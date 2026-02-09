@@ -1,0 +1,46 @@
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./types/EntityReference.js";
+
+/**
+ * Response from CreateKnowledgeArticleTranslation action
+ */
+export interface CreateKnowledgeArticleTranslationResponse {
+  value: EntityReference;
+}
+
+/**
+ * CreateKnowledgeArticleTranslation action
+ *
+ * Unbound action
+ */
+export class CreateKnowledgeArticleTranslationAction implements Executable<CreateKnowledgeArticleTranslationResponse> {
+  constructor(
+    public readonly source: EntityReference,
+    public readonly language: EntityReference,
+    public readonly isMajor: boolean
+  ) {}
+
+  toRequestInformation(baseUrl: string): RequestInformation {
+    const url = `${baseUrl}/CreateKnowledgeArticleTranslation`;
+
+    const body: Record<string, unknown> = {
+      Source: this.source,
+      Language: this.language,
+      IsMajor: this.isMajor,
+    };
+
+    return {
+      method: "POST",
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body,
+    };
+  }
+
+  async parseResponse(response: Response): Promise<CreateKnowledgeArticleTranslationResponse> {
+    const data = await response.json();
+    return data as CreateKnowledgeArticleTranslationResponse;
+  }
+}

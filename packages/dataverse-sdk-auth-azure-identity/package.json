@@ -1,0 +1,55 @@
+{
+  "name": "@mohsinonxrm/dataverse-sdk-auth-azure-identity",
+  "version": "1.0.0",
+  "description": "Azure Identity authentication provider for Dataverse SDK",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mohsinonxrm/dataverse-sdk-typescript.git",
+    "directory": "packages/dataverse-sdk-auth-azure-identity"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest",
+    "lint": "eslint src --ext .ts",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": [
+    "dataverse",
+    "dynamics365",
+    "authentication",
+    "azure-identity",
+    "managed-identity"
+  ],
+  "author": "Mohsin On xRM",
+  "license": "AGPL-3.0-only",
+  "peerDependencies": {
+    "@azure/identity": "^4.0.0",
+    "@mohsinonxrm/dataverse-sdk-core": "workspace:*"
+  },
+  "devDependencies": {
+    "@azure/identity": "^4.0.0",
+    "@mohsinonxrm/dataverse-sdk-core": "workspace:*",
+    "@types/node": "^20.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.6.0"
+  }
+}

@@ -1,0 +1,32 @@
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+
+/**
+ * Response from msdyn_EnableDVCopilot action
+ */
+export interface msdyn_EnableDVCopilotResponse {
+  // No content returned
+}
+
+/**
+ * msdyn_EnableDVCopilot action
+ *
+ * Unbound action
+ */
+export class msdyn_EnableDVCopilotAction implements Executable<msdyn_EnableDVCopilotResponse> {
+  toRequestInformation(baseUrl: string): RequestInformation {
+    const url = `${baseUrl}/msdyn_EnableDVCopilot`;
+
+    return {
+      method: "POST",
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
+  }
+
+  async parseResponse(response: Response): Promise<msdyn_EnableDVCopilotResponse> {
+    // No return value (204 No Content)
+    return {};
+  }
+}

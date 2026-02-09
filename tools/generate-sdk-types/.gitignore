@@ -1,0 +1,9 @@
+# Environment configuration
+.env
+
+# Build output
+dist/
+node_modules/
+
+# Config (if contains secrets)
+sdk-gen.config.json

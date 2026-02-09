@@ -1,0 +1,34 @@
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+
+/**
+ * Response from WhoAmI function
+ */
+export interface WhoAmIResponse {
+  BusinessUnitId: string;
+  UserId: string;
+  OrganizationId: string;
+}
+
+/**
+ * WhoAmI function
+ *
+ * Unbound function
+ */
+export class WhoAmIFunction implements Executable<WhoAmIResponse> {
+  toRequestInformation(baseUrl: string): RequestInformation {
+    let url = `${baseUrl}/WhoAmI`;
+
+    return {
+      method: "GET",
+      url,
+      headers: {
+        Accept: "application/json",
+      },
+    };
+  }
+
+  async parseResponse(response: Response): Promise<WhoAmIResponse> {
+    const data = await response.json();
+    return data as WhoAmIResponse;
+  }
+}

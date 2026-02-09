@@ -1,0 +1,88 @@
+import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./EntityReference.js";
+import type { PropagationOwnershipOptions } from "./types/index.js";
+
+/**
+ * CreateActivitiesList request message
+ *
+ * Web API Action: CreateActivitiesList
+ */
+export class CreateActivitiesListRequest
+  extends OrganizationRequest
+  implements Executable<CreateActivitiesListResponse>
+{
+  constructor(
+    public listId: string,
+    public friendlyName: string,
+    public activity: EntityReference,
+    public templateId: string,
+    public propagate: boolean,
+    public ownershipOptions: PropagationOwnershipOptions,
+    public owner: EntityReference,
+    public sendEmail: boolean,
+    public postWorkflowEvent: boolean,
+    public queueId: string
+  ) {
+    super("CreateActivitiesList");
+  }
+
+  toRequestInformation(baseUrl: string): RequestInformation {
+    const url = `${baseUrl}/CreateActivitiesList`;
+
+    const body: Record<string, unknown> = {
+      ListId: this.listId,
+      FriendlyName: this.friendlyName,
+      Activity: this.activity,
+      TemplateId: this.templateId,
+      Propagate: this.propagate,
+      OwnershipOptions: this.ownershipOptions,
+      Owner: this.owner,
+      sendEmail: this.sendEmail,
+      PostWorkflowEvent: this.postWorkflowEvent,
+      QueueId: this.queueId,
+    };
+
+    return {
+      method: "POST",
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body,
+    };
+  }
+
+  async parseResponse(response: Response): Promise<CreateActivitiesListResponse> {
+    const data = await response.json();
+    return CreateActivitiesListResponse.fromResponse(data);
+  }
+
+  toRequestBody(): Record<string, unknown> {
+    return {
+      ListId: this.listId,
+      FriendlyName: this.friendlyName,
+      Activity: this.activity,
+      TemplateId: this.templateId,
+      Propagate: this.propagate,
+      OwnershipOptions: this.ownershipOptions,
+      Owner: this.owner,
+      sendEmail: this.sendEmail,
+      PostWorkflowEvent: this.postWorkflowEvent,
+      QueueId: this.queueId,
+    };
+  }
+}
+
+/**
+ * CreateActivitiesList response message
+ */
+export class CreateActivitiesListResponse extends OrganizationResponse {
+  constructor(public result: CreateActivitiesListResponse) {
+    super("CreateActivitiesList");
+  }
+
+  static fromResponse(data: unknown): CreateActivitiesListResponse {
+    return new CreateActivitiesListResponse((data as any).value);
+  }
+}

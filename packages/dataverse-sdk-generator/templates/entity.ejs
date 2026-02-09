@@ -1,0 +1,82 @@
+import type { IEntity, EntityMetadata } from '@mohsinonxrm/dataverse-sdk-entities-runtime';
+
+/**
+ * <%= entity.Name %> entity interface
+ * Logical Name: <%= entity.LogicalName %>
+ * Entity Set: <%= entity.EntitySetName %>
+ <%_ if (entity.SchemaName && entity.SchemaName !== entity.Name) { _%>
+ * Schema Name: <%= entity.SchemaName %>
+ <%_ } _%>
+ */
+export interface <%= entity.Name %> extends IEntity {
+  logicalName: '<%= entity.LogicalName %>';
+<%_ entity.Properties.forEach(function(prop){ _%>
+  
+  <%_ if (prop.Description) { _%>
+  /** <%= prop.Description %> */
+  <%_ } else if (prop.DisplayName) { _%>
+  /** <%= prop.DisplayName %> */
+  <%_ } else { _%>
+  /** <%= prop.LogicalName %> */
+  <%_ } _%>
+  <%= prop.Name %>?: <%= formatType(prop.TypeScriptType) %><%= prop.Nullable ? ' | null' : '' %>;<%= getSourceTypeComment(prop.SourceType) %>
+<%_ }) _%>
+<%_ entity.NavigationProperties.forEach(function(nav){ _%>
+  
+  /** Navigation: <%= nav.RelationshipName %><%= nav.IsPolymorphic ? ' (polymorphic: ' + nav.Targets.join(', ') + ')' : '' %> */
+  <%= nav.Name %>?: <%= nav.IsPolymorphic ? 'any' : nav.TargetType %><%= nav.IsCollection ? '[]' : '' %>;
+<%_ }) _%>
+}
+
+/**
+ * Metadata for <%= entity.Name %> entity
+ */
+export const <%= entity.Name %>Metadata: EntityMetadata = {
+  typeName: '<%= entity.TypeName %>',
+  logicalName: '<%= entity.LogicalName %>',
+  collectionName: '<%= entity.EntitySetName %>',
+  primaryIdAttribute: '<%= entity.KeyName %>',
+  <%_ if (entity.PrimaryNameAttribute) { _%>
+  primaryNameAttribute: '<%= entity.PrimaryNameAttribute %>',
+  <%_ } _%>
+  attributeTypes: {
+<%_ entity.Properties.forEach(function(prop, index){ _%>
+    <%= prop.LogicalName %>: {
+      logicalName: '<%= prop.LogicalName %>',
+      schemaName: '<%= prop.SchemaName || prop.Name %>',
+      type: '<%= prop.Type %>',
+      <%_ if (prop.IsRequired) { _%>
+      isRequired: true,
+      <%_ } _%>
+      <%_ if (prop.SourceType === 1) { _%>
+      sourceType: 'calculated',
+      <%_ } else if (prop.SourceType === 2) { _%>
+      sourceType: 'rollup',
+      <%_ } _%>
+      <%_ if (prop.Targets && prop.Targets.length > 0) { _%>
+      targets: <%= JSON.stringify(prop.Targets) %>,
+      <%_ } _%>
+      <%_ if (prop.EnumName) { _%>
+      enumType: '<%= prop.EnumName %>',
+      <%_ } _%>
+    }<%= index < entity.Properties.length - 1 ? ',' : '' %>
+<%_ }) _%>
+  },
+  navigation: {
+<%_ entity.NavigationProperties.forEach(function(nav, index){ _%>
+    <%= nav.Name %>: {
+      name: '<%= nav.Name %>',
+      <%_ if (nav.FullName) { _%>
+      fullName: '<%= nav.FullName %>',
+      <%_ } _%>
+      targetType: '<%= nav.TargetType %>',
+      <%_ if (nav.IsPolymorphic) { _%>
+      isPolymorphic: true,
+      targets: <%= JSON.stringify(nav.Targets) %>,
+      <%_ } _%>
+      isCollection: <%= nav.IsCollection %>,
+      relationshipName: '<%= nav.RelationshipName %>'
+    }<%= index < entity.NavigationProperties.length - 1 ? ',' : '' %>
+<%_ }) _%>
+  }
+};

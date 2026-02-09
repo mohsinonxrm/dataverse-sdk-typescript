@@ -1,0 +1,61 @@
+/**
+ * contract entity type
+ */
+export interface contract {
+  billingstarton: string;
+  totaldiscount: number;
+  _createdby_value: string;
+  entityimage: string;
+  timezoneruleversionnumber: number;
+  _billingaccountid_value: string;
+  _modifiedby_value: string;
+  contractservicelevelcode: number;
+  entityimage_timestamp: number;
+  _owningteam_value: string;
+  contractnumber: string;
+  _modifiedonbehalfby_value: string;
+  _billingcontactid_value: string;
+  _originatingcontract_value: string;
+  utcconversiontimezonecode: number;
+  overriddencreatedon: string;
+  netprice_base: number;
+  _owninguser_value: string;
+  totalprice_base: number;
+  contracttemplateabbreviation: string;
+  _customerid_value: string;
+  contractlanguage: string;
+  contractid: string;
+  billingfrequencycode: number;
+  _billingcustomerid_value: string;
+  importsequencenumber: number;
+  _contracttemplateid_value: string;
+  _transactioncurrencyid_value: string;
+  exchangerate: number;
+  totalprice: number;
+  _ownerid_value: string;
+  modifiedon: string;
+  _accountid_value: string;
+  billingendon: string;
+  cancelon: string;
+  duration: number;
+  entityimage_url: string;
+  _owningbusinessunit_value: string;
+  emailaddress: string;
+  _serviceaddress_value: string;
+  _contactid_value: string;
+  title: string;
+  netprice: number;
+  effectivitycalendar: string;
+  entityimageid: string;
+  _createdonbehalfby_value: string;
+  statecode: number;
+  usediscountaspercentage: boolean;
+  allotmenttypecode: number;
+  versionnumber: number;
+  statuscode: number;
+  _billtoaddress_value: string;
+  activeon: string;
+  createdon: string;
+  expireson: string;
+  totaldiscount_base: number;
+}

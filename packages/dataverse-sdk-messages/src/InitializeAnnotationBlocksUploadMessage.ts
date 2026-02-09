@@ -1,0 +1,58 @@
+import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./EntityReference.js";
+
+/**
+ * InitializeAnnotationBlocksUpload request message
+ *
+ * Web API Action: InitializeAnnotationBlocksUpload
+ */
+export class InitializeAnnotationBlocksUploadRequest
+  extends OrganizationRequest
+  implements Executable<InitializeAnnotationBlocksUploadResponse>
+{
+  constructor(public target: EntityReference) {
+    super("InitializeAnnotationBlocksUpload");
+  }
+
+  toRequestInformation(baseUrl: string): RequestInformation {
+    const url = `${baseUrl}/InitializeAnnotationBlocksUpload`;
+
+    const body: Record<string, unknown> = {
+      Target: this.target,
+    };
+
+    return {
+      method: "POST",
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body,
+    };
+  }
+
+  async parseResponse(response: Response): Promise<InitializeAnnotationBlocksUploadResponse> {
+    const data = await response.json();
+    return InitializeAnnotationBlocksUploadResponse.fromResponse(data);
+  }
+
+  toRequestBody(): Record<string, unknown> {
+    return {
+      Target: this.target,
+    };
+  }
+}
+
+/**
+ * InitializeAnnotationBlocksUpload response message
+ */
+export class InitializeAnnotationBlocksUploadResponse extends OrganizationResponse {
+  constructor(public result: InitializeAnnotationBlocksUploadResponse) {
+    super("InitializeAnnotationBlocksUpload");
+  }
+
+  static fromResponse(data: unknown): InitializeAnnotationBlocksUploadResponse {
+    return new InitializeAnnotationBlocksUploadResponse((data as any).value);
+  }
+}

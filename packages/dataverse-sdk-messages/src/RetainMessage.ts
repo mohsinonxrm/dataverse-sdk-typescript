@@ -1,0 +1,60 @@
+import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./EntityReference.js";
+
+/**
+ * Retain request message
+ *
+ * Web API Action: Retain
+ */
+export class RetainRequest extends OrganizationRequest implements Executable<RetainResponse> {
+  constructor(
+    public target: EntityReference,
+    public operationId: string
+  ) {
+    super("Retain");
+  }
+
+  toRequestInformation(baseUrl: string): RequestInformation {
+    const url = `${baseUrl}/Retain`;
+
+    const body: Record<string, unknown> = {
+      Target: this.target,
+      OperationId: this.operationId,
+    };
+
+    return {
+      method: "POST",
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body,
+    };
+  }
+
+  async parseResponse(response: Response): Promise<RetainResponse> {
+    const data = await response.json();
+    return RetainResponse.fromResponse(data);
+  }
+
+  toRequestBody(): Record<string, unknown> {
+    return {
+      Target: this.target,
+      OperationId: this.operationId,
+    };
+  }
+}
+
+/**
+ * Retain response message
+ */
+export class RetainResponse extends OrganizationResponse {
+  constructor(public result: RetainResponse) {
+    super("Retain");
+  }
+
+  static fromResponse(data: unknown): RetainResponse {
+    return new RetainResponse((data as any).value);
+  }
+}

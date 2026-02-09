@@ -1,0 +1,44 @@
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { ColumnSet, quote } from "./types/index.js";
+
+/**
+ * Response from ReviseQuote action
+ */
+export interface ReviseQuoteResponse {
+  value: quote;
+}
+
+/**
+ * ReviseQuote action
+ *
+ * Unbound action
+ */
+export class ReviseQuoteAction implements Executable<ReviseQuoteResponse> {
+  constructor(
+    public readonly quoteId: string,
+    public readonly columnSet: ColumnSet
+  ) {}
+
+  toRequestInformation(baseUrl: string): RequestInformation {
+    const url = `${baseUrl}/ReviseQuote`;
+
+    const body: Record<string, unknown> = {
+      QuoteId: this.quoteId,
+      ColumnSet: this.columnSet,
+    };
+
+    return {
+      method: "POST",
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body,
+    };
+  }
+
+  async parseResponse(response: Response): Promise<ReviseQuoteResponse> {
+    const data = await response.json();
+    return data as ReviseQuoteResponse;
+  }
+}

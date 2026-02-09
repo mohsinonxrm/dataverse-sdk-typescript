@@ -1,0 +1,51 @@
+name: CI
+on:
+  pull_request:
+    branches: [main, dev]
+  push:
+    branches: [main, dev]
+
+jobs:
+  check-changeset:
+    name: Check for Changeset
+    runs-on: ubuntu-latest
+    # Only require changeset for PRs to main (not for dev branch PRs)
+    if: >
+      github.event_name == 'pull_request' && 
+      github.base_ref == 'main' &&
+      !startsWith(github.head_ref, 'changeset-release/')
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      - name: Check for changeset
+        run: |
+          pnpm changeset status --since=origin/${{ github.base_ref }} || {
+            echo "❌ No changeset detected. Please run 'pnpm changeset' to add one."
+            exit 1
+          }
+
+  build-test-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm format:check
+      - run: pnpm lint
+      - run: pnpm test
+      - run: pnpm build

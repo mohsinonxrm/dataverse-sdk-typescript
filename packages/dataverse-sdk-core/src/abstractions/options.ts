@@ -1,0 +1,69 @@
+export type PreferOption = string & { __brand: "PreferOption" };
+
+export const Prefer = {
+  returnRepresentation(): PreferOption {
+    return "return=representation" as PreferOption;
+  },
+  includeAnnotations(term: string): PreferOption {
+    return `odata.include-annotations="${term}"` as PreferOption;
+  },
+  continueOnError(): PreferOption {
+    return "odata.continue-on-error" as PreferOption;
+  },
+} as const;
+
+export interface RetryOptions {
+  maxRetries?: number;
+  baseDelayMs?: number;
+  maxDelayMs?: number;
+  jitter?: boolean;
+}
+
+export interface ConcurrencyOptions {
+  maxConcurrentRequests?: number;
+  adaptiveFromDopHint?: boolean;
+  /** Bounds for adaptive tuning */
+  min?: number;
+  max?: number;
+}
+
+export interface CircuitBreakerOptions {
+  enabled?: boolean;
+  failureThreshold?: number;
+  samplingWindowMs?: number;
+  openDurationMs?: number;
+}
+
+export interface BulkheadOptions {
+  enabled?: boolean;
+  maxParallel?: number;
+  maxQueue?: number;
+}
+
+export interface RequestOptions {
+  headers?: Record<string, string>;
+  prefer?: PreferOption[];
+  timeoutMs?: number;
+  signal?: AbortSignal;
+  /**
+   * Per-request middleware options overrides
+   * Allows fine-grained control of middleware behavior on a per-request basis
+   */
+  middlewareOptions?: import("../middleware/RequestOptions.js").RequestOptions;
+}
+
+export interface DataverseClientOptions {
+  baseUrl: string;
+  apiVersion?: "v9.2";
+  scopes?: string | string[];
+  tokenProvider?: import("./http.js").AccessTokenProvider;
+  fetchProvider?: import("./http.js").FetchProvider;
+  logger?: import("./http.js").Logger;
+  telemetry?: import("./http.js").TelemetryClient;
+  retry?: RetryOptions;
+  concurrency?: ConcurrencyOptions;
+  circuitBreaker?: CircuitBreakerOptions;
+  bulkhead?: BulkheadOptions;
+  defaultHeaders?: Record<string, string>;
+  defaultPrefer?: PreferOption[];
+}

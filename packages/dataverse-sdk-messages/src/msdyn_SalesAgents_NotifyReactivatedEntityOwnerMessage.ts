@@ -1,0 +1,64 @@
+import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+
+/**
+ * msdyn_SalesAgents_NotifyReactivatedEntityOwner request message
+ *
+ * Web API Action: msdyn_SalesAgents_NotifyReactivatedEntityOwner
+ */
+export class msdyn_SalesAgents_NotifyReactivatedEntityOwnerRequest
+  extends OrganizationRequest
+  implements Executable<msdyn_SalesAgents_NotifyReactivatedEntityOwnerResponse>
+{
+  constructor(
+    public msdyn_EntityTypeName: string,
+    public msdyn_EntityId: string
+  ) {
+    super("msdyn_SalesAgents_NotifyReactivatedEntityOwner");
+  }
+
+  toRequestInformation(baseUrl: string): RequestInformation {
+    const url = `${baseUrl}/msdyn_SalesAgents_NotifyReactivatedEntityOwner`;
+
+    const body: Record<string, unknown> = {
+      msdyn_EntityTypeName: this.msdyn_EntityTypeName,
+      msdyn_EntityId: this.msdyn_EntityId,
+    };
+
+    return {
+      method: "POST",
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body,
+    };
+  }
+
+  async parseResponse(
+    response: Response
+  ): Promise<msdyn_SalesAgents_NotifyReactivatedEntityOwnerResponse> {
+    const data = await response.json();
+    return msdyn_SalesAgents_NotifyReactivatedEntityOwnerResponse.fromResponse(data);
+  }
+
+  toRequestBody(): Record<string, unknown> {
+    return {
+      msdyn_EntityTypeName: this.msdyn_EntityTypeName,
+      msdyn_EntityId: this.msdyn_EntityId,
+    };
+  }
+}
+
+/**
+ * msdyn_SalesAgents_NotifyReactivatedEntityOwner response message
+ */
+export class msdyn_SalesAgents_NotifyReactivatedEntityOwnerResponse extends OrganizationResponse {
+  constructor(public result: msdyn_SalesAgents_NotifyReactivatedEntityOwnerResponse) {
+    super("msdyn_SalesAgents_NotifyReactivatedEntityOwner");
+  }
+
+  static fromResponse(data: unknown): msdyn_SalesAgents_NotifyReactivatedEntityOwnerResponse {
+    return new msdyn_SalesAgents_NotifyReactivatedEntityOwnerResponse((data as any).value);
+  }
+}

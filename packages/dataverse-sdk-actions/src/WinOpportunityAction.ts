@@ -1,0 +1,46 @@
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { opportunityclose } from "./types/index.js";
+
+/**
+ * Response from WinOpportunity action
+ */
+export interface WinOpportunityResponse {
+  // No content returned
+}
+
+/**
+ * WinOpportunity action
+ *
+ * Unbound action
+ */
+export class WinOpportunityAction implements Executable<WinOpportunityResponse> {
+  constructor(
+    public readonly opportunityClose: opportunityclose,
+    public readonly caller: string,
+    public readonly status: number
+  ) {}
+
+  toRequestInformation(baseUrl: string): RequestInformation {
+    const url = `${baseUrl}/WinOpportunity`;
+
+    const body: Record<string, unknown> = {
+      OpportunityClose: this.opportunityClose,
+      Caller: this.caller,
+      Status: this.status,
+    };
+
+    return {
+      method: "POST",
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body,
+    };
+  }
+
+  async parseResponse(response: Response): Promise<WinOpportunityResponse> {
+    // No return value (204 No Content)
+    return {};
+  }
+}

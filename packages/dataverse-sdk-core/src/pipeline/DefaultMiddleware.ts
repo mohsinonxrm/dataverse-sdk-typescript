@@ -1,0 +1,19 @@
+import type { Middleware } from "../abstractions/middleware.js";
+import type { DataverseClientOptions } from "../abstractions/options.js";
+import { AuthMiddleware } from "../middleware/AuthMiddleware.js";
+import { ODataHeadersMiddleware } from "../middleware/ODataHeadersMiddleware.js";
+import { RetryMiddleware } from "../middleware/RetryMiddleware.js";
+import { ConcurrencyMiddleware } from "../middleware/ConcurrencyMiddleware.js";
+import { LoggingMiddleware } from "../middleware/LoggingMiddleware.js";
+import { TelemetryMiddleware } from "../middleware/TelemetryMiddleware.js";
+
+export function buildDefaultMiddleware(options: DataverseClientOptions): Middleware[] {
+  const list: Middleware[] = [];
+  if (options.tokenProvider) list.push(new AuthMiddleware(options));
+  list.push(new ODataHeadersMiddleware(options));
+  list.push(new ConcurrencyMiddleware(options));
+  list.push(new RetryMiddleware(options));
+  list.push(new TelemetryMiddleware(options));
+  list.push(new LoggingMiddleware(options));
+  return list;
+}

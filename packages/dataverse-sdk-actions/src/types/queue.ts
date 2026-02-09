@@ -1,0 +1,59 @@
+/**
+ * queue entity type
+ */
+export interface queue {
+  overriddencreatedon: string;
+  msdyn_priority: number;
+  _owninguser_value: string;
+  queueviewtype: number;
+  _msdyn_operatinghourid_value: string;
+  isemailaddressapprovedbyo365admin: boolean;
+  msdyn_isomnichannelqueue: boolean;
+  modifiedon: string;
+  msdyn_queuetype: number;
+  entityimage_url: string;
+  _organizationid_value: string;
+  _createdby_value: string;
+  emailaddress: string;
+  incomingemailfilteringmethod: number;
+  ignoreunsolicitedemail: boolean;
+  msdyn_shortabandonedthreshold: number;
+  msdyn_operatinghoursbasedassignment: boolean;
+  statecode: number;
+  _transactioncurrencyid_value: string;
+  queuetypecode: number;
+  createdon: string;
+  queueid: string;
+  _owningbusinessunit_value: string;
+  msdyn_assignmentstrategy: number;
+  entityimage: string;
+  importsequencenumber: number;
+  msdyn_maxqueuesize: number;
+  _msdyn_inqueueoverflowrulesetid_value: string;
+  _emailsignature_value: string;
+  _msdyn_prequeueoverflowrulesetid_value: string;
+  versionnumber: number;
+  exchangerate: number;
+  entityimageid: string;
+  incomingemaildeliverymethod: number;
+  emailrouteraccessapproval: number;
+  name: string;
+  statuscode: number;
+  msdyn_processqueueperiodically: boolean;
+  _owningteam_value: string;
+  _ownerid_value: string;
+  numberofmembers: number;
+  _msdyn_assignmentinputcontractid_value: string;
+  _defaultmailbox_value: string;
+  description: string;
+  _modifiedonbehalfby_value: string;
+  _msdyn_intentfamilyid_value: string;
+  msdyn_queueservicelevelthreshold: number;
+  entityimage_timestamp: number;
+  outgoingemaildeliverymethod: number;
+  numberofitems: number;
+  msdyn_uniquename: string;
+  _modifiedby_value: string;
+  _createdonbehalfby_value: string;
+  msdyn_isdefaultqueue: boolean;
+}

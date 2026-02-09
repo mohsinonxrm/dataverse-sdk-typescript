@@ -1,0 +1,45 @@
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { systemform } from "./types/index.js";
+
+/**
+ * Response from CopySystemForm action
+ */
+export interface CopySystemFormResponse {
+  value: systemform;
+}
+
+/**
+ * CopySystemForm action
+ *
+ * Bound action
+ * Binding parameter: entity (mscrm.systemform)
+ */
+export class CopySystemFormAction implements Executable<CopySystemFormResponse> {
+  constructor(
+    public readonly systemformId: string,
+    public readonly target: systemform
+  ) {}
+
+  toRequestInformation(baseUrl: string): RequestInformation {
+    // Bound action
+    const url = `${baseUrl}/systemforms(${this.systemformId})/Microsoft.Dynamics.CRM.CopySystemForm`;
+
+    const body: Record<string, unknown> = {
+      Target: this.target,
+    };
+
+    return {
+      method: "POST",
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body,
+    };
+  }
+
+  async parseResponse(response: Response): Promise<CopySystemFormResponse> {
+    const data = await response.json();
+    return data as CopySystemFormResponse;
+  }
+}

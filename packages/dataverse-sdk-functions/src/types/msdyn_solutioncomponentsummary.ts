@@ -1,0 +1,65 @@
+/**
+ * msdyn_solutioncomponentsummary entity type
+ */
+export interface msdyn_solutioncomponentsummary {
+  msdyn_solutioncomponentsummaryid: string;
+  msdyn_fieldsecurity: string;
+  msdyn_culture: string;
+  msdyn_publickeytoken: string;
+  msdyn_iscustomizablename: string;
+  msdyn_workflowcategory: string;
+  msdyn_objecttypecode: string;
+  msdyn_statusname: string;
+  msdyn_isolationmode: string;
+  msdyn_executionorder: string;
+  msdyn_ismanaged: string;
+  msdyn_iscustomname: string;
+  msdyn_logicalcollectionname: string;
+  msdyn_modifiedon: string;
+  msdyn_subtype: string;
+  msdyn_objectid: string;
+  msdyn_isauditenabledname: string;
+  msdyn_iscustomizable: string;
+  msdyn_description: string;
+  msdyn_status: string;
+  msdyn_workflowidunique: string;
+  organizationid: string;
+  msdyn_primaryidattribute: string;
+  msdyn_deployment: string;
+  msdyn_componenttypename: string;
+  msdyn_owner: string;
+  msdyn_isdefaultname: string;
+  msdyn_iscustom: string;
+  msdyn_typename: string;
+  msdyn_connectorinternalid: string;
+  msdyn_synctoexternalsearchindex: string;
+  msdyn_version: string;
+  msdyn_displayname: string;
+  msdyn_standardstatus: string;
+  msdyn_name: string;
+  msdyn_istableenabled: string;
+  msdyn_componentlogicalname: string;
+  msdyn_eventhandler: string;
+  msdyn_componenttype: number;
+  msdyn_workflowcategoryname: string;
+  msdyn_hasactivecustomization: string;
+  msdyn_schemaname: string;
+  msdyn_ismanagedname: string;
+  msdyn_solutionid: string;
+  msdyn_isappaware: string;
+  msdyn_owningbusinessunit: string;
+  msdyn_isdefault: string;
+  msdyn_relatedentity: string;
+  msdyn_uniquename: string;
+  msdyn_sdkmessagename: string;
+  msdyn_relatedentityattribute: string;
+  msdyn_isappawarename: string;
+  msdyn_createdon: string;
+  msdyn_total: number;
+  msdyn_isauditenabled: string;
+  msdyn_fieldtype: string;
+  msdyn_canvasappuniqueid: string;
+  msdyn_executionstage: string;
+  msdyn_lcid: number;
+  msdyn_primaryentityname: string;
+}

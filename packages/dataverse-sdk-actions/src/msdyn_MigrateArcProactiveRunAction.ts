@@ -1,0 +1,33 @@
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+
+/**
+ * Response from msdyn_MigrateArcProactiveRun action
+ */
+export interface msdyn_MigrateArcProactiveRunResponse {
+  OutputString: string;
+  Exception: string;
+}
+
+/**
+ * msdyn_MigrateArcProactiveRun action
+ *
+ * Unbound action
+ */
+export class msdyn_MigrateArcProactiveRunAction implements Executable<msdyn_MigrateArcProactiveRunResponse> {
+  toRequestInformation(baseUrl: string): RequestInformation {
+    const url = `${baseUrl}/msdyn_MigrateArcProactiveRun`;
+
+    return {
+      method: "POST",
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
+  }
+
+  async parseResponse(response: Response): Promise<msdyn_MigrateArcProactiveRunResponse> {
+    const data = await response.json();
+    return data as msdyn_MigrateArcProactiveRunResponse;
+  }
+}

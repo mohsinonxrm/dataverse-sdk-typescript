@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+
+# Turbo
+.turbo/
+
+# Testing
+coverage/
+
+# Auto-generated SDK files
+packages/dataverse-sdk-actions/src/**/*.ts
+packages/dataverse-sdk-functions/src/**/*.ts
+packages/dataverse-sdk-messages/src/**/*.ts
+packages/dataverse-sdk-metadata/src/types/**/*.ts
+packages/dataverse-sdk-metadata/src/types/index.ts
+packages/dataverse-sdk-actions/src/index.ts
+packages/dataverse-sdk-functions/src/index.ts
+packages/dataverse-sdk-messages/src/index.ts
+
+# Lockfiles
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Changelog files (managed by changesets)
+.changeset/
+**/CHANGELOG.md

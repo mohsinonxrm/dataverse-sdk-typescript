@@ -1,0 +1,32 @@
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+
+/**
+ * Response from msdyn_getIslandUrl action
+ */
+export interface msdyn_getIslandUrlResponse {
+  Result: string;
+}
+
+/**
+ * msdyn_getIslandUrl action
+ *
+ * Unbound action
+ */
+export class msdyn_getIslandUrlAction implements Executable<msdyn_getIslandUrlResponse> {
+  toRequestInformation(baseUrl: string): RequestInformation {
+    const url = `${baseUrl}/msdyn_getIslandUrl`;
+
+    return {
+      method: "POST",
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
+  }
+
+  async parseResponse(response: Response): Promise<msdyn_getIslandUrlResponse> {
+    const data = await response.json();
+    return data as msdyn_getIslandUrlResponse;
+  }
+}

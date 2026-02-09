@@ -1,0 +1,63 @@
+/**
+ * msdyn_resourcerequirement entity type
+ */
+export interface msdyn_resourcerequirement {
+  msdyn_name: string;
+  msdyn_percentage: number;
+  _msdyn_serviceappointment_value: string;
+  _createdby_value: string;
+  msdyn_sortoptions: string;
+  msdyn_fromdate: string;
+  _msdyn_appointmentrequirementid_value: string;
+  createdon: string;
+  _msdyn_bookingsetupmetadataid_value: string;
+  overriddencreatedon: string;
+  _msdyn_requirementgroupid_value: string;
+  msdyn_timetopromised: string;
+  msdyn_isprimary: boolean;
+  _createdonbehalfby_value: string;
+  msdyn_internalflags: string;
+  msdyn_pooltype: string;
+  msdyn_fulfilledduration: number;
+  _modifiedby_value: string;
+  _owninguser_value: string;
+  statuscode: number;
+  msdyn_timezonefortimewindow: number;
+  modifiedon: string;
+  msdyn_worklocation: number;
+  msdyn_templaterequirementid: string;
+  _msdyn_territory_value: string;
+  _msdyn_workhourtemplate_value: string;
+  msdyn_todate: string;
+  _owningbusinessunit_value: string;
+  msdyn_requirementgroupcontrolviewid: string;
+  versionnumber: number;
+  msdyn_istemplate: boolean;
+  msdyn_tzafromdate: string;
+  timezoneruleversionnumber: number;
+  _msdyn_priority_value: string;
+  _msdyn_workorder_value: string;
+  msdyn_latitude: number;
+  msdyn_tzatodate: string;
+  msdyn_longitude: number;
+  statecode: number;
+  _ownerid_value: string;
+  msdyn_timefrompromised: string;
+  msdyn_timewindowstart: string;
+  msdyn_allocationmethod: number;
+  msdyn_calendarid: string;
+  msdyn_proposedduration: number;
+  _modifiedonbehalfby_value: string;
+  msdyn_remainingduration: number;
+  msdyn_duration: number;
+  msdyn_timewindowend: string;
+  _msdyn_status_value: string;
+  _msdyn_requirementrelationshipid_value: string;
+  msdyn_resourcetype: string;
+  importsequencenumber: number;
+  msdyn_resourcerequirementid: string;
+  utcconversiontimezonecode: number;
+  msdyn_effort: number;
+  _owningteam_value: string;
+  _msdyn_timegroup_value: string;
+}

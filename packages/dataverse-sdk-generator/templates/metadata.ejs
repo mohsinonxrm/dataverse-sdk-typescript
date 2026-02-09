@@ -1,0 +1,95 @@
+import type { EntityMetadata } from '@mohsinonxrm/dataverse-sdk-entities-runtime';
+<%_ entities.forEach(function(entity){ _%>
+import { <%= entity.Name %>Metadata } from './entities/<%= entity.Name %>.js';
+<%_ }) _%>
+
+/**
+ * Metadata cache for all generated entities
+ */
+export const EntityMetadataCache: Record<string, EntityMetadata> = {
+<%_ entities.forEach(function(entity, index){ _%>
+  '<%= entity.LogicalName %>': <%= entity.Name %>Metadata<%= index < entities.length - 1 ? ',' : '' %>
+<%_ }) _%>
+};
+
+/**
+ * Entity name mapping: SchemaName -> LogicalName
+ */
+export const Entities = {
+<%_ entities.forEach(function(entity, index){ _%>
+  <%= entity.SchemaName || entity.Name %>: '<%= entity.LogicalName %>'<%= index < entities.length - 1 ? ',' : '' %>
+<%_ }) _%>
+} as const;
+
+/**
+ * Get entity metadata by logical name
+ */
+export function getEntityMetadata(logicalName: string): EntityMetadata | undefined {
+  return EntityMetadataCache[logicalName];
+}
+
+/**
+ * Get entity logical name by schema name
+ */
+export function getLogicalName(schemaName: string): string | undefined {
+  return Entities[schemaName as keyof typeof Entities];
+}
+
+/**
+ * List of all generated entities (logical names)
+ */
+export const GeneratedEntities = [
+<%_ entities.forEach(function(entity, index){ _%>
+  '<%= entity.LogicalName %>'<%= index < entities.length - 1 ? ',' : '' %>
+<%_ }) _%>
+] as const;
+
+/**
+ * List of all generated actions
+ */
+export const GeneratedActions = [
+<%_ actions.forEach(function(action, index){ _%>
+  '<%= action.Name %>'<%= index < actions.length - 1 ? ',' : '' %>
+<%_ }) _%>
+] as const;
+
+/**
+ * List of all generated functions
+ */
+export const GeneratedFunctions = [
+<%_ functions.forEach(function(func, index){ _%>
+  '<%= func.Name %>'<%= index < functions.length - 1 ? ',' : '' %>
+<%_ }) _%>
+] as const;
+
+/**
+ * Action metadata for runtime lookup
+ */
+export const ActionMetadata = {
+<%_ actions.forEach(function(action, index){ _%>
+  <%= action.Name %>: {
+    name: '<%= action.Name %>',
+    isBound: <%= action.IsBound || false %>,
+    <%_ if (action.BindingType) { _%>
+    bindingType: '<%= action.BindingType %>',
+    <%_ } _%>
+    hasReturnType: <%= !!action.ReturnType %>
+  }<%= index < actions.length - 1 ? ',' : '' %>
+<%_ }) _%>
+} as const;
+
+/**
+ * Function metadata for runtime lookup
+ */
+export const FunctionMetadata = {
+<%_ functions.forEach(function(func, index){ _%>
+  <%= func.Name %>: {
+    name: '<%= func.Name %>',
+    isBound: <%= func.IsBound || false %>,
+    <%_ if (func.BindingType) { _%>
+    bindingType: '<%= func.BindingType %>',
+    <%_ } _%>
+    hasReturnType: <%= !!func.ReturnType %>
+  }<%= index < functions.length - 1 ? ',' : '' %>
+<%_ }) _%>
+} as const;

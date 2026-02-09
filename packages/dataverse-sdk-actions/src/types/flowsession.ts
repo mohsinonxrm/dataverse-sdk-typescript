@@ -1,0 +1,64 @@
+/**
+ * flowsession entity type
+ */
+export interface flowsession {
+  errormessage: string;
+  subcategory: number;
+  startedon: string;
+  _owningteam_value: string;
+  inputs: string;
+  sessionusersid: string;
+  _machineid_value: string;
+  additionalcontext_name: string;
+  machinepercentcpuusage: number;
+  timezoneruleversionnumber: number;
+  machineramusage: number;
+  outputs: string;
+  parentdesktopflowrunguid: string;
+  parentworkflowid: string;
+  flowsessionid: string;
+  rundetails: string;
+  _owninguser_value: string;
+  _ownerid_value: string;
+  runwaitduration: number;
+  _machinegroupid_value: string;
+  name: string;
+  statecode: number;
+  inputs_name: string;
+  outputs_name: string;
+  _modifiedonbehalfby_value: string;
+  clienttrackingid: string;
+  runmode: number;
+  errorcode: string;
+  overriddencreatedon: string;
+  completedon: string;
+  _regardingobjectid_value: string;
+  parentcloudflowrunsequenceid: string;
+  versionnumber: number;
+  createdon: string;
+  _createdby_value: string;
+  _modifiedby_value: string;
+  importsequencenumber: number;
+  connectionid: string;
+  credentials: string;
+  sessionusername: string;
+  _createdonbehalfby_value: string;
+  context: string;
+  _owningbusinessunit_value: string;
+  additionalcontext: string;
+  utcconversiontimezonecode: number;
+  processversion: string;
+  triggertype: number;
+  statuscode: number;
+  _parentdesktopflowrunid_value: string;
+  modifiedon: string;
+  gateway: string;
+  runduration: number;
+  callbackurl: string;
+  errorinnererror: string;
+  errordetails: string;
+  runexecutionduration: number;
+  correlationid: string;
+  runsessionmode: number;
+  machinepercentramusage: number;
+}

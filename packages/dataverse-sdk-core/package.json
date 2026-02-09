@@ -1,0 +1,41 @@
+{
+  "name": "@mohsinonxrm/dataverse-sdk-core",
+  "version": "1.0.0",
+  "type": "module",
+  "author": "Mohsin On xRM",
+  "license": "AGPL-3.0-only",
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mohsinonxrm/dataverse-sdk-typescript.git",
+    "directory": "packages/dataverse-sdk-core"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "clean": "rimraf dist"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "tsup": "^8.0.0",
+    "vitest": "^1.6.0",
+    "eslint": "^9.0.0"
+  }
+}

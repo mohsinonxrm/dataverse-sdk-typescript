@@ -1,0 +1,48 @@
+{
+  "name": "dataverse-sdk-typescript",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@9.15.0",
+  "workspaces": [
+    "packages/*",
+    "samples/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "clean": "turbo run clean && rimraf node_modules",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "changeset publish",
+    "sdk:generate": "pnpm --filter generate-sdk-types build && pnpm --filter generate-sdk-types generate",
+    "sdk:generate:purge": "pnpm --filter generate-sdk-types build && pnpm --filter generate-sdk-types generate --purge",
+    "sdk:generate:metadata": "pnpm --filter generate-sdk-types build && pnpm --filter generate-sdk-types generate metadata",
+    "sdk:generate:metadata:purge": "pnpm --filter generate-sdk-types build && pnpm --filter generate-sdk-types generate metadata --purge",
+    "sdk:generate:messages": "pnpm --filter generate-sdk-types build && pnpm --filter generate-sdk-types generate messages",
+    "sdk:generate:messages:purge": "pnpm --filter generate-sdk-types build && pnpm --filter generate-sdk-types generate messages --purge",
+    "sdk:generate:actions": "pnpm --filter generate-sdk-types build && pnpm --filter generate-sdk-types generate actions",
+    "sdk:generate:actions:purge": "pnpm --filter generate-sdk-types build && pnpm --filter generate-sdk-types generate actions --purge",
+    "sdk:generate:functions": "pnpm --filter generate-sdk-types build && pnpm --filter generate-sdk-types generate functions",
+    "sdk:generate:functions:purge": "pnpm --filter generate-sdk-types build && pnpm --filter generate-sdk-types generate functions --purge",
+    "format": "prettier -w .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.0",
+    "@eslint/js": "^9.39.2",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "eslint": "^9.0.0",
+    "msw": "^2.12.7",
+    "prettier": "^3.2.0",
+    "rimraf": "^6.0.0",
+    "tsd": "^0.31.0",
+    "tsup": "^8.0.0",
+    "turbo": "^2.3.0",
+    "typescript": "^5.4.0",
+    "typescript-eslint": "^8.53.1",
+    "vitest": "^1.6.0"
+  }
+}

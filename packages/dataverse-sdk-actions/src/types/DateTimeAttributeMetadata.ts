@@ -1,0 +1,18 @@
+import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
+import type { DateTimeBehavior } from "./DateTimeBehavior.js";
+import type { DateTimeFormat } from "./DateTimeFormat.js";
+import type { ImeMode } from "./ImeMode.js";
+
+/**
+ * DateTimeAttributeMetadata entity type
+ */
+export interface DateTimeAttributeMetadata {
+  MinSupportedValue: string;
+  MaxSupportedValue: string;
+  Format: DateTimeFormat;
+  ImeMode: ImeMode;
+  SourceTypeMask: number;
+  FormulaDefinition: string;
+  DateTimeBehavior: DateTimeBehavior;
+  CanChangeDateTimeBehavior: BooleanManagedProperty;
+}

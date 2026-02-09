@@ -1,0 +1,65 @@
+import { FunctionBase } from '@mohsinonxrm/dataverse-sdk-entities-runtime';
+
+/**
+ * Response type for <%= func.Name %> function
+ */
+export interface <%= func.Name %>Response {
+<%_ if (func.ReturnType) { _%>
+  result: <%= formatType(func.ReturnType) %>;
+<%_ } else { _%>
+  // No return value
+<%_ } _%>
+}
+
+/**
+ * <%= func.Name %> function
+ * <%_ if (func.IsBound) { _%>Bound to: <%= func.BindingType %><%_ } else { _%>Unbound function<%_ } _%>
+ */
+export class <%= func.Name %>Function extends FunctionBase<<%= func.Name %>Response> {
+  constructor(
+<%_ func.Parameters.forEach(function(param, index){ _%>
+    public <%= param.Name %>: <%= formatType(param.TypeScriptType) %><%= param.Nullable ? ' | null' : '' %><%= index < func.Parameters.length - 1 ? ',' : '' %>
+<%_ }) _%>
+  ) {
+    super();
+  }
+
+  /**
+   * Parameter metadata for runtime type checking
+   */
+  static parameterTypes = {
+<%_ func.Parameters.forEach(function(param, index){ _%>
+    <%= param.Name %>: {
+      type: '<%= param.Type %>',
+      structuralProperty: '<%= getStructuralType(param.Type) %>',
+      nullable: <%= param.Nullable || false %>
+    }<%= index < func.Parameters.length - 1 ? ',' : '' %>
+<%_ }) _%>
+  };
+
+  toRequestInformation(baseUrl: string) {
+    // Build parameter aliases for GET request
+    const paramAliases = new URLSearchParams();
+<%_ func.Parameters.forEach(function(param){ _%>
+    paramAliases.set('@<%= param.Name %>', String(this.<%= param.Name %>));
+<%_ }) _%>
+
+    const paramString = <%= func.Parameters.length > 0 ? 
+      '`(' + func.Parameters.map(p => p.Name + '=@' + p.Name).join(',') + ')`' : 
+      '""' %>;
+
+    return {
+      method: 'GET' as const,
+      url: `${baseUrl}/<%= func.Name %>${paramString}`,
+      headers: {
+        Accept: 'application/json'
+      },
+      query: Object.fromEntries(paramAliases)
+    };
+  }
+
+  async parseResponse(response: Response): Promise<<%= func.Name %>Response> {
+    const data = await response.json();
+    return { result: data };
+  }
+}

@@ -1,0 +1,54 @@
+import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+
+/**
+ * msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRule request message
+ *
+ * Web API Action: msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRule
+ */
+export class msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleRequest
+  extends OrganizationRequest
+  implements Executable<msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleResponse>
+{
+  constructor() {
+    super("msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRule");
+  }
+
+  toRequestInformation(baseUrl: string): RequestInformation {
+    const url = `${baseUrl}/msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRule`;
+
+    return {
+      method: "POST",
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
+  }
+
+  async parseResponse(
+    response: Response
+  ): Promise<msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleResponse> {
+    const data = await response.json();
+    return msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleResponse.fromResponse(data);
+  }
+
+  toRequestBody(): Record<string, unknown> {
+    return {};
+  }
+}
+
+/**
+ * msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRule response message
+ */
+export class msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleResponse extends OrganizationResponse {
+  constructor(public result: msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleResponse) {
+    super("msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRule");
+  }
+
+  static fromResponse(
+    data: unknown
+  ): msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleResponse {
+    return new msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleResponse((data as any).value);
+  }
+}

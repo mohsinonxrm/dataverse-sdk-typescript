@@ -1,0 +1,63 @@
+/**
+ * activitypointer entity type
+ */
+export interface activitypointer {
+  _transactioncurrencyid_value: string;
+  _slainvokedid_value: string;
+  _createdby_value: string;
+  onholdtime: number;
+  _ownerid_value: string;
+  leftvoicemail: boolean;
+  _owningteam_value: string;
+  scheduleddurationminutes: number;
+  description: string;
+  deliverylastattemptedon: string;
+  exchangerate: number;
+  isbilled: boolean;
+  instancetypecode: number;
+  senton: string;
+  processid: string;
+  _owningbusinessunit_value: string;
+  traversedpath: string;
+  scheduledstart: string;
+  descriptionblobid: string;
+  activityadditionalparams: string;
+  subject: string;
+  _modifiedby_value: string;
+  _serviceid_value: string;
+  sortdate: string;
+  descriptionblobid_name: string;
+  community: number;
+  versionnumber: number;
+  _createdonbehalfby_value: string;
+  formattedscheduledstart: string;
+  _regardingobjectid_value: string;
+  actualdurationminutes: number;
+  lastonholdtime: string;
+  isworkflowcreated: boolean;
+  scheduledend: string;
+  isregularactivity: boolean;
+  exchangeweblink: string;
+  _slaid_value: string;
+  _owninguser_value: string;
+  ismapiprivate: boolean;
+  activityid: string;
+  formattedscheduledend: string;
+  exchangeitemid: string;
+  _sendermailboxid_value: string;
+  stageid: string;
+  seriesid: string;
+  modifiedon: string;
+  createdon: string;
+  postponeactivityprocessinguntil: string;
+  activitytypecode: string;
+  statuscode: number;
+  statecode: number;
+  _modifiedonbehalfby_value: string;
+  actualstart: string;
+  prioritycode: number;
+  deliveryprioritycode: number;
+  actualend: string;
+  timezoneruleversionnumber: number;
+  utcconversiontimezonecode: number;
+}

@@ -1,0 +1,55 @@
+{
+  "name": "@mohsinonxrm/dataverse-sdk-otel",
+  "version": "1.0.0",
+  "description": "OpenTelemetry adapter for Dataverse SDK",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mohsinonxrm/dataverse-sdk-typescript.git",
+    "directory": "packages/dataverse-sdk-otel"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "dataverse",
+    "dynamics365",
+    "telemetry",
+    "opentelemetry",
+    "observability"
+  ],
+  "author": "Mohsin On xRM",
+  "license": "AGPL-3.0-only",
+  "dependencies": {
+    "@mohsinonxrm/dataverse-sdk-core": "workspace:*",
+    "@opentelemetry/api": "^1.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "tsup": "^8.0.0",
+    "vitest": "^1.6.0",
+    "eslint": "^9.0.0"
+  }
+}

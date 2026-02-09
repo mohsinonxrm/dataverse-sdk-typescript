@@ -1,0 +1,65 @@
+/**
+ * opportunityproduct entity type
+ */
+export interface opportunityproduct {
+  description: string;
+  _owninguser_value: string;
+  productassociationid: string;
+  quantity: number;
+  msdyn_startdate: string;
+  entityimage_timestamp: number;
+  versionnumber: number;
+  productname: string;
+  tax: number;
+  modifiedon: string;
+  extendedamount_base: number;
+  extendedamount: number;
+  opportunitystatecode: number;
+  baseamount_base: number;
+  _productid_value: string;
+  volumediscountamount: number;
+  _uomid_value: string;
+  manualdiscountamount_base: number;
+  _ownerid_value: string;
+  volumediscountamount_base: number;
+  _createdby_value: string;
+  pricingerrorcode: number;
+  msdyn_linetype: number;
+  propertyconfigurationstatus: number;
+  _owningbusinessunit_value: string;
+  sequencenumber: number;
+  priceperunit_base: number;
+  priceperunit: number;
+  _transactioncurrencyid_value: string;
+  manualdiscountamount: number;
+  _msdyn_pricelist_value: string;
+  createdon: string;
+  opportunityproductname: string;
+  utcconversiontimezonecode: number;
+  _msdyn_serviceaccount_value: string;
+  baseamount: number;
+  parentbundleid: string;
+  _createdonbehalfby_value: string;
+  _owningteam_value: string;
+  skippricecalculation: number;
+  timezoneruleversionnumber: number;
+  entityimage: string;
+  _modifiedonbehalfby_value: string;
+  ispriceoverridden: boolean;
+  overriddencreatedon: string;
+  opportunityproductid: string;
+  _modifiedby_value: string;
+  _parentbundleidref_value: string;
+  importsequencenumber: number;
+  exchangerate: number;
+  productdescription: string;
+  lineitemnumber: number;
+  producttypecode: number;
+  entityimageid: string;
+  _opportunityid_value: string;
+  isproductoverridden: boolean;
+  msdyn_duration: number;
+  entityimage_url: string;
+  msdyn_enddate: string;
+  tax_base: number;
+}

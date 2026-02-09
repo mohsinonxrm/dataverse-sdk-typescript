@@ -1,0 +1,53 @@
+import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+
+/**
+ * CancelAllCloudFlowRuns request message
+ *
+ * Web API Action: CancelAllCloudFlowRuns
+ */
+export class CancelAllCloudFlowRunsRequest
+  extends OrganizationRequest
+  implements Executable<CancelAllCloudFlowRunsResponse>
+{
+  constructor(public workflowId: string) {
+    super("CancelAllCloudFlowRuns");
+  }
+
+  toRequestInformation(baseUrl: string): RequestInformation {
+    // Bound action
+    const url = `${baseUrl}/workflows(${this.workflowId})/Microsoft.Dynamics.CRM.CancelAllCloudFlowRuns`;
+
+    return {
+      method: "POST",
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
+  }
+
+  async parseResponse(response: Response): Promise<CancelAllCloudFlowRunsResponse> {
+    // No return value (204 No Content)
+    return new CancelAllCloudFlowRunsResponse();
+  }
+
+  toRequestBody(): Record<string, unknown> {
+    return {
+      entity: this.workflowId,
+    };
+  }
+}
+
+/**
+ * CancelAllCloudFlowRuns response message
+ */
+export class CancelAllCloudFlowRunsResponse extends OrganizationResponse {
+  constructor() {
+    super("CancelAllCloudFlowRuns");
+  }
+
+  static fromResponse(_data: unknown): CancelAllCloudFlowRunsResponse {
+    return new CancelAllCloudFlowRunsResponse();
+  }
+}

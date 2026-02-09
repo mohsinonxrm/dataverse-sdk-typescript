@@ -1,0 +1,64 @@
+import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./EntityReference.js";
+import type { PrincipalAccess } from "./types/index.js";
+
+/**
+ * GrantAccess request message
+ *
+ * Web API Action: GrantAccess
+ */
+export class GrantAccessRequest
+  extends OrganizationRequest
+  implements Executable<GrantAccessResponse>
+{
+  constructor(
+    public target: EntityReference,
+    public principalAccess: PrincipalAccess
+  ) {
+    super("GrantAccess");
+  }
+
+  toRequestInformation(baseUrl: string): RequestInformation {
+    const url = `${baseUrl}/GrantAccess`;
+
+    const body: Record<string, unknown> = {
+      Target: this.target,
+      PrincipalAccess: this.principalAccess,
+    };
+
+    return {
+      method: "POST",
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body,
+    };
+  }
+
+  async parseResponse(response: Response): Promise<GrantAccessResponse> {
+    // No return value (204 No Content)
+    return new GrantAccessResponse();
+  }
+
+  toRequestBody(): Record<string, unknown> {
+    return {
+      Target: this.target,
+      PrincipalAccess: this.principalAccess,
+    };
+  }
+}
+
+/**
+ * GrantAccess response message
+ */
+export class GrantAccessResponse extends OrganizationResponse {
+  constructor() {
+    super("GrantAccess");
+  }
+
+  static fromResponse(_data: unknown): GrantAccessResponse {
+    return new GrantAccessResponse();
+  }
+}

@@ -1,0 +1,59 @@
+/**
+ * campaign entity type
+ */
+export interface campaign {
+  totalactualcost_base: number;
+  createdon: string;
+  codename: string;
+  message: string;
+  expectedrevenue_base: number;
+  _owningteam_value: string;
+  othercost: number;
+  _createdby_value: string;
+  processid: string;
+  tmpregardingobjectid: string;
+  totalactualcost: number;
+  typecode: number;
+  othercost_base: number;
+  _ownerid_value: string;
+  entityimage_timestamp: number;
+  versionnumber: number;
+  stageid: string;
+  actualend: string;
+  modifiedon: string;
+  description: string;
+  exchangerate: number;
+  timezoneruleversionnumber: number;
+  emailaddress: string;
+  _modifiedonbehalfby_value: string;
+  budgetedcost_base: number;
+  _transactioncurrencyid_value: string;
+  statecode: number;
+  entityimageid: string;
+  _modifiedby_value: string;
+  _owningbusinessunit_value: string;
+  totalcampaignactivityactualcost_base: number;
+  _owninguser_value: string;
+  actualstart: string;
+  statuscode: number;
+  entityimage_url: string;
+  proposedend: string;
+  proposedstart: string;
+  overriddencreatedon: string;
+  importsequencenumber: number;
+  _pricelistid_value: string;
+  expectedresponse: number;
+  traversedpath: string;
+  promotioncodename: string;
+  _createdonbehalfby_value: string;
+  utcconversiontimezonecode: number;
+  msdyn_gdproptout: boolean;
+  totalcampaignactivityactualcost: number;
+  expectedrevenue: number;
+  campaignid: string;
+  entityimage: string;
+  istemplate: boolean;
+  budgetedcost: number;
+  objective: string;
+  name: string;
+}

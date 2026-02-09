@@ -1,0 +1,70 @@
+import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
+
+/**
+ * report entity type
+ */
+export interface report {
+  name: string;
+  cdsdatasetid: string;
+  createdon: string;
+  customreportxml: string;
+  _ownerid_value: string;
+  modifiedon: string;
+  signatureid: string;
+  signaturedate: string;
+  defaultfilter: string;
+  signatureminorversion: number;
+  _owningteam_value: string;
+  bodyurl: string;
+  reporttypecode: number;
+  signaturelcid: number;
+  _modifiedonbehalfby_value: string;
+  signaturemajorversion: number;
+  ispersonal: boolean;
+  reportid: string;
+  reportidunique: string;
+  reportstatus: string;
+  powerbireportinternalstate: string;
+  schedulexml: string;
+  _modifiedby_value: string;
+  _owningbusinessunit_value: string;
+  componentstate: number;
+  ismanaged: boolean;
+  powerbiworkspaceinfo: string;
+  powerbifeaturetag: string;
+  filesize: number;
+  reportversion: number;
+  languagecode: number;
+  reportnameonsrs: string;
+  bodytext: string;
+  powerbireportid: string;
+  timezoneruleversionnumber: number;
+  powerbidatasetid: string;
+  rdlhash: number;
+  queryinfo: string;
+  bodybinary: string;
+  bodybinary_binary: string;
+  iscustomreport: boolean;
+  managedtype: number;
+  _dependentmodelreportid_value: string;
+  description: string;
+  powerbireportname: string;
+  _createdby_value: string;
+  utcconversiontimezonecode: number;
+  overwritetime: string;
+  isscheduledreport: boolean;
+  _parentreportid_value: string;
+  filename: string;
+  versionnumber: number;
+  applicationid: string;
+  solutionid: string;
+  originalbodytext: string;
+  iscustomizable: BooleanManagedProperty;
+  mimetype: string;
+  createdinmajorversion: number;
+  _createdonbehalfby_value: string;
+  filecontent_name: string;
+  filecontent: string;
+  introducedversion: string;
+  _owninguser_value: string;
+}

@@ -1,0 +1,57 @@
+{
+  "name": "@mohsinonxrm/dataverse-sdk-generator",
+  "version": "1.0.0",
+  "type": "module",
+  "author": "Mohsin On xRM",
+  "license": "AGPL-3.0-only",
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mohsinonxrm/dataverse-sdk-typescript.git",
+    "directory": "packages/dataverse-sdk-generator"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "dataverse-gen": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "templates"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@mohsinonxrm/dataverse-sdk-core": "workspace:*",
+    "@mohsinonxrm/dataverse-sdk-metadata": "workspace:*",
+    "@mohsinonxrm/dataverse-sdk-entities-runtime": "workspace:*",
+    "xml-js": "^1.6.11",
+    "ejs": "^3.1.10",
+    "commander": "^12.0.0",
+    "chalk": "^5.3.0",
+    "ora": "^8.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "tsup": "^8.0.0",
+    "vitest": "^1.6.0",
+    "eslint": "^9.0.0",
+    "@types/ejs": "^3.1.5",
+    "@types/node": "^20.0.0"
+  }
+}

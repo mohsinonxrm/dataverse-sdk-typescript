@@ -1,0 +1,40 @@
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./types/EntityReference.js";
+
+/**
+ * Response from OnExternalCreated action
+ */
+export interface OnExternalCreatedResponse {
+  // No content returned
+}
+
+/**
+ * OnExternalCreated action
+ *
+ * Unbound action
+ */
+export class OnExternalCreatedAction implements Executable<OnExternalCreatedResponse> {
+  constructor(public readonly target: EntityReference) {}
+
+  toRequestInformation(baseUrl: string): RequestInformation {
+    const url = `${baseUrl}/OnExternalCreated`;
+
+    const body: Record<string, unknown> = {
+      Target: this.target,
+    };
+
+    return {
+      method: "POST",
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body,
+    };
+  }
+
+  async parseResponse(response: Response): Promise<OnExternalCreatedResponse> {
+    // No return value (204 No Content)
+    return {};
+  }
+}

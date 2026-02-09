@@ -1,0 +1,4 @@
+/**
+ * crmmodelbaseentity
+ */
+export interface crmmodelbaseentity {}

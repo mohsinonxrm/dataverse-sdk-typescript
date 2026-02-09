@@ -1,0 +1,53 @@
+import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+
+/**
+ * RestartHostedMachine request message
+ *
+ * Web API Action: RestartHostedMachine
+ */
+export class RestartHostedMachineRequest
+  extends OrganizationRequest
+  implements Executable<RestartHostedMachineResponse>
+{
+  constructor(public flowmachineId: string) {
+    super("RestartHostedMachine");
+  }
+
+  toRequestInformation(baseUrl: string): RequestInformation {
+    // Bound action
+    const url = `${baseUrl}/flowmachines(${this.flowmachineId})/Microsoft.Dynamics.CRM.RestartHostedMachine`;
+
+    return {
+      method: "POST",
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
+  }
+
+  async parseResponse(response: Response): Promise<RestartHostedMachineResponse> {
+    // No return value (204 No Content)
+    return new RestartHostedMachineResponse();
+  }
+
+  toRequestBody(): Record<string, unknown> {
+    return {
+      entity: this.flowmachineId,
+    };
+  }
+}
+
+/**
+ * RestartHostedMachine response message
+ */
+export class RestartHostedMachineResponse extends OrganizationResponse {
+  constructor() {
+    super("RestartHostedMachine");
+  }
+
+  static fromResponse(_data: unknown): RestartHostedMachineResponse {
+    return new RestartHostedMachineResponse();
+  }
+}

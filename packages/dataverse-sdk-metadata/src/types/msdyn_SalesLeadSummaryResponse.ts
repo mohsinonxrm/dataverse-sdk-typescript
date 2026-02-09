@@ -1,0 +1,11 @@
+/**
+ * msdyn_SalesLeadSummaryResponse
+ */
+export interface msdyn_SalesLeadSummaryResponse {
+  msdyn_sales_copilot_output?: string;
+  msdyn_version?: string;
+  msdyn_summary?: string;
+  msdyn_summary_raw?: string;
+  msdyn_additionalDetails?: string;
+  msdyn_canUseCache?: boolean;
+}

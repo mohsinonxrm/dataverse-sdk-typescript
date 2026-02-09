@@ -1,0 +1,4 @@
+/**
+ * Type
+ */
+export interface Type {}

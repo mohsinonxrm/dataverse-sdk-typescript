@@ -1,0 +1,52 @@
+import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+
+/**
+ * msdyncrm_GetFileAttributesFromConfiguration request message
+ *
+ * Web API Action: msdyncrm_GetFileAttributesFromConfiguration
+ */
+export class msdyncrm_GetFileAttributesFromConfigurationRequest
+  extends OrganizationRequest
+  implements Executable<msdyncrm_GetFileAttributesFromConfigurationResponse>
+{
+  constructor() {
+    super("msdyncrm_GetFileAttributesFromConfiguration");
+  }
+
+  toRequestInformation(baseUrl: string): RequestInformation {
+    const url = `${baseUrl}/msdyncrm_GetFileAttributesFromConfiguration`;
+
+    return {
+      method: "POST",
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
+  }
+
+  async parseResponse(
+    response: Response
+  ): Promise<msdyncrm_GetFileAttributesFromConfigurationResponse> {
+    const data = await response.json();
+    return msdyncrm_GetFileAttributesFromConfigurationResponse.fromResponse(data);
+  }
+
+  toRequestBody(): Record<string, unknown> {
+    return {};
+  }
+}
+
+/**
+ * msdyncrm_GetFileAttributesFromConfiguration response message
+ */
+export class msdyncrm_GetFileAttributesFromConfigurationResponse extends OrganizationResponse {
+  constructor(public result: msdyncrm_GetFileAttributesFromConfigurationResponse) {
+    super("msdyncrm_GetFileAttributesFromConfiguration");
+  }
+
+  static fromResponse(data: unknown): msdyncrm_GetFileAttributesFromConfigurationResponse {
+    return new msdyncrm_GetFileAttributesFromConfigurationResponse((data as any).value);
+  }
+}

@@ -1,0 +1,66 @@
+/**
+ * email entity type
+ */
+export interface email {
+  safedescription: string;
+  sensitivitylabelinfo: string;
+  attachmentopencount: number;
+  sender: string;
+  _parentactivityid_value: string;
+  isunsafe: number;
+  replycount: number;
+  opencount: number;
+  correlatedsubjectchanged: boolean;
+  emailreminderexpirytime: string;
+  conversationindex: string;
+  internetmessageheaders: string;
+  msdyn_copilotengaged: boolean;
+  reminderactioncardid: string;
+  trackingtoken: string;
+  emailtrackingid: string;
+  compressed: boolean;
+  _sendersaccount_value: string;
+  torecipients: string;
+  category: string;
+  msdyn_emailengagementinteractions: string;
+  _emailsender_value: string;
+  emailremindertext: string;
+  messageid: string;
+  attachmentcount: number;
+  submittedby: string;
+  subcategory: string;
+  notifications: number;
+  _receivingmailboxid_value: string;
+  msdyn_sentimentreason: number;
+  msdyn_recipientlist: string;
+  _sensitivitylabelid_value: string;
+  isemailreminderset: boolean;
+  _templateid_value: string;
+  msdyn_sentiment: number;
+  lastopenedtime: string;
+  linksclickedcount: number;
+  overriddencreatedon: string;
+  delayedemailsendtime: string;
+  directioncode: boolean;
+  importsequencenumber: number;
+  purviewrights: string;
+  correlationmethod: number;
+  isemailfollowed: boolean;
+  deliveryreceiptrequested: boolean;
+  readreceiptrequested: boolean;
+  _correlatedactivityid_value: string;
+  conversationtrackingid: string;
+  deliveryattempts: number;
+  msdyn_autofill_type: number;
+  baseconversationindexhash: number;
+  parentsensitivitylabelid: string;
+  inreplyto: string;
+  isduplicatesenderunresolved: boolean;
+  emailremindertype: number;
+  emailreminderstatus: number;
+  _acceptingentityid_value: string;
+  postponeemailprocessinguntil: string;
+  mimetype: string;
+  followemailuserpreference: boolean;
+  reservedforinternaluse: string;
+}

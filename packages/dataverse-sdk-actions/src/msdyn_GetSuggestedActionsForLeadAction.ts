@@ -1,0 +1,36 @@
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+
+/**
+ * Response from msdyn_GetSuggestedActionsForLead action
+ */
+export interface msdyn_GetSuggestedActionsForLeadResponse {
+  Result: string;
+}
+
+/**
+ * msdyn_GetSuggestedActionsForLead action
+ *
+ * Bound action
+ * Binding parameter: entity (mscrm.lead)
+ */
+export class msdyn_GetSuggestedActionsForLeadAction implements Executable<msdyn_GetSuggestedActionsForLeadResponse> {
+  constructor(public readonly leadId: string) {}
+
+  toRequestInformation(baseUrl: string): RequestInformation {
+    // Bound action
+    const url = `${baseUrl}/leads(${this.leadId})/Microsoft.Dynamics.CRM.msdyn_GetSuggestedActionsForLead`;
+
+    return {
+      method: "POST",
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
+  }
+
+  async parseResponse(response: Response): Promise<msdyn_GetSuggestedActionsForLeadResponse> {
+    const data = await response.json();
+    return data as msdyn_GetSuggestedActionsForLeadResponse;
+  }
+}

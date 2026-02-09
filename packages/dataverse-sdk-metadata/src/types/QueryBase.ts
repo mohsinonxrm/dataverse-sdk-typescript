@@ -1,0 +1,4 @@
+/**
+ * QueryBase
+ */
+export interface QueryBase {}

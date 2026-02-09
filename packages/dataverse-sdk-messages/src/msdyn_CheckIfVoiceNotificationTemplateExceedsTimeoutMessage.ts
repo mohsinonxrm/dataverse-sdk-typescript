@@ -1,0 +1,52 @@
+import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+
+/**
+ * msdyn_CheckIfVoiceNotificationTemplateExceedsTimeout request message
+ *
+ * Web API Action: msdyn_CheckIfVoiceNotificationTemplateExceedsTimeout
+ */
+export class msdyn_CheckIfVoiceNotificationTemplateExceedsTimeoutRequest
+  extends OrganizationRequest
+  implements Executable<msdyn_CheckIfVoiceNotificationTemplateExceedsTimeoutResponse>
+{
+  constructor() {
+    super("msdyn_CheckIfVoiceNotificationTemplateExceedsTimeout");
+  }
+
+  toRequestInformation(baseUrl: string): RequestInformation {
+    const url = `${baseUrl}/msdyn_CheckIfVoiceNotificationTemplateExceedsTimeout`;
+
+    return {
+      method: "POST",
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
+  }
+
+  async parseResponse(
+    response: Response
+  ): Promise<msdyn_CheckIfVoiceNotificationTemplateExceedsTimeoutResponse> {
+    const data = await response.json();
+    return msdyn_CheckIfVoiceNotificationTemplateExceedsTimeoutResponse.fromResponse(data);
+  }
+
+  toRequestBody(): Record<string, unknown> {
+    return {};
+  }
+}
+
+/**
+ * msdyn_CheckIfVoiceNotificationTemplateExceedsTimeout response message
+ */
+export class msdyn_CheckIfVoiceNotificationTemplateExceedsTimeoutResponse extends OrganizationResponse {
+  constructor(public result: msdyn_CheckIfVoiceNotificationTemplateExceedsTimeoutResponse) {
+    super("msdyn_CheckIfVoiceNotificationTemplateExceedsTimeout");
+  }
+
+  static fromResponse(data: unknown): msdyn_CheckIfVoiceNotificationTemplateExceedsTimeoutResponse {
+    return new msdyn_CheckIfVoiceNotificationTemplateExceedsTimeoutResponse((data as any).value);
+  }
+}

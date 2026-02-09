@@ -1,0 +1,65 @@
+import { ActionBase } from '@mohsinonxrm/dataverse-sdk-entities-runtime';
+
+/**
+ * Response type for <%= action.Name %> action
+ */
+export interface <%= action.Name %>Response {
+<%_ if (action.ReturnType) { _%>
+  result: <%= formatType(action.ReturnType) %>;
+<%_ } else { _%>
+  // No return value (204 No Content)
+<%_ } _%>
+}
+
+/**
+ * <%= action.Name %> action
+ * <%_ if (action.IsBound) { _%>Bound to: <%= action.BindingType %><%_ } else { _%>Unbound action<%_ } _%>
+ */
+export class <%= action.Name %>Action extends ActionBase<<%= action.ReturnType ? action.Name + 'Response' : 'void' %>> {
+  constructor(
+<%_ action.Parameters.forEach(function(param, index){ _%>
+    public <%= param.Name %>: <%= formatType(param.TypeScriptType) %><%= param.Nullable ? ' | null' : '' %><%= index < action.Parameters.length - 1 ? ',' : '' %>
+<%_ }) _%>
+  ) {
+    super();
+  }
+
+  /**
+   * Parameter metadata for runtime type checking
+   */
+  static parameterTypes = {
+<%_ action.Parameters.forEach(function(param, index){ _%>
+    <%= param.Name %>: {
+      type: '<%= param.Type %>',
+      structuralProperty: '<%= getStructuralType(param.Type) %>',
+      nullable: <%= param.Nullable || false %>
+    }<%= index < action.Parameters.length - 1 ? ',' : '' %>
+<%_ }) _%>
+  };
+
+  toRequestInformation(baseUrl: string) {
+    return {
+      method: 'POST' as const,
+      url: `${baseUrl}/<%= action.Name %>`,
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json'
+      },
+      body: {
+<%_ action.Parameters.forEach(function(param, index){ _%>
+        <%= param.Name %>: this.<%= param.Name %><%= index < action.Parameters.length - 1 ? ',' : '' %>
+<%_ }) _%>
+      }
+    };
+  }
+
+  async parseResponse(response: Response): Promise<<%= action.ReturnType ? action.Name + 'Response' : 'void' %>> {
+<%_ if (action.ReturnType) { _%>
+    const data = await response.json();
+    return { result: data };
+<%_ } else { _%>
+    // 204 No Content
+    return;
+<%_ } _%>
+  }
+}

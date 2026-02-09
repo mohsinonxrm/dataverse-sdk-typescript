@@ -1,0 +1,57 @@
+import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+
+/**
+ * DeleteAndPromote request message
+ *
+ * Web API Action: DeleteAndPromote
+ */
+export class DeleteAndPromoteRequest
+  extends OrganizationRequest
+  implements Executable<DeleteAndPromoteResponse>
+{
+  constructor(public uniqueName: string) {
+    super("DeleteAndPromote");
+  }
+
+  toRequestInformation(baseUrl: string): RequestInformation {
+    const url = `${baseUrl}/DeleteAndPromote`;
+
+    const body: Record<string, unknown> = {
+      UniqueName: this.uniqueName,
+    };
+
+    return {
+      method: "POST",
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body,
+    };
+  }
+
+  async parseResponse(response: Response): Promise<DeleteAndPromoteResponse> {
+    const data = await response.json();
+    return DeleteAndPromoteResponse.fromResponse(data);
+  }
+
+  toRequestBody(): Record<string, unknown> {
+    return {
+      UniqueName: this.uniqueName,
+    };
+  }
+}
+
+/**
+ * DeleteAndPromote response message
+ */
+export class DeleteAndPromoteResponse extends OrganizationResponse {
+  constructor(public result: DeleteAndPromoteResponse) {
+    super("DeleteAndPromote");
+  }
+
+  static fromResponse(data: unknown): DeleteAndPromoteResponse {
+    return new DeleteAndPromoteResponse((data as any).value);
+  }
+}

@@ -1,0 +1,83 @@
+import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+
+/**
+ * msdyn_ConnectSequence request message
+ *
+ * Web API Action: msdyn_ConnectSequence
+ */
+export class msdyn_ConnectSequenceRequest
+  extends OrganizationRequest
+  implements Executable<msdyn_ConnectSequenceResponse>
+{
+  constructor(
+    public regardingEntityId: string,
+    public regardingEntityName: string,
+    public sequenceId: string,
+    public segmentId: string,
+    public source: string,
+    public waitTime: number,
+    public advancedToOtherSequenceTargetStepId: string,
+    public ownerEntityId: string,
+    public ownerEntityName: string
+  ) {
+    super("msdyn_ConnectSequence");
+  }
+
+  toRequestInformation(baseUrl: string): RequestInformation {
+    const url = `${baseUrl}/msdyn_ConnectSequence`;
+
+    const body: Record<string, unknown> = {
+      RegardingEntityId: this.regardingEntityId,
+      RegardingEntityName: this.regardingEntityName,
+      SequenceId: this.sequenceId,
+      SegmentId: this.segmentId,
+      Source: this.source,
+      WaitTime: this.waitTime,
+      AdvancedToOtherSequenceTargetStepId: this.advancedToOtherSequenceTargetStepId,
+      OwnerEntityId: this.ownerEntityId,
+      OwnerEntityName: this.ownerEntityName,
+    };
+
+    return {
+      method: "POST",
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body,
+    };
+  }
+
+  async parseResponse(response: Response): Promise<msdyn_ConnectSequenceResponse> {
+    const data = await response.json();
+    return msdyn_ConnectSequenceResponse.fromResponse(data);
+  }
+
+  toRequestBody(): Record<string, unknown> {
+    return {
+      RegardingEntityId: this.regardingEntityId,
+      RegardingEntityName: this.regardingEntityName,
+      SequenceId: this.sequenceId,
+      SegmentId: this.segmentId,
+      Source: this.source,
+      WaitTime: this.waitTime,
+      AdvancedToOtherSequenceTargetStepId: this.advancedToOtherSequenceTargetStepId,
+      OwnerEntityId: this.ownerEntityId,
+      OwnerEntityName: this.ownerEntityName,
+    };
+  }
+}
+
+/**
+ * msdyn_ConnectSequence response message
+ */
+export class msdyn_ConnectSequenceResponse extends OrganizationResponse {
+  constructor(public result: msdyn_ConnectSequenceResponse) {
+    super("msdyn_ConnectSequence");
+  }
+
+  static fromResponse(data: unknown): msdyn_ConnectSequenceResponse {
+    return new msdyn_ConnectSequenceResponse((data as any).value);
+  }
+}

@@ -1,0 +1,47 @@
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./types/EntityReference.js";
+import type { email } from "./types/index.js";
+
+/**
+ * Response from SendEmailFromTemplate action
+ */
+export interface SendEmailFromTemplateResponse {
+  value: email;
+}
+
+/**
+ * SendEmailFromTemplate action
+ *
+ * Unbound action
+ */
+export class SendEmailFromTemplateAction implements Executable<SendEmailFromTemplateResponse> {
+  constructor(
+    public readonly templateId: string,
+    public readonly regarding: EntityReference,
+    public readonly target: EntityReference
+  ) {}
+
+  toRequestInformation(baseUrl: string): RequestInformation {
+    const url = `${baseUrl}/SendEmailFromTemplate`;
+
+    const body: Record<string, unknown> = {
+      TemplateId: this.templateId,
+      Regarding: this.regarding,
+      Target: this.target,
+    };
+
+    return {
+      method: "POST",
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body,
+    };
+  }
+
+  async parseResponse(response: Response): Promise<SendEmailFromTemplateResponse> {
+    const data = await response.json();
+    return data as SendEmailFromTemplateResponse;
+  }
+}
