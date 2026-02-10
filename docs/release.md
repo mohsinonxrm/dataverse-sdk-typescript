@@ -13,6 +13,7 @@ This project uses [Changesets](https://github.com/changesets/changesets) for ver
 ## Development Workflow
 
 ### 1. Feature Development
+
 ```bash
 # Create feature branch from dev
 git checkout dev
@@ -25,6 +26,7 @@ git commit -m "feat: your feature"
 ```
 
 ### 2. Add Changeset (Required for PRs to Main)
+
 ```bash
 # Generate changeset
 pnpm changeset
@@ -40,6 +42,7 @@ git push
 ```
 
 ### 3. Create PR to Dev
+
 - PR: `feature/your-feature` → `dev`
 - ✅ CI checks must pass (lint, test, build)
 - ❌ Changeset NOT required for dev PRs
@@ -48,6 +51,7 @@ git push
 ### 4. Release to Main (Maintainers Only)
 
 Create PR from `dev` → `main`:
+
 ```bash
 git checkout dev
 git pull origin dev
@@ -56,6 +60,7 @@ git push -u origin release/vX.Y.Z
 ```
 
 **CI Requirements for PRs to main:**
+
 - ✅ Build, Lint, Test must pass
 - ✅ **Changeset required** (enforced by CI)
 
@@ -89,6 +94,7 @@ main (protected) ← releases happen here
 ## Manual Release Steps (For Reference)
 
 If automated release fails, manual steps:
+
 ```bash
 # 1. Version bump
 pnpm changeset version
@@ -119,6 +125,7 @@ git push --follow-tags
 ## Emergency Hotfix
 
 For critical production fixes:
+
 ```bash
 git checkout main
 git checkout -b hotfix/critical-fix
@@ -137,6 +144,7 @@ git push origin dev
 ## Troubleshooting
 
 ### "No changeset detected" error
+
 ```bash
 pnpm changeset
 git add .changeset
@@ -144,6 +152,7 @@ git commit -m "chore: add changeset"
 ```
 
 ### Version Packages PR conflicts
+
 ```bash
 git checkout changeset-release/main
 git merge main
@@ -153,6 +162,7 @@ git push
 ```
 
 ### Failed npm publish
+
 - Check `NPM_TOKEN` secret is valid
 - Verify package names are available on npm
 - Check npm 2FA settings
