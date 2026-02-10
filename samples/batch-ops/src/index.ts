@@ -538,7 +538,7 @@ async function performanceComparisonDemo(client: DataverseClient): Promise<void>
 
   // Cleanup
   console.log(chalk.gray("\n  Cleaning up test data..."));
-  const allIds = [...individualIds, ...batchIds, ...bulkResponse.Ids];
+  const allIds: string[] = [...individualIds, ...batchIds, ...bulkResponse.Ids];
 
   // Delete in batch
   const cleanupBatch = new BatchRequestBuilder(client);

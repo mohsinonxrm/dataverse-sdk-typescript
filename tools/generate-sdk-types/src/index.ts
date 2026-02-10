@@ -146,7 +146,9 @@ async function fetchMetadata(config: SdkGeneratorConfig): Promise<string> {
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`Failed to fetch $metadata (HTTP ${String(response.status)}): ${errorText}`);
+    throw new Error(
+      `Failed to fetch $metadata (HTTP ${String(response.status)}): ${errorText}`
+    );
   }
 
   const text = await response.text();
