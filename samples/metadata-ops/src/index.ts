@@ -134,8 +134,7 @@ async function demo1A_CreateEntityHttpFirst(
     .post<EntityMetadata>({
       "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
       ...entityDefinition,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any);
+    });
 
   const duration = ((Date.now() - startTime) / 1000).toFixed(2);
   const metadataId = response.MetadataId;
@@ -168,8 +167,7 @@ async function demo1A_CreateEntityHttpFirst(
       "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
       ...primaryNameAttr,
       IsPrimaryName: true,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any);
+    });
 
   console.log(chalk.green("  ✓ Primary name column added"));
 
@@ -281,8 +279,7 @@ async function demo2A_AddAttributeHttpFirst(
     .post({
       "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
       ...attributeDefinition,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any);
+    });
 
   console.log(chalk.green("✓ Attribute created (HTTP POST)"));
   console.log(chalk.gray(`  Logical Name: ${schemaPrefix.toLowerCase()}_description`));
@@ -440,8 +437,7 @@ async function demo4_CreateRelationshipHttpFirst(
         },
         RequiredLevel: { Value: AttributeRequiredLevel.ApplicationRequired },
       },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any);
+    });
 
   console.log(chalk.green("✓ 1:N relationship created (HTTP POST)"));
   console.log(chalk.gray(`  Schema Name: ${schemaPrefix}_project_milestones`));
@@ -541,8 +537,10 @@ async function cleanup(metadataClient: MetadataClient): Promise<void> {
       try {
         // Get relationship by schema name to retrieve MetadataId, then delete
         const relationship = await metadataClient.getRelationshipBySchemaName(relName);
-        await metadataClient.deleteRelationship(relationship.MetadataId!);
-        console.log(chalk.green(`  ✓ Deleted relationship: ${relName}`));
+        if (relationship.MetadataId) {
+          await metadataClient.deleteRelationship(relationship.MetadataId);
+          console.log(chalk.green(`  ✓ Deleted relationship: ${relName}`));
+        }
       } catch (_error) {
         console.log(chalk.yellow(`  ⚠️  Could not delete relationship: ${relName}`));
       }
