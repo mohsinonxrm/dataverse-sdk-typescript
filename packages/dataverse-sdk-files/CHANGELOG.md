@@ -4,6 +4,18 @@
 
 ### Major Changes
 
+- 78fc1e1: Initial v1.0.0 release of Dataverse SDK for TypeScript
+
+### Patch Changes
+
+- Updated dependencies [78fc1e1]
+  - @mohsinonxrm/dataverse-sdk-actions@1.0.0
+  - @mohsinonxrm/dataverse-sdk-core@1.0.0
+
+## 1.0.0
+
+### Major Changes
+
 - # v1.0.0 - Initial Release 🎉
 
   The first stable release of the Dataverse SDK for TypeScript! This modern, type-safe SDK provides comprehensive access to Microsoft Dataverse (Power Platform) with two complementary front doors:
