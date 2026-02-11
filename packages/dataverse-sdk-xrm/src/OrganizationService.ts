@@ -673,7 +673,7 @@ export class OrganizationService {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (this.isExecutable(request)) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return this.client.execute(request as any);
+      return await this.client.execute(request as any);
     }
 
     throw new Error(
