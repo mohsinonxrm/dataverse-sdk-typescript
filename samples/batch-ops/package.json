@@ -1,6 +1,6 @@
 {
   "name": "batch-ops-sample",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "type": "module",
   "description": "Comprehensive $batch operations sample demonstrating changesets, Content-ID references, and error handling",

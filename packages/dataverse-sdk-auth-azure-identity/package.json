@@ -1,6 +1,6 @@
 {
   "name": "@mohsinonxrm/dataverse-sdk-auth-azure-identity",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Azure Identity authentication provider for Dataverse SDK",
   "publishConfig": {
     "access": "public",

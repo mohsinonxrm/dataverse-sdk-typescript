@@ -1,6 +1,6 @@
 {
   "name": "node-cli-devicecode-sample",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "type": "module",
   "description": "Interactive Node.js CLI demonstrating device code authentication with Dataverse SDK",

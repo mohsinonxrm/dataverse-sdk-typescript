@@ -1,6 +1,6 @@
 {
   "name": "spa-fluentui-v9-sample",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "type": "module",
   "description": "Production-quality React 18 + Fluent UI v9 SPA demonstrating Dataverse SDK",
