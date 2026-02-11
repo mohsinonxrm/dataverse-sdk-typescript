@@ -58,8 +58,5 @@ desktop.ini
 .cache/
 .parcel-cache/
 
-# Changesets (keep .changeset directory but ignore generated files)
-.changeset/*.md
-!.changeset/README.md
-!.changeset/config.json
-!.changeset/v1-0-0-initial-release.md
+# Changesets - commit all changeset files for release automation
+!.changeset/
