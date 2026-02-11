@@ -1,6 +1,6 @@
 {
   "name": "@mohsinonxrm/dataverse-sdk-actions",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Typed Web API actions for Dataverse (POST operations with side effects)",
   "publishConfig": {
     "access": "public",
