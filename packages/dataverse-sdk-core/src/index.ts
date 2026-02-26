@@ -27,3 +27,5 @@ export {
 } from "./errors/NamedErrors.js";
 
 export * from "./telemetry/FeatureUsageTracker.js";
+
+export { odata } from "./odata/filter.js";

@@ -6,7 +6,8 @@ export class PageIterator<T> implements AsyncIterable<T> {
 
   constructor(
     private client: DataverseClient,
-    private first: PageResponse<T>
+    private first: PageResponse<T>,
+    private signal?: AbortSignal
   ) {
     this.nextLink = first["@odata.nextLink"];
   }
@@ -20,7 +21,7 @@ export class PageIterator<T> implements AsyncIterable<T> {
         yield item;
       }
       if (!this.nextLink) break;
-      current = await this.client.api(this.nextLink).getPage<T>();
+      current = await this.client.api(this.nextLink).getPage<T>({ signal: this.signal });
       this.nextLink = current["@odata.nextLink"];
     }
   }

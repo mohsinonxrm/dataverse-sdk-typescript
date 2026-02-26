@@ -11,3 +11,4 @@ export type {
   BatchExecutionOptions,
   BatchExecutionResult,
 } from "./types.js";
+export { createBindManyExecutor } from "./bindManyExecutor.js";
