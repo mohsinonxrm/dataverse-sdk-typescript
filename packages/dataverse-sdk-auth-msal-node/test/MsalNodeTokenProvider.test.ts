@@ -80,7 +80,7 @@ describe("MsalNodeTokenProvider", () => {
     });
 
     it("should throw when options are missing", () => {
-      const mockCCA = new ConfidentialClientApplication() as any;
+      const mockCCA = new (ConfidentialClientApplication as any)();
 
       expect(() => {
         new MsalNodeTokenProvider(mockCCA, null as any);
@@ -88,7 +88,7 @@ describe("MsalNodeTokenProvider", () => {
     });
 
     it("should throw when scopes are empty", () => {
-      const mockCCA = new ConfidentialClientApplication() as any;
+      const mockCCA = new (ConfidentialClientApplication as any)();
 
       expect(() => {
         new MsalNodeTokenProvider(mockCCA, {
@@ -99,7 +99,7 @@ describe("MsalNodeTokenProvider", () => {
     });
 
     it("should throw when device code flow uses ConfidentialClientApplication", () => {
-      const mockCCA = new ConfidentialClientApplication() as any;
+      const mockCCA = new (ConfidentialClientApplication as any)();
 
       expect(() => {
         new MsalNodeTokenProvider(mockCCA, {
@@ -111,7 +111,7 @@ describe("MsalNodeTokenProvider", () => {
     });
 
     it("should throw when client credentials flow uses PublicClientApplication", () => {
-      const mockPCA = new PublicClientApplication() as any;
+      const mockPCA = new (PublicClientApplication as any)();
 
       expect(() => {
         new MsalNodeTokenProvider(mockPCA, {
@@ -122,7 +122,7 @@ describe("MsalNodeTokenProvider", () => {
     });
 
     it("should throw when device code flow is missing callback", () => {
-      const mockPCA = new PublicClientApplication() as any;
+      const mockPCA = new (PublicClientApplication as any)();
 
       expect(() => {
         new MsalNodeTokenProvider(mockPCA, {
@@ -133,7 +133,7 @@ describe("MsalNodeTokenProvider", () => {
     });
 
     it("should throw when authorization code flow is missing redirectUri", () => {
-      const mockCCA = new ConfidentialClientApplication() as any;
+      const mockCCA = new (ConfidentialClientApplication as any)();
 
       expect(() => {
         new MsalNodeTokenProvider(mockCCA, {
@@ -147,7 +147,7 @@ describe("MsalNodeTokenProvider", () => {
   describe("Device code flow", () => {
     it("should acquire token using device code", async () => {
       const mockDeviceCodeCallback = vi.fn();
-      const mockPCA = new PublicClientApplication() as any;
+      const mockPCA = new (PublicClientApplication as any)();
       mockPCA.acquireTokenByDeviceCode.mockResolvedValue(mockAuthResult);
 
       const provider = new MsalNodeTokenProvider(mockPCA, {
@@ -169,7 +169,7 @@ describe("MsalNodeTokenProvider", () => {
 
     it("should pass claims and correlationId from options", async () => {
       const mockDeviceCodeCallback = vi.fn();
-      const mockPCA = new PublicClientApplication() as any;
+      const mockPCA = new (PublicClientApplication as any)();
       mockPCA.acquireTokenByDeviceCode.mockResolvedValue(mockAuthResult);
 
       const provider = new MsalNodeTokenProvider(mockPCA, {
@@ -192,7 +192,7 @@ describe("MsalNodeTokenProvider", () => {
 
     it("should override scopes when provided to getToken", async () => {
       const mockDeviceCodeCallback = vi.fn();
-      const mockPCA = new PublicClientApplication() as any;
+      const mockPCA = new (PublicClientApplication as any)();
       mockPCA.acquireTokenByDeviceCode.mockResolvedValue(mockAuthResult);
 
       const provider = new MsalNodeTokenProvider(mockPCA, {
@@ -214,7 +214,7 @@ describe("MsalNodeTokenProvider", () => {
 
   describe("Client credentials flow", () => {
     it("should acquire token using client credentials", async () => {
-      const mockCCA = new ConfidentialClientApplication() as any;
+      const mockCCA = new (ConfidentialClientApplication as any)();
       mockCCA.acquireTokenByClientCredential.mockResolvedValue(mockAuthResult);
 
       const provider = new MsalNodeTokenProvider(mockCCA, {
@@ -234,7 +234,7 @@ describe("MsalNodeTokenProvider", () => {
     });
 
     it("should override authority with tenantId", async () => {
-      const mockCCA = new ConfidentialClientApplication() as any;
+      const mockCCA = new (ConfidentialClientApplication as any)();
       mockCCA.acquireTokenByClientCredential.mockResolvedValue(mockAuthResult);
 
       const provider = new MsalNodeTokenProvider(mockCCA, {
@@ -253,7 +253,7 @@ describe("MsalNodeTokenProvider", () => {
     });
 
     it("should prefer tenantId from getToken options", async () => {
-      const mockCCA = new ConfidentialClientApplication() as any;
+      const mockCCA = new (ConfidentialClientApplication as any)();
       mockCCA.acquireTokenByClientCredential.mockResolvedValue(mockAuthResult);
 
       const provider = new MsalNodeTokenProvider(mockCCA, {
@@ -274,7 +274,7 @@ describe("MsalNodeTokenProvider", () => {
 
   describe("Authorization code flow", () => {
     it("should acquire token using authorization code", async () => {
-      const mockCCA = new ConfidentialClientApplication() as any;
+      const mockCCA = new (ConfidentialClientApplication as any)();
       mockCCA.acquireTokenByCode.mockResolvedValue(mockAuthResult);
 
       const provider = new MsalNodeTokenProvider(mockCCA, {
@@ -299,7 +299,7 @@ describe("MsalNodeTokenProvider", () => {
     });
 
     it("should throw when code is missing", async () => {
-      const mockCCA = new ConfidentialClientApplication() as any;
+      const mockCCA = new (ConfidentialClientApplication as any)();
 
       const provider = new MsalNodeTokenProvider(mockCCA, {
         flow: "authorizationCode",
@@ -313,7 +313,7 @@ describe("MsalNodeTokenProvider", () => {
 
   describe("Username/password flow", () => {
     it("should acquire token using username/password", async () => {
-      const mockPCA = new PublicClientApplication() as any;
+      const mockPCA = new (PublicClientApplication as any)();
       mockPCA.acquireTokenByUsernamePassword.mockResolvedValue(mockAuthResult);
 
       const provider = new MsalNodeTokenProvider(mockPCA, {
@@ -336,7 +336,7 @@ describe("MsalNodeTokenProvider", () => {
     });
 
     it("should throw when username or password is missing", () => {
-      const mockPCA = new PublicClientApplication() as any;
+      const mockPCA = new (PublicClientApplication as any)();
 
       expect(() => {
         new MsalNodeTokenProvider(mockPCA, {
@@ -350,7 +350,7 @@ describe("MsalNodeTokenProvider", () => {
 
   describe("Silent flow", () => {
     it("should acquire token silently", async () => {
-      const mockCCA = new ConfidentialClientApplication() as any;
+      const mockCCA = new (ConfidentialClientApplication as any)();
       mockCCA.acquireTokenSilent.mockResolvedValue(mockAuthResult);
 
       const provider = new MsalNodeTokenProvider(mockCCA, {
@@ -372,7 +372,7 @@ describe("MsalNodeTokenProvider", () => {
     });
 
     it("should throw when account is missing", () => {
-      const mockCCA = new ConfidentialClientApplication() as any;
+      const mockCCA = new (ConfidentialClientApplication as any)();
 
       expect(() => {
         new MsalNodeTokenProvider(mockCCA, {
@@ -385,7 +385,7 @@ describe("MsalNodeTokenProvider", () => {
 
   describe("Error handling", () => {
     it("should throw DataverseAuthenticationError when MSAL fails", async () => {
-      const mockCCA = new ConfidentialClientApplication() as any;
+      const mockCCA = new (ConfidentialClientApplication as any)();
       mockCCA.acquireTokenByClientCredential.mockRejectedValue(new Error("MSAL error"));
 
       const provider = new MsalNodeTokenProvider(mockCCA, {
@@ -397,7 +397,7 @@ describe("MsalNodeTokenProvider", () => {
     });
 
     it("should throw when access token is empty", async () => {
-      const mockCCA = new ConfidentialClientApplication() as any;
+      const mockCCA = new (ConfidentialClientApplication as any)();
       mockCCA.acquireTokenByClientCredential.mockResolvedValue({
         ...mockAuthResult,
         accessToken: "",
@@ -412,7 +412,7 @@ describe("MsalNodeTokenProvider", () => {
     });
 
     it("should throw when result is null", async () => {
-      const mockCCA = new ConfidentialClientApplication() as any;
+      const mockCCA = new (ConfidentialClientApplication as any)();
       mockCCA.acquireTokenByClientCredential.mockResolvedValue(null);
 
       const provider = new MsalNodeTokenProvider(mockCCA, {
@@ -426,7 +426,7 @@ describe("MsalNodeTokenProvider", () => {
 
   describe("Helper methods", () => {
     it("should get authorization code URL", async () => {
-      const mockCCA = new ConfidentialClientApplication() as any;
+      const mockCCA = new (ConfidentialClientApplication as any)();
       mockCCA.getAuthCodeUrl.mockResolvedValue("https://login.microsoftonline.com/authorize?...");
 
       const provider = new MsalNodeTokenProvider(mockCCA, {
@@ -455,7 +455,7 @@ describe("MsalNodeTokenProvider", () => {
 
     it("should get cached account", async () => {
       const authResultWithAccount = { ...mockAuthResult, account: mockAccount };
-      const mockCCA = new ConfidentialClientApplication() as any;
+      const mockCCA = new (ConfidentialClientApplication as any)();
       mockCCA.acquireTokenByClientCredential.mockResolvedValue(authResultWithAccount);
 
       const provider = new MsalNodeTokenProvider(mockCCA, {
@@ -475,7 +475,7 @@ describe("MsalNodeTokenProvider", () => {
       const mockTokenCache = {
         getAllAccounts: vi.fn().mockResolvedValue(mockAccounts),
       };
-      const mockCCA = new ConfidentialClientApplication() as any;
+      const mockCCA = new (ConfidentialClientApplication as any)();
       mockCCA.getTokenCache.mockReturnValue(mockTokenCache);
 
       const provider = new MsalNodeTokenProvider(mockCCA, {
@@ -495,7 +495,7 @@ describe("MsalNodeTokenProvider", () => {
         removeAccount: vi.fn().mockResolvedValue(undefined),
       };
       const authResultWithAccount = { ...mockAuthResult, account: mockAccount };
-      const mockCCA = new ConfidentialClientApplication() as any;
+      const mockCCA = new (ConfidentialClientApplication as any)();
       mockCCA.getTokenCache.mockReturnValue(mockTokenCache);
       mockCCA.acquireTokenByClientCredential.mockResolvedValue(authResultWithAccount);
 

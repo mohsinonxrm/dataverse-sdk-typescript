@@ -123,7 +123,7 @@ describe("MsalBrowserTokenProvider", () => {
 
   describe("Silent token acquisition", () => {
     it("should acquire token silently when possible", async () => {
-      const mockPCA = new PublicClientApplication() as any;
+      const mockPCA = new (PublicClientApplication as any)();
       mockPCA.acquireTokenSilent.mockResolvedValue(mockAuthResult);
       mockPCA.getAllAccounts.mockReturnValue([mockAccount]);
 
@@ -148,7 +148,7 @@ describe("MsalBrowserTokenProvider", () => {
         username: "custom@domain.com",
       };
 
-      const mockPCA = new PublicClientApplication() as any;
+      const mockPCA = new (PublicClientApplication as any)();
       mockPCA.acquireTokenSilent.mockResolvedValue(mockAuthResult);
       mockPCA.getAllAccounts.mockReturnValue([mockAccount, customAccount]);
 
@@ -167,7 +167,7 @@ describe("MsalBrowserTokenProvider", () => {
     });
 
     it("should override scopes when provided to getToken", async () => {
-      const mockPCA = new PublicClientApplication() as any;
+      const mockPCA = new (PublicClientApplication as any)();
       mockPCA.acquireTokenSilent.mockResolvedValue(mockAuthResult);
       mockPCA.getAllAccounts.mockReturnValue([mockAccount]);
 
@@ -186,7 +186,7 @@ describe("MsalBrowserTokenProvider", () => {
     });
 
     it("should pass claims and correlationId from options", async () => {
-      const mockPCA = new PublicClientApplication() as any;
+      const mockPCA = new (PublicClientApplication as any)();
       mockPCA.acquireTokenSilent.mockResolvedValue(mockAuthResult);
       mockPCA.getAllAccounts.mockReturnValue([mockAccount]);
 
@@ -207,7 +207,7 @@ describe("MsalBrowserTokenProvider", () => {
     });
 
     it("should override claims and correlationId from getToken options", async () => {
-      const mockPCA = new PublicClientApplication() as any;
+      const mockPCA = new (PublicClientApplication as any)();
       mockPCA.acquireTokenSilent.mockResolvedValue(mockAuthResult);
       mockPCA.getAllAccounts.mockReturnValue([mockAccount]);
 
@@ -233,7 +233,7 @@ describe("MsalBrowserTokenProvider", () => {
 
   describe("Interactive token acquisition - popup", () => {
     it("should fallback to popup when interaction required", async () => {
-      const mockPCA = new PublicClientApplication() as any;
+      const mockPCA = new (PublicClientApplication as any)();
       mockPCA.acquireTokenSilent.mockRejectedValue(
         new InteractionRequiredAuthError("interaction required")
       );
@@ -257,7 +257,7 @@ describe("MsalBrowserTokenProvider", () => {
     });
 
     it("should use popup by default when interactionType not specified", async () => {
-      const mockPCA = new PublicClientApplication() as any;
+      const mockPCA = new (PublicClientApplication as any)();
       mockPCA.acquireTokenSilent.mockRejectedValue(
         new InteractionRequiredAuthError("interaction required")
       );
@@ -276,7 +276,7 @@ describe("MsalBrowserTokenProvider", () => {
 
   describe("Interactive token acquisition - redirect", () => {
     it("should fallback to redirect when configured", async () => {
-      const mockPCA = new PublicClientApplication() as any;
+      const mockPCA = new (PublicClientApplication as any)();
       mockPCA.acquireTokenSilent.mockRejectedValue(
         new InteractionRequiredAuthError("interaction required")
       );
@@ -303,7 +303,7 @@ describe("MsalBrowserTokenProvider", () => {
 
   describe("Error handling", () => {
     it("should throw DataverseAuthenticationError when MSAL fails", async () => {
-      const mockPCA = new PublicClientApplication() as any;
+      const mockPCA = new (PublicClientApplication as any)();
       mockPCA.acquireTokenSilent.mockRejectedValue(new Error("Unknown MSAL error"));
       mockPCA.getAllAccounts.mockReturnValue([mockAccount]);
 
@@ -315,7 +315,7 @@ describe("MsalBrowserTokenProvider", () => {
     });
 
     it("should throw when access token is empty", async () => {
-      const mockPCA = new PublicClientApplication() as any;
+      const mockPCA = new (PublicClientApplication as any)();
       mockPCA.acquireTokenSilent.mockResolvedValue({
         ...mockAuthResult,
         accessToken: "",
@@ -330,7 +330,7 @@ describe("MsalBrowserTokenProvider", () => {
     });
 
     it("should throw when result is null", async () => {
-      const mockPCA = new PublicClientApplication() as any;
+      const mockPCA = new (PublicClientApplication as any)();
       mockPCA.acquireTokenSilent.mockResolvedValue(null);
       mockPCA.getAllAccounts.mockReturnValue([mockAccount]);
 
@@ -342,7 +342,7 @@ describe("MsalBrowserTokenProvider", () => {
     });
 
     it("should throw when no accounts are available", async () => {
-      const mockPCA = new PublicClientApplication() as any;
+      const mockPCA = new (PublicClientApplication as any)();
       mockPCA.getAllAccounts.mockReturnValue([]);
       mockPCA.acquireTokenSilent.mockResolvedValue({ ...mockAuthResult, accessToken: "" });
 
@@ -354,7 +354,7 @@ describe("MsalBrowserTokenProvider", () => {
     });
 
     it("should throw when scopes array is empty in getToken", async () => {
-      const mockPCA = new PublicClientApplication() as any;
+      const mockPCA = new (PublicClientApplication as any)();
       mockPCA.getAllAccounts.mockReturnValue([mockAccount]);
 
       const provider = new MsalBrowserTokenProvider(mockPCA, {
@@ -368,7 +368,7 @@ describe("MsalBrowserTokenProvider", () => {
   describe("Helper methods", () => {
     it("should get all accounts", () => {
       const mockAccounts = [mockAccount];
-      const mockPCA = new PublicClientApplication() as any;
+      const mockPCA = new (PublicClientApplication as any)();
       mockPCA.getAllAccounts.mockReturnValue(mockAccounts);
 
       const provider = new MsalBrowserTokenProvider(mockPCA, {
@@ -382,7 +382,7 @@ describe("MsalBrowserTokenProvider", () => {
     });
 
     it("should get active account", () => {
-      const mockPCA = new PublicClientApplication() as any;
+      const mockPCA = new (PublicClientApplication as any)();
       mockPCA.getActiveAccount.mockReturnValue(mockAccount);
 
       const provider = new MsalBrowserTokenProvider(mockPCA, {
@@ -396,7 +396,7 @@ describe("MsalBrowserTokenProvider", () => {
     });
 
     it("should set active account", () => {
-      const mockPCA = new PublicClientApplication() as any;
+      const mockPCA = new (PublicClientApplication as any)();
       mockPCA.setActiveAccount = vi.fn();
 
       const provider = new MsalBrowserTokenProvider(mockPCA, {
@@ -409,7 +409,7 @@ describe("MsalBrowserTokenProvider", () => {
     });
 
     it("should sign out with account", async () => {
-      const mockPCA = new PublicClientApplication() as any;
+      const mockPCA = new (PublicClientApplication as any)();
       mockPCA.logoutPopup.mockResolvedValue(undefined);
 
       const provider = new MsalBrowserTokenProvider(mockPCA, {
@@ -423,7 +423,7 @@ describe("MsalBrowserTokenProvider", () => {
     });
 
     it("should sign out using redirect", async () => {
-      const mockPCA = new PublicClientApplication() as any;
+      const mockPCA = new (PublicClientApplication as any)();
       mockPCA.logoutRedirect.mockResolvedValue(undefined);
 
       const provider = new MsalBrowserTokenProvider(mockPCA, {
@@ -437,7 +437,7 @@ describe("MsalBrowserTokenProvider", () => {
     });
 
     it("should sign out all accounts when no account specified", async () => {
-      const mockPCA = new PublicClientApplication() as any;
+      const mockPCA = new (PublicClientApplication as any)();
       mockPCA.logoutPopup.mockResolvedValue(undefined);
 
       const provider = new MsalBrowserTokenProvider(mockPCA, {
@@ -459,7 +459,7 @@ describe("MsalBrowserTokenProvider", () => {
 
       const allAccounts = [mockAccount, configuredAccount];
 
-      const mockPCA = new PublicClientApplication() as any;
+      const mockPCA = new (PublicClientApplication as any)();
       mockPCA.acquireTokenSilent.mockResolvedValue(mockAuthResult);
       mockPCA.getAllAccounts.mockReturnValue(allAccounts);
 
@@ -483,7 +483,7 @@ describe("MsalBrowserTokenProvider", () => {
         username: "active@domain.com",
       };
 
-      const mockPCA = new PublicClientApplication() as any;
+      const mockPCA = new (PublicClientApplication as any)();
       mockPCA.acquireTokenSilent.mockResolvedValue(mockAuthResult);
       mockPCA.getAllAccounts.mockReturnValue([mockAccount, activeAccount]);
       mockPCA.getActiveAccount.mockReturnValue(activeAccount);
@@ -502,7 +502,7 @@ describe("MsalBrowserTokenProvider", () => {
     });
 
     it("should use first account when no account configured and no active account", async () => {
-      const mockPCA = new PublicClientApplication() as any;
+      const mockPCA = new (PublicClientApplication as any)();
       mockPCA.acquireTokenSilent.mockResolvedValue(mockAuthResult);
       mockPCA.getAllAccounts.mockReturnValue([mockAccount]);
       mockPCA.getActiveAccount.mockReturnValue(null);

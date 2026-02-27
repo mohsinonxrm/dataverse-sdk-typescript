@@ -99,7 +99,7 @@ describe("FileColumnClient", () => {
         if (request.url.includes("InitializeFileBlocksUpload")) {
           // Check that GUID is normalized in body (no braces, lowercase)
 
-          expect(request.body.Target.id).toBe("aaaa-bbbb-cccc");
+          expect((request.body as { Target: { id: string } }).Target.id).toBe("aaaa-bbbb-cccc");
           return {
             ok: true,
             json: () => Promise.resolve({ FileContinuationToken: "token" }),
