@@ -133,6 +133,27 @@ describe("HeaderUtils", () => {
       expect(result).toBeDefined();
     });
 
+    it.each(["typed array", "data view", "subclass", "empty view"])(
+      "serializes only the selected bytes of a %s",
+      async (kind) => {
+        const bytes = new Uint8Array([99, 98, 1, 2, 3, 97]);
+        class ByteView extends Uint8Array {}
+        const view =
+          kind === "data view"
+            ? new DataView(bytes.buffer, 2, 3)
+            : kind === "subclass"
+              ? new ByteView(bytes.buffer, 2, 3)
+              : bytes.subarray(2, kind === "empty view" ? 2 : 5);
+        const request = new Request("https://example.invalid/upload", {
+          method: "POST",
+          body: serializeContent(view),
+        });
+        expect([...new Uint8Array(await request.arrayBuffer())]).toEqual(
+          kind === "empty view" ? [] : [1, 2, 3]
+        );
+      }
+    );
+
     it("throws error for non-serializable content", () => {
       const circular: any = {};
       circular.self = circular;

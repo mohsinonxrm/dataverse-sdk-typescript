@@ -3,10 +3,6 @@
  * Provides helpers for header manipulation, UUID generation, and content serialization
  */
 
-// Type-safe reference to Node.js Buffer when available
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-declare const Buffer: any;
-
 /**
  * Supported header formats:
  * 1. Headers object (standard Web API)
@@ -198,27 +194,9 @@ export function serializeContent(content: any): string | FormData | Blob | Array
     return content;
   }
 
-  // TypedArray - convert to buffer/blob
-  if (
-    className === "Int8Array" ||
-    className === "Int16Array" ||
-    className === "Int32Array" ||
-    className === "Uint8Array" ||
-    className === "Uint16Array" ||
-    className === "Uint32Array" ||
-    className === "Uint8ClampedArray" ||
-    className === "Float32Array" ||
-    className === "Float64Array" ||
-    className === "DataView"
-  ) {
-    // In Node, we can use Buffer; in browser, we use the underlying ArrayBuffer
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    if (typeof Buffer !== "undefined" && Buffer.from) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-      return Buffer.from(content.buffer as ArrayBuffer);
-    }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    return content.buffer as ArrayBuffer;
+  // Copy only the view's bytes, not unrelated bytes in its backing buffer.
+  if (ArrayBuffer.isView(content)) {
+    return new Uint8Array(content.buffer, content.byteOffset, content.byteLength).slice().buffer;
   }
 
   // Everything else - serialize to JSON
