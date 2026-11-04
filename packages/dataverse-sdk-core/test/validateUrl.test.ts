@@ -18,6 +18,30 @@ describe("validateUrl", () => {
     expect(result.errors).toHaveLength(0);
   });
 
+  it.each([
+    "https://org.crm.dynamics.com/api/data/v9.2/accounts",
+    "/api/data/v9.2/accounts",
+    "accounts",
+  ])("allows long queries without counting them as path segments: %s", (path) => {
+    const url = `${path}?$filter=${encodeURIComponent(`name eq '${"x".repeat(2000)}'`)}#${"y".repeat(300)}`;
+    const result = validateUrl(url);
+    expect(result).toEqual({
+      valid: true,
+      totalLength: url.length,
+      maxSegmentLength: 8,
+      errors: [],
+    });
+  });
+
+  it("retains encoded path segment lengths", () => {
+    expect(() => validateUrl(`/accounts/${"%20".repeat(100)}`)).toThrow(DataverseUrlError);
+  });
+
+  it("reports zero for an empty path", () => {
+    expect(validateUrl("https://org.crm.dynamics.com").maxSegmentLength).toBe(0);
+    expect(validateUrl("").maxSegmentLength).toBe(0);
+  });
+
   it("should fail URL exceeding 32KB", () => {
     const longUrl =
       "https://org.crm.dynamics.com/api/data/v9.2/accounts?$filter=" + "x".repeat(35000);
@@ -28,7 +52,7 @@ describe("validateUrl", () => {
 
   it("should fail URL with segment exceeding 260 chars", () => {
     const longSegment = "x".repeat(300);
-    const url = `https://org.crm.dynamics.com/api/data/v9.2/accounts?$filter=${longSegment}`;
+    const url = `https://org.crm.dynamics.com/api/data/v9.2/${longSegment}?$select=name`;
 
     expect(() => validateUrl(url)).toThrow(DataverseUrlError);
     expect(() => validateUrl(url)).toThrow(/URL segment exceeds maximum length of 260 characters/);
@@ -49,8 +73,7 @@ describe("validateUrl", () => {
 
     const result = validateUrl(longUrl, { throwOnError: false });
     expect(result.valid).toBe(false);
-    // Both total URL length and segment length will exceed limits
-    expect(result.errors.length).toBeGreaterThanOrEqual(1);
+    expect(result.errors).toHaveLength(1);
     expect(result.errors[0]).toContain("URL exceeds maximum length");
   });
 

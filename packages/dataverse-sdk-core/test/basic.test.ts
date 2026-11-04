@@ -43,6 +43,21 @@ describe("DataverseClient", () => {
     expect(result).toEqual({ value: [{ accountid: "123", name: "Test" }] });
   });
 
+  it("sends a long filter that fits within the total URL limit", async () => {
+    const filter = `name eq '${"x".repeat(2000)}'`;
+    let receivedFilter: string | null = null;
+    server.use(
+      http.get(`${API_URL}/accounts`, ({ request }) => {
+        receivedFilter = new URL(request.url).searchParams.get("$filter");
+        return HttpResponse.json({ value: [] });
+      })
+    );
+
+    const client = new DataverseClient({ baseUrl: BASE_URL });
+    await expect(client.api("accounts").filter(filter).get()).resolves.toEqual({ value: [] });
+    expect(receivedFilter).toBe(filter);
+  });
+
   it("builds query string correctly", async () => {
     let capturedUrl = "";
     server.use(

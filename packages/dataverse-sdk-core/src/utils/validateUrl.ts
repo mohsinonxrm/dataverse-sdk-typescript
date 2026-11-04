@@ -54,12 +54,18 @@ export function validateUrl(url: string, options: UrlValidationOptions = {}): Ur
     errors.push(error);
   }
 
-  // Check segment lengths
-  const segments = url.split("/").filter((s) => s.length > 0);
-  const maxSegmentLength = Math.max(...segments.map((s) => s.length));
+  // Only path segments have the 260-character limit; queries use the total URL limit.
+  let pathname: string;
+  try {
+    pathname = new URL(url).pathname;
+  } catch {
+    pathname = url.split(/[?#]/, 1)[0] ?? "";
+  }
+  const segments = pathname.split("/").filter((s) => s.length > 0);
+  const maxSegmentLength = Math.max(0, ...segments.map((s) => s.length));
 
   if (maxSegmentLength > URL_LIMITS.MAX_SEGMENT_LENGTH) {
-    const error = `URL segment exceeds maximum length of ${String(URL_LIMITS.MAX_SEGMENT_LENGTH)} characters (actual: ${String(maxSegmentLength)}). Consider shortening filter expressions or entity set names.`;
+    const error = `URL segment exceeds maximum length of ${String(URL_LIMITS.MAX_SEGMENT_LENGTH)} characters (actual: ${String(maxSegmentLength)}). Consider shortening path parameters or entity set names.`;
 
     if (options.throwOnError !== false) {
       throw new DataverseUrlError(error, maxSegmentLength, URL_LIMITS.MAX_SEGMENT_LENGTH, url);
