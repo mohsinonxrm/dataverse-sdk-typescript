@@ -60,18 +60,35 @@ jobs:
         if: matrix.node == 22
       - run: pnpm test
 
+  browser-tests:
+    name: browser-tests (Chromium)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Install Chromium for Playwright
+        run: pnpm --filter @mohsinonxrm/dataverse-sdk-browser-tests exec playwright install --with-deps chromium
+      - run: pnpm test:browser
+
   # Branch protection requires a check named exactly "build-test-lint". This job reports it,
-  # and passes only if every Node version in the matrix passed, so the required check doesn't
-  # change when the matrix does.
+  # and passes only if every Node version in the matrix and the browser tests passed, so the
+  # required check doesn't change when the jobs do.
   build-test-lint:
     name: build-test-lint
     runs-on: ubuntu-latest
-    needs: build-test-lint-matrix
+    needs: [build-test-lint-matrix, browser-tests]
     if: always()
     steps:
-      - name: All Node versions passed
+      - name: All Node versions and the browser tests passed
         env:
-          RESULT: ${{ needs.build-test-lint-matrix.result }}
+          MATRIX: ${{ needs.build-test-lint-matrix.result }}
+          BROWSER: ${{ needs.browser-tests.result }}
         run: |
-          echo "Matrix result: $RESULT"
-          test "$RESULT" = "success"
+          echo "Node matrix: $MATRIX, browser tests: $BROWSER"
+          test "$MATRIX" = "success" && test "$BROWSER" = "success"

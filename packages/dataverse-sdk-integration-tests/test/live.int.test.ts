@@ -145,12 +145,17 @@ describe.skipIf(!live)("live: query encoding and URL length", () => {
     expect(res.value).toEqual([]);
   });
 
-  it.fails("#10: the same long $filter passes the SDK's URL validation", async () => {
+  it("#10: the same long $filter passes the SDK's URL validation", async () => {
     const { client } = liveClient();
     const filter = Array.from({ length: 40 }, (_, i) => `name eq '${runId} n${String(i)}'`).join(
       " or "
     );
-    await client.api("accounts").select("name").filter(filter).get();
+    const res = await client
+      .api("accounts")
+      .select("name")
+      .filter(filter)
+      .get<{ value: unknown[] }>();
+    expect(res.value).toEqual([]);
   });
 });
 
