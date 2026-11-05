@@ -23,7 +23,7 @@ export class msdyn_ProvisionUnifiedRoutingAction implements Executable<msdyn_Pro
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

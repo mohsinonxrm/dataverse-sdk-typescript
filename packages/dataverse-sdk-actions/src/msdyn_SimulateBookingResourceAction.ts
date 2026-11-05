@@ -91,7 +91,7 @@ export class msdyn_SimulateBookingResourceAction implements Executable<msdyn_Sim
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

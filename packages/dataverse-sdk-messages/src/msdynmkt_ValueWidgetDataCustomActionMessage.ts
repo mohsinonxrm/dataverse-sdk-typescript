@@ -25,7 +25,7 @@ export class msdynmkt_ValueWidgetDataCustomActionRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

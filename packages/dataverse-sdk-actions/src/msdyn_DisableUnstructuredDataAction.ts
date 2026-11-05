@@ -20,7 +20,7 @@ export class msdyn_DisableUnstructuredDataAction implements Executable<msdyn_Dis
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

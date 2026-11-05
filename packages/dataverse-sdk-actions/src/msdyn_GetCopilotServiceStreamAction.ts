@@ -30,7 +30,7 @@ export class msdyn_GetCopilotServiceStreamAction implements Executable<msdyn_Get
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

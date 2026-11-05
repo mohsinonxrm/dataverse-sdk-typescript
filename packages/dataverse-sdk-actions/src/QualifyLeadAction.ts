@@ -49,7 +49,7 @@ export class QualifyLeadAction implements Executable<QualifyLeadResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

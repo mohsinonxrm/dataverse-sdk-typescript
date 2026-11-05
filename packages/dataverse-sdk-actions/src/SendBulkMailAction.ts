@@ -38,7 +38,7 @@ export class SendBulkMailAction implements Executable<SendBulkMailResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

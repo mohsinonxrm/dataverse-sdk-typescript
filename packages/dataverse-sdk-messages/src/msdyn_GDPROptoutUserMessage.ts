@@ -29,7 +29,7 @@ export class msdyn_GDPROptoutUserRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

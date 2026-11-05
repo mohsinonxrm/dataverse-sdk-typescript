@@ -20,7 +20,7 @@ export class msdyn_GetODOSMetadataAction implements Executable<msdyn_GetODOSMeta
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

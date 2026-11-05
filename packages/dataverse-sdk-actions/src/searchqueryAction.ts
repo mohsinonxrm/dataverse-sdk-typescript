@@ -48,7 +48,7 @@ export class searchqueryAction implements Executable<searchqueryResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

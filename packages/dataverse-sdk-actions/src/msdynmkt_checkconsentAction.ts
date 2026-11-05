@@ -41,7 +41,7 @@ export class msdynmkt_checkconsentAction implements Executable<msdynmkt_checkcon
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

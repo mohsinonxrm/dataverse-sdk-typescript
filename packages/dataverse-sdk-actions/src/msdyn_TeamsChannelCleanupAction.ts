@@ -20,7 +20,7 @@ export class msdyn_TeamsChannelCleanupAction implements Executable<msdyn_TeamsCh
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

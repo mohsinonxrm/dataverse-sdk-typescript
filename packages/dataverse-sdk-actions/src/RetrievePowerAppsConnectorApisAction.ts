@@ -21,7 +21,7 @@ export class RetrievePowerAppsConnectorApisAction implements Executable<Retrieve
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

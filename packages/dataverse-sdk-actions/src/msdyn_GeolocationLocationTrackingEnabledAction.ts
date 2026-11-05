@@ -20,7 +20,7 @@ export class msdyn_GeolocationLocationTrackingEnabledAction implements Executabl
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

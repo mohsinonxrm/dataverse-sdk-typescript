@@ -26,7 +26,7 @@ export class msdyn_OSUpdateModelGradesAction implements Executable<msdyn_OSUpdat
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

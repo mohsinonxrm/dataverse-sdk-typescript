@@ -31,7 +31,7 @@ export class msdyn_FastPassBotEventUpdateAction implements Executable<msdyn_Fast
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

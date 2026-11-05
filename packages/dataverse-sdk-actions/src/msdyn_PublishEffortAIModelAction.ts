@@ -30,7 +30,7 @@ export class msdyn_PublishEffortAIModelAction implements Executable<msdyn_Publis
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

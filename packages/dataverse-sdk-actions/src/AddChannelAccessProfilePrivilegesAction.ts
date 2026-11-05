@@ -31,7 +31,7 @@ export class AddChannelAccessProfilePrivilegesAction implements Executable<AddCh
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

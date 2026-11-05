@@ -30,7 +30,7 @@ export class msdyn_DuplicateDetectionTriggerActionAction implements Executable<m
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

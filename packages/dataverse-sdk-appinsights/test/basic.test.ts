@@ -2,31 +2,17 @@ import { describe, it, expect } from "vitest";
 import { ApplicationInsightsTelemetryClient } from "../src/ApplicationInsightsTelemetryClient.js";
 
 describe("ApplicationInsightsTelemetryClient", () => {
-  it("should be constructable", () => {
-    const client = new ApplicationInsightsTelemetryClient({
-      connectionString: "InstrumentationKey=test",
-    });
-    expect(client).toBeDefined();
+  it("should be constructable without starting Azure Monitor", () => {
+    expect(new ApplicationInsightsTelemetryClient()).toBeDefined();
+    expect(new ApplicationInsightsTelemetryClient({ disableTelemetry: true })).toBeDefined();
   });
 
-  it("should throw on trackEvent (not implemented)", () => {
-    const client = new ApplicationInsightsTelemetryClient({
-      connectionString: "InstrumentationKey=test",
-    });
-    expect(() => client.trackEvent("test")).toThrow("not implemented");
-  });
-
-  it("should throw on trackDependency (not implemented)", () => {
-    const client = new ApplicationInsightsTelemetryClient({
-      connectionString: "InstrumentationKey=test",
-    });
-    expect(() => client.trackDependency("test", {})).toThrow("not implemented");
-  });
-
-  it("should throw on trackException (not implemented)", () => {
-    const client = new ApplicationInsightsTelemetryClient({
-      connectionString: "InstrumentationKey=test",
-    });
-    expect(() => client.trackException(new Error("test"))).toThrow("not implemented");
+  it("should not throw from any method with the global no-op providers", () => {
+    const client = new ApplicationInsightsTelemetryClient();
+    expect(() => {
+      client.trackEvent("test");
+      client.trackDependency("test", {});
+      client.trackException(new Error("test"));
+    }).not.toThrow();
   });
 });

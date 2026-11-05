@@ -32,7 +32,7 @@ export class msdyn_GetSankeyDataAction implements Executable<msdyn_GetSankeyData
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

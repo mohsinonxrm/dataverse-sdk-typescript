@@ -32,7 +32,7 @@ export class msdyn_ExecuteCopilotServiceJobAction implements Executable<msdyn_Ex
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -20,7 +20,7 @@ export class msdyn_GetOCSharedServiceURIAction implements Executable<msdyn_GetOC
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

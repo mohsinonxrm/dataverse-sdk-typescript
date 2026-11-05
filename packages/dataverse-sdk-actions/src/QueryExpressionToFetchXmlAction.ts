@@ -27,7 +27,7 @@ export class QueryExpressionToFetchXmlAction implements Executable<QueryExpressi
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

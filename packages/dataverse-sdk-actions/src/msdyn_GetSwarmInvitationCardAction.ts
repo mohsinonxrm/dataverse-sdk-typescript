@@ -29,7 +29,7 @@ export class msdyn_GetSwarmInvitationCardAction implements Executable<msdyn_GetS
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

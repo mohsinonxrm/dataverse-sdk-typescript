@@ -62,7 +62,7 @@ export class msdyn_create_virtual_table_v2Action implements Executable<msdyn_cre
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

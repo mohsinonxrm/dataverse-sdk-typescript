@@ -21,7 +21,7 @@ export class msdyn_GetOCSharedServiceURIRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

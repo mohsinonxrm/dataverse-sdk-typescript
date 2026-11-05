@@ -22,7 +22,7 @@ export class msdyn_CheckServiceEndPointAction implements Executable<msdyn_CheckS
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

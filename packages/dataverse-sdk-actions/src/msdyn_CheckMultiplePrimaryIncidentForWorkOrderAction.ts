@@ -22,7 +22,7 @@ export class msdyn_CheckMultiplePrimaryIncidentForWorkOrderAction implements Exe
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

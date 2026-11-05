@@ -26,7 +26,7 @@ export class msdyn_WKWDeleteGDPRDataAction implements Executable<msdyn_WKWDelete
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

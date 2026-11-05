@@ -43,7 +43,7 @@ export class msdyn_SalesAccountCatchupAction implements Executable<msdyn_SalesAc
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

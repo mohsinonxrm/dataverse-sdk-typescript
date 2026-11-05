@@ -20,7 +20,7 @@ export class msdyn_EnableUnstructuredDataAction implements Executable<msdyn_Enab
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

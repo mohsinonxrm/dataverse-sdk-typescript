@@ -40,7 +40,7 @@ export class CCaaS_GetRepresentativeAvailabilityForConversationAction implements
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

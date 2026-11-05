@@ -22,7 +22,7 @@ export class msdyn_CheckIfHasLegacyArcRulesAction implements Executable<msdyn_Ch
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

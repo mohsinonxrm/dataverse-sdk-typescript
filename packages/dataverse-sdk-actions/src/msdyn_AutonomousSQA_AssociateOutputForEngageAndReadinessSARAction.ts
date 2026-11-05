@@ -32,7 +32,7 @@ export class msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSARAction i
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

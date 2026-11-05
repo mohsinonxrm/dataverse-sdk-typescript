@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 import type { ValidateFetchXmlExpressionResult } from "./types/index.js";
 
 /**
@@ -24,10 +25,7 @@ export class ValidateFetchXmlExpressionFunction implements Executable<ValidateFe
     const aliases: string[] = [];
     if (this.fetchXml !== undefined) {
       aliases.push(`FetchXml=@p1`);
-      params.append(
-        "@p1",
-        typeof this.fetchXml === "string" ? `'${this.fetchXml}'` : String(this.fetchXml)
-      );
+      params.append("@p1", formatAliasValue(this.fetchXml));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

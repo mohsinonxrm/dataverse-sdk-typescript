@@ -32,7 +32,7 @@ export class CCaaS_ModifyAgentPresenceAction implements Executable<CCaaS_ModifyA
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

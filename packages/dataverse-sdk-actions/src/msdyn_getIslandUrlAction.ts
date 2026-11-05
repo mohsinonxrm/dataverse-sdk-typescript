@@ -20,7 +20,7 @@ export class msdyn_getIslandUrlAction implements Executable<msdyn_getIslandUrlRe
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

@@ -52,7 +52,7 @@ export class InferEntityDefinitionAction implements Executable<InferEntityDefini
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

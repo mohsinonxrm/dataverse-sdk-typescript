@@ -27,7 +27,7 @@ export class RevertProductAction implements Executable<RevertProductResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

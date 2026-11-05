@@ -26,7 +26,7 @@ export class msdyn_DoesKBExistAction implements Executable<msdyn_DoesKBExistResp
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

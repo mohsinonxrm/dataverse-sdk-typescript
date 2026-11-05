@@ -27,7 +27,7 @@ export class ExportTranslationAction implements Executable<ExportTranslationResp
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

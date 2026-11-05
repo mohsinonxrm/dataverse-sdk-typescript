@@ -30,7 +30,7 @@ export class msdyn_StartODOSDeprovisioningAction implements Executable<msdyn_Sta
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

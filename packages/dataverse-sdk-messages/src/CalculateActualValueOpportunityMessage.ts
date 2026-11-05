@@ -22,7 +22,7 @@ export class CalculateActualValueOpportunityRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

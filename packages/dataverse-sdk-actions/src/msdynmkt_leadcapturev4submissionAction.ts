@@ -33,7 +33,7 @@ export class msdynmkt_leadcapturev4submissionAction implements Executable<msdynm
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

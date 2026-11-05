@@ -34,7 +34,7 @@ export class msdyn_SetFeatureStatusAction implements Executable<msdyn_SetFeature
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

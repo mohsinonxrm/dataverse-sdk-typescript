@@ -27,7 +27,7 @@ export class msdyn_GetAzureTokenAction implements Executable<msdyn_GetAzureToken
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

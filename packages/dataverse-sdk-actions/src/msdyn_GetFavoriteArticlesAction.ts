@@ -26,7 +26,7 @@ export class msdyn_GetFavoriteArticlesAction implements Executable<msdyn_GetFavo
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

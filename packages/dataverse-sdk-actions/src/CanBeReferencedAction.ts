@@ -26,7 +26,7 @@ export class CanBeReferencedAction implements Executable<CanBeReferencedResponse
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

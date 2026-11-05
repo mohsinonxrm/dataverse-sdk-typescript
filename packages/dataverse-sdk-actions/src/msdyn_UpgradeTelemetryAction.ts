@@ -50,7 +50,7 @@ export class msdyn_UpgradeTelemetryAction implements Executable<msdyn_UpgradeTel
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

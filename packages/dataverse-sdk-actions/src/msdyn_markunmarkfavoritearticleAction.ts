@@ -32,7 +32,7 @@ export class msdyn_markunmarkfavoritearticleAction implements Executable<msdyn_m
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

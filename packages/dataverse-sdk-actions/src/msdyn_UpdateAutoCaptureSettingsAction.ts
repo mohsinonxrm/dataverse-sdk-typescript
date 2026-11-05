@@ -36,7 +36,7 @@ export class msdyn_UpdateAutoCaptureSettingsAction implements Executable<msdyn_U
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

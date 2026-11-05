@@ -37,7 +37,7 @@ export class AddToQueueAction implements Executable<AddToQueueResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

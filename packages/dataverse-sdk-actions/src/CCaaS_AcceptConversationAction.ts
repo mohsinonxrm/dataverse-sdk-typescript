@@ -33,7 +33,7 @@ export class CCaaS_AcceptConversationAction implements Executable<CCaaS_AcceptCo
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

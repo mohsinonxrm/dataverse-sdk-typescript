@@ -32,7 +32,7 @@ export class msdyn_ForecastInstanceActionsAction implements Executable<msdyn_For
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

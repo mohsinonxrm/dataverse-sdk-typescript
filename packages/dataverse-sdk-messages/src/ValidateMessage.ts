@@ -23,7 +23,7 @@ export class ValidateRequest extends OrganizationRequest implements Executable<V
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

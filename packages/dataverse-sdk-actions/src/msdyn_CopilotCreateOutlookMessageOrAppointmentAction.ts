@@ -36,7 +36,7 @@ export class msdyn_CopilotCreateOutlookMessageOrAppointmentAction implements Exe
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

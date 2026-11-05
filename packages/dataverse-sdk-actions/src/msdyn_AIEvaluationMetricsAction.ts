@@ -26,7 +26,7 @@ export class msdyn_AIEvaluationMetricsAction implements Executable<msdyn_AIEvalu
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

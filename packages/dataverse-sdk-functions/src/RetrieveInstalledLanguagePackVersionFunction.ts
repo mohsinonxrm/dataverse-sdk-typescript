@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 
 /**
  * Response from RetrieveInstalledLanguagePackVersion function
@@ -23,10 +24,7 @@ export class RetrieveInstalledLanguagePackVersionFunction implements Executable<
     const aliases: string[] = [];
     if (this.language !== undefined) {
       aliases.push(`Language=@p1`);
-      params.append(
-        "@p1",
-        typeof this.language === "string" ? `'${this.language}'` : String(this.language)
-      );
+      params.append("@p1", formatAliasValue(this.language));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

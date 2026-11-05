@@ -24,7 +24,7 @@ export class ReleaseToQueueAction implements Executable<ReleaseToQueueResponse> 
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

@@ -21,7 +21,7 @@ export class GetAuditStorageDetailsAction implements Executable<GetAuditStorageD
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
