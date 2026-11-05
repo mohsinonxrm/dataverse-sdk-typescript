@@ -1,14 +1,13 @@
 # @mohsinonxrm/dataverse-sdk-discovery
 
-Global Discovery Service client for discovering Dataverse organizations across all regions in the Commercial cloud.
+Global Discovery Service (GDS) v2.0 client: find the Dataverse environments the signed-in user can access, in the Commercial, GCC, GCC High (USG), DoD or China cloud.
 
 ## Features
 
-- ✅ **Multi-region discovery**: Find organizations across all Dataverse regions (NA, EMEA, APAC, etc.)
-- ✅ **Filtering support**: Filter by state, region, or any organization property
-- ✅ **Type-safe**: Full TypeScript support with comprehensive types
-- ✅ **OData queries**: Use $filter, $select, and $orderby for precise queries
-- ✅ **Helper methods**: Convenient methods for common discovery scenarios
+- ✅ **Multi-region discovery**: Find environments across all regions of the cloud
+- ✅ **Typed v2.0 response**: `OrganizationDetail` matches the documented `Instance` entity (`Url`, `ApiUrl`, integer `State`, `Region`, …)
+- ✅ **OData queries**: Use `$filter`, `$select` and `$orderby`
+- ✅ **Helpers**: `getEnabledOrganizations()`, `getOrganization()`, `getOrganizationByUrl()`, `getOrganizationsByRegion()` and `toEnvironment()`
 
 ## Installation
 
@@ -19,7 +18,7 @@ pnpm add @mohsinonxrm/dataverse-sdk-discovery @mohsinonxrm/dataverse-sdk-auth-ms
 ## Quick Start
 
 ```typescript
-import { DiscoveryClient } from "@mohsinonxrm/dataverse-sdk-discovery";
+import { DiscoveryClient, toEnvironment } from "@mohsinonxrm/dataverse-sdk-discovery";
 import { MsalNodeTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-msal-node";
 
 // Create token provider (using device code flow)
@@ -37,22 +36,42 @@ const orgs = await discovery.listOrganizations();
 
 console.log(`You have access to ${orgs.length} organizations`);
 orgs.forEach((org) => {
-  console.log(`${org.FriendlyName} (${org.UniqueName})`);
-  console.log(`  Region: ${org.Geo}`);
-  console.log(`  State: ${org.State}`);
-  console.log(`  Web API: ${org.Endpoints.WebApiUrl}\n`);
+  const env = toEnvironment(org);
+  console.log(`${env.name} (${env.uniqueName})`);
+  console.log(`  Region: ${env.region}`);
+  console.log(`  Enabled: ${env.enabled}`);
+  console.log(`  Web API: ${env.webApiUrl}\n`);
 });
 ```
 
-## Authentication Scopes
+The Global Discovery Service returns the environments of a **signed-in user** (a delegated token,
+for example device code, authorization code or interactive). An app-only (client credentials)
+token gets no environments.
 
-The Discovery Service requires the following scope:
+## Clouds and Authentication Scopes
+
+The Global Discovery Service runs in five clouds. Pick one with `cloud`; the client calls that
+cloud's endpoint and requests a token for its `/.default` scope (the token audience is the
+discovery host). Endpoints are from Microsoft Learn, [Discover user organizations](https://learn.microsoft.com/power-apps/developer/data-platform/discovery-service).
+
+| `cloud`              | Cloud                         | Endpoint                                                          | Default scope                                           |
+| -------------------- | ----------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------- |
+| `"public"` (default) | Commercial                    | `https://globaldisco.crm.dynamics.com/api/discovery/v2.0`         | `https://globaldisco.crm.dynamics.com/.default`         |
+| `"gcc"`              | US Government Community Cloud | `https://globaldisco.crm9.dynamics.com/api/discovery/v2.0`        | `https://globaldisco.crm9.dynamics.com/.default`        |
+| `"usg"`              | US Government (GCC High)      | `https://globaldisco.crm.microsoftdynamics.us/api/discovery/v2.0` | `https://globaldisco.crm.microsoftdynamics.us/.default` |
+| `"dod"`              | US Department of Defense      | `https://globaldisco.crm.appsplatform.us/api/discovery/v2.0`      | `https://globaldisco.crm.appsplatform.us/.default`      |
+| `"china"`            | China (21Vianet)              | `https://globaldisco.crm.dynamics.cn/api/discovery/v2.0`          | `https://globaldisco.crm.dynamics.cn/.default`          |
 
 ```typescript
-const DISCOVERY_SCOPES = ["https://globaldisco.crm.dynamics.com/.default"];
+const gccHigh = new DiscoveryClient(tokenProvider, { cloud: "usg" });
 ```
 
-This scope is automatically used by the `DiscoveryClient` when requesting tokens.
+The table is exported as `DISCOVERY_CLOUDS`. For a sovereign cloud, configure your token provider
+with that cloud's Microsoft Entra authority (see Microsoft Entra "national clouds").
+
+Pass `scopes` to request something else, for example the delegated permission
+`https://globaldisco.crm.dynamics.com/user_impersonation` in a single-page app. With a custom
+`baseUrl` and no `scopes`, the scope is `https://<baseUrl host>/.default`.
 
 ## API Reference
 
@@ -61,19 +80,33 @@ This scope is automatically used by the `DiscoveryClient` when requesting tokens
 #### Constructor
 
 ```typescript
-new DiscoveryClient(tokenProvider: AccessTokenProvider, baseUrl?: string)
+new DiscoveryClient(tokenProvider: AccessTokenProvider, options?: DiscoveryClientOptions)
+new DiscoveryClient(tokenProvider: AccessTokenProvider, baseUrl?: string) // same as { baseUrl }
+
+interface DiscoveryClientOptions {
+  cloud?: "public" | "gcc" | "usg" | "dod" | "china"; // default "public"
+  baseUrl?: string; // overrides the cloud's endpoint; a host-only URL gets /api/discovery/v2.0
+  scopes?: string[]; // overrides the default https://<host>/.default
+  fetchProvider?: FetchProvider; // defaults to the global fetch
+  logger?: Logger;
+  telemetry?: TelemetryClient;
+  retry?: RetryOptions; // 429/502/503/504, honouring Retry-After
+}
 ```
 
 **Parameters:**
 
 - `tokenProvider`: An instance of a token provider (e.g., `MsalNodeTokenProvider`, `MsalBrowserTokenProvider`)
-- `baseUrl` (optional): Custom discovery endpoint. Defaults to Commercial cloud global discovery.
+- `options` (optional): the cloud, a custom endpoint and/or scopes, and pipeline options. Throws `DataverseInvalidRequestError` for an unknown `cloud` or a `baseUrl` that isn't an absolute https URL (plain http only for localhost).
 
-**Example:**
+Requests go through the same pipeline as `DataverseClient`: the injected `fetchProvider`, retries
+with `Retry-After`, logging, telemetry and typed errors. The bearer token is sent only to the
+discovery host, including on `@odata.nextLink` pages.
 
-```typescript
-const discovery = new DiscoveryClient(tokenProvider);
-```
+`getBaseUrl()` and `getScopes()` return the endpoint and scopes the client uses.
+
+Every method takes an optional `{ signal }` (`listOrganizations` takes it in its options) to cancel
+the request, including a retry wait.
 
 ### Methods
 
@@ -83,9 +116,13 @@ Lists all Dataverse organizations the authenticated user has access to.
 
 **Parameters:**
 
-- `options.filter`: OData filter expression (e.g., `"State eq 'Enabled'"`)
+- `options.filter`: OData filter expression (e.g., `"State eq 0"`). String comparisons are case sensitive. Sent as written: build it with `odata` from `@mohsinonxrm/dataverse-sdk-core` (or double each `'` yourself) when it contains user input. The helper methods escape their arguments.
 - `options.select`: Array of properties to return
 - `options.orderby`: Property to order results by
+- `options.signal`: `AbortSignal` to cancel the request
+
+All query values are percent-encoded. When the service returns `@odata.nextLink`, the pages are
+followed and concatenated.
 
 **Examples:**
 
@@ -93,102 +130,74 @@ Lists all Dataverse organizations the authenticated user has access to.
 // List all organizations
 const allOrgs = await discovery.listOrganizations();
 
-// Filter for enabled organizations only
-const enabledOrgs = await discovery.listOrganizations({
-  filter: "State eq 'Enabled'",
-});
+// Enabled organizations only (State is an integer: 0 = enabled, 1 = disabled)
+const enabledOrgs = await discovery.listOrganizations({ filter: "State eq 0" });
 
-// Select specific properties
-const basicInfo = await discovery.listOrganizations({
-  select: ["UniqueName", "FriendlyName", "Geo", "Endpoints"],
-});
+// Select just what an environment picker needs
+const basicInfo = await discovery.listOrganizations({ select: ["FriendlyName", "ApiUrl"] });
 
 // Order by friendly name
-const orderedOrgs = await discovery.listOrganizations({
-  orderby: "FriendlyName",
-});
+const orderedOrgs = await discovery.listOrganizations({ orderby: "FriendlyName" });
 
-// Complex filter: Enabled North American organizations
+// Enabled North American organizations
 const naEnabledOrgs = await discovery.listOrganizations({
-  filter: "State eq 'Enabled' and Geo eq 'NA'",
+  filter: "State eq 0 and Region eq 'NA'",
 });
 ```
 
 #### `getOrganization(uniqueName: string): Promise<OrganizationDetail | null>`
 
-Gets a specific organization by its unique name.
-
-**Parameters:**
-
-- `uniqueName`: The unique name of the organization (e.g., `'contoso'`)
-
-**Returns:** Organization detail if found, `null` otherwise
-
-**Example:**
+Gets a specific organization by its unique name (`UniqueName`). Returns `null` when none matches.
 
 ```typescript
-const org = await discovery.getOrganization("contoso");
-
-if (org) {
-  console.log(`Found: ${org.FriendlyName}`);
-  console.log(`Web API: ${org.Endpoints.WebApiUrl}`);
-  console.log(`Region: ${org.Geo}`);
-} else {
-  console.log("Organization not found");
-}
+const org = await discovery.getOrganization("unq6bcbf6bf1f2a4ab999012605b314d");
+if (org) console.log(`${org.FriendlyName}: ${org.ApiUrl}`);
 ```
 
-#### `getOrganizationsByRegion(geo: string): Promise<OrganizationDetail[]>`
+#### `getOrganizationByUrl(url: string): Promise<OrganizationDetail | null>`
 
-Gets all organizations in a specific geographic region.
-
-**Parameters:**
-
-- `geo`: Geographic region code (e.g., `'NA'`, `'EMEA'`, `'APAC'`, `'SAM'`, `'OCE'`, `'JPN'`, `'IND'`, `'CAN'`, `'GCC'`, `'GCCHigh'`, `'DOD'`)
-
-**Common Region Codes:**
-
-- `NA` - North America
-- `EMEA` - Europe, Middle East, and Africa
-- `APAC` - Asia Pacific
-- `SAM` - South America
-- `OCE` - Oceania
-- `JPN` - Japan
-- `IND` - India
-- `CAN` - Canada
-- `GCC` - US Government Community Cloud
-- `GCCHigh` - US Government Community Cloud High
-- `DOD` - US Department of Defense
-
-**Example:**
+Gets the organization served at a URL: its application URL (`Url`), its `ApiUrl`, or any URL on
+either origin (such as a Web API root). Origins are compared case-insensitively; paths and trailing
+slashes are ignored. The match is made on the client against the full list. Returns `null` when
+none matches, and throws `DataverseInvalidRequestError` when `url` isn't an absolute http(s) URL.
 
 ```typescript
-// Get all North American organizations
+const org = await discovery.getOrganizationByUrl("https://contoso.crm.dynamics.com/");
+```
+
+#### `getOrganizationsByRegion(region: string): Promise<OrganizationDetail[]>`
+
+Gets all organizations whose `Region` equals `region` (a 2-3 letter code such as `"NA"`; case sensitive).
+
+```typescript
 const naOrgs = await discovery.getOrganizationsByRegion("NA");
-
-// Get all European organizations
-const emeaOrgs = await discovery.getOrganizationsByRegion("EMEA");
-
-console.log(`Found ${naOrgs.length} organizations in North America`);
-console.log(`Found ${emeaOrgs.length} organizations in EMEA`);
 ```
 
 #### `getEnabledOrganizations(): Promise<OrganizationDetail[]>`
 
-Gets all enabled organizations.
-
-**Example:**
+Gets all enabled organizations (sends `$filter=State eq 0`).
 
 ```typescript
 const enabledOrgs = await discovery.getEnabledOrganizations();
-
 console.log(`You have access to ${enabledOrgs.length} enabled organizations`);
+```
 
-// Pick the first enabled organization
-if (enabledOrgs.length > 0) {
-  const org = enabledOrgs[0];
-  console.log(`Using: ${org.FriendlyName}`);
-  console.log(`Web API: ${org.Endpoints.WebApiUrl}`);
+### `toEnvironment(org: OrganizationDetail): DiscoveredEnvironment`
+
+A camel-cased summary of an `OrganizationDetail`:
+
+```typescript
+interface DiscoveredEnvironment {
+  id: string; // Id
+  url: string; // Url, e.g. https://contoso.crm.dynamics.com
+  apiUrl: string; // ApiUrl, e.g. https://contoso.api.crm.dynamics.com
+  webApiUrl: string; // ApiUrl + /api/data/v9.2
+  name: string; // FriendlyName
+  uniqueName: string; // UniqueName
+  enabled: boolean; // State === 0
+  version: string; // Version
+  region?: string; // Region
+  environmentId?: string; // EnvironmentId
 }
 ```
 
@@ -196,77 +205,74 @@ if (enabledOrgs.length > 0) {
 
 ### `OrganizationDetail`
 
+The `Instance` entity of the Global Discovery Service v2.0, with the service's property names.
+The response is flat: there is no `Endpoints` object and no `Geo` property. With `$select`, only
+the selected properties are present.
+
 ```typescript
 interface OrganizationDetail {
-  Id: string; // Unique identifier
-  UniqueName: string; // Unique name (e.g., 'contoso')
-  FriendlyName: string; // Display name (e.g., 'Contoso Corporation')
-  Endpoints: OrganizationEndpoints; // API endpoints
-  State: string; // 'Enabled' or 'Disabled'
-  Version: string; // Dataverse version
-  UrlName: string; // URL name
-  Geo: string; // Geographic region code
-  TenantId: string; // Azure AD tenant ID
-  EnvironmentId: string; // Environment ID
-  Region: string; // Data center region code
+  Id: string; // OrganizationId
+  UniqueName: string;
+  UrlName: string; // e.g. 'contoso'
+  FriendlyName: string; // display name
+  State: number; // 0 = enabled, 1 = disabled (OrganizationState)
+  Version: string; // e.g. '9.2.24101.00177'
+  Url: string; // application URL, e.g. 'https://contoso.crm.dynamics.com'
+  ApiUrl: string; // web services URL, e.g. 'https://contoso.api.crm.dynamics.com'
+  LastUpdated: string; // ISO 8601
+  EnvironmentId?: string | null;
+  TenantId?: string | null;
+  Region?: string | null; // 2-3 letter code, e.g. 'NA'
+  Purpose?: string | null;
+  IsUserSysAdmin?: boolean;
+  OrganizationType?: number;
+  DatacenterId?: string | null;
+  DatacenterName?: string | null;
+  SchemaType?: string | null;
+  StatusMessage?: number | null;
+  TrialExpirationDate?: string | null;
+  FinOpsUrl?: string | null; // returned live, not in the documented table
 }
 ```
 
-### `OrganizationEndpoints`
-
-```typescript
-interface OrganizationEndpoints {
-  WebApiUrl: string; // Web API endpoint (e.g., 'https://contoso.api.crm.dynamics.com')
-  WebApplicationUrl: string; // Web app endpoint (e.g., 'https://contoso.crm.dynamics.com')
-}
-```
+`OrganizationState` holds the `State` values: `OrganizationState.Enabled` (`0`) and `OrganizationState.Disabled` (`1`).
 
 ## Complete Example: Interactive Organization Selector
 
 ```typescript
-import { DiscoveryClient } from "@mohsinonxrm/dataverse-sdk-discovery";
+import { DiscoveryClient, toEnvironment } from "@mohsinonxrm/dataverse-sdk-discovery";
 import { MsalNodeTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-msal-node";
 import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
 
 async function selectOrganization() {
-  // Create token provider for discovery
   const tokenProvider = new MsalNodeTokenProvider({
     clientId: process.env.CLIENT_ID!,
     authority: `https://login.microsoftonline.com/${process.env.TENANT_ID}`,
     flow: "deviceCode",
   });
 
-  // Create discovery client
   const discovery = new DiscoveryClient(tokenProvider);
+  const environments = (await discovery.getEnabledOrganizations()).map(toEnvironment);
 
-  // Get all enabled organizations
-  const orgs = await discovery.getEnabledOrganizations();
-
-  if (orgs.length === 0) {
+  if (environments.length === 0) {
     console.log("No organizations found");
     return;
   }
 
-  // Display organizations
-  console.log("\nAvailable organizations:");
-  orgs.forEach((org, index) => {
-    console.log(`${index + 1}. ${org.FriendlyName} (${org.UniqueName}) - ${org.Geo}`);
+  environments.forEach((env, index) => {
+    console.log(`${index + 1}. ${env.name} (${env.uniqueName}) - ${env.region ?? "?"}`);
   });
 
-  // User selects organization (simplified - use readline in real app)
-  const selectedIndex = 0; // First org for demo
+  const selected = environments[0]; // use readline in a real app
 
-  const selectedOrg = orgs[selectedIndex];
-  console.log(`\nSelected: ${selectedOrg.FriendlyName}`);
-  console.log(`Web API: ${selectedOrg.Endpoints.WebApiUrl}`);
-
-  // Create Dataverse client for selected organization
+  // The discovery token is for the Global Discovery Service. Ask for a token for the selected
+  // environment by passing its scope.
   const client = new DataverseClient({
-    baseUrl: selectedOrg.Endpoints.WebApiUrl,
-    tokenProvider: tokenProvider,
+    baseUrl: selected.apiUrl,
+    tokenProvider,
+    scopes: [`${selected.url}/.default`],
   });
 
-  // Now you can use the client with the selected organization
   const whoami = await client.api("/WhoAmI").get();
   console.log("User ID:", whoami.UserId);
 }
@@ -276,19 +282,26 @@ selectOrganization().catch(console.error);
 
 ## Error Handling
 
+Error responses are thrown as the core SDK's typed errors: `DataverseODataError`, or
+`DataverseThrottleError` for a 429 that is still throttled after the retries. Both extend
+`DataverseError` and carry `status`, `code`, `requestId` and `raw`; `DataverseThrottleError` also has
+`retryAfterMs`. Aborting rejects with an `AbortError`.
+
 ```typescript
+import { DataverseError, DataverseThrottleError } from "@mohsinonxrm/dataverse-sdk-core";
+
 try {
   const orgs = await discovery.listOrganizations();
   console.log(`Found ${orgs.length} organizations`);
 } catch (error) {
-  if (error instanceof Error) {
-    if (error.message.includes("401")) {
-      console.error("Authentication failed. Check your credentials.");
-    } else if (error.message.includes("403")) {
-      console.error("Access denied. You may not have permission to use the discovery service.");
-    } else {
-      console.error("Discovery request failed:", error.message);
-    }
+  if (error instanceof DataverseThrottleError) {
+    console.error(`Throttled; retry after ${error.retryAfterMs ?? "?"} ms`);
+  } else if (error instanceof DataverseError && error.status === 401) {
+    console.error("Authentication failed. Check your credentials.");
+  } else if (error instanceof DataverseError && error.status === 403) {
+    console.error("Access denied. You may not have permission to use the discovery service.");
+  } else {
+    throw error;
   }
 }
 ```
