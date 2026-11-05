@@ -337,7 +337,8 @@ The generated metadata **EntityTypes**, **ComplexTypes** and **EnumTypes** are e
 - `class MetadataClient` (`new MetadataClient(client: DataverseClient)`)
   - Entity, attribute, relationship and global option set CRUD (`getEntityDefinitions`, `createAttributeDefinition`, `createOneToManyRelationship`, `createGlobalOptionSet`, …)
   - Option value operations (`insertOptionValue`, `updateOptionValue`, `deleteOptionValue`, `orderOptions`, `insertStatusValue`)
-  - `retrieveMetadataChanges(...)`: returns `RetrieveMetadataChangesResponse` (#62 tracks that it is sent as POST)
+  - `retrieveMetadataChanges(query, clientVersionStamp?, deletedMetadataFilters?)`: sends the `RetrieveMetadataChanges` function (GET) and returns `RetrieveMetadataChangesResponse`
+  - Relationship eligibility: `canBeReferenced`, `canBeReferencing`, `canManyToMany` (actions, return `boolean`); `getValidReferencingEntities`, `getValidReferencedEntities`, `getValidManyToMany` (functions, return `string[]`)
 - `interface MetadataQueryOptions`
 
 Strict metadata builders (`const Metadata`) are [planned](#16-planned-not-exported-yet).

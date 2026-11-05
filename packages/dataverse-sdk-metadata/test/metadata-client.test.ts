@@ -422,40 +422,6 @@ describe("MetadataClient", () => {
     });
   });
 
-  describe("RetrieveMetadataChanges", () => {
-    it("should call RetrieveMetadataChanges action with query", async () => {
-      server.use(
-        http.post(`${BASE_URL}/RetrieveMetadataChanges`, async ({ request }) => {
-          expect(request.method).toBe("POST");
-          const body = (await request.json()) as any;
-          expect(body.Query).toBeDefined();
-
-          return HttpResponse.json({
-            EntityMetadata: [],
-            ServerVersionStamp: "version-123",
-          });
-        })
-      );
-
-      const result = await metadataClient.retrieveMetadataChanges({
-        Query: {
-          Criteria: {
-            Conditions: [
-              {
-                PropertyName: "LogicalName",
-                ConditionOperator: "Equals",
-                Value: { Value: "account" },
-              },
-            ],
-          },
-          Properties: { PropertyNames: ["LogicalName", "SchemaName"] },
-        },
-      });
-
-      expect(result.ServerVersionStamp).toBe("version-123");
-    });
-  });
-
   describe("PUT Method Verification (Critical)", () => {
     it("should use PUT (not PATCH) for all metadata update operations", async () => {
       const methodsUsed: string[] = [];

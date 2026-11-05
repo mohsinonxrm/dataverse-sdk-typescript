@@ -467,66 +467,75 @@ const result = await metadataClient.createPolymorphicLookupAttribute({
 
 ## Relationship Eligibility Checks
 
+`CanBeReferenced`, `CanBeReferencing` and `CanManyToMany` are Web API actions (sent as `POST`);
+the `GetValid*` methods are functions (sent as `GET`). Each method returns the plain value.
+
 ```typescript
-// Check if entity can be referenced (parent in 1:N)
-const canBeReferenced = await metadataClient.canBeReferenced("new_project");
-console.log("Can be parent:", canBeReferenced.CanBeReferenced);
+// Can the table be the parent (referenced) table in a 1:N relationship?
+const canBeParent: boolean = await metadataClient.canBeReferenced("new_project");
 
-// Check if entity can reference others (child in 1:N)
-const canBeReferencing = await metadataClient.canBeReferencing("new_task");
-console.log("Can be child:", canBeReferencing.CanBeReferencing);
+// Can the table be the child (referencing) table in a 1:N relationship?
+const canBeChild: boolean = await metadataClient.canBeReferencing("new_task");
 
-// Check if entity can participate in N:N
-const canManyToMany = await metadataClient.canManyToMany("new_project");
-console.log("Can do N:N:", canManyToMany.CanManyToMany);
+// Can the table take part in an N:N relationship?
+const canDoManyToMany: boolean = await metadataClient.canManyToMany("new_project");
 
-// Get valid entities for N:N relationships
-const validEntities = await metadataClient.getValidManyToMany("new_project");
-console.log("Valid N:N partners:", validEntities.EntityNames);
+// Tables that can reference account, and tables that contact can reference
+const children: string[] = await metadataClient.getValidReferencingEntities("account");
+const parents: string[] = await metadataClient.getValidReferencedEntities("contact");
+
+// Every table that can take part in an N:N relationship (no argument)
+const manyToManyTables: string[] = await metadataClient.getValidManyToMany();
 ```
 
 ---
 
 ## RetrieveMetadataChanges
 
-Track metadata changes using version stamps for incremental sync:
+Track metadata changes with version stamps for incremental sync. The method is positional:
+`retrieveMetadataChanges(query, clientVersionStamp?, deletedMetadataFilters?)`.
+`RetrieveMetadataChanges` is a Web API function, so the SDK sends it as a `GET` with the query as
+a JSON parameter alias.
 
 ```typescript
-// Initial query (get all + version stamp)
-const result = await metadataClient.retrieveMetadataChanges(
-  {
-    Criteria: {
-      FilterOperator: "And",
-      Conditions: [{ PropertyName: "IsCustomEntity", Value: true }],
-    },
-    Properties: {
-      PropertyNames: ["LogicalName", "DisplayName", "Attributes"],
-    },
-  },
-  "Entity" // Track entity deletions
-);
+import {
+  LogicalOperator,
+  MetadataConditionOperator,
+  type EntityQueryExpression,
+} from "@mohsinonxrm/dataverse-sdk-metadata";
 
+const query: EntityQueryExpression = {
+  Criteria: {
+    FilterOperator: LogicalOperator.And,
+    Conditions: [
+      {
+        PropertyName: "IsCustomEntity",
+        ConditionOperator: MetadataConditionOperator.Equals,
+        // A condition value is { Type, Value }
+        Value: { Type: "System.Boolean", Value: "true" },
+      },
+    ],
+  },
+  Properties: { AllProperties: false, PropertyNames: ["LogicalName", "DisplayName"] },
+};
+
+// Initial query: the metadata, plus a version stamp
+const result = await metadataClient.retrieveMetadataChanges(query);
 console.log("Entities:", result.EntityMetadata);
 console.log("Server version:", result.ServerVersionStamp);
 
-// Later: get only changes since last sync
+// Later: only what changed since the stamp, including deleted tables
 const changes = await metadataClient.retrieveMetadataChanges(
-  {
-    Criteria: {
-      FilterOperator: "And",
-      Conditions: [{ PropertyName: "IsCustomEntity", Value: true }],
-    },
-    Properties: {
-      PropertyNames: ["LogicalName", "DisplayName"],
-    },
-  },
-  "Entity",
-  result.ServerVersionStamp // Pass previous stamp
+  query,
+  result.ServerVersionStamp, // the previous stamp
+  "Default" // DeletedMetadataFilters: "Default" (tables), "Attribute", "All", or a comma-separated list
 );
-
 console.log("Changed entities:", changes.EntityMetadata);
-console.log("Deleted entities:", changes.DeletedMetadata);
+console.log("Deleted metadata:", changes.DeletedMetadata);
 ```
+
+Enum members in the query are sent by name (`"And"`, `"Equals"`), the only form Dataverse
+accepts.
 
 ---
 
