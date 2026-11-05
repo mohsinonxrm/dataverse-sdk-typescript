@@ -45,6 +45,9 @@ export interface RetryOptions extends MiddlewareOptions {
    * Custom function to determine if a request should be retried
    */
   shouldRetry?: (statusCode: number, error?: Error) => boolean;
+
+  /** Per-request override of the client's `retry.retryNonIdempotent`. */
+  retryNonIdempotent?: boolean;
 }
 
 /**

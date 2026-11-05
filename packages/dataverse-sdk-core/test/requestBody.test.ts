@@ -120,7 +120,8 @@ describe("#7: request bodies reach fetch unchanged unless they are plain objects
   });
 
   it("still retries replayable bodies", async () => {
-    const calls = await send("{}", {}, 503);
+    // 429, because a POST is never replayed after a 5xx (#12).
+    const calls = await send("{}", {}, 429);
     expect(calls).toHaveLength(3);
   });
 

@@ -136,7 +136,7 @@ describe("core: retries", () => {
     expect(fake.requests).toHaveLength(2);
   });
 
-  it.fails("#12: a POST that gets a 504 is not replayed", async () => {
+  it("#12: a POST that gets a 504 is not replayed", async () => {
     const { client, fake } = createTestClient({
       retry: { maxRetries: 1, baseDelayMs: 1, maxDelayMs: 5 },
     });

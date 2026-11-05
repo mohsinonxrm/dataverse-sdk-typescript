@@ -17,6 +17,13 @@ export interface RetryOptions {
   baseDelayMs?: number;
   maxDelayMs?: number;
   jitter?: boolean;
+  /**
+   * Also retry POST, and PATCH without `If-Match`, after 502/503/504. Default `false`: a gateway
+   * error can arrive after Dataverse already applied the request, so replaying a create or an
+   * action can apply it twice. 429 responses are always retried, for every method, because
+   * Dataverse rejects throttled requests before doing any work.
+   */
+  retryNonIdempotent?: boolean;
 }
 
 export interface ConcurrencyOptions {
