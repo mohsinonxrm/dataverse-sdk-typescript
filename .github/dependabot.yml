@@ -5,13 +5,17 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
+    open-pull-requests-limit: 5
     groups:
+      # One PR for all minor/patch dev-dependency updates.
       dev-dependencies:
         dependency-type: "development"
+        update-types: ["minor", "patch"]
+      # One PR for all minor/patch production-dependency updates.
+      production-dependencies:
+        dependency-type: "production"
+        update-types: ["minor", "patch"]
     ignore:
-      # Vitest 2.x has breaking changes — track manually
-      - dependency-name: "vitest"
-        update-types: ["version-update:semver-major"]
       # TypeScript minor upgrades — track manually
       - dependency-name: "typescript"
         update-types: ["version-update:semver-minor"]
@@ -19,3 +23,8 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "monday"
+    groups:
+      # Actions are pinned by commit SHA; bump them together in one PR.
+      github-actions:
+        patterns: ["*"]
