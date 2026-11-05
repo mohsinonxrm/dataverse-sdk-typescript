@@ -108,8 +108,8 @@ export interface RetryOptions {
 export interface LoggingConfig {
   /**
    * Log full request URLs, including the query string and key values. Default `false`: URLs are
-   * logged as origin and path, with key values in parentheses shown as `(…)` and the query as
-   * `?…`, so filters, record ids and alternate keys stay out of logs.
+   * logged through `redactUrl` (by default origin and path, with keys and the query hidden), so
+   * filters, record ids and alternate keys stay out of logs.
    */
   fullUrls?: boolean;
 }
@@ -178,7 +178,18 @@ export interface DataverseClientOptions {
   logger?: import("./http.js").Logger;
   /** What request logging includes. Only used when `logger` is set. */
   logging?: LoggingConfig;
+  /**
+   * Receives the SDK's telemetry: one dependency per request attempt, and exceptions. Calls into
+   * it are guarded, so a client that throws never fails a request.
+   */
   telemetry?: import("./http.js").TelemetryClient;
+  /**
+   * How request URLs appear in logs and telemetry. Default: origin and path, with GUID keys as
+   * `({id})`, other keys as `(…)` and the query as `?…` (see `defaultRedactUrl`), so filters,
+   * record ids and alternate keys stay out. Return `url.href` to report full URLs. If it throws,
+   * the default is used.
+   */
+  redactUrl?: (url: URL) => string;
   retry?: RetryOptions;
   concurrency?: ConcurrencyOptions;
   circuitBreaker?: CircuitBreakerOptions;

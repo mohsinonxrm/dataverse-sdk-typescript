@@ -1,14 +1,14 @@
 import type { Middleware, NextMiddleware } from "../abstractions/middleware.js";
-import type { MiddlewareContext, RequestInformation } from "../abstractions/http.js";
+import type {
+  MiddlewareContext,
+  RequestInformation,
+  TelemetryClient,
+} from "../abstractions/http.js";
 import type { DataverseClientOptions } from "../abstractions/options.js";
 import { getGlobalFeatureTracker, FeatureUsageFlag } from "../telemetry/FeatureUsageTracker.js";
 import { generateUUID } from "../utils/HeaderUtils.js";
-
-/**
- * SDK version - should be auto-generated during build
- * For now, we'll use a placeholder
- */
-const SDK_VERSION = "0.1.0"; // TODO: Auto-generate from package.json during build
+import { redactRequestUrl } from "../utils/redact.js";
+import { SDK_VERSION } from "../version.js";
 
 export class TelemetryMiddleware implements Middleware {
   name = "TelemetryMiddleware";
@@ -37,12 +37,9 @@ export class TelemetryMiddleware implements Middleware {
     ctx.correlationId ??= generateUUID();
     request.headers["x-ms-correlation-id"] = ctx.correlationId;
 
-    // Add feature usage telemetry
     const featureTracker = ctx.featureTracker ?? getGlobalFeatureTracker();
-    // Mark telemetry as enabled
-    featureTracker.addFeature(FeatureUsageFlag.TELEMETRY_ENABLED);
-
-    // Add feature usage header
+    // Only a configured telemetry client counts as "telemetry enabled".
+    if (telemetry) featureTracker.addFeature(FeatureUsageFlag.TELEMETRY_ENABLED);
     request.headers["x-ms-feature-usage"] = featureTracker.getFlagsHex();
 
     if (!telemetry) {
@@ -51,16 +48,18 @@ export class TelemetryMiddleware implements Middleware {
 
     const start = Date.now();
     const method = request.method;
-    const url = request.url;
+    // Redacted: filters, record ids and alternate keys never reach telemetry by default (#35).
+    const url = redactRequestUrl(request, this.options.redactUrl);
+    const target = hostOf(request.url);
+    const guard = guarded(telemetry, ctx);
 
     try {
       const res = await next(request, ctx);
-      const durationMs = Date.now() - start;
-
-      telemetry.trackDependency("dataverse", {
+      guard.trackDependency("dataverse", {
+        target,
         method,
         url,
-        durationMs,
+        durationMs: Date.now() - start,
         success: res.ok,
         resultCode: String(res.status),
         properties: {
@@ -71,15 +70,13 @@ export class TelemetryMiddleware implements Middleware {
           ...customProperties,
         },
       });
-
       return res;
     } catch (err) {
-      const durationMs = Date.now() - start;
-
-      telemetry.trackDependency("dataverse", {
+      guard.trackDependency("dataverse", {
+        target,
         method,
         url,
-        durationMs,
+        durationMs: Date.now() - start,
         success: false,
         properties: {
           "sdk.version": SDK_VERSION,
@@ -88,14 +85,52 @@ export class TelemetryMiddleware implements Middleware {
           ...customProperties,
         },
       });
-
-      telemetry.trackException(err, {
+      guard.trackException(err, {
         "correlation.id": ctx.correlationId,
         "request.method": method,
         "request.url": url,
       });
-
       throw err;
     }
+  }
+}
+
+/** Telemetry calls that can never throw into the request: a failure is logged and dropped. */
+function guarded(
+  telemetry: TelemetryClient,
+  ctx: MiddlewareContext
+): Pick<TelemetryClient, "trackDependency" | "trackException"> {
+  const safely = (what: string, fn: () => void) => {
+    try {
+      fn();
+    } catch (e) {
+      try {
+        ctx.logger?.warn(`Telemetry ${what} threw; ignoring`, {
+          error: e instanceof Error ? e.name : typeof e,
+        });
+      } catch {
+        // Nothing else to do: telemetry must not break the request.
+      }
+    }
+  };
+  return {
+    trackDependency: (name, data) => {
+      safely("trackDependency", () => {
+        telemetry.trackDependency(name, data);
+      });
+    },
+    trackException: (error, props) => {
+      safely("trackException", () => {
+        telemetry.trackException(error, props);
+      });
+    },
+  };
+}
+
+function hostOf(url: string): string | undefined {
+  try {
+    return new URL(url).host;
+  } catch {
+    return undefined;
   }
 }
