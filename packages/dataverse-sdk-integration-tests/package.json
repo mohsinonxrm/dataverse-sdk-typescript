@@ -6,7 +6,7 @@
   "type": "module",
   "license": "AGPL-3.0-only",
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "scripts": {
     "test:integration": "vitest run --config vitest.config.ts",
