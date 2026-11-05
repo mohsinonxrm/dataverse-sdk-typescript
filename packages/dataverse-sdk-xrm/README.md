@@ -55,12 +55,11 @@ detection).
 Creates a new entity record.
 
 ```typescript
-create(entitySetName: string, entity: Record<string, unknown>, options?: CreateOptions): Promise<string>;
-create<T>(
+async create<T = any>(
   entitySetName: string,
   entity: Record<string, unknown>,
-  options: CreateOptions & { returnRepresentation: true }
-): Promise<T>;
+  options?: CreateOptions
+): Promise<string | T>
 ```
 
 **Parameters:**

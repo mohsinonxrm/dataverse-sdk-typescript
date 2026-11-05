@@ -37,7 +37,7 @@ describe.skipIf(!live)("live: OrganizationService (#83, #84)", () => {
     const name = `sdk-int xrm ${runId}`;
 
     // create → id from OData-EntityId
-    const id = await org.create("accounts", { name, telephone1: "555-0100" });
+    const id: string = await org.create("accounts", { name, telephone1: "555-0100" });
     expect(id).toMatch(GUID);
     created.push({ set: "accounts", id });
 
@@ -82,11 +82,11 @@ describe.skipIf(!live)("live: OrganizationService (#83, #84)", () => {
   it("create with returnRepresentation returns the record", async () => {
     const org = service();
     const name = `sdk-int xrm rep ${runId}`;
-    const account = await org.create<Account>(
+    const account = (await org.create<Account>(
       "accounts",
       { name },
       { returnRepresentation: true, select: ["accountid", "name"] }
-    );
+    )) as Account;
     expect(account.accountid).toMatch(GUID);
     expect(account.name).toBe(name);
     created.push({ set: "accounts", id: account.accountid });
@@ -103,9 +103,9 @@ describe.skipIf(!live)("live: OrganizationService (#83, #84)", () => {
 
   it("several expand options are all applied (#84)", async () => {
     const org = service();
-    const accountId = await org.create("accounts", { name: `sdk-int xrm expand ${runId}` });
+    const accountId: string = await org.create("accounts", { name: `sdk-int xrm expand ${runId}` });
     created.push({ set: "accounts", id: accountId });
-    const contactId = await org.create("contacts", {
+    const contactId: string = await org.create("contacts", {
       lastname: `sdk-int xrm expand ${runId}`,
       "parentcustomerid_account@odata.bind": `/accounts(${accountId})`,
     });

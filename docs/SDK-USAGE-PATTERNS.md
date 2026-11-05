@@ -274,13 +274,14 @@ const accountTyped = await service.retrieve<Account>("accounts", accountId, {
 console.log(accountTyped.name); // ✅ Type-safe
 console.log(accountTyped.invalidProp); // ❌ Compile error
 
-// The type argument types the returned record (the entity argument is not checked against it)
-const created = await service.create<Account>(
+// With returnRepresentation, create() resolves the record (string | T, so narrow it). The
+// entity argument is not checked against T.
+const created = (await service.create<Account>(
   "accounts",
   { name: "Typed Account", revenue: 1000000 },
   { returnRepresentation: true, select: ["accountid", "name"] }
-);
-console.log(created.accountid); // ✅ Type-safe
+)) as Account;
+console.log(created.accountid);
 ```
 
 ---
