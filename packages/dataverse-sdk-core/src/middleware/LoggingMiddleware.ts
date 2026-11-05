@@ -2,6 +2,7 @@ import type { Middleware, NextMiddleware } from "../abstractions/middleware.js";
 import type { MiddlewareContext, RequestInformation } from "../abstractions/http.js";
 import type { DataverseClientOptions } from "../abstractions/options.js";
 import { buildUrl } from "../utils/url.js";
+import { redactRequestUrl } from "../utils/redact.js";
 
 export class LoggingMiddleware implements Middleware {
   name = "LoggingMiddleware";
@@ -24,7 +25,9 @@ export class LoggingMiddleware implements Middleware {
     ) {
       return next(request, ctx);
     }
-    const url = this.options.logging?.fullUrls ? buildUrl(request) : redactedUrl(request);
+    const url = this.options.logging?.fullUrls
+      ? buildUrl(request)
+      : redactRequestUrl(request, this.options.redactUrl);
     const start = Date.now();
     logger.debug(`➡️ ${request.method} ${url}`, { attempt: ctx.attempt });
     const res = await next(request, ctx);
@@ -36,19 +39,4 @@ export class LoggingMiddleware implements Middleware {
     });
     return res;
   }
-}
-
-/**
- * Origin and path only: key values in parentheses become `(…)` and any query becomes `?…`, so
- * filters, record ids and alternate keys don't reach logs.
- */
-export function redactedUrl(request: RequestInformation): string {
-  let url: URL;
-  try {
-    url = new URL(buildUrl(request));
-  } catch {
-    return "(invalid URL)";
-  }
-  const path = url.pathname.replace(/\([^/]*\)/g, "(…)");
-  return `${url.origin}${path}${url.search ? "?…" : ""}`;
 }

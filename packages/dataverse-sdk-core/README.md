@@ -950,20 +950,39 @@ export interface TelemetryClient {
   ): void;
 
   /**
-   * Track HTTP dependencies (outbound calls)
+   * Track HTTP dependencies (outbound calls): one per request attempt
    */
   trackDependency(
-    name: string,
+    name: string, // "dataverse"
     data: {
-      target?: string; // Hostname/endpoint
+      target?: string; // Host, e.g. "org.crm.dynamics.com"
       method?: string; // HTTP method
-      duration: number; // Duration in milliseconds
-      success: boolean; // Whether call succeeded
-      resultCode?: number; // HTTP status code
+      url?: string; // Redacted URL (see below)
+      durationMs?: number; // Duration in milliseconds
+      success?: boolean; // Whether the call succeeded
+      resultCode?: string; // HTTP status code
+      properties?: Record<string, string>; // sdk.version, correlation.id, retry.attempt, …
     }
   ): void;
+
+  /**
+   * Track an error thrown by a request (network failure, abort, timeout)
+   */
+  trackException(error: unknown, props?: Record<string, string>): void;
 }
 ```
+
+**Privacy and safety:**
+
+- URLs are redacted before they reach telemetry (and logs): origin and path only, with GUID keys as
+  `({id})`, other keys as `(…)` and the query as `?…`. For example, a request to
+  `accounts(…guid…)?$filter=…` is reported as `https://org.crm.dynamics.com/api/data/v9.2/accounts({id})?…`.
+  Pass `redactUrl: (url) => …` on the client to change this (`(url) => url.href` reports full URLs).
+  `defaultRedactUrl` is exported if you want to wrap it.
+- Calls into the telemetry client are guarded: if `trackDependency` or `trackException` throws, the
+  error is logged with `logger.warn` and dropped, and the request carries on (or rejects with its own
+  error).
+- `sdk.version` and the `x-ms-sdk-version` header carry the real package version (`SDK_VERSION`).
 
 **Example implementations:**
 
@@ -975,8 +994,9 @@ export interface TelemetryClient {
 ```typescript
 import { ApplicationInsightsTelemetryClient } from "@mohsinonxrm/dataverse-sdk-appinsights";
 
+// Node.js only. Or call useAzureMonitor() yourself and pass no options.
 const telemetry = new ApplicationInsightsTelemetryClient({
-  instrumentationKey: "your-key",
+  connectionString: process.env.APPLICATIONINSIGHTS_CONNECTION_STRING,
 });
 
 const client = new DataverseClient({

@@ -314,9 +314,10 @@ describe("DataverseClient with OpenTelemetryClient", () => {
 
     expect(fake.last().url).toContain("jane");
     const span = onlySpan();
-    // Core may or may not include the query in the URL it reports; either way no value leaks.
+    // Core redacts the query itself (#35: "?…", which the adapter reports as "?REDACTED"); an
+    // older core reported it unredacted, and the adapter's own redaction kept the name only.
     expect(span.attributes["url.full"]).toMatch(
-      /^https:\/\/contoso\.crm\.dynamics\.com\/api\/data\/v9\.2\/contacts(\?\$filter=REDACTED)?$/
+      /^https:\/\/contoso\.crm\.dynamics\.com\/api\/data\/v9\.2\/contacts(\?\$filter=REDACTED|\?REDACTED)?$/
     );
     expect(JSON.stringify(span.attributes)).not.toContain("jane");
   });
