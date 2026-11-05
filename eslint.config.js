@@ -23,8 +23,6 @@ export default tseslint.config(
       "packages/dataverse-sdk-actions/src/index.ts",
       "packages/dataverse-sdk-functions/src/index.ts",
       "packages/dataverse-sdk-messages/src/index.ts",
-      // Test file for code generation
-      "tools/generate-sdk-types/test-response-types.ts",
     ],
   },
   js.configs.recommended,
