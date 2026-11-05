@@ -19,6 +19,7 @@ export interface FakePca {
   logoutRedirect: Mock;
   initialize: Mock;
   handleRedirectPromise: Mock;
+  getConfiguration: Mock;
 }
 
 export function createFakePca(): FakePca {
@@ -33,6 +34,9 @@ export function createFakePca(): FakePca {
     logoutRedirect: vi.fn(),
     initialize: vi.fn().mockResolvedValue(undefined),
     handleRedirectPromise: vi.fn().mockResolvedValue(null),
+    getConfiguration: vi
+      .fn()
+      .mockReturnValue({ auth: { authority: "https://login.microsoftonline.com/common" } }),
   };
 }
 
