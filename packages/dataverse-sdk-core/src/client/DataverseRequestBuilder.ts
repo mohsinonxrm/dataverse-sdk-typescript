@@ -4,7 +4,7 @@ import { buildQuery } from "../odata/query.js";
 import type { QueryState } from "../odata/query.js";
 import type { PageResponse } from "../paging/types.js";
 import { PageIterator } from "../paging/PageIterator.js";
-import { buildUrl, normalizeBaseUrl } from "../utils/url.js";
+import { buildUrl } from "../utils/url.js";
 import { parseODataError } from "../errors/parseODataError.js";
 import { DataverseDuplicateError } from "../errors/DataverseDuplicateError.js";
 import { validateUrl, type UrlValidationOptions } from "../utils/validateUrl.js";
@@ -414,9 +414,6 @@ export class DataverseRequestBuilder {
 
   private resolveUrl(): string {
     // absolute nextLink or relative path
-    if (/^https?:\/\//i.test(this.pathOrUrl)) return this.pathOrUrl;
-    const base = normalizeBaseUrl(this.client.getBaseUrl());
-    const p = this.pathOrUrl.startsWith("/") ? this.pathOrUrl : `/${this.pathOrUrl}`;
-    return `${base}${p}`;
+    return this.client.resolveUrl(this.pathOrUrl);
   }
 }

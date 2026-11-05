@@ -64,9 +64,13 @@ export interface RequestOptions {
   middlewareOptions?: import("../middleware/RequestOptions.js").RequestOptions;
 }
 
+/** A Dataverse Web API version string such as `"v9.2"`. */
+export type ApiVersion = `v${number}.${number}`;
+
 export interface DataverseClientOptions {
   baseUrl: string;
-  apiVersion?: "v9.2";
+  /** Web API version, e.g. `"v9.2"` (default) or `"v9.1"`. Ignored when `baseUrl` already ends in `/api/data/vX.Y`. */
+  apiVersion?: ApiVersion;
   scopes?: string | string[];
   tokenProvider?: import("./http.js").AccessTokenProvider;
   fetchProvider?: import("./http.js").FetchProvider;
