@@ -23,11 +23,11 @@ The SDK is organized as a monorepo with focused, composable packages:
 
 ### Core SDK
 
-| Package                                                                | Description                                                                  | Status      |
-| ---------------------------------------------------------------------- | ---------------------------------------------------------------------------- | ----------- |
-| **[@mohsinonxrm/dataverse-sdk-core](./packages/dataverse-sdk-core)**   | HTTP pipeline, middleware, fluent request builder, OData query support       | ✅ Complete |
-| **[@mohsinonxrm/dataverse-sdk-batch](./packages/dataverse-sdk-batch)** | $batch operations with change sets, Content-ID references, auto-split        | ✅ Complete |
-| **[@mohsinonxrm/dataverse-sdk-xrm](./packages/dataverse-sdk-xrm)**     | OrganizationService facade (create/retrieve/update/delete/associate/execute) | ✅ Complete |
+| Package                                                                | Description                                                                            | Status      |
+| ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | ----------- |
+| **[@mohsinonxrm/dataverse-sdk-core](./packages/dataverse-sdk-core)**   | HTTP pipeline, middleware, fluent request builder, OData query support                 | ✅ Complete |
+| **[@mohsinonxrm/dataverse-sdk-batch](./packages/dataverse-sdk-batch)** | $batch operations with change sets, Content-ID references (auto-split is planned: #57) | ✅ Complete |
+| **[@mohsinonxrm/dataverse-sdk-xrm](./packages/dataverse-sdk-xrm)**     | OrganizationService facade (create/retrieve/update/delete/associate/execute)           | ✅ Complete |
 
 ### Authentication
 
@@ -156,6 +156,8 @@ function AccountList() {
   return <div>{/* Render accounts */}</div>;
 }
 ```
+
+For app registration, CORS, Content-Security-Policy and browser limits, see [docs/browser.md](./docs/browser.md).
 
 ## 🎓 Core Concepts
 

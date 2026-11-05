@@ -35,10 +35,8 @@ const client = new DataverseClient({
   tokenProvider,
 });
 
-const fileClient = new FileColumnClient(
-  client.requestAdapter,
-  'https://your-org.crm.dynamics.com/api/data/v9.2'
-);
+// A DataverseClient is a RequestAdapter: client.send() runs each request through its pipeline.
+const fileClient = new FileColumnClient(client, client.getBaseUrl());
 
 // Upload file to account logo (image column)
 const accountId = 'aaaa-bbbb-cccc-dddd';
@@ -172,10 +170,7 @@ function ProfilePictureUpload({ client, accountId }) {
   const [progress, setProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
 
-  const fileClient = new FileColumnClient(
-    client.requestAdapter,
-    'https://your-org.crm.dynamics.com/api/data/v9.2'
-  );
+  const fileClient = new FileColumnClient(client, client.getBaseUrl());
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
@@ -229,11 +224,11 @@ function ProfilePictureUpload({ client, accountId }) {
 #### Constructor
 
 ```typescript
-new FileColumnClient(adapter: RequestAdapter, baseUrl: string)
+new FileColumnClient(adapter: RequestAdapter, baseUrl?: string)
 ```
 
-- `adapter`: Request adapter from DataverseClient
-- `baseUrl`: Base URL for Web API (e.g., `https://org.crm.dynamics.com/api/data/v9.2`)
+- `adapter`: any object with `send(request: RequestInformation): Promise<Response>`. Pass your `DataverseClient` (it has no `requestAdapter` property; the client itself satisfies the interface, and `client.send()` applies its auth, retry and logging).
+- `baseUrl`: the Web API root, e.g. `client.getBaseUrl()` (`https://org.crm.dynamics.com/api/data/v9.2`). Pass it explicitly: the default `""` is tracked in #59.
 
 #### Methods
 

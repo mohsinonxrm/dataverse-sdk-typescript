@@ -4,7 +4,7 @@
 >
 > **Package**: `@mohsinonxrm/dataverse-sdk-actions`
 >
-> **Last Updated**: 2025-01-01
+> **Last Updated**: 2026-02-08 (the count was checked against the generated package on 2026-11-05)
 
 ---
 

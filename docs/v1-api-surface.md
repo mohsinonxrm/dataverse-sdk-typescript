@@ -1,16 +1,17 @@
 # v1-api-surface.md
 
-> **Status**: Draft (Implementation Target)
+> **Status**: Reconciled with the exports on `dev` (packages at 1.0.x), November 2026.
 >
-> **Scope**: Minimal v1 _public_ API surface for `dataverse-sdk-typescript`.
+> **Scope**: The public API surface of every published `@mohsinonxrm/dataverse-sdk-*` package.
 >
-> **Goal**: Enumerate **every exported symbol** (types, functions, classes, namespaces) per package that is intended to be public in **v1**.
+> **Goal**: List what each package's `index.ts` actually exports. APIs that earlier drafts of this document promised but that don't exist are listed under [Planned](#16-planned-not-exported-yet) with their tracking issue, or were removed.
 >
 > Notes:
 >
 > - This is an **API contract**. Changes require an ADR + SemVer discipline.
-> - All packages are **ESM-only** and target **Node 18+** and modern browsers.
-> - “Generated” exports (metadata types) are listed as stable namespaces/entrypoints rather than every individual generated type name.
+> - All packages are **ESM-only**, require **Node 22+** (`engines.node: ">=22"`), and the browser-facing ones run in modern browsers (see [browser.md](./browser.md)).
+> - Generated packages (actions, functions, messages, metadata types) are described by naming pattern and count rather than every generated name.
+> - Known defects in exported APIs are tracked in the [v1.1.0](https://github.com/mohsinonxrm/dataverse-sdk-typescript/milestone/1) and [v1.2.0](https://github.com/mohsinonxrm/dataverse-sdk-typescript/milestone/2) milestones.
 
 ---
 
@@ -19,9 +20,13 @@
 ### 1.1 Client & request builder
 
 - `class DataverseClient`
+  - `api(pathOrAbsoluteUrl)`, `execute(executable, options?)`, `send(request)`, `resolveUrl(pathOrUrl)`, `getBaseUrl()`, `bind(navigationProperty, entitySetName, id)`
 - `interface DataverseClientOptions`
+- `type ApiVersion` (`` `v${number}.${number}` ``)
 - `class DataverseRequestBuilder`
 - `interface RequestOptions`
+- `class PreferBuilder`
+- `const odata` _(OData filter helpers)_
 
 ### 1.2 Execution model (typed operations)
 
@@ -33,25 +38,35 @@
 
 - `type HttpMethod` (`"GET" | "POST" | "PATCH" | "PUT" | "DELETE"`)
 - `interface RequestInformation`
-- `interface RequestAdapter`
+- `interface RequestAdapter` (`send(request, ctx?): Promise<Response>`)
 - `interface FetchProvider`
+- `class FetchRequestAdapter`
+- `type RawBody`
+- `function entityIdFromResponse(res: Response): string`
+- Header utilities: `type HeadersLike`, `getRequestHeader`, `setRequestHeader`, `appendRequestHeader`, `normalizeHeaderKey`, `normalizeHeaders`, `headersToObject`, `parseRetryAfter`, `serializeContent`, `isStreamContent`, `generateUUID`
 
 ### 1.4 Auth adapter abstraction
 
 - `interface AccessTokenProvider`
-- `interface TokenOptions`
+- `interface TokenOptions` (`claims`, `tenantId`, `correlationId`, `forceRefresh`)
+- `function parseClaimsChallenge(header): string | undefined`
 
 ### 1.5 Middleware pipeline (public extension points)
 
 - `interface Middleware`
 - `type NextMiddleware`
 - `interface MiddlewareContext`
-- `interface RetryOptions`
+- `interface MiddlewareCustomization` (`DataverseClientOptions.middleware`: `prepend`, `append`, `replace`)
+- `class Pipeline`
+- `function buildDefaultMiddleware(options)`
+- Built-in middleware: `ODataHeadersMiddleware`, `ConcurrencyMiddleware`, `RetryMiddleware`, `AuthMiddleware`, `TelemetryMiddleware`, `LoggingMiddleware`
+- `interface RetryOptions`, `interface RetryAttempt`, `interface RetryInfo`, `function getRetryAttempts(res: Response)`
 - `interface ConcurrencyOptions`
-- `interface CircuitBreakerOptions` _(optional middleware, v1-ready)_
-- `interface BulkheadOptions` _(optional middleware, v1-ready)_
-
-> Note: concrete middleware implementations are exported only if they are intended for user composition. Otherwise they remain internal.
+- `interface DiagnosticHeaderOptions` (`DataverseClientOptions.diagnosticHeaders`)
+- `interface LoggingConfig` (`DataverseClientOptions.logging`)
+- `type BindManyExecutor`
+- Per-request middleware options: `class MiddlewareRequestOptions`, `type MiddlewareRetryOptions`, `interface MiddlewareConcurrencyOptions`, `interface TelemetryOptions`, `interface LoggingOptions`, `interface MiddlewareOptions`, `type MiddlewareOptionEntry`
+- `interface CircuitBreakerOptions`, `interface BulkheadOptions`: exported, but the client options that use them are `@deprecated` and have no effect. The middleware is [planned](#16-planned-not-exported-yet) (#100).
 
 ### 1.6 Prefer helpers (typed)
 
@@ -61,35 +76,67 @@
   - `Prefer.includeAnnotations(term)`
   - `Prefer.continueOnError()`
 
-### 1.7 Logging & telemetry (interfaces only)
+### 1.7 Logging & telemetry
 
 - `interface Logger`
+- `class ConsoleLogger`, `type LogLevel` _(the SDK logs nothing unless a logger is passed)_
+- `function defaultRedactUrl(url: URL): string`
 - `interface TelemetryClient`
+- `const SDK_VERSION`
+- Feature usage flags: `enum FeatureUsageFlag`, `class FeatureUsageTracker`, `getGlobalFeatureTracker()`, `resetGlobalFeatureTracker()`
 
 ### 1.8 Errors
 
-- `class DataverseError`
+Every SDK error extends `DataverseError`.
+
+- `class DataverseError`, `interface DataverseErrorInit`, `interface DataverseInnerError`
 - `class DataverseODataError`
 - `class DataverseThrottleError`
 - `class DataverseBatchError`
+- `class DataverseDuplicateError`, `interface DuplicateRecord`
+- `class DataverseUrlError`
+- `class DataverseAuthenticationError`
+- `class DataverseInvalidRequestError`
+- `class DataverseServiceError`
+- `class DataverseNetworkError`
+- `class DataverseAbortError`
+- `function parseODataError(res: Response, rawText?: string): Promise<Error>`
 
 ### 1.9 Paging helpers
 
-- `type PageResponse<T>` (`{ value: T[]; "@odata.nextLink"?: string }`)
-- `class PageIterator<T>` _(or equivalent `iterate()` return type)_
+- `interface PageResponse<T>` (`{ value: T[]; "@odata.nextLink"?: string }`)
+- `class PageIterator<T>` _(returned through `DataverseRequestBuilder.iterate()`; `getAll()` collects pages)_
 
 ---
 
 ## 2) `@mohsinonxrm/dataverse-sdk-auth-msal-browser`
 
+Peer dependency: `@azure/msal-browser` `^3.30.0 || ^4.0.0 || ^5.0.0`.
+
 ### 2.1 Token provider
 
 - `class MsalBrowserTokenProvider implements AccessTokenProvider`
 - `interface MsalBrowserTokenProviderOptions`
+- `type InteractionType` (`"popup" | "redirect"`)
 
-### 2.2 Utilities
+### 2.2 SPA helpers
 
-- `function createMsalBrowserProvider(options: MsalBrowserTokenProviderOptions): MsalBrowserTokenProvider` _(optional helper export)_
+- `function initializeMsal(pca: IPublicClientApplication): Promise<AuthenticationResult | null>`
+- `function createMsalBrowserProvider(pca: IPublicClientApplication, options: CreateMsalBrowserProviderOptions): MsalBrowserTokenProvider`
+- `interface CreateMsalBrowserProviderOptions`
+- `function scopesForEnvironment(url: string, kind?: DataverseScopeKind): string[]`, `type DataverseScopeKind`
+- `function authorityFor(cloud: EntraCloud, tenant?: string): string`, `type EntraCloud`, `const AUTHORITY_HOSTS`
+
+### 2.3 Errors
+
+- `class MsalBrowserAuthenticationError` _(extends `DataverseAuthenticationError`)_
+- `isInteractionRequiredError(error)`, `isPopupBlockedError(error)`, `getMsalErrorCode(error)`
+- `const INTERACTION_REQUIRED_ERROR_CODES`, `const POPUP_BLOCKED_ERROR_CODES`
+- `interface MsalErrorLike`, `interface MsalErrorDetails`
+
+### 2.4 Re-exported MSAL types
+
+- `AccountInfo`, `AuthenticationResult`, `PopupRequest`, `RedirectRequest`, `SilentRequest`, `EndSessionRequest`
 
 ---
 
@@ -98,33 +145,52 @@
 ### 3.1 Token provider
 
 - `class MsalNodeTokenProvider implements AccessTokenProvider`
-- `interface MsalNodeTokenProviderOptions`
+  - `new MsalNodeTokenProvider(clientApplication, options)`, where `clientApplication` is an MSAL `PublicClientApplication` or `ConfidentialClientApplication`
+- `type MsalNodeTokenProviderOptions`, `interface MsalNodeTokenProviderOptionsBase`
 
-### 3.2 Supported flows (exported helpers)
+### 3.2 Supported flows
 
-- `function deviceCodeFlow(options): MsalNodeTokenProvider`
-- `function clientCredentialsFlow(options): MsalNodeTokenProvider`
+The flow is chosen with `options.flow` (`type AuthFlow`); there are no per-flow helper functions.
 
-> Additional flows (auth code + PKCE for Electron) may be added later without breaking v1.
+- `interface DeviceCodeFlowOptions` (`flow: "deviceCode"`)
+- `interface ClientCredentialsFlowOptions` (`flow: "clientCredentials"`)
+- `interface AuthorizationCodeFlowOptions` (`flow: "authorizationCode"`)
+- `interface UsernamePasswordFlowOptions` (`flow: "usernamePassword"`)
+- `interface SilentFlowOptions` (`flow: "silent"`)
+
+### 3.3 Re-exported MSAL types
+
+- `AccountInfo`, `AuthenticationResult`, `DeviceCodeRequest`, `ClientCredentialRequest`, `AuthorizationCodeRequest`, `UsernamePasswordRequest`, `SilentFlowRequest`
 
 ---
 
-## 4) `@mohsinonxrm/dataverse-sdk-xrm`
+## 4) `@mohsinonxrm/dataverse-sdk-auth-azure-identity`
 
-### 4.1 OrganizationService facade
+- `class AzureIdentityTokenProvider implements AccessTokenProvider` (`new AzureIdentityTokenProvider(credential: TokenCredential, options)`)
+- `interface AzureIdentityTokenProviderOptions`
 
-- `class OrganizationService`
+Peer dependency: `@azure/identity` `^4.0.0`.
+
+---
+
+## 5) `@mohsinonxrm/dataverse-sdk-xrm`
+
+### 5.1 OrganizationService facade
+
+- `class OrganizationService` (`new OrganizationService(client: DataverseClient)`)
   - `create<T>(entitySetName: string, entity: Record<string, any>, options?: CreateOptions): Promise<string | T>`
   - `retrieve<T>(entitySetName: string, id: string, options?: RetrieveOptions): Promise<T>`
-  - `update<T>(entitySetName: string, id: string, entity: Record<string, any>, options?: UpdateOptions): Promise<void | T>`
+  - `update<T>(entitySetName: string, id: string, entity: Record<string, any>, options?: UpdateOptions): Promise<T | undefined>`
   - `delete(entitySetName: string, id: string, options?: DeleteOptions): Promise<void>`
   - `retrieveMultiple<T>(entitySetName: string, options?: RetrieveMultipleOptions): Promise<RetrieveMultipleResult<T>>`
-  - `associate(entitySetName: string, id: string, relationshipName: string, relatedEntities: EntityReference[], options?: AssociateOptions): Promise<void>`
-  - `disassociate(entitySetName: string, id: string, relationshipName: string, relatedEntityId: string, options?: DisassociateOptions): Promise<void>`
+  - `associate(entitySetName: string, id: string, relationship: string, relatedEntities: EntityReference[], options?: AssociateOptions): Promise<void>`
+  - `disassociate(entitySetName: string, id: string, relationship: string, relatedId?: string, options?: DisassociateOptions): Promise<void>`
+  - `whoAmI(): Promise<{ UserId: string; BusinessUnitId: string; OrganizationId: string }>`
+  - `assign(entityName: string, recordId: string, assigneeId: string, assigneeType?: "systemuser" | "team"): Promise<void>`
   - `setState(entityName: string, recordId: string, stateCode: number, statusCode: number): Promise<void>`
-  - `execute<TRequest, TResponse>(request: TRequest): Promise<TResponse>` _(works with Executable<T> classes only)_
+  - `execute<TResponse>(request: unknown): Promise<TResponse>` _(runs `Executable<T>` instances)_
 
-### 4.2 Types
+### 5.2 Types
 
 - `interface EntityReference`
 - `interface CreateOptions`
@@ -138,30 +204,31 @@
 
 ---
 
-## 5) `@mohsinonxrm/dataverse-sdk-messages`
+## 6) `@mohsinonxrm/dataverse-sdk-messages`
 
 > **Note**: All message classes are exported **directly** (no namespaces). Import individual message classes as needed.
 
-### 5.1 Base classes and types
+### 6.1 Base classes and types
 
-- `class OrganizationRequest` _(generic request escape hatch)_
+- `class OrganizationRequest` _(generic request; it can't be executed yet, #80)_
 - `class OrganizationResponse` _(generic response)_
 - `interface MessageRequest`
 - `interface MessageResponse`
 - `type EntityReference`
-- `function createEntityReference(logicalName: string, id: string): EntityReference`
+- `function createEntityReference(...)`
 
-### 5.2 Message exports (direct exports, no namespaces)
+### 6.2 Message exports (direct exports, no namespaces)
 
-All 1,350+ generated message classes follow the pattern:
+1,356 generated message pairs, one per Web API **action** in the v9.2 CSDL, following the pattern:
 
 - `<MessageName>Request`
 - `<MessageName>Response`
 
+Function-backed and CRUD messages (for example `WhoAmIRequest`) are not generated yet: see [Planned](#16-planned-not-exported-yet).
+
 **Import pattern**:
 
 ```typescript
-import { WhoAmIRequest, WhoAmIResponse } from "@mohsinonxrm/dataverse-sdk-messages";
 import {
   ExecuteWorkflowRequest,
   ExecuteWorkflowResponse,
@@ -170,9 +237,6 @@ import {
 
 **Example messages available** (non-exhaustive):
 
-- `WhoAmIRequest`, `WhoAmIResponse`
-- `AssignRequest`, `AssignResponse`
-- `SetStateRequest`, `SetStateResponse`
 - `ExecuteWorkflowRequest`, `ExecuteWorkflowResponse`
 - `WinOpportunityRequest`, `WinOpportunityResponse`
 - `MergeRequest`, `MergeResponse`
@@ -180,27 +244,14 @@ import {
 - `ImportSolutionRequest`, `ImportSolutionResponse`
 - `PublishXmlRequest`, `PublishXmlResponse`
 - `PublishAllXmlRequest`, `PublishAllXmlResponse`
-- ... and 1,300+ more
+- ... and about 1,350 more
 
-### 5.3 Execution model
+### 6.3 Execution model
 
-All message classes implement the `Executable<TResponse>` interface from `@mohsinonxrm/dataverse-sdk-core`, allowing them to be executed via:
+Message classes implement the `Executable<TResponse>` interface from `@mohsinonxrm/dataverse-sdk-core`, so they run through:
 
 - `client.execute(messageRequest)` - Execute via DataverseClient
 - `service.execute(messageRequest)` - Execute via OrganizationService
-
-**Usage example**:
-
-```typescript
-import { OrganizationService } from "@mohsinonxrm/dataverse-sdk-xrm";
-import { ExecuteWorkflowRequest, createEntityReference } from "@mohsinonxrm/dataverse-sdk-messages";
-
-const service = new OrganizationService(client);
-
-const request = new ExecuteWorkflowRequest(workflowId, recordId, {});
-const response = await service.execute(request);
-console.log(`Async operation: ${response.result.asyncoperationid}`);
-```
 
 **Implementation details**:
 
@@ -210,157 +261,209 @@ console.log(`Async operation: ${response.result.asyncoperationid}`);
 
 ---
 
-## 6) `@mohsinonxrm/dataverse-sdk-batch`
+## 7) `@mohsinonxrm/dataverse-sdk-batch`
 
-### 6.1 Batch construction
+### 7.1 Batch construction and execution
 
-- `class BatchRequest`
-- `class ChangeSet`
-- `interface BatchOptions`
-- `interface BatchExecuteOptions`
+- `class BatchRequestBuilder` (`new BatchRequestBuilder(client: DataverseClient)`)
+  - `addRequest(...)`, `beginChangeset()`, `endChangeset()`, `getTotalRequestCount()`, `execute(options?)`, `clear()`
+- `interface BatchRequestStep`
+- `interface BatchExecutionOptions`
+- `function createBindManyExecutor()` _(lets `DataverseRequestBuilder.bindMany()` use `$batch`)_
 
-### 6.2 Batch results
+### 7.2 Batch results and errors
 
-- `interface BatchResponsePart<T = unknown>`
-- `interface BatchResponse`
+- `interface BatchResponseStep`
+- `interface BatchExecutionResult`
+- `class DataverseBatchError` _(this package's own class, with `requestErrors` and `totalRequests`; distinct from core's `DataverseBatchError`)_
+
+Splitting a large batch automatically is [planned](#16-planned-not-exported-yet) (#57).
 
 ---
 
-## 7) `@mohsinonxrm/dataverse-sdk-actions`
+## 8) `@mohsinonxrm/dataverse-sdk-actions`
 
 > Typed Web API **Actions** (POST) executed via `client.execute(action)`.
 
-### 7.1 Minimal v1 typed actions
+### 8.1 Generated actions
 
-- `class ExecuteWorkflowAction implements Executable<AsyncOperation>`
-- `class WinOpportunityAction implements Executable<void>`
+1,356 generated classes, one per action in the v9.2 CSDL: `class <Name>Action implements Executable<<Name>Response>`, each with its `<Name>Response` type. For example:
 
-### 7.2 Types
+- `class ExecuteWorkflowAction`, `interface ExecuteWorkflowResponse`
+- `class WinOpportunityAction`, `interface WinOpportunityResponse`
 
-- `interface AsyncOperation` _(minimal typed shape for returned asyncoperation entity; may be expanded)_
+### 8.2 Helpers
+
+- `function createEntityReference(...)`
+- `function getEntitySetNameFromReference(...)`
 
 ---
 
-## 8) `@mohsinonxrm/dataverse-sdk-functions`
+## 9) `@mohsinonxrm/dataverse-sdk-functions`
 
 > Typed Web API **Functions** (GET) executed via `client.execute(fn)`.
 
-### 8.1 Minimal v1 typed functions
+### 9.1 Generated functions
 
-- `class WhoAmIFunction implements Executable<WhoAmIResponse>`
+229 generated classes, one per function in the v9.2 CSDL: `class <Name>Function implements Executable<<Name>Response>`. For example:
 
-### 8.2 Types
+- `class WhoAmIFunction`, `interface WhoAmIResponse`
+- `class RetrieveMetadataChangesFunction`, `interface RetrieveMetadataChangesResponse`
 
-- `interface WhoAmIResponse` _(Web API function response type)_
+### 9.2 Helpers
 
----
-
-## 9) `@mohsinonxrm/dataverse-sdk-metadata`
-
-> Strict typing for metadata only (generated from v9.2 `$metadata`).
-
-### 9.1 Generated type entrypoints (stable exports)
-
-- `namespace MicrosoftDynamicsCRM`
-  - Contains **generated** Metadata **EntityTypes**, **ComplexTypes**, **EnumTypes**.
-  - Types are split into:
-    - `*Read` (GET)
-    - `*Create` (POST)
-    - `*Update` (PUT/PATCH)
-
-> We intentionally do not list every generated type name here; the namespace is the contract.
-
-### 9.2 Builders (strict)
-
-- `const Metadata`
-  - `Metadata.Label` helpers (e.g., `enUS(...)`)
-  - `Metadata.Attribute.*` builders returning `*Create` / `*Update` types
-  - `Metadata.Entity.*` builders returning `*Create` / `*Update` types
-  - `Metadata.Relationship.*` builders returning `*Create` / `*Update` types
-  - `Metadata.OptionSet.*` builders returning `*Create` / `*Update` types
-
-### 9.3 Metadata client
-
-- `class MetadataClient`
-
-### 9.4 RetrieveMetadataChanges
-
-- `class RetrieveMetadataChangesRequest`
-- `class RetrieveMetadataChangesResponse`
-- `type EntityQueryExpression` _(or generated complex type export under `MicrosoftDynamicsCRM`)_
+- `function createEntityReference(...)`
+- `function getEntitySetNameFromReference(...)`
 
 ---
 
-## 10) `@mohsinonxrm/dataverse-sdk-discovery`
+## 10) `@mohsinonxrm/dataverse-sdk-metadata`
 
-### 10.1 Client
+> Strict typing for metadata (generated from v9.2 `$metadata`).
 
-- `class DiscoveryClient`
+### 10.1 Generated types (flat exports)
+
+The generated metadata **EntityTypes**, **ComplexTypes** and **EnumTypes** are exported directly from the package root (there is no `MicrosoftDynamicsCRM` namespace). For example:
+
+- `EntityMetadata`, `AttributeMetadata`, `StringAttributeMetadata`, `Label`, … (read shapes)
+- `EntityMetadataCreate`, `EntityMetadataUpdate`, and the other `*Create` / `*Update` variants where they exist
+- `EntityQueryExpression`, `LabelQueryExpression`, `RetrieveMetadataChangesResponse`
+- Enums such as `AttributeRequiredLevel`, `EntityFilters`, `OwnershipTypes`, `CascadeType`
+
+> We intentionally do not list every generated type name here.
+
+### 10.2 Metadata client
+
+- `class MetadataClient` (`new MetadataClient(client: DataverseClient)`)
+  - Entity, attribute, relationship and global option set CRUD (`getEntityDefinitions`, `createAttributeDefinition`, `createOneToManyRelationship`, `createGlobalOptionSet`, …)
+  - Option value operations (`insertOptionValue`, `updateOptionValue`, `deleteOptionValue`, `orderOptions`, `insertStatusValue`)
+  - `retrieveMetadataChanges(...)`: returns `RetrieveMetadataChangesResponse` (#62 tracks that it is sent as POST)
+- `interface MetadataQueryOptions`
+
+Strict metadata builders (`const Metadata`) are [planned](#16-planned-not-exported-yet).
+
+---
+
+## 11) `@mohsinonxrm/dataverse-sdk-discovery`
+
+### 11.1 Client
+
+- `class DiscoveryClient` (`new DiscoveryClient(tokenProvider, options?)`)
+  - `listOrganizations()`, `getOrganization()`, `getOrganizationByUrl()`, `getOrganizationsByRegion()`, `getEnabledOrganizations()`
 - `interface DiscoveryClientOptions`
+- `function toEnvironment(org: OrganizationDetail): DiscoveredEnvironment`
 
-### 10.2 Types
+### 11.2 Types and clouds
 
-- `interface DiscoveredOrganization`
-- `type Cloud = "Commercial"` _(v1 only)_
+- `interface OrganizationDetail` _(the Global Discovery Service v2.0 `Instances` shape)_
+- `interface DiscoveredEnvironment`
+- `interface DiscoveryResponse`, `interface DiscoveryOptions`, `interface DiscoveryRequestOptions`
+- `const OrganizationState`
+- `type DiscoveryCloud` (`"public" | "gcc" | "usg" | "dod" | "china"`), `const DISCOVERY_CLOUDS`, `interface DiscoveryCloudEndpoint`
 
 ---
 
-## 11) `@mohsinonxrm/dataverse-sdk-entities-runtime`
+## 12) `@mohsinonxrm/dataverse-sdk-entities-runtime`
 
 > Tiny runtime used by generated early-bound entity output.
 
-### 11.1 Entity descriptors
+### 12.1 Types
 
-- `interface EntityDescriptor`
-- `function entity(descriptor: EntityDescriptor): EntityDescriptor`
-
-### 11.2 Utility types
-
-- `type EntityWithEtag<T>`
+- `interface IEntity`
 - `interface EntityReference`
+- `interface EntityMetadata`, `interface AttributeMetadata`, `interface NavigationMetadata`
+- `interface EntityOperationOptions`
+
+### 12.2 Base classes and helpers
+
+- `abstract class ActionBase<TResponse>`, `abstract class FunctionBase<TResponse>`
+- `createEntityReference(logicalName, id, name?)`, `isEntityReference(value)`, `isEntity(value)`
+- `getODataType(entityMetadata)`, `getCollectionUrl(entityMetadata, baseUrl)`, `getEntityUrl(entityMetadata, id, baseUrl)`, `formatEntityForWrite(entity, entityMetadata)`
 
 ---
 
-## 12) `@mohsinonxrm/dataverse-sdk-generator`
+## 13) `@mohsinonxrm/dataverse-sdk-generator`
 
 > CLI + programmatic API to generate early-bound entities into a consumer project.
 
-### 12.1 CLI
+### 13.1 CLI
 
-- `bin` entry: `dataverse-sdk-generator`
+- `bin` entry: `dataverse-gen` (commands `init`, `generate`, `validate`)
 
-### 12.2 Programmatic API
+### 13.2 Programmatic API
 
-- `function generateEntities(options: GenerateEntitiesOptions): Promise<GenerateEntitiesResult>`
-- `interface GenerateEntitiesOptions`
-- `interface GenerateEntitiesResult`
-
----
-
-## 13) Optional telemetry packages (v1+)
-
-### 13.1 `@mohsinonxrm/dataverse-sdk-appinsights`
-
-- `function createAppInsightsTelemetry(connectionString: string): TelemetryClient`
-
-### 13.2 `@mohsinonxrm/dataverse-sdk-otel`
-
-- `function createOpenTelemetryTelemetry(tracer: unknown): TelemetryClient`
+- `function generateCode(config: DataverseGenConfig, accessToken?: string): Promise<void>`
+- `interface DataverseGenConfig`, `const DEFAULT_CONFIG`
+- `class SchemaModel`, `class TypescriptGenerator`, `class MetadataService`
+- Schema types: `EntityType`, `EnumType`, `EnumMember`, `ActionType`, `FunctionType`, `ComplexType`, `PropertyType`, `NavigationPropertyType`, `ParameterType`, `TypeScriptType`
 
 ---
 
-## 14) Export style requirements
+## 14) `@mohsinonxrm/dataverse-sdk-files`
+
+- `class FileColumnClient` (`new FileColumnClient(adapter: RequestAdapter, baseUrl?: string)`; a `DataverseClient` can be passed as the adapter, with `client.getBaseUrl()`)
+  - `upload(entitySetName, recordId, columnName, file, fileName, options?)`, `download(entitySetName, recordId, columnName, options?)`
+- `interface FileUploadOptions`, `interface FileDownloadOptions`, `interface UploadProgress`
+
+---
+
+## 15) Optional telemetry packages
+
+### 15.1 `@mohsinonxrm/dataverse-sdk-appinsights` (Node.js only)
+
+- `class ApplicationInsightsTelemetryClient implements TelemetryClient` (`new ApplicationInsightsTelemetryClient(config?)`)
+- `interface ApplicationInsightsConfig`
+
+### 15.2 `@mohsinonxrm/dataverse-sdk-otel`
+
+- `class OpenTelemetryClient implements TelemetryClient` (`new OpenTelemetryClient(config?)`)
+- `interface OpenTelemetryConfig`
+
+---
+
+## 16) Planned (not exported yet)
+
+Earlier drafts of this document listed these. They don't exist in the packages today. The roadmap issue is [#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100).
+
+| API                                                                                  | Package     | Tracking                                                                   |
+| ------------------------------------------------------------------------------------ | ----------- | -------------------------------------------------------------------------- |
+| Circuit breaker and bulkhead middleware (the options exist and have no effect)       | core        | [#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100) |
+| Automatic splitting of large batches                                                 | batch       | [#57](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/57)   |
+| `const Metadata` strict builders (`Label`, `Attribute`, `Entity`, `Relationship`, …) | metadata    | [#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100) |
+| Function-backed and CRUD messages (`WhoAmIRequest`, `RetrieveEntityRequest`, …)      | messages    | [#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100) |
+| Browser Application Insights adapter                                                 | appinsights | [#158](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/158) |
+
+Removed because the real API has a different shape (see the package sections above):
+
+- `deviceCodeFlow()` / `clientCredentialsFlow()`: use `new MsalNodeTokenProvider(app, { flow: "deviceCode" | "clientCredentials", … })`.
+- `generateEntities()` / `GenerateEntitiesOptions` / `GenerateEntitiesResult`: use `generateCode(config, accessToken?)`.
+- `entity()`, `EntityDescriptor`, `EntityWithEtag`: the runtime exports `EntityMetadata`, `IEntity` and the helpers in §12.
+- `BatchRequest`, `ChangeSet`, `BatchOptions`, `BatchResponse`, `BatchResponsePart`: use `BatchRequestBuilder`, `BatchExecutionOptions`, `BatchExecutionResult` and `BatchResponseStep`.
+- `RetrieveMetadataChangesRequest` / `RetrieveMetadataChangesResponse` classes: use `MetadataClient.retrieveMetadataChanges()` or `RetrieveMetadataChangesFunction`; `RetrieveMetadataChangesResponse` is an interface.
+- `namespace MicrosoftDynamicsCRM`: the metadata types are flat exports.
+- `DiscoveredOrganization`, `type Cloud`: use `OrganizationDetail` / `DiscoveredEnvironment` and `DiscoveryCloud`.
+- `createAppInsightsTelemetry()` / `createOpenTelemetryTelemetry()`: use `new ApplicationInsightsTelemetryClient()` / `new OpenTelemetryClient()`.
+- `AsyncOperation` (actions): `ExecuteWorkflowAction` returns `ExecuteWorkflowResponse`.
+- `AssignRequest` / `SetStateRequest` (messages): use `OrganizationService.assign()` / `setState()`.
+- The `dataverse-sdk-generator` bin: the CLI is `dataverse-gen`.
+
+---
+
+## 17) Export style requirements
 
 - All packages use **named exports** (best for tree-shaking)
 - Messages package exports all request/response classes directly:
   ```typescript
-  import { WhoAmIRequest, ExecuteWorkflowRequest } from "@mohsinonxrm/dataverse-sdk-messages";
+  import {
+    ExecuteWorkflowRequest,
+    WinOpportunityRequest,
+  } from "@mohsinonxrm/dataverse-sdk-messages";
   ```
 
 ---
 
-## 15) Backward-compatibility expectations (v1)
+## 18) Backward-compatibility expectations (v1)
 
 - Adding new exports is a **minor** bump.
 - Changing signatures/removing exports is **major**.
-- Generated metadata namespace contract (`MicrosoftDynamicsCRM`) is stable; internal contents may expand but must not remove/rename existing exported type names without major bump.
+- Generated type names (metadata types, `<Name>Action`, `<Name>Function`, `<Name>Request` / `<Name>Response`) are stable; the set may expand but must not remove/rename existing exported names without a major bump.
