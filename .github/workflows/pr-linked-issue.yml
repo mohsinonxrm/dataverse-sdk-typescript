@@ -9,8 +9,8 @@ permissions:
 
 jobs:
   linked-issue:
-    # Release PRs opened by the changesets bot don't need an issue.
-    if: ${{ !startsWith(github.head_ref, 'changeset-release/') }}
+    # Release PRs from the changesets bot and dependency PRs from Dependabot don't need an issue.
+    if: ${{ !startsWith(github.head_ref, 'changeset-release/') && github.event.pull_request.user.login != 'dependabot[bot]' }}
     runs-on: ubuntu-latest
     steps:
       - name: Require a linked issue in the PR description
