@@ -21,6 +21,11 @@
     },
     "generate:metadata-types": {
       "outputs": ["src/generated/**"]
+    },
+    "test:integration": {
+      "dependsOn": ["^build"],
+      "outputs": [],
+      "cache": false
     }
   }
 }

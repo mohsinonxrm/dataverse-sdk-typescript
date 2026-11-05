@@ -1,25 +1,38 @@
 name: Integration Tests
 on:
   workflow_dispatch:
+  schedule:
+    # Nightly against the dev org (03:17 UTC).
+    - cron: "17 3 * * *"
 
 permissions:
   contents: read
 
+# One live run at a time: the tests share one org.
+concurrency:
+  group: integration-tests
+  cancel-in-progress: false
+
 jobs:
   integration:
     runs-on: ubuntu-latest
+    # Forks don't get the secrets; don't run there.
+    if: github.repository == 'mohsinonxrm/dataverse-sdk-typescript'
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: 20
+          node-version: 24
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
-      - name: Run integration tests
+      - run: pnpm build
+      - name: Run live integration tests
         env:
           DATAVERSE_URL: ${{ secrets.DATAVERSE_URL }}
-          TENANT_ID: ${{ secrets.TENANT_ID }}
-          CLIENT_ID: ${{ secrets.CLIENT_ID }}
-          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
-        run: pnpm turbo run test:integration
+          DATAVERSE_TENANT_ID: ${{ secrets.DATAVERSE_TENANT_ID }}
+          DATAVERSE_CLIENT_ID: ${{ secrets.DATAVERSE_CLIENT_ID }}
+          DATAVERSE_CLIENT_SECRET: ${{ secrets.DATAVERSE_CLIENT_SECRET }}
+          # Fail instead of silently skipping if a secret is missing.
+          DATAVERSE_INTEGRATION_REQUIRED: "1"
+        run: pnpm test:integration
