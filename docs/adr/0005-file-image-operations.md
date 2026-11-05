@@ -37,7 +37,9 @@ The metadata package (Phase 6) will include strict typing for FileAttributeMetad
    ```typescript
    import { FileColumnClient } from "@mohsinonxrm/dataverse-sdk-files";
 
-   const fileClient = new FileColumnClient(client.requestAdapter);
+   // Any RequestAdapter (an object with send(request)) works; a DataverseClient is one, and
+   // client.send() runs each request through the client's pipeline (auth, retry, logging).
+   const fileClient = new FileColumnClient(client, client.getBaseUrl());
 
    await fileClient.upload(
      "accounts", // entitySetName
@@ -56,7 +58,7 @@ The metadata package (Phase 6) will include strict typing for FileAttributeMetad
 5. **Stream-based approach:** Defer to v1.1+ as alternative implementation for smaller files or specific scenarios.
 
 6. **Package dependencies:**
-   - Depends on `dataverse-sdk-core` (RequestAdapter, middleware)
+   - Depends on `dataverse-sdk-core` (`RequestAdapter`; `DataverseClient` satisfies it through `send()`)
    - Depends on `dataverse-sdk-actions` (typed action wrappers)
 
 ### Consequences

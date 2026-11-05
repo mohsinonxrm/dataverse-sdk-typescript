@@ -22,6 +22,8 @@ pnpm add @mohsinonxrm/dataverse-sdk-auth-msal-browser @mohsinonxrm/dataverse-sdk
 
 Errors are classified by MSAL's `name` and `errorCode`, never by `instanceof`, so "interaction required" from any of those MSAL majors starts the interactive flow. The same check is exported as `isInteractionRequiredError(error)` for app code.
 
+For the SPA app registration, CORS, Content-Security-Policy and browser limits, see [docs/browser.md](../../docs/browser.md).
+
 ## Quick Start
 
 ### 1. Basic Setup with Popup Flow (Recommended)

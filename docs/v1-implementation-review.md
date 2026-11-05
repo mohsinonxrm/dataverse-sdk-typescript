@@ -1,5 +1,15 @@
 # Dataverse SDK TypeScript - v1.0 Implementation Review
 
+> [!WARNING]
+> **Historical snapshot, superseded.** This review was written before the 1.0.0 release (January–February 2026) and is kept unchanged as a record. Its readiness and coverage claims ("production ready", "no blockers", "435/435 tests", "100% coverage", phase percentages, package and sample counts) are **not accurate** and should not be relied on: later reviews found the defects and missing features tracked in the issues. Some architecture docs it cites don't exist.
+>
+> For the current state, see:
+>
+> - the [v1.1.0 milestone](https://github.com/mohsinonxrm/dataverse-sdk-typescript/milestone/1) (browser and SPA readiness, core pipeline correctness; tracking issue [#5](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/5));
+> - the [v1.2.0 milestone](https://github.com/mohsinonxrm/dataverse-sdk-typescript/milestone/2) (package correctness; tracking issue [#6](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/6));
+> - the [roadmap issue #100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100) for promised features that don't exist yet;
+> - [v1-api-surface.md](./v1-api-surface.md) for what each package exports today.
+
 > **Review Date**: January 29, 2026  
 > **Reviewer**: Automated Analysis  
 > **Scope**: Complete ADR compliance, phase completion, and gap analysis

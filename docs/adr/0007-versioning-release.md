@@ -18,7 +18,9 @@ We use Changesets for SemVer management and automated changelog generation.
 
 ### Decision
 
-#### **v1.0 Scope (Target: Q2 2026, ~10-15 weeks)**
+> **Release status (November 2026):** v1.0.0 was released on 2026-02-11. The v1.1 and v1.2+ targets below are the original plan and are out of date: the work now scheduled is in the [v1.1.0](https://github.com/mohsinonxrm/dataverse-sdk-typescript/milestone/1) (browser and SPA readiness, core pipeline correctness, [#5](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/5)) and [v1.2.0](https://github.com/mohsinonxrm/dataverse-sdk-typescript/milestone/2) (package correctness, [#6](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/6)) milestones, and features promised here that don't exist yet are collected in the roadmap issue [#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100). The ✅ marks record the v1.0 plan, not verified behaviour.
+
+#### **v1.0 Scope (released as 1.0.0 on 2026-02-11)**
 
 **Core Capabilities:**
 
@@ -61,17 +63,21 @@ We use Changesets for SemVer management and automated changelog generation.
 **Escape Hatches (v1.0):**
 
 ```typescript
-// Generic OrganizationRequest for unsupported messages
+// Generic OrganizationRequest for unsupported messages (not executable yet: #80)
 await org.execute(new OrganizationRequest("CustomAction", { param1: value }));
 
-// Raw .api() for maximum flexibility
-await client.api("/api/data/v9.2/customendpoint").header("Custom-Header", "value").post({ data });
+// Raw .api() for maximum flexibility. Relative paths resolve against the Web API root
+// (https://<org>/api/data/v9.2), so don't repeat /api/data/v9.2. Absolute URLs on the
+// client's own origin work too.
+await client.api("customendpoint").header("Custom-Header", "value").post({ data });
 
-// Custom middleware for specialized behaviors
-client.middleware.use(customCircuitBreakerMiddleware);
+// Custom middleware for specialized behaviors, passed when the client is created
+new DataverseClient({ baseUrl, tokenProvider, middleware: { append: [customMiddleware] } });
 ```
 
-#### **v1.1 Fast-Follow (Target: Q3 2026, ~3 months after v1.0)**
+#### **v1.1 Fast-Follow (original plan, not scheduled)**
+
+The v1.1.0 milestone has a different scope (see the release status above); the items below are tracked in [#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100) and, for stream-based file operations, [#95](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/95).
 
 **New Capabilities:**
 
@@ -87,7 +93,9 @@ client.middleware.use(customCircuitBreakerMiddleware);
   - Duplicate rule management
   - Detection API integration
 
-#### **v1.2+ Roadmap (Target: 2027)**
+#### **v1.2+ Roadmap (original plan, not scheduled)**
+
+The v1.2.0 milestone now covers package correctness; the items below are tracked in [#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100) and, for FetchXML, [#51](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/51).
 
 **Planned Capabilities:**
 
