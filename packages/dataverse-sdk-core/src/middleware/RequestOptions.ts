@@ -3,6 +3,8 @@
  * Allows fluent API: client.api('/accounts').options({ retry: {...}, concurrency: {...} })
  */
 
+import type { RetryOptions as ClientRetryOptions } from "../abstractions/options.js";
+
 /**
  * Base interface for middleware-specific options
  * This is intentionally empty to act as a marker interface
@@ -14,41 +16,10 @@ export interface MiddlewareOptions {
 }
 
 /**
- * Retry middleware options for per-request overrides
+ * Per-request retry options. This is the same type as the client's `retry` option (exported from
+ * the package root as `RetryOptions`; `MiddlewareRetryOptions` is an alias kept for compatibility).
  */
-export interface RetryOptions extends MiddlewareOptions {
-  /**
-   * Maximum number of retry attempts
-   * @default 3
-   */
-  maxRetries?: number;
-
-  /**
-   * Delay between retries in milliseconds
-   * @default 1000
-   */
-  delay?: number;
-
-  /**
-   * Whether to use exponential backoff
-   * @default true
-   */
-  useExponentialBackoff?: boolean;
-
-  /**
-   * HTTP status codes that should trigger a retry
-   * @default [429, 503, 504]
-   */
-  retryableStatusCodes?: number[];
-
-  /**
-   * Custom function to determine if a request should be retried
-   */
-  shouldRetry?: (statusCode: number, error?: Error) => boolean;
-
-  /** Per-request override of the client's `retry.retryNonIdempotent`. */
-  retryNonIdempotent?: boolean;
-}
+export type RetryOptions = ClientRetryOptions;
 
 /**
  * Concurrency middleware options for per-request overrides
@@ -106,7 +77,7 @@ export interface LoggingOptions extends MiddlewareOptions {
  * @example
  * ```typescript
  * const options = new RequestOptions([
- *   { type: 'retry', maxRetries: 5, delay: 2000 },
+ *   { type: 'retry', maxRetries: 5, baseDelayMs: 2000 },
  *   { type: 'concurrency', bypass: true }
  * ]);
  *

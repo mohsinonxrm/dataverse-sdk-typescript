@@ -75,7 +75,9 @@ describe("#16: per-request middleware options reach the middleware", () => {
       method: "GET",
       url: "WhoAmI",
       headers: {},
-      middlewareOptions: new MiddlewareRequestOptions([{ type: "retry", maxRetries: 2, delay: 1 }]),
+      middlewareOptions: new MiddlewareRequestOptions([
+        { type: "retry", maxRetries: 2, baseDelayMs: 1 },
+      ]),
     });
     expect(res.status).toBe(429);
     expect(calls).toHaveLength(3);
