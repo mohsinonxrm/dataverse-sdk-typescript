@@ -6,17 +6,34 @@
 import type {
   IPublicClientApplication,
   AccountInfo,
+  AuthenticationResult,
   SilentRequest,
   PopupRequest,
   RedirectRequest,
   EndSessionRequest,
 } from "@azure/msal-browser";
-import { InteractionRequiredAuthError } from "@azure/msal-browser";
 import type { AccessTokenProvider, TokenOptions } from "@mohsinonxrm/dataverse-sdk-core";
 import {
   DataverseAuthenticationError,
   DataverseInvalidRequestError,
 } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  MsalBrowserAuthenticationError,
+  isInteractionRequiredError,
+  isPopupBlockedError,
+} from "./errors.js";
+import { AUTHORITY_HOSTS, assertValidTenant } from "./authority.js";
+
+/**
+ * Wraps a failure as `MsalBrowserAuthenticationError` (keeping MSAL's details and the error as
+ * `cause`). SDK authentication errors thrown by this provider pass through unchanged.
+ */
+function toAuthenticationError(error: unknown): DataverseAuthenticationError {
+  if (error instanceof DataverseAuthenticationError) {
+    return error;
+  }
+  return MsalBrowserAuthenticationError.tokenAcquisitionFailed(error);
+}
 
 /**
  * Interaction type for acquiring tokens when silent acquisition fails
@@ -34,16 +51,30 @@ export interface MsalBrowserTokenProviderOptions {
   scopes: string[];
 
   /**
-   * Optional account to use for silent token acquisition
-   * If not provided, will use the first account from MSAL cache
+   * Which account to get tokens for. The account is resolved on **every** call, so switching
+   * accounts in the app (`setActiveAccount`) takes effect on the next request.
+   *
+   * - A function: called on every request; its account wins. Return `null` to fall back to
+   *   MSAL's active account, then the first cached account.
+   * - An `AccountInfo`: used when MSAL has no active account. MSAL's active account wins, so
+   *   `pca.setActiveAccount(other)` is not ignored.
+   * - Omitted: MSAL's active account, then the first cached account.
    */
-  account?: AccountInfo;
+  account?: AccountInfo | (() => AccountInfo | null | undefined);
 
   /**
    * Interaction type to use when silent acquisition fails
    * @default 'popup'
    */
   interactionType?: InteractionType;
+
+  /**
+   * With `interactionType: 'popup'`: when the browser blocks the popup (`popup_window_error`,
+   * `empty_window_error`), start a redirect instead. Without it, a blocked popup throws
+   * `MsalBrowserAuthenticationError` with `code: 'popup_blocked'`.
+   * @default false
+   */
+  fallbackToRedirect?: boolean;
 
   /**
    * Additional claims to request (e.g., for Conditional Access)
@@ -91,6 +122,13 @@ export class MsalBrowserTokenProvider implements AccessTokenProvider {
   private publicClientApplication: IPublicClientApplication;
   private options: MsalBrowserTokenProviderOptions;
 
+  /** Interactive acquisitions in flight, by scopes + claims (single-flight). */
+  private readonly interactions = new Map<string, Promise<string>>();
+  /** Settles when the last started interaction settles; the next one chains on it. */
+  private interactionQueue: Promise<void> = Promise.resolve();
+  /** Number of interactive acquisitions that succeeded. */
+  private completedInteractions = 0;
+
   /**
    * Creates a new MSAL Browser token provider
    *
@@ -130,7 +168,13 @@ export class MsalBrowserTokenProvider implements AccessTokenProvider {
    * @param options - Additional token options
    * @returns Access token string
    *
-   * @throws {DataverseAuthenticationError} When token acquisition fails
+   * `options.tenantId` requests the token from that tenant
+   * (`https://login.microsoftonline.com/<tenantId>`, on the host of the MSAL configuration's
+   * authority), for example for a guest user in the Dataverse organization's tenant.
+   *
+   * @throws {MsalBrowserAuthenticationError} When token acquisition fails. It is a
+   *   `DataverseAuthenticationError` that keeps MSAL's `errorCode`, `subError`, `correlationId`
+   *   and the original error as `cause`.
    */
   async getToken(scopes?: string | string[], options?: TokenOptions): Promise<string> {
     // Use provided scopes or fall back to configured scopes
@@ -144,103 +188,230 @@ export class MsalBrowserTokenProvider implements AccessTokenProvider {
       throw DataverseInvalidRequestError.emptyScopes();
     }
 
-    // Get account for silent request
-    const account = this.options.account ?? this.getAccount();
+    const authority = this.tenantAuthority(options);
 
-    // Build silent request
+    // Resolved on every call: the app may have switched accounts since the last one.
+    const account = this.resolveAccount();
+
+    // No signed-in account: a silent call can only fail with no_account_error, and the user has
+    // to sign in. Go straight to the interactive flow.
+    if (!account) {
+      return this.acquireTokenInteractive(requestScopes, authority, options, false);
+    }
+
+    const completedBefore = this.completedInteractions;
+    try {
+      return await this.acquireTokenSilent(requestScopes, account, authority, options);
+    } catch (error) {
+      // If interaction is required, use configured interaction type. Detected by name/errorCode,
+      // not instanceof: the app's MSAL copy is not this package's copy.
+      if (isInteractionRequiredError(error)) {
+        // If another call finished an interaction while this silent call was running, the cache
+        // may now hold a usable token: try silently once more before prompting again.
+        return this.acquireTokenInteractive(
+          requestScopes,
+          authority,
+          options,
+          this.completedInteractions !== completedBefore
+        );
+      }
+
+      throw toAuthenticationError(error);
+    }
+  }
+
+  private async acquireTokenSilent(
+    scopes: string[],
+    account: AccountInfo,
+    authority: string | undefined,
+    options?: TokenOptions
+  ): Promise<string> {
     const silentRequest: SilentRequest = {
-      scopes: requestScopes,
-      account: account ?? undefined,
+      scopes,
+      account,
+      authority,
       claims: options?.claims ?? this.options.claims,
       correlationId: options?.correlationId ?? this.options.correlationId,
     };
 
+    const response = await this.publicClientApplication.acquireTokenSilent(silentRequest);
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (!response?.accessToken) {
+      throw DataverseAuthenticationError.tokenAcquisitionFailed(
+        "Received empty access token from MSAL"
+      );
+    }
+
+    return response.accessToken;
+  }
+
+  /**
+   * Acquires a token interactively (popup or redirect), single-flight.
+   *
+   * MSAL allows one interaction at a time (a second one fails with `interaction_in_progress`), so:
+   * - concurrent calls for the same scopes and claims share one interaction;
+   * - a call for other scopes waits for the running interaction, then tries silently first,
+   *   because the interaction usually signed the user in or granted consent.
+   *
+   * @param retrySilentFirst - try a silent call before prompting
+   */
+  private acquireTokenInteractive(
+    scopes: string[],
+    authority: string | undefined,
+    options: TokenOptions | undefined,
+    retrySilentFirst: boolean
+  ): Promise<string> {
+    const claims = options?.claims ?? this.options.claims;
+    const key = JSON.stringify([[...scopes].sort(), claims ?? null, authority ?? null]);
+
+    const inFlight = this.interactions.get(key);
+    if (inFlight) {
+      return inFlight;
+    }
+
+    const waitsForAnother = this.interactions.size > 0;
+    const run = this.interactionQueue.then(() =>
+      this.runInteraction(scopes, authority, options, retrySilentFirst || waitsForAnother)
+    );
+    // The next interaction starts after this one settles, whatever the outcome.
+    this.interactionQueue = run.then(
+      () => undefined,
+      () => undefined
+    );
+    const shared = run.finally(() => {
+      this.interactions.delete(key);
+    });
+    this.interactions.set(key, shared);
+    return shared;
+  }
+
+  private async runInteraction(
+    scopes: string[],
+    authority: string | undefined,
+    options: TokenOptions | undefined,
+    retrySilentFirst: boolean
+  ): Promise<string> {
+    const account = this.resolveAccount();
+
+    if (retrySilentFirst && account) {
+      try {
+        return await this.acquireTokenSilent(scopes, account, authority, options);
+      } catch (error) {
+        if (!isInteractionRequiredError(error)) {
+          throw toAuthenticationError(error);
+        }
+      }
+    }
+
+    // Keep the user on the account they are signed in with: without account/loginHint, MSAL shows
+    // the account picker and the user can pick a different account.
+    const request: PopupRequest & RedirectRequest = {
+      scopes,
+      account: account ?? undefined,
+      loginHint: account?.username,
+      authority,
+      claims: options?.claims ?? this.options.claims,
+      correlationId: options?.correlationId ?? this.options.correlationId,
+    };
+
+    if ((this.options.interactionType ?? "popup") === "redirect") {
+      return this.acquireTokenRedirect(request);
+    }
+
+    let response: AuthenticationResult;
     try {
-      // Try silent acquisition first
-      const response = await this.publicClientApplication.acquireTokenSilent(silentRequest);
-
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!response?.accessToken) {
-        throw DataverseAuthenticationError.tokenAcquisitionFailed(
-          "Received empty access token from MSAL"
-        );
-      }
-
-      return response.accessToken;
+      response = await this.publicClientApplication.acquireTokenPopup(request);
     } catch (error) {
-      // If interaction is required, use configured interaction type
-      if (error instanceof InteractionRequiredAuthError) {
-        return this.acquireTokenInteractive(requestScopes, options);
+      if (isPopupBlockedError(error)) {
+        if (this.options.fallbackToRedirect) {
+          return this.acquireTokenRedirect(request);
+        }
+        throw MsalBrowserAuthenticationError.popupBlocked(error);
       }
+      throw toAuthenticationError(error);
+    }
 
-      // Re-throw other errors as DataverseAuthenticationError
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (!response?.accessToken) {
       throw DataverseAuthenticationError.tokenAcquisitionFailed(
-        error instanceof Error ? error.message : String(error)
+        "Received empty access token from popup authentication"
       );
     }
+
+    // The user may have signed in, or picked another account: make it the active account so the
+    // next silent call (here and in the rest of the app) uses it.
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- null in some MSAL versions
+    if (response.account) {
+      this.publicClientApplication.setActiveAccount(response.account);
+    }
+    this.completedInteractions++;
+
+    return response.accessToken;
+  }
+
+  private async acquireTokenRedirect(request: RedirectRequest): Promise<never> {
+    // Redirect flow: the page navigates away; the token arrives via handleRedirectPromise().
+    try {
+      await this.publicClientApplication.acquireTokenRedirect(request);
+    } catch (error) {
+      throw toAuthenticationError(error);
+    }
+
+    // This code won't be reached as the page will redirect
+    throw DataverseAuthenticationError.tokenAcquisitionFailed(
+      "Redirect flow initiated but page did not redirect"
+    );
   }
 
   /**
-   * Acquires token using interactive flow (popup or redirect)
-   *
-   * @param scopes - Scopes to request
-   * @param options - Token options
-   * @returns Access token string
-   * @private
+   * Resolves the account for this call: the `account` function's result, then MSAL's active
+   * account, then a configured `AccountInfo`, then the first cached account.
    */
-  private async acquireTokenInteractive(scopes: string[], options?: TokenOptions): Promise<string> {
-    const interactionType = this.options.interactionType ?? "popup";
-
-    if (interactionType === "popup") {
-      const popupRequest: PopupRequest = {
-        scopes,
-        claims: options?.claims ?? this.options.claims,
-        correlationId: options?.correlationId ?? this.options.correlationId,
-      };
-
-      const response = await this.publicClientApplication.acquireTokenPopup(popupRequest);
-
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!response?.accessToken) {
-        throw DataverseAuthenticationError.tokenAcquisitionFailed(
-          "Received empty access token from popup authentication"
-        );
+  private resolveAccount(): AccountInfo | null {
+    const configured = this.options.account;
+    if (typeof configured === "function") {
+      const chosen = configured();
+      if (chosen) {
+        return chosen;
       }
-
-      return response.accessToken;
-    } else {
-      // Redirect flow - this won't return, will redirect the page
-      const redirectRequest: RedirectRequest = {
-        scopes,
-        claims: options?.claims ?? this.options.claims,
-        correlationId: options?.correlationId ?? this.options.correlationId,
-      };
-
-      await this.publicClientApplication.acquireTokenRedirect(redirectRequest);
-
-      // This code won't be reached as the page will redirect
-      throw DataverseAuthenticationError.tokenAcquisitionFailed(
-        "Redirect flow initiated but page did not redirect"
-      );
     }
+
+    const active = this.publicClientApplication.getActiveAccount();
+    if (active) {
+      return active;
+    }
+
+    if (configured && typeof configured !== "function") {
+      return configured;
+    }
+
+    return this.publicClientApplication.getAllAccounts()[0] ?? null;
   }
 
   /**
-   * Gets the active account from MSAL cache
-   *
-   * @returns Account info or null if no accounts found
-   * @private
+   * Maps `TokenOptions.tenantId` to an authority on the configured authority's host, so the
+   * token is issued by that tenant (guest users, multi-tenant apps).
    */
-  private getAccount(): AccountInfo | null {
-    const accounts = this.publicClientApplication.getAllAccounts();
-
-    if (accounts.length === 0) {
-      return null;
+  private tenantAuthority(options?: TokenOptions): string | undefined {
+    const tenantId = options?.tenantId;
+    if (!tenantId) {
+      return undefined;
     }
+    assertValidTenant(tenantId);
+    return `${this.authorityHost()}/${tenantId}`;
+  }
 
-    // Return the active account or the first account
-    const activeAccount = this.publicClientApplication.getActiveAccount();
-    return activeAccount ?? accounts[0];
+  private authorityHost(): string {
+    try {
+      const configured = this.publicClientApplication.getConfiguration().auth.authority;
+      if (configured) {
+        return new URL(configured).origin;
+      }
+    } catch {
+      // No configuration (a minimal IPublicClientApplication) or an unparsable authority.
+    }
+    return AUTHORITY_HOSTS.public;
   }
 
   /**
