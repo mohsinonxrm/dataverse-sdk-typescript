@@ -1,0 +1,33 @@
+{
+  "name": "@mohsinonxrm/dataverse-sdk-testing",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Internal test harness: a recording fake fetch and Dataverse response builders for contract tests. Not published.",
+  "type": "module",
+  "license": "AGPL-3.0-only",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.typecheck.json",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@mohsinonxrm/dataverse-sdk-core": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "tsup": "^8.0.0",
+    "vitest": "^1.6.0",
+    "eslint": "^9.0.0"
+  }
+}

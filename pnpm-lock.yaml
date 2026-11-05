@@ -166,6 +166,9 @@ importers:
         specifier: workspace:*
         version: link:../dataverse-sdk-core
     devDependencies:
+      '@mohsinonxrm/dataverse-sdk-testing':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-testing
       eslint:
         specifier: ^9.0.0
         version: 9.39.2
@@ -237,6 +240,9 @@ importers:
         specifier: workspace:*
         version: link:../dataverse-sdk-core
     devDependencies:
+      '@mohsinonxrm/dataverse-sdk-testing':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-testing
       '@types/node':
         specifier: ^20.0.0
         version: 20.19.30
@@ -381,6 +387,25 @@ importers:
         specifier: ^1.6.0
         version: 1.6.1(@types/node@25.0.10)
 
+  packages/dataverse-sdk-testing:
+    dependencies:
+      '@mohsinonxrm/dataverse-sdk-core':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-core
+    devDependencies:
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.2
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.4.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.6.0
+        version: 1.6.1(@types/node@25.0.10)
+
   packages/dataverse-sdk-xrm:
     dependencies:
       '@mohsinonxrm/dataverse-sdk-core':
@@ -390,6 +415,9 @@ importers:
         specifier: workspace:*
         version: link:../dataverse-sdk-messages
     devDependencies:
+      '@mohsinonxrm/dataverse-sdk-testing':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-testing
       eslint:
         specifier: ^9.0.0
         version: 9.39.2
@@ -2949,6 +2977,7 @@ packages:
   eslint@9.39.2:
     resolution: {integrity: sha512-LEyamqS7W5HB3ujJyvi0HQK/dtVINZvd5mAAp9eT5S/ujByGjiZLCzPcHVzuXbpJDJF/cxwHlfceVUDZ2lnSTw==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
     peerDependencies:
       jiti: '*'

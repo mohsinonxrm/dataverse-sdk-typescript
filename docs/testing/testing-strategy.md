@@ -55,3 +55,7 @@ Run only when env vars present.
   - manual workflow dispatch
   - nightly schedule
   - release candidate pipeline
+
+## Contract tests (fake fetch)
+
+Package tests that cross the HTTP boundary must use a real `DataverseClient` together with the recording fake fetch from the private `@mohsinonxrm/dataverse-sdk-testing` package (`packages/dataverse-sdk-testing`). Assert on the method, URL, headers and body bytes that reach `fetch`. Don't mock `client.api()` or other SDK surfaces. Known bugs are pinned with `it.fails("#NN: …")`, and the PR that fixes the issue flips them to `it`.
