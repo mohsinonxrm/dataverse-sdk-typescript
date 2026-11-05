@@ -32,3 +32,6 @@ yarn.lock
 # Changelog files (managed by changesets)
 .changeset/
 **/CHANGELOG.md
+
+# Imported review notes (kept verbatim)
+docs/issues/

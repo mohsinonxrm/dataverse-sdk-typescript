@@ -27,7 +27,10 @@ export interface TokenOptions {
 }
 
 export interface AccessTokenProvider {
-  getToken(scopes: string | string[], options?: TokenOptions): Promise<string>;
+  /**
+   * @param scopes - Scopes to request. When omitted, the provider uses its configured default scopes.
+   */
+  getToken(scopes?: string | string[], options?: TokenOptions): Promise<string>;
 }
 
 export interface Logger {

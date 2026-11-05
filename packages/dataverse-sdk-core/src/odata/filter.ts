@@ -41,14 +41,12 @@ export const odata = {
   lt: (field: string, value: number): string => `${field} lt ${String(value)}`,
   le: (field: string, value: number): string => `${field} le ${String(value)}`,
 
-  contains: (field: string, value: string): string =>
-    `contains(${field},${escapeString(value)})`,
+  contains: (field: string, value: string): string => `contains(${field},${escapeString(value)})`,
 
   startsWith: (field: string, value: string): string =>
     `startswith(${field},${escapeString(value)})`,
 
-  endsWith: (field: string, value: string): string =>
-    `endswith(${field},${escapeString(value)})`,
+  endsWith: (field: string, value: string): string => `endswith(${field},${escapeString(value)})`,
 
   and: (...clauses: string[]): string => `(${clauses.join(" and ")})`,
   or: (...clauses: string[]): string => `(${clauses.join(" or ")})`,

@@ -211,13 +211,12 @@ async function demo1B_CreateEntityMetadataClient(
   const metadataId = await metadataClient.createEntityDefinition({
     "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
     ...entityDefinition,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unnecessary-type-assertion
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } as any);
 
   const duration = ((Date.now() - startTime) / 1000).toFixed(2);
 
   console.log(chalk.green(`✓ Entity created in ${duration}s (MetadataClient)`));
-  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
   console.log(chalk.gray(`  Metadata ID: ${metadataId}`));
   console.log(chalk.gray(`  Schema Name: ${schemaPrefix}_milestone`));
   console.log(chalk.gray(`  Logical Name: ${schemaPrefix}_milestone`));
@@ -241,7 +240,7 @@ async function demo1B_CreateEntityMetadataClient(
     "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
     ...primaryNameAttr,
     IsPrimaryName: true,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unnecessary-type-assertion
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } as any);
 
   console.log(chalk.green("  ✓ Primary name column added"));
@@ -312,7 +311,7 @@ async function demo2B_AddAttributeMetadataClient(
   await metadataClient.createAttributeDefinition(entityLogicalName, {
     "@odata.type": "Microsoft.Dynamics.CRM.IntegerAttributeMetadata",
     ...attributeDefinition,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unnecessary-type-assertion
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } as any);
 
   console.log(chalk.green("✓ Attribute created (MetadataClient)"));
@@ -339,16 +338,16 @@ async function demo3A_QueryMetadataHttpFirst(
     .get<EntityMetadata>();
 
   console.log(chalk.green("✓ Metadata retrieved (HTTP GET)"));
-  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
   console.log(chalk.gray(`  Logical Name: ${entity.LogicalName ?? ""}`));
-  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
   console.log(
     chalk.gray(`  Display Name: ${entity.DisplayName?.LocalizedLabels?.[0]?.Label ?? ""}`)
   );
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison, @typescript-eslint/restrict-template-expressions
-  console.log(chalk.gray(`  Ownership: ${entity.OwnershipType === 1 ? "User-Owned" : "Organization-Owned"}`));
-  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-  console.log(chalk.gray(`  Attributes: ${entity.Attributes?.length ?? 0}`));
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
+  console.log(
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
+    chalk.gray(`  Ownership: ${entity.OwnershipType === 1 ? "User-Owned" : "Organization-Owned"}`)
+  );
+  console.log(chalk.gray(`  Attributes: ${String(entity.Attributes?.length ?? 0)}`));
   console.log(chalk.cyan("  ℹ️  Approach: GET with $select and $expand query options"));
 }
 
@@ -368,16 +367,16 @@ async function demo3B_QueryMetadataWithClient(
   });
 
   console.log(chalk.green("✓ Metadata retrieved (MetadataClient)"));
-  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
   console.log(chalk.gray(`  Logical Name: ${entity.LogicalName ?? ""}`));
-  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
   console.log(
     chalk.gray(`  Display Name: ${entity.DisplayName?.LocalizedLabels?.[0]?.Label ?? ""}`)
   );
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison, @typescript-eslint/restrict-template-expressions
-  console.log(chalk.gray(`  Ownership: ${entity.OwnershipType === 1 ? "User-Owned" : "Organization-Owned"}`));
-  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-  console.log(chalk.gray(`  Attributes: ${entity.Attributes?.length ?? 0}`));
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
+  console.log(
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
+    chalk.gray(`  Ownership: ${entity.OwnershipType === 1 ? "User-Owned" : "Organization-Owned"}`)
+  );
+  console.log(chalk.gray(`  Attributes: ${String(entity.Attributes?.length ?? 0)}`));
   console.log(chalk.cyan("  ℹ️  Approach: MetadataClient.getEntityDefinition()"));
 
   // Show custom attributes
@@ -395,8 +394,7 @@ async function demo3B_QueryMetadataWithClient(
       const displayName = attr.DisplayName?.LocalizedLabels?.[0]?.Label ?? attr.LogicalName ?? "";
       console.log(
         chalk.gray(
-          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-          `    • ${attr.LogicalName ?? ""} (${attr.AttributeType ?? ""}) - ${displayName}`
+          `    • ${attr.LogicalName ?? ""} (${String(attr.AttributeType ?? "")}) - ${displayName}`
         )
       );
     }
@@ -489,11 +487,10 @@ async function demo5_CreateGlobalChoice(
   const metadataId = await metadataClient.createGlobalOptionSet({
     "@odata.type": "Microsoft.Dynamics.CRM.OptionSetMetadata",
     ...optionSet,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unnecessary-type-assertion
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } as any);
 
   console.log(chalk.green("✓ Global choice created"));
-  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
   console.log(chalk.gray(`  Metadata ID: ${metadataId}`));
   console.log(chalk.gray(`  Name: ${schemaPrefix}_projecttype`));
   console.log(chalk.gray("  Options: 3 (Internal, External, Research)"));

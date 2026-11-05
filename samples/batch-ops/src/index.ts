@@ -327,10 +327,10 @@ async function continueOnErrorDemo(client: DataverseClient): Promise<void> {
   for (const [id, resp] of result.responses) {
     if (resp.status >= 200 && resp.status < 300) {
       successCount++;
-      console.log(chalk.green(`  ✓ Request ${String(id)}: Success (${String(resp.status)})`));
+      console.log(chalk.green(`  ✓ Request ${id}: Success (${resp.status.toString()})`));
     } else {
       failureCount++;
-      console.log(chalk.red(`  ✗ Request ${String(id)}: Failed (${String(resp.status)})`));
+      console.log(chalk.red(`  ✗ Request ${id}: Failed (${resp.status.toString()})`));
       if (resp.body && typeof resp.body === "object") {
         const errorBody = resp.body as { error?: { message?: string } };
         if (errorBody.error?.message) {
@@ -400,7 +400,7 @@ async function mixedOperationsDemo(client: DataverseClient): Promise<void> {
   batch.addRequest(
     "update",
     "PATCH",
-    `/accounts(${String(testAccountId)})`,
+    `/accounts(${testAccountId})`,
     { "Content-Type": "application/json" },
     {
       websiteurl: "https://updated.example.com",
@@ -409,7 +409,7 @@ async function mixedOperationsDemo(client: DataverseClient): Promise<void> {
   );
 
   // Delete operation
-  batch.addRequest("delete", "DELETE", `/accounts(${String(deleteAccountId)})`);
+  batch.addRequest("delete", "DELETE", `/accounts(${deleteAccountId})`);
 
   batch.endChangeset();
 
@@ -433,7 +433,7 @@ async function mixedOperationsDemo(client: DataverseClient): Promise<void> {
   }
 
   // Cleanup the test account
-  await client.api(`/accounts(${String(testAccountId)})`).delete();
+  await client.api(`/accounts(${testAccountId})`).delete();
 }
 
 /**
