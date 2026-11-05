@@ -13,7 +13,8 @@ npm install @mohsinonxrm/dataverse-sdk-files @mohsinonxrm/dataverse-sdk-core @mo
 - ✅ **Chunked uploads**: Handles files of any size with automatic chunking (default 4MB chunks)
 - ✅ **Progress tracking**: Real-time upload progress callbacks
 - ✅ **File & Image columns**: Supports both FileAttributeMetadata and ImageAttributeMetadata
-- ✅ **Download support**: Retrieve file content as Blob (browser) or Buffer (Node.js)
+- ✅ **Download support**: Retrieve file content as a `Blob` (browser and Node.js)
+- ✅ **Browser and Node.js**: Takes a `Blob`, `File`, `ArrayBuffer` or typed array; no `Buffer` polyfill needed
 - ✅ **TypeScript first**: Fully typed with comprehensive IntelliSense
 - ✅ **Actions-based approach**: Uses Microsoft-recommended Web API actions
 
@@ -46,7 +47,7 @@ await fileClient.upload(
   'accounts',      // Entity set name
   accountId,       // Record ID
   'new_logo',      // Column logical name
-  logoFile,        // File data (Blob or Buffer)
+  logoFile,        // File data (Blob, File, ArrayBuffer or Uint8Array/Buffer)
   'company-logo.png'  // File name
 );
 ```
@@ -92,21 +93,17 @@ await fileClient.upload(
 // Download file from column
 const file = await fileClient.download("accounts", accountId, "new_logo");
 
-// In browser: file is Blob
-if (file instanceof Blob) {
-  const url = URL.createObjectURL(file);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = "logo.png";
-  link.click();
-  URL.revokeObjectURL(url);
-}
+// In a browser: save the Blob
+const url = URL.createObjectURL(file);
+const link = document.createElement("a");
+link.href = url;
+link.download = "logo.png";
+link.click();
+URL.revokeObjectURL(url);
 
-// In Node.js: file is Buffer
-else {
-  const fs = require("fs");
-  fs.writeFileSync("downloaded-logo.png", file);
-}
+// In Node.js: download() returns a Blob too
+import { writeFile } from "node:fs/promises";
+await writeFile("downloaded-logo.png", Buffer.from(await file.arrayBuffer()));
 ```
 
 ### Delete File
@@ -239,7 +236,7 @@ async upload(
   entitySetName: string,
   recordId: string,
   columnName: string,
-  file: Blob | Buffer,
+  file: Blob | ArrayBuffer | ArrayBufferView,
   fileName: string,
   options?: FileUploadOptions
 ): Promise<void>
@@ -252,7 +249,7 @@ Upload a file to a file or image column.
 - `entitySetName`: Entity set name (e.g., `'accounts'`, `'contacts'`)
 - `recordId`: Record GUID (with or without braces)
 - `columnName`: Logical name of file/image column
-- `file`: File data (Blob in browser, Buffer in Node.js)
+- `file`: File data: a `Blob` or `File`, an `ArrayBuffer`, or a typed-array view such as `Uint8Array` (a Node.js `Buffer` is a `Uint8Array`). A `Blob`'s `type` becomes the file's MIME type; otherwise it is `application/octet-stream`.
 - `fileName`: Name of file being uploaded
 - `options`: Upload options (optional)
 
@@ -266,7 +263,7 @@ async download(
   recordId: string,
   columnName: string,
   options?: FileDownloadOptions
-): Promise<Blob | Buffer>
+): Promise<Blob>
 ```
 
 Download a file from a file or image column.
@@ -278,7 +275,7 @@ Download a file from a file or image column.
 - `columnName`: Logical name of file/image column
 - `options`: Download options (optional)
 
-**Returns:** File data as Blob (browser) or Buffer (Node.js).
+**Returns:** File data as a `Blob`, in browsers and in Node.js.
 
 ##### `delete()`
 
@@ -339,7 +336,7 @@ The underlying `RequestAdapter` handles retry logic for failed requests. Individ
 
 ## Browser Compatibility
 
-- **Modern browsers**: Full support (Chrome, Firefox, Safari, Edge)
+- **Modern browsers**: Full support (Chrome, Firefox, Safari, Edge), with no `Buffer` polyfill
 - **IE11**: Not supported (no native `fetch`, Blob support limited)
 
 ## Node.js Compatibility

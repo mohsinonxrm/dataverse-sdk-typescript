@@ -66,7 +66,8 @@ export class FileColumnClient {
    * @param entitySetName - The entity set name (e.g., "accounts")
    * @param recordId - The record ID (GUID)
    * @param columnName - The logical name of the file/image column
-   * @param file - The file data (Blob in browser, Buffer in Node)
+   * @param file - The file data: a `Blob` (or `File`), an `ArrayBuffer`, or a typed-array view
+   *   such as `Uint8Array` (a Node.js `Buffer` is a `Uint8Array`)
    * @param fileName - The name of the file being uploaded
    * @param options - Upload options (chunk size, progress callback)
    */
@@ -74,7 +75,7 @@ export class FileColumnClient {
     entitySetName: string,
     recordId: string,
     columnName: string,
-    file: Blob | Buffer,
+    file: Blob | ArrayBuffer | ArrayBufferView,
     fileName: string,
     options?: FileUploadOptions
   ): Promise<void> {
@@ -106,14 +107,14 @@ export class FileColumnClient {
     for (let i = 0; i < totalChunks; i++) {
       const start = i * chunkSize;
       const end = Math.min(start + chunkSize, totalSize);
-      const chunk = fileData.slice(start, end);
+      const chunk = fileData.subarray(start, end);
 
       // Generate block ID (base64-encoded sequential number)
       const blockId = this.generateBlockId(i);
       blockIds.push(blockId);
 
       // Encode chunk as base64
-      const blockData = this.arrayBufferToBase64(chunk.buffer);
+      const blockData = bytesToBase64(chunk);
 
       // Upload block
       const uploadAction = new UploadBlockAction(blockId, blockData, FileContinuationToken);
@@ -135,7 +136,7 @@ export class FileColumnClient {
     }
 
     // Step 3: Commit upload
-    const mimeType = (file as Blob).type || "application/octet-stream";
+    const mimeType = (isBlob(file) && file.type) || "application/octet-stream";
     const commitAction = new CommitFileBlocksUploadAction(
       fileName,
       mimeType,
@@ -153,14 +154,15 @@ export class FileColumnClient {
    * @param recordId - The record ID (GUID)
    * @param columnName - The logical name of the file/image column
    * @param options - Download options
-   * @returns The file data (Blob in browser, Buffer in Node)
+   * @returns The file data as a `Blob` (in Node.js too; `Buffer.from(await blob.arrayBuffer())`
+   *   gives a `Buffer`)
    */
   async download(
     entitySetName: string,
     recordId: string,
     columnName: string,
     _options?: FileDownloadOptions
-  ): Promise<Blob | Buffer> {
+  ): Promise<Blob> {
     const normalizedId = recordId.replace(/[{}]/g, "").toLowerCase();
 
     // Construct download URL
@@ -180,14 +182,7 @@ export class FileColumnClient {
       throw new Error(`Failed to download file: ${response.statusText}`);
     }
 
-    // Return appropriate type based on environment
-    if (typeof Blob !== "undefined") {
-      return await response.blob();
-    } else {
-      // Node.js environment
-      const arrayBuffer = await response.arrayBuffer();
-      return Buffer.from(arrayBuffer);
-    }
+    return response.blob();
   }
 
   /**
@@ -223,46 +218,37 @@ export class FileColumnClient {
   }
 
   /**
-   * Convert string to base64 (works in both browser and Node).
+   * Convert an ASCII string to base64.
    */
   private stringToBase64(str: string): string {
-    if (typeof btoa !== "undefined") {
-      // Browser
-      return btoa(str);
-    } else {
-      // Node.js
-      return Buffer.from(str, "utf-8").toString("base64");
-    }
+    return btoa(str);
   }
 
   /**
-   * Convert ArrayBuffer to base64 string.
+   * The bytes of a Blob, ArrayBuffer or typed-array view (a Node.js `Buffer` is a `Uint8Array`).
+   * Works without Node's `Buffer`, so it runs in browsers with no polyfill (#58).
    */
-  private arrayBufferToBase64(buffer: ArrayBuffer): string {
-    if (typeof btoa !== "undefined") {
-      // Browser
-      const bytes = new Uint8Array(buffer);
-      let binary = "";
-      for (let i = 0; i < bytes.byteLength; i++) {
-        binary += String.fromCharCode(bytes[i]);
-      }
-      return btoa(binary);
-    } else {
-      // Node.js
-      return Buffer.from(buffer).toString("base64");
+  private async fileToUint8Array(file: Blob | ArrayBuffer | ArrayBufferView): Promise<Uint8Array> {
+    if (file instanceof ArrayBuffer) return new Uint8Array(file);
+    if (ArrayBuffer.isView(file)) {
+      return new Uint8Array(file.buffer, file.byteOffset, file.byteLength);
     }
+    if (isBlob(file)) return new Uint8Array(await file.arrayBuffer());
+    throw new TypeError("file must be a Blob, an ArrayBuffer or a typed array such as Uint8Array");
   }
+}
 
-  /**
-   * Convert Blob or Buffer to Uint8Array.
-   */
-  private async fileToUint8Array(file: Blob | Buffer): Promise<Uint8Array> {
-    if (Buffer.isBuffer(file)) {
-      return new Uint8Array(file);
-    } else {
-      // Blob
-      const arrayBuffer = await file.arrayBuffer();
-      return new Uint8Array(arrayBuffer);
-    }
+function isBlob(value: unknown): value is Blob {
+  return typeof Blob !== "undefined" && value instanceof Blob;
+}
+
+/** Base64 without Node's `Buffer`: `btoa` exists in browsers and in Node.js. */
+function bytesToBase64(bytes: Uint8Array): string {
+  // String.fromCharCode in slices: one call per byte is slow, one call for 4 MB overflows the stack.
+  const SLICE = 0x8000;
+  let binary = "";
+  for (let i = 0; i < bytes.length; i += SLICE) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + SLICE));
   }
+  return btoa(binary);
 }

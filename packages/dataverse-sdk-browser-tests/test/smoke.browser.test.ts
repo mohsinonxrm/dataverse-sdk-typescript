@@ -106,7 +106,7 @@ describe("browser behaviour", () => {
     expect(await page.evaluate(() => window.__smoke.cspViolations())).toEqual([]);
   });
 
-  it.fails("#58: FileColumnClient.upload() works with a Blob in the browser", async () => {
+  it("#58: FileColumnClient.upload() works with a Blob in the browser", async () => {
     const steps = await page.evaluate(() => window.__smoke.uploadBlob());
     expect(steps).toEqual(["InitializeFileBlocksUpload", "UploadBlock", "CommitFileBlocksUpload"]);
   });
