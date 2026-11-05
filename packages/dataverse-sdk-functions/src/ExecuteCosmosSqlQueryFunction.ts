@@ -1,13 +1,16 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { formatParameterAlias } from "./internal/odataLiteral.js";
-import type { EntityReference } from "./types/EntityReference.js";
 import type { ParameterCollection } from "./types/index.js";
 
 /**
  * Response from ExecuteCosmosSqlQuery function
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
 export interface ExecuteCosmosSqlQueryResponse {
-  value: EntityReference;
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
+  [column: string]: unknown;
 }
 
 /**

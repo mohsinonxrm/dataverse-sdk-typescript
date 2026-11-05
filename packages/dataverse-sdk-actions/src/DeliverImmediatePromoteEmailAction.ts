@@ -4,9 +4,12 @@ import type { email } from "./types/index.js";
 
 /**
  * Response from DeliverImmediatePromoteEmail action
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
-export interface DeliverImmediatePromoteEmailResponse {
-  value: email;
+export interface DeliverImmediatePromoteEmailResponse extends email {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
 }
 
 /**

@@ -1,11 +1,14 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
 
 /**
  * Response from msdyn_GetKAObjectFromTemplate action
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
 export interface msdyn_GetKAObjectFromTemplateResponse {
-  value: EntityReference;
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
+  [column: string]: unknown;
 }
 
 /**

@@ -19,6 +19,7 @@ import {
   purgeDirectory,
 } from "../utils/file-writer.js";
 import { polymorphicParameterType } from "../utils/polymorphism.js";
+import { entityReturn, entityResponseInterface } from "../utils/entity-return.js";
 import { entityReferenceSource } from "../utils/entity-reference.js";
 import { collectionBinding, ENTITY_SET_PARAM } from "../utils/binding.js";
 
@@ -203,8 +204,8 @@ function generateActionClass(csdl: CsdlSchema, action: CsdlAction): string {
   // Check if EntityReference is needed (from return type or parameters)
   let needsEntityReference = false;
 
-  // Check return type for EntityReference
-  if (action.returnType) {
+  // Check return type for EntityReference (a single system-entity return is a record, #71)
+  if (action.returnType && entityReturn(csdl, action.returnType)?.kind !== "record") {
     const tsType = csdlTypeToTs(action.returnType, false);
     const baseType = tsType.replace("[]", "");
     if (baseType === "EntityReference") {
@@ -401,6 +402,16 @@ function generateResponseInterface(
   action: CsdlAction,
   interfaceName: string
 ): string {
+  // An entity return is the entity itself (#71)
+  const entityShape = action.returnType ? entityReturn(csdl, action.returnType) : undefined;
+  if (entityShape) {
+    return entityResponseInterface(
+      interfaceName,
+      entityShape,
+      `Response from ${action.name} action`
+    );
+  }
+
   let code = `/**\n`;
   code += ` * Response from ${action.name} action\n`;
   code += ` */\n`;

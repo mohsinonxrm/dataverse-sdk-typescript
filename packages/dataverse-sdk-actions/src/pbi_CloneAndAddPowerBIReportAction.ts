@@ -1,11 +1,14 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
 
 /**
  * Response from pbi_CloneAndAddPowerBIReport action
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
 export interface pbi_CloneAndAddPowerBIReportResponse {
-  value: EntityReference;
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
+  [column: string]: unknown;
 }
 
 /**

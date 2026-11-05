@@ -3,9 +3,13 @@ import type { EntityReference } from "./types/EntityReference.js";
 
 /**
  * Response from CreateKnowledgeArticleTranslation action
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
 export interface CreateKnowledgeArticleTranslationResponse {
-  value: EntityReference;
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
+  [column: string]: unknown;
 }
 
 /**

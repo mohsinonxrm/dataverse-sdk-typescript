@@ -3,9 +3,12 @@ import type { msdyn_businessclosure } from "./types/index.js";
 
 /**
  * Response from msdyn_BusinessClosureRetrieve action
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
-export interface msdyn_BusinessClosureRetrieveResponse {
-  value: msdyn_businessclosure;
+export interface msdyn_BusinessClosureRetrieveResponse extends msdyn_businessclosure {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
 }
 
 /**

@@ -5,9 +5,13 @@ import type { TargetFieldType } from "./types/index.js";
 
 /**
  * Response from InitializeFrom function
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
 export interface InitializeFromResponse {
-  value: EntityReference;
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
+  [column: string]: unknown;
 }
 
 /**

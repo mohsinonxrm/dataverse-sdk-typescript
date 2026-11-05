@@ -4,9 +4,12 @@ import type { sharedworkspace } from "./types/index.js";
 
 /**
  * Response from GetOrCreateSharedWorkspace action
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
-export interface GetOrCreateSharedWorkspaceResponse {
-  value: sharedworkspace;
+export interface GetOrCreateSharedWorkspaceResponse extends sharedworkspace {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
 }
 
 /**

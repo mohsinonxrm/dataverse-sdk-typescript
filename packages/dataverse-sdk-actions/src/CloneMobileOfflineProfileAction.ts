@@ -3,9 +3,12 @@ import type { mobileofflineprofile } from "./types/index.js";
 
 /**
  * Response from CloneMobileOfflineProfile action
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
-export interface CloneMobileOfflineProfileResponse {
-  value: mobileofflineprofile;
+export interface CloneMobileOfflineProfileResponse extends mobileofflineprofile {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
 }
 
 /**

@@ -3,9 +3,12 @@ import type { importmap } from "./types/index.js";
 
 /**
  * Response from ImportMappingsImportMap action
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
-export interface ImportMappingsImportMapResponse {
-  value: importmap;
+export interface ImportMappingsImportMapResponse extends importmap {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
 }
 
 /**
