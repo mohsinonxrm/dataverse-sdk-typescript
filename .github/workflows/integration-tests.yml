@@ -13,9 +13,6 @@ concurrency:
   group: integration-tests
   cancel-in-progress: false
 
-permissions:
-  contents: read
-
 jobs:
   integration:
     runs-on: ubuntu-latest
