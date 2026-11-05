@@ -64,6 +64,28 @@ describe.skipIf(!live)("live: Global Discovery Service", () => {
     expect(org.Region ? inRegion.some((o) => o.Id === org.Id) : true).toBe(true);
   });
 
+  it("cloud: 'public' and a host-only baseUrl reach the same service (#29)", async () => {
+    const { tokenProvider } = liveClient();
+    const byCloud = new DiscoveryClient(tokenProvider, { cloud: "public" });
+    const byHost = new DiscoveryClient(tokenProvider, {
+      baseUrl: "https://globaldisco.crm.dynamics.com",
+    });
+
+    const [a, b] = await Promise.all([byCloud.listOrganizations(), byHost.listOrganizations()]);
+
+    expect(a.length).toBeGreaterThan(0);
+    expect(
+      a
+        .map((o) => o.Id)
+        .sort()
+        .join() ===
+        b
+          .map((o) => o.Id)
+          .sort()
+          .join()
+    ).toBe(true);
+  });
+
   it("toEnvironment() gives a Web API root a DataverseClient can use", async () => {
     const env = toEnvironment(await configuredOrg());
 
