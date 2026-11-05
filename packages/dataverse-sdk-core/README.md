@@ -784,7 +784,8 @@ User Code (typed result)
 
 - **Per request:** the same `RetryOptions` type overrides the client's values for one request, e.g.
   `client.api("accounts").get({ middlewareOptions: new MiddlewareRequestOptions([{ type: "retry", maxRetries: 0 }]) })`.
-- **Retry-Attempt header:** Added to retried requests for server-side diagnostics
+- **Retry-Attempt header:** Added to retried requests for server-side diagnostics (turn off with
+  `diagnosticHeaders: { retryAttempt: false }`)
 - **Stream content:** Not retried (detected via Content-Type header)
 
 #### Adaptive Concurrency
@@ -1100,6 +1101,24 @@ pnpm test --coverage        # Generate coverage report
 - Modern browsers with native `fetch()` support
 - ES2020+ (async/await, optional chaining, nullish coalescing)
 - No polyfills included (use Vite/Next.js for automatic polyfilling if needed)
+
+### Diagnostic headers and CORS
+
+Besides the headers a request needs (`authorization`, `accept`, `odata-*`, and `content-type`,
+`prefer` or `if-match` when used), the SDK sends its own diagnostic headers:
+`x-ms-sdk-version`, `x-ms-correlation-id`, `x-ms-feature-usage`, and `retry-attempt` on retries.
+
+In a browser every non-safelisted header is part of the CORS preflight. Dataverse's preflight
+currently allows these headers, so they work from SPAs, but you can turn them off to send only what
+the request needs, for example in a tool that shows "the exact request that was sent":
+
+```typescript
+new DataverseClient({ baseUrl, tokenProvider, diagnosticHeaders: false }); // none of them
+new DataverseClient({ baseUrl, tokenProvider, diagnosticHeaders: { featureUsage: false } }); // one off
+```
+
+Telemetry still records the correlation id when the header is off. The SDK never changes the
+`RequestInformation` you pass to `send()`: headers are added to a per-request copy.
 
 ## Node.js Compatibility
 

@@ -4,6 +4,7 @@ import type {
   RequestInformation,
   TelemetryClient,
 } from "../abstractions/http.js";
+import { resolveDiagnosticHeaders } from "../utils/diagnosticHeaders.js";
 import type { DataverseClientOptions } from "../abstractions/options.js";
 import { getGlobalFeatureTracker, FeatureUsageFlag } from "../telemetry/FeatureUsageTracker.js";
 import { generateUUID } from "../utils/HeaderUtils.js";
@@ -30,17 +31,23 @@ export class TelemetryMiddleware implements Middleware {
       Object.entries(perRequest?.customProperties ?? {}).map(([k, v]) => [k, String(v)])
     );
 
-    // Always add SDK version header
-    request.headers["x-ms-sdk-version"] = `dataverse-sdk-js/${SDK_VERSION}`;
+    const headers = resolveDiagnosticHeaders(this.options.diagnosticHeaders);
+    if (headers.sdkVersion) {
+      request.headers["x-ms-sdk-version"] = `dataverse-sdk-js/${SDK_VERSION}`;
+    }
 
-    // Add correlation ID for request tracking
+    // The correlation id is tracked either way; the header is optional (#13).
     ctx.correlationId ??= generateUUID();
-    request.headers["x-ms-correlation-id"] = ctx.correlationId;
+    if (headers.correlationId) {
+      request.headers["x-ms-correlation-id"] = ctx.correlationId;
+    }
 
     const featureTracker = ctx.featureTracker ?? getGlobalFeatureTracker();
     // Only a configured telemetry client counts as "telemetry enabled".
     if (telemetry) featureTracker.addFeature(FeatureUsageFlag.TELEMETRY_ENABLED);
-    request.headers["x-ms-feature-usage"] = featureTracker.getFlagsHex();
+    if (headers.featureUsage) {
+      request.headers["x-ms-feature-usage"] = featureTracker.getFlagsHex();
+    }
 
     if (!telemetry) {
       return next(request, ctx);

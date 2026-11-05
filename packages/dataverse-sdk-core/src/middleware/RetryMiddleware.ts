@@ -1,5 +1,6 @@
 import type { Middleware, NextMiddleware } from "../abstractions/middleware.js";
 import type { MiddlewareContext, RequestInformation } from "../abstractions/http.js";
+import { resolveDiagnosticHeaders } from "../utils/diagnosticHeaders.js";
 import type {
   DataverseClientOptions,
   RetryAttempt,
@@ -99,8 +100,8 @@ export class RetryMiddleware implements Middleware {
     while (true) {
       ctx.attempt = attempt;
 
-      // Add Retry-Attempt header for server-side diagnostics
-      if (attempt > 0) {
+      // Add Retry-Attempt header for server-side diagnostics (unless turned off, #13)
+      if (attempt > 0 && resolveDiagnosticHeaders(this.options.diagnosticHeaders).retryAttempt) {
         request.headers["retry-attempt"] = attempt.toString();
       }
 
