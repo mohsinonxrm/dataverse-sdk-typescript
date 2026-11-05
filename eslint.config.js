@@ -39,6 +39,11 @@ export default tseslint.config(
       // Enforce no 'any' in public APIs
       "@typescript-eslint/no-explicit-any": "error",
 
+      // No eval-like code: it needs CSP 'unsafe-eval' and bundlers can't follow it (#20)
+      "no-eval": "error",
+      "no-new-func": "error",
+      "@typescript-eslint/no-implied-eval": "error",
+
       // Require await in async functions
       "@typescript-eslint/require-await": "error",
 

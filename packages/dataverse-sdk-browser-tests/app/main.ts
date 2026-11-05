@@ -112,6 +112,17 @@ const smoke = {
     return countConsole(() => c.api("WhoAmI").get());
   },
 
+  /** bindMany() in the bundle, under the page's strict CSP (#20). */
+  async bindMany(): Promise<string[]> {
+    const fake = fakeFetch(() => new Response(null, { status: 204 }));
+    await client(fake.provider)
+      .api("accounts(00000000-0000-0000-0000-0000000000a1)")
+      .bindMany("contact_customer_accounts", "contacts", ["c1", "c2"]);
+    return fake.calls.map(
+      (r) => `${r.method} ${new URL(r.url).pathname.split("/").slice(-2).join("/")}`
+    );
+  },
+
   /** A file upload from a Blob, as a browser app would do it (#58). */
   async uploadBlob(): Promise<string[]> {
     const fake = fakeFetch((r) =>

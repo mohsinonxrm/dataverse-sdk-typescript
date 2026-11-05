@@ -198,12 +198,12 @@ describe("bindMany executor", () => {
     );
   });
 
-  it("throws a helpful error when called without an executor", async () => {
+  it("rejects an executor that isn't a function", async () => {
     const client = new DataverseClient({ baseUrl: BASE_URL });
     const builder = client.api("accounts(a1)") as unknown as {
-      bindMany: (nav: string, set: string, ids: string[]) => Promise<void>;
+      bindMany: (nav: string, set: string, ids: string[], executor: unknown) => Promise<void>;
     };
-    await expect(builder.bindMany("nav", "contacts", ["c1"])).rejects.toThrow(
+    await expect(builder.bindMany("nav", "contacts", ["c1"], {})).rejects.toThrow(
       /createBindManyExecutor/
     );
   });
