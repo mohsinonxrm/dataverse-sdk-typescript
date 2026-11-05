@@ -324,6 +324,37 @@ importers:
         specifier: ^1.6.0
         version: 1.6.1(@types/node@20.19.30)
 
+  packages/dataverse-sdk-integration-tests:
+    dependencies:
+      '@azure/msal-node':
+        specifier: ^2.0.0
+        version: 2.16.3
+      '@mohsinonxrm/dataverse-sdk-auth-msal-node':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-auth-msal-node
+      '@mohsinonxrm/dataverse-sdk-batch':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-batch
+      '@mohsinonxrm/dataverse-sdk-core':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-core
+      '@mohsinonxrm/dataverse-sdk-metadata':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-metadata
+      '@mohsinonxrm/dataverse-sdk-xrm':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-xrm
+    devDependencies:
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.2
+      typescript:
+        specifier: ^5.4.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.6.0
+        version: 1.6.1(@types/node@25.0.10)
+
   packages/dataverse-sdk-messages:
     dependencies:
       '@mohsinonxrm/dataverse-sdk-core':

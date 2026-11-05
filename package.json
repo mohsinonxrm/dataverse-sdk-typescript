@@ -27,7 +27,8 @@
     "sdk:generate:functions": "pnpm --filter generate-sdk-types build && pnpm --filter generate-sdk-types generate functions",
     "sdk:generate:functions:purge": "pnpm --filter generate-sdk-types build && pnpm --filter generate-sdk-types generate functions --purge",
     "format": "prettier -w .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "test:integration": "pnpm --filter @mohsinonxrm/dataverse-sdk-integration-tests test:integration"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.0",

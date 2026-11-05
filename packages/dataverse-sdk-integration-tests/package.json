@@ -1,0 +1,29 @@
+{
+  "name": "@mohsinonxrm/dataverse-sdk-integration-tests",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Live integration tests against a real Dataverse org. Not published. Gated on DATAVERSE_* environment variables.",
+  "type": "module",
+  "license": "AGPL-3.0-only",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test:integration": "vitest run --config vitest.config.ts",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.typecheck.json"
+  },
+  "dependencies": {
+    "@azure/msal-node": "^2.0.0",
+    "@mohsinonxrm/dataverse-sdk-auth-msal-node": "workspace:*",
+    "@mohsinonxrm/dataverse-sdk-batch": "workspace:*",
+    "@mohsinonxrm/dataverse-sdk-core": "workspace:*",
+    "@mohsinonxrm/dataverse-sdk-metadata": "workspace:*",
+    "@mohsinonxrm/dataverse-sdk-xrm": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "vitest": "^1.6.0",
+    "eslint": "^9.0.0"
+  }
+}
