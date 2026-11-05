@@ -171,8 +171,12 @@ describe("#62: retrieveMetadataChanges sends the RetrieveMetadataChanges functio
       "Microsoft.Dynamics.CRM.DeletedMetadataFilters'Attribute,Relationship'"
     );
 
+    // The member's value as is: Dataverse takes a member name or the numeric flag value.
     await metadata.retrieveMetadataChanges(query, "1!x", DeletedMetadataFilters.All);
-    expect(alias(last().url, "@p3")).toBe("Microsoft.Dynamics.CRM.DeletedMetadataFilters'31'");
+    const all: string | number = DeletedMetadataFilters.All;
+    expect(alias(last().url, "@p3")).toBe(
+      `Microsoft.Dynamics.CRM.DeletedMetadataFilters'${String(all)}'`
+    );
   });
 
   it("doubles single quotes in the version stamp", async () => {

@@ -36,7 +36,6 @@ import type {
   GetValidManyToManyResponse,
   EntityQueryExpression,
   RetrieveMetadataChangesResponse,
-  DeletedMetadataFilters,
 } from "./types/index.js";
 
 /**
@@ -826,7 +825,8 @@ export class MetadataClient {
    * @param clientVersionStamp `ServerVersionStamp` from a previous call
    * @param deletedMetadataFilters With a version stamp, which deleted metadata to return: a
    *   member name (`"Default"`, `"Attribute"`, `"Relationship"`, `"Label"`, `"OptionSet"`,
-   *   `"All"`), a comma-separated list of names, or the numeric flag value
+   *   `"All"`, or a `DeletedMetadataFilters` member), a comma-separated list of names, or the
+   *   numeric flag value
    * @returns The matching metadata, any deleted metadata, and the new `ServerVersionStamp`
    * @example
    * ```typescript
@@ -851,7 +851,7 @@ export class MetadataClient {
   async retrieveMetadataChanges(
     query: EntityQueryExpression,
     clientVersionStamp?: string,
-    deletedMetadataFilters?: DeletedMetadataFilters | string
+    deletedMetadataFilters?: string | number
   ): Promise<RetrieveMetadataChangesResponse> {
     const aliases = ["Query=@p1"];
     const values = [`@p1=${encodeURIComponent(JSON.stringify(query, enumNameReplacer))}`];
