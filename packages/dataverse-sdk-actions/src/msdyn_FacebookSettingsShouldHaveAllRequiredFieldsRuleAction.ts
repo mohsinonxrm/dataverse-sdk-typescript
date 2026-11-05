@@ -22,7 +22,7 @@ export class msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRuleAction impleme
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

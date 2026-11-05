@@ -26,7 +26,7 @@ export class msdyn_IngestAnalyticsDataAction implements Executable<msdyn_IngestA
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

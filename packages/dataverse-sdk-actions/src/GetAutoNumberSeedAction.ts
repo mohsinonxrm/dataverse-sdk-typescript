@@ -30,7 +30,7 @@ export class GetAutoNumberSeedAction implements Executable<GetAutoNumberSeedResp
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

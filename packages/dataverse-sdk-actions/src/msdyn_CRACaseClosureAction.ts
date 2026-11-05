@@ -39,7 +39,7 @@ export class msdyn_CRACaseClosureAction implements Executable<msdyn_CRACaseClosu
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

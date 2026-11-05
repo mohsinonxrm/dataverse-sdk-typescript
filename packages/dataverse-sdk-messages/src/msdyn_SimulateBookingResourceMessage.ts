@@ -90,7 +90,7 @@ export class msdyn_SimulateBookingResourceRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

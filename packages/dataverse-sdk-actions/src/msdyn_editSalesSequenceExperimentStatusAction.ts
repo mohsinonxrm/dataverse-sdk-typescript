@@ -36,7 +36,7 @@ export class msdyn_editSalesSequenceExperimentStatusAction implements Executable
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

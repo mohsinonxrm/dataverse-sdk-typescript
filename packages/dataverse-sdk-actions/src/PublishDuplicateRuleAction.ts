@@ -25,7 +25,7 @@ export class PublishDuplicateRuleAction implements Executable<PublishDuplicateRu
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

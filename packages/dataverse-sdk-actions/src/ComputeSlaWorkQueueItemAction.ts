@@ -24,7 +24,7 @@ export class ComputeSlaWorkQueueItemAction implements Executable<ComputeSlaWorkQ
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

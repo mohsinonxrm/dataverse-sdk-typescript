@@ -32,7 +32,7 @@ export class msft_DataEngineIndexMgmt_CreateIndexAction implements Executable<ms
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

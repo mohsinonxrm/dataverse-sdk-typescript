@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 import type { EntityReference } from "./types/EntityReference.js";
 import { getEntitySetNameFromReference } from "./types/EntityReference.js";
 
@@ -28,19 +29,11 @@ export class RetrieveProcessInstancesFunction implements Executable<RetrieveProc
     const aliases: string[] = [];
     if (this.entityId !== undefined) {
       aliases.push(`EntityId=@p1`);
-      params.append(
-        "@p1",
-        typeof this.entityId === "string" ? `'${this.entityId}'` : String(this.entityId)
-      );
+      params.append("@p1", formatAliasValue(this.entityId));
     }
     if (this.entityLogicalName !== undefined) {
       aliases.push(`EntityLogicalName=@p2`);
-      params.append(
-        "@p2",
-        typeof this.entityLogicalName === "string"
-          ? `'${this.entityLogicalName}'`
-          : String(this.entityLogicalName)
-      );
+      params.append("@p2", formatAliasValue(this.entityLogicalName));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

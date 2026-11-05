@@ -27,7 +27,7 @@ export class ValidateAction implements Executable<ValidateResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

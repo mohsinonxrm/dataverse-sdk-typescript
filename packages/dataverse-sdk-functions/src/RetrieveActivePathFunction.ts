@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 import type { processstage } from "./types/index.js";
 
 /**
@@ -24,12 +25,7 @@ export class RetrieveActivePathFunction implements Executable<RetrieveActivePath
     const aliases: string[] = [];
     if (this.processInstanceId !== undefined) {
       aliases.push(`ProcessInstanceId=@p1`);
-      params.append(
-        "@p1",
-        typeof this.processInstanceId === "string"
-          ? `'${this.processInstanceId}'`
-          : String(this.processInstanceId)
-      );
+      params.append("@p1", formatAliasValue(this.processInstanceId));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

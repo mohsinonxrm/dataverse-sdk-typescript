@@ -26,7 +26,7 @@ export class msdyn_GetFCBValueAction implements Executable<msdyn_GetFCBValueResp
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

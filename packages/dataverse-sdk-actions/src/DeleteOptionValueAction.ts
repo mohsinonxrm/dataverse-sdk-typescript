@@ -36,7 +36,7 @@ export class DeleteOptionValueAction implements Executable<DeleteOptionValueResp
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

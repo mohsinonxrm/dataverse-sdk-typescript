@@ -22,7 +22,7 @@ export class msdyn_CheckForSolutionVersionAction implements Executable<msdyn_Che
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

@@ -30,7 +30,7 @@ export class msdyn_PullDataForIoTDeviceAction implements Executable<msdyn_PullDa
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

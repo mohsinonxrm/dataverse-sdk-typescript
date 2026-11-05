@@ -44,7 +44,7 @@ export class msdyn_GeocodeAddressAction implements Executable<msdyn_GeocodeAddre
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

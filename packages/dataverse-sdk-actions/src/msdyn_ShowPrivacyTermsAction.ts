@@ -26,7 +26,7 @@ export class msdyn_ShowPrivacyTermsAction implements Executable<msdyn_ShowPrivac
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

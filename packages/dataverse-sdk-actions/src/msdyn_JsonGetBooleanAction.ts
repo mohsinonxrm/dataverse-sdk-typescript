@@ -32,7 +32,7 @@ export class msdyn_JsonGetBooleanAction implements Executable<msdyn_JsonGetBoole
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

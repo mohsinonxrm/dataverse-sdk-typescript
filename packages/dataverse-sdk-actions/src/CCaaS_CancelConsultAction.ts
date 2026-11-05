@@ -33,7 +33,7 @@ export class CCaaS_CancelConsultAction implements Executable<CCaaS_CancelConsult
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

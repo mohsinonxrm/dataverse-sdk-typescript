@@ -31,7 +31,7 @@ export class SetupAiConnectionAction implements Executable<SetupAiConnectionResp
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

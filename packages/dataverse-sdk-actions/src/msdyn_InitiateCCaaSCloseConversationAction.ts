@@ -32,7 +32,7 @@ export class msdyn_InitiateCCaaSCloseConversationAction implements Executable<ms
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

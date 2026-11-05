@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 
 /**
  * Response from pbi_GetEnvironmentWorkspaceAccessForUser function
@@ -23,12 +24,7 @@ export class pbi_GetEnvironmentWorkspaceAccessForUserFunction implements Executa
     const aliases: string[] = [];
     if (this.pbi_UserObjectId !== undefined) {
       aliases.push(`pbi_UserObjectId=@p1`);
-      params.append(
-        "@p1",
-        typeof this.pbi_UserObjectId === "string"
-          ? `'${this.pbi_UserObjectId}'`
-          : String(this.pbi_UserObjectId)
-      );
+      params.append("@p1", formatAliasValue(this.pbi_UserObjectId));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

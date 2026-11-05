@@ -39,7 +39,7 @@ export class msdyn_GetDocumentContentAction implements Executable<msdyn_GetDocum
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

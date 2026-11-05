@@ -27,7 +27,7 @@ export class msdyn_UpsertSellerAssignmentMapAction implements Executable<msdyn_U
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -31,7 +31,7 @@ export class CloseIncidentAction implements Executable<CloseIncidentResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

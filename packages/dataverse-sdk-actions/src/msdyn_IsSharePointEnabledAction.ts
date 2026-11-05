@@ -20,7 +20,7 @@ export class msdyn_IsSharePointEnabledAction implements Executable<msdyn_IsShare
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

@@ -26,7 +26,7 @@ export class msdyn_IsBotUserConfiguredAction implements Executable<msdyn_IsBotUs
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

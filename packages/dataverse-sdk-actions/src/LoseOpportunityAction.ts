@@ -33,7 +33,7 @@ export class LoseOpportunityAction implements Executable<LoseOpportunityResponse
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

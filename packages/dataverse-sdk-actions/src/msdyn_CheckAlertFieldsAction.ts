@@ -22,7 +22,7 @@ export class msdyn_CheckAlertFieldsAction implements Executable<msdyn_CheckAlert
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

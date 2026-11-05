@@ -35,7 +35,7 @@ export class CCaaS_RejectConversationAction implements Executable<CCaaS_RejectCo
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

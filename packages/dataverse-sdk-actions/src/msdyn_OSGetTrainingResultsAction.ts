@@ -26,7 +26,7 @@ export class msdyn_OSGetTrainingResultsAction implements Executable<msdyn_OSGetT
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 
 /**
  * Response from CCaaS_GetAgents function
@@ -38,10 +39,7 @@ export class CCaaS_GetAgentsFunction implements Executable<CCaaS_GetAgentsRespon
     }
     if (this.agentType !== undefined) {
       aliases.push(`AgentType=@p2`);
-      params.append(
-        "@p2",
-        typeof this.agentType === "string" ? `'${this.agentType}'` : String(this.agentType)
-      );
+      params.append("@p2", formatAliasValue(this.agentType));
     }
     if (this.queues !== undefined) {
       aliases.push(`Queues=@p3`);
@@ -49,23 +47,15 @@ export class CCaaS_GetAgentsFunction implements Executable<CCaaS_GetAgentsRespon
     }
     if (this.apiVersion !== undefined) {
       aliases.push(`ApiVersion=@p4`);
-      params.append(
-        "@p4",
-        typeof this.apiVersion === "string" ? `'${this.apiVersion}'` : String(this.apiVersion)
-      );
+      params.append("@p4", formatAliasValue(this.apiVersion));
     }
     if (this.continuationToken !== undefined) {
       aliases.push(`ContinuationToken=@p5`);
-      params.append(
-        "@p5",
-        typeof this.continuationToken === "string"
-          ? `'${this.continuationToken}'`
-          : String(this.continuationToken)
-      );
+      params.append("@p5", formatAliasValue(this.continuationToken));
     }
     if (this.name !== undefined) {
       aliases.push(`Name=@p6`);
-      params.append("@p6", typeof this.name === "string" ? `'${this.name}'` : String(this.name));
+      params.append("@p6", formatAliasValue(this.name));
     }
     if (this.baseStatus !== undefined) {
       aliases.push(`BaseStatus=@p7`);
@@ -73,10 +63,7 @@ export class CCaaS_GetAgentsFunction implements Executable<CCaaS_GetAgentsRespon
     }
     if (this.orderBy !== undefined) {
       aliases.push(`OrderBy=@p8`);
-      params.append(
-        "@p8",
-        typeof this.orderBy === "string" ? `'${this.orderBy}'` : String(this.orderBy)
-      );
+      params.append("@p8", formatAliasValue(this.orderBy));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

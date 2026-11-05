@@ -26,7 +26,7 @@ export class msdyn_CascadeCrewMembershipsAction implements Executable<msdyn_Casc
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

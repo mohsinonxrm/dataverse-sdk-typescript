@@ -32,7 +32,7 @@ export class msdyn_IntentServiceAPICallProxyAction implements Executable<msdyn_I
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

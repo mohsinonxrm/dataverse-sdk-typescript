@@ -33,7 +33,7 @@ export class McpUpdateTableRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

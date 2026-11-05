@@ -33,7 +33,7 @@ export class msdyn_cesinvokeAction implements Executable<msdyn_cesinvokeResponse
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

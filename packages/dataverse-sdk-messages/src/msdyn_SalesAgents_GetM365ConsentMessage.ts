@@ -21,7 +21,7 @@ export class msdyn_SalesAgents_GetM365ConsentRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

@@ -26,7 +26,7 @@ export class msdyn_UserOptOutActorAction implements Executable<msdyn_UserOptOutA
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

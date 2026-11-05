@@ -34,7 +34,7 @@ export class PickFromQueueAction implements Executable<PickFromQueueResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

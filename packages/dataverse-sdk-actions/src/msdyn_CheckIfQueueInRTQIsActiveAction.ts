@@ -22,7 +22,7 @@ export class msdyn_CheckIfQueueInRTQIsActiveAction implements Executable<msdyn_C
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

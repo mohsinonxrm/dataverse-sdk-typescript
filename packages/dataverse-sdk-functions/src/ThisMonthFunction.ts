@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 
 /**
  * Response from ThisMonth function
@@ -23,10 +24,7 @@ export class ThisMonthFunction implements Executable<ThisMonthResponse> {
     const aliases: string[] = [];
     if (this.propertyName !== undefined) {
       aliases.push(`PropertyName=@p1`);
-      params.append(
-        "@p1",
-        typeof this.propertyName === "string" ? `'${this.propertyName}'` : String(this.propertyName)
-      );
+      params.append("@p1", formatAliasValue(this.propertyName));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

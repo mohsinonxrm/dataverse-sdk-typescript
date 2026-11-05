@@ -31,7 +31,7 @@ export class CCaaS_CloseConsultAction implements Executable<CCaaS_CloseConsultRe
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -21,7 +21,7 @@ export class msft_GetSecHubFeatureDataAction implements Executable<msft_GetSecHu
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

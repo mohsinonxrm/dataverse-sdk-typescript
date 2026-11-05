@@ -31,7 +31,7 @@ export class msdyn_InvokeOutboundAPIAction implements Executable<msdyn_InvokeOut
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

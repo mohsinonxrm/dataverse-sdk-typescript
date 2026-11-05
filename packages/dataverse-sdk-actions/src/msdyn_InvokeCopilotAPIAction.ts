@@ -30,7 +30,7 @@ export class msdyn_InvokeCopilotAPIAction implements Executable<msdyn_InvokeCopi
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

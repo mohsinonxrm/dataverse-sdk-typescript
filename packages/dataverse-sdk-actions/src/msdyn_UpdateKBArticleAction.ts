@@ -30,7 +30,7 @@ export class msdyn_UpdateKBArticleAction implements Executable<msdyn_UpdateKBArt
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

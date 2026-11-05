@@ -27,7 +27,7 @@ export class msdyn_FindRulesetDependenciesAction implements Executable<msdyn_Fin
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

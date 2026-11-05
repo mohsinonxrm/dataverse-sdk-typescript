@@ -32,7 +32,7 @@ export class msdyn_SalesAgents_IsOwnerAssignedAction implements Executable<msdyn
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

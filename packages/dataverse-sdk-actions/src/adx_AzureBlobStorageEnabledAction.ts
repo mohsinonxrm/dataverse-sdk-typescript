@@ -20,7 +20,7 @@ export class adx_AzureBlobStorageEnabledAction implements Executable<adx_AzureBl
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

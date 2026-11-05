@@ -25,7 +25,7 @@ export class msdyn_GetFeatureControlStatusRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

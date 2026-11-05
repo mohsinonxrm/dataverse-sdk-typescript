@@ -27,7 +27,7 @@ export class WinQuoteRequest extends OrganizationRequest implements Executable<W
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -44,7 +44,7 @@ export class UpsertCompositeDataSourceAction implements Executable<UpsertComposi
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -20,7 +20,7 @@ export class msdyncrm_MigrateFilesCustomActionAction implements Executable<msdyn
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

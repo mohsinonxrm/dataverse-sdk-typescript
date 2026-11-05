@@ -61,7 +61,7 @@ export class msdyn_create_virtual_table_v2Request
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

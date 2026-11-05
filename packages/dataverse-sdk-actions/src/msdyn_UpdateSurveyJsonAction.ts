@@ -30,7 +30,7 @@ export class msdyn_UpdateSurveyJsonAction implements Executable<msdyn_UpdateSurv
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

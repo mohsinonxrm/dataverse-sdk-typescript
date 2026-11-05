@@ -30,7 +30,7 @@ export class msdyn_ForecastApiAction implements Executable<msdyn_ForecastApiResp
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

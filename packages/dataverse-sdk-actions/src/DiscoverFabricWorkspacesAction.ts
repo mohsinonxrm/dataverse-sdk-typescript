@@ -26,7 +26,7 @@ export class DiscoverFabricWorkspacesAction implements Executable<DiscoverFabric
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

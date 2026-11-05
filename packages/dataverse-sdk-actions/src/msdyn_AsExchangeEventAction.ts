@@ -28,7 +28,7 @@ export class msdyn_AsExchangeEventAction implements Executable<msdyn_AsExchangeE
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

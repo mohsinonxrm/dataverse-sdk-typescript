@@ -34,7 +34,7 @@ export class msdyn_GetIoTAlertAggregationAction implements Executable<msdyn_GetI
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

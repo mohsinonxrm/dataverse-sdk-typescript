@@ -34,7 +34,7 @@ export class msdyn_CascadeCrewBookingsAction implements Executable<msdyn_Cascade
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

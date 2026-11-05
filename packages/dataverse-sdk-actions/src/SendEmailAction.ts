@@ -33,7 +33,7 @@ export class SendEmailAction implements Executable<SendEmailResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

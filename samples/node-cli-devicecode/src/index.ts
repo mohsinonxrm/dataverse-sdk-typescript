@@ -83,14 +83,12 @@ async function getOrganization(tokenProvider: MsalNodeTokenProvider): Promise<Or
       Id: "manual",
       UniqueName: "manual",
       FriendlyName: "Manual Configuration",
-      Endpoints: {
-        WebApiUrl: `${env.dataverseUrl}/api/data/v9.2`,
-        WebApplicationUrl: env.dataverseUrl,
-      },
-      State: "Enabled",
+      Url: env.dataverseUrl,
+      ApiUrl: env.dataverseUrl,
+      State: 0,
       Version: "9.2",
       UrlName: "",
-      Geo: "",
+      LastUpdated: "",
       TenantId: env.tenantId,
       EnvironmentId: "",
       Region: "",
@@ -121,7 +119,7 @@ async function getOrganization(tokenProvider: MsalNodeTokenProvider): Promise<Or
       name: "selectedOrg",
       message: "Select an organization:",
       choices: orgs.map((org) => ({
-        title: `${org.FriendlyName} (${org.UniqueName}) - ${org.Geo}`,
+        title: `${org.FriendlyName} (${org.UniqueName}) - ${org.Region ?? ""}`,
         value: org,
       })),
     });
@@ -302,11 +300,11 @@ async function main() {
   // Step 2: Discover and select organization
   const org = await getOrganization(tokenProvider);
   console.log(chalk.green(`\n✓ Selected: ${org.FriendlyName}`));
-  console.log(chalk.gray(`  Environment: ${org.Endpoints.WebApplicationUrl}`));
+  console.log(chalk.gray(`  Environment: ${org.Url}`));
 
   // Step 3: Create Dataverse client
   const client = new DataverseClient({
-    baseUrl: org.Endpoints.WebApplicationUrl,
+    baseUrl: org.Url,
     tokenProvider,
   });
 

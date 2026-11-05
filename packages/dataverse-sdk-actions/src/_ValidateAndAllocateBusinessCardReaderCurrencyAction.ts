@@ -20,7 +20,7 @@ export class _ValidateAndAllocateBusinessCardReaderCurrencyAction implements Exe
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

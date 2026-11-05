@@ -36,7 +36,7 @@ export class msdyn_InvokeStoredProcAction implements Executable<msdyn_InvokeStor
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -32,7 +32,7 @@ export class msdyn_DisconnectSequenceAction implements Executable<msdyn_Disconne
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

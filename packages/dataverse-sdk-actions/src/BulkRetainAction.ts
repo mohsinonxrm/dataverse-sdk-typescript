@@ -40,7 +40,7 @@ export class BulkRetainAction implements Executable<BulkRetainResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

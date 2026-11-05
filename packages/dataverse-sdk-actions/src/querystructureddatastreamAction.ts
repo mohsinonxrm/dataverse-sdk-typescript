@@ -36,7 +36,7 @@ export class querystructureddatastreamAction implements Executable<querystructur
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

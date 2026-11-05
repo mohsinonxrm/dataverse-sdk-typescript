@@ -32,7 +32,7 @@ export class AddPrincipalToQueueAction implements Executable<AddPrincipalToQueue
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

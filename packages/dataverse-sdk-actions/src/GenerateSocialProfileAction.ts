@@ -28,7 +28,7 @@ export class GenerateSocialProfileAction implements Executable<GenerateSocialPro
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
