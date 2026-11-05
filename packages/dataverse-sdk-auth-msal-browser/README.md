@@ -18,10 +18,9 @@
 pnpm add @mohsinonxrm/dataverse-sdk-auth-msal-browser @mohsinonxrm/dataverse-sdk-core @azure/msal-browser
 ```
 
-**Peer dependencies:**
+**Peer dependency:** `@azure/msal-browser` `^3.30.0 || ^4.0.0 || ^5.0.0`. Install it yourself (as above); this package does not bring its own copy. The provider uses the `PublicClientApplication` your app creates, so the app, `@azure/msal-react` and this provider share one MSAL copy and one token cache.
 
-- `@azure/msal-browser` (^3.0.0)
-- `@mohsinonxrm/dataverse-sdk-core` (workspace dependency)
+Errors are classified by MSAL's `name` and `errorCode`, never by `instanceof`, so "interaction required" from any of those MSAL majors starts the interactive flow. The same check is exported as `isInteractionRequiredError(error)` for app code.
 
 ## Quick Start
 

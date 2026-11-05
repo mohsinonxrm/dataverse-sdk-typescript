@@ -36,11 +36,16 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "@azure/msal-browser": "^3.30.0",
     "@mohsinonxrm/dataverse-sdk-core": "workspace:*"
   },
+  "peerDependencies": {
+    "@azure/msal-browser": "^3.30.0 || ^4.0.0 || ^5.0.0"
+  },
   "devDependencies": {
+    "@azure/msal-browser": "^3.30.0",
     "eslint": "^9.39.5",
+    "msal-browser-v4": "npm:@azure/msal-browser@^4.30.0",
+    "msal-browser-v5": "npm:@azure/msal-browser@^5.28.0",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3",
     "vitest": "^4.1.11"

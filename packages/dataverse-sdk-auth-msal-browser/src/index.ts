@@ -8,6 +8,12 @@ export type {
   MsalBrowserTokenProviderOptions,
   InteractionType,
 } from "./MsalBrowserTokenProvider.js";
+export {
+  isInteractionRequiredError,
+  getMsalErrorCode,
+  INTERACTION_REQUIRED_ERROR_CODES,
+} from "./errors.js";
+export type { MsalErrorLike } from "./errors.js";
 
 // Re-export commonly used MSAL types for convenience
 export type {

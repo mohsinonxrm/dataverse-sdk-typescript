@@ -10,34 +10,10 @@ import {
   DataverseInvalidRequestError,
 } from "@mohsinonxrm/dataverse-sdk-core";
 
-// Mock MSAL Browser with proper class and methods
-vi.mock("@azure/msal-browser", () => {
-  class MockPublicClientApplication {
-    acquireTokenSilent = vi.fn();
-    acquireTokenPopup = vi.fn();
-    acquireTokenRedirect = vi.fn();
-    getAllAccounts = vi.fn();
-    getActiveAccount = vi.fn();
-    setActiveAccount = vi.fn();
-    logoutPopup = vi.fn();
-    logoutRedirect = vi.fn();
-  }
-
-  class InteractionRequiredAuthError extends Error {
-    constructor(message: string) {
-      super(message);
-      this.name = "InteractionRequiredAuthError";
-    }
-  }
-
-  return {
-    PublicClientApplication: MockPublicClientApplication,
-    InteractionRequiredAuthError,
-  };
-});
-
-// Import after mocking
-import { PublicClientApplication, InteractionRequiredAuthError } from "@azure/msal-browser";
+// A real MSAL error class. The provider has no runtime import of MSAL, so this is a "foreign" copy
+// as far as the provider is concerned (see msal-versions.test.ts for v4 and v5).
+import { InteractionRequiredAuthError } from "@azure/msal-browser";
+import { asPca, createFakePca } from "./fakePca.js";
 
 describe("MsalBrowserTokenProvider", () => {
   const mockScopes = ["https://org.crm.dynamics.com/.default"];
@@ -82,27 +58,27 @@ describe("MsalBrowserTokenProvider", () => {
     });
 
     it("should throw when options are missing", () => {
-      const mockPCA = {} as PublicClientApplication;
+      const mockPCA = createFakePca();
 
       expect(() => {
-        new MsalBrowserTokenProvider(mockPCA, null as any);
+        new MsalBrowserTokenProvider(asPca(mockPCA), null as any);
       }).toThrow(DataverseInvalidRequestError);
     });
 
     it("should throw when scopes are empty", () => {
-      const mockPCA = {} as PublicClientApplication;
+      const mockPCA = createFakePca();
 
       expect(() => {
-        new MsalBrowserTokenProvider(mockPCA, {
+        new MsalBrowserTokenProvider(asPca(mockPCA), {
           scopes: [],
         });
       }).toThrow(DataverseInvalidRequestError);
     });
 
     it("should construct successfully with valid options", () => {
-      const mockPCA = {} as PublicClientApplication;
+      const mockPCA = createFakePca();
 
-      const provider = new MsalBrowserTokenProvider(mockPCA, {
+      const provider = new MsalBrowserTokenProvider(asPca(mockPCA), {
         scopes: mockScopes,
       });
 
@@ -110,9 +86,9 @@ describe("MsalBrowserTokenProvider", () => {
     });
 
     it("should accept optional interactionType", () => {
-      const mockPCA = {} as PublicClientApplication;
+      const mockPCA = createFakePca();
 
-      const provider = new MsalBrowserTokenProvider(mockPCA, {
+      const provider = new MsalBrowserTokenProvider(asPca(mockPCA), {
         scopes: mockScopes,
         interactionType: "redirect",
       });
@@ -123,11 +99,11 @@ describe("MsalBrowserTokenProvider", () => {
 
   describe("Silent token acquisition", () => {
     it("should acquire token silently when possible", async () => {
-      const mockPCA = new (PublicClientApplication as any)();
+      const mockPCA = createFakePca();
       mockPCA.acquireTokenSilent.mockResolvedValue(mockAuthResult);
       mockPCA.getAllAccounts.mockReturnValue([mockAccount]);
 
-      const provider = new MsalBrowserTokenProvider(mockPCA, {
+      const provider = new MsalBrowserTokenProvider(asPca(mockPCA), {
         scopes: mockScopes,
       });
 
@@ -148,11 +124,11 @@ describe("MsalBrowserTokenProvider", () => {
         username: "custom@domain.com",
       };
 
-      const mockPCA = new (PublicClientApplication as any)();
+      const mockPCA = createFakePca();
       mockPCA.acquireTokenSilent.mockResolvedValue(mockAuthResult);
       mockPCA.getAllAccounts.mockReturnValue([mockAccount, customAccount]);
 
-      const provider = new MsalBrowserTokenProvider(mockPCA, {
+      const provider = new MsalBrowserTokenProvider(asPca(mockPCA), {
         scopes: mockScopes,
         account: customAccount,
       });
@@ -167,11 +143,11 @@ describe("MsalBrowserTokenProvider", () => {
     });
 
     it("should override scopes when provided to getToken", async () => {
-      const mockPCA = new (PublicClientApplication as any)();
+      const mockPCA = createFakePca();
       mockPCA.acquireTokenSilent.mockResolvedValue(mockAuthResult);
       mockPCA.getAllAccounts.mockReturnValue([mockAccount]);
 
-      const provider = new MsalBrowserTokenProvider(mockPCA, {
+      const provider = new MsalBrowserTokenProvider(asPca(mockPCA), {
         scopes: mockScopes,
       });
 
@@ -186,11 +162,11 @@ describe("MsalBrowserTokenProvider", () => {
     });
 
     it("should pass claims and correlationId from options", async () => {
-      const mockPCA = new (PublicClientApplication as any)();
+      const mockPCA = createFakePca();
       mockPCA.acquireTokenSilent.mockResolvedValue(mockAuthResult);
       mockPCA.getAllAccounts.mockReturnValue([mockAccount]);
 
-      const provider = new MsalBrowserTokenProvider(mockPCA, {
+      const provider = new MsalBrowserTokenProvider(asPca(mockPCA), {
         scopes: mockScopes,
         claims: "claim-data",
         correlationId: "corr-id",
@@ -207,11 +183,11 @@ describe("MsalBrowserTokenProvider", () => {
     });
 
     it("should override claims and correlationId from getToken options", async () => {
-      const mockPCA = new (PublicClientApplication as any)();
+      const mockPCA = createFakePca();
       mockPCA.acquireTokenSilent.mockResolvedValue(mockAuthResult);
       mockPCA.getAllAccounts.mockReturnValue([mockAccount]);
 
-      const provider = new MsalBrowserTokenProvider(mockPCA, {
+      const provider = new MsalBrowserTokenProvider(asPca(mockPCA), {
         scopes: mockScopes,
         claims: "configured-claims",
         correlationId: "configured-corr-id",
@@ -233,14 +209,14 @@ describe("MsalBrowserTokenProvider", () => {
 
   describe("Interactive token acquisition - popup", () => {
     it("should fallback to popup when interaction required", async () => {
-      const mockPCA = new (PublicClientApplication as any)();
+      const mockPCA = createFakePca();
       mockPCA.acquireTokenSilent.mockRejectedValue(
-        new InteractionRequiredAuthError("interaction required")
+        new InteractionRequiredAuthError("interaction_required")
       );
       mockPCA.acquireTokenPopup.mockResolvedValue(mockAuthResult);
       mockPCA.getAllAccounts.mockReturnValue([mockAccount]);
 
-      const provider = new MsalBrowserTokenProvider(mockPCA, {
+      const provider = new MsalBrowserTokenProvider(asPca(mockPCA), {
         scopes: mockScopes,
         interactionType: "popup",
       });
@@ -257,14 +233,14 @@ describe("MsalBrowserTokenProvider", () => {
     });
 
     it("should use popup by default when interactionType not specified", async () => {
-      const mockPCA = new (PublicClientApplication as any)();
+      const mockPCA = createFakePca();
       mockPCA.acquireTokenSilent.mockRejectedValue(
-        new InteractionRequiredAuthError("interaction required")
+        new InteractionRequiredAuthError("interaction_required")
       );
       mockPCA.acquireTokenPopup.mockResolvedValue(mockAuthResult);
       mockPCA.getAllAccounts.mockReturnValue([mockAccount]);
 
-      const provider = new MsalBrowserTokenProvider(mockPCA, {
+      const provider = new MsalBrowserTokenProvider(asPca(mockPCA), {
         scopes: mockScopes,
       });
 
@@ -276,14 +252,14 @@ describe("MsalBrowserTokenProvider", () => {
 
   describe("Interactive token acquisition - redirect", () => {
     it("should fallback to redirect when configured", async () => {
-      const mockPCA = new (PublicClientApplication as any)();
+      const mockPCA = createFakePca();
       mockPCA.acquireTokenSilent.mockRejectedValue(
-        new InteractionRequiredAuthError("interaction required")
+        new InteractionRequiredAuthError("interaction_required")
       );
       mockPCA.acquireTokenRedirect.mockResolvedValue(undefined);
       mockPCA.getAllAccounts.mockReturnValue([mockAccount]);
 
-      const provider = new MsalBrowserTokenProvider(mockPCA, {
+      const provider = new MsalBrowserTokenProvider(asPca(mockPCA), {
         scopes: mockScopes,
         interactionType: "redirect",
       });
@@ -303,11 +279,11 @@ describe("MsalBrowserTokenProvider", () => {
 
   describe("Error handling", () => {
     it("should throw DataverseAuthenticationError when MSAL fails", async () => {
-      const mockPCA = new (PublicClientApplication as any)();
+      const mockPCA = createFakePca();
       mockPCA.acquireTokenSilent.mockRejectedValue(new Error("Unknown MSAL error"));
       mockPCA.getAllAccounts.mockReturnValue([mockAccount]);
 
-      const provider = new MsalBrowserTokenProvider(mockPCA, {
+      const provider = new MsalBrowserTokenProvider(asPca(mockPCA), {
         scopes: mockScopes,
       });
 
@@ -315,14 +291,14 @@ describe("MsalBrowserTokenProvider", () => {
     });
 
     it("should throw when access token is empty", async () => {
-      const mockPCA = new (PublicClientApplication as any)();
+      const mockPCA = createFakePca();
       mockPCA.acquireTokenSilent.mockResolvedValue({
         ...mockAuthResult,
         accessToken: "",
       });
       mockPCA.getAllAccounts.mockReturnValue([mockAccount]);
 
-      const provider = new MsalBrowserTokenProvider(mockPCA, {
+      const provider = new MsalBrowserTokenProvider(asPca(mockPCA), {
         scopes: mockScopes,
       });
 
@@ -330,11 +306,11 @@ describe("MsalBrowserTokenProvider", () => {
     });
 
     it("should throw when result is null", async () => {
-      const mockPCA = new (PublicClientApplication as any)();
+      const mockPCA = createFakePca();
       mockPCA.acquireTokenSilent.mockResolvedValue(null);
       mockPCA.getAllAccounts.mockReturnValue([mockAccount]);
 
-      const provider = new MsalBrowserTokenProvider(mockPCA, {
+      const provider = new MsalBrowserTokenProvider(asPca(mockPCA), {
         scopes: mockScopes,
       });
 
@@ -342,11 +318,11 @@ describe("MsalBrowserTokenProvider", () => {
     });
 
     it("should throw when no accounts are available", async () => {
-      const mockPCA = new (PublicClientApplication as any)();
+      const mockPCA = createFakePca();
       mockPCA.getAllAccounts.mockReturnValue([]);
       mockPCA.acquireTokenSilent.mockResolvedValue({ ...mockAuthResult, accessToken: "" });
 
-      const provider = new MsalBrowserTokenProvider(mockPCA, {
+      const provider = new MsalBrowserTokenProvider(asPca(mockPCA), {
         scopes: mockScopes,
       });
 
@@ -354,10 +330,10 @@ describe("MsalBrowserTokenProvider", () => {
     });
 
     it("should throw when scopes array is empty in getToken", async () => {
-      const mockPCA = new (PublicClientApplication as any)();
+      const mockPCA = createFakePca();
       mockPCA.getAllAccounts.mockReturnValue([mockAccount]);
 
-      const provider = new MsalBrowserTokenProvider(mockPCA, {
+      const provider = new MsalBrowserTokenProvider(asPca(mockPCA), {
         scopes: mockScopes,
       });
 
@@ -368,10 +344,10 @@ describe("MsalBrowserTokenProvider", () => {
   describe("Helper methods", () => {
     it("should get all accounts", () => {
       const mockAccounts = [mockAccount];
-      const mockPCA = new (PublicClientApplication as any)();
+      const mockPCA = createFakePca();
       mockPCA.getAllAccounts.mockReturnValue(mockAccounts);
 
-      const provider = new MsalBrowserTokenProvider(mockPCA, {
+      const provider = new MsalBrowserTokenProvider(asPca(mockPCA), {
         scopes: mockScopes,
       });
 
@@ -382,10 +358,10 @@ describe("MsalBrowserTokenProvider", () => {
     });
 
     it("should get active account", () => {
-      const mockPCA = new (PublicClientApplication as any)();
+      const mockPCA = createFakePca();
       mockPCA.getActiveAccount.mockReturnValue(mockAccount);
 
-      const provider = new MsalBrowserTokenProvider(mockPCA, {
+      const provider = new MsalBrowserTokenProvider(asPca(mockPCA), {
         scopes: mockScopes,
       });
 
@@ -396,10 +372,10 @@ describe("MsalBrowserTokenProvider", () => {
     });
 
     it("should set active account", () => {
-      const mockPCA = new (PublicClientApplication as any)();
+      const mockPCA = createFakePca();
       mockPCA.setActiveAccount = vi.fn();
 
-      const provider = new MsalBrowserTokenProvider(mockPCA, {
+      const provider = new MsalBrowserTokenProvider(asPca(mockPCA), {
         scopes: mockScopes,
       });
 
@@ -409,10 +385,10 @@ describe("MsalBrowserTokenProvider", () => {
     });
 
     it("should sign out with account", async () => {
-      const mockPCA = new (PublicClientApplication as any)();
+      const mockPCA = createFakePca();
       mockPCA.logoutPopup.mockResolvedValue(undefined);
 
-      const provider = new MsalBrowserTokenProvider(mockPCA, {
+      const provider = new MsalBrowserTokenProvider(asPca(mockPCA), {
         scopes: mockScopes,
         interactionType: "popup",
       });
@@ -423,10 +399,10 @@ describe("MsalBrowserTokenProvider", () => {
     });
 
     it("should sign out using redirect", async () => {
-      const mockPCA = new (PublicClientApplication as any)();
+      const mockPCA = createFakePca();
       mockPCA.logoutRedirect.mockResolvedValue(undefined);
 
-      const provider = new MsalBrowserTokenProvider(mockPCA, {
+      const provider = new MsalBrowserTokenProvider(asPca(mockPCA), {
         scopes: mockScopes,
         interactionType: "redirect",
       });
@@ -437,10 +413,10 @@ describe("MsalBrowserTokenProvider", () => {
     });
 
     it("should sign out all accounts when no account specified", async () => {
-      const mockPCA = new (PublicClientApplication as any)();
+      const mockPCA = createFakePca();
       mockPCA.logoutPopup.mockResolvedValue(undefined);
 
-      const provider = new MsalBrowserTokenProvider(mockPCA, {
+      const provider = new MsalBrowserTokenProvider(asPca(mockPCA), {
         scopes: mockScopes,
       });
 
@@ -459,11 +435,11 @@ describe("MsalBrowserTokenProvider", () => {
 
       const allAccounts = [mockAccount, configuredAccount];
 
-      const mockPCA = new (PublicClientApplication as any)();
+      const mockPCA = createFakePca();
       mockPCA.acquireTokenSilent.mockResolvedValue(mockAuthResult);
       mockPCA.getAllAccounts.mockReturnValue(allAccounts);
 
-      const provider = new MsalBrowserTokenProvider(mockPCA, {
+      const provider = new MsalBrowserTokenProvider(asPca(mockPCA), {
         scopes: mockScopes,
         account: configuredAccount,
       });
@@ -483,12 +459,12 @@ describe("MsalBrowserTokenProvider", () => {
         username: "active@domain.com",
       };
 
-      const mockPCA = new (PublicClientApplication as any)();
+      const mockPCA = createFakePca();
       mockPCA.acquireTokenSilent.mockResolvedValue(mockAuthResult);
       mockPCA.getAllAccounts.mockReturnValue([mockAccount, activeAccount]);
       mockPCA.getActiveAccount.mockReturnValue(activeAccount);
 
-      const provider = new MsalBrowserTokenProvider(mockPCA, {
+      const provider = new MsalBrowserTokenProvider(asPca(mockPCA), {
         scopes: mockScopes,
       });
 
@@ -502,12 +478,12 @@ describe("MsalBrowserTokenProvider", () => {
     });
 
     it("should use first account when no account configured and no active account", async () => {
-      const mockPCA = new (PublicClientApplication as any)();
+      const mockPCA = createFakePca();
       mockPCA.acquireTokenSilent.mockResolvedValue(mockAuthResult);
       mockPCA.getAllAccounts.mockReturnValue([mockAccount]);
       mockPCA.getActiveAccount.mockReturnValue(null);
 
-      const provider = new MsalBrowserTokenProvider(mockPCA, {
+      const provider = new MsalBrowserTokenProvider(asPca(mockPCA), {
         scopes: mockScopes,
       });
 
