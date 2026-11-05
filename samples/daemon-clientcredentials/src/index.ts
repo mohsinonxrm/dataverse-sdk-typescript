@@ -114,7 +114,7 @@ async function bulkCreateAccounts(client: DataverseClient, count: number): Promi
     console.log(chalk.green(`✓ Created ${String(response.Ids.length)} accounts in ${duration}s`));
     console.log(chalk.gray(`  Rate: ${idsPerSecond} records/sec`));
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    console.log(chalk.gray(`  IDs: ${response.Ids.slice(0, 3).join(", ")}...`));
+    console.log(chalk.gray(`  IDs: ${String(response.Ids.slice(0, 3).join(", "))}...`));
 
     return response.Ids;
   } catch (error) {
@@ -173,13 +173,13 @@ async function queryAccounts(client: DataverseClient, filter: string): Promise<v
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .get<any>();
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+     
     console.log(
       chalk.green(`✓ Found ${String(response.value.length)} accounts (showing first 10):`)
     );
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     for (const account of response.value) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+       
       console.log(
         chalk.gray(`  • ${String(account.name)} (${String(account.websiteurl ?? "no website")})`)
       );

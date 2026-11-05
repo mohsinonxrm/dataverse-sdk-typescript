@@ -357,6 +357,7 @@ export class BatchRequestBuilder {
         }
       }
 
+      // eslint-disable-next-line @typescript-eslint/only-throw-error -- DataverseBatchError extends DataverseError extends Error; cross-package type resolution prevents ESLint from verifying the chain
       throw new DataverseBatchError(
         `Batch request failed with ${String(failedRequests)} error(s) out of ${String(result.totalRequests)} request(s)`,
         errorResponses,

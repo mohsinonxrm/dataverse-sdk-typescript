@@ -13,7 +13,6 @@ export class PageIterator<T> implements AsyncIterable<T> {
   }
 
   async *[Symbol.asyncIterator](): AsyncIterator<T> {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     let current: PageResponse<T> | undefined = this.first;
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     while (current) {

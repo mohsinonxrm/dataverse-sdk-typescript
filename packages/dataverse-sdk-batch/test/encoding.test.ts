@@ -77,7 +77,7 @@ describe("encoding", () => {
         body: { firstname: "John" },
       };
 
-      const encoded = encodeRequest(request, 1);
+      const encoded = encodeRequest(request, "1");
 
       expect(encoded).toContain("Content-ID: 1");
     });
