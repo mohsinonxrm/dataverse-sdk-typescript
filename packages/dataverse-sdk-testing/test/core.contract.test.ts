@@ -151,9 +151,15 @@ describe("core: retries", () => {
 });
 
 describe("core: token handling", () => {
-  it.fails("#8: the bearer token is not sent to a different origin", async () => {
-    const { client, fake } = createTestClient({}, { onUnhandled: () => jsonResponse({}) });
-    await client.api("https://evil.example.com/collect").get();
-    expect(fake.last().headers.authorization).toBeUndefined();
+  it("#8: the bearer token is not sent to a different origin", async () => {
+    const { client, fake, tokenProvider } = createTestClient(
+      {},
+      { onUnhandled: () => jsonResponse({}) }
+    );
+    await expect(client.api("https://evil.example.com/collect").get()).rejects.toMatchObject({
+      name: "TokenOriginRefused",
+    });
+    expect(fake.requests).toHaveLength(0);
+    expect(tokenProvider.calls).toHaveLength(0);
   });
 });
