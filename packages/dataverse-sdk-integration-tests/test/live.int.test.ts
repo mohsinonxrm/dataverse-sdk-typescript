@@ -101,6 +101,40 @@ describe.skipIf(!live)("live: CRUD round trip", () => {
   });
 });
 
+describe.skipIf(!live)("live: raw responses (#11)", () => {
+  it("createAndGetId() reads the new id from OData-EntityId; response() exposes the ETag", async () => {
+    const { client } = liveClient();
+    const id = await client.api("accounts").createAndGetId({ name: `${runId} raw` });
+    created.push(id);
+    expect(id).toMatch(GUID);
+
+    const res = await client.api(`accounts(${id})`).select("name").response();
+    expect(res.status).toBe(200);
+    expect(res.headers.get("etag")).toMatch(/^W\/"\d+"$/);
+    expect(((await res.json()) as { name: string }).name).toBe(`${runId} raw`);
+  });
+
+  it("a PATCH (204 No Content) resolves without a JSON parse error", async () => {
+    const { client } = liveClient();
+    const id = await client.api("accounts").createAndGetId({ name: `${runId} patch` });
+    created.push(id);
+    await expect(
+      client.api(`accounts(${id})`).patch({ name: `${runId} patched` })
+    ).resolves.toBeUndefined();
+  });
+
+  it("text() returns $metadata as XML, and get() points at text() instead of failing to parse", async () => {
+    const { client } = liveClient();
+    const xml = await client.api("$metadata").header("accept", "application/xml").text();
+    expect(xml).toContain("<edmx:Edmx");
+    await expect(
+      client.api("$metadata").header("accept", "application/xml").get()
+    ).rejects.toMatchObject({
+      name: "UnexpectedContentType",
+    });
+  });
+});
+
 describe.skipIf(!live)("live: headers", () => {
   it("#9: a caller-set Content-Type is sent once, so Dataverse accepts the create", async () => {
     // Before #9, the SDK added its own content-type next to the caller's "Content-Type", fetch
