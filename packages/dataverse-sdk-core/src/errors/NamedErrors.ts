@@ -156,6 +156,16 @@ export class DataverseInvalidRequestError extends DataverseError {
   }
 
   /**
+   * Create error for a request whose URL may not receive the bearer token
+   * (another origin, or a URL carrying user info).
+   */
+  static tokenOriginRefused(reason: string): DataverseInvalidRequestError {
+    const error = new DataverseInvalidRequestError(`Request refused: ${reason}`);
+    error.name = "TokenOriginRefused";
+    return error;
+  }
+
+  /**
    * Create error for serialization failures
    */
   static serializationFailed(details?: string): DataverseInvalidRequestError {
