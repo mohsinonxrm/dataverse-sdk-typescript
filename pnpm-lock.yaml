@@ -381,6 +381,9 @@ importers:
       '@mohsinonxrm/dataverse-sdk-core':
         specifier: workspace:*
         version: link:../dataverse-sdk-core
+      '@mohsinonxrm/dataverse-sdk-discovery':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-discovery
       '@mohsinonxrm/dataverse-sdk-metadata':
         specifier: workspace:*
         version: link:../dataverse-sdk-metadata
