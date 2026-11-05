@@ -71,7 +71,7 @@ export class OrganizationRequest implements MessageRequest, Executable<Organizat
    * Typed message classes override this.
    */
   toRequestInformation(baseUrl: string): RequestInformation {
-    const root = baseUrl.replace(/\/+$/, "");
+    const root = trimTrailingSlashes(baseUrl);
     const bound = this.#options.boundTo;
     const url = bound
       ? `${root}/${bound.entitySetName}(${bound.id.replace(/[{}]/g, "")})/Microsoft.Dynamics.CRM.${this.messageName}`
@@ -103,6 +103,13 @@ export class OrganizationRequest implements MessageRequest, Executable<Organizat
     }
     return new OrganizationResponse(this.messageName, results);
   }
+}
+
+/** Remove trailing `/` characters in linear time (a `/\/+$/` regex is quadratic on long runs). */
+function trimTrailingSlashes(value: string): string {
+  let end = value.length;
+  while (end > 0 && value.charCodeAt(end - 1) === 47) end--;
+  return value.slice(0, end);
 }
 
 /**

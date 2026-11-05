@@ -73,6 +73,13 @@ describe("#80: OrganizationRequest is executable", () => {
     expect(fake.last().path).toBe(`/accounts(${ID})/Microsoft.Dynamics.CRM.new_BoundAction`);
   });
 
+  it("ignores trailing slashes on the base URL", () => {
+    const info = new OrganizationRequest("new_CustomAction").toRequestInformation(
+      `${TEST_API_URL}///`
+    );
+    expect(info.url).toBe(`${TEST_API_URL}/new_CustomAction`);
+  });
+
   it("a non-object JSON response lands in Results.value", async () => {
     const { client, fake } = createTestClient();
     fake.on("POST", "/new_ReturnsArray", () => jsonResponse([1, 2]));
