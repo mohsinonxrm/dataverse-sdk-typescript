@@ -294,9 +294,13 @@ await client.api("/accounts").post({ name: "Contoso" });
 
 - Default: Duplicate detection is **suppressed** (matches Dataverse defaults)
 - `.detectDuplicates()` explicitly enables detection
-- Returns `DataverseDuplicateError` (extends `DataverseError`) on 412 status
-- Error includes `duplicates` array with record details from `error.innererror.duplicaterecords`
-- Error includes `duplicateRuleId` from `error.innererror.duplicateruleid`
+- Returns `DataverseDuplicateError` (extends `DataverseError`) for a 412 with Dataverse's
+  duplicate code `0x80040333`. Any other 412, such as an `If-Match` etag mismatch (`0x80060882`),
+  rejects with the usual `DataverseODataError`, even with `.detectDuplicates()` on
+- Error includes `duplicates` array with record details from `error.innererror.duplicaterecords`,
+  when Dataverse sends them (a plain duplicate-detection 412 carries only the code and message, so
+  the array is often empty)
+- Error includes `duplicateRuleId` from `error.innererror.duplicateruleid`, when present
 
 #### Navigation Property Binding
 

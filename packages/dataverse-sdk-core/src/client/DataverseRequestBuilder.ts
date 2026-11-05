@@ -7,7 +7,10 @@ import { PageIterator } from "../paging/PageIterator.js";
 import { buildUrl } from "../utils/url.js";
 import { entityIdFromResponse, readJson } from "../utils/response.js";
 import { parseODataError } from "../errors/parseODataError.js";
-import { DataverseDuplicateError } from "../errors/DataverseDuplicateError.js";
+import {
+  DataverseDuplicateError,
+  type DuplicateRecord,
+} from "../errors/DataverseDuplicateError.js";
 import { validateUrl, type UrlValidationOptions } from "../utils/validateUrl.js";
 import { PreferBuilder } from "./PreferBuilder.js";
 import type { DataverseClient } from "./DataverseClient.js";
@@ -431,29 +434,20 @@ export class DataverseRequestBuilder {
     const req = this.buildRequest(method, body, options);
     const res = await this.client.send(req);
     if (!res.ok) {
-      // Check for 412 duplicate detection
       if (res.status === 412 && !this.suppressDuplicateDetection) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const errorData = await res.json();
-
-        // Parse duplicate details from error response
-        const duplicates = [];
-        // Microsoft returns duplicate details in error.innererror
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        if (errorData.error?.innererror?.duplicaterecords) {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-          duplicates.push(...errorData.error.innererror.duplicaterecords);
+        // With detectDuplicates(), a 412 is either a duplicate (0x80040333) or something else,
+        // such as an If-Match etag mismatch (0x80060882). Only the first is a duplicate (#50).
+        const text = await res.text().catch(() => "");
+        const duplicate = duplicateDetails(text);
+        if (duplicate) {
+          throw new DataverseDuplicateError(
+            duplicate.message,
+            duplicate.duplicates,
+            duplicate.ruleId,
+            412
+          );
         }
-
-        throw new DataverseDuplicateError(
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-          errorData.error?.message ?? "Duplicate records detected",
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-          duplicates,
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-          errorData.error?.innererror?.duplicateruleid,
-          412
-        );
+        throw await parseODataError(res, text);
       }
 
       const err = await parseODataError(res);
@@ -466,4 +460,39 @@ export class DataverseRequestBuilder {
     // absolute nextLink or relative path
     return this.client.resolveUrl(this.pathOrUrl);
   }
+}
+
+/** Dataverse's error code for "a duplicate of the current record already exists". */
+const DUPLICATE_RECORD = "0x80040333";
+
+/**
+ * The duplicate-detection details in a 412 body, or undefined when the 412 is something else.
+ * Dataverse sends `{ error: { code: "0x80040333", message } }`; `innererror.duplicaterecords` and
+ * `duplicateruleid` are read when present.
+ */
+function duplicateDetails(
+  text: string
+): { message: string; duplicates: DuplicateRecord[]; ruleId?: string } | undefined {
+  let body: unknown;
+  try {
+    body = JSON.parse(text) as unknown;
+  } catch {
+    return undefined;
+  }
+  const error = (body as { error?: unknown } | null)?.error;
+  if (typeof error !== "object" || error === null) return undefined;
+  const e = error as Record<string, unknown>;
+  const inner = (
+    typeof e.innererror === "object" && e.innererror !== null ? e.innererror : {}
+  ) as Record<string, unknown>;
+  const records = Array.isArray(inner.duplicaterecords)
+    ? (inner.duplicaterecords as DuplicateRecord[])
+    : undefined;
+  const code = typeof e.code === "string" ? e.code.toLowerCase() : "";
+  if (code !== DUPLICATE_RECORD && !records) return undefined;
+  return {
+    message: typeof e.message === "string" ? e.message : "Duplicate records detected",
+    duplicates: records ?? [],
+    ruleId: typeof inner.duplicateruleid === "string" ? inner.duplicateruleid : undefined,
+  };
 }
