@@ -4,6 +4,9 @@
   "type": "module",
   "author": "Mohsin On xRM",
   "license": "AGPL-3.0-only",
+  "engines": {
+    "node": ">=20"
+  },
   "sideEffects": false,
   "publishConfig": {
     "access": "public",

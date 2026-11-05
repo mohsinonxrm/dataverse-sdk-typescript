@@ -5,6 +5,9 @@
   "description": "Internal test harness: a recording fake fetch and Dataverse response builders for contract tests. Not published.",
   "type": "module",
   "license": "AGPL-3.0-only",
+  "engines": {
+    "node": ">=20"
+  },
   "sideEffects": false,
   "exports": {
     ".": {
