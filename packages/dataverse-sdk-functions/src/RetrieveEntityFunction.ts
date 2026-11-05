@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { ComplexEntityMetadata, EntityFilters } from "./types/index.js";
 
 /**
@@ -16,8 +16,8 @@ export interface RetrieveEntityResponse {
  */
 export class RetrieveEntityFunction implements Executable<RetrieveEntityResponse> {
   constructor(
-    public readonly entityFilters: EntityFilters,
-    public readonly logicalName: string,
+    public readonly entityFilters: EntityFilters | keyof typeof EntityFilters,
+    public readonly logicalName: string | undefined,
     public readonly metadataId: string,
     public readonly retrieveAsIfPublished: boolean
   ) {}
@@ -30,19 +30,22 @@ export class RetrieveEntityFunction implements Executable<RetrieveEntityResponse
     const aliases: string[] = [];
     if (this.entityFilters !== undefined) {
       aliases.push(`EntityFilters=@p1`);
-      params.append("@p1", formatAliasValue(this.entityFilters));
+      params.append(
+        "@p1",
+        formatParameterAlias(this.entityFilters, "mscrm.EntityFilters", "EnumerationType")
+      );
     }
     if (this.logicalName !== undefined) {
       aliases.push(`LogicalName=@p2`);
-      params.append("@p2", formatAliasValue(this.logicalName));
+      params.append("@p2", formatParameterAlias(this.logicalName, "Edm.String"));
     }
     if (this.metadataId !== undefined) {
       aliases.push(`MetadataId=@p3`);
-      params.append("@p3", formatAliasValue(this.metadataId));
+      params.append("@p3", formatParameterAlias(this.metadataId, "Edm.Guid"));
     }
     if (this.retrieveAsIfPublished !== undefined) {
       aliases.push(`RetrieveAsIfPublished=@p4`);
-      params.append("@p4", formatAliasValue(this.retrieveAsIfPublished));
+      params.append("@p4", formatParameterAlias(this.retrieveAsIfPublished, "Edm.Boolean"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

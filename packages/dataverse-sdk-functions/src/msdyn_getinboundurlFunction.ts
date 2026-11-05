@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
  * Response from msdyn_getinboundurl function
@@ -29,11 +29,11 @@ export class msdyn_getinboundurlFunction implements Executable<msdyn_getinboundu
     const aliases: string[] = [];
     if (this.contactpoint !== undefined) {
       aliases.push(`contactpoint=@p1`);
-      params.append("@p1", formatAliasValue(this.contactpoint));
+      params.append("@p1", formatParameterAlias(this.contactpoint, "Edm.String"));
     }
     if (this.channeldefinitionid !== undefined) {
       aliases.push(`channeldefinitionid=@p2`);
-      params.append("@p2", formatAliasValue(this.channeldefinitionid));
+      params.append("@p2", formatParameterAlias(this.channeldefinitionid, "Edm.Guid"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

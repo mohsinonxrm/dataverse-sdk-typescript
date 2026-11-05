@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
  * Response from IsComponentCustomizable function
@@ -27,11 +27,11 @@ export class IsComponentCustomizableFunction implements Executable<IsComponentCu
     const aliases: string[] = [];
     if (this.componentId !== undefined) {
       aliases.push(`ComponentId=@p1`);
-      params.append("@p1", formatAliasValue(this.componentId));
+      params.append("@p1", formatParameterAlias(this.componentId, "Edm.Guid"));
     }
     if (this.componentType !== undefined) {
       aliases.push(`ComponentType=@p2`);
-      params.append("@p2", formatAliasValue(this.componentType));
+      params.append("@p2", formatParameterAlias(this.componentType, "Edm.Int32"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

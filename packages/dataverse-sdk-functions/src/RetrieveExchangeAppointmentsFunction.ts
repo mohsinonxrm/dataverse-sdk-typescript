@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { EntityReference } from "./types/EntityReference.js";
 import { getEntitySetNameFromReference } from "./types/EntityReference.js";
 
@@ -17,8 +17,8 @@ export interface RetrieveExchangeAppointmentsResponse {
  */
 export class RetrieveExchangeAppointmentsFunction implements Executable<RetrieveExchangeAppointmentsResponse> {
   constructor(
-    public readonly startDate: string,
-    public readonly endDate: string
+    public readonly startDate: string | Date,
+    public readonly endDate: string | Date
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -29,11 +29,11 @@ export class RetrieveExchangeAppointmentsFunction implements Executable<Retrieve
     const aliases: string[] = [];
     if (this.startDate !== undefined) {
       aliases.push(`StartDate=@p1`);
-      params.append("@p1", formatAliasValue(this.startDate));
+      params.append("@p1", formatParameterAlias(this.startDate, "Edm.DateTimeOffset"));
     }
     if (this.endDate !== undefined) {
       aliases.push(`EndDate=@p2`);
-      params.append("@p2", formatAliasValue(this.endDate));
+      params.append("@p2", formatParameterAlias(this.endDate, "Edm.DateTimeOffset"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

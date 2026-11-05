@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { PagingInfo, StringCollection } from "./types/index.js";
 
 /**
@@ -17,7 +17,7 @@ export interface RetrieveParsedDataImportFileResponse {
 export class RetrieveParsedDataImportFileFunction implements Executable<RetrieveParsedDataImportFileResponse> {
   constructor(
     public readonly importFileId: string,
-    public readonly pagingInfo: PagingInfo
+    public readonly pagingInfo?: PagingInfo
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -28,7 +28,7 @@ export class RetrieveParsedDataImportFileFunction implements Executable<Retrieve
     const aliases: string[] = [];
     if (this.importFileId !== undefined) {
       aliases.push(`ImportFileId=@p1`);
-      params.append("@p1", formatAliasValue(this.importFileId));
+      params.append("@p1", formatParameterAlias(this.importFileId, "Edm.Guid"));
     }
     if (this.pagingInfo !== undefined) {
       aliases.push(`PagingInfo=@p2`);

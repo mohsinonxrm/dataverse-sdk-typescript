@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
  * Response from RetrieveExchangeRate function
@@ -24,7 +24,7 @@ export class RetrieveExchangeRateFunction implements Executable<RetrieveExchange
     const aliases: string[] = [];
     if (this.transactionCurrencyId !== undefined) {
       aliases.push(`TransactionCurrencyId=@p1`);
-      params.append("@p1", formatAliasValue(this.transactionCurrencyId));
+      params.append("@p1", formatParameterAlias(this.transactionCurrencyId, "Edm.Guid"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

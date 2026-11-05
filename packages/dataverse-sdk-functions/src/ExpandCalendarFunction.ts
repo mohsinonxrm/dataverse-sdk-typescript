@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { TimeInfo } from "./types/index.js";
 
 /**
@@ -18,8 +18,8 @@ export interface ExpandCalendarResponse {
 export class ExpandCalendarFunction implements Executable<ExpandCalendarResponse> {
   constructor(
     public readonly calendarId: string,
-    public readonly start: string,
-    public readonly end: string
+    public readonly start: string | Date,
+    public readonly end: string | Date
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -31,11 +31,11 @@ export class ExpandCalendarFunction implements Executable<ExpandCalendarResponse
     const aliases: string[] = [];
     if (this.start !== undefined) {
       aliases.push(`Start=@p1`);
-      params.append("@p1", formatAliasValue(this.start));
+      params.append("@p1", formatParameterAlias(this.start, "Edm.DateTimeOffset"));
     }
     if (this.end !== undefined) {
       aliases.push(`End=@p2`);
-      params.append("@p2", formatAliasValue(this.end));
+      params.append("@p2", formatParameterAlias(this.end, "Edm.DateTimeOffset"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

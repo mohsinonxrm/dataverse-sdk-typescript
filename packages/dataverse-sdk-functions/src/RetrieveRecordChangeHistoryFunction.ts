@@ -18,7 +18,7 @@ export interface RetrieveRecordChangeHistoryResponse {
 export class RetrieveRecordChangeHistoryFunction implements Executable<RetrieveRecordChangeHistoryResponse> {
   constructor(
     public readonly target: EntityReference,
-    public readonly pagingInfo: PagingInfo
+    public readonly pagingInfo?: PagingInfo
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

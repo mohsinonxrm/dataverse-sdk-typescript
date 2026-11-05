@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { msdyn_nottoexceed } from "./types/index.js";
 
 /**
@@ -28,11 +28,11 @@ export class msdyn_SelectNotToExceedFunction implements Executable<msdyn_SelectN
     const aliases: string[] = [];
     if (this.msdyn_NTEType !== undefined) {
       aliases.push(`msdyn_NTEType=@p1`);
-      params.append("@p1", formatAliasValue(this.msdyn_NTEType));
+      params.append("@p1", formatParameterAlias(this.msdyn_NTEType, "Edm.Int32"));
     }
     if (this.msdyn_SelectNotToExceedFilters !== undefined) {
       aliases.push(`msdyn_SelectNotToExceedFilters=@p2`);
-      params.append("@p2", formatAliasValue(this.msdyn_SelectNotToExceedFilters));
+      params.append("@p2", formatParameterAlias(this.msdyn_SelectNotToExceedFilters, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
