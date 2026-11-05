@@ -30,7 +30,8 @@
   },
   "files": [
     "dist",
-    "templates"
+    "templates",
+    "THIRD_PARTY_NOTICES.md"
   ],
   "scripts": {
     "build": "tsup",
