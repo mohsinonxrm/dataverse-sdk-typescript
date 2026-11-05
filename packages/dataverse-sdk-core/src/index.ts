@@ -20,6 +20,7 @@ export {
 
 export * from "./utils/HeaderUtils.js";
 export { entityIdFromResponse } from "./utils/response.js";
+export { ConsoleLogger, type LogLevel } from "./utils/consoleLogger.js";
 export type { RawBody } from "./utils/body.js";
 
 export {

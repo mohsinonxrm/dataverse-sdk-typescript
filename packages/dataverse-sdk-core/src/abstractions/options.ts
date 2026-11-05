@@ -64,6 +64,16 @@ export interface RetryOptions {
   useExponentialBackoff?: boolean;
 }
 
+/** Client-level request logging settings. */
+export interface LoggingConfig {
+  /**
+   * Log full request URLs, including the query string and key values. Default `false`: URLs are
+   * logged as origin and path, with key values in parentheses shown as `(…)` and the query as
+   * `?…`, so filters, record ids and alternate keys stay out of logs.
+   */
+  fullUrls?: boolean;
+}
+
 export interface ConcurrencyOptions {
   maxConcurrentRequests?: number;
   adaptiveFromDopHint?: boolean;
@@ -121,7 +131,13 @@ export interface DataverseClientOptions {
   scopes?: string | string[];
   tokenProvider?: import("./http.js").AccessTokenProvider;
   fetchProvider?: import("./http.js").FetchProvider;
+  /**
+   * Where the SDK writes its diagnostics. Default: nothing is logged. Pass
+   * `new ConsoleLogger()` to log to the console, or your own `Logger`.
+   */
   logger?: import("./http.js").Logger;
+  /** What request logging includes. Only used when `logger` is set. */
+  logging?: LoggingConfig;
   telemetry?: import("./http.js").TelemetryClient;
   retry?: RetryOptions;
   concurrency?: ConcurrencyOptions;

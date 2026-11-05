@@ -52,7 +52,7 @@ The main entry point for all HTTP operations. Manages middleware pipeline, base 
 
 ```typescript
 import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
-import { ConsoleLogger } from "@mohsinonxrm/dataverse-sdk-core"; // Built-in default logger
+import { ConsoleLogger } from "@mohsinonxrm/dataverse-sdk-core"; // Opt-in console logger
 
 const client = new DataverseClient({
   // Required: Base URL (accepts environment root or full API path)
@@ -88,7 +88,8 @@ const client = new DataverseClient({
   },
 
   // Optional: Logger (implements Logger interface)
-  logger: new ConsoleLogger(), // Default: logs to console
+  logger: new ConsoleLogger(), // Default: none (the SDK logs nothing unless you pass a logger)
+  logging: { fullUrls: false }, // Default: URLs logged as origin + path, keys as (…), query as ?…
 
   // Optional: Telemetry client (implements TelemetryClient interface)
   telemetry: myTelemetryClient,
@@ -868,12 +869,28 @@ export interface Logger {
 }
 ```
 
-**Built-in implementation:** `ConsoleLogger` (logs to `console.log`, `console.error`, etc.)
+**Default:** no logger, so the SDK writes nothing to the console. Request URLs carry filters,
+record ids and alternate keys, so logging is opt-in.
+
+**Built-in implementation:** `ConsoleLogger` writes to `console.debug` / `info` / `warn` / `error`,
+with the meta object as a separate argument. `new ConsoleLogger({ level: "warn" })` drops debug
+and info messages.
+
+Request logs show URLs as origin and path, with key values in parentheses as `(…)` and the query as
+`?…` (e.g. `GET https://org.crm.dynamics.com/api/data/v9.2/contacts?…`). Set
+`logging: { fullUrls: true }` to log full URLs while debugging.
 
 **Usage:**
 
 ```typescript
-import { ConsoleLogger } from "@mohsinonxrm/dataverse-sdk-core";
+import { ConsoleLogger, DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+import type { Logger } from "@mohsinonxrm/dataverse-sdk-core";
+
+// Built-in console logger
+const debugClient = new DataverseClient({
+  baseUrl: "https://org.crm.dynamics.com",
+  logger: new ConsoleLogger(),
+});
 
 // Custom logger implementation
 class CustomLogger implements Logger {

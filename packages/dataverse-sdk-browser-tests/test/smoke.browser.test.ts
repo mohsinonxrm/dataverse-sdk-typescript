@@ -93,7 +93,7 @@ describe("browser behaviour", () => {
     expect(await page.evaluate(() => window.__smoke.cspViolations())).toEqual([]);
   });
 
-  it.fails("#33: with no logger configured, a request writes nothing to the console", async () => {
+  it("#33: with no logger configured, a request writes nothing to the console", async () => {
     expect(await page.evaluate(() => window.__smoke.consoleCallsPerRequest())).toBe(0);
   });
 
