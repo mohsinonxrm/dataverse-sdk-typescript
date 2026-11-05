@@ -1,8 +1,23 @@
 /**
- * Fluent builder for Prefer header options
+ * Fluent builder for Prefer header options. From `request.prefer()`, `done()` returns the request
+ * builder, so the chain can go on: `.prefer().allAnnotations().done().get()`.
  */
-export class PreferBuilder {
+export class PreferBuilder<TParent = undefined> {
   private options: string[] = [];
+
+  /** @param parent - What `done()` returns; set by the request builder's `prefer()`. */
+  constructor(private readonly parent?: TParent) {}
+
+  /**
+   * Back to the request builder that created this one.
+   * @throws {Error} on a `PreferBuilder` created with `new PreferBuilder()`, which has none.
+   */
+  done(): TParent {
+    if (this.parent === undefined) {
+      throw new Error("done(): this PreferBuilder wasn't created by a request builder's prefer().");
+    }
+    return this.parent;
+  }
 
   /**
    * Request response representation (instead of 204 No Content)

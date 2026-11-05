@@ -10,13 +10,16 @@ import { parseODataError } from "../errors/parseODataError.js";
 import { DataverseDuplicateError } from "../errors/DataverseDuplicateError.js";
 import { validateUrl, type UrlValidationOptions } from "../utils/validateUrl.js";
 import { PreferBuilder } from "./PreferBuilder.js";
+import { DataverseInvalidRequestError } from "../errors/NamedErrors.js";
+import { formatExpand, type ExpandOptions } from "../odata/expand.js";
 import type { DataverseClient } from "./DataverseClient.js";
 
 export class DataverseRequestBuilder {
   private state: QueryState = {};
   private headers: Record<string, string> = {};
   private preferValues: PreferOption[] = [];
-  private preferBuilder?: PreferBuilder;
+  private preferBuilder?: PreferBuilder<unknown>;
+  private expansions: string[] = [];
   private ifMatchValue?: string;
   private ifNoneMatchValue?: string;
   private impersonateUserId?: string;
@@ -39,8 +42,35 @@ export class DataverseRequestBuilder {
     return this;
   }
 
-  expand(...expands: string[]): this {
-    this.state.$expand = expands.join(",");
+  /**
+   * `$expand`. Pass navigation properties as strings (nested options may be written inline,
+   * `"primarycontactid($select=fullname)"`), and follow one with an {@link ExpandOptions} object to
+   * give it options:
+   *
+   * ```typescript
+   * .expand("primarycontactid", { select: ["fullname"] }, "contact_customer_accounts", { top: 5 })
+   * ```
+   *
+   * Calls add up: `.expand("a").expand("b")` expands both.
+   */
+  expand(...items: Array<string | ExpandOptions>): this {
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (typeof item !== "string") {
+        throw DataverseInvalidRequestError.invalidParameter(
+          "expand",
+          "an options object must follow the navigation property it belongs to"
+        );
+      }
+      const next = items.at(i + 1);
+      if (next !== undefined && typeof next !== "string") {
+        this.expansions.push(formatExpand(item, next));
+        i++;
+      } else {
+        this.expansions.push(item);
+      }
+    }
+    this.state.$expand = this.expansions.join(",");
     return this;
   }
 
@@ -80,23 +110,33 @@ export class DataverseRequestBuilder {
   }
 
   /**
-   * Build Prefer header fluently
+   * Build the Prefer header fluently. Call `done()` to get back to this builder:
+   * `client.api("accounts").prefer().allAnnotations().maxPageSize(50).done().get()`.
    */
-  prefer(): PreferBuilder;
+  prefer(): PreferBuilder<this>;
   /**
-   * Set Prefer header from array of options
+   * Set Prefer header from options
    */
   prefer(...values: PreferOption[]): this;
-  prefer(values: PreferOption[]): this;
-  prefer(...valuesOrArray: PreferOption[] | [PreferOption[]]): PreferBuilder | this {
-    if (valuesOrArray.length === 0) {
-      this.preferBuilder = new PreferBuilder();
-      return this.preferBuilder;
+  /**
+   * Set Prefer header from an array of options, or build it in a callback that keeps the chain:
+   * `client.api("accounts").prefer((p) => p.allAnnotations().maxPageSize(50)).get()`.
+   */
+  prefer(valuesOrConfigure: PreferOption[] | ((prefer: PreferBuilder<this>) => unknown)): this;
+  prefer(
+    ...valuesOrArray: Array<
+      PreferOption | PreferOption[] | ((prefer: PreferBuilder<this>) => unknown)
+    >
+  ): PreferBuilder<this> | this {
+    const first = valuesOrArray[0];
+    if (valuesOrArray.length === 0 || typeof first === "function") {
+      const builder = (this.preferBuilder ??= new PreferBuilder<this>(this)) as PreferBuilder<this>;
+      if (typeof first !== "function") return builder;
+      first(builder);
+      return this;
     }
 
-    const values: PreferOption[] = Array.isArray(valuesOrArray[0])
-      ? valuesOrArray[0]
-      : (valuesOrArray as PreferOption[]);
+    const values: PreferOption[] = Array.isArray(first) ? first : (valuesOrArray as PreferOption[]);
     this.preferValues.push(...values);
     return this;
   }
