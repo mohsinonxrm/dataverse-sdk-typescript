@@ -23,7 +23,7 @@
     "commander": "^13.0.0",
     "dotenv": "^16.5.1",
     "ejs": "^4.0.0",
-    "fast-xml-parser": "^5.0.0",
+    "fast-xml-parser": "^5.7.0",
     "zod": "^3.24.3"
   },
   "devDependencies": {
