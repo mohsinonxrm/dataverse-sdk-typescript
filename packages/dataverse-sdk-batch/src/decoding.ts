@@ -114,7 +114,9 @@ function parseHttpResponse(
 ): Pick<BatchResponsePart, "status" | "statusText" | "headers" | "body" | "bodyText"> {
   const lineEnd = /\r?\n/.exec(text);
   const statusLine = lineEnd ? text.slice(0, lineEnd.index) : text;
-  const statusMatch = /^HTTP\/\d+(?:\.\d+)?\s+(\d{3})(?:\s+(.*))?$/i.exec(statusLine.trim());
+  // One unambiguous match: the reason phrase starts after a single space or tab (it is trimmed
+  // below), so the pattern stays linear on long runs of whitespace.
+  const statusMatch = /^HTTP\/\d+(?:\.\d+)?[ \t]+(\d{3})(?:[ \t](.*))?$/i.exec(statusLine.trim());
   if (!statusMatch) {
     throw new Error(`Invalid HTTP status line in batch response part: ${statusLine}`);
   }
