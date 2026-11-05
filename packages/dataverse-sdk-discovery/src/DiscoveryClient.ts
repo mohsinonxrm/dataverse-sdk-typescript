@@ -8,23 +8,16 @@ import { DataverseInvalidRequestError } from "@mohsinonxrm/dataverse-sdk-core";
 import type { AccessTokenProvider } from "@mohsinonxrm/dataverse-sdk-core";
 import type { OrganizationDetail, DiscoveryOptions, DiscoveryResponse } from "./types.js";
 import { OrganizationState } from "./types.js";
-import { originOf } from "./environment.js";
-
-/**
- * Global Discovery Service endpoint for Commercial cloud
- */
-const GLOBAL_DISCOVERY_URL = "https://globaldisco.crm.dynamics.com/api/discovery/v2.0";
-
-/**
- * Discovery Service scopes for authentication
- */
-const DISCOVERY_SCOPES = ["https://globaldisco.crm.dynamics.com/.default"];
+import { originOf } from "./url.js";
+import { resolveDiscoveryEndpoint } from "./clouds.js";
+import type { DiscoveryClientOptions } from "./clouds.js";
 
 /**
  * Client for interacting with the Dataverse Global Discovery Service.
  *
  * The Discovery Service allows you to discover which Dataverse organizations
- * a user has access to across all regions in the Commercial cloud.
+ * a user has access to across all regions of a cloud: Commercial (`public`, the default), `gcc`,
+ * `usg` (GCC High), `dod` or `china`. See {@link DiscoveryClientOptions.cloud}.
  *
  * The service only returns environments for a signed-in user (a delegated token). An app-only
  * (client credentials) token gets no environments.
@@ -63,21 +56,50 @@ const DISCOVERY_SCOPES = ["https://globaldisco.crm.dynamics.com/.default"];
 export class DiscoveryClient {
   private readonly tokenProvider: AccessTokenProvider;
   private readonly baseUrl: string;
+  private readonly scopes: string[];
 
   /**
    * Creates a new DiscoveryClient instance
    *
    * @param tokenProvider - Token provider for authentication
-   * @param baseUrl - Optional custom discovery endpoint (defaults to Commercial global disco)
+   * @param options - A cloud (`{ cloud: "usg" }`), a custom `baseUrl` and/or `scopes`. For
+   *   backward compatibility a string is taken as `baseUrl`. Defaults to the Commercial cloud.
+   *
+   * @throws {DataverseInvalidRequestError} If `cloud` is unknown or `baseUrl` is not an absolute
+   *   http(s) URL
    *
    * @example
    * ```typescript
+   * // Commercial cloud
    * const discovery = new DiscoveryClient(tokenProvider);
+   *
+   * // GCC High: https://globaldisco.crm.microsoftdynamics.us, token for its /.default scope
+   * const gccHigh = new DiscoveryClient(tokenProvider, { cloud: "usg" });
+   *
+   * // Custom endpoint; the scope is derived from its host unless `scopes` is given
+   * const custom = new DiscoveryClient(tokenProvider, {
+   *   baseUrl: "https://globaldisco.crm.dynamics.com",
+   *   scopes: ["https://globaldisco.crm.dynamics.com/user_impersonation"],
+   * });
    * ```
    */
-  constructor(tokenProvider: AccessTokenProvider, baseUrl?: string) {
+  constructor(tokenProvider: AccessTokenProvider, options?: string | DiscoveryClientOptions) {
     this.tokenProvider = tokenProvider;
-    this.baseUrl = baseUrl ?? GLOBAL_DISCOVERY_URL;
+    const resolved = resolveDiscoveryEndpoint(
+      typeof options === "string" ? { baseUrl: options } : options
+    );
+    this.baseUrl = resolved.baseUrl;
+    this.scopes = resolved.scopes;
+  }
+
+  /** The Global Discovery Service root this client calls, e.g. `https://globaldisco.crm9.dynamics.com/api/discovery/v2.0`. */
+  getBaseUrl(): string {
+    return this.baseUrl;
+  }
+
+  /** The scopes this client requests its token for. */
+  getScopes(): string[] {
+    return [...this.scopes];
   }
 
   /**
@@ -116,7 +138,7 @@ export class DiscoveryClient {
    */
   async listOrganizations(options?: DiscoveryOptions): Promise<OrganizationDetail[]> {
     // Get access token
-    const token = await this.tokenProvider.getToken(DISCOVERY_SCOPES);
+    const token = await this.tokenProvider.getToken(this.scopes);
 
     // Build query string
     const queryParams: string[] = [];
