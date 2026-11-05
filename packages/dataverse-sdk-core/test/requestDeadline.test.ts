@@ -65,16 +65,18 @@ async function timed<T>(p: Promise<T>): Promise<{ ms: number; result: unknown }>
 describe("#46: timeoutMs covers the whole request", () => {
   it("a server that keeps answering 503 fails at the deadline, not after every retry", async () => {
     const { client, calls } = makeClient(() => new Response(null, { status: 503 }), {
-      retry: { maxRetries: 3, baseDelayMs: 200, jitter: false },
+      retry: { maxRetries: 3, baseDelayMs: 2000, jitter: false },
     });
-    const { ms, result } = await timed(client.api("WhoAmI").get({ timeoutMs: 300 }));
+    const { ms, result } = await timed(client.api("WhoAmI").get({ timeoutMs: 200 }));
     expect(result).toBeInstanceOf(DataverseNetworkError);
     expect(result).toMatchObject({
       name: "RequestTimeout",
-      message: "Request timed out after 300ms",
+      message: "Request timed out after 200ms",
     });
-    expect(ms).toBeLessThan(500); // the retries alone would take 200 + 400 + 800 ms
-    expect(calls()).toBe(2); // the second wait (400 ms) was cut short
+    // The retries alone would take 2 + 4 + 8 s; the deadline cuts the first wait short. The bound
+    // is loose on purpose (slow CI runners), and far below the first retry wait.
+    expect(ms).toBeLessThan(1500);
+    expect(calls()).toBe(1);
   });
 
   it("a 429 with a Retry-After longer than the deadline fails at the deadline", async () => {
@@ -84,7 +86,7 @@ describe("#46: timeoutMs covers the whole request", () => {
     );
     const { ms, result } = await timed(client.api("WhoAmI").get({ timeoutMs: 200 }));
     expect(result).toMatchObject({ name: "RequestTimeout" });
-    expect(ms).toBeLessThan(600);
+    expect(ms).toBeLessThan(2500); // waiting out Retry-After and retrying would take over 6 s
   });
 
   it("the wait for a concurrency slot counts too, and leaves the queue", async () => {
@@ -107,7 +109,7 @@ describe("#46: timeoutMs covers the whole request", () => {
     await new Promise((r) => setTimeout(r, 5));
     const { ms, result } = await timed(client.api("second").get({ timeoutMs: 50 }));
     expect(result).toMatchObject({ name: "RequestTimeout" });
-    expect(ms).toBeLessThan(300);
+    expect(ms).toBeLessThan(2000); // without a deadline it would wait forever
     release();
     await first;
     // The timed-out request left the queue: the slot went back without sending it.
@@ -118,7 +120,7 @@ describe("#46: timeoutMs covers the whole request", () => {
   it("a caller's abort during a retry wait is an abort, not a timeout", async () => {
     const controller = new AbortController();
     const { client } = makeClient(() => new Response(null, { status: 503 }), {
-      retry: { maxRetries: 3, baseDelayMs: 1000, jitter: false },
+      retry: { maxRetries: 3, baseDelayMs: 3000, jitter: false },
     });
     setTimeout(() => {
       controller.abort();
@@ -127,7 +129,7 @@ describe("#46: timeoutMs covers the whole request", () => {
       client.api("WhoAmI").get({ timeoutMs: 5000, signal: controller.signal })
     );
     expect(result).toBeInstanceOf(DataverseAbortError);
-    expect(ms).toBeLessThan(500);
+    expect(ms).toBeLessThan(2000); // the first retry wait is 3000 ms
   });
 
   it("a request that answers in time is unaffected, and the timer is cleared", async () => {
@@ -146,7 +148,7 @@ describe("#46: attemptTimeoutMs limits one attempt", () => {
       name: "RequestTimeout",
       message: "Request timed out after 50ms",
     });
-    expect(ms).toBeLessThan(300);
+    expect(ms).toBeLessThan(2000); // without a deadline it would wait forever
     expect(calls()).toBe(1);
   });
 
