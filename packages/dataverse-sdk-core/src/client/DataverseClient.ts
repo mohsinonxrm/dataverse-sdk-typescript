@@ -115,6 +115,7 @@ export class DataverseClient {
       ...this.baseCtx,
       correlationId: request.correlationId ?? generateUUID(),
       attempt: 0,
+      middlewareOptions: request.middlewareOptions,
     };
     return this.pipeline.execute(req, ctx, (r, c) => this.adapter.send(r, c));
   }
@@ -128,6 +129,7 @@ function applyOptions(req: RequestInformation, opt?: RequestOptions) {
   });
   if (opt.timeoutMs !== undefined) req.timeoutMs = opt.timeoutMs;
   if (opt.correlationId) req.correlationId = opt.correlationId;
+  if (opt.middlewareOptions) req.middlewareOptions = opt.middlewareOptions;
   if (opt.signal) req.signal = opt.signal;
   if (opt.prefer?.length) {
     // Prefer is a single header with comma-separated values; names are lower-cased above.

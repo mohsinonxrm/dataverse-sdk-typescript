@@ -1,7 +1,6 @@
 import type { Middleware, NextMiddleware } from "../abstractions/middleware.js";
 import type { MiddlewareContext, RequestInformation } from "../abstractions/http.js";
 import type { DataverseClientOptions } from "../abstractions/options.js";
-import type { RetryOptions } from "./RequestOptions.js";
 import { withJitter } from "../utils/jitter.js";
 import { sleep } from "../utils/sleep.js";
 import { isStreamBody } from "../utils/body.js";
@@ -25,14 +24,17 @@ export class RetryMiddleware implements Middleware {
     next: NextMiddleware
   ): Promise<Response> {
     // Check for per-request retry options override
-    // tsc needs this assertion; typescript-eslint's project service resolves the type differently and
-    // calls it unnecessary. Per-request options are being reworked in #16.
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-    const perRequestOptions = ctx.middlewareOptions?.get("retry") as RetryOptions | undefined;
+    const perRequestOptions = ctx.middlewareOptions?.get("retry");
     const opt = {
       ...DEFAULTS,
       ...this.options.retry,
-      ...perRequestOptions,
+      ...definedOnly({
+        maxRetries: perRequestOptions?.maxRetries,
+        // The per-request type calls the base delay `delay`.
+        baseDelayMs: perRequestOptions?.delay,
+        retryableStatusCodes: perRequestOptions?.retryableStatusCodes,
+        useExponentialBackoff: perRequestOptions?.useExponentialBackoff,
+      }),
     };
 
     // A stream body can be read only once, so a request carrying one is never retried.
@@ -103,4 +105,9 @@ function shouldRetry(status: number, retryableStatusCodes?: number[]): boolean {
 function backoff(base: number, attempt: number, max: number): number {
   const v = Math.min(max, base * 2 ** attempt);
   return v;
+}
+
+/** Drop undefined values so they don't override client-level settings when spread. */
+function definedOnly<T extends Record<string, unknown>>(o: T): Partial<T> {
+  return Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined)) as Partial<T>;
 }

@@ -13,6 +13,11 @@ export class LoggingMiddleware implements Middleware {
     ctx: MiddlewareContext,
     next: NextMiddleware
   ): Promise<Response> {
+    const perRequest = ctx.middlewareOptions?.get("logging");
+    // This middleware only logs at debug level, so any higher per-request level silences it.
+    if (perRequest?.disable || (perRequest?.logLevel && perRequest.logLevel !== "debug")) {
+      return next(request, ctx);
+    }
     const logger = this.options.logger ?? ctx.logger ?? ConsoleLogger;
     const start = Date.now();
     logger.debug(`➡️ ${request.method} ${request.url}`, { attempt: String(ctx.attempt) });

@@ -111,10 +111,29 @@ export interface LoggingOptions extends MiddlewareOptions {
  * const retryOpts = requestOptions.get('retry');
  * ```
  */
+/** Option types of the built-in middleware, keyed by their `type`. */
+export interface BuiltInMiddlewareOptions {
+  retry: RetryOptions;
+  concurrency: ConcurrencyOptions;
+  telemetry: TelemetryOptions;
+  logging: LoggingOptions;
+}
+
+/**
+ * One entry passed to the `RequestOptions` constructor: the built-in middleware types are
+ * checked, and any other `type` (for custom middleware) takes arbitrary fields.
+ */
+export type MiddlewareOptionEntry =
+  | ({ type: "retry" } & RetryOptions)
+  | ({ type: "concurrency" } & ConcurrencyOptions)
+  | ({ type: "telemetry" } & TelemetryOptions)
+  | ({ type: "logging" } & LoggingOptions)
+  | ({ type: string } & Record<string, unknown>);
+
 export class RequestOptions {
   private optionsMap: Map<string, MiddlewareOptions> = new Map<string, MiddlewareOptions>();
 
-  constructor(options?: Array<{ type: string } & MiddlewareOptions>) {
+  constructor(options?: MiddlewareOptionEntry[]) {
     if (options) {
       for (const option of options) {
         const { type, ...rest } = option;
@@ -128,6 +147,10 @@ export class RequestOptions {
    * @param middlewareType - The middleware type ('retry', 'concurrency', 'telemetry', 'logging')
    * @returns The middleware options or undefined if not set
    */
+  get<K extends keyof BuiltInMiddlewareOptions>(
+    middlewareType: K
+  ): BuiltInMiddlewareOptions[K] | undefined;
+  get(middlewareType: string): MiddlewareOptions | undefined;
   get(middlewareType: string): MiddlewareOptions | undefined {
     return this.optionsMap.get(middlewareType);
   }
