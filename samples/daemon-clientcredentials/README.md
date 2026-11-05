@@ -39,14 +39,11 @@ Create an app registration in [Azure Portal](https://portal.azure.com):
 4. Click **Add**
 5. **⚠️ IMPORTANT:** Copy the **Value** immediately (you cannot retrieve it later)
 
-#### Configure API Permissions
+#### API Permissions
 
-1. Go to **API permissions** → **Add a permission**
-2. Select **Dynamics CRM** (or "Common Data Service")
-3. Select **Application permissions** (not Delegated)
-4. Check **user_impersonation** (this is misleading naming - it's required for service principals)
-5. Click **Add permissions**
-6. **REQUIRED:** Click **Grant admin consent for [tenant]**
+None needed. Dynamics CRM exposes no application permissions (its only permission,
+`user_impersonation`, is delegated, for apps where a user signs in), and admin consent doesn't
+apply. App-only access comes from the application user below and its security role.
 
 ### 2. Create Application User in Dataverse
 
@@ -158,11 +155,20 @@ BATCH_SIZE=500 pnpm start
 This flow authenticates as the **application itself** (not as a user):
 
 ```typescript
-const tokenProvider = new MsalNodeTokenProvider({
-  clientId: "your-client-id",
-  tenantId: "your-tenant-id",
-  clientSecret: "your-client-secret",
+import { ConfidentialClientApplication } from "@azure/msal-node";
+import { MsalNodeTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-msal-node";
+
+const cca = new ConfidentialClientApplication({
+  auth: {
+    clientId: env.clientId,
+    authority: `https://login.microsoftonline.com/${env.tenantId}`,
+    clientSecret: env.clientSecret,
+  },
+});
+
+const tokenProvider = new MsalNodeTokenProvider(cca, {
   flow: "clientCredentials",
+  scopes: [`${new URL(env.dataverseUrl).origin}/.default`],
 });
 ```
 
@@ -256,11 +262,11 @@ await client.execute(action); // Returns 204 No Content
 ```typescript
 const response = await client
   .api("/accounts")
-  .select(["name", "createdon", "websiteurl"])
+  .select("name", "createdon", "websiteurl")
   .filter(`contains(name, 'Bulk Account')`)
-  .orderby("createdon desc")
+  .orderBy("createdon desc")
   .top(10)
-  .get();
+  .get<{ value: { name: string; createdon: string; websiteurl?: string }[] }>();
 
 console.log("Found:", response.value.length);
 ```
@@ -475,9 +481,12 @@ The SDK includes built-in retry logic for 429 (throttling) responses, but consid
 const client = new DataverseClient({
   baseUrl: env.dataverseUrl,
   tokenProvider,
-  retryOptions: {
-    maxRetries: 5,
-    retryDelay: 1000,
+  retry: {
+    maxRetries: 5, // default 6
+    baseDelayMs: 1000, // default 3000; doubles per retry
+    maxDelayMs: 30000, // default 30000
+    onRetry: ({ attempt, maxRetries, status, delayMs }) =>
+      console.warn(`HTTP ${status}, retry ${attempt}/${maxRetries} in ${delayMs} ms`),
   },
 });
 ```

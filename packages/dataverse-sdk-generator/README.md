@@ -348,12 +348,23 @@ console.log("✓ Code generation complete!");
 Generated types work seamlessly with the core SDK:
 
 ```typescript
+import { ConfidentialClientApplication } from "@azure/msal-node";
 import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
 import { MsalNodeTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-msal-node";
 import { Account, Contact } from "./generated/index.js";
 
 // Setup client
-const tokenProvider = new MsalNodeTokenProvider({/* ... */});
+const cca = new ConfidentialClientApplication({
+  auth: {
+    clientId: "your-client-id",
+    authority: "https://login.microsoftonline.com/your-tenant-id",
+    clientSecret: process.env.CLIENT_SECRET!,
+  },
+});
+const tokenProvider = new MsalNodeTokenProvider(cca, {
+  flow: "clientCredentials",
+  scopes: ["https://org.crm.dynamics.com/.default"],
+});
 const client = new DataverseClient({
   baseUrl: "https://org.crm.dynamics.com/api/data/v9.2",
   tokenProvider,

@@ -23,13 +23,26 @@ pnpm add @mohsinonxrm/dataverse-sdk-core
 ## Quick Start
 
 ```typescript
+import { ConfidentialClientApplication } from "@azure/msal-node";
 import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
 import { MsalNodeTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-msal-node";
+
+// Token provider: an MSAL client application plus the flow and scopes to use
+const cca = new ConfidentialClientApplication({
+  auth: {
+    clientId: "your-client-id",
+    authority: "https://login.microsoftonline.com/your-tenant-id",
+    clientSecret: process.env.CLIENT_SECRET!,
+  },
+});
 
 // Create client with token provider
 const client = new DataverseClient({
   baseUrl: "https://org.crm.dynamics.com", // Accepts env root or full /api/data/v9.2 URL
-  tokenProvider: new MsalNodeTokenProvider({/* MSAL config */}),
+  tokenProvider: new MsalNodeTokenProvider(cca, {
+    flow: "clientCredentials",
+    scopes: ["https://org.crm.dynamics.com/.default"],
+  }),
 });
 
 // Execute OData query with fluent API
@@ -137,10 +150,7 @@ client
   .api("accounts")
   .select("name", "accountnumber", "revenue") // $select (comma-separated)
   .filter("revenue gt 1000000 and statecode eq 0") // $filter (OData expression)
-  .expand("primarycontactid", {
-    // $expand with nested options
-    select: ["fullname", "emailaddress1"], // Currently supports simple string expand
-  })
+  .expand("primarycontactid($select=fullname,emailaddress1)") // $expand (strings; nested options inline)
   .orderBy("name asc", "revenue desc") // $orderby (multiple fields)
   .top(50) // $top
   .skip(100) // $skip
@@ -170,39 +180,42 @@ await builder.get({
 Build complex `Prefer` headers using either fluent PreferBuilder or typed Prefer helper.
 
 ```typescript
-import { PreferBuilder } from "@mohsinonxrm/dataverse-sdk-core";
-
-// Method 1: Fluent PreferBuilder (recommended for complex scenarios)
-await client
-  .api("/accounts")
-  .prefer() // Returns PreferBuilder instance
-  .returnRepresentation() // return=representation
-  .formattedValues() // odata.include-annotations="OData.Community.Display.V1.FormattedValue"
-  .allAnnotations() // odata.include-annotations="*"
-  .maxPageSize(50) // odata.maxpagesize=50
-  .continueOnError() // odata.continue-on-error (batch operations)
-  .trackChanges() // odata.track-changes (delta queries)
-  .post({ name: "Contoso" });
-
-// Method 2: Prefer helper (simple scenarios)
 import { Prefer } from "@mohsinonxrm/dataverse-sdk-core";
 
+// Method 1: Prefer helper values (chains like any other builder method)
 await client
   .api("/accounts")
-  .preferRaw(Prefer.returnRepresentation()) // Type-safe helper
+  .prefer(Prefer.returnRepresentation(), Prefer.includeAnnotations("*"))
   .post({ name: "Contoso" });
 
-// Method 3: Array syntax (existing API, still supported)
+// The same values as an array
 await client
   .api("/accounts")
-  .prefer(["return=representation", 'odata.include-annotations="*"'])
+  .prefer([Prefer.returnRepresentation(), Prefer.includeAnnotations("*")])
   .post({ name: "Contoso" });
 
-// Prefer helper methods available:
+// Method 2: Raw string, for a preference without a helper
+await client.api("/accounts").preferRaw("odata.maxpagesize=50").get();
+
+// Method 3: Fluent PreferBuilder. prefer() with no arguments returns a PreferBuilder, which has
+// no terminal methods (get/post/...), so keep a reference to the request builder:
+const request = client.api("/accounts");
+request
+  .prefer() // Returns a PreferBuilder
+  .formattedValues() // odata.include-annotations="OData.Community.Display.V1.FormattedValue"
+  .maxPageSize(50); // odata.maxpagesize=50
+const page = await request.get();
+// PreferBuilder also has returnRepresentation(), allAnnotations() (odata.include-annotations="*"),
+// continueOnError() and trackChanges() (odata.track-changes, for change tracking queries).
+
+// Prefer helper values available:
 Prefer.returnRepresentation(); // 'return=representation'
 Prefer.includeAnnotations("*"); // 'odata.include-annotations="*"'
 Prefer.continueOnError(); // 'odata.continue-on-error'
 ```
+
+`DataverseClientOptions.defaultPrefer` adds `Prefer` values to every request; a request that sets
+the same preference keeps its own value.
 
 #### ETag Operations (Optimistic Concurrency)
 
@@ -210,7 +223,7 @@ Convenient methods for optimistic concurrency control and upserts.
 
 ```typescript
 // Retrieve entity with ETag
-const account = await client.api(`/accounts(${accountId})`).get();
+const account = await client.api(`/accounts(${accountId})`).get<{ "@odata.etag": string }>();
 const etag = account["@odata.etag"]; // e.g., 'W/"12345678"'
 
 // Optimistic concurrency - update only if not modified
@@ -292,20 +305,14 @@ Simplified syntax for binding single-valued and collection-valued navigation pro
 ```typescript
 // ========== Single-Valued Navigation (Lookup Fields) ==========
 
-// Approach 1: Fluent bind() method (adds to request body)
-await client
-  .api("/contacts")
-  .post({
-    firstname: "John",
-    lastname: "Doe",
-    emailaddress1: "john@contoso.com",
-  })
-  .bind("parentcustomerid_account", "accounts", accountId)
-  .post({
-    firstname: "John",
-    lastname: "Doe",
-  });
-// Merges binding into POST body automatically
+// Approach 1: Fluent bind() method, before the terminal call
+await client.api("/contacts").bind("parentcustomerid_account", "accounts", accountId).post({
+  firstname: "John",
+  lastname: "Doe",
+  emailaddress1: "john@contoso.com",
+});
+// The binding is merged into the body of post(), patch(), createAndGetId() and
+// response("POST" | "PATCH", body). put() sends its body unchanged: use client.bind() there.
 
 // Approach 2: client.bind() helper (manual spread)
 await client.api("/contacts").post({
@@ -499,6 +506,7 @@ DataverseError (base)
 Customize request/response processing with middleware. All requests flow through the middleware pipeline in sequence.
 
 ```typescript
+import { DataverseClient, LoggingMiddleware } from "@mohsinonxrm/dataverse-sdk-core";
 import type {
   Middleware,
   RequestInformation,
@@ -864,25 +872,30 @@ Authentication interface - implement this to provide OAuth tokens.
 ```typescript
 export interface AccessTokenProvider {
   /**
-   * Acquire an access token for the specified scopes
-   * @param scopes - OAuth scopes (string or string array)
-   * @param options - Optional token acquisition options
+   * @param scopes - Scopes to request. When omitted, the provider uses its configured default scopes.
    * @returns Access token (JWT bearer token as string)
    */
-  getToken(scopes: string | string[], options?: TokenOptions): Promise<string>;
+  getToken(scopes?: string | string[], options?: TokenOptions): Promise<string>;
 }
 
 export interface TokenOptions {
-  /** Optional claims challenge from WWW-Authenticate header */
+  /** Claims from a Conditional Access / CAE challenge (decoded JSON), set by the SDK after a 401 */
   claims?: string;
 
-  /** Optional tenant ID for multi-tenant scenarios */
+  /** Tenant ID for multi-tenant scenarios */
   tenantId?: string;
 
-  /** Optional correlation ID for tracing */
+  /** The SDK's correlation id for the request */
   correlationId?: string;
+
+  /** Skip any cached token and get a new one. Set by the SDK after a 401 without a claims challenge */
+  forceRefresh?: boolean;
 }
 ```
+
+The SDK passes the client's `scopes` option to `getToken` when it is set, and `undefined`
+otherwise, so the provider uses its own default scopes. Whether a provider honours `forceRefresh` is up to the provider: the MSAL and Azure Identity
+providers in this repo don't act on it yet ([#167](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/167)).
 
 **Example implementations:**
 
@@ -893,17 +906,25 @@ export interface TokenOptions {
 **Usage:**
 
 ```typescript
+import { PublicClientApplication } from "@azure/msal-node";
 import { MsalNodeTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-msal-node";
 
-const tokenProvider = new MsalNodeTokenProvider({
-  clientId: "your-app-id",
-  authority: "https://login.microsoftonline.com/your-tenant-id",
+const pca = new PublicClientApplication({
+  auth: {
+    clientId: "your-app-id",
+    authority: "https://login.microsoftonline.com/your-tenant-id",
+  },
+});
+
+const tokenProvider = new MsalNodeTokenProvider(pca, {
+  flow: "deviceCode",
+  scopes: ["https://org.crm.dynamics.com/.default"],
+  deviceCodeCallback: (response) => console.log(response.message),
 });
 
 const client = new DataverseClient({
   baseUrl: "https://org.crm.dynamics.com",
   tokenProvider,
-  scopes: ["https://org.crm.dynamics.com/.default"],
 });
 ```
 
@@ -1059,12 +1080,18 @@ export interface Executable<T> {
 
 export interface RequestInformation {
   method: "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
+  /** Absolute URL, or a path relative to the Web API root */
   url: string;
   headers: Record<string, string>;
-  query?: string;
+  /** Query parameters (URL-encoded when sent) */
+  query?: Record<string, string | number | boolean | undefined | null>;
   body?: unknown;
   timeoutMs?: number;
   signal?: AbortSignal;
+  /** Sent as x-ms-correlation-id; a new one is generated when omitted */
+  correlationId?: string;
+  /** Per-request middleware overrides, e.g. new MiddlewareRequestOptions([{ type: "retry", maxRetries: 0 }]) */
+  middlewareOptions?: MiddlewareRequestOptions;
 }
 ```
 
@@ -1122,7 +1149,7 @@ pnpm test --coverage        # Generate coverage report
 
 ## Bundle Size
 
-- **Core package:** ~50KB minified (ESM, tree-shakeable)
+- **ESM only**, marked `"sideEffects": false` so bundlers can tree-shake it
 - **Zero dependencies** (runtime)
 - **Peer dependencies:** None (works with any auth provider implementing `AccessTokenProvider`)
 
@@ -1224,8 +1251,8 @@ See [CONTRIBUTING.md](../../CONTRIBUTING.md) for development setup and guideline
 
 ## Support
 
-- **Issues:** [GitHub Issues](https://github.com/mohsinonxrm/mxrm-dataverse-sdk-typescript/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/mohsinonxrm/mxrm-dataverse-sdk-typescript/discussions)
+- **Issues:** [GitHub Issues](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/mohsinonxrm/dataverse-sdk-typescript/discussions)
 - **Documentation:** [docs/](../../docs/)
 
 ---

@@ -18,14 +18,22 @@ pnpm add @mohsinonxrm/dataverse-sdk-discovery @mohsinonxrm/dataverse-sdk-auth-ms
 ## Quick Start
 
 ```typescript
+import { PublicClientApplication } from "@azure/msal-node";
 import { DiscoveryClient, toEnvironment } from "@mohsinonxrm/dataverse-sdk-discovery";
 import { MsalNodeTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-msal-node";
 
 // Create token provider (using device code flow)
-const tokenProvider = new MsalNodeTokenProvider({
-  clientId: "your-client-id",
-  authority: "https://login.microsoftonline.com/your-tenant-id",
+const pca = new PublicClientApplication({
+  auth: {
+    clientId: "your-client-id",
+    authority: "https://login.microsoftonline.com/your-tenant-id",
+  },
+});
+const tokenProvider = new MsalNodeTokenProvider(pca, {
   flow: "deviceCode",
+  // The provider's default scopes; DiscoveryClient asks for its own scope on every call
+  scopes: ["https://globaldisco.crm.dynamics.com/.default"],
+  deviceCodeCallback: (response) => console.log(response.message),
 });
 
 // Create discovery client
@@ -240,15 +248,22 @@ interface OrganizationDetail {
 ## Complete Example: Interactive Organization Selector
 
 ```typescript
+import { PublicClientApplication } from "@azure/msal-node";
 import { DiscoveryClient, toEnvironment } from "@mohsinonxrm/dataverse-sdk-discovery";
 import { MsalNodeTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-msal-node";
 import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
 
 async function selectOrganization() {
-  const tokenProvider = new MsalNodeTokenProvider({
-    clientId: process.env.CLIENT_ID!,
-    authority: `https://login.microsoftonline.com/${process.env.TENANT_ID}`,
+  const pca = new PublicClientApplication({
+    auth: {
+      clientId: process.env.CLIENT_ID!,
+      authority: `https://login.microsoftonline.com/${process.env.TENANT_ID}`,
+    },
+  });
+  const tokenProvider = new MsalNodeTokenProvider(pca, {
     flow: "deviceCode",
+    scopes: ["https://globaldisco.crm.dynamics.com/.default"],
+    deviceCodeCallback: (response) => console.log(response.message),
   });
 
   const discovery = new DiscoveryClient(tokenProvider);

@@ -4,7 +4,7 @@
 
 ## Table of Contents
 
-1. [The Three Front Doors](#the-three-front-doors)
+1. [Two Front Doors, Plus Typed Executables](#two-front-doors-plus-typed-executables)
 2. [CRUD Operations](#crud-operations)
 3. [Actions](#actions)
 4. [Functions](#functions)
@@ -14,9 +14,11 @@
 
 ---
 
-## The Three Front Doors
+## Two Front Doors, Plus Typed Executables
 
-Based on ADR-0001, this SDK provides **THREE** ways to interact with Dataverse:
+Based on ADR-0001, this SDK has **two front doors**: the HTTP-first fluent API and the
+OrganizationService facade. Typed actions, functions and messages are `Executable<T>` classes that
+either front door runs, with `client.execute()` or `service.execute()`.
 
 ### 1. HTTP-First Fluent API (`client.api()`)
 
@@ -25,19 +27,21 @@ Based on ADR-0001, this SDK provides **THREE** ways to interact with Dataverse:
 - Maximum **flexibility**
 - Best for: Web developers, custom scenarios, direct HTTP control
 
-### 2. Typed Executables (`client.execute()`)
-
-- **Typed** action/function/metadata classes
-- **Type-safe** at compile time
-- Implements `Executable<T>` interface
-- Best for: Type safety, IDE autocomplete, compile-time validation
-
-### 3. OrganizationService Facade (`orgService.create/retrieve/update/delete/execute`)
+### 2. OrganizationService Facade (`orgService.create/retrieve/update/delete/execute`)
 
 - **C#-familiar** API surface
 - Matches **Dataverse C# SDK** patterns
 - Built on top of HTTP primitives
 - Best for: C# developers migrating to TypeScript, familiar patterns
+
+### Typed Executables (`client.execute()` / `service.execute()`)
+
+Not a third front door: typed requests that either front door executes.
+
+- **Typed** action/function/message classes
+- **Type-safe** at compile time
+- Implements `Executable<T>` interface
+- Best for: Type safety, IDE autocomplete, compile-time validation
 
 ---
 
@@ -46,30 +50,56 @@ Based on ADR-0001, this SDK provides **THREE** ways to interact with Dataverse:
 ### 1. Late-Bound with `client.api()` (HTTP-First)
 
 ```typescript
-import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+import { ConfidentialClientApplication } from "@azure/msal-node";
+import { DataverseClient, Prefer } from "@mohsinonxrm/dataverse-sdk-core";
 import { MsalNodeTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-msal-node";
+
+interface Account {
+  accountid: string;
+  name: string;
+  telephone1?: string;
+  revenue?: number;
+}
+
+const cca = new ConfidentialClientApplication({
+  auth: {
+    clientId: "your-client-id",
+    authority: "https://login.microsoftonline.com/your-tenant-id",
+    clientSecret: process.env.CLIENT_SECRET!,
+  },
+});
 
 const client = new DataverseClient({
   baseUrl: "https://org.crm.dynamics.com",
-  tokenProvider: new MsalNodeTokenProvider({/* config */}),
+  tokenProvider: new MsalNodeTokenProvider(cca, {
+    flow: "clientCredentials",
+    scopes: ["https://org.crm.dynamics.com/.default"],
+  }),
 });
 
 // ========== CREATE ==========
-const createResponse = await client.api("/accounts").preferRaw("return=representation").post({
-  name: "Contoso Ltd",
-  telephone1: "555-1234",
-  revenue: 1000000,
-});
+const createResponse = await client
+  .api("/accounts")
+  .prefer(Prefer.returnRepresentation())
+  .post<Account>({
+    name: "Contoso Ltd",
+    telephone1: "555-1234",
+    revenue: 1000000,
+  });
 
 const accountId = createResponse.accountid;
 console.log(`Created account: ${accountId}`);
 
+// Without return=representation, createAndGetId() reads the id from OData-EntityId
+const otherId = await client.api("/accounts").createAndGetId({ name: "Fabrikam" });
+
 // ========== RETRIEVE ==========
+// expand() takes strings; nested query options go inline in OData syntax
 const account = await client
   .api(`/accounts(${accountId})`)
   .select("name", "telephone1", "revenue", "createdon")
-  .expand("primarycontactid", { select: ["fullname", "emailaddress1"] })
-  .get();
+  .expand("primarycontactid($select=fullname,emailaddress1)")
+  .get<Account & { primarycontactid?: { fullname: string } }>();
 
 console.log(`Account: ${account.name}, Revenue: ${account.revenue}`);
 
@@ -82,7 +112,7 @@ await client.api(`/accounts(${accountId})`).patch({
 console.log("Account updated");
 
 // ========== DELETE ==========
-await client.api(`/accounts(${accountId}`).delete();
+await client.api(`/accounts(${accountId})`).delete();
 
 console.log("Account deleted");
 
@@ -93,21 +123,26 @@ const accounts = await client
   .filter("revenue gt 500000")
   .orderBy("revenue desc")
   .top(10)
-  .get();
+  .get<{ value: Account[] }>();
 
 console.log(`Found ${accounts.value.length} accounts`);
 
 // ========== PAGING ==========
-// Single page (default)
-const page1 = await client.api("/accounts").select("name").top(5).get();
+// Single page (default). getPage() types the body as { value, "@odata.nextLink"? }.
+// Dataverse pages with the odata.maxpagesize preference ($top limits the total instead).
+const page1 = await client
+  .api("/accounts")
+  .select("name")
+  .preferRaw("odata.maxpagesize=5")
+  .getPage<Account>();
 
 // Get next page
 if (page1["@odata.nextLink"]) {
-  const page2 = await client.api(page1["@odata.nextLink"]).get();
+  const page2 = await client.api(page1["@odata.nextLink"]).getPage<Account>();
 }
 
 // Iterate all pages
-for await (const account of client.api("/accounts").select("name").iterate()) {
+for await (const account of client.api("/accounts").select("name").iterate<Account>()) {
   console.log(account.name);
 }
 
@@ -387,17 +422,16 @@ console.log(`Organization ID: ${whoAmIResponse.OrganizationId}`);
 
 ```typescript
 // ========== WhoAmI (Raw HTTP GET) ==========
-const whoAmI = await client.api("/WhoAmI").get();
+const whoAmI = await client.api("/WhoAmI").get<{ UserId: string }>();
 
 console.log(`User ID: ${whoAmI.UserId}`);
 
 // ========== Functions with Parameters (OData parameter aliases) ==========
-// GetValidReferencingEntities function
+// The builder has no method for parameter aliases: put them in the path's query string.
+// The builder's own query options ($select, ...) are added to it.
 const result = await client
-  .api("/GetValidReferencingEntities")
-  .query("@EntityLogicalName", "'account'")
-  .query("@PropertyName", "''")
-  .get();
+  .api("/GetValidReferencingEntities(ReferencedEntityName=@p1)?@p1='account'")
+  .get<{ EntityNames: string[] }>();
 
 // Note: Functions use GET with parameter aliases following Microsoft OData guidance
 ```
@@ -452,25 +486,33 @@ const response = await client.execute(workflowRequest);
 
 All messages are exported directly (no namespaces required):
 
-````typescript
+```typescript
 // System messages
-import { WhoAmIRequest, WhoAmIResponse } from '@mohsinonxrm/dataverse-sdk-messages';
-import { AssignRequest, AssignResponse } from '@mohsinonxrm/dataverse-sdk-messages';
-import { SetStateRequest, SetStateResponse } from '@mohsinonxrm/dataverse-sdk-messages';
+import { WhoAmIRequest, WhoAmIResponse } from "@mohsinonxrm/dataverse-sdk-messages";
+import { AssignRequest, AssignResponse } from "@mohsinonxrm/dataverse-sdk-messages";
+import { SetStateRequest, SetStateResponse } from "@mohsinonxrm/dataverse-sdk-messages";
 
 // Workflow and process messages
-import { ExecuteWorkflowRequest, ExecuteWorkflowResponse } from '@mohsinonxrm/dataverse-sdk-messages';
+import {
+  ExecuteWorkflowRequest,
+  ExecuteWorkflowResponse,
+} from "@mohsinonxrm/dataverse-sdk-messages";
 
 // Sales messages
-import { WinOpportunityRequest, WinOpportunityResponse } from '@mohsinonxrm/dataverse-sdk-messages';
-import { LoseOpportunityRequest, LoseOpportunityResponse } from '@mohsinonxrm/dataverse-sdk-messages';
-import { QualifyLeadRequest, QualifyLeadResponse } from '@mohsinonxrm/dataverse-sdk-messages';
+import { WinOpportunityRequest, WinOpportunityResponse } from "@mohsinonxrm/dataverse-sdk-messages";
+import {
+  LoseOpportunityRequest,
+  LoseOpportunityResponse,
+} from "@mohsinonxrm/dataverse-sdk-messages";
+import { QualifyLeadRequest, QualifyLeadResponse } from "@mohsinonxrm/dataverse-sdk-messages";
 
 // Solution messages
-import { ExportSolutionRequest, ExportSolutionResponse } from '@mohsinonxrm/dataverse-sdk-messages';
-import { ImportSolutionRequest, ImportSolutionResponse } from '@mohsinonxrm/dataverse-sdk-messages';
-import { PublishXmlRequest, PublishXmlResponse } from '@mohsinonxrm/dataverse-sdk-messages';
-impoHow Message Execution Works
+import { ExportSolutionRequest, ExportSolutionResponse } from "@mohsinonxrm/dataverse-sdk-messages";
+import { ImportSolutionRequest, ImportSolutionResponse } from "@mohsinonxrm/dataverse-sdk-messages";
+import { PublishXmlRequest, PublishXmlResponse } from "@mohsinonxrm/dataverse-sdk-messages";
+```
+
+### How Message Execution Works
 
 All message classes implement the `Executable<TResponse>` interface from `@mohsinonxrm/dataverse-sdk-core`:
 
@@ -479,7 +521,7 @@ export interface Executable<T> {
   toRequestInformation(baseUrl: string): RequestInformation;
   parseResponse(response: Response): Promise<T>;
 }
-````
+```
 
 Each message class encapsulates:
 
@@ -489,11 +531,11 @@ Each message class encapsulates:
 **OrganizationService.execute() implementation:**
 
 ```typescript
-// FROM: packages/dataverse-sdk-xrm/src/OrganizationService.ts (lines 663-675)
-async execute<TRequest, TResponse>(request: TRequest): Promise<TResponse> {
+// FROM: packages/dataverse-sdk-xrm/src/OrganizationService.ts (OrganizationService.execute)
+async execute<TResponse>(request: unknown): Promise<TResponse> {
   // Check if request implements Executable<T> interface
   if (this.isExecutable(request)) {
-    return this.client.execute(request as any);
+    return await this.client.execute(request);
   }
 
   throw new Error(
@@ -721,7 +763,7 @@ User Code
    ↓
 client.execute() OR client.api()
    ↓
-Pipeline (AuthMiddleware → RetryMiddleware → ConcurrencyMiddleware → TelemetryMiddleware)
+Pipeline (ODataHeaders → Concurrency → Retry → Auth → Telemetry → Logging)
    ↓
 FetchRequestAdapter
    ↓
@@ -766,11 +808,12 @@ Metadata types use `ComplexLookupAttributeMetadata` and `ComplexOneToManyRelatio
 
 ## Conclusion
 
-The SDK provides **flexibility** with three front doors:
+The SDK provides **flexibility** with two front doors, and typed executables that run through
+either of them:
 
 1. **HTTP-First** (`client.api()`) - Maximum control, OData expertise required
-2. **Typed Executables** (`client.execute()`) - Type safety, IDE support, recommended for actions/functions
-3. **OrganizationService** - C#-familiar, good for CRUD, built on HTTP primitives
+2. **OrganizationService** - C#-familiar, good for CRUD, built on HTTP primitives
+3. **Typed Executables** (`client.execute()` / `service.execute()`) - Type safety, IDE support, recommended for actions/functions
 
 **Recommendation**:
 

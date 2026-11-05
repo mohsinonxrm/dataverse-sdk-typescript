@@ -65,7 +65,11 @@ const client = new DataverseClient({
 });
 
 // Step 5: Use the client - first call triggers popup login automatically
-const accounts = await client.api("/accounts").select("name", "accountnumber").top(10).get();
+const accounts = await client
+  .api("/accounts")
+  .select("name", "accountnumber")
+  .top(10)
+  .get<{ value: { name: string; accountnumber?: string }[] }>();
 
 console.log(`Retrieved ${accounts.value.length} accounts`);
 ```
@@ -179,7 +183,7 @@ const client = new DataverseClient({
 });
 
 // All API calls use silent token acquisition (no popup after initial login)
-const whoami = await client.api("/WhoAmI").get();
+const whoami = await client.api("/WhoAmI").get<{ UserId: string }>();
 console.log(`User ID: ${whoami.UserId}`);
 ```
 
@@ -230,12 +234,22 @@ await pca.loginPopup({ scopes: scopesForEnvironment(environmentUrl) });
 
 The `@azure/msal-react` library provides React-specific hooks and components for MSAL authentication.
 
-```typescript
-import React from 'react';
-import { MsalProvider, useMsal, AuthenticatedTemplate, UnauthenticatedTemplate } from '@azure/msal-react';
-import { PublicClientApplication } from '@azure/msal-browser';
-import { MsalBrowserTokenProvider } from '@mohsinonxrm/dataverse-sdk-auth-msal-browser';
-import { DataverseClient } from '@mohsinonxrm/dataverse-sdk-core';
+```tsx
+import React from "react";
+import {
+  MsalProvider,
+  useMsal,
+  AuthenticatedTemplate,
+  UnauthenticatedTemplate,
+} from "@azure/msal-react";
+import { PublicClientApplication } from "@azure/msal-browser";
+import { MsalBrowserTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-msal-browser";
+import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+
+interface Account {
+  accountid: string;
+  name: string;
+}
 
 // MSAL configuration
 const msalConfig = {
@@ -245,7 +259,7 @@ const msalConfig = {
     redirectUri: window.location.origin,
   },
   cache: {
-    cacheLocation: 'sessionStorage',
+    cacheLocation: "sessionStorage",
   },
 };
 
@@ -271,7 +285,7 @@ function LoginButton() {
   const { instance } = useMsal();
 
   const handleLogin = () => {
-    instance.loginPopup({
+    void instance.loginPopup({
       scopes: [process.env.REACT_APP_DATAVERSE_SCOPE!],
     });
   };
@@ -281,9 +295,10 @@ function LoginButton() {
 
 // Component using Dataverse client
 function DataverseApp() {
+  // `accounts` here are the signed-in MSAL accounts; the Dataverse records are `records`
   const { instance, accounts } = useMsal();
   const [client, setClient] = React.useState<DataverseClient | null>(null);
-  const [accounts, setAccounts] = React.useState([]);
+  const [records, setRecords] = React.useState<Account[]>([]);
 
   React.useEffect(() => {
     if (accounts.length > 0) {
@@ -291,7 +306,7 @@ function DataverseApp() {
       const tokenProvider = new MsalBrowserTokenProvider(instance, {
         scopes: [process.env.REACT_APP_DATAVERSE_SCOPE!],
         account: accounts[0],
-        interactionType: 'popup',
+        interactionType: "popup",
       });
 
       const dataverseClient = new DataverseClient({
@@ -307,11 +322,12 @@ function DataverseApp() {
     if (!client) return;
 
     // Fetch accounts from Dataverse
-    client.api('/accounts')
-      .select('name', 'accountnumber')
+    client
+      .api("/accounts")
+      .select("accountid", "name")
       .top(10)
-      .get()
-      .then(result => setAccounts(result.value))
+      .get<{ value: Account[] }>()
+      .then((result) => setRecords(result.value))
       .catch(console.error);
   }, [client]);
 
@@ -323,7 +339,7 @@ function DataverseApp() {
     <div>
       <h1>Dataverse Accounts</h1>
       <ul>
-        {accounts.map(acc => (
+        {records.map((acc) => (
           <li key={acc.accountid}>{acc.name}</li>
         ))}
       </ul>
@@ -336,11 +352,11 @@ function DataverseApp() {
 
 Create a reusable hook for the Dataverse client.
 
-```typescript
-import { useMsal } from '@azure/msal-react';
-import { DataverseClient } from '@mohsinonxrm/dataverse-sdk-core';
-import { MsalBrowserTokenProvider } from '@mohsinonxrm/dataverse-sdk-auth-msal-browser';
-import { useMemo } from 'react';
+```tsx
+import React, { useMemo } from "react";
+import { useMsal } from "@azure/msal-react";
+import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+import { MsalBrowserTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-msal-browser";
 
 export function useDataverseClient(): DataverseClient | null {
   const { instance, accounts } = useMsal();
@@ -353,7 +369,7 @@ export function useDataverseClient(): DataverseClient | null {
     const tokenProvider = new MsalBrowserTokenProvider(instance, {
       scopes: [process.env.REACT_APP_DATAVERSE_SCOPE!],
       account: accounts[0],
-      interactionType: 'popup',
+      interactionType: "popup",
     });
 
     return new DataverseClient({
@@ -366,16 +382,17 @@ export function useDataverseClient(): DataverseClient | null {
 // Usage in component
 function AccountList() {
   const client = useDataverseClient();
-  const [accounts, setAccounts] = React.useState([]);
+  const [records, setRecords] = React.useState<{ accountid: string; name: string }[]>([]);
 
   React.useEffect(() => {
     if (!client) return;
 
-    client.api('/accounts')
-      .select('name', 'accountnumber')
+    client
+      .api("/accounts")
+      .select("accountid", "name")
       .top(10)
-      .get()
-      .then(result => setAccounts(result.value))
+      .get<{ value: { accountid: string; name: string }[] }>()
+      .then((result) => setRecords(result.value))
       .catch(console.error);
   }, [client]);
 
@@ -385,48 +402,13 @@ function AccountList() {
 
   return (
     <div>
-      {accounts.map(acc => (
+      {records.map((acc) => (
         <div key={acc.accountid}>{acc.name}</div>
       ))}
     </div>
   );
 }
 ```
-
-      account: accounts[0],
-      interactionType: 'popup',
-    });
-
-    return new DataverseClient({
-      baseUrl: process.env.REACT_APP_DATAVERSE_URL!,
-      tokenProvider,
-    });
-
-}, [instance, accounts]);
-}
-
-// Usage in component
-function AccountList() {
-const client = useDataverseClient();
-const [accounts, setAccounts] = React.useState([]);
-
-React.useEffect(() => {
-if (!client) return;
-
-    client.api('/accounts').top(10).get()
-      .then(setAccounts)
-      .catch(console.error);
-
-}, [client]);
-
-if (!client) {
-return <div>Not authenticated</div>;
-}
-
-return <div>{/_ Render accounts _/}</div>;
-}
-
-````
 
 ## Account Management
 
@@ -439,14 +421,14 @@ const pca = new PublicClientApplication(msalConfig);
 await pca.initialize();
 
 const tokenProvider = new MsalBrowserTokenProvider(pca, {
-  scopes: ['https://your-org.crm.dynamics.com/.default'],
+  scopes: ["https://your-org.crm.dynamics.com/.default"],
 });
 
 // Get all cached accounts
 const accounts = tokenProvider.getAccounts();
 console.log(`Found ${accounts.length} cached account(s)`);
 
-accounts.forEach(account => {
+accounts.forEach((account) => {
   console.log(`- ${account.username} (${account.name})`);
 });
 
@@ -461,17 +443,17 @@ const activeAccount = tokenProvider.getActiveAccount();
 if (activeAccount) {
   console.log(`Active account: ${activeAccount.username}`);
 } else {
-  console.log('No active account set');
+  console.log("No active account set");
 }
 
 // The account is resolved on every request: MSAL's active account wins, so after
 // setActiveAccount(), the next request uses the new account.
 // To pin a provider to one account whatever the active account is, pass a function:
 const specificTokenProvider = new MsalBrowserTokenProvider(pca, {
-  scopes: ['https://your-org.crm.dynamics.com/.default'],
+  scopes: ["https://your-org.crm.dynamics.com/.default"],
   account: () => accounts[0], // called on every request
 });
-````
+```
 
 **Account resolution, on every `getToken()` call:**
 
@@ -675,7 +657,7 @@ const tokenProvider = new MsalBrowserTokenProvider(pca, {
 // Dynamic claims challenges: after a 401, the SDK client gets a new token and resends the
 // request once. In a browser, Dataverse doesn't expose `WWW-Authenticate` to scripts (it isn't a
 // CORS-exposed header), so the claims of a challenge can't be read there and the SDK asks the
-// provider for a fresh token (`forceRefresh`). In Node.js, the claims are passed to `getToken`
+// provider for a fresh token (`forceRefresh`, which this provider doesn't pass on to MSAL yet: #167). In Node.js, the claims are passed to `getToken`
 // automatically. To handle a challenge yourself, read it from the error:
 import { parseClaimsChallenge, DataverseODataError } from "@mohsinonxrm/dataverse-sdk-core";
 
@@ -870,14 +852,20 @@ try {
 
 **Problem**: API calls fail after some time
 
-**Solution**: Token refresh is automatic. If seeing errors:
+**Solution**: MSAL renews tokens before they expire, and after a 401 the SDK client calls
+`getToken(scopes, { forceRefresh: true })` and resends the request once. This provider doesn't pass
+`forceRefresh` on to MSAL yet ([#167](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/167)),
+so that retry can get the same cached token. To skip MSAL's cache yourself, call MSAL directly:
 
 ```typescript
-// Force new token
-const newToken = await tokenProvider.getToken(
-  ["https://org.crm.dynamics.com/.default"],
-  { forceRefresh: true } // Note: Not supported by default, handle manually
-);
+// Force a new token from Entra ID, skipping MSAL's cache
+const account = pca.getActiveAccount() ?? pca.getAllAccounts()[0];
+const result = await pca.acquireTokenSilent({
+  scopes: ["https://org.crm.dynamics.com/.default"],
+  account,
+  forceRefresh: true,
+});
+// Later getToken() calls get the new token from the cache
 ```
 
 ## Related Packages

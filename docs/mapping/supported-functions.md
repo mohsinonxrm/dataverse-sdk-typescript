@@ -30,13 +30,14 @@ const prepopulatedContact = await client.execute(initFunc);
 // WhoAmI via raw API
 const userInfo = await client.api("/WhoAmI").get();
 
-// InitializeFrom via raw API (parameter aliases required)
+// InitializeFrom via raw API. The builder has no method for parameter aliases, so they go in
+// the path's query string (the builder adds its own query options, such as $select, to it).
+const p1 = encodeURIComponent(JSON.stringify({ "@odata.id": `accounts(${accountId})` }));
 const contact = await client
-  .api("/InitializeFrom(EntityMoniker=@p1,TargetEntityName=@p2)")
-  .query({
-    "@p1": { "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: accountId },
-    "@p2": "'contact'",
-  })
+  .api(
+    "/InitializeFrom(EntityMoniker=@p1,TargetEntityName=@p2,TargetFieldType=@p3)" +
+      `?@p1=${p1}&@p2='contact'&@p3=Microsoft.Dynamics.CRM.TargetFieldType'ValidForCreate'`
+  )
   .get();
 ```
 

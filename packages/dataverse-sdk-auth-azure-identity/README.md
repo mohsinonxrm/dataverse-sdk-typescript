@@ -63,7 +63,7 @@ const client = new DataverseClient({
 });
 
 // Use the client
-const accounts = await client.api("/accounts").top(10).get();
+const accounts = await client.api("/accounts").top(10).get<{ value: unknown[] }>();
 ```
 
 ### DefaultAzureCredential (Development & Production)
@@ -109,12 +109,20 @@ Best for: Production daemons, enhanced security requirements
 ```typescript
 import { ClientCertificateCredential } from "@azure/identity";
 import { AzureIdentityTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-azure-identity";
-import { readFileSync } from "fs";
+import { readFileSync } from "node:fs";
 
-const certificatePath = "/path/to/certificate.pem";
-const certificate = readFileSync(certificatePath, "utf-8");
+// A PEM file holding the certificate and its private key: pass the path...
+const credential = new ClientCertificateCredential(
+  "tenant-id",
+  "client-id",
+  "/path/to/certificate.pem"
+);
 
-const credential = new ClientCertificateCredential("tenant-id", "client-id", certificate);
+// ...or the PEM content itself, as `{ certificate }` (a plain string is read as a path)
+const pem = readFileSync("/path/to/certificate.pem", "utf-8"); // or from a secret store
+const credentialFromPem = new ClientCertificateCredential("tenant-id", "client-id", {
+  certificate: pem,
+});
 
 const tokenProvider = new AzureIdentityTokenProvider(credential, {
   scopes: ["https://your-org.crm.dynamics.com/.default"],
@@ -205,7 +213,11 @@ export async function getAccounts(
   context.log("HTTP trigger function processing request");
 
   try {
-    const result = await client.api("/accounts").select("name", "accountnumber").top(100).get();
+    const result = await client
+      .api("/accounts")
+      .select("name", "accountnumber")
+      .top(100)
+      .get<{ value: { name: string; accountnumber?: string }[] }>();
 
     return {
       status: 200,
@@ -302,6 +314,8 @@ Acquires an access token using the configured credential.
   - `tenantId`: Override tenant ID for multi-tenant scenarios
   - `claims`: Claims challenge from server (Conditional Access)
   - `correlationId`: Correlation ID for telemetry (not passed to Azure Identity)
+  - `forceRefresh`: ignored. `@azure/identity`'s `GetTokenOptions` has no option to skip the
+    cache; each credential decides when to get a new token
 
 **Returns:** `Promise<string>` - Access token
 

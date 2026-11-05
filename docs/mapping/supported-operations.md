@@ -219,7 +219,7 @@ const accounts = await client
   .api("accounts")
   .select("name", "revenue")
   .filter("revenue gt 1000000")
-  .orderby("revenue desc")
+  .orderBy("revenue desc")
   .top(10)
   .get();
 ```
