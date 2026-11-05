@@ -1,6 +1,6 @@
 # Metadata Operations - Complete API Reference
 
-Complete documentation for `@mohsinonxrm/dataverse-sdk-metadata` - all 45 methods for managing Dataverse metadata.
+Complete documentation for `@mohsinonxrm/dataverse-sdk-metadata`: the `MetadataClient` methods for managing Dataverse metadata.
 
 ## Table of Contents
 
@@ -46,15 +46,27 @@ const metadataId = await metadataClient.createEntityDefinition({
 
 ### Update Entity
 
-**Important**: Uses HTTP PUT (not PATCH) - must send complete definition.
+**Important**: Uses HTTP PUT (not PATCH), which replaces the definition. A property you leave
+out is reset to its default, so send the complete definition.
 
 ```typescript
-await metadataClient.updateEntityDefinition("new_project", {
-  // Send complete entity definition with changes
+// Retrieve the current definition, apply the change and PUT the result
+await metadataClient.mergeAndUpdateEntityDefinition("new_project", {
   DisplayName: {
     LocalizedLabels: [{ Label: "Updated Project", LanguageCode: 1033 }],
   },
-  // ... all other properties
+});
+```
+
+### Created IDs and Solutions
+
+Every `create*` method returns the new component's `MetadataId`, read from the `OData-EntityId`
+header of Dataverse's `204 No Content` response. Every create and update takes an optional last
+argument `{ solutionUniqueName }`, sent as `MSCRM.SolutionUniqueName`:
+
+```typescript
+const id = await metadataClient.createEntityDefinition(definition, {
+  solutionUniqueName: "ContosoProjects",
 });
 ```
 
@@ -327,12 +339,13 @@ console.log("Deleted metadata:", response.DeletedMetadata);
 
 ## Complete Method List
 
-**Entity Operations (5):**
+**Entity Operations (6):**
 
 - getEntityDefinitions
 - getEntityDefinition
 - createEntityDefinition
 - updateEntityDefinition (uses PUT)
+- mergeAndUpdateEntityDefinition (retrieve, merge, PUT)
 - deleteEntityDefinition
 
 **Attribute Operations (5):**
@@ -391,17 +404,15 @@ console.log("Deleted metadata:", response.DeletedMetadata);
 
 - retrieveMetadataChanges
 
-**Total: 45 methods**
-
 ## Important Notes
 
-1. **Update Operations Use PUT**: Per Microsoft documentation, all metadata update operations must use HTTP PUT (not PATCH). This means you must send the complete definition, not just changed properties.
+1. **Update Operations Use PUT**: Per Microsoft documentation, all metadata update operations must use HTTP PUT (not PATCH). A PUT replaces the definition, so send the complete definition, not just changed properties, or use `mergeAndUpdateEntityDefinition()` for tables.
 
-2. **MSCRM.MergeLabels Header**: When updating, set `MSCRM.MergeLabels: true` header to merge labels instead of replacing them.
+2. **MSCRM.MergeLabels Header**: Every update sends `MSCRM.MergeLabels: true`, so labels are merged instead of replaced.
 
 3. **Publishing**: Metadata changes must be published using PublishXml or PublishAllXml action before they take effect.
 
-4. **Solution Context**: Use `MSCRM.SolutionUniqueName` header to associate changes with a specific solution.
+4. **Solution Context**: Pass `{ solutionUniqueName }` as the last argument of any create or update; the SDK sends it as the `MSCRM.SolutionUniqueName` header.
 
 ## Reference Documentation
 

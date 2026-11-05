@@ -2,6 +2,7 @@
  * Metadata client for managing Dataverse metadata (entities, attributes, relationships)
  */
 
+import { DataverseInvalidRequestError, parseODataError } from "@mohsinonxrm/dataverse-sdk-core";
 import type { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
 import type {
   EntityMetadata,
@@ -46,6 +47,17 @@ export interface MetadataQueryOptions {
   select?: string[];
   filter?: string;
   expand?: string;
+}
+
+/**
+ * Options for metadata creates and updates.
+ */
+export interface MetadataWriteOptions {
+  /**
+   * Unique name of an unmanaged solution to add the created or changed component to. Sent as
+   * the `MSCRM.SolutionUniqueName` header. Without it, the change goes to the default solution.
+   */
+  solutionUniqueName?: string;
 }
 
 /**
@@ -120,7 +132,8 @@ export class MetadataClient {
   /**
    * Create a new entity definition
    * @param entity Entity metadata to create
-   * @returns Metadata ID of created entity (GUID)
+   * @param options Solution to add the new component to
+   * @returns Metadata ID of the created entity (GUID), read from the `OData-EntityId` response header
    * @example
    * ```typescript
    * const metadataId = await metadataClient.createEntityDefinition({
@@ -137,31 +150,64 @@ export class MetadataClient {
    * });
    * ```
    */
-  async createEntityDefinition(entity: EntityMetadataCreate): Promise<string> {
-    const response = await this.client
-      .api("/EntityDefinitions")
-      .header("Content-Type", "application/json")
-      .preferRaw("return=representation")
-      .post<EntityMetadata>(entity);
-
-    if (!response.MetadataId) {
-      throw new Error("Failed to retrieve entity metadata ID from response");
-    }
-
-    return response.MetadataId;
+  async createEntityDefinition(
+    entity: EntityMetadataCreate,
+    options?: MetadataWriteOptions
+  ): Promise<string> {
+    return this.createDefinition("/EntityDefinitions", entity, options);
   }
 
   /**
-   * Update an existing entity definition
+   * Update an existing entity definition.
+   *
+   * Metadata updates use `PUT`, which **replaces** the definition: a property you leave out is
+   * reset to its default. Send the complete definition (retrieve it, change it, send it back),
+   * or use {@link mergeAndUpdateEntityDefinition}, which does that for you. Labels are merged
+   * (`MSCRM.MergeLabels: true`), so labels in other languages are kept.
    * @param logicalName Entity logical name
-   * @param entity Entity metadata updates
+   * @param entity The complete entity definition
+   * @param options Solution to add the change to
    */
-  async updateEntityDefinition(logicalName: string, entity: EntityMetadataUpdate): Promise<void> {
-    await this.client
-      .api(`/EntityDefinitions(LogicalName='${logicalName}')`)
-      .header("Content-Type", "application/json")
-      .header("MSCRM.MergeLabels", "true")
-      .put<undefined>(entity);
+  async updateEntityDefinition(
+    logicalName: string,
+    entity: EntityMetadataUpdate,
+    options?: MetadataWriteOptions
+  ): Promise<void> {
+    await this.updateDefinition(
+      `/EntityDefinitions(LogicalName='${logicalName}')`,
+      entity,
+      options
+    );
+  }
+
+  /**
+   * Retrieve an entity definition, apply `changes` to it, and `PUT` the result back, so the
+   * properties you don't change keep their current values.
+   * @param logicalName Entity logical name
+   * @param changes The properties to change
+   * @param options Solution to add the change to
+   * @example
+   * ```typescript
+   * await metadataClient.mergeAndUpdateEntityDefinition("new_project", {
+   *   Description: {
+   *     LocalizedLabels: [{ Label: "Tracks projects", LanguageCode: 1033 }],
+   *   },
+   * });
+   * ```
+   */
+  async mergeAndUpdateEntityDefinition(
+    logicalName: string,
+    changes: EntityMetadataUpdate,
+    options?: MetadataWriteOptions
+  ): Promise<void> {
+    const path = `/EntityDefinitions(LogicalName='${logicalName}')`;
+    const current = await this.client.api(path).get<Record<string, unknown>>();
+    const merged = {
+      ...withoutAnnotations(current),
+      ...changes,
+      "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
+    };
+    await this.updateDefinition(path, merged, options);
   }
 
   /**
@@ -226,43 +272,42 @@ export class MetadataClient {
    * Create a new attribute definition
    * @param entityLogicalName Entity logical name
    * @param attribute Attribute metadata to create
-   * @returns Metadata ID of created attribute (GUID)
+   * @param options Solution to add the new component to
+   * @returns Metadata ID of the created attribute (GUID), read from the `OData-EntityId` response header
    */
   async createAttributeDefinition(
     entityLogicalName: string,
-    attribute: AttributeMetadataCreateTypes
+    attribute: AttributeMetadataCreateTypes,
+    options?: MetadataWriteOptions
   ): Promise<string> {
-    const response = await this.client
-      .api(`/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes`)
-      .header("Content-Type", "application/json")
-      .preferRaw("return=representation")
-      .post<AttributeMetadata>(attribute);
-
-    if (!response.MetadataId) {
-      throw new Error("Failed to retrieve attribute metadata ID from response");
-    }
-
-    return response.MetadataId;
+    return this.createDefinition(
+      `/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes`,
+      attribute,
+      options
+    );
   }
 
   /**
-   * Update an existing attribute definition
+   * Update an existing attribute definition.
+   *
+   * Like every metadata update this is a `PUT`, which **replaces** the definition: send the
+   * complete attribute definition, including its `@odata.type`, not just the changed properties.
    * @param entityLogicalName Entity logical name
    * @param attributeLogicalName Attribute logical name
-   * @param attribute Attribute metadata updates
+   * @param attribute The complete attribute definition
+   * @param options Solution to add the change to
    */
   async updateAttributeDefinition(
     entityLogicalName: string,
     attributeLogicalName: string,
-    attribute: Partial<AttributeMetadataCreateTypes>
+    attribute: Partial<AttributeMetadataCreateTypes>,
+    options?: MetadataWriteOptions
   ): Promise<void> {
-    await this.client
-      .api(
-        `/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes(LogicalName='${attributeLogicalName}')`
-      )
-      .header("Content-Type", "application/json")
-      .header("MSCRM.MergeLabels", "true")
-      .put<undefined>(attribute);
+    await this.updateDefinition(
+      `/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes(LogicalName='${attributeLogicalName}')`,
+      attribute,
+      options
+    );
   }
 
   /**
@@ -286,22 +331,14 @@ export class MetadataClient {
   /**
    * Create a one-to-many relationship
    * @param relationship Relationship metadata to create
-   * @returns Metadata ID of created relationship (GUID)
+   * @param options Solution to add the new component to
+   * @returns Metadata ID of the created relationship (GUID), read from the `OData-EntityId` response header
    */
   async createOneToManyRelationship(
-    relationship: OneToManyRelationshipMetadataCreate
+    relationship: OneToManyRelationshipMetadataCreate,
+    options?: MetadataWriteOptions
   ): Promise<string> {
-    const response = await this.client
-      .api("/RelationshipDefinitions")
-      .header("Content-Type", "application/json")
-      .preferRaw("return=representation")
-      .post<OneToManyRelationshipMetadata>(relationship);
-
-    if (!response.MetadataId) {
-      throw new Error("Failed to retrieve relationship metadata ID from response");
-    }
-
-    return response.MetadataId;
+    return this.createDefinition("/RelationshipDefinitions", relationship, options);
   }
 
   /**
@@ -434,7 +471,8 @@ export class MetadataClient {
   /**
    * Create a many-to-many relationship
    * @param relationship Relationship metadata to create
-   * @returns Metadata ID of created relationship (GUID)
+   * @param options Solution to add the new component to
+   * @returns Metadata ID of the created relationship (GUID), read from the `OData-EntityId` response header
    * @example
    * ```typescript
    * const metadataId = await metadataClient.createManyToManyRelationship({
@@ -447,51 +485,48 @@ export class MetadataClient {
    * ```
    */
   async createManyToManyRelationship(
-    relationship: ManyToManyRelationshipMetadataCreate
+    relationship: ManyToManyRelationshipMetadataCreate,
+    options?: MetadataWriteOptions
   ): Promise<string> {
-    const response = await this.client
-      .api("/RelationshipDefinitions")
-      .header("Content-Type", "application/json")
-      .preferRaw("return=representation")
-      .post<ManyToManyRelationshipMetadata>(relationship);
-
-    if (!response.MetadataId) {
-      throw new Error("Failed to retrieve relationship metadata ID from response");
-    }
-
-    return response.MetadataId;
+    return this.createDefinition("/RelationshipDefinitions", relationship, options);
   }
 
   /**
-   * Update an existing one-to-many relationship
+   * Update an existing one-to-many relationship.
+   * A `PUT` that **replaces** the definition: send the complete relationship definition.
    * @param schemaName Relationship schema name
-   * @param relationship Relationship metadata updates
+   * @param relationship The complete relationship definition
+   * @param options Solution to add the change to
    */
   async updateOneToManyRelationship(
     schemaName: string,
-    relationship: OneToManyRelationshipMetadataUpdate
+    relationship: OneToManyRelationshipMetadataUpdate,
+    options?: MetadataWriteOptions
   ): Promise<void> {
-    await this.client
-      .api(`/RelationshipDefinitions(SchemaName='${schemaName}')`)
-      .header("Content-Type", "application/json")
-      .header("MSCRM.MergeLabels", "true")
-      .put<undefined>(relationship);
+    await this.updateDefinition(
+      `/RelationshipDefinitions(SchemaName='${schemaName}')`,
+      relationship,
+      options
+    );
   }
 
   /**
-   * Update an existing many-to-many relationship
+   * Update an existing many-to-many relationship.
+   * A `PUT` that **replaces** the definition: send the complete relationship definition.
    * @param schemaName Relationship schema name
-   * @param relationship Relationship metadata updates
+   * @param relationship The complete relationship definition
+   * @param options Solution to add the change to
    */
   async updateManyToManyRelationship(
     schemaName: string,
-    relationship: ManyToManyRelationshipMetadataUpdate
+    relationship: ManyToManyRelationshipMetadataUpdate,
+    options?: MetadataWriteOptions
   ): Promise<void> {
-    await this.client
-      .api(`/RelationshipDefinitions(SchemaName='${schemaName}')`)
-      .header("Content-Type", "application/json")
-      .header("MSCRM.MergeLabels", "true")
-      .put<undefined>(relationship);
+    await this.updateDefinition(
+      `/RelationshipDefinitions(SchemaName='${schemaName}')`,
+      relationship,
+      options
+    );
   }
 
   /**
@@ -561,7 +596,8 @@ export class MetadataClient {
   /**
    * Create a global option set
    * @param optionSet Option set metadata to create
-   * @returns Metadata ID of created option set (GUID)
+   * @param options Solution to add the new component to
+   * @returns Metadata ID of the created option set (GUID), read from the `OData-EntityId` response header
    * @example
    * ```typescript
    * const metadataId = await metadataClient.createGlobalOptionSet({
@@ -577,28 +613,26 @@ export class MetadataClient {
    * });
    * ```
    */
-  async createGlobalOptionSet(optionSet: OptionSetMetadataCreate): Promise<string> {
-    const response = await this.client
-      .api("/GlobalOptionSetDefinitions")
-      .header("Content-Type", "application/json")
-      .preferRaw("return=representation")
-      .post<OptionSetMetadata>(optionSet);
-
-    if (!response.MetadataId) {
-      throw new Error("Failed to retrieve option set metadata ID from response");
-    }
-
-    return response.MetadataId;
+  async createGlobalOptionSet(
+    optionSet: OptionSetMetadataCreate,
+    options?: MetadataWriteOptions
+  ): Promise<string> {
+    return this.createDefinition("/GlobalOptionSetDefinitions", optionSet, options);
   }
 
   /**
-   * Update a global option set
+   * Update a global option set.
+   * A `PUT` that **replaces** the definition: send the complete option set definition. To add,
+   * change or remove a single option, use {@link insertOptionValue}, {@link updateOptionValue}
+   * or {@link deleteOptionValue} instead.
    * @param nameOrMetadataId Option set name or metadata ID
-   * @param optionSet Option set metadata updates
+   * @param optionSet The complete option set definition
+   * @param options Solution to add the change to
    */
   async updateGlobalOptionSet(
     nameOrMetadataId: string,
-    optionSet: Partial<OptionSetMetadata>
+    optionSet: Partial<OptionSetMetadata>,
+    options?: MetadataWriteOptions
   ): Promise<void> {
     const isGuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
       nameOrMetadataId
@@ -607,11 +641,7 @@ export class MetadataClient {
       ? `/GlobalOptionSetDefinitions(${nameOrMetadataId})`
       : `/GlobalOptionSetDefinitions(Name='${nameOrMetadataId}')`;
 
-    await this.client
-      .api(path)
-      .header("Content-Type", "application/json")
-      .header("MSCRM.MergeLabels", "true")
-      .put<undefined>(optionSet);
+    await this.updateDefinition(path, optionSet, options);
   }
 
   /**
@@ -859,4 +889,56 @@ export class MetadataClient {
       .api("/RetrieveMetadataChanges")
       .post<RetrieveMetadataChangesResponse>(params);
   }
+
+  // ==================== Internals ====================
+
+  /**
+   * POST a metadata definition and return its MetadataId. Dataverse answers a metadata create
+   * with `204 No Content` and the new id in the `OData-EntityId` header
+   * (`…/EntityDefinitions(<id>)`); a `MetadataId` in a JSON body is the fallback.
+   */
+  private async createDefinition(
+    path: string,
+    body: unknown,
+    options: MetadataWriteOptions | undefined
+  ): Promise<string> {
+    const res = await this.writeBuilder(path, options).response("POST", body);
+    if (!res.ok) throw await parseODataError(res);
+
+    const fromHeader = GUID_AT_END.exec(res.headers.get("odata-entityid") ?? "")?.[1];
+    if (fromHeader) {
+      await res.body?.cancel();
+      return fromHeader;
+    }
+
+    const text = res.status === 204 ? "" : await res.text();
+    const fromBody = text.trim() ? (JSON.parse(text) as { MetadataId?: unknown }).MetadataId : "";
+    if (typeof fromBody === "string" && fromBody) return fromBody;
+
+    throw DataverseInvalidRequestError.missingParameter("OData-EntityId response header");
+  }
+
+  /** PUT a complete metadata definition, merging labels. */
+  private async updateDefinition(
+    path: string,
+    body: unknown,
+    options: MetadataWriteOptions | undefined
+  ): Promise<void> {
+    await this.writeBuilder(path, options).header("MSCRM.MergeLabels", "true").put<undefined>(body);
+  }
+
+  private writeBuilder(path: string, options: MetadataWriteOptions | undefined) {
+    const builder = this.client.api(path).header("Content-Type", "application/json");
+    return options?.solutionUniqueName
+      ? builder.header("MSCRM.SolutionUniqueName", options.solutionUniqueName)
+      : builder;
+  }
+}
+
+/** A GUID in parentheses at the end of an `OData-EntityId` URL. */
+const GUID_AT_END = /\(([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\)\s*$/i;
+
+/** A copy of a retrieved definition without its `@odata.*` annotations (context, etag, …). */
+function withoutAnnotations(definition: Record<string, unknown>): Record<string, unknown> {
+  return Object.fromEntries(Object.entries(definition).filter(([key]) => !key.includes("@odata.")));
 }

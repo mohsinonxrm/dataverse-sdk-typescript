@@ -115,13 +115,31 @@ const projectEntity = await metadataClient.getEntityDefinition("new_project", {
 });
 ```
 
-### Update Entity
+Every `create*` method returns the new component's `MetadataId`. Dataverse answers a metadata
+create with `204 No Content` and the id in the `OData-EntityId` header, which is where the SDK
+reads it.
+
+### Create in a Solution
+
+Every create and update takes an optional last argument, `{ solutionUniqueName }`, sent as the
+`MSCRM.SolutionUniqueName` header. The component is added to that unmanaged solution; without it
+the change goes to the default solution.
 
 ```typescript
-// Update entity display name
-await metadataClient.updateEntityDefinition("new_project", {
-  "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
-  DisplayName: { LocalizedLabels: [{ Label: "Project (Updated)", LanguageCode: 1033 }] },
+const metadataId = await metadataClient.createEntityDefinition(definition, {
+  solutionUniqueName: "ContosoProjects",
+});
+```
+
+### Update Entity
+
+Metadata updates use `PUT`, which **replaces** the whole definition: a property you leave out is
+reset to its default. Either send the complete definition to `updateEntityDefinition()`, or let
+the SDK retrieve it, apply your changes and send it back:
+
+```typescript
+// Change only the description; every other property keeps its current value
+await metadataClient.mergeAndUpdateEntityDefinition("new_project", {
   Description: { LocalizedLabels: [{ Label: "Manage projects and tasks", LanguageCode: 1033 }] },
 });
 ```
@@ -534,21 +552,21 @@ console.log("Deleted entities:", changes.DeletedMetadata);
 
 ### Update Operations Use PUT
 
-Per Microsoft documentation, all metadata update operations use HTTP PUT (not PATCH). This means you must send the complete definition with all properties, not just the changed ones:
+Per Microsoft documentation, all metadata update operations use HTTP PUT (not PATCH). A PUT
+replaces the definition, so a property you leave out is reset to its default. Send the complete
+definition, not just the changed properties. For tables, `mergeAndUpdateEntityDefinition()`
+retrieves the current definition, applies your changes and sends the result:
 
 ```typescript
-// Update entity - requires complete definition
-await metadataClient.updateEntityDefinition("new_project", {
-  "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
-  DisplayName: {
-    LocalizedLabels: [{ Label: "Updated Project", LanguageCode: 1033 }],
-  },
-  Description: {
-    LocalizedLabels: [{ Label: "Updated description", LanguageCode: 1033 }],
-  },
-  // Include all other properties you want to preserve
+// Only the changed properties: the SDK fills in the rest from the current definition
+await metadataClient.mergeAndUpdateEntityDefinition("new_project", {
+  DisplayName: { LocalizedLabels: [{ Label: "Updated Project", LanguageCode: 1033 }] },
+  Description: { LocalizedLabels: [{ Label: "Updated description", LanguageCode: 1033 }] },
 });
 ```
+
+For columns, relationships and global choices, retrieve the definition, change it and pass the
+whole object to the `update*` method.
 
 The SDK automatically sets the `MSCRM.MergeLabels: true` header to merge labels instead of replacing them, preserving labels for other languages.
 

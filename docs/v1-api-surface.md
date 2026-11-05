@@ -335,10 +335,11 @@ The generated metadata **EntityTypes**, **ComplexTypes** and **EnumTypes** are e
 ### 10.2 Metadata client
 
 - `class MetadataClient` (`new MetadataClient(client: DataverseClient)`)
-  - Entity, attribute, relationship and global option set CRUD (`getEntityDefinitions`, `createAttributeDefinition`, `createOneToManyRelationship`, `createGlobalOptionSet`, …)
+  - Entity, attribute, relationship and global option set CRUD (`getEntityDefinitions`, `createAttributeDefinition`, `createOneToManyRelationship`, `createGlobalOptionSet`, …). Creates return the `MetadataId` from `OData-EntityId`; creates and updates take an optional `MetadataWriteOptions` (`{ solutionUniqueName }`)
+  - `mergeAndUpdateEntityDefinition(logicalName, changes, options?)`: retrieve, merge and `PUT` a table definition
   - Option value operations (`insertOptionValue`, `updateOptionValue`, `deleteOptionValue`, `orderOptions`, `insertStatusValue`)
   - `retrieveMetadataChanges(...)`: returns `RetrieveMetadataChangesResponse` (#62 tracks that it is sent as POST)
-- `interface MetadataQueryOptions`
+- `interface MetadataQueryOptions`, `interface MetadataWriteOptions`
 
 Strict metadata builders (`const Metadata`) are [planned](#16-planned-not-exported-yet).
 
