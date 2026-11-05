@@ -155,6 +155,9 @@ export interface PropertyType {
   /** Dataverse/OData type */
   Type: string;
 
+  /** Dataverse attribute type from RetrieveMetadataChanges (e.g. "Lookup", "Picklist") */
+  AttributeType?: string;
+
   /** TypeScript type */
   TypeScriptType: TypeScriptType;
 
@@ -328,6 +331,9 @@ export interface ComplexType {
   /** Type name */
   Name: string;
 
+  /** Base complex type name, if this type derives from another one */
+  BaseType?: string;
+
   /** Properties */
   Properties: PropertyType[];
 }
@@ -338,6 +344,12 @@ export interface ComplexType {
 export interface TypeScriptType {
   /** Type name in TypeScript */
   name: string;
+
+  /**
+   * Name of the referenced entity, complex or enum type in the Dataverse schema (without the
+   * namespace), when this is not a primitive type. The generator resolves it to an import.
+   */
+  reference?: string;
 
   /** Import path (if external type) */
   importPath?: string;
