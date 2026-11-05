@@ -145,7 +145,9 @@ export class AzureIdentityTokenProvider implements AccessTokenProvider {
    * Acquires an access token from Azure Identity
    *
    * @param scopes - Optional scopes to override default scopes
-   * @param options - Optional token request options (claims, tenantId, correlationId)
+   * @param options - Optional token request options (claims, tenantId, correlationId). `forceRefresh`
+   *   (sent by the SDK after a 401) has no equivalent in `@azure/identity`'s `GetTokenOptions`, so it is
+   *   ignored: each credential decides when to refresh its cached token. A claims challenge is passed on.
    * @returns Access token string
    * @throws {DataverseAuthenticationError} If token acquisition fails
    * @throws {DataverseInvalidRequestError} If scopes are empty after resolution

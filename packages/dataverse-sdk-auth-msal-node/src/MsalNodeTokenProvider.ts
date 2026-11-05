@@ -404,6 +404,8 @@ export class MsalNodeTokenProvider implements AccessTokenProvider {
       azureRegion: undefined, // Can be added to options if needed
       claims: options?.claims ?? this.options.claims,
       correlationId: options?.correlationId ?? this.options.correlationId,
+      // After a 401 the SDK asks for a new token: skip MSAL's token cache (#167).
+      ...(options?.forceRefresh ? { skipCache: true } : {}),
     };
 
     // Override authority if specific tenant requested
@@ -484,7 +486,7 @@ export class MsalNodeTokenProvider implements AccessTokenProvider {
     const silentRequest: SilentFlowRequest = {
       scopes,
       account,
-      forceRefresh: false,
+      forceRefresh: options?.forceRefresh ?? false,
       claims: options?.claims ?? this.options.claims,
       correlationId: options?.correlationId ?? this.options.correlationId,
     };
