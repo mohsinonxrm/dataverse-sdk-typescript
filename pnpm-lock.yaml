@@ -173,16 +173,22 @@ importers:
 
   packages/dataverse-sdk-auth-msal-node:
     dependencies:
-      '@azure/msal-node':
-        specifier: ^2.16.3
-        version: 2.16.3
       '@mohsinonxrm/dataverse-sdk-core':
         specifier: workspace:*
         version: link:../dataverse-sdk-core
     devDependencies:
+      '@azure/msal-node':
+        specifier: ^2.16.3
+        version: 2.16.3
+      '@mohsinonxrm/dataverse-sdk-testing':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-testing
       eslint:
         specifier: ^9.39.5
         version: 9.39.5
+      msal-node-v7:
+        specifier: npm:@azure/msal-node@^7.2.0
+        version: '@azure/msal-node@7.2.0'
       tsup:
         specifier: ^8.5.1
         version: 8.5.1(postcss@8.5.32)(tsx@4.23.15)(typescript@5.9.3)(yaml@2.9.1)
