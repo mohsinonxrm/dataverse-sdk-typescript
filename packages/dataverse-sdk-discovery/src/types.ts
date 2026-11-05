@@ -94,6 +94,12 @@ export interface OrganizationDetail {
 
   /** When the environment's trial period expires (ISO 8601 date-time), if it is a trial. */
   TrialExpirationDate?: string | null;
+
+  /**
+   * The finance and operations apps URL linked to the environment, if any. Not in the documented
+   * `Instance` table, but returned by the live service (usually `null`).
+   */
+  FinOpsUrl?: string | null;
 }
 
 /**

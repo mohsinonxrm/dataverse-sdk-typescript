@@ -231,6 +231,7 @@ interface OrganizationDetail {
   SchemaType?: string | null;
   StatusMessage?: number | null;
   TrialExpirationDate?: string | null;
+  FinOpsUrl?: string | null; // returned live, not in the documented table
 }
 ```
 
