@@ -5,6 +5,7 @@ import type { QueryState } from "../odata/query.js";
 import type { PageResponse } from "../paging/types.js";
 import { PageIterator } from "../paging/PageIterator.js";
 import { buildUrl } from "../utils/url.js";
+import { entityIdFromResponse, readJson } from "../utils/response.js";
 import { parseODataError } from "../errors/parseODataError.js";
 import { DataverseDuplicateError } from "../errors/DataverseDuplicateError.js";
 import { validateUrl, type UrlValidationOptions } from "../utils/validateUrl.js";
@@ -227,51 +228,75 @@ export class DataverseRequestBuilder {
     return this;
   }
 
+  /**
+   * GET and parse the JSON body. Resolves `undefined` for `204 No Content` or an empty body.
+   * Rejects with `DataverseInvalidRequestError` ("UnexpectedContentType") for a non-JSON body;
+   * use {@link text}, {@link blob} or {@link arrayBuffer} for those.
+   */
   async get<T = unknown>(options?: RequestOptions): Promise<T> {
-    const res = await this.send("GET", undefined, options);
-    return (await res.json()) as T;
+    return readJson<T>(await this.send("GET", undefined, options));
   }
 
   async post<T = unknown>(body?: unknown, options?: RequestOptions): Promise<T> {
-    // Merge bindings into body
-    const mergedBody =
-      Object.keys(this.bindings).length > 0 && body && typeof body === "object"
-        ? { ...(body as Record<string, unknown>), ...this.bindings }
-        : body;
-    const res = await this.send("POST", mergedBody, options);
-    // POST may return representation only if Prefer says so
-    const txt = await res.text();
-    // undefined is intentionally cast to any to return as the generic type T
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
-    const parsed = txt ? JSON.parse(txt) : (undefined as any);
-
-    return parsed as T;
+    // POST returns a body only with Prefer: return=representation (or for actions).
+    return readJson<T>(await this.send("POST", this.withBindings(body), options));
   }
 
   async patch<T = unknown>(body?: unknown, options?: RequestOptions): Promise<T> {
-    // Merge bindings into body
-    const mergedBody =
-      Object.keys(this.bindings).length > 0 && body && typeof body === "object"
-        ? { ...(body as Record<string, unknown>), ...this.bindings }
-        : body;
-    const res = await this.send("PATCH", mergedBody, options);
-    const txt = await res.text();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (txt ? JSON.parse(txt) : (undefined as any)) as T;
+    return readJson<T>(await this.send("PATCH", this.withBindings(body), options));
   }
 
   async put<T = unknown>(body?: unknown, options?: RequestOptions): Promise<T> {
-    const res = await this.send("PUT", body, options);
-    const txt = await res.text();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (txt ? JSON.parse(txt) : (undefined as any)) as T;
+    return readJson<T>(await this.send("PUT", body, options));
   }
 
   async delete<T = unknown>(options?: RequestOptions): Promise<T> {
-    const res = await this.send("DELETE", undefined, options);
-    const txt = await res.text();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (txt ? JSON.parse(txt) : (undefined as any)) as T;
+    return readJson<T>(await this.send("DELETE", undefined, options));
+  }
+
+  /** GET the body as text, e.g. `$metadata` (XML) or a `$value` of a text column. */
+  async text(options?: RequestOptions): Promise<string> {
+    return (await this.send("GET", undefined, options)).text();
+  }
+
+  /** GET the body as a Blob, e.g. a file or image column's `$value`. */
+  async blob(options?: RequestOptions): Promise<Blob> {
+    return (await this.send("GET", undefined, options)).blob();
+  }
+
+  /** GET the body as an ArrayBuffer. */
+  async arrayBuffer(options?: RequestOptions): Promise<ArrayBuffer> {
+    return (await this.send("GET", undefined, options)).arrayBuffer();
+  }
+
+  /**
+   * Send the request and return the raw `Response`: status, headers (`ETag`, `OData-EntityId`,
+   * `Preference-Applied`, `x-ms-service-request-id`) and an unread body.
+   * Unlike the other terminals, this does **not** reject on a non-2xx status.
+   *
+   * @example
+   * ```typescript
+   * const res = await client.api("accounts").response("POST", { name: "Contoso" });
+   * const id = entityIdFromResponse(res); // from OData-EntityId
+   * ```
+   */
+  async response(
+    method: "GET" | "POST" | "PATCH" | "PUT" | "DELETE" = "GET",
+    body?: unknown,
+    options?: RequestOptions
+  ): Promise<Response> {
+    const merged = method === "POST" || method === "PATCH" ? this.withBindings(body) : body;
+    return this.client.send(this.buildRequest(method, merged, options));
+  }
+
+  /**
+   * Create a record and return its id, read from the `OData-EntityId` response header.
+   * Works without `Prefer: return=representation`, which is Dataverse's default for creates.
+   */
+  async createAndGetId(body: unknown, options?: RequestOptions): Promise<string> {
+    const res = await this.send("POST", this.withBindings(body), options);
+    await res.body?.cancel();
+    return entityIdFromResponse(res);
   }
 
   async getPage<T = unknown>(options?: RequestOptions): Promise<PageResponse<T>> {
@@ -312,11 +337,17 @@ export class DataverseRequestBuilder {
     return out;
   }
 
-  private async send(
+  private withBindings(body: unknown): unknown {
+    return Object.keys(this.bindings).length > 0 && body && typeof body === "object"
+      ? { ...(body as Record<string, unknown>), ...this.bindings }
+      : body;
+  }
+
+  private buildRequest(
     method: "GET" | "POST" | "PATCH" | "PUT" | "DELETE",
-    body?: unknown,
-    options?: RequestOptions
-  ): Promise<Response> {
+    body: unknown,
+    options: RequestOptions | undefined
+  ): RequestInformation {
     const url = this.resolveUrl();
     const query = buildQuery(this.state);
 
@@ -378,7 +409,15 @@ export class DataverseRequestBuilder {
         ? `${headers.prefer}, ${options.prefer.join(", ")}`
         : options.prefer.join(", ");
     }
+    return req;
+  }
 
+  private async send(
+    method: "GET" | "POST" | "PATCH" | "PUT" | "DELETE",
+    body?: unknown,
+    options?: RequestOptions
+  ): Promise<Response> {
+    const req = this.buildRequest(method, body, options);
     const res = await this.client.send(req);
     if (!res.ok) {
       // Check for 412 duplicate detection

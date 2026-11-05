@@ -108,7 +108,7 @@ describe("core: responses", () => {
     });
   });
 
-  it.fails("#11: get() on a 204 response resolves instead of throwing", async () => {
+  it("#11: get() on a 204 response resolves instead of throwing", async () => {
     const { client, fake } = createTestClient();
     fake.on("GET", "/accounts", () => noContent());
     await expect(client.api("accounts").get()).resolves.toBeUndefined();

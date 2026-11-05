@@ -18,6 +18,7 @@ export {
 } from "./middleware/RequestOptions.js";
 
 export * from "./utils/HeaderUtils.js";
+export { entityIdFromResponse } from "./utils/response.js";
 export type { RawBody } from "./utils/body.js";
 
 export {
