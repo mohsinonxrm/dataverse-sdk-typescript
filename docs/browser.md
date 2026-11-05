@@ -92,7 +92,7 @@ A browser lets script read only the CORS-safelisted response headers (such as `C
 
 Any other response header is hidden from script in a browser. That changes three things compared with Node.js:
 
-- **`WWW-Authenticate` can't be read**, so a claims challenge (Conditional Access, continuous access evaluation) is invisible to the SDK. After a 401, the SDK's recovery (`refreshTokenOn401`, on by default) therefore always calls `getToken()` with `forceRefresh: true` and resends the request once. `MsalBrowserTokenProvider` doesn't pass `forceRefresh` on to MSAL yet ([#167](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/167)), so until then the resend uses MSAL's current cached token.
+- **`WWW-Authenticate` can't be read**, so a claims challenge (Conditional Access, continuous access evaluation) is invisible to the SDK. After a 401, the SDK's recovery (`refreshTokenOn401`, on by default) therefore always calls `getToken()` with `forceRefresh: true` and resends the request once. `MsalBrowserTokenProvider` passes `forceRefresh` on to MSAL's `acquireTokenSilent`, so the resend gets a new token rather than the cached one ([#167](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/167)).
 - **`x-ms-service-request-id` can't be read**, so `DataverseError.requestId` falls back to `REQ_ID`.
 - **`x-ms-dop-hint` can't be read**, so adaptive concurrency has nothing to adapt to: the limit stays at `concurrency.maxConcurrentRequests` (default 8).
 
@@ -136,7 +136,6 @@ The client attaches the bearer token only to requests for its own `baseUrl` orig
 | Limit                                                                                                | Tracking                                                                   |
 | ---------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
 | Claims challenges can't be read (`WWW-Authenticate` isn't exposed); 401 recovery is a forced refresh | Dataverse CORS behaviour                                                   |
-| `MsalBrowserTokenProvider` ignores `forceRefresh`                                                    | [#167](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/167) |
 | `FileColumnClient.upload()` with a `Blob` throws `ReferenceError: Buffer is not defined`             | [#58](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/58)   |
 | No chunked `PATCH`, ranged download or streaming for file columns                                    | [#95](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/95)   |
 | Application Insights adapter is Node.js only                                                         | [#158](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/158) |
