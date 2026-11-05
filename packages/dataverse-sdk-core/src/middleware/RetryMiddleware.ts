@@ -11,6 +11,7 @@ const DEFAULTS = {
   baseDelayMs: 3000,
   maxDelayMs: 30000,
   jitter: true,
+  retryNonIdempotent: false,
 };
 
 export class RetryMiddleware implements Middleware {
@@ -34,6 +35,7 @@ export class RetryMiddleware implements Middleware {
         baseDelayMs: perRequestOptions?.delay,
         retryableStatusCodes: perRequestOptions?.retryableStatusCodes,
         useExponentialBackoff: perRequestOptions?.useExponentialBackoff,
+        retryNonIdempotent: perRequestOptions?.retryNonIdempotent,
       }),
     };
 
@@ -68,6 +70,18 @@ export class RetryMiddleware implements Middleware {
           return res;
         }
       } else if (!shouldRetry(res.status, opt.retryableStatusCodes)) {
+        return res;
+      } else if (
+        res.status !== 429 &&
+        !opt.retryNonIdempotent &&
+        !isIdempotent(request.method, request.headers)
+      ) {
+        // A 5xx from a gateway can arrive after Dataverse applied the request; replaying a
+        // create, an action or an unconditional PATCH could apply it twice.
+        ctx.logger?.debug("Not retrying a non-idempotent request after a server error", {
+          method: request.method,
+          statusCode: res.status,
+        });
         return res;
       }
 
@@ -110,4 +124,14 @@ function backoff(base: number, attempt: number, max: number): number {
 /** Drop undefined values so they don't override client-level settings when spread. */
 function definedOnly<T extends Record<string, unknown>>(o: T): Partial<T> {
   return Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined)) as Partial<T>;
+}
+
+/**
+ * Whether replaying the request can't apply it twice: GET, HEAD, OPTIONS, PUT and DELETE are
+ * idempotent; PATCH is when it carries `If-Match` (so a replay can only update the same version).
+ */
+function isIdempotent(method: string, headers: Record<string, string>): boolean {
+  const m = method.toUpperCase();
+  if (m === "GET" || m === "HEAD" || m === "OPTIONS" || m === "PUT" || m === "DELETE") return true;
+  return m === "PATCH" && Boolean(headers["if-match"]);
 }
