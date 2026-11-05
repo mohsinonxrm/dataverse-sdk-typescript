@@ -23,6 +23,17 @@ export { entityIdFromResponse } from "./utils/response.js";
 export { ConsoleLogger, type LogLevel } from "./utils/consoleLogger.js";
 export { defaultRedactUrl } from "./utils/redact.js";
 export { SDK_VERSION } from "./version.js";
+
+// Pipeline building blocks, for `DataverseClientOptions.middleware` (#18).
+export { Pipeline } from "./pipeline/Pipeline.js";
+export { FetchRequestAdapter } from "./pipeline/FetchRequestAdapter.js";
+export { buildDefaultMiddleware } from "./pipeline/DefaultMiddleware.js";
+export { AuthMiddleware } from "./middleware/AuthMiddleware.js";
+export { ODataHeadersMiddleware } from "./middleware/ODataHeadersMiddleware.js";
+export { ConcurrencyMiddleware } from "./middleware/ConcurrencyMiddleware.js";
+export { RetryMiddleware } from "./middleware/RetryMiddleware.js";
+export { TelemetryMiddleware } from "./middleware/TelemetryMiddleware.js";
+export { LoggingMiddleware } from "./middleware/LoggingMiddleware.js";
 export { getRetryAttempts } from "./middleware/RetryMiddleware.js";
 export type { RawBody } from "./utils/body.js";
 
