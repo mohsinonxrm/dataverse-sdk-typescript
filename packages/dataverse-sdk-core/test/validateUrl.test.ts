@@ -26,12 +26,47 @@ describe("validateUrl", () => {
     expect(() => validateUrl(longUrl)).toThrow(/URL exceeds maximum length of 32768 bytes/);
   });
 
-  it("should fail URL with segment exceeding 260 chars", () => {
-    const longSegment = "x".repeat(300);
-    const url = `https://org.crm.dynamics.com/api/data/v9.2/accounts?$filter=${longSegment}`;
+  it("should fail URL with a path segment exceeding 260 chars", () => {
+    const longKey = `accounts(name='${"x".repeat(300)}')`;
+    const url = `https://org.crm.dynamics.com/api/data/v9.2/${longKey}`;
 
     expect(() => validateUrl(url)).toThrow(DataverseUrlError);
     expect(() => validateUrl(url)).toThrow(/URL segment exceeds maximum length of 260 characters/);
+  });
+
+  it("does not treat the query string as a segment (#10)", () => {
+    const filter = Array.from({ length: 60 }, (_, i) => `name eq 'account ${String(i)}'`).join(
+      " or "
+    );
+    const url = `https://org.crm.dynamics.com/api/data/v9.2/accounts?$select=name&$filter=${encodeURIComponent(filter)}`;
+    expect(url.length).toBeGreaterThan(2000);
+
+    const result = validateUrl(url);
+    expect(result.valid).toBe(true);
+    expect(result.maxSegmentLength).toBe("accounts".length);
+  });
+
+  it("ignores '/' inside query values, such as nextLink skip tokens or lookup paths", () => {
+    const url =
+      "https://org.crm.dynamics.com/api/data/v9.2/contacts?$filter=parentcustomerid_account/name eq 'a/b'&$skiptoken=" +
+      encodeURIComponent(`<cookie pagenumber="2" pagingcookie="${"%3c".repeat(200)}" />`);
+    expect(validateUrl(url).valid).toBe(true);
+  });
+
+  it("measures percent-encoded path segments by their decoded length", () => {
+    const name = "a b".repeat(80); // 240 characters, 400 when encoded
+    const url = `https://org.crm.dynamics.com/api/data/v9.2/accounts(name='${encodeURIComponent(name)}')`;
+    expect(validateUrl(url).valid).toBe(true);
+  });
+
+  it("validates relative URLs by their path only", () => {
+    expect(validateUrl(`accounts?$filter=${"x".repeat(400)}`).valid).toBe(true);
+    expect(() => validateUrl(`${"y".repeat(300)}?$top=1`)).toThrow(DataverseUrlError);
+  });
+
+  it("still enforces the total length limit, including the query string", () => {
+    const url = `https://org.crm.dynamics.com/api/data/v9.2/accounts?$filter=${"x".repeat(40000)}`;
+    expect(() => validateUrl(url)).toThrow(/URL exceeds maximum length of 32768 bytes/);
   });
 
   it("should skip validation when requested", () => {

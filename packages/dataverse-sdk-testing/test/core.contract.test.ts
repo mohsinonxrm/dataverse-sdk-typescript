@@ -78,7 +78,7 @@ describe("core: request wire format", () => {
     expect(fake.last().headers["content-type"]).toBe("application/json");
   });
 
-  it.fails("#10: a long $filter is not rejected by URL validation", async () => {
+  it("#10: a long $filter is not rejected by URL validation", async () => {
     const { client, fake } = createTestClient();
     fake.on("GET", "/accounts", () => jsonResponse({ value: [] }));
     const filter = Array.from(
