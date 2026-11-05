@@ -6,7 +6,7 @@ import type {
   RequestInformation,
 } from "../abstractions/http.js";
 import type { DataverseClientOptions, RequestOptions } from "../abstractions/options.js";
-import { normalizeBaseUrl } from "../utils/url.js";
+import { normalizeBaseUrl, resolveRequestUrl } from "../utils/url.js";
 import { Pipeline } from "../pipeline/Pipeline.js";
 import { FetchRequestAdapter } from "../pipeline/FetchRequestAdapter.js";
 import { buildDefaultMiddleware } from "../pipeline/DefaultMiddleware.js";
@@ -55,6 +55,15 @@ export class DataverseClient {
     }
   }
 
+  /**
+   * Resolve a path against this client's Web API root. Absolute `http(s)://` URLs are returned
+   * unchanged. `send()` does this for every request, so relative URLs such as `"WhoAmI"` or
+   * `"/accounts(…)"` work there too.
+   */
+  resolveUrl(pathOrUrl: string): string {
+    return resolveRequestUrl(this.baseUrl, pathOrUrl);
+  }
+
   getBaseUrl(): string {
     return this.baseUrl;
   }
@@ -90,7 +99,11 @@ export class DataverseClient {
   async send(request: RequestInformation): Promise<Response> {
     // Work on a copy with lower-cased header names: middleware must never see (or send) two
     // casings of the same header, and the caller's object must not be mutated.
-    const req: RequestInformation = { ...request, headers: normalizeHeaders(request.headers) };
+    const req: RequestInformation = {
+      ...request,
+      url: this.resolveUrl(request.url),
+      headers: normalizeHeaders(request.headers),
+    };
     return this.pipeline.execute(req, this.ctx, (r, c) => this.adapter.send(r, c));
   }
 }

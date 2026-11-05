@@ -1,11 +1,28 @@
 import type { RequestInformation } from "../abstractions/http.js";
+import type { ApiVersion } from "../abstractions/options.js";
 
-export function normalizeBaseUrl(input: string, apiVersion: "v9.2" = "v9.2"): string {
+export function normalizeBaseUrl(input: string, apiVersion: ApiVersion = "v9.2"): string {
   const trimmed = input.replace(/\/$/, "");
   if (/\/api\/data\/v\d+\.\d+$/i.test(trimmed)) {
     return trimmed;
   }
   return `${trimmed}/api/data/${apiVersion}`;
+}
+
+/**
+ * Resolve a request path against the Web API root. Absolute `http(s)://` URLs are returned
+ * unchanged; anything else is treated as relative to `apiRoot`, with or without a leading `/`.
+ *
+ * @example
+ * ```typescript
+ * resolveRequestUrl("https://org.crm.dynamics.com/api/data/v9.2", "WhoAmI");
+ * // "https://org.crm.dynamics.com/api/data/v9.2/WhoAmI"
+ * ```
+ */
+export function resolveRequestUrl(apiRoot: string, pathOrUrl: string): string {
+  if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl;
+  const root = apiRoot.endsWith("/") ? apiRoot.slice(0, -1) : apiRoot;
+  return `${root}/${pathOrUrl.replace(/^\/+/, "")}`;
 }
 
 export function buildUrl(req: RequestInformation): string {
