@@ -43,8 +43,8 @@ export const GeneratedEntities = [
  * List of all generated actions
  */
 export const GeneratedActions = [
-<%_ actions.forEach(function(action){ _%>
-  <%- literal(action.Name) %>,
+<%_ actions.forEach(function(e){ _%>
+  <%- literal(e.op.Name) %>,
 <%_ }) _%>
 ] as const;
 
@@ -52,8 +52,8 @@ export const GeneratedActions = [
  * List of all generated functions
  */
 export const GeneratedFunctions = [
-<%_ functions.forEach(function(func){ _%>
-  <%- literal(func.Name) %>,
+<%_ functions.forEach(function(e){ _%>
+  <%- literal(e.op.Name) %>,
 <%_ }) _%>
 ] as const;
 
@@ -61,14 +61,14 @@ export const GeneratedFunctions = [
  * Action metadata for runtime lookup
  */
 export const ActionMetadata = {
-<%_ actions.forEach(function(action){ _%>
-  <%- propertyKey(action.Name) %>: {
-    name: <%- literal(action.Name) %>,
-    isBound: <%- action.IsBound ? 'true' : 'false' %>,
-    <%_ if (action.BindingType) { _%>
-    bindingType: <%- literal(action.BindingType) %>,
+<%_ actions.forEach(function(e){ _%>
+  <%- propertyKey(e.key) %>: {
+    name: <%- literal(e.op.Name) %>,
+    isBound: <%- e.op.IsBound ? 'true' : 'false' %>,
+    <%_ if (e.op.BindingType) { _%>
+    bindingType: <%- literal(e.op.BindingType) %>,
     <%_ } _%>
-    hasReturnType: <%- action.ReturnType ? 'true' : 'false' %>,
+    hasReturnType: <%- e.op.ReturnType ? 'true' : 'false' %>,
   },
 <%_ }) _%>
 } as const;
@@ -77,14 +77,14 @@ export const ActionMetadata = {
  * Function metadata for runtime lookup
  */
 export const FunctionMetadata = {
-<%_ functions.forEach(function(func){ _%>
-  <%- propertyKey(func.Name) %>: {
-    name: <%- literal(func.Name) %>,
-    isBound: <%- func.IsBound ? 'true' : 'false' %>,
-    <%_ if (func.BindingType) { _%>
-    bindingType: <%- literal(func.BindingType) %>,
+<%_ functions.forEach(function(e){ _%>
+  <%- propertyKey(e.key) %>: {
+    name: <%- literal(e.op.Name) %>,
+    isBound: <%- e.op.IsBound ? 'true' : 'false' %>,
+    <%_ if (e.op.BindingType) { _%>
+    bindingType: <%- literal(e.op.BindingType) %>,
     <%_ } _%>
-    hasReturnType: <%- func.ReturnType ? 'true' : 'false' %>,
+    hasReturnType: <%- e.op.ReturnType ? 'true' : 'false' %>,
   },
 <%_ }) _%>
 } as const;

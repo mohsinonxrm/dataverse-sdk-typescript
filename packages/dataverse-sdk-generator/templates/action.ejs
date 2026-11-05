@@ -5,8 +5,11 @@
  */
 export class <%- className %> extends ActionBase<<%- responseType %>> {
   constructor(
-<%_ action.Parameters.forEach(function(param){ _%>
-    public <%- identifier(param.Name) %>: <%- formatType(param.TypeScriptType) %><%- param.Nullable ? ' | null' : '' %>,
+<%_ if (bindingDeclaration) { _%>
+    <%- bindingDeclaration %>
+<%_ } _%>
+<%_ action.Parameters.forEach(function(param, index){ _%>
+    public <%- identifier(param.Name) %><%- isOptional(index) ? '?' : '' %>: <%- parameterType(param) %><%- param.Nullable ? ' | null' : '' %>,
 <%_ }) _%>
   ) {
     super();
@@ -28,7 +31,7 @@ export class <%- className %> extends ActionBase<<%- responseType %>> {
   toRequestInformation(baseUrl: string): RequestInformation {
     return {
       method: "POST",
-      url: `${baseUrl}/<%- action.Name %>`,
+      url: `${baseUrl}<%- operationPath %>`,
       headers: {
         "content-type": "application/json",
         accept: "application/json",

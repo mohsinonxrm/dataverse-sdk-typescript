@@ -375,6 +375,71 @@ const whoAmI = await client.execute(new WhoAmIFunction()); // WhoAmIResponse
 console.log(whoAmI.UserId);
 ```
 
+### Function Class
+
+Function parameters are sent as parameter aliases (`Name(Param=@p1)?@p1=<literal>`), and each
+value is written as the OData literal for its type by `formatParameterAlias()` from
+`@mohsinonxrm/dataverse-sdk-entities-runtime`:
+
+- strings are quoted, with `'` doubled: `'O''Brien'`;
+- GUIDs, numbers and booleans are written bare; `Date` values become ISO strings (`Edm.Date` takes
+  only the date part);
+- enum values become enum literals: `Microsoft.Dynamics.CRM.EntityFilters'1'`;
+- collections and complex values are written as JSON, and an entity reference as
+  `{"@odata.id":"accounts(<id>)"}`.
+
+Trailing nullable parameters are optional; a parameter left `undefined` is left out of the call.
+
+```typescript
+// generated/functions/RetrieveUserPrivilegeByPrivilegeNameFunction.ts (bound to systemuser)
+export class RetrieveUserPrivilegeByPrivilegeNameFunction extends FunctionBase<RetrieveUserPrivilegeByPrivilegeNameResponse> {
+  constructor(
+    public readonly targetId: string,
+    public PrivilegeName: string,
+    public ExcludeTeamBasic?: boolean | null
+  ) {
+    super();
+  }
+
+  toRequestInformation(baseUrl: string): RequestInformation {
+    const aliases: string[] = [];
+    const values = new URLSearchParams();
+    if (this.PrivilegeName !== undefined) {
+      aliases.push("PrivilegeName=@p1");
+      values.append("@p1", formatParameterAlias(this.PrivilegeName, "Edm.String", "PrimitiveType"));
+    }
+    // ...
+    const query = values.toString();
+    return {
+      method: "GET",
+      url: `${baseUrl}/systemusers(${formatParameterAlias(this.targetId, "Edm.Guid")})/Microsoft.Dynamics.CRM.RetrieveUserPrivilegeByPrivilegeName(${aliases.join(",")})${query ? `?${query}` : ""}`,
+      headers: { accept: "application/json" },
+    };
+  }
+  // ...
+}
+
+const result = await client.execute(
+  new RetrieveUserPrivilegeByPrivilegeNameFunction(userId, "prvReadAccount")
+);
+```
+
+### Bound Actions and Functions
+
+A bound operation is called on what it is bound to, `/<entity set>(<id>)/Microsoft.Dynamics.CRM.<Name>`
+for one record or `/<entity set>/Microsoft.Dynamics.CRM.<Name>` for a collection:
+
+| Bound to                                   | First constructor parameter                    |
+| ------------------------------------------ | ---------------------------------------------- |
+| one record of a table (`mscrm.systemuser`) | `targetId: string`                             |
+| a table's collection                       | none (the entity set is known)                 |
+| an abstract type (`mscrm.crmbaseentity`)   | `target: EntityReference` with `entitySetName` |
+| a collection of an abstract type           | `entitySetName: string`                        |
+
+An operation bound to several tables (`RetrieveUnpublished` is bound to about twenty) gets one
+class per binding, named after the table: `RetrieveUnpublished_savedqueryFunction`,
+`RetrieveUnpublished_systemformFunction`, and so on.
+
 ---
 
 ## 🔌 Programmatic Usage

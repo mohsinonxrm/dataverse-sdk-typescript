@@ -4,9 +4,12 @@ import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { SchemaModel } from "./schema-model.js";
 import type {
+  ActionType,
   DataverseGenConfig,
   EntityType,
+  FunctionType,
   NavigationPropertyType,
+  ParameterType,
   TypeScriptType,
 } from "./types.js";
 
@@ -228,17 +231,18 @@ export class TypescriptGenerator {
 
     const template = await this.loadTemplate("action.ejs");
 
+    const names = this.operationNames(this.model.Actions);
     for (const action of this.model.Actions) {
       const imports = new ImportCollector();
       imports.value("ActionBase", RUNTIME_PACKAGE);
       imports.type("RequestInformation", RUNTIME_PACKAGE);
-      const className = `${toSafeIdentifier(action.Name)}Action`;
+      const className = `${names.get(action) ?? toSafeIdentifier(action.Name)}Action`;
 
       const body = ejs.render(template, {
         ...this.helpers("actions", imports),
+        ...this.operationHelpers(action, "actions", imports),
         action,
         className,
-        getStructuralType: (type: string) => this.model.getStructuralType(type),
       });
 
       await this.writeFile(dir, className, imports, body);
@@ -254,17 +258,18 @@ export class TypescriptGenerator {
 
     const template = await this.loadTemplate("function.ejs");
 
+    const names = this.operationNames(this.model.Functions);
     for (const func of this.model.Functions) {
       const imports = new ImportCollector();
       imports.value("FunctionBase", RUNTIME_PACKAGE);
       imports.type("RequestInformation", RUNTIME_PACKAGE);
-      const className = `${toSafeIdentifier(func.Name)}Function`;
+      const className = `${names.get(func) ?? toSafeIdentifier(func.Name)}Function`;
 
       const body = ejs.render(template, {
         ...this.helpers("functions", imports),
+        ...this.operationHelpers(func, "functions", imports),
         func,
         className,
-        getStructuralType: (type: string) => this.model.getStructuralType(type),
       });
 
       await this.writeFile(dir, className, imports, body);
@@ -311,12 +316,14 @@ export class TypescriptGenerator {
       return { entity, typeName, metadataName: `${typeName}Metadata` };
     });
 
+    const actionNames = this.operationNames(this.model.Actions);
+    const functionNames = this.operationNames(this.model.Functions);
     const template = await this.loadTemplate("metadata.ejs");
     const body = ejs.render(template, {
       ...this.helpers("entities", imports),
       entities,
-      actions: this.model.Actions,
-      functions: this.model.Functions,
+      actions: this.model.Actions.map((op) => ({ op, key: actionNames.get(op) ?? op.Name })),
+      functions: this.model.Functions.map((op) => ({ op, key: functionNames.get(op) ?? op.Name })),
     });
 
     await this.writeFile(this.outputRoot, "metadata", imports, body);
@@ -346,13 +353,15 @@ export * from './metadata${suffix}.js';
       "enums",
       this.model.EnumTypes.map((e) => toSafeIdentifier(e.Name))
     );
+    const actionNames = this.operationNames(this.model.Actions);
     await this.outputFolderIndex(
       "actions",
-      this.model.Actions.map((a) => `${toSafeIdentifier(a.Name)}Action`)
+      this.model.Actions.map((a) => `${actionNames.get(a) ?? a.Name}Action`)
     );
+    const functionNames = this.operationNames(this.model.Functions);
     await this.outputFolderIndex(
       "functions",
-      this.model.Functions.map((f) => `${toSafeIdentifier(f.Name)}Function`)
+      this.model.Functions.map((f) => `${functionNames.get(f) ?? f.Name}Function`)
     );
     await this.outputFolderIndex(
       "complextypes",
@@ -402,6 +411,94 @@ export * from './metadata${suffix}.js';
       this.model.AllEntityTypeNames.has(name) ||
       this.model.ComplexTypes.some((c) => c.Name === name)
     );
+  }
+
+  /**
+   * Unique class-name stems for operations. An operation name can be bound to several entity
+   * types (`RetrieveUnpublished` is bound to a dozen); each overload gets the binding entity in
+   * its name (`RetrieveUnpublished_savedquery`) instead of overwriting the others' file.
+   */
+  private operationNames<T extends ActionType | FunctionType>(operations: T[]): Map<T, string> {
+    const counts = new Map<string, number>();
+    for (const op of operations) counts.set(op.Name, (counts.get(op.Name) ?? 0) + 1);
+
+    const names = new Map<T, string>();
+    const used = new Set<string>();
+    for (const op of operations) {
+      let name = toSafeIdentifier(op.Name);
+      if ((counts.get(op.Name) ?? 0) > 1 && op.BindingEntity) {
+        name = `${name}_${op.BindingEntity}${op.IsCollectionBound ? "_collection" : ""}`;
+      }
+      const stem = name;
+      for (let i = 2; used.has(name); i++) name = `${stem}_${String(i)}`;
+      used.add(name);
+      names.set(op, name);
+    }
+    return names;
+  }
+
+  /**
+   * Helpers for action and function templates: the constructor parameters, the request path
+   * (with the binding, for a bound operation) and how each parameter is serialized.
+   */
+  private operationHelpers(
+    op: ActionType | FunctionType,
+    folder: Folder,
+    imports: ImportCollector
+  ) {
+    const params = op.Parameters;
+    // Trailing nullable parameters are optional: they can be left out of the call.
+    let firstOptional = params.length;
+    while (firstOptional > 0 && params[firstOptional - 1].Nullable) firstOptional--;
+
+    const isFunction = folder === "functions";
+    const kindOf = (param: ParameterType) => this.model.getStructuralType(param.Type);
+    const parameterType = (param: ParameterType) => {
+      const tsType = this.formatType(param.TypeScriptType, folder, imports);
+      // A function's entity-typed parameter is usually a reference ({"@odata.id": ...}).
+      if (isFunction && kindOf(param) === "EntityType") {
+        imports.type("EntityReference", RUNTIME_PACKAGE);
+        return `${tsType} | EntityReference`;
+      }
+      return tsType;
+    };
+
+    // The record or collection a bound operation is called on.
+    let bindingDeclaration = "";
+    let target = "";
+    if (op.IsBound && op.BindingEntity) {
+      const set = op.BindingEntitySetName;
+      if (op.IsCollectionBound) {
+        if (set) {
+          target = `/${set}`;
+        } else {
+          bindingDeclaration = "public readonly entitySetName: string,";
+          target = "/${this.entitySetName}";
+        }
+      } else if (set) {
+        imports.value("formatParameterAlias", RUNTIME_PACKAGE);
+        bindingDeclaration = "public readonly targetId: string,";
+        target = `/${set}(\${formatParameterAlias(this.targetId, "Edm.Guid")})`;
+      } else {
+        imports.value("formatRecordPath", RUNTIME_PACKAGE);
+        imports.type("EntityReference", RUNTIME_PACKAGE);
+        bindingDeclaration = "public readonly target: EntityReference,";
+        target = "/${formatRecordPath(this.target)}";
+      }
+    }
+    const operationPath = op.IsBound
+      ? `${target}/Microsoft.Dynamics.CRM.${op.Name}`
+      : `/${op.Name}`;
+    if (isFunction && params.length > 0) imports.value("formatParameterAlias", RUNTIME_PACKAGE);
+
+    return {
+      bindingDeclaration,
+      operationPath,
+      isOptional: (index: number) => index >= firstOptional,
+      parameterType,
+      parameterKind: kindOf,
+      getStructuralType: (type: string) => this.model.getStructuralType(type),
+    };
   }
 
   /** TypeScript for a resolved type, adding the imports it needs. */

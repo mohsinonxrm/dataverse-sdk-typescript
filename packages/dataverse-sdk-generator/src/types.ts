@@ -277,6 +277,15 @@ export interface ActionType {
   /** Binding parameter type (if bound) */
   BindingType?: string;
 
+  /** Entity type the operation is bound to, without the namespace (e.g. "account") */
+  BindingEntity?: string;
+
+  /** Bound to the entity collection (`Collection(mscrm.account)`) rather than to one record */
+  IsCollectionBound?: boolean;
+
+  /** Entity set of the binding entity type, when it has one (e.g. "accounts") */
+  BindingEntitySetName?: string;
+
   /** Parameters */
   Parameters: ParameterType[];
 
@@ -296,6 +305,15 @@ export interface FunctionType {
 
   /** Binding parameter type (if bound) */
   BindingType?: string;
+
+  /** Entity type the operation is bound to, without the namespace (e.g. "account") */
+  BindingEntity?: string;
+
+  /** Bound to the entity collection (`Collection(mscrm.account)`) rather than to one record */
+  IsCollectionBound?: boolean;
+
+  /** Entity set of the binding entity type, when it has one (e.g. "accounts") */
+  BindingEntitySetName?: string;
 
   /** Parameters */
   Parameters: ParameterType[];
