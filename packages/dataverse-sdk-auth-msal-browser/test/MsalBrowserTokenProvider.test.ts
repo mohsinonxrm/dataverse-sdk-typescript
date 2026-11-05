@@ -227,6 +227,8 @@ describe("MsalBrowserTokenProvider", () => {
       expect(mockPCA.acquireTokenSilent).toHaveBeenCalled();
       expect(mockPCA.acquireTokenPopup).toHaveBeenCalledWith({
         scopes: mockScopes,
+        account: mockAccount,
+        loginHint: mockAccount.username,
         claims: undefined,
         correlationId: undefined,
       });
@@ -271,6 +273,8 @@ describe("MsalBrowserTokenProvider", () => {
       await expect(tokenPromise).rejects.toThrow(DataverseAuthenticationError);
       expect(mockPCA.acquireTokenRedirect).toHaveBeenCalledWith({
         scopes: mockScopes,
+        account: mockAccount,
+        loginHint: mockAccount.username,
         claims: undefined,
         correlationId: undefined,
       });
@@ -317,10 +321,24 @@ describe("MsalBrowserTokenProvider", () => {
       await expect(provider.getToken()).rejects.toThrow(DataverseAuthenticationError);
     });
 
-    it("should throw when no accounts are available", async () => {
+    it("should sign in interactively when no accounts are available", async () => {
       const mockPCA = createFakePca();
       mockPCA.getAllAccounts.mockReturnValue([]);
-      mockPCA.acquireTokenSilent.mockResolvedValue({ ...mockAuthResult, accessToken: "" });
+      mockPCA.acquireTokenPopup.mockResolvedValue(mockAuthResult);
+
+      const provider = new MsalBrowserTokenProvider(asPca(mockPCA), {
+        scopes: mockScopes,
+      });
+
+      await expect(provider.getToken()).resolves.toBe(mockAccessToken);
+      expect(mockPCA.acquireTokenSilent).not.toHaveBeenCalled();
+      expect(mockPCA.acquireTokenPopup).toHaveBeenCalledTimes(1);
+    });
+
+    it("should throw when the popup returns an empty access token", async () => {
+      const mockPCA = createFakePca();
+      mockPCA.getAllAccounts.mockReturnValue([]);
+      mockPCA.acquireTokenPopup.mockResolvedValue({ ...mockAuthResult, accessToken: "" });
 
       const provider = new MsalBrowserTokenProvider(asPca(mockPCA), {
         scopes: mockScopes,
