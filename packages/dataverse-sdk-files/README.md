@@ -67,8 +67,10 @@ await fileClient.upload("accounts", accountId, "new_document", documentFile, "co
 ### Upload Large File
 
 ```typescript
-// Files >128MB are automatically chunked
+// Every upload is sent in blocks of at most 4MB (the largest block Dataverse accepts),
+// so a large file needs no special options. The column's maximum size still applies.
 const largeFile = /* 500MB file */;
+const controller = new AbortController(); // controller.abort() cancels the upload
 
 await fileClient.upload(
   'emails',
@@ -77,11 +79,11 @@ await fileClient.upload(
   largeFile,
   'large-document.pdf',
   {
-    chunkSize: 8 * 1024 * 1024, // Use 8MB chunks for large files
     onProgress: (progress) => {
       // Update UI progress bar
       updateProgressBar(progress.percentage);
-    }
+    },
+    signal: controller.signal,
   }
 );
 ```
@@ -112,7 +114,8 @@ else {
 ### Delete File
 
 ```typescript
-// Remove file from column
+// Remove the file from the column (DELETE /accounts(id)/new_logo).
+// Deleting from a column that has no file succeeds.
 await fileClient.delete("accounts", accountId, "new_logo");
 ```
 
@@ -126,9 +129,8 @@ The `FileColumnClient` uses a three-step chunked upload process based on Microso
 
 ### Default Chunk Size
 
-- **Default**: 4MB (4 _ 1024 _ 1024 bytes)
-- **Configurable**: Specify `chunkSize` option to customize
-- **Recommendation**: Use larger chunks (8-16MB) for very large files to reduce API calls
+- **Default and maximum**: 4MB (`4 * 1024 * 1024` bytes). Dataverse rejects bigger blocks, so `upload()` rejects a larger `chunkSize` with a `DataverseInvalidRequestError` before sending anything.
+- **Configurable**: Specify a smaller `chunkSize` for finer-grained progress
 
 ### Block ID Generation
 
@@ -142,7 +144,11 @@ This ensures proper ordering when committing the upload.
 
 ## Error Handling
 
+Every response is checked. When a step fails, `upload()`, `download()` and `delete()` reject with the parsed error (`DataverseODataError`, or `DataverseThrottleError` for a 429), which carries `status`, `code`, `message`, `requestId` and the response headers, and `upload()` sends nothing after the failed request. `download()` of a column with no file rejects with status 404.
+
 ```typescript
+import { DataverseODataError } from "@mohsinonxrm/dataverse-sdk-core";
+
 try {
   await fileClient.upload("accounts", accountId, "new_logo", logoFile, "logo.png", {
     onProgress: (progress) => {
@@ -152,8 +158,7 @@ try {
   console.log("Upload successful!");
 } catch (error) {
   if (error instanceof DataverseODataError) {
-    console.error("Dataverse error:", error.message);
-    console.error("Error code:", error.code);
+    console.error("Dataverse error:", error.status, error.code, error.message);
   } else {
     console.error("Upload failed:", error);
   }
@@ -290,7 +295,7 @@ async delete(
 ): Promise<void>
 ```
 
-Delete a file from a file or image column.
+Delete a file from a file or image column, with `DELETE /{entitySetName}({recordId})/{columnName}`. Deleting from a column that has no file succeeds.
 
 **Parameters:**
 
@@ -304,8 +309,9 @@ Delete a file from a file or image column.
 
 ```typescript
 interface FileUploadOptions {
-  chunkSize?: number; // Chunk size in bytes (default: 4MB)
+  chunkSize?: number; // Chunk size in bytes (default and maximum: 4MB)
   onProgress?: (progress: UploadProgress) => void;
+  signal?: AbortSignal; // Cancels the upload; it rejects with DataverseAbortError
 }
 ```
 
@@ -325,9 +331,8 @@ interface UploadProgress {
 
 ### Chunk Size
 
-- **Small files (<10MB)**: Default 4MB chunks work well
-- **Medium files (10-100MB)**: Consider 8MB chunks
-- **Large files (>100MB)**: Consider 16MB chunks to reduce API call overhead
+- The default 4MB is also the largest block Dataverse accepts, and needs the fewest requests.
+- `upload()` reads the whole file into memory before it sends the first block.
 
 ### Parallel Uploads
 
@@ -335,7 +340,7 @@ interface UploadProgress {
 
 ### Retry Logic
 
-The underlying `RequestAdapter` handles retry logic for failed requests. Individual chunk uploads will be retried automatically on transient failures (429, 5xx).
+When the `FileColumnClient` sends through a `DataverseClient`, the client's retry settings apply to every request: a 429 is retried for any request. A block (`UploadBlock`) is also retried after a 502, 503 or 504 (and after a dropped connection when `retry.retryNetworkErrors` is on), because sending a block again with the same block id replaces it; the client retries other POSTs only after a 429. The number of retries is the client's `retry.maxRetries`. A raw adapter such as `FetchRequestAdapter` doesn't retry.
 
 ## Browser Compatibility
 
