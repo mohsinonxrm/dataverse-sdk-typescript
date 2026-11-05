@@ -68,7 +68,7 @@ pnpm lint
 All public APIs must have:
 
 - **JSDoc documentation** with usage examples
-- **Unit tests** with >90% coverage
+- **Unit tests** that keep the package's coverage gate green (core's `pnpm test` fails below 85% statements/functions/lines and 80% branches; see `packages/dataverse-sdk-core/vitest.config.ts`)
 - **Type tests** (if impacting metadata types)
 
 ### Breaking Changes
@@ -128,7 +128,7 @@ packages/
 
 - Test individual functions/classes
 - Mock external dependencies
-- Target: >90% coverage
+- Coverage: core enforces its thresholds on every `pnpm test`; don't lower them, raise them as tests grow
 
 ### Contract Tests (MSW)
 
