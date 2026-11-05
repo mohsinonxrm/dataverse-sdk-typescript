@@ -313,11 +313,12 @@ export class DataverseNetworkError extends DataverseError {
   /**
    * Create error for network failure
    */
-  static connectionFailed(details?: string): DataverseNetworkError {
+  static connectionFailed(details?: string, cause?: unknown): DataverseNetworkError {
     const error = new DataverseNetworkError(
       `Network connection failed${details ? ": " + details : ""}`
     );
     error.name = "ConnectionFailed";
+    if (cause !== undefined) error.cause = cause;
     return error;
   }
 

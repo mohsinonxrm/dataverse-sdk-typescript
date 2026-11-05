@@ -12,18 +12,56 @@ export const Prefer = {
   },
 } as const;
 
+/**
+ * Retry policy, used both for the client (`DataverseClientOptions.retry`) and per request
+ * (`new MiddlewareRequestOptions([{ type: "retry", ... }])`). A per-request value overrides the
+ * client's value for that request only.
+ *
+ * The delay before retry `n` (0-based) is `min(maxDelayMs, baseDelayMs * 2^n)`, with ±20% jitter
+ * when `jitter` is on. When the response carries `Retry-After`, that wait is used as is instead.
+ */
 export interface RetryOptions {
+  /** Retries after the first attempt. @default 6 */
   maxRetries?: number;
+  /** Base of the exponential backoff, in ms. @default 3000 */
   baseDelayMs?: number;
+  /** Upper bound of the computed backoff, in ms. @default 30000 */
   maxDelayMs?: number;
-  jitter?: boolean;
   /**
-   * Also retry POST, and PATCH without `If-Match`, after 502/503/504. Default `false`: a gateway
-   * error can arrive after Dataverse already applied the request, so replaying a create or an
-   * action can apply it twice. 429 responses are always retried, for every method, because
-   * Dataverse rejects throttled requests before doing any work.
+   * Longest `Retry-After` the SDK waits out, in ms. When the server asks for a longer wait, the
+   * response is returned at once (as a `DataverseThrottleError` with `retryAfterMs` for a 429),
+   * so the caller decides whether to wait. Use `Infinity` to always honour `Retry-After`.
+   * @default maxDelayMs (30000 unless changed)
+   */
+  maxRetryAfterMs?: number;
+  /** Add ±20% random jitter to the computed backoff (never to `Retry-After`). @default true */
+  jitter?: boolean;
+  /** Status codes that are retried. @default [429, 502, 503, 504] */
+  retryableStatusCodes?: number[];
+  /**
+   * Also retry POST, and PATCH without `If-Match`, after 502/503/504 (and after network errors,
+   * when `retryNetworkErrors` is on). Default `false`: a gateway error can arrive after Dataverse
+   * already applied the request, so replaying a create or an action can apply it twice. 429
+   * responses are always retried, for every method, because Dataverse rejects throttled requests
+   * before doing any work.
    */
   retryNonIdempotent?: boolean;
+  /**
+   * Retry when `fetch` itself fails (a `DataverseNetworkError` named `ConnectionFailed`, such as
+   * a dropped connection), for idempotent methods only unless `retryNonIdempotent` is set.
+   * Aborts and timeouts are never retried. @default false
+   */
+  retryNetworkErrors?: boolean;
+  /**
+   * Decide yourself whether to retry. Replaces the status-code, method and network-error checks;
+   * `maxRetries`, the delays and `maxRetryAfterMs` still apply. For a network error it is called
+   * with status `0` and the error.
+   */
+  shouldRetry?: (statusCode: number, error?: Error) => boolean;
+  /** @deprecated Use `baseDelayMs`. */
+  delay?: number;
+  /** @deprecated Has no effect: backoff is always exponential. */
+  useExponentialBackoff?: boolean;
 }
 
 export interface ConcurrencyOptions {
