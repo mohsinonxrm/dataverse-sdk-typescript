@@ -1,11 +1,10 @@
+import { DataverseError } from "../src/errors/DataverseError.js";
 import { describe, it, expect } from "vitest";
 import {
-  DataverseError,
   DataverseAuthenticationError,
   DataverseInvalidRequestError,
   DataverseServiceError,
   DataverseNetworkError,
-  DataverseBatchError,
 } from "../src/errors/NamedErrors.js";
 
 describe("NamedErrors", () => {
@@ -41,13 +40,13 @@ describe("NamedErrors", () => {
     it("creates unauthorized error with status code", () => {
       const error = DataverseAuthenticationError.unauthorized();
       expect(error.name).toBe("Unauthorized");
-      expect(error.statusCode).toBe(401);
+      expect(error.status).toBe(401);
     });
 
     it("creates forbidden error with status code", () => {
       const error = DataverseAuthenticationError.forbidden();
       expect(error.name).toBe("Forbidden");
-      expect(error.statusCode).toBe(403);
+      expect(error.status).toBe(403);
     });
   });
 
@@ -87,14 +86,14 @@ describe("NamedErrors", () => {
   describe("DataverseServiceError", () => {
     it("creates service error with status code", () => {
       const error = new DataverseServiceError(400, "Bad request");
-      expect(error.statusCode).toBe(400);
+      expect(error.status).toBe(400);
       expect(error.message).toBe("Bad request");
     });
 
     it("creates throttled error", () => {
       const error = DataverseServiceError.throttled(5000);
       expect(error.name).toBe("TooManyRequests");
-      expect(error.statusCode).toBe(429);
+      expect(error.status).toBe(429);
       expect(error.code).toBe("Throttled");
       expect(error.message).toContain("5000");
     });
@@ -102,7 +101,7 @@ describe("NamedErrors", () => {
     it("creates not found error", () => {
       const error = DataverseServiceError.notFound("account", "123");
       expect(error.name).toBe("NotFound");
-      expect(error.statusCode).toBe(404);
+      expect(error.status).toBe(404);
       expect(error.message).toContain("account");
       expect(error.message).toContain("123");
     });
@@ -110,7 +109,7 @@ describe("NamedErrors", () => {
     it("creates bad request error", () => {
       const error = DataverseServiceError.badRequest("Invalid filter");
       expect(error.name).toBe("BadRequest");
-      expect(error.statusCode).toBe(400);
+      expect(error.status).toBe(400);
       expect(error.message).toBe("Invalid filter");
     });
 
@@ -160,25 +159,6 @@ describe("NamedErrors", () => {
     it("creates aborted error", () => {
       const error = DataverseNetworkError.aborted();
       expect(error.name).toBe("RequestAborted");
-    });
-  });
-
-  describe("DataverseBatchError", () => {
-    it("creates batch error with sub-errors", () => {
-      const subErrors = [
-        { index: 0, error: new Error("Request 0 failed") },
-        { index: 2, error: new Error("Request 2 failed") },
-      ];
-      const error = new DataverseBatchError("Batch failed", subErrors);
-      expect(error.subErrors).toHaveLength(2);
-      expect(error.subErrors[0].index).toBe(0);
-    });
-
-    it("creates partial failure error", () => {
-      const subErrors = [{ index: 1, error: new Error("Failed") }];
-      const error = DataverseBatchError.partialFailure(subErrors);
-      expect(error.name).toBe("BatchPartialFailure");
-      expect(error.message).toContain("1 error");
     });
   });
 

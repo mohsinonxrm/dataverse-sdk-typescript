@@ -268,7 +268,7 @@ try {
     });
 
     // HTTP status is always 412 Precondition Failed
-    console.log(`Status: ${error.statusCode}`); // 412
+    console.log(`Status: ${error.status}`); // 412
   }
 }
 
@@ -437,16 +437,14 @@ Typed error classes for different failure scenarios.
 
 ```typescript
 import {
-  DataverseError, // Base error class
-  DataverseODataError, // OData protocol errors (4xx/5xx with error payload)
-  DataverseThrottleError, // 429 Too Many Requests with Retry-After
-  DataverseAuthenticationError, // 401 Unauthorized
-  DataverseServiceError, // 5xx server errors
-  DataverseInvalidRequestError, // 400 Bad Request
-  DataverseNetworkError, // Network/fetch failures
-  DataverseBatchError, // Batch operation errors (multi-part)
-  DataverseDuplicateError, // 412 duplicate detection
-  DataverseUrlError, // Client-side URL validation error
+  DataverseError, // Base class: every error the SDK throws is an instance
+  DataverseODataError, // HTTP error response (4xx/5xx)
+  DataverseThrottleError, // 429, with retryAfterMs
+  DataverseNetworkError, // fetch failed (ConnectionFailed: DNS/TLS/CORS) or timed out (RequestTimeout)
+  DataverseAbortError, // cancelled through an AbortSignal (name "AbortError")
+  DataverseInvalidRequestError, // refused before sending (e.g. TokenOriginRefused)
+  DataverseAuthenticationError, // auth helpers (e.g. EmptyAccessToken)
+  DataverseUrlError, // client-side URL validation
 } from "@mohsinonxrm/dataverse-sdk-core";
 
 try {
@@ -455,37 +453,41 @@ try {
   if (error instanceof DataverseThrottleError) {
     console.log(`Throttled! Retry after ${String(error.retryAfterMs)} ms`);
   } else if (error instanceof DataverseODataError) {
-    console.log(`OData error code: ${error.odataError.code}`);
-    console.log(`Message: ${error.odataError.message}`);
-    console.log(`Status: ${error.statusCode}`);
-
-    // Access inner error details
-    if (error.odataError.innererror) {
-      console.log("Stack trace:", error.odataError.innererror.stacktrace);
-    }
-  } else if (error instanceof DataverseAuthenticationError) {
-    console.log("Authentication failed - check token provider");
-  } else if (error instanceof DataverseServiceError) {
-    console.log(`Server error ${error.statusCode}: ${error.message}`);
+    console.log(`HTTP ${error.status}, code ${error.code}: ${error.message}`);
+    console.log("Request id for support:", error.requestId); // x-ms-service-request-id
+    console.log("Correlation id:", error.correlationId); // the x-ms-correlation-id the SDK sent
+    console.log("Headers:", error.headers); // lower-cased names
+    console.log("Body:", error.body); // parsed JSON, or the text
+    console.log("Inner error:", error.innerError?.message, error.innerError?.stacktrace);
+  } else if (error instanceof DataverseAbortError) {
+    // The caller cancelled; error.cause is the original DOMException.
+  } else if (error instanceof DataverseNetworkError) {
+    console.log(`${error.name}: ${error.message}`); // ConnectionFailed / RequestTimeout
   } else if (error instanceof DataverseError) {
-    console.log(`Generic Dataverse error: ${error.message}`);
+    console.log(`Dataverse SDK error: ${error.message}`);
   }
 }
 ```
+
+Every `DataverseError` has `status?`, `code?`, `message`, `headers?`, `body?` (also `raw`),
+`innerError?`, `requestId?`, `correlationId?`, `cause?` and `date`. `statusCode` still works as a
+deprecated alias of `status`. Errors thrown by your own middleware or token provider are passed
+through unchanged.
 
 **Error hierarchy:**
 
 ```
 DataverseError (base)
-├── DataverseODataError (has odataError payload)
-│   ├── DataverseThrottleError (429, has retryAfterMs)
-│   ├── DataverseDuplicateError (412, has duplicates array)
-│   ├── DataverseAuthenticationError (401)
-│   ├── DataverseInvalidRequestError (400)
-│   └── DataverseServiceError (5xx)
+├── DataverseODataError (HTTP 4xx/5xx)
+├── DataverseThrottleError (429, has retryAfterMs)
+├── DataverseDuplicateError (412, has duplicates array)
 ├── DataverseBatchError (batch-specific, has per-part errors)
 ├── DataverseUrlError (client-side validation)
-└── DataverseNetworkError (fetch/network failures)
+├── DataverseNetworkError (ConnectionFailed, RequestTimeout)
+├── DataverseAbortError (cancelled; name "AbortError")
+├── DataverseInvalidRequestError (refused before sending)
+├── DataverseAuthenticationError (auth helpers)
+└── DataverseServiceError (DataverseServiceError.fromResponse helper)
 ```
 
 ### Middleware Pipeline
@@ -676,7 +678,7 @@ try {
 
   console.log("Update successful");
 } catch (error) {
-  if (error instanceof DataverseODataError && error.statusCode === 412) {
+  if (error instanceof DataverseODataError && error.status === 412) {
     console.log("Precondition failed - record was modified by another user");
     // Retrieve latest version and retry
   }

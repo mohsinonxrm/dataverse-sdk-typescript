@@ -42,6 +42,7 @@ export {
   DataverseInvalidRequestError,
   DataverseServiceError,
   DataverseNetworkError,
+  DataverseAbortError,
 } from "./errors/NamedErrors.js";
 
 export * from "./telemetry/FeatureUsageTracker.js";
