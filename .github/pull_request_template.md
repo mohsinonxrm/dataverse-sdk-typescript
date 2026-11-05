@@ -1,3 +1,9 @@
+## Linked issue
+
+<!-- Required. Every PR must link an `accepted` issue that is assigned to you. See CONTRIBUTING.md. -->
+
+Fixes #
+
 ## Summary
 
 <!-- What does this PR change and why? -->
@@ -11,6 +17,7 @@
 
 ## Checklist
 
+- [ ] The linked issue is triaged (`accepted`, in a milestone) and assigned to me
 - [ ] Tests added or updated for all changed behavior
 - [ ] `pnpm changeset` run if this is a user-facing change
 - [ ] All checks pass locally: `pnpm lint && pnpm typecheck && pnpm test && pnpm build`

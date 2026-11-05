@@ -2,9 +2,36 @@
 
 Thank you for your interest in contributing to the Dataverse SDK TypeScript project!
 
+## How work gets done: issue first, maintainer-triaged
+
+This project follows a **planned, milestone-driven workflow**. Every change starts as an issue, the maintainer decides whether and when it is worked on, and work follows the milestone plan.
+
+1. **Open an issue first.** Use one of the [issue templates](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/new/choose): bug report, feature request or question. Search [existing issues](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues) before opening a new one. **Don't open a pull request for an issue that hasn't been triaged.**
+2. **The maintainer triages it.** New issues are labelled `needs-triage`. The maintainer analyses and reviews each one, then:
+   - adds a type label (`bug`, `enhancement`, `documentation`, `ci`, `security`) and package labels (`pkg:*`);
+   - sets a priority (`P0` to `P3`, defined below);
+   - assigns a milestone (`v1.1.0`, `v1.2.0` or `Backlog`);
+   - replaces `needs-triage` with `accepted`, or closes the issue with a reason (duplicate, won't fix, needs more information).
+3. **Work follows the milestones.** Issues are worked in milestone order, highest priority first. See the [milestones](https://github.com/mohsinonxrm/dataverse-sdk-typescript/milestones) and the tracking issue pinned to each one.
+4. **Want to work on an issue?** Comment on an `accepted` issue and wait for the maintainer to assign it to you before you start. This avoids duplicated effort and work that conflicts with the plan.
+5. **Pull requests must link their issue.** Put `Fixes #123` (or `Refs #123` for partial work) in the PR description. A PR without a linked, accepted issue is converted to a draft or closed, however good the change is. Keep each PR to one issue.
+
+### Priorities
+
+| Priority | Meaning                                          |
+| -------- | ------------------------------------------------ |
+| `P0`     | Blocks browser or SPA use, or a security problem |
+| `P1`     | Wrong behaviour, likely to hit real users        |
+| `P2`     | Correctness or ergonomics gap with a workaround  |
+| `P3`     | Polish                                           |
+
+### Security issues
+
+**Don't report security vulnerabilities in public issues.** See [SECURITY.md](./SECURITY.md).
+
 ## Requirements
 
-- **Node 18+**
+- **Node 20+** (Node 18 is end of life)
 - **pnpm** (package manager)
 - **ESM-only** packages
 
@@ -55,6 +82,7 @@ All public APIs must have:
 
 Before submitting a PR, ensure:
 
+- [ ] The PR links an `accepted` issue that is assigned to you (`Fixes #123`)
 - [ ] Tests added/updated for all changes
 - [ ] Documentation updated:
   - [ ] Package README if API changed
@@ -141,10 +169,10 @@ Select:
 
 ```bash
 # Version packages based on changesets
-pnpm version
+pnpm run version
 
 # Publish to npm
-pnpm release
+pnpm run release
 ```
 
 ## Architectural Decision Records (ADRs)
@@ -169,9 +197,8 @@ By submitting a pull request, you agree that your contributions will be licensed
 
 ## Questions?
 
-- Open an issue for bugs or feature requests
-- Check existing issues/discussions first
-- Tag issues appropriately (`bug`, `feature`, `question`, `docs`)
+- Search the existing issues first.
+- Then open an issue with the **Question** template. The maintainer labels it during triage, so you don't need to.
 
 ---
 

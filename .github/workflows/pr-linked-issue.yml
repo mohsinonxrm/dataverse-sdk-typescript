@@ -1,0 +1,25 @@
+name: PR links an issue
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  contents: read
+
+jobs:
+  linked-issue:
+    # Release PRs opened by the changesets bot don't need an issue.
+    if: ${{ !startsWith(github.head_ref, 'changeset-release/') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require a linked issue in the PR description
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          if printf '%s' "$PR_BODY" | grep -Eiq '(fix(es|ed)?|close[sd]?|resolve[sd]?|refs?|part of)[[:space:]]+#[0-9]+'; then
+            echo "Linked issue found."
+          else
+            echo "::error::Link the accepted issue this PR works on, e.g. 'Fixes #123' (see CONTRIBUTING.md)."
+            exit 1
+          fi
