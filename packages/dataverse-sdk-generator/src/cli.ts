@@ -163,19 +163,16 @@ program
       console.log(chalk.dim("\nConfiguration summary:"));
       console.log(chalk.cyan(`  Environment: ${config.environmentUrl}`));
       console.log(
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         chalk.cyan(
           `  Entities: ${String(config.entities?.length ?? 0)} ${config.entities?.length === 0 ? "(all)" : ""}`
         )
       );
       console.log(
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         chalk.cyan(
           `  Actions: ${String(config.actions?.length ?? 0)} ${config.actions?.length === 0 ? "(all)" : ""}`
         )
       );
       console.log(
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         chalk.cyan(
           `  Functions: ${String(config.functions?.length ?? 0)} ${config.functions?.length === 0 ? "(all)" : ""}`
         )

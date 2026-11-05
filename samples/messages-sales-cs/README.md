@@ -1043,21 +1043,15 @@ batch.beginChangeset();
 // Add message requests as POST actions
 batch.addRequest(
   client.api("/WinOpportunity").post({
-    OpportunityClose: {
-      /* ... */
-    },
+    OpportunityClose: {/* ... */},
     Status: -1,
   })
 );
 
 batch.addRequest(
   client.api("/Assign").post({
-    Target: {
-      /* ... */
-    },
-    Assignee: {
-      /* ... */
-    },
+    Target: {/* ... */},
+    Assignee: {/* ... */},
   })
 );
 

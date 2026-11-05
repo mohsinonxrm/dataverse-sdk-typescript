@@ -29,9 +29,7 @@ import { MsalNodeTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-msal-node
 // Create client with token provider
 const client = new DataverseClient({
   baseUrl: "https://org.crm.dynamics.com", // Accepts env root or full /api/data/v9.2 URL
-  tokenProvider: new MsalNodeTokenProvider({
-    /* MSAL config */
-  }),
+  tokenProvider: new MsalNodeTokenProvider({/* MSAL config */}),
 });
 
 // Execute OData query with fluent API

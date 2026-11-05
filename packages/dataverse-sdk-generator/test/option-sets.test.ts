@@ -65,7 +65,7 @@ describe("Option Set Enum Generation", () => {
           Keys: [],
         },
       ],
-    } as any);
+    });
 
     model.EntityTypes.push({
       Name: "Account",
@@ -135,7 +135,7 @@ describe("Option Set Enum Generation", () => {
           Keys: [],
         },
       ],
-    } as any);
+    });
 
     await model.generate();
 
@@ -176,7 +176,7 @@ describe("Option Set Enum Generation", () => {
           Keys: [],
         },
       ],
-    } as any);
+    });
 
     model.EntityTypes.push({
       Name: "Account",
@@ -287,7 +287,7 @@ describe("Option Set Enum Generation", () => {
           Keys: [],
         },
       ],
-    } as any);
+    });
 
     model.EntityTypes.push({
       Name: "Account",

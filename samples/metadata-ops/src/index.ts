@@ -20,6 +20,7 @@ import {
   StringFormat as _StringFormat,
   OptionSetType,
   AttributeRequiredLevel,
+  OwnershipTypes,
 } from "@mohsinonxrm/dataverse-sdk-metadata";
 import type {
   EntityMetadataCreate,
@@ -118,7 +119,7 @@ async function demo1A_CreateEntityHttpFirst(
         },
       ],
     },
-    OwnershipType: 1, // UserOwned
+    OwnershipType: OwnershipTypes.UserOwned,
     HasActivities: true,
     HasNotes: true,
   };
@@ -200,7 +201,7 @@ async function demo1B_CreateEntityMetadataClient(
         },
       ],
     },
-    OwnershipType: 1,
+    OwnershipType: OwnershipTypes.UserOwned,
     HasActivities: false,
     HasNotes: false,
   };

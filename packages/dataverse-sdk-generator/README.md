@@ -68,9 +68,7 @@ pnpm dataverse-gen generate --token "eyJ0eXAi..."
 import { Account, AccountMetadata } from "./generated/entities/Account.js";
 import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
 
-const client = new DataverseClient({
-  /* ... */
-});
+const client = new DataverseClient({/* ... */});
 
 // Type-safe entity creation
 const account: Account = {
@@ -355,9 +353,7 @@ import { MsalNodeTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-msal-node
 import { Account, Contact } from "./generated/index.js";
 
 // Setup client
-const tokenProvider = new MsalNodeTokenProvider({
-  /* ... */
-});
+const tokenProvider = new MsalNodeTokenProvider({/* ... */});
 const client = new DataverseClient({
   baseUrl: "https://org.crm.dynamics.com/api/data/v9.2",
   tokenProvider,

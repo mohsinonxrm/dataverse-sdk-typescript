@@ -7,7 +7,7 @@ import { resolve } from "path";
  */
 export const SdkGeneratorConfigSchema = z.object({
   /** Dataverse environment URL */
-  dataverseUrl: z.string().url(),
+  dataverseUrl: z.url(),
 
   /** Azure AD authentication */
   authentication: z.object({

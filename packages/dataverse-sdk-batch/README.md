@@ -23,9 +23,7 @@ pnpm add @mohsinonxrm/dataverse-sdk-batch
 import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
 import { BatchRequestBuilder } from "@mohsinonxrm/dataverse-sdk-batch";
 
-const client = new DataverseClient({
-  /* config */
-});
+const client = new DataverseClient({/* config */});
 const batch = new BatchRequestBuilder(client);
 
 // Add individual requests
@@ -285,15 +283,7 @@ const batch = new BatchRequestBuilder(client);
 
 batch
   .addRequest("req1", "POST", "/accounts", {}, { name: "Valid Account" })
-  .addRequest(
-    "req2",
-    "POST",
-    "/accounts",
-    {},
-    {
-      /* invalid data */
-    }
-  )
+  .addRequest("req2", "POST", "/accounts", {}, {/* invalid data */})
   .addRequest("req3", "POST", "/accounts", {}, { name: "Another Valid Account" });
 
 try {

@@ -10,13 +10,9 @@ describe("ConcurrencyMiddleware", () => {
     const mw = new ConcurrencyMiddleware({
       baseUrl: "https://example.crm.dynamics.com",
       concurrency: { adaptiveFromDopHint: true, min: 2, max: 16 },
-    } as any);
+    });
     const next = () => Promise.resolve(resWithHint("5"));
-    const res = await mw.execute(
-      { method: "GET", url: "https://x", headers: {} } as any,
-      {} as any,
-      next as any
-    );
+    const res = await mw.execute({ method: "GET", url: "https://x", headers: {} } as any, {}, next);
     expect(res.status).toBe(200);
   });
 });

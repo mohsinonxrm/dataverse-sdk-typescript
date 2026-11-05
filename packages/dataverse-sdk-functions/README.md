@@ -177,9 +177,7 @@ Retrieves metadata changes since a specific version.
 import { RetrieveMetadataChangesFunction } from "@mohsinonxrm/dataverse-sdk-functions";
 
 const metadataFunc = new RetrieveMetadataChangesFunction({
-  Query: {
-    /* EntityQueryExpression */
-  },
+  Query: {/* EntityQueryExpression */},
   ClientVersionStamp: previousVersionStamp,
 });
 

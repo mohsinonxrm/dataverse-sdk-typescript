@@ -375,9 +375,7 @@ await metadata.createEntity({
     LocalizedLabels: [{ Label: "Custom Entity", LanguageCode: 1033 }],
   },
   PrimaryNameAttribute: "new_name",
-  Attributes: [
-    /* ... */
-  ],
+  Attributes: [/* ... */],
 });
 
 // Create string attribute

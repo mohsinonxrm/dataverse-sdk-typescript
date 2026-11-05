@@ -51,9 +51,7 @@ import { MsalNodeTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-msal-node
 
 const client = new DataverseClient({
   baseUrl: "https://org.crm.dynamics.com",
-  tokenProvider: new MsalNodeTokenProvider({
-    /* config */
-  }),
+  tokenProvider: new MsalNodeTokenProvider({/* config */}),
 });
 
 // ========== CREATE ==========

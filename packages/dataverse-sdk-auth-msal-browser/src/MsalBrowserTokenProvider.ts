@@ -160,7 +160,7 @@ export class MsalBrowserTokenProvider implements AccessTokenProvider {
       const response = await this.publicClientApplication.acquireTokenSilent(silentRequest);
 
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!response || !response.accessToken) {
+      if (!response?.accessToken) {
         throw DataverseAuthenticationError.tokenAcquisitionFailed(
           "Received empty access token from MSAL"
         );
@@ -201,7 +201,7 @@ export class MsalBrowserTokenProvider implements AccessTokenProvider {
       const response = await this.publicClientApplication.acquireTokenPopup(popupRequest);
 
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!response || !response.accessToken) {
+      if (!response?.accessToken) {
         throw DataverseAuthenticationError.tokenAcquisitionFailed(
           "Received empty access token from popup authentication"
         );

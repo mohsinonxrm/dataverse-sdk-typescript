@@ -30,7 +30,7 @@ describe("Metadata Enrichment", () => {
       // Setup mock to return empty EntityMetadata array
       vi.mocked(mockMetadataService.getEntityMetadata).mockResolvedValue({
         EntityMetadata: [],
-      } as any);
+      });
 
       // Call generate which triggers enrichment
       await expect(model.generate()).rejects.toThrow(
@@ -51,7 +51,7 @@ describe("Metadata Enrichment", () => {
             Keys: [],
           },
         ],
-      } as any);
+      });
 
       await model.generate();
 
@@ -83,7 +83,7 @@ describe("Metadata Enrichment", () => {
             Keys: [],
           },
         ],
-      } as any);
+      });
 
       await model.generate();
 
@@ -118,7 +118,7 @@ describe("Metadata Enrichment", () => {
             Keys: [],
           },
         ],
-      } as any);
+      });
 
       await model.generate();
 
@@ -155,7 +155,7 @@ describe("Metadata Enrichment", () => {
             Keys: [],
           },
         ],
-      } as any);
+      });
 
       await model.generate();
 
@@ -187,7 +187,7 @@ describe("Metadata Enrichment", () => {
             ],
           },
         ],
-      } as any);
+      });
 
       await model.generate();
 

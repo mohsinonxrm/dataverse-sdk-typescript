@@ -224,7 +224,7 @@ describe("FeatureUsageTracker", () => {
           typeof FeatureUsageFlag[key] === "number" &&
           FeatureUsageFlag[key] !== FeatureUsageFlag.NONE
         ) {
-          tracker.addFeature(FeatureUsageFlag[key] as FeatureUsageFlag);
+          tracker.addFeature(FeatureUsageFlag[key]);
         }
       }
 

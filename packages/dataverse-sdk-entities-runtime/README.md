@@ -258,9 +258,7 @@ export const AccountMetadata: EntityMetadata = {
    import { Account, AccountMetadata } from "./generated/entities/Account.js";
    import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
 
-   const client = new DataverseClient({
-     /* ... */
-   });
+   const client = new DataverseClient({/* ... */});
 
    // Type-safe entity operations
    const account: Account = {

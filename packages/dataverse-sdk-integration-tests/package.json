@@ -14,7 +14,7 @@
     "typecheck": "tsc -p tsconfig.typecheck.json"
   },
   "dependencies": {
-    "@azure/msal-node": "^2.0.0",
+    "@azure/msal-node": "^2.16.3",
     "@mohsinonxrm/dataverse-sdk-auth-msal-node": "workspace:*",
     "@mohsinonxrm/dataverse-sdk-batch": "workspace:*",
     "@mohsinonxrm/dataverse-sdk-core": "workspace:*",
@@ -22,8 +22,8 @@
     "@mohsinonxrm/dataverse-sdk-xrm": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^5.4.0",
-    "vitest": "^1.6.0",
-    "eslint": "^9.0.0"
+    "eslint": "^9.39.5",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.11"
   }
 }
