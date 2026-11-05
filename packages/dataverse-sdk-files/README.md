@@ -120,7 +120,7 @@ await fileClient.delete("accounts", accountId, "new_logo");
 
 The `FileColumnClient` uses a three-step chunked upload process based on Microsoft's Web API actions:
 
-1. **Initialize**: `InitializeFileBlocksUpload` action creates upload session
+1. **Initialize**: `InitializeFileBlocksUpload` action creates upload session. Its `Target` is a typed entity reference, `{ "@odata.type": "Microsoft.Dynamics.CRM.account", "accountid": "…" }`, so the first upload to a table looks up its logical name and primary key from `EntityDefinitions` (once per entity set; the result is reused by every `FileColumnClient` on the same `DataverseClient`)
 2. **Upload blocks**: `UploadBlock` action uploads each chunk sequentially
 3. **Commit**: `CommitFileBlocksUpload` action finalizes the upload
 
@@ -249,7 +249,7 @@ Upload a file to a file or image column.
 
 **Parameters:**
 
-- `entitySetName`: Entity set name (e.g., `'accounts'`, `'contacts'`)
+- `entitySetName`: Entity set name (e.g., `'accounts'`, `'emails'`). The table's logical name and primary key are looked up from it once (see [Chunking Strategy](#chunking-strategy))
 - `recordId`: Record GUID (with or without braces)
 - `columnName`: Logical name of file/image column
 - `file`: File data (Blob in browser, Buffer in Node.js)

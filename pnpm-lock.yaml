@@ -420,6 +420,9 @@ importers:
       '@mohsinonxrm/dataverse-sdk-discovery':
         specifier: workspace:*
         version: link:../dataverse-sdk-discovery
+      '@mohsinonxrm/dataverse-sdk-files':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-files
       '@mohsinonxrm/dataverse-sdk-functions':
         specifier: workspace:*
         version: link:../dataverse-sdk-functions
