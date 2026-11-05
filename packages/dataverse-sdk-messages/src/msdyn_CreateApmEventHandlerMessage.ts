@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CreateApmEventHandlerResponse as msdyn_CreateApmEventHandlerResponseData } from "./types/index.js";
 
 /**
  * msdyn_CreateApmEventHandler request message
@@ -35,23 +37,19 @@ export class msdyn_CreateApmEventHandlerRequest
     const data = await response.json();
     return msdyn_CreateApmEventHandlerResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      AppModuleId: this.appModuleId,
-    };
-  }
 }
 
 /**
  * msdyn_CreateApmEventHandler response message
  */
 export class msdyn_CreateApmEventHandlerResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CreateApmEventHandlerResponse) {
+  constructor(public result: msdyn_CreateApmEventHandlerResponseData) {
     super("msdyn_CreateApmEventHandler");
   }
 
   static fromResponse(data: unknown): msdyn_CreateApmEventHandlerResponse {
-    return new msdyn_CreateApmEventHandlerResponse((data as any).value);
+    return new msdyn_CreateApmEventHandlerResponse(
+      responseObject<msdyn_CreateApmEventHandlerResponseData>(data)
+    );
   }
 }

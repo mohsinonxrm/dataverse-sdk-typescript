@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import type { ColumnSet, invoice } from "./types/index.js";
 
@@ -43,14 +44,6 @@ export class ConvertSalesOrderToInvoiceRequest
     const data = await response.json();
     return ConvertSalesOrderToInvoiceResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SalesOrderId: this.salesOrderId,
-      ColumnSet: this.columnSet,
-      ProcessInstanceId: this.processInstanceId,
-    };
-  }
 }
 
 /**
@@ -62,6 +55,6 @@ export class ConvertSalesOrderToInvoiceResponse extends OrganizationResponse {
   }
 
   static fromResponse(data: unknown): ConvertSalesOrderToInvoiceResponse {
-    return new ConvertSalesOrderToInvoiceResponse((data as any).value);
+    return new ConvertSalesOrderToInvoiceResponse(responseObject<invoice>(data));
   }
 }

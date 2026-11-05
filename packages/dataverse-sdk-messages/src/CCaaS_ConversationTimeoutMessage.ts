@@ -41,14 +41,6 @@ export class CCaaS_ConversationTimeoutRequest
     // No return value (204 No Content)
     return new CCaaS_ConversationTimeoutResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_ocliveworkitemId,
-      ApiVersion: this.apiVersion,
-      SessionId: this.sessionId,
-    };
-  }
 }
 
 /**

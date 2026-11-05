@@ -43,15 +43,6 @@ export class SaveSettingValueRequest
     // No return value (204 No Content)
     return new SaveSettingValueResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      AppUniqueName: this.appUniqueName,
-      SettingName: this.settingName,
-      Value: this.value,
-      SolutionUniqueName: this.solutionUniqueName,
-    };
-  }
 }
 
 /**

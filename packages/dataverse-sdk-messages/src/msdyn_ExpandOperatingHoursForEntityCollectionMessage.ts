@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_ExpandOperatingHoursForEntityCollectionResponse as msdyn_ExpandOperatingHoursForEntityCollectionResponseData } from "./types/index.js";
 
 /**
  * msdyn_ExpandOperatingHoursForEntityCollection request message
@@ -43,25 +45,19 @@ export class msdyn_ExpandOperatingHoursForEntityCollectionRequest
     const data = await response.json();
     return msdyn_ExpandOperatingHoursForEntityCollectionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_EntityCollection: this.msdyn_EntityCollection,
-      msdyn_Start: this.msdyn_Start,
-      msdyn_End: this.msdyn_End,
-    };
-  }
 }
 
 /**
  * msdyn_ExpandOperatingHoursForEntityCollection response message
  */
 export class msdyn_ExpandOperatingHoursForEntityCollectionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ExpandOperatingHoursForEntityCollectionResponse) {
+  constructor(public result: msdyn_ExpandOperatingHoursForEntityCollectionResponseData) {
     super("msdyn_ExpandOperatingHoursForEntityCollection");
   }
 
   static fromResponse(data: unknown): msdyn_ExpandOperatingHoursForEntityCollectionResponse {
-    return new msdyn_ExpandOperatingHoursForEntityCollectionResponse((data as any).value);
+    return new msdyn_ExpandOperatingHoursForEntityCollectionResponse(
+      responseObject<msdyn_ExpandOperatingHoursForEntityCollectionResponseData>(data)
+    );
   }
 }

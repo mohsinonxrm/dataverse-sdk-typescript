@@ -35,12 +35,6 @@ export class msdyn_TriggerForecastRecomputeRequest
     // No return value (204 No Content)
     return new msdyn_TriggerForecastRecomputeResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      InputData: this.inputData,
-    };
-  }
 }
 
 /**

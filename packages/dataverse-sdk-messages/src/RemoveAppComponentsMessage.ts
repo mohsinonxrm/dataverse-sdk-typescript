@@ -39,13 +39,6 @@ export class RemoveAppComponentsRequest
     // No return value (204 No Content)
     return new RemoveAppComponentsResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      AppId: this.appId,
-      Components: this.components,
-    };
-  }
 }
 
 /**

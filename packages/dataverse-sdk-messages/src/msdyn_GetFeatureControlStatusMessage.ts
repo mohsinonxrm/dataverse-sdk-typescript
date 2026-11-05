@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetFeatureControlStatusResponse as msdyn_GetFeatureControlStatusResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetFeatureControlStatus request message
@@ -35,23 +37,19 @@ export class msdyn_GetFeatureControlStatusRequest
     const data = await response.json();
     return msdyn_GetFeatureControlStatusResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_featureName: this.msdyn_featureName,
-    };
-  }
 }
 
 /**
  * msdyn_GetFeatureControlStatus response message
  */
 export class msdyn_GetFeatureControlStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetFeatureControlStatusResponse) {
+  constructor(public result: msdyn_GetFeatureControlStatusResponseData) {
     super("msdyn_GetFeatureControlStatus");
   }
 
   static fromResponse(data: unknown): msdyn_GetFeatureControlStatusResponse {
-    return new msdyn_GetFeatureControlStatusResponse((data as any).value);
+    return new msdyn_GetFeatureControlStatusResponse(
+      responseObject<msdyn_GetFeatureControlStatusResponseData>(data)
+    );
   }
 }

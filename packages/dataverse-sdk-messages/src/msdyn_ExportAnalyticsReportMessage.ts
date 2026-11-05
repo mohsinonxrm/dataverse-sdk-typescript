@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_ExportAnalyticsReportResponse as msdyn_ExportAnalyticsReportResponseData } from "./types/index.js";
 
 /**
  * msdyn_ExportAnalyticsReport request message
@@ -35,23 +37,19 @@ export class msdyn_ExportAnalyticsReportRequest
     const data = await response.json();
     return msdyn_ExportAnalyticsReportResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_AnalyticsFeatureId: this.msdyn_AnalyticsFeatureId,
-    };
-  }
 }
 
 /**
  * msdyn_ExportAnalyticsReport response message
  */
 export class msdyn_ExportAnalyticsReportResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ExportAnalyticsReportResponse) {
+  constructor(public result: msdyn_ExportAnalyticsReportResponseData) {
     super("msdyn_ExportAnalyticsReport");
   }
 
   static fromResponse(data: unknown): msdyn_ExportAnalyticsReportResponse {
-    return new msdyn_ExportAnalyticsReportResponse((data as any).value);
+    return new msdyn_ExportAnalyticsReportResponse(
+      responseObject<msdyn_ExportAnalyticsReportResponseData>(data)
+    );
   }
 }

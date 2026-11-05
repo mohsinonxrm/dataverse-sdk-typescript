@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_RetrieveKPIValuesForGDPRResponse as msdyn_RetrieveKPIValuesForGDPRResponseData } from "./types/index.js";
 
 /**
  * msdyn_RetrieveKPIValuesForGDPR request message
@@ -36,23 +38,19 @@ export class msdyn_RetrieveKPIValuesForGDPRRequest
     const data = await response.json();
     return msdyn_RetrieveKPIValuesForGDPRResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      CRMRecord: this.cRMRecord,
-    };
-  }
 }
 
 /**
  * msdyn_RetrieveKPIValuesForGDPR response message
  */
 export class msdyn_RetrieveKPIValuesForGDPRResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrieveKPIValuesForGDPRResponse) {
+  constructor(public result: msdyn_RetrieveKPIValuesForGDPRResponseData) {
     super("msdyn_RetrieveKPIValuesForGDPR");
   }
 
   static fromResponse(data: unknown): msdyn_RetrieveKPIValuesForGDPRResponse {
-    return new msdyn_RetrieveKPIValuesForGDPRResponse((data as any).value);
+    return new msdyn_RetrieveKPIValuesForGDPRResponse(
+      responseObject<msdyn_RetrieveKPIValuesForGDPRResponseData>(data)
+    );
   }
 }

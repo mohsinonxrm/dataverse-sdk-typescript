@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_RetrieveOutlookSchedulesResponse as msdyn_RetrieveOutlookSchedulesResponseData } from "./types/index.js";
 
 /**
  * msdyn_RetrieveOutlookSchedules request message
@@ -43,26 +45,19 @@ export class msdyn_RetrieveOutlookSchedulesRequest
     const data = await response.json();
     return msdyn_RetrieveOutlookSchedulesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Version: this.version,
-      StartDate: this.startDate,
-      EndDate: this.endDate,
-      BookableResourceEmails: this.bookableResourceEmails,
-    };
-  }
 }
 
 /**
  * msdyn_RetrieveOutlookSchedules response message
  */
 export class msdyn_RetrieveOutlookSchedulesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrieveOutlookSchedulesResponse) {
+  constructor(public result: msdyn_RetrieveOutlookSchedulesResponseData) {
     super("msdyn_RetrieveOutlookSchedules");
   }
 
   static fromResponse(data: unknown): msdyn_RetrieveOutlookSchedulesResponse {
-    return new msdyn_RetrieveOutlookSchedulesResponse((data as any).value);
+    return new msdyn_RetrieveOutlookSchedulesResponse(
+      responseObject<msdyn_RetrieveOutlookSchedulesResponseData>(data)
+    );
   }
 }

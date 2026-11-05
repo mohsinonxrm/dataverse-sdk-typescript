@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import { responseObject } from "./internal/responseData.js";
 
 /**
  * Dequeue request message
@@ -37,24 +37,17 @@ export class DequeueRequest extends OrganizationRequest implements Executable<De
     const data = await response.json();
     return DequeueResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.workqueueId,
-      request: this.request,
-    };
-  }
 }
 
 /**
  * Dequeue response message
  */
 export class DequeueResponse extends OrganizationResponse {
-  constructor(public result: EntityReference) {
+  constructor(public result: Record<string, unknown>) {
     super("Dequeue");
   }
 
   static fromResponse(data: unknown): DequeueResponse {
-    return new DequeueResponse((data as any).value);
+    return new DequeueResponse(responseObject<Record<string, unknown>>(data));
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { CreateFlowCredentialApplicationResponse as CreateFlowCredentialApplicationResponseData } from "./types/index.js";
 
 /**
  * CreateFlowCredentialApplication request message
@@ -47,28 +49,19 @@ export class CreateFlowCredentialApplicationRequest
     const data = await response.json();
     return CreateFlowCredentialApplicationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.flowmachinegroupId,
-      sharingtype: this.sharingtype,
-      password: this.password,
-      description: this.description,
-      certificate: this.certificate,
-      applicationId: this.applicationId,
-    };
-  }
 }
 
 /**
  * CreateFlowCredentialApplication response message
  */
 export class CreateFlowCredentialApplicationResponse extends OrganizationResponse {
-  constructor(public result: CreateFlowCredentialApplicationResponse) {
+  constructor(public result: CreateFlowCredentialApplicationResponseData) {
     super("CreateFlowCredentialApplication");
   }
 
   static fromResponse(data: unknown): CreateFlowCredentialApplicationResponse {
-    return new CreateFlowCredentialApplicationResponse((data as any).value);
+    return new CreateFlowCredentialApplicationResponse(
+      responseObject<CreateFlowCredentialApplicationResponseData>(data)
+    );
   }
 }

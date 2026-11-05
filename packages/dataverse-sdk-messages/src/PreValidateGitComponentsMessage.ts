@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { PreValidateGitComponentsResponse as PreValidateGitComponentsResponseData } from "./types/index.js";
 
 /**
  * PreValidateGitComponents request message
@@ -39,24 +41,19 @@ export class PreValidateGitComponentsRequest
     const data = await response.json();
     return PreValidateGitComponentsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionUniqueName: this.solutionUniqueName,
-      IsRetriableOnly: this.isRetriableOnly,
-    };
-  }
 }
 
 /**
  * PreValidateGitComponents response message
  */
 export class PreValidateGitComponentsResponse extends OrganizationResponse {
-  constructor(public result: PreValidateGitComponentsResponse) {
+  constructor(public result: PreValidateGitComponentsResponseData) {
     super("PreValidateGitComponents");
   }
 
   static fromResponse(data: unknown): PreValidateGitComponentsResponse {
-    return new PreValidateGitComponentsResponse((data as any).value);
+    return new PreValidateGitComponentsResponse(
+      responseObject<PreValidateGitComponentsResponseData>(data)
+    );
   }
 }

@@ -1,6 +1,11 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { QueryExpression, activityparty } from "./types/index.js";
+import { responseObject } from "./internal/responseData.js";
+import type {
+  BulkDeleteResponse as BulkDeleteResponseData,
+  QueryExpression,
+  activityparty,
+} from "./types/index.js";
 
 /**
  * BulkDelete request message
@@ -54,31 +59,17 @@ export class BulkDeleteRequest
     const data = await response.json();
     return BulkDeleteResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      QuerySet: this.querySet,
-      JobName: this.jobName,
-      SendEmailNotification: this.sendEmailNotification,
-      ToRecipients: this.toRecipients,
-      CCRecipients: this.cCRecipients,
-      RecurrencePattern: this.recurrencePattern,
-      StartDateTime: this.startDateTime,
-      SourceImportId: this.sourceImportId,
-      RunNow: this.runNow,
-    };
-  }
 }
 
 /**
  * BulkDelete response message
  */
 export class BulkDeleteResponse extends OrganizationResponse {
-  constructor(public result: BulkDeleteResponse) {
+  constructor(public result: BulkDeleteResponseData) {
     super("BulkDelete");
   }
 
   static fromResponse(data: unknown): BulkDeleteResponse {
-    return new BulkDeleteResponse((data as any).value);
+    return new BulkDeleteResponse(responseObject<BulkDeleteResponseData>(data));
   }
 }

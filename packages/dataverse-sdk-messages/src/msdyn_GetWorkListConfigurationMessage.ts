@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetWorkListConfigurationResponse as msdyn_GetWorkListConfigurationResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetWorkListConfiguration request message
@@ -43,26 +45,19 @@ export class msdyn_GetWorkListConfigurationRequest
     const data = await response.json();
     return msdyn_GetWorkListConfigurationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Viewtype: this.viewtype,
-      GetData: this.getData,
-      DefaultViewType: this.defaultViewType,
-      QueryParams: this.queryParams,
-    };
-  }
 }
 
 /**
  * msdyn_GetWorkListConfiguration response message
  */
 export class msdyn_GetWorkListConfigurationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetWorkListConfigurationResponse) {
+  constructor(public result: msdyn_GetWorkListConfigurationResponseData) {
     super("msdyn_GetWorkListConfiguration");
   }
 
   static fromResponse(data: unknown): msdyn_GetWorkListConfigurationResponse {
-    return new msdyn_GetWorkListConfigurationResponse((data as any).value);
+    return new msdyn_GetWorkListConfigurationResponse(
+      responseObject<msdyn_GetWorkListConfigurationResponseData>(data)
+    );
   }
 }

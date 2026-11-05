@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_WorkstreamShouldNotHaveDuplicateContextRuleResponse as msdyn_WorkstreamShouldNotHaveDuplicateContextRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_WorkstreamShouldNotHaveDuplicateContextRule request message
@@ -32,21 +34,19 @@ export class msdyn_WorkstreamShouldNotHaveDuplicateContextRuleRequest
     const data = await response.json();
     return msdyn_WorkstreamShouldNotHaveDuplicateContextRuleResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_WorkstreamShouldNotHaveDuplicateContextRule response message
  */
 export class msdyn_WorkstreamShouldNotHaveDuplicateContextRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_WorkstreamShouldNotHaveDuplicateContextRuleResponse) {
+  constructor(public result: msdyn_WorkstreamShouldNotHaveDuplicateContextRuleResponseData) {
     super("msdyn_WorkstreamShouldNotHaveDuplicateContextRule");
   }
 
   static fromResponse(data: unknown): msdyn_WorkstreamShouldNotHaveDuplicateContextRuleResponse {
-    return new msdyn_WorkstreamShouldNotHaveDuplicateContextRuleResponse((data as any).value);
+    return new msdyn_WorkstreamShouldNotHaveDuplicateContextRuleResponse(
+      responseObject<msdyn_WorkstreamShouldNotHaveDuplicateContextRuleResponseData>(data)
+    );
   }
 }

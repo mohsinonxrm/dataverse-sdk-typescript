@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { TrainResponse as TrainResponseData } from "./types/index.js";
 
 /**
  * Train request message
@@ -38,25 +40,17 @@ export class TrainRequest extends OrganizationRequest implements Executable<Trai
     const data = await response.json();
     return TrainResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_aiconfigurationId,
-      version: this.version,
-      source: this.source,
-    };
-  }
 }
 
 /**
  * Train response message
  */
 export class TrainResponse extends OrganizationResponse {
-  constructor(public result: TrainResponse) {
+  constructor(public result: TrainResponseData) {
     super("Train");
   }
 
   static fromResponse(data: unknown): TrainResponse {
-    return new TrainResponse((data as any).value);
+    return new TrainResponse(responseObject<TrainResponseData>(data));
   }
 }

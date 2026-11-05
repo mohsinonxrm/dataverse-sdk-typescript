@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_CascadeBookingChangesResponse as msdyn_CascadeBookingChangesResponseData } from "./types/index.js";
 
 /**
  * msdyn_CascadeBookingChanges request message
@@ -54,31 +56,19 @@ export class msdyn_CascadeBookingChangesRequest
     const data = await response.json();
     return msdyn_CascadeBookingChangesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      MessageName: this.messageName,
-      Stage: this.stage,
-      SourceBooking: this.sourceBooking,
-      SourcePreImageBooking: this.sourcePreImageBooking,
-      SourceRelatedBookingsCreate: this.sourceRelatedBookingsCreate,
-      SourceRelatedBookingsUpdate: this.sourceRelatedBookingsUpdate,
-      SourceRelatedBookingsDelete: this.sourceRelatedBookingsDelete,
-      SourcePreImageRelatedBookingsUpdate: this.sourcePreImageRelatedBookingsUpdate,
-      SourcePreImageRelatedBookingsDelete: this.sourcePreImageRelatedBookingsDelete,
-    };
-  }
 }
 
 /**
  * msdyn_CascadeBookingChanges response message
  */
 export class msdyn_CascadeBookingChangesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CascadeBookingChangesResponse) {
+  constructor(public result: msdyn_CascadeBookingChangesResponseData) {
     super("msdyn_CascadeBookingChanges");
   }
 
   static fromResponse(data: unknown): msdyn_CascadeBookingChangesResponse {
-    return new msdyn_CascadeBookingChangesResponse((data as any).value);
+    return new msdyn_CascadeBookingChangesResponse(
+      responseObject<msdyn_CascadeBookingChangesResponseData>(data)
+    );
   }
 }

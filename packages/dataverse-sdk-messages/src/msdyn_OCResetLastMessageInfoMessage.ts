@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_OCResetLastMessageInfoResponse as msdyn_OCResetLastMessageInfoResponseData } from "./types/index.js";
 
 /**
  * msdyn_OCResetLastMessageInfo request message
@@ -35,23 +37,19 @@ export class msdyn_OCResetLastMessageInfoRequest
     const data = await response.json();
     return msdyn_OCResetLastMessageInfoResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      LiveWorkItemId: this.liveWorkItemId,
-    };
-  }
 }
 
 /**
  * msdyn_OCResetLastMessageInfo response message
  */
 export class msdyn_OCResetLastMessageInfoResponse extends OrganizationResponse {
-  constructor(public result: msdyn_OCResetLastMessageInfoResponse) {
+  constructor(public result: msdyn_OCResetLastMessageInfoResponseData) {
     super("msdyn_OCResetLastMessageInfo");
   }
 
   static fromResponse(data: unknown): msdyn_OCResetLastMessageInfoResponse {
-    return new msdyn_OCResetLastMessageInfoResponse((data as any).value);
+    return new msdyn_OCResetLastMessageInfoResponse(
+      responseObject<msdyn_OCResetLastMessageInfoResponseData>(data)
+    );
   }
 }

@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { RetainResponse as RetainResponseData } from "./types/index.js";
 
 /**
  * Retain request message
@@ -37,24 +39,17 @@ export class RetainRequest extends OrganizationRequest implements Executable<Ret
     const data = await response.json();
     return RetainResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-      OperationId: this.operationId,
-    };
-  }
 }
 
 /**
  * Retain response message
  */
 export class RetainResponse extends OrganizationResponse {
-  constructor(public result: RetainResponse) {
+  constructor(public result: RetainResponseData) {
     super("Retain");
   }
 
   static fromResponse(data: unknown): RetainResponse {
-    return new RetainResponse((data as any).value);
+    return new RetainResponse(responseObject<RetainResponseData>(data));
   }
 }

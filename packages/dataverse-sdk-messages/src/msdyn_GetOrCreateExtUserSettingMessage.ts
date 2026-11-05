@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetOrCreateExtUserSettingResponse as msdyn_GetOrCreateExtUserSettingResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetOrCreateExtUserSetting request message
@@ -30,21 +32,19 @@ export class msdyn_GetOrCreateExtUserSettingRequest
     const data = await response.json();
     return msdyn_GetOrCreateExtUserSettingResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_GetOrCreateExtUserSetting response message
  */
 export class msdyn_GetOrCreateExtUserSettingResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetOrCreateExtUserSettingResponse) {
+  constructor(public result: msdyn_GetOrCreateExtUserSettingResponseData) {
     super("msdyn_GetOrCreateExtUserSetting");
   }
 
   static fromResponse(data: unknown): msdyn_GetOrCreateExtUserSettingResponse {
-    return new msdyn_GetOrCreateExtUserSettingResponse((data as any).value);
+    return new msdyn_GetOrCreateExtUserSettingResponse(
+      responseObject<msdyn_GetOrCreateExtUserSettingResponseData>(data)
+    );
   }
 }

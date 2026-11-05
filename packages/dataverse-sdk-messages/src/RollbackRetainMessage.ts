@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { RollbackRetainResponse as RollbackRetainResponseData } from "./types/index.js";
 
 /**
  * RollbackRetain request message
@@ -40,24 +42,17 @@ export class RollbackRetainRequest
     const data = await response.json();
     return RollbackRetainResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-      OperationId: this.operationId,
-    };
-  }
 }
 
 /**
  * RollbackRetain response message
  */
 export class RollbackRetainResponse extends OrganizationResponse {
-  constructor(public result: RollbackRetainResponse) {
+  constructor(public result: RollbackRetainResponseData) {
     super("RollbackRetain");
   }
 
   static fromResponse(data: unknown): RollbackRetainResponse {
-    return new RollbackRetainResponse((data as any).value);
+    return new RollbackRetainResponse(responseObject<RollbackRetainResponseData>(data));
   }
 }

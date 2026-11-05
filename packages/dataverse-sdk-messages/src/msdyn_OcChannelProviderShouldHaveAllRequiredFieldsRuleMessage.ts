@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRuleResponse as msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRule request message
@@ -32,23 +34,21 @@ export class msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRuleRequest
     const data = await response.json();
     return msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRuleResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRule response message
  */
 export class msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRuleResponse) {
+  constructor(public result: msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRuleResponseData) {
     super("msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRule");
   }
 
   static fromResponse(
     data: unknown
   ): msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRuleResponse {
-    return new msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRuleResponse((data as any).value);
+    return new msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRuleResponse(
+      responseObject<msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRuleResponseData>(data)
+    );
   }
 }

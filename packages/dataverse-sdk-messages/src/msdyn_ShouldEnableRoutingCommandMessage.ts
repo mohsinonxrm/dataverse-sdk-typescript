@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_ShouldEnableRoutingCommandResponse as msdyn_ShouldEnableRoutingCommandResponseData } from "./types/index.js";
 
 /**
  * msdyn_ShouldEnableRoutingCommand request message
@@ -35,23 +37,19 @@ export class msdyn_ShouldEnableRoutingCommandRequest
     const data = await response.json();
     return msdyn_ShouldEnableRoutingCommandResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntityLogicalName: this.entityLogicalName,
-    };
-  }
 }
 
 /**
  * msdyn_ShouldEnableRoutingCommand response message
  */
 export class msdyn_ShouldEnableRoutingCommandResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ShouldEnableRoutingCommandResponse) {
+  constructor(public result: msdyn_ShouldEnableRoutingCommandResponseData) {
     super("msdyn_ShouldEnableRoutingCommand");
   }
 
   static fromResponse(data: unknown): msdyn_ShouldEnableRoutingCommandResponse {
-    return new msdyn_ShouldEnableRoutingCommandResponse((data as any).value);
+    return new msdyn_ShouldEnableRoutingCommandResponse(
+      responseObject<msdyn_ShouldEnableRoutingCommandResponseData>(data)
+    );
   }
 }

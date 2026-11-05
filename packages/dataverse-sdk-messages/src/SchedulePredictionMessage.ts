@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { SchedulePredictionResponse as SchedulePredictionResponseData } from "./types/index.js";
 
 /**
  * SchedulePrediction request message
@@ -43,26 +45,17 @@ export class SchedulePredictionRequest
     const data = await response.json();
     return SchedulePredictionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_aimodelId,
-      version: this.version,
-      predictImmediately: this.predictImmediately,
-      cleanupRequired: this.cleanupRequired,
-    };
-  }
 }
 
 /**
  * SchedulePrediction response message
  */
 export class SchedulePredictionResponse extends OrganizationResponse {
-  constructor(public result: SchedulePredictionResponse) {
+  constructor(public result: SchedulePredictionResponseData) {
     super("SchedulePrediction");
   }
 
   static fromResponse(data: unknown): SchedulePredictionResponse {
-    return new SchedulePredictionResponse((data as any).value);
+    return new SchedulePredictionResponse(responseObject<SchedulePredictionResponseData>(data));
   }
 }

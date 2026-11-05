@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { PublishAIConfigurationResponse as PublishAIConfigurationResponseData } from "./types/index.js";
 
 /**
  * PublishAIConfiguration request message
@@ -41,25 +43,19 @@ export class PublishAIConfigurationRequest
     const data = await response.json();
     return PublishAIConfigurationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_aiconfigurationId,
-      version: this.version,
-      source: this.source,
-    };
-  }
 }
 
 /**
  * PublishAIConfiguration response message
  */
 export class PublishAIConfigurationResponse extends OrganizationResponse {
-  constructor(public result: PublishAIConfigurationResponse) {
+  constructor(public result: PublishAIConfigurationResponseData) {
     super("PublishAIConfiguration");
   }
 
   static fromResponse(data: unknown): PublishAIConfigurationResponse {
-    return new PublishAIConfigurationResponse((data as any).value);
+    return new PublishAIConfigurationResponse(
+      responseObject<PublishAIConfigurationResponseData>(data)
+    );
   }
 }

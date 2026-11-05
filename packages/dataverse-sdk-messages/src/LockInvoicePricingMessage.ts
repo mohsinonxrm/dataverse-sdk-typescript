@@ -31,12 +31,6 @@ export class LockInvoicePricingRequest
     // No return value (204 No Content)
     return new LockInvoicePricingResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.invoiceId,
-    };
-  }
 }
 
 /**

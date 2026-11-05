@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRuleResponse as msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRule request message
@@ -32,23 +34,21 @@ export class msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRuleRequest
     const data = await response.json();
     return msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRuleResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRule response message
  */
 export class msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRuleResponse) {
+  constructor(public result: msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRuleResponseData) {
     super("msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRule");
   }
 
   static fromResponse(
     data: unknown
   ): msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRuleResponse {
-    return new msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRuleResponse((data as any).value);
+    return new msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRuleResponse(
+      responseObject<msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRuleResponseData>(data)
+    );
   }
 }

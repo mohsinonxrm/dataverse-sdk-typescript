@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_IoTGetIoTAlertCustomAttributesResponse as msdyn_IoTGetIoTAlertCustomAttributesResponseData } from "./types/index.js";
 
 /**
  * msdyn_IoTGetIoTAlertCustomAttributes request message
@@ -30,21 +32,19 @@ export class msdyn_IoTGetIoTAlertCustomAttributesRequest
     const data = await response.json();
     return msdyn_IoTGetIoTAlertCustomAttributesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_IoTGetIoTAlertCustomAttributes response message
  */
 export class msdyn_IoTGetIoTAlertCustomAttributesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_IoTGetIoTAlertCustomAttributesResponse) {
+  constructor(public result: msdyn_IoTGetIoTAlertCustomAttributesResponseData) {
     super("msdyn_IoTGetIoTAlertCustomAttributes");
   }
 
   static fromResponse(data: unknown): msdyn_IoTGetIoTAlertCustomAttributesResponse {
-    return new msdyn_IoTGetIoTAlertCustomAttributesResponse((data as any).value);
+    return new msdyn_IoTGetIoTAlertCustomAttributesResponse(
+      responseObject<msdyn_IoTGetIoTAlertCustomAttributesResponseData>(data)
+    );
   }
 }

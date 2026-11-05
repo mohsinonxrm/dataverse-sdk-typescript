@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_UpdateModelGradesResponse as msdyn_UpdateModelGradesResponseData } from "./types/index.js";
 
 /**
  * msdyn_UpdateModelGrades request message
@@ -35,23 +37,19 @@ export class msdyn_UpdateModelGradesRequest
     const data = await response.json();
     return msdyn_UpdateModelGradesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      PredictionGrade: this.predictionGrade,
-    };
-  }
 }
 
 /**
  * msdyn_UpdateModelGrades response message
  */
 export class msdyn_UpdateModelGradesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_UpdateModelGradesResponse) {
+  constructor(public result: msdyn_UpdateModelGradesResponseData) {
     super("msdyn_UpdateModelGrades");
   }
 
   static fromResponse(data: unknown): msdyn_UpdateModelGradesResponse {
-    return new msdyn_UpdateModelGradesResponse((data as any).value);
+    return new msdyn_UpdateModelGradesResponse(
+      responseObject<msdyn_UpdateModelGradesResponseData>(data)
+    );
   }
 }

@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { asyncoperation } from "./types/index.js";
 
 /**
@@ -36,12 +37,6 @@ export class TransformImportRequest
     const data = await response.json();
     return TransformImportResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ImportId: this.importId,
-    };
-  }
 }
 
 /**
@@ -53,6 +48,6 @@ export class TransformImportResponse extends OrganizationResponse {
   }
 
   static fromResponse(data: unknown): TransformImportResponse {
-    return new TransformImportResponse((data as any).value);
+    return new TransformImportResponse(responseObject<asyncoperation>(data));
   }
 }

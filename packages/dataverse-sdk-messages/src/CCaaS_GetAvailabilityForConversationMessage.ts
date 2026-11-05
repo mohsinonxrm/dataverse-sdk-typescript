@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { CCaaS_GetAvailabilityForConversationResponse as CCaaS_GetAvailabilityForConversationResponseData } from "./types/index.js";
 
 /**
  * CCaaS_GetAvailabilityForConversation request message
@@ -41,25 +43,19 @@ export class CCaaS_GetAvailabilityForConversationRequest
     const data = await response.json();
     return CCaaS_GetAvailabilityForConversationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      CustomContextItems: this.customContextItems,
-      ApiVersion: this.apiVersion,
-      ConversationId: this.conversationId,
-    };
-  }
 }
 
 /**
  * CCaaS_GetAvailabilityForConversation response message
  */
 export class CCaaS_GetAvailabilityForConversationResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_GetAvailabilityForConversationResponse) {
+  constructor(public result: CCaaS_GetAvailabilityForConversationResponseData) {
     super("CCaaS_GetAvailabilityForConversation");
   }
 
   static fromResponse(data: unknown): CCaaS_GetAvailabilityForConversationResponse {
-    return new CCaaS_GetAvailabilityForConversationResponse((data as any).value);
+    return new CCaaS_GetAvailabilityForConversationResponse(
+      responseObject<CCaaS_GetAvailabilityForConversationResponseData>(data)
+    );
   }
 }

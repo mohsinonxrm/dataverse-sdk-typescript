@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRuleResponse as msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRule request message
@@ -32,21 +34,19 @@ export class msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRuleRequest
     const data = await response.json();
     return msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRuleResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRule response message
  */
 export class msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRuleResponse) {
+  constructor(public result: msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRuleResponseData) {
     super("msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRule");
   }
 
   static fromResponse(data: unknown): msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRuleResponse {
-    return new msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRuleResponse((data as any).value);
+    return new msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRuleResponse(
+      responseObject<msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRuleResponseData>(data)
+    );
   }
 }

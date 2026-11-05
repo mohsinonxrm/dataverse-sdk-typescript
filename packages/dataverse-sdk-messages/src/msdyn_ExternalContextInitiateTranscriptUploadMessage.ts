@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_ExternalContextInitiateTranscriptUploadResponse as msdyn_ExternalContextInitiateTranscriptUploadResponseData } from "./types/index.js";
 
 /**
  * msdyn_ExternalContextInitiateTranscriptUpload request message
@@ -41,24 +43,19 @@ export class msdyn_ExternalContextInitiateTranscriptUploadRequest
     const data = await response.json();
     return msdyn_ExternalContextInitiateTranscriptUploadResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_ocexternalcontextId,
-      Transcript: this.transcript,
-    };
-  }
 }
 
 /**
  * msdyn_ExternalContextInitiateTranscriptUpload response message
  */
 export class msdyn_ExternalContextInitiateTranscriptUploadResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ExternalContextInitiateTranscriptUploadResponse) {
+  constructor(public result: msdyn_ExternalContextInitiateTranscriptUploadResponseData) {
     super("msdyn_ExternalContextInitiateTranscriptUpload");
   }
 
   static fromResponse(data: unknown): msdyn_ExternalContextInitiateTranscriptUploadResponse {
-    return new msdyn_ExternalContextInitiateTranscriptUploadResponse((data as any).value);
+    return new msdyn_ExternalContextInitiateTranscriptUploadResponse(
+      responseObject<msdyn_ExternalContextInitiateTranscriptUploadResponseData>(data)
+    );
   }
 }

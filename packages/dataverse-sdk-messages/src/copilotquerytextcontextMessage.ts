@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { copilotquerytextcontextResponse as copilotquerytextcontextResponseData } from "./types/index.js";
 
 /**
  * copilotquerytextcontext request message
@@ -53,31 +55,19 @@ export class copilotquerytextcontextRequest
     const data = await response.json();
     return copilotquerytextcontextResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      totalResultCount: this.totalResultCount,
-      orderBy: this.orderBy,
-      searchMode: this.searchMode,
-      entityParameters: this.entityParameters,
-      skip: this.skip,
-      top: this.top,
-      options: this.options,
-      searchType: this.searchType,
-      searchText: this.searchText,
-    };
-  }
 }
 
 /**
  * copilotquerytextcontext response message
  */
 export class copilotquerytextcontextResponse extends OrganizationResponse {
-  constructor(public result: copilotquerytextcontextResponse) {
+  constructor(public result: copilotquerytextcontextResponseData) {
     super("copilotquerytextcontext");
   }
 
   static fromResponse(data: unknown): copilotquerytextcontextResponse {
-    return new copilotquerytextcontextResponse((data as any).value);
+    return new copilotquerytextcontextResponse(
+      responseObject<copilotquerytextcontextResponseData>(data)
+    );
   }
 }

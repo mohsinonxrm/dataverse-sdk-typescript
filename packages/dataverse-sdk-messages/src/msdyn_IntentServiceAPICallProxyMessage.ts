@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_IntentServiceAPICallProxyResponse as msdyn_IntentServiceAPICallProxyResponseData } from "./types/index.js";
 
 /**
  * msdyn_IntentServiceAPICallProxy request message
@@ -41,25 +43,19 @@ export class msdyn_IntentServiceAPICallProxyRequest
     const data = await response.json();
     return msdyn_IntentServiceAPICallProxyResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      IntentServiceEntityType: this.intentServiceEntityType,
-      IntentServiceRequestPayload: this.intentServiceRequestPayload,
-      IntentServiceRequestPayloadForTelemetry: this.intentServiceRequestPayloadForTelemetry,
-    };
-  }
 }
 
 /**
  * msdyn_IntentServiceAPICallProxy response message
  */
 export class msdyn_IntentServiceAPICallProxyResponse extends OrganizationResponse {
-  constructor(public result: msdyn_IntentServiceAPICallProxyResponse) {
+  constructor(public result: msdyn_IntentServiceAPICallProxyResponseData) {
     super("msdyn_IntentServiceAPICallProxy");
   }
 
   static fromResponse(data: unknown): msdyn_IntentServiceAPICallProxyResponse {
-    return new msdyn_IntentServiceAPICallProxyResponse((data as any).value);
+    return new msdyn_IntentServiceAPICallProxyResponse(
+      responseObject<msdyn_IntentServiceAPICallProxyResponseData>(data)
+    );
   }
 }

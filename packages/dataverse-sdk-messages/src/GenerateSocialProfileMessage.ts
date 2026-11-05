@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { socialprofile } from "./types/index.js";
 
 /**
@@ -37,12 +38,6 @@ export class GenerateSocialProfileRequest
     const data = await response.json();
     return GenerateSocialProfileResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Entity: this.entity,
-    };
-  }
 }
 
 /**
@@ -54,6 +49,6 @@ export class GenerateSocialProfileResponse extends OrganizationResponse {
   }
 
   static fromResponse(data: unknown): GenerateSocialProfileResponse {
-    return new GenerateSocialProfileResponse((data as any).value);
+    return new GenerateSocialProfileResponse(responseObject<socialprofile>(data));
   }
 }

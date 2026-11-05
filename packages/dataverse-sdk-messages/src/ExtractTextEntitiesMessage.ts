@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { ExtractTextEntitiesResponse as ExtractTextEntitiesResponseData } from "./types/index.js";
 
 /**
  * ExtractTextEntities request message
@@ -41,25 +43,17 @@ export class ExtractTextEntitiesRequest
     const data = await response.json();
     return ExtractTextEntitiesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      text: this.text,
-      modelId: this.modelId,
-      language: this.language,
-    };
-  }
 }
 
 /**
  * ExtractTextEntities response message
  */
 export class ExtractTextEntitiesResponse extends OrganizationResponse {
-  constructor(public result: ExtractTextEntitiesResponse) {
+  constructor(public result: ExtractTextEntitiesResponseData) {
     super("ExtractTextEntities");
   }
 
   static fromResponse(data: unknown): ExtractTextEntitiesResponse {
-    return new ExtractTextEntitiesResponse((data as any).value);
+    return new ExtractTextEntitiesResponse(responseObject<ExtractTextEntitiesResponseData>(data));
   }
 }

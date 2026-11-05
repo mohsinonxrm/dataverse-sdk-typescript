@@ -43,14 +43,6 @@ export class msdyn_SalesAgents_CompleteOrchestrationRequest
     // No return value (204 No Content)
     return new msdyn_SalesAgents_CompleteOrchestrationResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_SarRecordId: this.msdyn_SarRecordId,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-      msdyn_SalesAgentType: this.msdyn_SalesAgentType,
-    };
-  }
 }
 
 /**

@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import { responseValue } from "./internal/responseData.js";
 
 /**
  * GetCertificateCredential request message
@@ -40,24 +40,17 @@ export class GetCertificateCredentialRequest
     const data = await response.json();
     return GetCertificateCredentialResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entityId: this.entityId,
-      entityLogicalName: this.entityLogicalName,
-    };
-  }
 }
 
 /**
  * GetCertificateCredential response message
  */
 export class GetCertificateCredentialResponse extends OrganizationResponse {
-  constructor(public result: EntityReference[]) {
+  constructor(public result: Record<string, unknown>[]) {
     super("GetCertificateCredential");
   }
 
   static fromResponse(data: unknown): GetCertificateCredentialResponse {
-    return new GetCertificateCredentialResponse((data as any).value);
+    return new GetCertificateCredentialResponse(responseValue<Record<string, unknown>[]>(data));
   }
 }

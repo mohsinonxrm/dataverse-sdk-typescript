@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetODOSFeatureEnabledRolesResponse as msdyn_GetODOSFeatureEnabledRolesResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetODOSFeatureEnabledRoles request message
@@ -35,23 +37,19 @@ export class msdyn_GetODOSFeatureEnabledRolesRequest
     const data = await response.json();
     return msdyn_GetODOSFeatureEnabledRolesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      FeatureName: this.featureName,
-    };
-  }
 }
 
 /**
  * msdyn_GetODOSFeatureEnabledRoles response message
  */
 export class msdyn_GetODOSFeatureEnabledRolesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetODOSFeatureEnabledRolesResponse) {
+  constructor(public result: msdyn_GetODOSFeatureEnabledRolesResponseData) {
     super("msdyn_GetODOSFeatureEnabledRoles");
   }
 
   static fromResponse(data: unknown): msdyn_GetODOSFeatureEnabledRolesResponse {
-    return new msdyn_GetODOSFeatureEnabledRolesResponse((data as any).value);
+    return new msdyn_GetODOSFeatureEnabledRolesResponse(
+      responseObject<msdyn_GetODOSFeatureEnabledRolesResponseData>(data)
+    );
   }
 }

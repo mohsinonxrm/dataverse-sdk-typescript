@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRuleResponse as msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRule request message
@@ -32,17 +34,15 @@ export class msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRuleRequest
     const data = await response.json();
     return msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRuleResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRule response message
  */
 export class msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRuleResponse) {
+  constructor(
+    public result: msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRuleResponseData
+  ) {
     super("msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRule");
   }
 
@@ -50,7 +50,7 @@ export class msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRuleResponse 
     data: unknown
   ): msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRuleResponse {
     return new msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRuleResponse(
-      (data as any).value
+      responseObject<msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRuleResponseData>(data)
     );
   }
 }

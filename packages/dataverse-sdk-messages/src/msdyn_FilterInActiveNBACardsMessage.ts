@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_FilterInActiveNBACardsResponse as msdyn_FilterInActiveNBACardsResponseData } from "./types/index.js";
 
 /**
  * msdyn_FilterInActiveNBACards request message
@@ -35,23 +37,19 @@ export class msdyn_FilterInActiveNBACardsRequest
     const data = await response.json();
     return msdyn_FilterInActiveNBACardsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_NBAEntityIds: this.msdyn_NBAEntityIds,
-    };
-  }
 }
 
 /**
  * msdyn_FilterInActiveNBACards response message
  */
 export class msdyn_FilterInActiveNBACardsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_FilterInActiveNBACardsResponse) {
+  constructor(public result: msdyn_FilterInActiveNBACardsResponseData) {
     super("msdyn_FilterInActiveNBACards");
   }
 
   static fromResponse(data: unknown): msdyn_FilterInActiveNBACardsResponse {
-    return new msdyn_FilterInActiveNBACardsResponse((data as any).value);
+    return new msdyn_FilterInActiveNBACardsResponse(
+      responseObject<msdyn_FilterInActiveNBACardsResponseData>(data)
+    );
   }
 }

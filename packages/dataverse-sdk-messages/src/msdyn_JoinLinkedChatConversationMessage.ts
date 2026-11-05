@@ -41,14 +41,6 @@ export class msdyn_JoinLinkedChatConversationRequest
     // No return value (204 No Content)
     return new msdyn_JoinLinkedChatConversationResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_UserId: this.msdyn_UserId,
-      msdyn_RegardingEntityId: this.msdyn_RegardingEntityId,
-      msdyn_TeamsConversationId: this.msdyn_TeamsConversationId,
-    };
-  }
 }
 
 /**

@@ -30,10 +30,6 @@ export class PublishAllXmlRequest
     // No return value (204 No Content)
     return new PublishAllXmlResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**

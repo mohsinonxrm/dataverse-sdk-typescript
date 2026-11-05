@@ -40,13 +40,6 @@ export class RevokeAccessRequest
     // No return value (204 No Content)
     return new RevokeAccessResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-      Revokee: this.revokee,
-    };
-  }
 }
 
 /**

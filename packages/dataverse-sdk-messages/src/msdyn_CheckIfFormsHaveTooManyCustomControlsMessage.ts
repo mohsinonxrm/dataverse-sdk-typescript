@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckIfFormsHaveTooManyCustomControlsResponse as msdyn_CheckIfFormsHaveTooManyCustomControlsResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckIfFormsHaveTooManyCustomControls request message
@@ -45,26 +47,19 @@ export class msdyn_CheckIfFormsHaveTooManyCustomControlsRequest
     const data = await response.json();
     return msdyn_CheckIfFormsHaveTooManyCustomControlsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionName: this.solutionName,
-      LogicalNamesOfEntitiesToCheck: this.logicalNamesOfEntitiesToCheck,
-      NotificationRecipientUserIds: this.notificationRecipientUserIds,
-      ControlsAndLimits: this.controlsAndLimits,
-    };
-  }
 }
 
 /**
  * msdyn_CheckIfFormsHaveTooManyCustomControls response message
  */
 export class msdyn_CheckIfFormsHaveTooManyCustomControlsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfFormsHaveTooManyCustomControlsResponse) {
+  constructor(public result: msdyn_CheckIfFormsHaveTooManyCustomControlsResponseData) {
     super("msdyn_CheckIfFormsHaveTooManyCustomControls");
   }
 
   static fromResponse(data: unknown): msdyn_CheckIfFormsHaveTooManyCustomControlsResponse {
-    return new msdyn_CheckIfFormsHaveTooManyCustomControlsResponse((data as any).value);
+    return new msdyn_CheckIfFormsHaveTooManyCustomControlsResponse(
+      responseObject<msdyn_CheckIfFormsHaveTooManyCustomControlsResponseData>(data)
+    );
   }
 }

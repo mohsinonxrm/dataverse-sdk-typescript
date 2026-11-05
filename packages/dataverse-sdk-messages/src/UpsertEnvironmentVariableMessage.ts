@@ -51,19 +51,6 @@ export class UpsertEnvironmentVariableRequest
     // No return value (204 No Content)
     return new UpsertEnvironmentVariableResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      DisplayName: this.displayName,
-      SchemaName: this.schemaName,
-      Type: this.type,
-      DefaultValue: this.defaultValue,
-      Value: this.value,
-      SecretStore: this.secretStore,
-      ParameterKey: this.parameterKey,
-      ApiId: this.apiId,
-    };
-  }
 }
 
 /**

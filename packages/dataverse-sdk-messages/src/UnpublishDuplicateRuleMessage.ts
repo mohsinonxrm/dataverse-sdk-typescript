@@ -35,12 +35,6 @@ export class UnpublishDuplicateRuleRequest
     // No return value (204 No Content)
     return new UnpublishDuplicateRuleResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      DuplicateRuleId: this.duplicateRuleId,
-    };
-  }
 }
 
 /**

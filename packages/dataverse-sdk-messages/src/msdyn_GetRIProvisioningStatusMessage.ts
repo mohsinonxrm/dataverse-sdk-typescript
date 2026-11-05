@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetRIProvisioningStatusResponse as msdyn_GetRIProvisioningStatusResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetRIProvisioningStatus request message
@@ -30,21 +32,19 @@ export class msdyn_GetRIProvisioningStatusRequest
     const data = await response.json();
     return msdyn_GetRIProvisioningStatusResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_GetRIProvisioningStatus response message
  */
 export class msdyn_GetRIProvisioningStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetRIProvisioningStatusResponse) {
+  constructor(public result: msdyn_GetRIProvisioningStatusResponseData) {
     super("msdyn_GetRIProvisioningStatus");
   }
 
   static fromResponse(data: unknown): msdyn_GetRIProvisioningStatusResponse {
-    return new msdyn_GetRIProvisioningStatusResponse((data as any).value);
+    return new msdyn_GetRIProvisioningStatusResponse(
+      responseObject<msdyn_GetRIProvisioningStatusResponseData>(data)
+    );
   }
 }

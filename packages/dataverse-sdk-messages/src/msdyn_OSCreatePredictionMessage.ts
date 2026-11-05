@@ -35,12 +35,6 @@ export class msdyn_OSCreatePredictionRequest
     // No return value (204 No Content)
     return new msdyn_OSCreatePredictionResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ModelState: this.modelState,
-    };
-  }
 }
 
 /**

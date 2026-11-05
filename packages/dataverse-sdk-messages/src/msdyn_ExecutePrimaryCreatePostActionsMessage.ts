@@ -42,14 +42,6 @@ export class msdyn_ExecutePrimaryCreatePostActionsRequest
     // No return value (204 No Content)
     return new msdyn_ExecutePrimaryCreatePostActionsResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SourceEntityReference: this.sourceEntityReference,
-      PrimaryEntityReference: this.primaryEntityReference,
-      RuleId: this.ruleId,
-    };
-  }
 }
 
 /**

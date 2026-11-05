@@ -45,16 +45,6 @@ export class msdyn_RegisterCustomEntityRequest
     // No return value (204 No Content)
     return new msdyn_RegisterCustomEntityResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntityIds: this.entityIds,
-      EntityLogicalName: this.entityLogicalName,
-      DeviceIds: this.deviceIds,
-      Names: this.names,
-      AccountIds: this.accountIds,
-    };
-  }
 }
 
 /**

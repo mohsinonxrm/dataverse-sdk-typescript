@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetHierarchyDataResponse as msdyn_GetHierarchyDataResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetHierarchyData request message
@@ -35,23 +37,19 @@ export class msdyn_GetHierarchyDataRequest
     const data = await response.json();
     return msdyn_GetHierarchyDataResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      input: this.input,
-    };
-  }
 }
 
 /**
  * msdyn_GetHierarchyData response message
  */
 export class msdyn_GetHierarchyDataResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetHierarchyDataResponse) {
+  constructor(public result: msdyn_GetHierarchyDataResponseData) {
     super("msdyn_GetHierarchyData");
   }
 
   static fromResponse(data: unknown): msdyn_GetHierarchyDataResponse {
-    return new msdyn_GetHierarchyDataResponse((data as any).value);
+    return new msdyn_GetHierarchyDataResponse(
+      responseObject<msdyn_GetHierarchyDataResponseData>(data)
+    );
   }
 }

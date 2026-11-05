@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_WKWGDPRDeleteStatusResponse as msdyn_WKWGDPRDeleteStatusResponseData } from "./types/index.js";
 
 /**
  * msdyn_WKWGDPRDeleteStatus request message
@@ -35,23 +37,19 @@ export class msdyn_WKWGDPRDeleteStatusRequest
     const data = await response.json();
     return msdyn_WKWGDPRDeleteStatusResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      UserIds: this.userIds,
-    };
-  }
 }
 
 /**
  * msdyn_WKWGDPRDeleteStatus response message
  */
 export class msdyn_WKWGDPRDeleteStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_WKWGDPRDeleteStatusResponse) {
+  constructor(public result: msdyn_WKWGDPRDeleteStatusResponseData) {
     super("msdyn_WKWGDPRDeleteStatus");
   }
 
   static fromResponse(data: unknown): msdyn_WKWGDPRDeleteStatusResponse {
-    return new msdyn_WKWGDPRDeleteStatusResponse((data as any).value);
+    return new msdyn_WKWGDPRDeleteStatusResponse(
+      responseObject<msdyn_WKWGDPRDeleteStatusResponseData>(data)
+    );
   }
 }

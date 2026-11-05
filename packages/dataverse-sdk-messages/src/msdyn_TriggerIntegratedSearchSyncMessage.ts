@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_TriggerIntegratedSearchSyncResponse as msdyn_TriggerIntegratedSearchSyncResponseData } from "./types/index.js";
 
 /**
  * msdyn_TriggerIntegratedSearchSync request message
@@ -30,21 +32,19 @@ export class msdyn_TriggerIntegratedSearchSyncRequest
     const data = await response.json();
     return msdyn_TriggerIntegratedSearchSyncResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_TriggerIntegratedSearchSync response message
  */
 export class msdyn_TriggerIntegratedSearchSyncResponse extends OrganizationResponse {
-  constructor(public result: msdyn_TriggerIntegratedSearchSyncResponse) {
+  constructor(public result: msdyn_TriggerIntegratedSearchSyncResponseData) {
     super("msdyn_TriggerIntegratedSearchSync");
   }
 
   static fromResponse(data: unknown): msdyn_TriggerIntegratedSearchSyncResponse {
-    return new msdyn_TriggerIntegratedSearchSyncResponse((data as any).value);
+    return new msdyn_TriggerIntegratedSearchSyncResponse(
+      responseObject<msdyn_TriggerIntegratedSearchSyncResponseData>(data)
+    );
   }
 }

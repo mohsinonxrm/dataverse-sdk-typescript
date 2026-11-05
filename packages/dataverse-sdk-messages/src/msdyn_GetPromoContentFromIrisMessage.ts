@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetPromoContentFromIrisResponse as msdyn_GetPromoContentFromIrisResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetPromoContentFromIris request message
@@ -49,29 +51,19 @@ export class msdyn_GetPromoContentFromIrisRequest
     const data = await response.json();
     return msdyn_GetPromoContentFromIrisResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_country: this.msdyn_country,
-      msdyn_placementId: this.msdyn_placementId,
-      msdyn_irisUrl: this.msdyn_irisUrl,
-      msdyn_pageType: this.msdyn_pageType,
-      msdyn_isAdmin: this.msdyn_isAdmin,
-      msdyn_pageName: this.msdyn_pageName,
-      msdyn_locale: this.msdyn_locale,
-    };
-  }
 }
 
 /**
  * msdyn_GetPromoContentFromIris response message
  */
 export class msdyn_GetPromoContentFromIrisResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetPromoContentFromIrisResponse) {
+  constructor(public result: msdyn_GetPromoContentFromIrisResponseData) {
     super("msdyn_GetPromoContentFromIris");
   }
 
   static fromResponse(data: unknown): msdyn_GetPromoContentFromIrisResponse {
-    return new msdyn_GetPromoContentFromIrisResponse((data as any).value);
+    return new msdyn_GetPromoContentFromIrisResponse(
+      responseObject<msdyn_GetPromoContentFromIrisResponseData>(data)
+    );
   }
 }

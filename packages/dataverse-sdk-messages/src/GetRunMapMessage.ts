@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { GetRunMapResponse as GetRunMapResponseData } from "./types/index.js";
 
 /**
  * GetRunMap request message
@@ -40,26 +42,17 @@ export class GetRunMapRequest extends OrganizationRequest implements Executable<
     const data = await response.json();
     return GetRunMapResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.businessprocessId,
-      runId: this.runId,
-      continuationToken: this.continuationToken,
-      max: this.max,
-    };
-  }
 }
 
 /**
  * GetRunMap response message
  */
 export class GetRunMapResponse extends OrganizationResponse {
-  constructor(public result: GetRunMapResponse) {
+  constructor(public result: GetRunMapResponseData) {
     super("GetRunMap");
   }
 
   static fromResponse(data: unknown): GetRunMapResponse {
-    return new GetRunMapResponse((data as any).value);
+    return new GetRunMapResponse(responseObject<GetRunMapResponseData>(data));
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { PvaGetDirectLineEndpointResponse as PvaGetDirectLineEndpointResponseData } from "./types/index.js";
 
 /**
  * PvaGetDirectLineEndpoint request message
@@ -31,23 +33,19 @@ export class PvaGetDirectLineEndpointRequest
     const data = await response.json();
     return PvaGetDirectLineEndpointResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.botId,
-    };
-  }
 }
 
 /**
  * PvaGetDirectLineEndpoint response message
  */
 export class PvaGetDirectLineEndpointResponse extends OrganizationResponse {
-  constructor(public result: PvaGetDirectLineEndpointResponse) {
+  constructor(public result: PvaGetDirectLineEndpointResponseData) {
     super("PvaGetDirectLineEndpoint");
   }
 
   static fromResponse(data: unknown): PvaGetDirectLineEndpointResponse {
-    return new PvaGetDirectLineEndpointResponse((data as any).value);
+    return new PvaGetDirectLineEndpointResponse(
+      responseObject<PvaGetDirectLineEndpointResponseData>(data)
+    );
   }
 }

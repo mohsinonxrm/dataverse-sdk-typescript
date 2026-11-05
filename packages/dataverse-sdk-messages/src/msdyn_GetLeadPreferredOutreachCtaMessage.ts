@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetLeadPreferredOutreachCtaResponse as msdyn_GetLeadPreferredOutreachCtaResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetLeadPreferredOutreachCta request message
@@ -35,23 +37,19 @@ export class msdyn_GetLeadPreferredOutreachCtaRequest
     const data = await response.json();
     return msdyn_GetLeadPreferredOutreachCtaResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_leadid: this.msdyn_leadid,
-    };
-  }
 }
 
 /**
  * msdyn_GetLeadPreferredOutreachCta response message
  */
 export class msdyn_GetLeadPreferredOutreachCtaResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetLeadPreferredOutreachCtaResponse) {
+  constructor(public result: msdyn_GetLeadPreferredOutreachCtaResponseData) {
     super("msdyn_GetLeadPreferredOutreachCta");
   }
 
   static fromResponse(data: unknown): msdyn_GetLeadPreferredOutreachCtaResponse {
-    return new msdyn_GetLeadPreferredOutreachCtaResponse((data as any).value);
+    return new msdyn_GetLeadPreferredOutreachCtaResponse(
+      responseObject<msdyn_GetLeadPreferredOutreachCtaResponseData>(data)
+    );
   }
 }

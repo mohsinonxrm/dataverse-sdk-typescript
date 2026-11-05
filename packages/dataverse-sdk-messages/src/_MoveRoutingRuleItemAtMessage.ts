@@ -46,16 +46,6 @@ export class _MoveRoutingRuleItemAtRequest
     // No return value (204 No Content)
     return new _MoveRoutingRuleItemAtResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RoutingRuleSetId: this.routingRuleSetId,
-      RoutingRuleItemIdToMove: this.routingRuleItemIdToMove,
-      TargetRoutingRuleItemId: this.targetRoutingRuleItemId,
-      IsBefore: this.isBefore,
-      Options: this.options,
-    };
-  }
 }
 
 /**

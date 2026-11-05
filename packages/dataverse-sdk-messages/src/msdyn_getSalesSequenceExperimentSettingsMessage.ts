@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_getSalesSequenceExperimentSettingsResponse as msdyn_getSalesSequenceExperimentSettingsResponseData } from "./types/index.js";
 
 /**
  * msdyn_getSalesSequenceExperimentSettings request message
@@ -43,25 +45,19 @@ export class msdyn_getSalesSequenceExperimentSettingsRequest
     const data = await response.json();
     return msdyn_getSalesSequenceExperimentSettingsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_experimentRecordId: this.msdyn_experimentRecordId,
-      msdyn_experimentKey: this.msdyn_experimentKey,
-      msdyn_experimentVersionRecordId: this.msdyn_experimentVersionRecordId,
-    };
-  }
 }
 
 /**
  * msdyn_getSalesSequenceExperimentSettings response message
  */
 export class msdyn_getSalesSequenceExperimentSettingsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_getSalesSequenceExperimentSettingsResponse) {
+  constructor(public result: msdyn_getSalesSequenceExperimentSettingsResponseData) {
     super("msdyn_getSalesSequenceExperimentSettings");
   }
 
   static fromResponse(data: unknown): msdyn_getSalesSequenceExperimentSettingsResponse {
-    return new msdyn_getSalesSequenceExperimentSettingsResponse((data as any).value);
+    return new msdyn_getSalesSequenceExperimentSettingsResponse(
+      responseObject<msdyn_getSalesSequenceExperimentSettingsResponseData>(data)
+    );
   }
 }

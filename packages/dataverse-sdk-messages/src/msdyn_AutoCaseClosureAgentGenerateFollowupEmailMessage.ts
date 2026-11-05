@@ -37,12 +37,6 @@ export class msdyn_AutoCaseClosureAgentGenerateFollowupEmailRequest
     // No return value (204 No Content)
     return new msdyn_AutoCaseClosureAgentGenerateFollowupEmailResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Payload: this.payload,
-    };
-  }
 }
 
 /**

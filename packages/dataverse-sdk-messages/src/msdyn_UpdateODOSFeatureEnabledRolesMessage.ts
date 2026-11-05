@@ -39,13 +39,6 @@ export class msdyn_UpdateODOSFeatureEnabledRolesRequest
     // No return value (204 No Content)
     return new msdyn_UpdateODOSFeatureEnabledRolesResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      FeatureName: this.featureName,
-      Roles: this.roles,
-    };
-  }
 }
 
 /**

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { searchautocompleteResponse as searchautocompleteResponseData } from "./types/index.js";
 
 /**
  * searchautocomplete request message
@@ -47,28 +49,17 @@ export class searchautocompleteRequest
     const data = await response.json();
     return searchautocompleteResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      propertybag: this.propertybag,
-      filter: this.filter,
-      fuzzy: this.fuzzy,
-      options: this.options,
-      search: this.search,
-      entities: this.entities,
-    };
-  }
 }
 
 /**
  * searchautocomplete response message
  */
 export class searchautocompleteResponse extends OrganizationResponse {
-  constructor(public result: searchautocompleteResponse) {
+  constructor(public result: searchautocompleteResponseData) {
     super("searchautocomplete");
   }
 
   static fromResponse(data: unknown): searchautocompleteResponse {
-    return new searchautocompleteResponse((data as any).value);
+    return new searchautocompleteResponse(responseObject<searchautocompleteResponseData>(data));
   }
 }

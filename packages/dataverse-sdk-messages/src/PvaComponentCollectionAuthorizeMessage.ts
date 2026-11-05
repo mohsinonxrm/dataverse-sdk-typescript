@@ -43,15 +43,6 @@ export class PvaComponentCollectionAuthorizeRequest
     // No return value (204 No Content)
     return new PvaComponentCollectionAuthorizeResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.botcomponentcollectionId,
-      Users: this.users,
-      SharingRoleType: this.sharingRoleType,
-      ShareOrUnshare: this.shareOrUnshare,
-    };
-  }
 }
 
 /**

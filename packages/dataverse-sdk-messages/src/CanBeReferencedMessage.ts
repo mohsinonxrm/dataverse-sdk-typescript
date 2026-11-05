@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { CanBeReferencedResponse as CanBeReferencedResponseData } from "./types/index.js";
 
 /**
  * CanBeReferenced request message
@@ -35,23 +37,17 @@ export class CanBeReferencedRequest
     const data = await response.json();
     return CanBeReferencedResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntityName: this.entityName,
-    };
-  }
 }
 
 /**
  * CanBeReferenced response message
  */
 export class CanBeReferencedResponse extends OrganizationResponse {
-  constructor(public result: CanBeReferencedResponse) {
+  constructor(public result: CanBeReferencedResponseData) {
     super("CanBeReferenced");
   }
 
   static fromResponse(data: unknown): CanBeReferencedResponse {
-    return new CanBeReferencedResponse((data as any).value);
+    return new CanBeReferencedResponse(responseObject<CanBeReferencedResponseData>(data));
   }
 }

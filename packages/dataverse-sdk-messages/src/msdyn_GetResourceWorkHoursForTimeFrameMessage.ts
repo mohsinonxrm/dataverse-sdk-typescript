@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetResourceWorkHoursForTimeFrameResponse as msdyn_GetResourceWorkHoursForTimeFrameResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetResourceWorkHoursForTimeFrame request message
@@ -41,25 +43,19 @@ export class msdyn_GetResourceWorkHoursForTimeFrameRequest
     const data = await response.json();
     return msdyn_GetResourceWorkHoursForTimeFrameResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      End: this.end,
-      Start: this.start,
-      ResourceIds: this.resourceIds,
-    };
-  }
 }
 
 /**
  * msdyn_GetResourceWorkHoursForTimeFrame response message
  */
 export class msdyn_GetResourceWorkHoursForTimeFrameResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetResourceWorkHoursForTimeFrameResponse) {
+  constructor(public result: msdyn_GetResourceWorkHoursForTimeFrameResponseData) {
     super("msdyn_GetResourceWorkHoursForTimeFrame");
   }
 
   static fromResponse(data: unknown): msdyn_GetResourceWorkHoursForTimeFrameResponse {
-    return new msdyn_GetResourceWorkHoursForTimeFrameResponse((data as any).value);
+    return new msdyn_GetResourceWorkHoursForTimeFrameResponse(
+      responseObject<msdyn_GetResourceWorkHoursForTimeFrameResponseData>(data)
+    );
   }
 }

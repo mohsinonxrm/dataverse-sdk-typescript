@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_InitiateCCaaSPickConversationResponse as msdyn_InitiateCCaaSPickConversationResponseData } from "./types/index.js";
 
 /**
  * msdyn_InitiateCCaaSPickConversation request message
@@ -39,24 +41,19 @@ export class msdyn_InitiateCCaaSPickConversationRequest
     const data = await response.json();
     return msdyn_InitiateCCaaSPickConversationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      LiveWorkItemId: this.liveWorkItemId,
-      InitiatingUser: this.initiatingUser,
-    };
-  }
 }
 
 /**
  * msdyn_InitiateCCaaSPickConversation response message
  */
 export class msdyn_InitiateCCaaSPickConversationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_InitiateCCaaSPickConversationResponse) {
+  constructor(public result: msdyn_InitiateCCaaSPickConversationResponseData) {
     super("msdyn_InitiateCCaaSPickConversation");
   }
 
   static fromResponse(data: unknown): msdyn_InitiateCCaaSPickConversationResponse {
-    return new msdyn_InitiateCCaaSPickConversationResponse((data as any).value);
+    return new msdyn_InitiateCCaaSPickConversationResponse(
+      responseObject<msdyn_InitiateCCaaSPickConversationResponseData>(data)
+    );
   }
 }

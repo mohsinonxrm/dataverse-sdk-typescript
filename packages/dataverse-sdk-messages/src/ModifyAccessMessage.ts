@@ -41,13 +41,6 @@ export class ModifyAccessRequest
     // No return value (204 No Content)
     return new ModifyAccessResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-      PrincipalAccess: this.principalAccess,
-    };
-  }
 }
 
 /**

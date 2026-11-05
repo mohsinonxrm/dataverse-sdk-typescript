@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { workflow } from "./types/index.js";
 
 /**
@@ -32,12 +33,6 @@ export class InitializeModernFlowFromAsyncWorkflowRequest
     const data = await response.json();
     return InitializeModernFlowFromAsyncWorkflowResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.workflowId,
-    };
-  }
 }
 
 /**
@@ -49,6 +44,6 @@ export class InitializeModernFlowFromAsyncWorkflowResponse extends OrganizationR
   }
 
   static fromResponse(data: unknown): InitializeModernFlowFromAsyncWorkflowResponse {
-    return new InitializeModernFlowFromAsyncWorkflowResponse((data as any).value);
+    return new InitializeModernFlowFromAsyncWorkflowResponse(responseObject<workflow>(data));
   }
 }

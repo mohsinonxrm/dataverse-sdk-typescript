@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_SalesAgents_GetMicroAgentActivationDetailsResponse as msdyn_SalesAgents_GetMicroAgentActivationDetailsResponseData } from "./types/index.js";
 
 /**
  * msdyn_SalesAgents_GetMicroAgentActivationDetails request message
@@ -37,23 +39,19 @@ export class msdyn_SalesAgents_GetMicroAgentActivationDetailsRequest
     const data = await response.json();
     return msdyn_SalesAgents_GetMicroAgentActivationDetailsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RequestJson: this.requestJson,
-    };
-  }
 }
 
 /**
  * msdyn_SalesAgents_GetMicroAgentActivationDetails response message
  */
 export class msdyn_SalesAgents_GetMicroAgentActivationDetailsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgents_GetMicroAgentActivationDetailsResponse) {
+  constructor(public result: msdyn_SalesAgents_GetMicroAgentActivationDetailsResponseData) {
     super("msdyn_SalesAgents_GetMicroAgentActivationDetails");
   }
 
   static fromResponse(data: unknown): msdyn_SalesAgents_GetMicroAgentActivationDetailsResponse {
-    return new msdyn_SalesAgents_GetMicroAgentActivationDetailsResponse((data as any).value);
+    return new msdyn_SalesAgents_GetMicroAgentActivationDetailsResponse(
+      responseObject<msdyn_SalesAgents_GetMicroAgentActivationDetailsResponseData>(data)
+    );
   }
 }

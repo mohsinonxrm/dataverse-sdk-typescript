@@ -35,12 +35,6 @@ export class msdyn_CalendarBulkDeleteRequest
     // No return value (204 No Content)
     return new msdyn_CalendarBulkDeleteResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      CalendarIds: this.calendarIds,
-    };
-  }
 }
 
 /**

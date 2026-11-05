@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { ImmediateBookResponse as ImmediateBookResponseData } from "./types/index.js";
 
 /**
  * ImmediateBook request message
@@ -44,26 +46,17 @@ export class ImmediateBookRequest
     const data = await response.json();
     return ImmediateBookResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-      AttachmentIds: this.attachmentIds,
-      EWSUrl: this.eWSUrl,
-      AttachmentToken: this.attachmentToken,
-    };
-  }
 }
 
 /**
  * ImmediateBook response message
  */
 export class ImmediateBookResponse extends OrganizationResponse {
-  constructor(public result: ImmediateBookResponse) {
+  constructor(public result: ImmediateBookResponseData) {
     super("ImmediateBook");
   }
 
   static fromResponse(data: unknown): ImmediateBookResponse {
-    return new ImmediateBookResponse((data as any).value);
+    return new ImmediateBookResponse(responseObject<ImmediateBookResponseData>(data));
   }
 }

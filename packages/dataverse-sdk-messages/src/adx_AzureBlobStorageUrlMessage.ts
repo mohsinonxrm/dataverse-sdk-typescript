@@ -1,6 +1,10 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { annotation } from "./types/index.js";
+import { responseObject } from "./internal/responseData.js";
+import type {
+  adx_AzureBlobStorageUrlResponse as adx_AzureBlobStorageUrlResponseData,
+  annotation,
+} from "./types/index.js";
 
 /**
  * adx_AzureBlobStorageUrl request message
@@ -36,23 +40,19 @@ export class adx_AzureBlobStorageUrlRequest
     const data = await response.json();
     return adx_AzureBlobStorageUrlResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Annotation: this.annotation,
-    };
-  }
 }
 
 /**
  * adx_AzureBlobStorageUrl response message
  */
 export class adx_AzureBlobStorageUrlResponse extends OrganizationResponse {
-  constructor(public result: adx_AzureBlobStorageUrlResponse) {
+  constructor(public result: adx_AzureBlobStorageUrlResponseData) {
     super("adx_AzureBlobStorageUrl");
   }
 
   static fromResponse(data: unknown): adx_AzureBlobStorageUrlResponse {
-    return new adx_AzureBlobStorageUrlResponse((data as any).value);
+    return new adx_AzureBlobStorageUrlResponse(
+      responseObject<adx_AzureBlobStorageUrlResponseData>(data)
+    );
   }
 }

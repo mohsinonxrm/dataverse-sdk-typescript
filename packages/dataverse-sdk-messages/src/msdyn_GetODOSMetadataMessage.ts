@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetODOSMetadataResponse as msdyn_GetODOSMetadataResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetODOSMetadata request message
@@ -30,21 +32,19 @@ export class msdyn_GetODOSMetadataRequest
     const data = await response.json();
     return msdyn_GetODOSMetadataResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_GetODOSMetadata response message
  */
 export class msdyn_GetODOSMetadataResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetODOSMetadataResponse) {
+  constructor(public result: msdyn_GetODOSMetadataResponseData) {
     super("msdyn_GetODOSMetadata");
   }
 
   static fromResponse(data: unknown): msdyn_GetODOSMetadataResponse {
-    return new msdyn_GetODOSMetadataResponse((data as any).value);
+    return new msdyn_GetODOSMetadataResponse(
+      responseObject<msdyn_GetODOSMetadataResponseData>(data)
+    );
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { AddMembersBatchListResponse as AddMembersBatchListResponseData } from "./types/index.js";
 
 /**
  * AddMembersBatchList request message
@@ -41,25 +43,17 @@ export class AddMembersBatchListRequest
     const data = await response.json();
     return AddMembersBatchListResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ListId: this.listId,
-      FetchXml: this.fetchXml,
-      SkipCount: this.skipCount,
-    };
-  }
 }
 
 /**
  * AddMembersBatchList response message
  */
 export class AddMembersBatchListResponse extends OrganizationResponse {
-  constructor(public result: AddMembersBatchListResponse) {
+  constructor(public result: AddMembersBatchListResponseData) {
     super("AddMembersBatchList");
   }
 
   static fromResponse(data: unknown): AddMembersBatchListResponse {
-    return new AddMembersBatchListResponse((data as any).value);
+    return new AddMembersBatchListResponse(responseObject<AddMembersBatchListResponseData>(data));
   }
 }

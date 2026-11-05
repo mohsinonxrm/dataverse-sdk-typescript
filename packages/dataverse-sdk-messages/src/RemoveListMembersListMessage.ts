@@ -40,13 +40,6 @@ export class RemoveListMembersListRequest
     // No return value (204 No Content)
     return new RemoveListMembersListResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      List: this.list,
-      Members: this.members,
-    };
-  }
 }
 
 /**

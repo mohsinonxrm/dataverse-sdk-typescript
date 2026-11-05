@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckFieldServiceDBVersionResponse as msdyn_CheckFieldServiceDBVersionResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckFieldServiceDBVersion request message
@@ -35,23 +37,19 @@ export class msdyn_CheckFieldServiceDBVersionRequest
     const data = await response.json();
     return msdyn_CheckFieldServiceDBVersionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ExpectedDBVersion: this.expectedDBVersion,
-    };
-  }
 }
 
 /**
  * msdyn_CheckFieldServiceDBVersion response message
  */
 export class msdyn_CheckFieldServiceDBVersionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckFieldServiceDBVersionResponse) {
+  constructor(public result: msdyn_CheckFieldServiceDBVersionResponseData) {
     super("msdyn_CheckFieldServiceDBVersion");
   }
 
   static fromResponse(data: unknown): msdyn_CheckFieldServiceDBVersionResponse {
-    return new msdyn_CheckFieldServiceDBVersionResponse((data as any).value);
+    return new msdyn_CheckFieldServiceDBVersionResponse(
+      responseObject<msdyn_CheckFieldServiceDBVersionResponseData>(data)
+    );
   }
 }

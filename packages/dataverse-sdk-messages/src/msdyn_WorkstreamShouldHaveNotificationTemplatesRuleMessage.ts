@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_WorkstreamShouldHaveNotificationTemplatesRuleResponse as msdyn_WorkstreamShouldHaveNotificationTemplatesRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_WorkstreamShouldHaveNotificationTemplatesRule request message
@@ -32,21 +34,19 @@ export class msdyn_WorkstreamShouldHaveNotificationTemplatesRuleRequest
     const data = await response.json();
     return msdyn_WorkstreamShouldHaveNotificationTemplatesRuleResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_WorkstreamShouldHaveNotificationTemplatesRule response message
  */
 export class msdyn_WorkstreamShouldHaveNotificationTemplatesRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_WorkstreamShouldHaveNotificationTemplatesRuleResponse) {
+  constructor(public result: msdyn_WorkstreamShouldHaveNotificationTemplatesRuleResponseData) {
     super("msdyn_WorkstreamShouldHaveNotificationTemplatesRule");
   }
 
   static fromResponse(data: unknown): msdyn_WorkstreamShouldHaveNotificationTemplatesRuleResponse {
-    return new msdyn_WorkstreamShouldHaveNotificationTemplatesRuleResponse((data as any).value);
+    return new msdyn_WorkstreamShouldHaveNotificationTemplatesRuleResponse(
+      responseObject<msdyn_WorkstreamShouldHaveNotificationTemplatesRuleResponseData>(data)
+    );
   }
 }

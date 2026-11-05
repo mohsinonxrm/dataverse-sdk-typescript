@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_IoTHubQueryDeviceReadingsResponse as msdyn_IoTHubQueryDeviceReadingsResponseData } from "./types/index.js";
 
 /**
  * msdyn_IoTHubQueryDeviceReadings request message
@@ -43,26 +45,19 @@ export class msdyn_IoTHubQueryDeviceReadingsRequest
     const data = await response.json();
     return msdyn_IoTHubQueryDeviceReadingsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      From: this.from,
-      To: this.to,
-      Interval: this.interval,
-      IotDeviceId: this.iotDeviceId,
-    };
-  }
 }
 
 /**
  * msdyn_IoTHubQueryDeviceReadings response message
  */
 export class msdyn_IoTHubQueryDeviceReadingsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_IoTHubQueryDeviceReadingsResponse) {
+  constructor(public result: msdyn_IoTHubQueryDeviceReadingsResponseData) {
     super("msdyn_IoTHubQueryDeviceReadings");
   }
 
   static fromResponse(data: unknown): msdyn_IoTHubQueryDeviceReadingsResponse {
-    return new msdyn_IoTHubQueryDeviceReadingsResponse((data as any).value);
+    return new msdyn_IoTHubQueryDeviceReadingsResponse(
+      responseObject<msdyn_IoTHubQueryDeviceReadingsResponseData>(data)
+    );
   }
 }

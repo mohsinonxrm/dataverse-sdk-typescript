@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { CCaaS_GetRepresentativeAvailabilityForConversationResponse as CCaaS_GetRepresentativeAvailabilityForConversationResponseData } from "./types/index.js";
 
 /**
  * CCaaS_GetRepresentativeAvailabilityForConversation request message
@@ -43,25 +45,19 @@ export class CCaaS_GetRepresentativeAvailabilityForConversationRequest
     const data = await response.json();
     return CCaaS_GetRepresentativeAvailabilityForConversationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ConversationId: this.conversationId,
-      ApiVersion: this.apiVersion,
-      CustomContextItems: this.customContextItems,
-    };
-  }
 }
 
 /**
  * CCaaS_GetRepresentativeAvailabilityForConversation response message
  */
 export class CCaaS_GetRepresentativeAvailabilityForConversationResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_GetRepresentativeAvailabilityForConversationResponse) {
+  constructor(public result: CCaaS_GetRepresentativeAvailabilityForConversationResponseData) {
     super("CCaaS_GetRepresentativeAvailabilityForConversation");
   }
 
   static fromResponse(data: unknown): CCaaS_GetRepresentativeAvailabilityForConversationResponse {
-    return new CCaaS_GetRepresentativeAvailabilityForConversationResponse((data as any).value);
+    return new CCaaS_GetRepresentativeAvailabilityForConversationResponse(
+      responseObject<CCaaS_GetRepresentativeAvailabilityForConversationResponseData>(data)
+    );
   }
 }

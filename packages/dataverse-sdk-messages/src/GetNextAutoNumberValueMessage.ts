@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { GetNextAutoNumberValueResponse as GetNextAutoNumberValueResponseData } from "./types/index.js";
 
 /**
  * GetNextAutoNumberValue request message
@@ -39,24 +41,19 @@ export class GetNextAutoNumberValueRequest
     const data = await response.json();
     return GetNextAutoNumberValueResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntityName: this.entityName,
-      AttributeName: this.attributeName,
-    };
-  }
 }
 
 /**
  * GetNextAutoNumberValue response message
  */
 export class GetNextAutoNumberValueResponse extends OrganizationResponse {
-  constructor(public result: GetNextAutoNumberValueResponse) {
+  constructor(public result: GetNextAutoNumberValueResponseData) {
     super("GetNextAutoNumberValue");
   }
 
   static fromResponse(data: unknown): GetNextAutoNumberValueResponse {
-    return new GetNextAutoNumberValueResponse((data as any).value);
+    return new GetNextAutoNumberValueResponse(
+      responseObject<GetNextAutoNumberValueResponseData>(data)
+    );
   }
 }

@@ -40,13 +40,6 @@ export class CompoundUpdateDuplicateDetectionRuleRequest
     // No return value (204 No Content)
     return new CompoundUpdateDuplicateDetectionRuleResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Entity: this.entity,
-      ChildEntities: this.childEntities,
-    };
-  }
 }
 
 /**

@@ -35,12 +35,6 @@ export class msdyn_PollODOSForConsentRequest
     // No return value (204 No Content)
     return new msdyn_PollODOSForConsentResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      InputData: this.inputData,
-    };
-  }
 }
 
 /**

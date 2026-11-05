@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { ListChildDesktopFlowsResponse as ListChildDesktopFlowsResponseData } from "./types/index.js";
 
 /**
  * ListChildDesktopFlows request message
@@ -31,23 +33,19 @@ export class ListChildDesktopFlowsRequest
     const data = await response.json();
     return ListChildDesktopFlowsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.workflowId,
-    };
-  }
 }
 
 /**
  * ListChildDesktopFlows response message
  */
 export class ListChildDesktopFlowsResponse extends OrganizationResponse {
-  constructor(public result: ListChildDesktopFlowsResponse) {
+  constructor(public result: ListChildDesktopFlowsResponseData) {
     super("ListChildDesktopFlows");
   }
 
   static fromResponse(data: unknown): ListChildDesktopFlowsResponse {
-    return new ListChildDesktopFlowsResponse((data as any).value);
+    return new ListChildDesktopFlowsResponse(
+      responseObject<ListChildDesktopFlowsResponseData>(data)
+    );
   }
 }

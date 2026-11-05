@@ -35,12 +35,6 @@ export class DeleteFileRequest
     // No return value (204 No Content)
     return new DeleteFileResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      FileId: this.fileId,
-    };
-  }
 }
 
 /**

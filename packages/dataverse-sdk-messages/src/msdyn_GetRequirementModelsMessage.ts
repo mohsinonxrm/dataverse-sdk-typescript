@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetRequirementModelsResponse as msdyn_GetRequirementModelsResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetRequirementModels request message
@@ -35,23 +37,19 @@ export class msdyn_GetRequirementModelsRequest
     const data = await response.json();
     return msdyn_GetRequirementModelsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Attributes: this.attributes,
-    };
-  }
 }
 
 /**
  * msdyn_GetRequirementModels response message
  */
 export class msdyn_GetRequirementModelsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetRequirementModelsResponse) {
+  constructor(public result: msdyn_GetRequirementModelsResponseData) {
     super("msdyn_GetRequirementModels");
   }
 
   static fromResponse(data: unknown): msdyn_GetRequirementModelsResponse {
-    return new msdyn_GetRequirementModelsResponse((data as any).value);
+    return new msdyn_GetRequirementModelsResponse(
+      responseObject<msdyn_GetRequirementModelsResponseData>(data)
+    );
   }
 }

@@ -1,6 +1,12 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { msdyn_liveworkstream, msdyn_ocphonenumber, msdyn_smsnumber } from "./types/index.js";
+import { responseObject } from "./internal/responseData.js";
+import type {
+  msdyn_liveworkstream,
+  msdyn_msdyn_ValidateWorkStreamSMSConnectionResponse as msdyn_msdyn_ValidateWorkStreamSMSConnectionResponseData,
+  msdyn_ocphonenumber,
+  msdyn_smsnumber,
+} from "./types/index.js";
 
 /**
  * msdyn_msdyn_ValidateWorkStreamSMSConnection request message
@@ -46,26 +52,19 @@ export class msdyn_msdyn_ValidateWorkStreamSMSConnectionRequest
     const data = await response.json();
     return msdyn_msdyn_ValidateWorkStreamSMSConnectionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      OcPhoneNumberEntityReference: this.ocPhoneNumberEntityReference,
-      WorkStreamEntityReference: this.workStreamEntityReference,
-      SMSNumberEntityReference: this.sMSNumberEntityReference,
-      Input: this.input,
-    };
-  }
 }
 
 /**
  * msdyn_msdyn_ValidateWorkStreamSMSConnection response message
  */
 export class msdyn_msdyn_ValidateWorkStreamSMSConnectionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_msdyn_ValidateWorkStreamSMSConnectionResponse) {
+  constructor(public result: msdyn_msdyn_ValidateWorkStreamSMSConnectionResponseData) {
     super("msdyn_msdyn_ValidateWorkStreamSMSConnection");
   }
 
   static fromResponse(data: unknown): msdyn_msdyn_ValidateWorkStreamSMSConnectionResponse {
-    return new msdyn_msdyn_ValidateWorkStreamSMSConnectionResponse((data as any).value);
+    return new msdyn_msdyn_ValidateWorkStreamSMSConnectionResponse(
+      responseObject<msdyn_msdyn_ValidateWorkStreamSMSConnectionResponseData>(data)
+    );
   }
 }

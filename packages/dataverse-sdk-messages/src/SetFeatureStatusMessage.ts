@@ -43,15 +43,6 @@ export class SetFeatureStatusRequest
     // No return value (204 No Content)
     return new SetFeatureStatusResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      FeatureType: this.featureType,
-      Status: this.status,
-      ConfigData: this.configData,
-      IsSolutionUninstall: this.isSolutionUninstall,
-    };
-  }
 }
 
 /**

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { _GetServiceTreeDataResponse as _GetServiceTreeDataResponseData } from "./types/index.js";
 
 /**
  * _GetServiceTreeData request message
@@ -39,24 +41,17 @@ export class _GetServiceTreeDataRequest
     const data = await response.json();
     return _GetServiceTreeDataResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ServiceId: this.serviceId,
-      InputSource: this.inputSource,
-    };
-  }
 }
 
 /**
  * _GetServiceTreeData response message
  */
 export class _GetServiceTreeDataResponse extends OrganizationResponse {
-  constructor(public result: _GetServiceTreeDataResponse) {
+  constructor(public result: _GetServiceTreeDataResponseData) {
     super("_GetServiceTreeData");
   }
 
   static fromResponse(data: unknown): _GetServiceTreeDataResponse {
-    return new _GetServiceTreeDataResponse((data as any).value);
+    return new _GetServiceTreeDataResponse(responseObject<_GetServiceTreeDataResponseData>(data));
   }
 }

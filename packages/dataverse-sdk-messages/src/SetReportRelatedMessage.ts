@@ -43,15 +43,6 @@ export class SetReportRelatedRequest
     // No return value (204 No Content)
     return new SetReportRelatedResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ReportId: this.reportId,
-      Entities: this.entities,
-      Categories: this.categories,
-      Visibility: this.visibility,
-    };
-  }
 }
 
 /**

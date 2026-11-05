@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetKeywordsResponse as msdyn_GetKeywordsResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetKeywords request message
@@ -45,27 +47,17 @@ export class msdyn_GetKeywordsRequest
     const data = await response.json();
     return msdyn_GetKeywordsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_entityType: this.msdyn_entityType,
-      msdyn_activityId: this.msdyn_activityId,
-      msdyn_queryLocale: this.msdyn_queryLocale,
-      msdyn_userquery: this.msdyn_userquery,
-      msdyn_entityName: this.msdyn_entityName,
-    };
-  }
 }
 
 /**
  * msdyn_GetKeywords response message
  */
 export class msdyn_GetKeywordsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetKeywordsResponse) {
+  constructor(public result: msdyn_GetKeywordsResponseData) {
     super("msdyn_GetKeywords");
   }
 
   static fromResponse(data: unknown): msdyn_GetKeywordsResponse {
-    return new msdyn_GetKeywordsResponse((data as any).value);
+    return new msdyn_GetKeywordsResponse(responseObject<msdyn_GetKeywordsResponseData>(data));
   }
 }

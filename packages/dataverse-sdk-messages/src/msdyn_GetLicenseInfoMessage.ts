@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetLicenseInfoResponse as msdyn_GetLicenseInfoResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetLicenseInfo request message
@@ -30,21 +32,17 @@ export class msdyn_GetLicenseInfoRequest
     const data = await response.json();
     return msdyn_GetLicenseInfoResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_GetLicenseInfo response message
  */
 export class msdyn_GetLicenseInfoResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetLicenseInfoResponse) {
+  constructor(public result: msdyn_GetLicenseInfoResponseData) {
     super("msdyn_GetLicenseInfo");
   }
 
   static fromResponse(data: unknown): msdyn_GetLicenseInfoResponse {
-    return new msdyn_GetLicenseInfoResponse((data as any).value);
+    return new msdyn_GetLicenseInfoResponse(responseObject<msdyn_GetLicenseInfoResponseData>(data));
   }
 }

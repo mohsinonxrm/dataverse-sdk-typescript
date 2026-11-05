@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { AITranslateResponse as AITranslateResponseData } from "./types/index.js";
 
 /**
  * AITranslate request message
@@ -39,24 +41,17 @@ export class AITranslateRequest
     const data = await response.json();
     return AITranslateResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      TargetLanguage: this.targetLanguage,
-      Text: this.text,
-    };
-  }
 }
 
 /**
  * AITranslate response message
  */
 export class AITranslateResponse extends OrganizationResponse {
-  constructor(public result: AITranslateResponse) {
+  constructor(public result: AITranslateResponseData) {
     super("AITranslate");
   }
 
   static fromResponse(data: unknown): AITranslateResponse {
-    return new AITranslateResponse((data as any).value);
+    return new AITranslateResponse(responseObject<AITranslateResponseData>(data));
   }
 }

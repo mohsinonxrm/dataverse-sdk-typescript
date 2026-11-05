@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetSummaryBookingsResponse as msdyn_GetSummaryBookingsResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetSummaryBookings request message
@@ -49,29 +51,19 @@ export class msdyn_GetSummaryBookingsRequest
     const data = await response.json();
     return msdyn_GetSummaryBookingsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ResourceIds: this.resourceIds,
-      StartDate: this.startDate,
-      EndDate: this.endDate,
-      TimeZoneCode: this.timeZoneCode,
-      Timescale: this.timescale,
-      ConsiderAppointments: this.considerAppointments,
-      ConsiderFirstDayOfWeekSettings: this.considerFirstDayOfWeekSettings,
-    };
-  }
 }
 
 /**
  * msdyn_GetSummaryBookings response message
  */
 export class msdyn_GetSummaryBookingsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetSummaryBookingsResponse) {
+  constructor(public result: msdyn_GetSummaryBookingsResponseData) {
     super("msdyn_GetSummaryBookings");
   }
 
   static fromResponse(data: unknown): msdyn_GetSummaryBookingsResponse {
-    return new msdyn_GetSummaryBookingsResponse((data as any).value);
+    return new msdyn_GetSummaryBookingsResponse(
+      responseObject<msdyn_GetSummaryBookingsResponseData>(data)
+    );
   }
 }

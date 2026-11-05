@@ -47,16 +47,6 @@ export class SendBulkMailRequest
     // No return value (204 No Content)
     return new SendBulkMailResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Sender: this.sender,
-      TemplateId: this.templateId,
-      RegardingType: this.regardingType,
-      RegardingId: this.regardingId,
-      Query: this.query,
-    };
-  }
 }
 
 /**

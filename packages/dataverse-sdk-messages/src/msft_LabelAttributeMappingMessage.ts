@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import { responseValue } from "./internal/responseData.js";
 
 /**
  * msft_LabelAttributeMapping request message
@@ -36,23 +36,17 @@ export class msft_LabelAttributeMappingRequest
     const data = await response.json();
     return msft_LabelAttributeMappingResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntityId: this.entityId,
-    };
-  }
 }
 
 /**
  * msft_LabelAttributeMapping response message
  */
 export class msft_LabelAttributeMappingResponse extends OrganizationResponse {
-  constructor(public result: EntityReference[]) {
+  constructor(public result: Record<string, unknown>[]) {
     super("msft_LabelAttributeMapping");
   }
 
   static fromResponse(data: unknown): msft_LabelAttributeMappingResponse {
-    return new msft_LabelAttributeMappingResponse((data as any).value);
+    return new msft_LabelAttributeMappingResponse(responseValue<Record<string, unknown>[]>(data));
   }
 }

@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_SearchResourceAvailabilityForRequirementGroupResponse as msdyn_SearchResourceAvailabilityForRequirementGroupResponseData } from "./types/index.js";
 
 /**
  * msdyn_SearchResourceAvailabilityForRequirementGroup request message
@@ -48,27 +50,19 @@ export class msdyn_SearchResourceAvailabilityForRequirementGroupRequest
     const data = await response.json();
     return msdyn_SearchResourceAvailabilityForRequirementGroupResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Version: this.version,
-      IsWebApi: this.isWebApi,
-      RequirementGroup: this.requirementGroup,
-      RequirementSpecification: this.requirementSpecification,
-      Settings: this.settings,
-    };
-  }
 }
 
 /**
  * msdyn_SearchResourceAvailabilityForRequirementGroup response message
  */
 export class msdyn_SearchResourceAvailabilityForRequirementGroupResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SearchResourceAvailabilityForRequirementGroupResponse) {
+  constructor(public result: msdyn_SearchResourceAvailabilityForRequirementGroupResponseData) {
     super("msdyn_SearchResourceAvailabilityForRequirementGroup");
   }
 
   static fromResponse(data: unknown): msdyn_SearchResourceAvailabilityForRequirementGroupResponse {
-    return new msdyn_SearchResourceAvailabilityForRequirementGroupResponse((data as any).value);
+    return new msdyn_SearchResourceAvailabilityForRequirementGroupResponse(
+      responseObject<msdyn_SearchResourceAvailabilityForRequirementGroupResponseData>(data)
+    );
   }
 }

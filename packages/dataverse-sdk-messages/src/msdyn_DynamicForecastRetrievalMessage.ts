@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_DynamicForecastRetrievalResponse as msdyn_DynamicForecastRetrievalResponseData } from "./types/index.js";
 
 /**
  * msdyn_DynamicForecastRetrieval request message
@@ -35,23 +37,19 @@ export class msdyn_DynamicForecastRetrievalRequest
     const data = await response.json();
     return msdyn_DynamicForecastRetrievalResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_dynamicForecastRetrievalRequest: this.msdyn_dynamicForecastRetrievalRequest,
-    };
-  }
 }
 
 /**
  * msdyn_DynamicForecastRetrieval response message
  */
 export class msdyn_DynamicForecastRetrievalResponse extends OrganizationResponse {
-  constructor(public result: msdyn_DynamicForecastRetrievalResponse) {
+  constructor(public result: msdyn_DynamicForecastRetrievalResponseData) {
     super("msdyn_DynamicForecastRetrieval");
   }
 
   static fromResponse(data: unknown): msdyn_DynamicForecastRetrievalResponse {
-    return new msdyn_DynamicForecastRetrievalResponse((data as any).value);
+    return new msdyn_DynamicForecastRetrievalResponse(
+      responseObject<msdyn_DynamicForecastRetrievalResponseData>(data)
+    );
   }
 }

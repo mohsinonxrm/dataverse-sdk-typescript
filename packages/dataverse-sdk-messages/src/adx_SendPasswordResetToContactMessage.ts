@@ -53,20 +53,6 @@ export class adx_SendPasswordResetToContactRequest
     // No return value (204 No Content)
     return new adx_SendPasswordResetToContactResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.contactId,
-      CallbackUrl: this.callbackUrl,
-      Code: this.code,
-      UrlCode: this.urlCode,
-      Email: this.email,
-      UserId: this.userId,
-      BusinessProcessFlowId: this.businessProcessFlowId,
-      BusinessProcessFlowInstanceId: this.businessProcessFlowInstanceId,
-      ActionStepId: this.actionStepId,
-    };
-  }
 }
 
 /**

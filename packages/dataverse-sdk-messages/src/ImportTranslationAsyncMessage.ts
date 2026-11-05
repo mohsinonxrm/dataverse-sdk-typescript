@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { ImportTranslationAsyncResponse as ImportTranslationAsyncResponseData } from "./types/index.js";
 
 /**
  * ImportTranslationAsync request message
@@ -39,24 +41,19 @@ export class ImportTranslationAsyncRequest
     const data = await response.json();
     return ImportTranslationAsyncResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      TranslationFile: this.translationFile,
-      ImportJobId: this.importJobId,
-    };
-  }
 }
 
 /**
  * ImportTranslationAsync response message
  */
 export class ImportTranslationAsyncResponse extends OrganizationResponse {
-  constructor(public result: ImportTranslationAsyncResponse) {
+  constructor(public result: ImportTranslationAsyncResponseData) {
     super("ImportTranslationAsync");
   }
 
   static fromResponse(data: unknown): ImportTranslationAsyncResponse {
-    return new ImportTranslationAsyncResponse((data as any).value);
+    return new ImportTranslationAsyncResponse(
+      responseObject<ImportTranslationAsyncResponseData>(data)
+    );
   }
 }

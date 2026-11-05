@@ -47,17 +47,6 @@ export class CCaaS_InitiateAgentGroupTransferRequest
     // No return value (204 No Content)
     return new CCaaS_InitiateAgentGroupTransferResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_ocliveworkitemId,
-      AgentGroupId: this.agentGroupId,
-      ApiVersion: this.apiVersion,
-      IntentId: this.intentId,
-      IntentGroupId: this.intentGroupId,
-      IntentFamilyId: this.intentFamilyId,
-    };
-  }
 }
 
 /**

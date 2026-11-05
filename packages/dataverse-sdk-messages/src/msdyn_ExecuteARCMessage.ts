@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_ExecuteARCResponse as msdyn_ExecuteARCResponseData } from "./types/index.js";
 
 /**
  * msdyn_ExecuteARC request message
@@ -40,24 +42,17 @@ export class msdyn_ExecuteARCRequest
     const data = await response.json();
     return msdyn_ExecuteARCResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      CreatedEntityReference: this.createdEntityReference,
-      RuleId: this.ruleId,
-    };
-  }
 }
 
 /**
  * msdyn_ExecuteARC response message
  */
 export class msdyn_ExecuteARCResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ExecuteARCResponse) {
+  constructor(public result: msdyn_ExecuteARCResponseData) {
     super("msdyn_ExecuteARC");
   }
 
   static fromResponse(data: unknown): msdyn_ExecuteARCResponse {
-    return new msdyn_ExecuteARCResponse((data as any).value);
+    return new msdyn_ExecuteARCResponse(responseObject<msdyn_ExecuteARCResponseData>(data));
   }
 }

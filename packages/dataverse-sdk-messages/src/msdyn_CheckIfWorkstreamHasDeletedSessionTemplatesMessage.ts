@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckIfWorkstreamHasDeletedSessionTemplatesResponse as msdyn_CheckIfWorkstreamHasDeletedSessionTemplatesResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckIfWorkstreamHasDeletedSessionTemplates request message
@@ -32,21 +34,19 @@ export class msdyn_CheckIfWorkstreamHasDeletedSessionTemplatesRequest
     const data = await response.json();
     return msdyn_CheckIfWorkstreamHasDeletedSessionTemplatesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_CheckIfWorkstreamHasDeletedSessionTemplates response message
  */
 export class msdyn_CheckIfWorkstreamHasDeletedSessionTemplatesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfWorkstreamHasDeletedSessionTemplatesResponse) {
+  constructor(public result: msdyn_CheckIfWorkstreamHasDeletedSessionTemplatesResponseData) {
     super("msdyn_CheckIfWorkstreamHasDeletedSessionTemplates");
   }
 
   static fromResponse(data: unknown): msdyn_CheckIfWorkstreamHasDeletedSessionTemplatesResponse {
-    return new msdyn_CheckIfWorkstreamHasDeletedSessionTemplatesResponse((data as any).value);
+    return new msdyn_CheckIfWorkstreamHasDeletedSessionTemplatesResponse(
+      responseObject<msdyn_CheckIfWorkstreamHasDeletedSessionTemplatesResponseData>(data)
+    );
   }
 }

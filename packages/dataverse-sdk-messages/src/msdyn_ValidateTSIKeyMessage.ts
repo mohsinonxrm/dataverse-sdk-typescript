@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_ValidateTSIKeyResponse as msdyn_ValidateTSIKeyResponseData } from "./types/index.js";
 
 /**
  * msdyn_ValidateTSIKey request message
@@ -30,21 +32,17 @@ export class msdyn_ValidateTSIKeyRequest
     const data = await response.json();
     return msdyn_ValidateTSIKeyResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_ValidateTSIKey response message
  */
 export class msdyn_ValidateTSIKeyResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ValidateTSIKeyResponse) {
+  constructor(public result: msdyn_ValidateTSIKeyResponseData) {
     super("msdyn_ValidateTSIKey");
   }
 
   static fromResponse(data: unknown): msdyn_ValidateTSIKeyResponse {
-    return new msdyn_ValidateTSIKeyResponse((data as any).value);
+    return new msdyn_ValidateTSIKeyResponse(responseObject<msdyn_ValidateTSIKeyResponseData>(data));
   }
 }

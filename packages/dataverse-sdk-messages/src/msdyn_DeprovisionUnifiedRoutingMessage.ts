@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_DeprovisionUnifiedRoutingResponse as msdyn_DeprovisionUnifiedRoutingResponseData } from "./types/index.js";
 
 /**
  * msdyn_DeprovisionUnifiedRouting request message
@@ -30,21 +32,19 @@ export class msdyn_DeprovisionUnifiedRoutingRequest
     const data = await response.json();
     return msdyn_DeprovisionUnifiedRoutingResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_DeprovisionUnifiedRouting response message
  */
 export class msdyn_DeprovisionUnifiedRoutingResponse extends OrganizationResponse {
-  constructor(public result: msdyn_DeprovisionUnifiedRoutingResponse) {
+  constructor(public result: msdyn_DeprovisionUnifiedRoutingResponseData) {
     super("msdyn_DeprovisionUnifiedRouting");
   }
 
   static fromResponse(data: unknown): msdyn_DeprovisionUnifiedRoutingResponse {
-    return new msdyn_DeprovisionUnifiedRoutingResponse((data as any).value);
+    return new msdyn_DeprovisionUnifiedRoutingResponse(
+      responseObject<msdyn_DeprovisionUnifiedRoutingResponseData>(data)
+    );
   }
 }

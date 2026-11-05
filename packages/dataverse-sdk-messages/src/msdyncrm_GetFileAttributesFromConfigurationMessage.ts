@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyncrm_GetFileAttributesFromConfigurationResponse as msdyncrm_GetFileAttributesFromConfigurationResponseData } from "./types/index.js";
 
 /**
  * msdyncrm_GetFileAttributesFromConfiguration request message
@@ -32,21 +34,19 @@ export class msdyncrm_GetFileAttributesFromConfigurationRequest
     const data = await response.json();
     return msdyncrm_GetFileAttributesFromConfigurationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyncrm_GetFileAttributesFromConfiguration response message
  */
 export class msdyncrm_GetFileAttributesFromConfigurationResponse extends OrganizationResponse {
-  constructor(public result: msdyncrm_GetFileAttributesFromConfigurationResponse) {
+  constructor(public result: msdyncrm_GetFileAttributesFromConfigurationResponseData) {
     super("msdyncrm_GetFileAttributesFromConfiguration");
   }
 
   static fromResponse(data: unknown): msdyncrm_GetFileAttributesFromConfigurationResponse {
-    return new msdyncrm_GetFileAttributesFromConfigurationResponse((data as any).value);
+    return new msdyncrm_GetFileAttributesFromConfigurationResponse(
+      responseObject<msdyncrm_GetFileAttributesFromConfigurationResponseData>(data)
+    );
   }
 }

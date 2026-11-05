@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_ShowConsumerCredentialsResponse as msdyn_ShowConsumerCredentialsResponseData } from "./types/index.js";
 
 /**
  * msdyn_ShowConsumerCredentials request message
@@ -39,24 +41,19 @@ export class msdyn_ShowConsumerCredentialsRequest
     const data = await response.json();
     return msdyn_ShowConsumerCredentialsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_octwitterapplicationId,
-      ApplicationId: this.applicationId,
-    };
-  }
 }
 
 /**
  * msdyn_ShowConsumerCredentials response message
  */
 export class msdyn_ShowConsumerCredentialsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ShowConsumerCredentialsResponse) {
+  constructor(public result: msdyn_ShowConsumerCredentialsResponseData) {
     super("msdyn_ShowConsumerCredentials");
   }
 
   static fromResponse(data: unknown): msdyn_ShowConsumerCredentialsResponse {
-    return new msdyn_ShowConsumerCredentialsResponse((data as any).value);
+    return new msdyn_ShowConsumerCredentialsResponse(
+      responseObject<msdyn_ShowConsumerCredentialsResponseData>(data)
+    );
   }
 }

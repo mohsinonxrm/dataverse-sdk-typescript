@@ -37,12 +37,6 @@ export class msdyn_CreateSimilarOpportunitiyPredictionModelRequest
     // No return value (204 No Content)
     return new msdyn_CreateSimilarOpportunitiyPredictionModelResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ModelState: this.modelState,
-    };
-  }
 }
 
 /**

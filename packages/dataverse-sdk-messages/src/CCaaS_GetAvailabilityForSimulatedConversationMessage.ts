@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { CCaaS_GetAvailabilityForSimulatedConversationResponse as CCaaS_GetAvailabilityForSimulatedConversationResponseData } from "./types/index.js";
 
 /**
  * CCaaS_GetAvailabilityForSimulatedConversation request message
@@ -45,26 +47,19 @@ export class CCaaS_GetAvailabilityForSimulatedConversationRequest
     const data = await response.json();
     return CCaaS_GetAvailabilityForSimulatedConversationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      LiveWorkStreamId: this.liveWorkStreamId,
-      CustomContextItems: this.customContextItems,
-      ApiVersion: this.apiVersion,
-      ChannelEngagementContext: this.channelEngagementContext,
-    };
-  }
 }
 
 /**
  * CCaaS_GetAvailabilityForSimulatedConversation response message
  */
 export class CCaaS_GetAvailabilityForSimulatedConversationResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_GetAvailabilityForSimulatedConversationResponse) {
+  constructor(public result: CCaaS_GetAvailabilityForSimulatedConversationResponseData) {
     super("CCaaS_GetAvailabilityForSimulatedConversation");
   }
 
   static fromResponse(data: unknown): CCaaS_GetAvailabilityForSimulatedConversationResponse {
-    return new CCaaS_GetAvailabilityForSimulatedConversationResponse((data as any).value);
+    return new CCaaS_GetAvailabilityForSimulatedConversationResponse(
+      responseObject<CCaaS_GetAvailabilityForSimulatedConversationResponseData>(data)
+    );
   }
 }

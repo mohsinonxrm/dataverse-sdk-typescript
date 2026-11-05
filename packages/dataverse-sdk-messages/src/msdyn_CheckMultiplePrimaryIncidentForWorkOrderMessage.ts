@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckMultiplePrimaryIncidentForWorkOrderResponse as msdyn_CheckMultiplePrimaryIncidentForWorkOrderResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckMultiplePrimaryIncidentForWorkOrder request message
@@ -32,21 +34,19 @@ export class msdyn_CheckMultiplePrimaryIncidentForWorkOrderRequest
     const data = await response.json();
     return msdyn_CheckMultiplePrimaryIncidentForWorkOrderResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_CheckMultiplePrimaryIncidentForWorkOrder response message
  */
 export class msdyn_CheckMultiplePrimaryIncidentForWorkOrderResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckMultiplePrimaryIncidentForWorkOrderResponse) {
+  constructor(public result: msdyn_CheckMultiplePrimaryIncidentForWorkOrderResponseData) {
     super("msdyn_CheckMultiplePrimaryIncidentForWorkOrder");
   }
 
   static fromResponse(data: unknown): msdyn_CheckMultiplePrimaryIncidentForWorkOrderResponse {
-    return new msdyn_CheckMultiplePrimaryIncidentForWorkOrderResponse((data as any).value);
+    return new msdyn_CheckMultiplePrimaryIncidentForWorkOrderResponse(
+      responseObject<msdyn_CheckMultiplePrimaryIncidentForWorkOrderResponseData>(data)
+    );
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CancelDataProcessingModuleExecutionResponse as msdyn_CancelDataProcessingModuleExecutionResponseData } from "./types/index.js";
 
 /**
  * msdyn_CancelDataProcessingModuleExecution request message
@@ -37,23 +39,19 @@ export class msdyn_CancelDataProcessingModuleExecutionRequest
     const data = await response.json();
     return msdyn_CancelDataProcessingModuleExecutionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      DataProcessingRequest: this.dataProcessingRequest,
-    };
-  }
 }
 
 /**
  * msdyn_CancelDataProcessingModuleExecution response message
  */
 export class msdyn_CancelDataProcessingModuleExecutionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CancelDataProcessingModuleExecutionResponse) {
+  constructor(public result: msdyn_CancelDataProcessingModuleExecutionResponseData) {
     super("msdyn_CancelDataProcessingModuleExecution");
   }
 
   static fromResponse(data: unknown): msdyn_CancelDataProcessingModuleExecutionResponse {
-    return new msdyn_CancelDataProcessingModuleExecutionResponse((data as any).value);
+    return new msdyn_CancelDataProcessingModuleExecutionResponse(
+      responseObject<msdyn_CancelDataProcessingModuleExecutionResponseData>(data)
+    );
   }
 }

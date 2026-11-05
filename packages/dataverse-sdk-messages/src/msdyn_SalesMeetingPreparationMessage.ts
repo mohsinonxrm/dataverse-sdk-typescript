@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_SalesMeetingPreparationResponse as msdyn_SalesMeetingPreparationResponseData } from "./types/index.js";
 
 /**
  * msdyn_SalesMeetingPreparation request message
@@ -43,26 +45,19 @@ export class msdyn_SalesMeetingPreparationRequest
     const data = await response.json();
     return msdyn_SalesMeetingPreparationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_sessionId: this.msdyn_sessionId,
-      msdyn_activityId: this.msdyn_activityId,
-      msdyn_id: this.msdyn_id,
-      msdyn_responseFormat: this.msdyn_responseFormat,
-    };
-  }
 }
 
 /**
  * msdyn_SalesMeetingPreparation response message
  */
 export class msdyn_SalesMeetingPreparationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesMeetingPreparationResponse) {
+  constructor(public result: msdyn_SalesMeetingPreparationResponseData) {
     super("msdyn_SalesMeetingPreparation");
   }
 
   static fromResponse(data: unknown): msdyn_SalesMeetingPreparationResponse {
-    return new msdyn_SalesMeetingPreparationResponse((data as any).value);
+    return new msdyn_SalesMeetingPreparationResponse(
+      responseObject<msdyn_SalesMeetingPreparationResponseData>(data)
+    );
   }
 }

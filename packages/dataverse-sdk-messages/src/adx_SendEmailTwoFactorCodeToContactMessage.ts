@@ -45,16 +45,6 @@ export class adx_SendEmailTwoFactorCodeToContactRequest
     // No return value (204 No Content)
     return new adx_SendEmailTwoFactorCodeToContactResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.contactId,
-      Code: this.code,
-      BusinessProcessFlowId: this.businessProcessFlowId,
-      BusinessProcessFlowInstanceId: this.businessProcessFlowInstanceId,
-      ActionStepId: this.actionStepId,
-    };
-  }
 }
 
 /**

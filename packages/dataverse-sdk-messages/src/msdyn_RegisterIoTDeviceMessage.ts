@@ -35,12 +35,6 @@ export class msdyn_RegisterIoTDeviceRequest
     // No return value (204 No Content)
     return new msdyn_RegisterIoTDeviceResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      IoTDeviceIds: this.ioTDeviceIds,
-    };
-  }
 }
 
 /**

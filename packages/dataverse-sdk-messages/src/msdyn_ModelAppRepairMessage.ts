@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_ModelAppRepairResponse as msdyn_ModelAppRepairResponseData } from "./types/index.js";
 
 /**
  * msdyn_ModelAppRepair request message
@@ -36,23 +38,17 @@ export class msdyn_ModelAppRepairRequest
     const data = await response.json();
     return msdyn_ModelAppRepairResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      AnalysisResult: this.analysisResult,
-    };
-  }
 }
 
 /**
  * msdyn_ModelAppRepair response message
  */
 export class msdyn_ModelAppRepairResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ModelAppRepairResponse) {
+  constructor(public result: msdyn_ModelAppRepairResponseData) {
     super("msdyn_ModelAppRepair");
   }
 
   static fromResponse(data: unknown): msdyn_ModelAppRepairResponse {
-    return new msdyn_ModelAppRepairResponse((data as any).value);
+    return new msdyn_ModelAppRepairResponse(responseObject<msdyn_ModelAppRepairResponseData>(data));
   }
 }

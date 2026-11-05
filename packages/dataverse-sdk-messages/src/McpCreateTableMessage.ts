@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { McpCreateTableResponse as McpCreateTableResponseData } from "./types/index.js";
 
 /**
  * McpCreateTable request message
@@ -43,26 +45,17 @@ export class McpCreateTableRequest
     const data = await response.json();
     return McpCreateTableResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      displayname: this.displayname,
-      item: this.item,
-      tablename: this.tablename,
-      description: this.description,
-    };
-  }
 }
 
 /**
  * McpCreateTable response message
  */
 export class McpCreateTableResponse extends OrganizationResponse {
-  constructor(public result: McpCreateTableResponse) {
+  constructor(public result: McpCreateTableResponseData) {
     super("McpCreateTable");
   }
 
   static fromResponse(data: unknown): McpCreateTableResponse {
-    return new McpCreateTableResponse((data as any).value);
+    return new McpCreateTableResponse(responseObject<McpCreateTableResponseData>(data));
   }
 }

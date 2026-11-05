@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_RetrieveAppointmentsByAttendeesResponse as msdyn_RetrieveAppointmentsByAttendeesResponseData } from "./types/index.js";
 
 /**
  * msdyn_RetrieveAppointmentsByAttendees request message
@@ -47,28 +49,19 @@ export class msdyn_RetrieveAppointmentsByAttendeesRequest
     const data = await response.json();
     return msdyn_RetrieveAppointmentsByAttendeesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Version: this.version,
-      StartDate: this.startDate,
-      EndDate: this.endDate,
-      BookableResourceIds: this.bookableResourceIds,
-      OnlyRetrieveCompletedOrScheduled: this.onlyRetrieveCompletedOrScheduled,
-      ModifiedOnDate: this.modifiedOnDate,
-    };
-  }
 }
 
 /**
  * msdyn_RetrieveAppointmentsByAttendees response message
  */
 export class msdyn_RetrieveAppointmentsByAttendeesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrieveAppointmentsByAttendeesResponse) {
+  constructor(public result: msdyn_RetrieveAppointmentsByAttendeesResponseData) {
     super("msdyn_RetrieveAppointmentsByAttendees");
   }
 
   static fromResponse(data: unknown): msdyn_RetrieveAppointmentsByAttendeesResponse {
-    return new msdyn_RetrieveAppointmentsByAttendeesResponse((data as any).value);
+    return new msdyn_RetrieveAppointmentsByAttendeesResponse(
+      responseObject<msdyn_RetrieveAppointmentsByAttendeesResponseData>(data)
+    );
   }
 }

@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import { responseObject } from "./internal/responseData.js";
 
 /**
  * SearchWeb request message
@@ -43,27 +43,17 @@ export class SearchWebRequest extends OrganizationRequest implements Executable<
     const data = await response.json();
     return SearchWebResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      query: this.query,
-      urls: this.urls,
-      partnerSource: this.partnerSource,
-      summarize: this.summarize,
-      maxResults: this.maxResults,
-    };
-  }
 }
 
 /**
  * SearchWeb response message
  */
 export class SearchWebResponse extends OrganizationResponse {
-  constructor(public result: EntityReference) {
+  constructor(public result: Record<string, unknown>) {
     super("SearchWeb");
   }
 
   static fromResponse(data: unknown): SearchWebResponse {
-    return new SearchWebResponse((data as any).value);
+    return new SearchWebResponse(responseObject<Record<string, unknown>>(data));
   }
 }

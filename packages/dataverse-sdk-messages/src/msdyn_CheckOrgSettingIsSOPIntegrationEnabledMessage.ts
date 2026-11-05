@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckOrgSettingIsSOPIntegrationEnabledResponse as msdyn_CheckOrgSettingIsSOPIntegrationEnabledResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckOrgSettingIsSOPIntegrationEnabled request message
@@ -32,21 +34,19 @@ export class msdyn_CheckOrgSettingIsSOPIntegrationEnabledRequest
     const data = await response.json();
     return msdyn_CheckOrgSettingIsSOPIntegrationEnabledResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_CheckOrgSettingIsSOPIntegrationEnabled response message
  */
 export class msdyn_CheckOrgSettingIsSOPIntegrationEnabledResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckOrgSettingIsSOPIntegrationEnabledResponse) {
+  constructor(public result: msdyn_CheckOrgSettingIsSOPIntegrationEnabledResponseData) {
     super("msdyn_CheckOrgSettingIsSOPIntegrationEnabled");
   }
 
   static fromResponse(data: unknown): msdyn_CheckOrgSettingIsSOPIntegrationEnabledResponse {
-    return new msdyn_CheckOrgSettingIsSOPIntegrationEnabledResponse((data as any).value);
+    return new msdyn_CheckOrgSettingIsSOPIntegrationEnabledResponse(
+      responseObject<msdyn_CheckOrgSettingIsSOPIntegrationEnabledResponseData>(data)
+    );
   }
 }

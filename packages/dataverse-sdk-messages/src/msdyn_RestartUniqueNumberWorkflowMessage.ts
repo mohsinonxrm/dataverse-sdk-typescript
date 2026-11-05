@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_RestartUniqueNumberWorkflowResponse as msdyn_RestartUniqueNumberWorkflowResponseData } from "./types/index.js";
 
 /**
  * msdyn_RestartUniqueNumberWorkflow request message
@@ -36,23 +38,19 @@ export class msdyn_RestartUniqueNumberWorkflowRequest
     const data = await response.json();
     return msdyn_RestartUniqueNumberWorkflowResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      AnalysisResult: this.analysisResult,
-    };
-  }
 }
 
 /**
  * msdyn_RestartUniqueNumberWorkflow response message
  */
 export class msdyn_RestartUniqueNumberWorkflowResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RestartUniqueNumberWorkflowResponse) {
+  constructor(public result: msdyn_RestartUniqueNumberWorkflowResponseData) {
     super("msdyn_RestartUniqueNumberWorkflow");
   }
 
   static fromResponse(data: unknown): msdyn_RestartUniqueNumberWorkflowResponse {
-    return new msdyn_RestartUniqueNumberWorkflowResponse((data as any).value);
+    return new msdyn_RestartUniqueNumberWorkflowResponse(
+      responseObject<msdyn_RestartUniqueNumberWorkflowResponseData>(data)
+    );
   }
 }

@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { SubstituteForComponentResponse as SubstituteForComponentResponseData } from "./types/index.js";
 
 /**
  * SubstituteForComponent request message
@@ -40,24 +42,19 @@ export class SubstituteForComponentRequest
     const data = await response.json();
     return SubstituteForComponentResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Entity: this.entity,
-      SubStore: this.subStore,
-    };
-  }
 }
 
 /**
  * SubstituteForComponent response message
  */
 export class SubstituteForComponentResponse extends OrganizationResponse {
-  constructor(public result: SubstituteForComponentResponse) {
+  constructor(public result: SubstituteForComponentResponseData) {
     super("SubstituteForComponent");
   }
 
   static fromResponse(data: unknown): SubstituteForComponentResponse {
-    return new SubstituteForComponentResponse((data as any).value);
+    return new SubstituteForComponentResponse(
+      responseObject<SubstituteForComponentResponseData>(data)
+    );
   }
 }

@@ -39,13 +39,6 @@ export class msdyn_GDPROptoutContactRequest
     // No return value (204 No Content)
     return new msdyn_GDPROptoutContactResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.contactId,
-      optout: this.optout,
-    };
-  }
 }
 
 /**

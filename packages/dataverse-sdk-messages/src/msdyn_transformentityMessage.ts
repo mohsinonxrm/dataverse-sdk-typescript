@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 
 /**
@@ -40,24 +41,17 @@ export class msdyn_transformentityRequest
     const data = await response.json();
     return msdyn_transformentityResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Entity: this.entity,
-      Params: this.params,
-    };
-  }
 }
 
 /**
  * msdyn_transformentity response message
  */
 export class msdyn_transformentityResponse extends OrganizationResponse {
-  constructor(public result: EntityReference) {
+  constructor(public result: Record<string, unknown>) {
     super("msdyn_transformentity");
   }
 
   static fromResponse(data: unknown): msdyn_transformentityResponse {
-    return new msdyn_transformentityResponse((data as any).value);
+    return new msdyn_transformentityResponse(responseObject<Record<string, unknown>>(data));
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { CCaaS_ResetAgentPresenceResponse as CCaaS_ResetAgentPresenceResponseData } from "./types/index.js";
 
 /**
  * CCaaS_ResetAgentPresence request message
@@ -35,23 +37,19 @@ export class CCaaS_ResetAgentPresenceRequest
     const data = await response.json();
     return CCaaS_ResetAgentPresenceResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ApiVersion: this.apiVersion,
-    };
-  }
 }
 
 /**
  * CCaaS_ResetAgentPresence response message
  */
 export class CCaaS_ResetAgentPresenceResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_ResetAgentPresenceResponse) {
+  constructor(public result: CCaaS_ResetAgentPresenceResponseData) {
     super("CCaaS_ResetAgentPresence");
   }
 
   static fromResponse(data: unknown): CCaaS_ResetAgentPresenceResponse {
-    return new CCaaS_ResetAgentPresenceResponse((data as any).value);
+    return new CCaaS_ResetAgentPresenceResponse(
+      responseObject<CCaaS_ResetAgentPresenceResponseData>(data)
+    );
   }
 }

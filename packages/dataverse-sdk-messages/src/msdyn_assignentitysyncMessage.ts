@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_assignentitysyncResponse as msdyn_assignentitysyncResponseData } from "./types/index.js";
 
 /**
  * msdyn_assignentitysync request message
@@ -41,25 +43,19 @@ export class msdyn_assignentitysyncRequest
     const data = await response.json();
     return msdyn_assignentitysyncResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RegardingEntityId: this.regardingEntityId,
-      RegardingEntityName: this.regardingEntityName,
-      SegmentId: this.segmentId,
-    };
-  }
 }
 
 /**
  * msdyn_assignentitysync response message
  */
 export class msdyn_assignentitysyncResponse extends OrganizationResponse {
-  constructor(public result: msdyn_assignentitysyncResponse) {
+  constructor(public result: msdyn_assignentitysyncResponseData) {
     super("msdyn_assignentitysync");
   }
 
   static fromResponse(data: unknown): msdyn_assignentitysyncResponse {
-    return new msdyn_assignentitysyncResponse((data as any).value);
+    return new msdyn_assignentitysyncResponse(
+      responseObject<msdyn_assignentitysyncResponseData>(data)
+    );
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckOrgSettingOOBPriceCalculationEnabledResponse as msdyn_CheckOrgSettingOOBPriceCalculationEnabledResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckOrgSettingOOBPriceCalculationEnabled request message
@@ -32,21 +34,19 @@ export class msdyn_CheckOrgSettingOOBPriceCalculationEnabledRequest
     const data = await response.json();
     return msdyn_CheckOrgSettingOOBPriceCalculationEnabledResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_CheckOrgSettingOOBPriceCalculationEnabled response message
  */
 export class msdyn_CheckOrgSettingOOBPriceCalculationEnabledResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckOrgSettingOOBPriceCalculationEnabledResponse) {
+  constructor(public result: msdyn_CheckOrgSettingOOBPriceCalculationEnabledResponseData) {
     super("msdyn_CheckOrgSettingOOBPriceCalculationEnabled");
   }
 
   static fromResponse(data: unknown): msdyn_CheckOrgSettingOOBPriceCalculationEnabledResponse {
-    return new msdyn_CheckOrgSettingOOBPriceCalculationEnabledResponse((data as any).value);
+    return new msdyn_CheckOrgSettingOOBPriceCalculationEnabledResponse(
+      responseObject<msdyn_CheckOrgSettingOOBPriceCalculationEnabledResponseData>(data)
+    );
   }
 }

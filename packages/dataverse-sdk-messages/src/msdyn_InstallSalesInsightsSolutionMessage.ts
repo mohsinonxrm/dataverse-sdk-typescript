@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_InstallSalesInsightsSolutionResponse as msdyn_InstallSalesInsightsSolutionResponseData } from "./types/index.js";
 
 /**
  * msdyn_InstallSalesInsightsSolution request message
@@ -39,24 +41,19 @@ export class msdyn_InstallSalesInsightsSolutionRequest
     const data = await response.json();
     return msdyn_InstallSalesInsightsSolutionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionName: this.solutionName,
-      ForceInstall: this.forceInstall,
-    };
-  }
 }
 
 /**
  * msdyn_InstallSalesInsightsSolution response message
  */
 export class msdyn_InstallSalesInsightsSolutionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_InstallSalesInsightsSolutionResponse) {
+  constructor(public result: msdyn_InstallSalesInsightsSolutionResponseData) {
     super("msdyn_InstallSalesInsightsSolution");
   }
 
   static fromResponse(data: unknown): msdyn_InstallSalesInsightsSolutionResponse {
-    return new msdyn_InstallSalesInsightsSolutionResponse((data as any).value);
+    return new msdyn_InstallSalesInsightsSolutionResponse(
+      responseObject<msdyn_InstallSalesInsightsSolutionResponseData>(data)
+    );
   }
 }

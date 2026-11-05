@@ -39,13 +39,6 @@ export class DeactivateEntityKeyRequest
     // No return value (204 No Content)
     return new DeactivateEntityKeyResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntityKeyLogicalName: this.entityKeyLogicalName,
-      EntityLogicalName: this.entityLogicalName,
-    };
-  }
 }
 
 /**

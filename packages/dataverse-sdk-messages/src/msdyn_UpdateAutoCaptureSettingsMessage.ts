@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_UpdateAutoCaptureSettingsResponse as msdyn_UpdateAutoCaptureSettingsResponseData } from "./types/index.js";
 
 /**
  * msdyn_UpdateAutoCaptureSettings request message
@@ -45,27 +47,19 @@ export class msdyn_UpdateAutoCaptureSettingsRequest
     const data = await response.json();
     return msdyn_UpdateAutoCaptureSettingsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      actiontype: this.actiontype,
-      dialogtype: this.dialogtype,
-      BusinessProcessFlowId: this.businessProcessFlowId,
-      BusinessProcessFlowInstanceId: this.businessProcessFlowInstanceId,
-      ActionStepId: this.actionStepId,
-    };
-  }
 }
 
 /**
  * msdyn_UpdateAutoCaptureSettings response message
  */
 export class msdyn_UpdateAutoCaptureSettingsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_UpdateAutoCaptureSettingsResponse) {
+  constructor(public result: msdyn_UpdateAutoCaptureSettingsResponseData) {
     super("msdyn_UpdateAutoCaptureSettings");
   }
 
   static fromResponse(data: unknown): msdyn_UpdateAutoCaptureSettingsResponse {
-    return new msdyn_UpdateAutoCaptureSettingsResponse((data as any).value);
+    return new msdyn_UpdateAutoCaptureSettingsResponse(
+      responseObject<msdyn_UpdateAutoCaptureSettingsResponseData>(data)
+    );
   }
 }

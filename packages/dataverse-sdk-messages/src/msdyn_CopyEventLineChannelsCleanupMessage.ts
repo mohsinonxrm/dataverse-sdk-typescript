@@ -30,10 +30,6 @@ export class msdyn_CopyEventLineChannelsCleanupRequest
     // No return value (204 No Content)
     return new msdyn_CopyEventLineChannelsCleanupResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**

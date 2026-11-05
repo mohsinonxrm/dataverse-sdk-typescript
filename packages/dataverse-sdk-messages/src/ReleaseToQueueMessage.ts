@@ -31,12 +31,6 @@ export class ReleaseToQueueRequest
     // No return value (204 No Content)
     return new ReleaseToQueueResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.queueitemId,
-    };
-  }
 }
 
 /**

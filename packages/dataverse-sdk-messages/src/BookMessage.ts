@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { BookResponse as BookResponseData } from "./types/index.js";
 
 /**
  * Book request message
@@ -37,24 +39,17 @@ export class BookRequest extends OrganizationRequest implements Executable<BookR
     const data = await response.json();
     return BookResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-      ReturnNotifications: this.returnNotifications,
-    };
-  }
 }
 
 /**
  * Book response message
  */
 export class BookResponse extends OrganizationResponse {
-  constructor(public result: BookResponse) {
+  constructor(public result: BookResponseData) {
     super("Book");
   }
 
   static fromResponse(data: unknown): BookResponse {
-    return new BookResponse((data as any).value);
+    return new BookResponse(responseObject<BookResponseData>(data));
   }
 }

@@ -1,7 +1,12 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
-import type { queue, queueitem } from "./types/index.js";
+import type {
+  AddToQueueResponse as AddToQueueResponseData,
+  queue,
+  queueitem,
+} from "./types/index.js";
 
 /**
  * AddToQueue request message
@@ -45,26 +50,17 @@ export class AddToQueueRequest
     const data = await response.json();
     return AddToQueueResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.queueId,
-      Target: this.target,
-      SourceQueue: this.sourceQueue,
-      QueueItemProperties: this.queueItemProperties,
-    };
-  }
 }
 
 /**
  * AddToQueue response message
  */
 export class AddToQueueResponse extends OrganizationResponse {
-  constructor(public result: AddToQueueResponse) {
+  constructor(public result: AddToQueueResponseData) {
     super("AddToQueue");
   }
 
   static fromResponse(data: unknown): AddToQueueResponse {
-    return new AddToQueueResponse((data as any).value);
+    return new AddToQueueResponse(responseObject<AddToQueueResponseData>(data));
   }
 }

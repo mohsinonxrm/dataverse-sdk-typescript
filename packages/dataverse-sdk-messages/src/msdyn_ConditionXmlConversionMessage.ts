@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_ConditionXmlConversionResponse as msdyn_ConditionXmlConversionResponseData } from "./types/index.js";
 
 /**
  * msdyn_ConditionXmlConversion request message
@@ -45,27 +47,19 @@ export class msdyn_ConditionXmlConversionRequest
     const data = await response.json();
     return msdyn_ConditionXmlConversionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      InputType: this.inputType,
-      OutputType: this.outputType,
-      InputString: this.inputString,
-      EntityName: this.entityName,
-      EnableUnderNotUnderSupport: this.enableUnderNotUnderSupport,
-    };
-  }
 }
 
 /**
  * msdyn_ConditionXmlConversion response message
  */
 export class msdyn_ConditionXmlConversionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ConditionXmlConversionResponse) {
+  constructor(public result: msdyn_ConditionXmlConversionResponseData) {
     super("msdyn_ConditionXmlConversion");
   }
 
   static fromResponse(data: unknown): msdyn_ConditionXmlConversionResponse {
-    return new msdyn_ConditionXmlConversionResponse((data as any).value);
+    return new msdyn_ConditionXmlConversionResponse(
+      responseObject<msdyn_ConditionXmlConversionResponseData>(data)
+    );
   }
 }

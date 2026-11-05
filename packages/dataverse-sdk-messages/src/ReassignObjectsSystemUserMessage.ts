@@ -42,14 +42,6 @@ export class ReassignObjectsSystemUserRequest
     // No return value (204 No Content)
     return new ReassignObjectsSystemUserResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.systemuserId,
-      ReassignPrincipal: this.reassignPrincipal,
-      objectType: this.objectType,
-    };
-  }
 }
 
 /**

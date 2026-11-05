@@ -40,13 +40,6 @@ export class CancelSalesOrderRequest
     // No return value (204 No Content)
     return new CancelSalesOrderResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      OrderClose: this.orderClose,
-      Status: this.status,
-    };
-  }
 }
 
 /**

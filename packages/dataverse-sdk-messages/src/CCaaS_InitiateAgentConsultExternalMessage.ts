@@ -55,21 +55,6 @@ export class CCaaS_InitiateAgentConsultExternalRequest
     // No return value (204 No Content)
     return new CCaaS_InitiateAgentConsultExternalResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_ocliveworkitemId,
-      ExternalReferenceType: this.externalReferenceType,
-      ExternalParticipantChannel: this.externalParticipantChannel,
-      ApiVersion: this.apiVersion,
-      QueueId: this.queueId,
-      ExternalReferenceId: this.externalReferenceId,
-      ConsultType: this.consultType,
-      ExternalParticipantChannelType: this.externalParticipantChannelType,
-      AgentName: this.agentName,
-      ConversationAccess: this.conversationAccess,
-    };
-  }
 }
 
 /**

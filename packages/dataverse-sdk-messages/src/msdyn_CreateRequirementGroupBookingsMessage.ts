@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_CreateRequirementGroupBookingsResponse as msdyn_CreateRequirementGroupBookingsResponseData } from "./types/index.js";
 
 /**
  * msdyn_CreateRequirementGroupBookings request message
@@ -46,27 +48,19 @@ export class msdyn_CreateRequirementGroupBookingsRequest
     const data = await response.json();
     return msdyn_CreateRequirementGroupBookingsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Version: this.version,
-      Start: this.start,
-      Duration: this.duration,
-      ResourceAssignments: this.resourceAssignments,
-      RequirementGroup: this.requirementGroup,
-    };
-  }
 }
 
 /**
  * msdyn_CreateRequirementGroupBookings response message
  */
 export class msdyn_CreateRequirementGroupBookingsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CreateRequirementGroupBookingsResponse) {
+  constructor(public result: msdyn_CreateRequirementGroupBookingsResponseData) {
     super("msdyn_CreateRequirementGroupBookings");
   }
 
   static fromResponse(data: unknown): msdyn_CreateRequirementGroupBookingsResponse {
-    return new msdyn_CreateRequirementGroupBookingsResponse((data as any).value);
+    return new msdyn_CreateRequirementGroupBookingsResponse(
+      responseObject<msdyn_CreateRequirementGroupBookingsResponseData>(data)
+    );
   }
 }

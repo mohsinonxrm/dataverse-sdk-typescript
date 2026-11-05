@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import { responseValue } from "./internal/responseData.js";
 
 /**
  * msdynmkt_GetDataverseTableMetadataItems request message
@@ -47,28 +47,19 @@ export class msdynmkt_GetDataverseTableMetadataItemsRequest
     const data = await response.json();
     return msdynmkt_GetDataverseTableMetadataItemsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdynmkt_GetDataverseTableMetadataItems_request_LanguageCode:
-        this.msdynmkt_GetDataverseTableMetadataItems_request_LanguageCode,
-      msdynmkt_GetDataverseTableMetadataItems_request_SourceLogicalNames:
-        this.msdynmkt_GetDataverseTableMetadataItems_request_SourceLogicalNames,
-      msdynmkt_GetDataverseTableMetadataItems_request_UseLazyLoading:
-        this.msdynmkt_GetDataverseTableMetadataItems_request_UseLazyLoading,
-    };
-  }
 }
 
 /**
  * msdynmkt_GetDataverseTableMetadataItems response message
  */
 export class msdynmkt_GetDataverseTableMetadataItemsResponse extends OrganizationResponse {
-  constructor(public result: EntityReference[]) {
+  constructor(public result: Record<string, unknown>[]) {
     super("msdynmkt_GetDataverseTableMetadataItems");
   }
 
   static fromResponse(data: unknown): msdynmkt_GetDataverseTableMetadataItemsResponse {
-    return new msdynmkt_GetDataverseTableMetadataItemsResponse((data as any).value);
+    return new msdynmkt_GetDataverseTableMetadataItemsResponse(
+      responseValue<Record<string, unknown>[]>(data)
+    );
   }
 }

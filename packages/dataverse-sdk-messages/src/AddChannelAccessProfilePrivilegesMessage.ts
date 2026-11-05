@@ -40,13 +40,6 @@ export class AddChannelAccessProfilePrivilegesRequest
     // No return value (204 No Content)
     return new AddChannelAccessProfilePrivilegesResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ChannelAccessProfileId: this.channelAccessProfileId,
-      Privileges: this.privileges,
-    };
-  }
 }
 
 /**

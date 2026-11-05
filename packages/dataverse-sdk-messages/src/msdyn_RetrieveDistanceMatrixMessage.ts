@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_RetrieveDistanceMatrixResponse as msdyn_RetrieveDistanceMatrixResponseData } from "./types/index.js";
 
 /**
  * msdyn_RetrieveDistanceMatrix request message
@@ -41,25 +43,19 @@ export class msdyn_RetrieveDistanceMatrixRequest
     const data = await response.json();
     return msdyn_RetrieveDistanceMatrixResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Version: this.version,
-      Sources: this.sources,
-      Targets: this.targets,
-    };
-  }
 }
 
 /**
  * msdyn_RetrieveDistanceMatrix response message
  */
 export class msdyn_RetrieveDistanceMatrixResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrieveDistanceMatrixResponse) {
+  constructor(public result: msdyn_RetrieveDistanceMatrixResponseData) {
     super("msdyn_RetrieveDistanceMatrix");
   }
 
   static fromResponse(data: unknown): msdyn_RetrieveDistanceMatrixResponse {
-    return new msdyn_RetrieveDistanceMatrixResponse((data as any).value);
+    return new msdyn_RetrieveDistanceMatrixResponse(
+      responseObject<msdyn_RetrieveDistanceMatrixResponseData>(data)
+    );
   }
 }

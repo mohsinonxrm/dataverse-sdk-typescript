@@ -43,14 +43,6 @@ export class msdyn_UpdateAutoScheduledTrainingStatusRequest
     // No return value (204 No Content)
     return new msdyn_UpdateAutoScheduledTrainingStatusResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      AutoScheduledTraining: this.autoScheduledTraining,
-      PredictionName: this.predictionName,
-      PredictionType: this.predictionType,
-    };
-  }
 }
 
 /**

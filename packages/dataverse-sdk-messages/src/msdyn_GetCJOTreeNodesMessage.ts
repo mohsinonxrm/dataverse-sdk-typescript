@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetCJOTreeNodesResponse as msdyn_GetCJOTreeNodesResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetCJOTreeNodes request message
@@ -39,24 +41,19 @@ export class msdyn_GetCJOTreeNodesRequest
     const data = await response.json();
     return msdyn_GetCJOTreeNodesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_startingnodeid: this.msdyn_startingnodeid,
-      msdyn_cjodefinition: this.msdyn_cjodefinition,
-    };
-  }
 }
 
 /**
  * msdyn_GetCJOTreeNodes response message
  */
 export class msdyn_GetCJOTreeNodesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetCJOTreeNodesResponse) {
+  constructor(public result: msdyn_GetCJOTreeNodesResponseData) {
     super("msdyn_GetCJOTreeNodes");
   }
 
   static fromResponse(data: unknown): msdyn_GetCJOTreeNodesResponse {
-    return new msdyn_GetCJOTreeNodesResponse((data as any).value);
+    return new msdyn_GetCJOTreeNodesResponse(
+      responseObject<msdyn_GetCJOTreeNodesResponseData>(data)
+    );
   }
 }

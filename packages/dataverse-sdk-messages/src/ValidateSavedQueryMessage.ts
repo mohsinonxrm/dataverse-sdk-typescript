@@ -40,13 +40,6 @@ export class ValidateSavedQueryRequest
     // No return value (204 No Content)
     return new ValidateSavedQueryResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      FetchXml: this.fetchXml,
-      QueryType: this.queryType,
-    };
-  }
 }
 
 /**

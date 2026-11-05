@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRuleResponse as msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRule request message
@@ -32,23 +34,21 @@ export class msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRuleRequest
     const data = await response.json();
     return msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRuleResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRule response message
  */
 export class msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRuleResponse) {
+  constructor(public result: msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRuleResponseData) {
     super("msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRule");
   }
 
   static fromResponse(
     data: unknown
   ): msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRuleResponse {
-    return new msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRuleResponse((data as any).value);
+    return new msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRuleResponse(
+      responseObject<msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRuleResponseData>(data)
+    );
   }
 }

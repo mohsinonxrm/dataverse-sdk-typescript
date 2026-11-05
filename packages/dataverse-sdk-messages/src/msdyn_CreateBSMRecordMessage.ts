@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_CreateBSMRecordResponse as msdyn_CreateBSMRecordResponseData } from "./types/index.js";
 
 /**
  * msdyn_CreateBSMRecord request message
@@ -36,23 +38,19 @@ export class msdyn_CreateBSMRecordRequest
     const data = await response.json();
     return msdyn_CreateBSMRecordResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      AnalysisResult: this.analysisResult,
-    };
-  }
 }
 
 /**
  * msdyn_CreateBSMRecord response message
  */
 export class msdyn_CreateBSMRecordResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CreateBSMRecordResponse) {
+  constructor(public result: msdyn_CreateBSMRecordResponseData) {
     super("msdyn_CreateBSMRecord");
   }
 
   static fromResponse(data: unknown): msdyn_CreateBSMRecordResponse {
-    return new msdyn_CreateBSMRecordResponse((data as any).value);
+    return new msdyn_CreateBSMRecordResponse(
+      responseObject<msdyn_CreateBSMRecordResponseData>(data)
+    );
   }
 }

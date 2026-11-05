@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_FetchAllPredictionModelsResponse as msdyn_FetchAllPredictionModelsResponseData } from "./types/index.js";
 
 /**
  * msdyn_FetchAllPredictionModels request message
@@ -35,23 +37,19 @@ export class msdyn_FetchAllPredictionModelsRequest
     const data = await response.json();
     return msdyn_FetchAllPredictionModelsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      PredictionType: this.predictionType,
-    };
-  }
 }
 
 /**
  * msdyn_FetchAllPredictionModels response message
  */
 export class msdyn_FetchAllPredictionModelsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_FetchAllPredictionModelsResponse) {
+  constructor(public result: msdyn_FetchAllPredictionModelsResponseData) {
     super("msdyn_FetchAllPredictionModels");
   }
 
   static fromResponse(data: unknown): msdyn_FetchAllPredictionModelsResponse {
-    return new msdyn_FetchAllPredictionModelsResponse((data as any).value);
+    return new msdyn_FetchAllPredictionModelsResponse(
+      responseObject<msdyn_FetchAllPredictionModelsResponseData>(data)
+    );
   }
 }

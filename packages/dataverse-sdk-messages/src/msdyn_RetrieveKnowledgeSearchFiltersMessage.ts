@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_RetrieveKnowledgeSearchFiltersResponse as msdyn_RetrieveKnowledgeSearchFiltersResponseData } from "./types/index.js";
 
 /**
  * msdyn_RetrieveKnowledgeSearchFilters request message
@@ -35,23 +37,19 @@ export class msdyn_RetrieveKnowledgeSearchFiltersRequest
     const data = await response.json();
     return msdyn_RetrieveKnowledgeSearchFiltersResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SearchFiltersMetadata: this.searchFiltersMetadata,
-    };
-  }
 }
 
 /**
  * msdyn_RetrieveKnowledgeSearchFilters response message
  */
 export class msdyn_RetrieveKnowledgeSearchFiltersResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrieveKnowledgeSearchFiltersResponse) {
+  constructor(public result: msdyn_RetrieveKnowledgeSearchFiltersResponseData) {
     super("msdyn_RetrieveKnowledgeSearchFilters");
   }
 
   static fromResponse(data: unknown): msdyn_RetrieveKnowledgeSearchFiltersResponse {
-    return new msdyn_RetrieveKnowledgeSearchFiltersResponse((data as any).value);
+    return new msdyn_RetrieveKnowledgeSearchFiltersResponse(
+      responseObject<msdyn_RetrieveKnowledgeSearchFiltersResponseData>(data)
+    );
   }
 }

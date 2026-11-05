@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_editSalesSequenceExperimentStatusResponse as msdyn_editSalesSequenceExperimentStatusResponseData } from "./types/index.js";
 
 /**
  * msdyn_editSalesSequenceExperimentStatus request message
@@ -47,27 +49,19 @@ export class msdyn_editSalesSequenceExperimentStatusRequest
     const data = await response.json();
     return msdyn_editSalesSequenceExperimentStatusResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_winnerOrDefault: this.msdyn_winnerOrDefault,
-      msdyn_experimentKey: this.msdyn_experimentKey,
-      msdyn_expiryTime: this.msdyn_expiryTime,
-      msdyn_isDeactivated: this.msdyn_isDeactivated,
-      msdyn_experimentVersionRecordId: this.msdyn_experimentVersionRecordId,
-    };
-  }
 }
 
 /**
  * msdyn_editSalesSequenceExperimentStatus response message
  */
 export class msdyn_editSalesSequenceExperimentStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_editSalesSequenceExperimentStatusResponse) {
+  constructor(public result: msdyn_editSalesSequenceExperimentStatusResponseData) {
     super("msdyn_editSalesSequenceExperimentStatus");
   }
 
   static fromResponse(data: unknown): msdyn_editSalesSequenceExperimentStatusResponse {
-    return new msdyn_editSalesSequenceExperimentStatusResponse((data as any).value);
+    return new msdyn_editSalesSequenceExperimentStatusResponse(
+      responseObject<msdyn_editSalesSequenceExperimentStatusResponseData>(data)
+    );
   }
 }

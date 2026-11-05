@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { systemform } from "./types/index.js";
 
 /**
@@ -40,13 +41,6 @@ export class CopySystemFormRequest
     const data = await response.json();
     return CopySystemFormResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.systemformId,
-      Target: this.target,
-    };
-  }
 }
 
 /**
@@ -58,6 +52,6 @@ export class CopySystemFormResponse extends OrganizationResponse {
   }
 
   static fromResponse(data: unknown): CopySystemFormResponse {
-    return new CopySystemFormResponse((data as any).value);
+    return new CopySystemFormResponse(responseObject<systemform>(data));
   }
 }

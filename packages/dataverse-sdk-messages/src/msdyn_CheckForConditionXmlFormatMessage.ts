@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckForConditionXmlFormatResponse as msdyn_CheckForConditionXmlFormatResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckForConditionXmlFormat request message
@@ -35,23 +37,19 @@ export class msdyn_CheckForConditionXmlFormatRequest
     const data = await response.json();
     return msdyn_CheckForConditionXmlFormatResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionId: this.solutionId,
-    };
-  }
 }
 
 /**
  * msdyn_CheckForConditionXmlFormat response message
  */
 export class msdyn_CheckForConditionXmlFormatResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckForConditionXmlFormatResponse) {
+  constructor(public result: msdyn_CheckForConditionXmlFormatResponseData) {
     super("msdyn_CheckForConditionXmlFormat");
   }
 
   static fromResponse(data: unknown): msdyn_CheckForConditionXmlFormatResponse {
-    return new msdyn_CheckForConditionXmlFormatResponse((data as any).value);
+    return new msdyn_CheckForConditionXmlFormatResponse(
+      responseObject<msdyn_CheckForConditionXmlFormatResponseData>(data)
+    );
   }
 }

@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import { responseValue } from "./internal/responseData.js";
 
 /**
  * RetrieveFlowUpdates request message
@@ -36,23 +36,17 @@ export class RetrieveFlowUpdatesRequest
     const data = await response.json();
     return RetrieveFlowUpdatesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ObjectId: this.objectId,
-    };
-  }
 }
 
 /**
  * RetrieveFlowUpdates response message
  */
 export class RetrieveFlowUpdatesResponse extends OrganizationResponse {
-  constructor(public result: EntityReference[]) {
+  constructor(public result: Record<string, unknown>[]) {
     super("RetrieveFlowUpdates");
   }
 
   static fromResponse(data: unknown): RetrieveFlowUpdatesResponse {
-    return new RetrieveFlowUpdatesResponse((data as any).value);
+    return new RetrieveFlowUpdatesResponse(responseValue<Record<string, unknown>[]>(data));
   }
 }

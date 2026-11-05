@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetFormattedOpportunityDataResponse as msdyn_GetFormattedOpportunityDataResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetFormattedOpportunityData request message
@@ -35,23 +37,19 @@ export class msdyn_GetFormattedOpportunityDataRequest
     const data = await response.json();
     return msdyn_GetFormattedOpportunityDataResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      OpportunityId: this.opportunityId,
-    };
-  }
 }
 
 /**
  * msdyn_GetFormattedOpportunityData response message
  */
 export class msdyn_GetFormattedOpportunityDataResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetFormattedOpportunityDataResponse) {
+  constructor(public result: msdyn_GetFormattedOpportunityDataResponseData) {
     super("msdyn_GetFormattedOpportunityData");
   }
 
   static fromResponse(data: unknown): msdyn_GetFormattedOpportunityDataResponse {
-    return new msdyn_GetFormattedOpportunityDataResponse((data as any).value);
+    return new msdyn_GetFormattedOpportunityDataResponse(
+      responseObject<msdyn_GetFormattedOpportunityDataResponseData>(data)
+    );
   }
 }

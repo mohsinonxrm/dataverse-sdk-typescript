@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckIfProcessesAreActiveResponse as msdyn_CheckIfProcessesAreActiveResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckIfProcessesAreActive request message
@@ -39,24 +41,19 @@ export class msdyn_CheckIfProcessesAreActiveRequest
     const data = await response.json();
     return msdyn_CheckIfProcessesAreActiveResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntityIds: this.entityIds,
-      SolutionId: this.solutionId,
-    };
-  }
 }
 
 /**
  * msdyn_CheckIfProcessesAreActive response message
  */
 export class msdyn_CheckIfProcessesAreActiveResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfProcessesAreActiveResponse) {
+  constructor(public result: msdyn_CheckIfProcessesAreActiveResponseData) {
     super("msdyn_CheckIfProcessesAreActive");
   }
 
   static fromResponse(data: unknown): msdyn_CheckIfProcessesAreActiveResponse {
-    return new msdyn_CheckIfProcessesAreActiveResponse((data as any).value);
+    return new msdyn_CheckIfProcessesAreActiveResponse(
+      responseObject<msdyn_CheckIfProcessesAreActiveResponseData>(data)
+    );
   }
 }

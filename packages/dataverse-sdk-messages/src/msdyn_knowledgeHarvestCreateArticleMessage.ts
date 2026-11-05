@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_knowledgeHarvestCreateArticleResponse as msdyn_knowledgeHarvestCreateArticleResponseData } from "./types/index.js";
 
 /**
  * msdyn_knowledgeHarvestCreateArticle request message
@@ -43,26 +45,19 @@ export class msdyn_knowledgeHarvestCreateArticleRequest
     const data = await response.json();
     return msdyn_knowledgeHarvestCreateArticleResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_knowledgeHarvestJobId: this.msdyn_knowledgeHarvestJobId,
-      msdyn_entityName: this.msdyn_entityName,
-      msdyn_entityId: this.msdyn_entityId,
-      msdyn_payload: this.msdyn_payload,
-    };
-  }
 }
 
 /**
  * msdyn_knowledgeHarvestCreateArticle response message
  */
 export class msdyn_knowledgeHarvestCreateArticleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_knowledgeHarvestCreateArticleResponse) {
+  constructor(public result: msdyn_knowledgeHarvestCreateArticleResponseData) {
     super("msdyn_knowledgeHarvestCreateArticle");
   }
 
   static fromResponse(data: unknown): msdyn_knowledgeHarvestCreateArticleResponse {
-    return new msdyn_knowledgeHarvestCreateArticleResponse((data as any).value);
+    return new msdyn_knowledgeHarvestCreateArticleResponse(
+      responseObject<msdyn_knowledgeHarvestCreateArticleResponseData>(data)
+    );
   }
 }

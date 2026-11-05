@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseValue } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 
 /**
@@ -100,54 +101,19 @@ export class msdyn_SimulateBookingResourceRequest
     const data = await response.json();
     return msdyn_SimulateBookingResourceResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SubcontractLineId: this.subcontractLineId,
-      SubcontractId: this.subcontractId,
-      DistributeEvenlyBehavior: this.distributeEvenlyBehavior,
-      NewStartDateTime: this.newStartDateTime,
-      NewResourceId: this.newResourceId,
-      NewTravelTime: this.newTravelTime,
-      NewDistance: this.newDistance,
-      ResourceId: this.resourceId,
-      RequirementId: this.requirementId,
-      Work: this.work,
-      BookingStatusId: this.bookingStatusId,
-      BookingMethod: this.bookingMethod,
-      BookingType: this.bookingType,
-      Schedules: this.schedules,
-      Timeframe: this.timeframe,
-      Hours: this.hours,
-      Percentage: this.percentage,
-      DistributeMethod: this.distributeMethod,
-      BookingIds: this.bookingIds,
-      DefaultBookingHeader: this.defaultBookingHeader,
-      DefaultBookingDetail: this.defaultBookingDetail,
-      ReloadStartDate: this.reloadStartDate,
-      ReloadEndDate: this.reloadEndDate,
-      ReloadDetailBookings: this.reloadDetailBookings,
-      TimeZoneCode: this.timeZoneCode,
-      SchedulerSettings: this.schedulerSettings,
-      PreventPartialFulfillment: this.preventPartialFulfillment,
-      AllowDoubleBooking: this.allowDoubleBooking,
-      CancelExistingBooking: this.cancelExistingBooking,
-      URSInternalFlags: this.uRSInternalFlags,
-      ConsiderAppointments: this.considerAppointments,
-      IgnoreTimeZone: this.ignoreTimeZone,
-    };
-  }
 }
 
 /**
  * msdyn_SimulateBookingResource response message
  */
 export class msdyn_SimulateBookingResourceResponse extends OrganizationResponse {
-  constructor(public result: EntityReference[]) {
+  constructor(public result: Record<string, unknown>[]) {
     super("msdyn_SimulateBookingResource");
   }
 
   static fromResponse(data: unknown): msdyn_SimulateBookingResourceResponse {
-    return new msdyn_SimulateBookingResourceResponse((data as any).value);
+    return new msdyn_SimulateBookingResourceResponse(
+      responseValue<Record<string, unknown>[]>(data)
+    );
   }
 }

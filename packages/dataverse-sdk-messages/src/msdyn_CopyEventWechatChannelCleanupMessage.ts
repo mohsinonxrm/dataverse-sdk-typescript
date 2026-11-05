@@ -30,10 +30,6 @@ export class msdyn_CopyEventWechatChannelCleanupRequest
     // No return value (204 No Content)
     return new msdyn_CopyEventWechatChannelCleanupResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**

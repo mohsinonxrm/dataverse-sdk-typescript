@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_ExecuteHttpServiceRequestResponse as msdyn_ExecuteHttpServiceRequestResponseData } from "./types/index.js";
 
 /**
  * msdyn_ExecuteHttpServiceRequest request message
@@ -45,27 +47,19 @@ export class msdyn_ExecuteHttpServiceRequestRequest
     const data = await response.json();
     return msdyn_ExecuteHttpServiceRequestResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_RequestType: this.msdyn_RequestType,
-      msdyn_RequestUrl: this.msdyn_RequestUrl,
-      msdyn_CloudServiceApplicationType: this.msdyn_CloudServiceApplicationType,
-      msdyn_RequestBody: this.msdyn_RequestBody,
-      msdyn_Method: this.msdyn_Method,
-    };
-  }
 }
 
 /**
  * msdyn_ExecuteHttpServiceRequest response message
  */
 export class msdyn_ExecuteHttpServiceRequestResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ExecuteHttpServiceRequestResponse) {
+  constructor(public result: msdyn_ExecuteHttpServiceRequestResponseData) {
     super("msdyn_ExecuteHttpServiceRequest");
   }
 
   static fromResponse(data: unknown): msdyn_ExecuteHttpServiceRequestResponse {
-    return new msdyn_ExecuteHttpServiceRequestResponse((data as any).value);
+    return new msdyn_ExecuteHttpServiceRequestResponse(
+      responseObject<msdyn_ExecuteHttpServiceRequestResponseData>(data)
+    );
   }
 }

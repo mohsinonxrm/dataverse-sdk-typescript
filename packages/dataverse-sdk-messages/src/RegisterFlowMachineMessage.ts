@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { RegisterFlowMachineResponse as RegisterFlowMachineResponseData } from "./types/index.js";
 
 /**
  * RegisterFlowMachine request message
@@ -54,31 +56,17 @@ export class RegisterFlowMachineRequest
     const data = await response.json();
     return RegisterFlowMachineResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      machineName: this.machineName,
-      machineDescription: this.machineDescription,
-      machineCapacity: this.machineCapacity,
-      agentVersion: this.agentVersion,
-      groupPublicKey: this.groupPublicKey,
-      hostingType: this.hostingType,
-      targetGroup: this.targetGroup,
-      pictureInPictureSupport: this.pictureInPictureSupport,
-      machineDomain: this.machineDomain,
-    };
-  }
 }
 
 /**
  * RegisterFlowMachine response message
  */
 export class RegisterFlowMachineResponse extends OrganizationResponse {
-  constructor(public result: RegisterFlowMachineResponse) {
+  constructor(public result: RegisterFlowMachineResponseData) {
     super("RegisterFlowMachine");
   }
 
   static fromResponse(data: unknown): RegisterFlowMachineResponse {
-    return new RegisterFlowMachineResponse((data as any).value);
+    return new RegisterFlowMachineResponse(responseObject<RegisterFlowMachineResponseData>(data));
   }
 }

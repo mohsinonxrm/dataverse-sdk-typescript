@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { _RetrieveActivitiesByResourcesResponse as _RetrieveActivitiesByResourcesResponseData } from "./types/index.js";
 
 /**
  * _RetrieveActivitiesByResources request message
@@ -43,26 +45,19 @@ export class _RetrieveActivitiesByResourcesRequest
     const data = await response.json();
     return _RetrieveActivitiesByResourcesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      StartDate: this.startDate,
-      EndDate: this.endDate,
-      ResourceIds: this.resourceIds,
-      ActivityType: this.activityType,
-    };
-  }
 }
 
 /**
  * _RetrieveActivitiesByResources response message
  */
 export class _RetrieveActivitiesByResourcesResponse extends OrganizationResponse {
-  constructor(public result: _RetrieveActivitiesByResourcesResponse) {
+  constructor(public result: _RetrieveActivitiesByResourcesResponseData) {
     super("_RetrieveActivitiesByResources");
   }
 
   static fromResponse(data: unknown): _RetrieveActivitiesByResourcesResponse {
-    return new _RetrieveActivitiesByResourcesResponse((data as any).value);
+    return new _RetrieveActivitiesByResourcesResponse(
+      responseObject<_RetrieveActivitiesByResourcesResponseData>(data)
+    );
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckIfRequiredLevelOfFieldIsChangedResponse as msdyn_CheckIfRequiredLevelOfFieldIsChangedResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckIfRequiredLevelOfFieldIsChanged request message
@@ -32,21 +34,19 @@ export class msdyn_CheckIfRequiredLevelOfFieldIsChangedRequest
     const data = await response.json();
     return msdyn_CheckIfRequiredLevelOfFieldIsChangedResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_CheckIfRequiredLevelOfFieldIsChanged response message
  */
 export class msdyn_CheckIfRequiredLevelOfFieldIsChangedResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfRequiredLevelOfFieldIsChangedResponse) {
+  constructor(public result: msdyn_CheckIfRequiredLevelOfFieldIsChangedResponseData) {
     super("msdyn_CheckIfRequiredLevelOfFieldIsChanged");
   }
 
   static fromResponse(data: unknown): msdyn_CheckIfRequiredLevelOfFieldIsChangedResponse {
-    return new msdyn_CheckIfRequiredLevelOfFieldIsChangedResponse((data as any).value);
+    return new msdyn_CheckIfRequiredLevelOfFieldIsChangedResponse(
+      responseObject<msdyn_CheckIfRequiredLevelOfFieldIsChangedResponseData>(data)
+    );
   }
 }

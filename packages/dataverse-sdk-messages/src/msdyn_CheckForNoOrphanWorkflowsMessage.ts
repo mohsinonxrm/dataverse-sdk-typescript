@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckForNoOrphanWorkflowsResponse as msdyn_CheckForNoOrphanWorkflowsResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckForNoOrphanWorkflows request message
@@ -35,23 +37,19 @@ export class msdyn_CheckForNoOrphanWorkflowsRequest
     const data = await response.json();
     return msdyn_CheckForNoOrphanWorkflowsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionId: this.solutionId,
-    };
-  }
 }
 
 /**
  * msdyn_CheckForNoOrphanWorkflows response message
  */
 export class msdyn_CheckForNoOrphanWorkflowsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckForNoOrphanWorkflowsResponse) {
+  constructor(public result: msdyn_CheckForNoOrphanWorkflowsResponseData) {
     super("msdyn_CheckForNoOrphanWorkflows");
   }
 
   static fromResponse(data: unknown): msdyn_CheckForNoOrphanWorkflowsResponse {
-    return new msdyn_CheckForNoOrphanWorkflowsResponse((data as any).value);
+    return new msdyn_CheckForNoOrphanWorkflowsResponse(
+      responseObject<msdyn_CheckForNoOrphanWorkflowsResponseData>(data)
+    );
   }
 }

@@ -40,13 +40,6 @@ export class PullChangesFromGitRequest
     // No return value (204 No Content)
     return new PullChangesFromGitResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionUniqueName: this.solutionUniqueName,
-      AdditionalParameters: this.additionalParameters,
-    };
-  }
 }
 
 /**

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_KnowledgeHarvestFetchDataResponse as msdyn_KnowledgeHarvestFetchDataResponseData } from "./types/index.js";
 
 /**
  * msdyn_KnowledgeHarvestFetchData request message
@@ -39,24 +41,19 @@ export class msdyn_KnowledgeHarvestFetchDataRequest
     const data = await response.json();
     return msdyn_KnowledgeHarvestFetchDataResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_entityId: this.msdyn_entityId,
-      msdyn_entityName: this.msdyn_entityName,
-    };
-  }
 }
 
 /**
  * msdyn_KnowledgeHarvestFetchData response message
  */
 export class msdyn_KnowledgeHarvestFetchDataResponse extends OrganizationResponse {
-  constructor(public result: msdyn_KnowledgeHarvestFetchDataResponse) {
+  constructor(public result: msdyn_KnowledgeHarvestFetchDataResponseData) {
     super("msdyn_KnowledgeHarvestFetchData");
   }
 
   static fromResponse(data: unknown): msdyn_KnowledgeHarvestFetchDataResponse {
-    return new msdyn_KnowledgeHarvestFetchDataResponse((data as any).value);
+    return new msdyn_KnowledgeHarvestFetchDataResponse(
+      responseObject<msdyn_KnowledgeHarvestFetchDataResponseData>(data)
+    );
   }
 }

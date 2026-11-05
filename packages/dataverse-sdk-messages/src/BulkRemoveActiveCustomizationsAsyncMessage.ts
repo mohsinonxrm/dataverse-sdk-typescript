@@ -1,6 +1,10 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { BulkRemoveActiveCustomizationsParameters } from "./types/index.js";
+import { responseObject } from "./internal/responseData.js";
+import type {
+  BulkRemoveActiveCustomizationsAsyncResponse as BulkRemoveActiveCustomizationsAsyncResponseData,
+  BulkRemoveActiveCustomizationsParameters,
+} from "./types/index.js";
 
 /**
  * BulkRemoveActiveCustomizationsAsync request message
@@ -38,23 +42,19 @@ export class BulkRemoveActiveCustomizationsAsyncRequest
     const data = await response.json();
     return BulkRemoveActiveCustomizationsAsyncResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      BulkRemoveActiveCustomizationsParameters: this.bulkRemoveActiveCustomizationsParameters,
-    };
-  }
 }
 
 /**
  * BulkRemoveActiveCustomizationsAsync response message
  */
 export class BulkRemoveActiveCustomizationsAsyncResponse extends OrganizationResponse {
-  constructor(public result: BulkRemoveActiveCustomizationsAsyncResponse) {
+  constructor(public result: BulkRemoveActiveCustomizationsAsyncResponseData) {
     super("BulkRemoveActiveCustomizationsAsync");
   }
 
   static fromResponse(data: unknown): BulkRemoveActiveCustomizationsAsyncResponse {
-    return new BulkRemoveActiveCustomizationsAsyncResponse((data as any).value);
+    return new BulkRemoveActiveCustomizationsAsyncResponse(
+      responseObject<BulkRemoveActiveCustomizationsAsyncResponseData>(data)
+    );
   }
 }

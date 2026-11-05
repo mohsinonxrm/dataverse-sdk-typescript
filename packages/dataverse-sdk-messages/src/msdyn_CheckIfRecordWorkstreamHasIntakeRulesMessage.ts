@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckIfRecordWorkstreamHasIntakeRulesResponse as msdyn_CheckIfRecordWorkstreamHasIntakeRulesResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckIfRecordWorkstreamHasIntakeRules request message
@@ -32,21 +34,19 @@ export class msdyn_CheckIfRecordWorkstreamHasIntakeRulesRequest
     const data = await response.json();
     return msdyn_CheckIfRecordWorkstreamHasIntakeRulesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_CheckIfRecordWorkstreamHasIntakeRules response message
  */
 export class msdyn_CheckIfRecordWorkstreamHasIntakeRulesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfRecordWorkstreamHasIntakeRulesResponse) {
+  constructor(public result: msdyn_CheckIfRecordWorkstreamHasIntakeRulesResponseData) {
     super("msdyn_CheckIfRecordWorkstreamHasIntakeRules");
   }
 
   static fromResponse(data: unknown): msdyn_CheckIfRecordWorkstreamHasIntakeRulesResponse {
-    return new msdyn_CheckIfRecordWorkstreamHasIntakeRulesResponse((data as any).value);
+    return new msdyn_CheckIfRecordWorkstreamHasIntakeRulesResponse(
+      responseObject<msdyn_CheckIfRecordWorkstreamHasIntakeRulesResponseData>(data)
+    );
   }
 }

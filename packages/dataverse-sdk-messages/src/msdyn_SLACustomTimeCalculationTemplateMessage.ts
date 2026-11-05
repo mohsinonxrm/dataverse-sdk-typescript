@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_SLACustomTimeCalculationTemplateResponse as msdyn_SLACustomTimeCalculationTemplateResponseData } from "./types/index.js";
 
 /**
  * msdyn_SLACustomTimeCalculationTemplate request message
@@ -55,32 +57,19 @@ export class msdyn_SLACustomTimeCalculationTemplateRequest
     const data = await response.json();
     return msdyn_SLACustomTimeCalculationTemplateResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      calendarId: this.calendarId,
-      regardingId: this.regardingId,
-      slaItemId: this.slaItemId,
-      entityName: this.entityName,
-      requestType: this.requestType,
-      previousInstanceId: this.previousInstanceId,
-      firstInputDuration: this.firstInputDuration,
-      secondInputDuration: this.secondInputDuration,
-      firstInputDate: this.firstInputDate,
-      secondInputDate: this.secondInputDate,
-    };
-  }
 }
 
 /**
  * msdyn_SLACustomTimeCalculationTemplate response message
  */
 export class msdyn_SLACustomTimeCalculationTemplateResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SLACustomTimeCalculationTemplateResponse) {
+  constructor(public result: msdyn_SLACustomTimeCalculationTemplateResponseData) {
     super("msdyn_SLACustomTimeCalculationTemplate");
   }
 
   static fromResponse(data: unknown): msdyn_SLACustomTimeCalculationTemplateResponse {
-    return new msdyn_SLACustomTimeCalculationTemplateResponse((data as any).value);
+    return new msdyn_SLACustomTimeCalculationTemplateResponse(
+      responseObject<msdyn_SLACustomTimeCalculationTemplateResponseData>(data)
+    );
   }
 }

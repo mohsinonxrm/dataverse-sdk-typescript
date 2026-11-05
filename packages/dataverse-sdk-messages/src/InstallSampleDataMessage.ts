@@ -30,10 +30,6 @@ export class InstallSampleDataRequest
     // No return value (204 No Content)
     return new InstallSampleDataResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**

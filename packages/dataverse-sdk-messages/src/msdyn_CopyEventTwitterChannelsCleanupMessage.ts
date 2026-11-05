@@ -30,10 +30,6 @@ export class msdyn_CopyEventTwitterChannelsCleanupRequest
     // No return value (204 No Content)
     return new msdyn_CopyEventTwitterChannelsCleanupResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**

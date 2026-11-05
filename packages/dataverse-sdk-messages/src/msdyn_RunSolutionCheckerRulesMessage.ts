@@ -39,13 +39,6 @@ export class msdyn_RunSolutionCheckerRulesRequest
     // No return value (204 No Content)
     return new msdyn_RunSolutionCheckerRulesResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      AnalysisComponentId: this.analysisComponentId,
-      InAppNotificationEnabled: this.inAppNotificationEnabled,
-    };
-  }
 }
 
 /**

@@ -35,12 +35,6 @@ export class msdyn_RouteToOperationRequest
     // No return value (204 No Content)
     return new msdyn_RouteToOperationResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      LiveWorkItemId: this.liveWorkItemId,
-    };
-  }
 }
 
 /**

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { _ResourcesAddUpdateActionResponse as _ResourcesAddUpdateActionResponseData } from "./types/index.js";
 
 /**
  * _ResourcesAddUpdateAction request message
@@ -41,25 +43,19 @@ export class _ResourcesAddUpdateActionRequest
     const data = await response.json();
     return _ResourcesAddUpdateActionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      NewlyAddedResources: this.newlyAddedResources,
-      ResourceGroupId: this.resourceGroupId,
-      ResourceGroupsToAdd: this.resourceGroupsToAdd,
-    };
-  }
 }
 
 /**
  * _ResourcesAddUpdateAction response message
  */
 export class _ResourcesAddUpdateActionResponse extends OrganizationResponse {
-  constructor(public result: _ResourcesAddUpdateActionResponse) {
+  constructor(public result: _ResourcesAddUpdateActionResponseData) {
     super("_ResourcesAddUpdateAction");
   }
 
   static fromResponse(data: unknown): _ResourcesAddUpdateActionResponse {
-    return new _ResourcesAddUpdateActionResponse((data as any).value);
+    return new _ResourcesAddUpdateActionResponse(
+      responseObject<_ResourcesAddUpdateActionResponseData>(data)
+    );
   }
 }

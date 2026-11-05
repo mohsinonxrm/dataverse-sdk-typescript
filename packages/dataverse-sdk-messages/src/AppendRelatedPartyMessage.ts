@@ -40,13 +40,6 @@ export class AppendRelatedPartyRequest
     // No return value (204 No Content)
     return new AppendRelatedPartyResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Activity: this.activity,
-      Party: this.party,
-    };
-  }
 }
 
 /**

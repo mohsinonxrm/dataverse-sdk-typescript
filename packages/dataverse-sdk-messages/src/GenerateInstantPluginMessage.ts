@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { GenerateInstantPluginResponse as GenerateInstantPluginResponseData } from "./types/index.js";
 
 /**
  * GenerateInstantPlugin request message
@@ -49,29 +51,19 @@ export class GenerateInstantPluginRequest
     const data = await response.json();
     return GenerateInstantPluginResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionUniqueName: this.solutionUniqueName,
-      Expression: this.expression,
-      Context: this.context,
-      Description: this.description,
-      EntityLogicalName: this.entityLogicalName,
-      Parameters: this.parameters,
-      Name: this.name,
-    };
-  }
 }
 
 /**
  * GenerateInstantPlugin response message
  */
 export class GenerateInstantPluginResponse extends OrganizationResponse {
-  constructor(public result: GenerateInstantPluginResponse) {
+  constructor(public result: GenerateInstantPluginResponseData) {
     super("GenerateInstantPlugin");
   }
 
   static fromResponse(data: unknown): GenerateInstantPluginResponse {
-    return new GenerateInstantPluginResponse((data as any).value);
+    return new GenerateInstantPluginResponse(
+      responseObject<GenerateInstantPluginResponseData>(data)
+    );
   }
 }

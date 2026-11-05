@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { AISentimentResponse as AISentimentResponseData } from "./types/index.js";
 
 /**
  * AISentiment request message
@@ -35,23 +37,17 @@ export class AISentimentRequest
     const data = await response.json();
     return AISentimentResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Text: this.text,
-    };
-  }
 }
 
 /**
  * AISentiment response message
  */
 export class AISentimentResponse extends OrganizationResponse {
-  constructor(public result: AISentimentResponse) {
+  constructor(public result: AISentimentResponseData) {
     super("AISentiment");
   }
 
   static fromResponse(data: unknown): AISentimentResponse {
-    return new AISentimentResponse((data as any).value);
+    return new AISentimentResponse(responseObject<AISentimentResponseData>(data));
   }
 }

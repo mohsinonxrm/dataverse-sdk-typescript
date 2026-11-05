@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { AISummarizeRecordResponse as AISummarizeRecordResponseData } from "./types/index.js";
 
 /**
  * AISummarizeRecord request message
@@ -43,26 +45,17 @@ export class AISummarizeRecordRequest
     const data = await response.json();
     return AISummarizeRecordResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Id: this.id,
-      EntityLogicalName: this.entityLogicalName,
-      RecordContext: this.recordContext,
-      IsMergedCatchupAndSummary: this.isMergedCatchupAndSummary,
-    };
-  }
 }
 
 /**
  * AISummarizeRecord response message
  */
 export class AISummarizeRecordResponse extends OrganizationResponse {
-  constructor(public result: AISummarizeRecordResponse) {
+  constructor(public result: AISummarizeRecordResponseData) {
     super("AISummarizeRecord");
   }
 
   static fromResponse(data: unknown): AISummarizeRecordResponse {
-    return new AISummarizeRecordResponse((data as any).value);
+    return new AISummarizeRecordResponse(responseObject<AISummarizeRecordResponseData>(data));
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_FieldServiceBookableResourceBookingAssociateActionResponse as msdyn_FieldServiceBookableResourceBookingAssociateActionResponseData } from "./types/index.js";
 
 /**
  * msdyn_FieldServiceBookableResourceBookingAssociateAction request message
@@ -43,21 +45,13 @@ export class msdyn_FieldServiceBookableResourceBookingAssociateActionRequest
     const data = await response.json();
     return msdyn_FieldServiceBookableResourceBookingAssociateActionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.bookableresourcebookingId,
-      Type: this.type,
-      InputParameter: this.inputParameter,
-    };
-  }
 }
 
 /**
  * msdyn_FieldServiceBookableResourceBookingAssociateAction response message
  */
 export class msdyn_FieldServiceBookableResourceBookingAssociateActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_FieldServiceBookableResourceBookingAssociateActionResponse) {
+  constructor(public result: msdyn_FieldServiceBookableResourceBookingAssociateActionResponseData) {
     super("msdyn_FieldServiceBookableResourceBookingAssociateAction");
   }
 
@@ -65,7 +59,7 @@ export class msdyn_FieldServiceBookableResourceBookingAssociateActionResponse ex
     data: unknown
   ): msdyn_FieldServiceBookableResourceBookingAssociateActionResponse {
     return new msdyn_FieldServiceBookableResourceBookingAssociateActionResponse(
-      (data as any).value
+      responseObject<msdyn_FieldServiceBookableResourceBookingAssociateActionResponseData>(data)
     );
   }
 }

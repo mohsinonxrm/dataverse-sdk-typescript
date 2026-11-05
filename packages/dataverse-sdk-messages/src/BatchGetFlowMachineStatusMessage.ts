@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { BatchGetFlowMachineStatusResponse as BatchGetFlowMachineStatusResponseData } from "./types/index.js";
 
 /**
  * BatchGetFlowMachineStatus request message
@@ -39,24 +41,19 @@ export class BatchGetFlowMachineStatusRequest
     const data = await response.json();
     return BatchGetFlowMachineStatusResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      machineIds: this.machineIds,
-      version: this.version,
-    };
-  }
 }
 
 /**
  * BatchGetFlowMachineStatus response message
  */
 export class BatchGetFlowMachineStatusResponse extends OrganizationResponse {
-  constructor(public result: BatchGetFlowMachineStatusResponse) {
+  constructor(public result: BatchGetFlowMachineStatusResponseData) {
     super("BatchGetFlowMachineStatus");
   }
 
   static fromResponse(data: unknown): BatchGetFlowMachineStatusResponse {
-    return new BatchGetFlowMachineStatusResponse((data as any).value);
+    return new BatchGetFlowMachineStatusResponse(
+      responseObject<BatchGetFlowMachineStatusResponseData>(data)
+    );
   }
 }

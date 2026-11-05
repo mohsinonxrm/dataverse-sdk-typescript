@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetSequenceAnalyticsKPIsResponse as msdyn_GetSequenceAnalyticsKPIsResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetSequenceAnalyticsKPIs request message
@@ -45,27 +47,19 @@ export class msdyn_GetSequenceAnalyticsKPIsRequest
     const data = await response.json();
     return msdyn_GetSequenceAnalyticsKPIsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SequenceId: this.sequenceId,
-      SequenceStepId: this.sequenceStepId,
-      StartDate: this.startDate,
-      EndDate: this.endDate,
-      Configuration: this.configuration,
-    };
-  }
 }
 
 /**
  * msdyn_GetSequenceAnalyticsKPIs response message
  */
 export class msdyn_GetSequenceAnalyticsKPIsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetSequenceAnalyticsKPIsResponse) {
+  constructor(public result: msdyn_GetSequenceAnalyticsKPIsResponseData) {
     super("msdyn_GetSequenceAnalyticsKPIs");
   }
 
   static fromResponse(data: unknown): msdyn_GetSequenceAnalyticsKPIsResponse {
-    return new msdyn_GetSequenceAnalyticsKPIsResponse((data as any).value);
+    return new msdyn_GetSequenceAnalyticsKPIsResponse(
+      responseObject<msdyn_GetSequenceAnalyticsKPIsResponseData>(data)
+    );
   }
 }

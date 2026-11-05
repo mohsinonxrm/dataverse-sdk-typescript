@@ -43,14 +43,6 @@ export class msdyn_PostOrganizationProvisioningStatusRequest
     // No return value (204 No Content)
     return new msdyn_PostOrganizationProvisioningStatusResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      autoCaptureSettings: this.autoCaptureSettings,
-      autoCaptureRules: this.autoCaptureRules,
-      orgProvisioningDetails: this.orgProvisioningDetails,
-    };
-  }
 }
 
 /**

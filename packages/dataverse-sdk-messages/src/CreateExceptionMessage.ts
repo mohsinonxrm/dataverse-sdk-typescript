@@ -1,6 +1,10 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { appointment } from "./types/index.js";
+import { responseObject } from "./internal/responseData.js";
+import type {
+  CreateExceptionResponse as CreateExceptionResponseData,
+  appointment,
+} from "./types/index.js";
 
 /**
  * CreateException request message
@@ -43,25 +47,17 @@ export class CreateExceptionRequest
     const data = await response.json();
     return CreateExceptionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-      OriginalStartDate: this.originalStartDate,
-      IsDeleted: this.isDeleted,
-    };
-  }
 }
 
 /**
  * CreateException response message
  */
 export class CreateExceptionResponse extends OrganizationResponse {
-  constructor(public result: CreateExceptionResponse) {
+  constructor(public result: CreateExceptionResponseData) {
     super("CreateException");
   }
 
   static fromResponse(data: unknown): CreateExceptionResponse {
-    return new CreateExceptionResponse((data as any).value);
+    return new CreateExceptionResponse(responseObject<CreateExceptionResponseData>(data));
   }
 }

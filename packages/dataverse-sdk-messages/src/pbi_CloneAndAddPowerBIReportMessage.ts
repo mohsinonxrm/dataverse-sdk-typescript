@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import { responseObject } from "./internal/responseData.js";
 
 /**
  * pbi_CloneAndAddPowerBIReport request message
@@ -44,26 +44,17 @@ export class pbi_CloneAndAddPowerBIReportRequest
     const data = await response.json();
     return pbi_CloneAndAddPowerBIReportResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      pbi_ReportObjectId: this.pbi_ReportObjectId,
-      pbi_SolutionUniqueName: this.pbi_SolutionUniqueName,
-      pbi_WorkspaceObjectId: this.pbi_WorkspaceObjectId,
-      pbi_UniqueName: this.pbi_UniqueName,
-    };
-  }
 }
 
 /**
  * pbi_CloneAndAddPowerBIReport response message
  */
 export class pbi_CloneAndAddPowerBIReportResponse extends OrganizationResponse {
-  constructor(public result: EntityReference) {
+  constructor(public result: Record<string, unknown>) {
     super("pbi_CloneAndAddPowerBIReport");
   }
 
   static fromResponse(data: unknown): pbi_CloneAndAddPowerBIReportResponse {
-    return new pbi_CloneAndAddPowerBIReportResponse((data as any).value);
+    return new pbi_CloneAndAddPowerBIReportResponse(responseObject<Record<string, unknown>>(data));
   }
 }

@@ -36,12 +36,6 @@ export class RemoveParentRequest
     // No return value (204 No Content)
     return new RemoveParentResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-    };
-  }
 }
 
 /**

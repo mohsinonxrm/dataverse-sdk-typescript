@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { CCaaS_BulkQueueAssignmentResponse as CCaaS_BulkQueueAssignmentResponseData } from "./types/index.js";
 
 /**
  * CCaaS_BulkQueueAssignment request message
@@ -41,25 +43,19 @@ export class CCaaS_BulkQueueAssignmentRequest
     const data = await response.json();
     return CCaaS_BulkQueueAssignmentResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ApiVersion: this.apiVersion,
-      ConversationIds: this.conversationIds,
-      TargetQueueId: this.targetQueueId,
-    };
-  }
 }
 
 /**
  * CCaaS_BulkQueueAssignment response message
  */
 export class CCaaS_BulkQueueAssignmentResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_BulkQueueAssignmentResponse) {
+  constructor(public result: CCaaS_BulkQueueAssignmentResponseData) {
     super("CCaaS_BulkQueueAssignment");
   }
 
   static fromResponse(data: unknown): CCaaS_BulkQueueAssignmentResponse {
-    return new CCaaS_BulkQueueAssignmentResponse((data as any).value);
+    return new CCaaS_BulkQueueAssignmentResponse(
+      responseObject<CCaaS_BulkQueueAssignmentResponseData>(data)
+    );
   }
 }

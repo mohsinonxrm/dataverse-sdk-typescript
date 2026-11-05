@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { BatchPredictionResponse as BatchPredictionResponseData } from "./types/index.js";
 
 /**
  * BatchPrediction request message
@@ -39,24 +41,17 @@ export class BatchPredictionRequest
     const data = await response.json();
     return BatchPredictionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_aimodelId,
-      version: this.version,
-    };
-  }
 }
 
 /**
  * BatchPrediction response message
  */
 export class BatchPredictionResponse extends OrganizationResponse {
-  constructor(public result: BatchPredictionResponse) {
+  constructor(public result: BatchPredictionResponseData) {
     super("BatchPrediction");
   }
 
   static fromResponse(data: unknown): BatchPredictionResponse {
-    return new BatchPredictionResponse((data as any).value);
+    return new BatchPredictionResponse(responseObject<BatchPredictionResponseData>(data));
   }
 }

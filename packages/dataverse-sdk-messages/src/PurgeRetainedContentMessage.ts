@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { PurgeRetainedContentResponse as PurgeRetainedContentResponseData } from "./types/index.js";
 
 /**
  * PurgeRetainedContent request message
@@ -43,26 +45,17 @@ export class PurgeRetainedContentRequest
     const data = await response.json();
     return PurgeRetainedContentResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntityName: this.entityName,
-      PageSize: this.pageSize,
-      OperationId: this.operationId,
-      MaxVersionToPurge: this.maxVersionToPurge,
-    };
-  }
 }
 
 /**
  * PurgeRetainedContent response message
  */
 export class PurgeRetainedContentResponse extends OrganizationResponse {
-  constructor(public result: PurgeRetainedContentResponse) {
+  constructor(public result: PurgeRetainedContentResponseData) {
     super("PurgeRetainedContent");
   }
 
   static fromResponse(data: unknown): PurgeRetainedContentResponse {
-    return new PurgeRetainedContentResponse((data as any).value);
+    return new PurgeRetainedContentResponse(responseObject<PurgeRetainedContentResponseData>(data));
   }
 }

@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_FindRulesetDependenciesResponse as msdyn_FindRulesetDependenciesResponseData } from "./types/index.js";
 
 /**
  * msdyn_FindRulesetDependencies request message
@@ -36,23 +38,19 @@ export class msdyn_FindRulesetDependenciesRequest
     const data = await response.json();
     return msdyn_FindRulesetDependenciesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      InputEntityReference: this.inputEntityReference,
-    };
-  }
 }
 
 /**
  * msdyn_FindRulesetDependencies response message
  */
 export class msdyn_FindRulesetDependenciesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_FindRulesetDependenciesResponse) {
+  constructor(public result: msdyn_FindRulesetDependenciesResponseData) {
     super("msdyn_FindRulesetDependencies");
   }
 
   static fromResponse(data: unknown): msdyn_FindRulesetDependenciesResponse {
-    return new msdyn_FindRulesetDependenciesResponse((data as any).value);
+    return new msdyn_FindRulesetDependenciesResponse(
+      responseObject<msdyn_FindRulesetDependenciesResponseData>(data)
+    );
   }
 }

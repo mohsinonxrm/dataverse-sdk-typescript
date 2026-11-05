@@ -40,13 +40,6 @@ export class CloseQuoteRequest
     // No return value (204 No Content)
     return new CloseQuoteResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      QuoteClose: this.quoteClose,
-      Status: this.status,
-    };
-  }
 }
 
 /**

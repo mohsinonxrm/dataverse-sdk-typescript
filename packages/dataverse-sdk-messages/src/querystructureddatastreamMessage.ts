@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { querystructureddatastreamResponse as querystructureddatastreamResponseData } from "./types/index.js";
 
 /**
  * querystructureddatastream request message
@@ -45,27 +47,19 @@ export class querystructureddatastreamRequest
     const data = await response.json();
     return querystructureddatastreamResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      maxRows: this.maxRows,
-      options: this.options,
-      additionalProperties: this.additionalProperties,
-      skill: this.skill,
-      queryText: this.queryText,
-    };
-  }
 }
 
 /**
  * querystructureddatastream response message
  */
 export class querystructureddatastreamResponse extends OrganizationResponse {
-  constructor(public result: querystructureddatastreamResponse) {
+  constructor(public result: querystructureddatastreamResponseData) {
     super("querystructureddatastream");
   }
 
   static fromResponse(data: unknown): querystructureddatastreamResponse {
-    return new querystructureddatastreamResponse((data as any).value);
+    return new querystructureddatastreamResponse(
+      responseObject<querystructureddatastreamResponseData>(data)
+    );
   }
 }

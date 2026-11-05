@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_InvokeIntelligenceActionResponse as msdyn_InvokeIntelligenceActionResponseData } from "./types/index.js";
 
 /**
  * msdyn_InvokeIntelligenceAction request message
@@ -44,26 +46,19 @@ export class msdyn_InvokeIntelligenceActionRequest
     const data = await response.json();
     return msdyn_InvokeIntelligenceActionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Context: this.context,
-      entityReference: this.entityReference,
-      ScenarioType: this.scenarioType,
-      RequestPayload: this.requestPayload,
-    };
-  }
 }
 
 /**
  * msdyn_InvokeIntelligenceAction response message
  */
 export class msdyn_InvokeIntelligenceActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_InvokeIntelligenceActionResponse) {
+  constructor(public result: msdyn_InvokeIntelligenceActionResponseData) {
     super("msdyn_InvokeIntelligenceAction");
   }
 
   static fromResponse(data: unknown): msdyn_InvokeIntelligenceActionResponse {
-    return new msdyn_InvokeIntelligenceActionResponse((data as any).value);
+    return new msdyn_InvokeIntelligenceActionResponse(
+      responseObject<msdyn_InvokeIntelligenceActionResponseData>(data)
+    );
   }
 }

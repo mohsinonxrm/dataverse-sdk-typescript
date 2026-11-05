@@ -39,13 +39,6 @@ export class msdyn_CapacityProfilesToUsersRequest
     // No return value (204 No Content)
     return new msdyn_CapacityProfilesToUsersResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      AddedBookableResourceCapacityProfiles: this.addedBookableResourceCapacityProfiles,
-      DeletedBookableResourceCapacityProfiles: this.deletedBookableResourceCapacityProfiles,
-    };
-  }
 }
 
 /**

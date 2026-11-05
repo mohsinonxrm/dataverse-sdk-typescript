@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetAppModuleSettingsResponse as msdyn_GetAppModuleSettingsResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetAppModuleSettings request message
@@ -30,21 +32,19 @@ export class msdyn_GetAppModuleSettingsRequest
     const data = await response.json();
     return msdyn_GetAppModuleSettingsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_GetAppModuleSettings response message
  */
 export class msdyn_GetAppModuleSettingsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetAppModuleSettingsResponse) {
+  constructor(public result: msdyn_GetAppModuleSettingsResponseData) {
     super("msdyn_GetAppModuleSettings");
   }
 
   static fromResponse(data: unknown): msdyn_GetAppModuleSettingsResponse {
-    return new msdyn_GetAppModuleSettingsResponse((data as any).value);
+    return new msdyn_GetAppModuleSettingsResponse(
+      responseObject<msdyn_GetAppModuleSettingsResponseData>(data)
+    );
   }
 }

@@ -35,12 +35,6 @@ export class UnlockInvoicePricingRequest
     // No return value (204 No Content)
     return new UnlockInvoicePricingResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      InvoiceId: this.invoiceId,
-    };
-  }
 }
 
 /**

@@ -43,15 +43,6 @@ export class msdyn_UpdateNBACardStateRequest
     // No return value (204 No Content)
     return new msdyn_UpdateNBACardStateResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_SnoozeTill: this.msdyn_SnoozeTill,
-      msdyn_OperationType: this.msdyn_OperationType,
-      msdyn_NBAEntityLogicalName: this.msdyn_NBAEntityLogicalName,
-      msdyn_NBAEntityIds: this.msdyn_NBAEntityIds,
-    };
-  }
 }
 
 /**

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { PvaGetMaxDatabaseVersionResponse as PvaGetMaxDatabaseVersionResponseData } from "./types/index.js";
 
 /**
  * PvaGetMaxDatabaseVersion request message
@@ -30,21 +32,19 @@ export class PvaGetMaxDatabaseVersionRequest
     const data = await response.json();
     return PvaGetMaxDatabaseVersionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * PvaGetMaxDatabaseVersion response message
  */
 export class PvaGetMaxDatabaseVersionResponse extends OrganizationResponse {
-  constructor(public result: PvaGetMaxDatabaseVersionResponse) {
+  constructor(public result: PvaGetMaxDatabaseVersionResponseData) {
     super("PvaGetMaxDatabaseVersion");
   }
 
   static fromResponse(data: unknown): PvaGetMaxDatabaseVersionResponse {
-    return new PvaGetMaxDatabaseVersionResponse((data as any).value);
+    return new PvaGetMaxDatabaseVersionResponse(
+      responseObject<PvaGetMaxDatabaseVersionResponseData>(data)
+    );
   }
 }

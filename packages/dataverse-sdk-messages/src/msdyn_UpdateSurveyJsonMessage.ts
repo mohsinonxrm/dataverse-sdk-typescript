@@ -39,13 +39,6 @@ export class msdyn_UpdateSurveyJsonRequest
     // No return value (204 No Content)
     return new msdyn_UpdateSurveyJsonResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      inspectionDefinitionId: this.inspectionDefinitionId,
-      newInspectionJson: this.newInspectionJson,
-    };
-  }
 }
 
 /**

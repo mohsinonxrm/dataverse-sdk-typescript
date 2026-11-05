@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_AcsForceSyncActionResponse as msdyn_AcsForceSyncActionResponseData } from "./types/index.js";
 
 /**
  * msdyn_AcsForceSyncAction request message
@@ -35,23 +37,19 @@ export class msdyn_AcsForceSyncActionRequest
     const data = await response.json();
     return msdyn_AcsForceSyncActionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ActionRequest: this.actionRequest,
-    };
-  }
 }
 
 /**
  * msdyn_AcsForceSyncAction response message
  */
 export class msdyn_AcsForceSyncActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_AcsForceSyncActionResponse) {
+  constructor(public result: msdyn_AcsForceSyncActionResponseData) {
     super("msdyn_AcsForceSyncAction");
   }
 
   static fromResponse(data: unknown): msdyn_AcsForceSyncActionResponse {
-    return new msdyn_AcsForceSyncActionResponse((data as any).value);
+    return new msdyn_AcsForceSyncActionResponse(
+      responseObject<msdyn_AcsForceSyncActionResponseData>(data)
+    );
   }
 }

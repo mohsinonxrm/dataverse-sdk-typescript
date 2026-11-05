@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import type { ColumnSet, salesorder } from "./types/index.js";
 
@@ -51,18 +52,6 @@ export class ConvertQuoteToSalesOrderRequest
     const data = await response.json();
     return ConvertQuoteToSalesOrderResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      QuoteId: this.quoteId,
-      ColumnSet: this.columnSet,
-      QuoteCloseDate: this.quoteCloseDate,
-      QuoteCloseStatus: this.quoteCloseStatus,
-      QuoteCloseSubject: this.quoteCloseSubject,
-      QuoteCloseDescription: this.quoteCloseDescription,
-      ProcessInstanceId: this.processInstanceId,
-    };
-  }
 }
 
 /**
@@ -74,6 +63,6 @@ export class ConvertQuoteToSalesOrderResponse extends OrganizationResponse {
   }
 
   static fromResponse(data: unknown): ConvertQuoteToSalesOrderResponse {
-    return new ConvertQuoteToSalesOrderResponse((data as any).value);
+    return new ConvertQuoteToSalesOrderResponse(responseObject<salesorder>(data));
   }
 }

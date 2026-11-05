@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetIntentAssistSuggestionsForBotResponse as msdyn_GetIntentAssistSuggestionsForBotResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetIntentAssistSuggestionsForBot request message
@@ -39,24 +41,19 @@ export class msdyn_GetIntentAssistSuggestionsForBotRequest
     const data = await response.json();
     return msdyn_GetIntentAssistSuggestionsForBotResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      slot__conversation: this.slot__conversation,
-      IntentAssistForBotRequest: this.intentAssistForBotRequest,
-    };
-  }
 }
 
 /**
  * msdyn_GetIntentAssistSuggestionsForBot response message
  */
 export class msdyn_GetIntentAssistSuggestionsForBotResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetIntentAssistSuggestionsForBotResponse) {
+  constructor(public result: msdyn_GetIntentAssistSuggestionsForBotResponseData) {
     super("msdyn_GetIntentAssistSuggestionsForBot");
   }
 
   static fromResponse(data: unknown): msdyn_GetIntentAssistSuggestionsForBotResponse {
-    return new msdyn_GetIntentAssistSuggestionsForBotResponse((data as any).value);
+    return new msdyn_GetIntentAssistSuggestionsForBotResponse(
+      responseObject<msdyn_GetIntentAssistSuggestionsForBotResponseData>(data)
+    );
   }
 }

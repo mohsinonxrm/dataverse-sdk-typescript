@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { GetConsentLinkResponse as GetConsentLinkResponseData } from "./types/index.js";
 
 /**
  * GetConsentLink request message
@@ -39,24 +41,17 @@ export class GetConsentLinkRequest
     const data = await response.json();
     return GetConsentLinkResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.connectioninstanceId,
-      redirectUrl: this.redirectUrl,
-    };
-  }
 }
 
 /**
  * GetConsentLink response message
  */
 export class GetConsentLinkResponse extends OrganizationResponse {
-  constructor(public result: GetConsentLinkResponse) {
+  constructor(public result: GetConsentLinkResponseData) {
     super("GetConsentLink");
   }
 
   static fromResponse(data: unknown): GetConsentLinkResponse {
-    return new GetConsentLinkResponse((data as any).value);
+    return new GetConsentLinkResponse(responseObject<GetConsentLinkResponseData>(data));
   }
 }

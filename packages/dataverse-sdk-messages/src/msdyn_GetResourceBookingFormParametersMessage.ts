@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetResourceBookingFormParametersResponse as msdyn_GetResourceBookingFormParametersResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetResourceBookingFormParameters request message
@@ -39,24 +41,19 @@ export class msdyn_GetResourceBookingFormParametersRequest
     const data = await response.json();
     return msdyn_GetResourceBookingFormParametersResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      BookingContext: this.bookingContext,
-      TimeZoneCode: this.timeZoneCode,
-    };
-  }
 }
 
 /**
  * msdyn_GetResourceBookingFormParameters response message
  */
 export class msdyn_GetResourceBookingFormParametersResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetResourceBookingFormParametersResponse) {
+  constructor(public result: msdyn_GetResourceBookingFormParametersResponseData) {
     super("msdyn_GetResourceBookingFormParameters");
   }
 
   static fromResponse(data: unknown): msdyn_GetResourceBookingFormParametersResponse {
-    return new msdyn_GetResourceBookingFormParametersResponse((data as any).value);
+    return new msdyn_GetResourceBookingFormParametersResponse(
+      responseObject<msdyn_GetResourceBookingFormParametersResponseData>(data)
+    );
   }
 }

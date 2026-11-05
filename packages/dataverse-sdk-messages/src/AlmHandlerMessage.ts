@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { AlmHandlerResponse as AlmHandlerResponseData } from "./types/index.js";
 
 /**
  * AlmHandler request message
@@ -39,24 +41,17 @@ export class AlmHandlerRequest
     const data = await response.json();
     return AlmHandlerResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      action: this.action,
-      input: this.input,
-    };
-  }
 }
 
 /**
  * AlmHandler response message
  */
 export class AlmHandlerResponse extends OrganizationResponse {
-  constructor(public result: AlmHandlerResponse) {
+  constructor(public result: AlmHandlerResponseData) {
     super("AlmHandler");
   }
 
   static fromResponse(data: unknown): AlmHandlerResponse {
-    return new AlmHandlerResponse((data as any).value);
+    return new AlmHandlerResponse(responseObject<AlmHandlerResponseData>(data));
   }
 }

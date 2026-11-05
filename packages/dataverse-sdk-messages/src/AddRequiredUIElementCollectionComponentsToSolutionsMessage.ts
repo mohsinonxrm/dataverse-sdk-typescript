@@ -33,12 +33,6 @@ export class AddRequiredUIElementCollectionComponentsToSolutionsRequest
     // No return value (204 No Content)
     return new AddRequiredUIElementCollectionComponentsToSolutionsResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.desktopflowmoduleId,
-    };
-  }
 }
 
 /**

@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_MarkAgreementAsExpiredResponse as msdyn_MarkAgreementAsExpiredResponseData } from "./types/index.js";
 
 /**
  * msdyn_MarkAgreementAsExpired request message
@@ -36,23 +38,19 @@ export class msdyn_MarkAgreementAsExpiredRequest
     const data = await response.json();
     return msdyn_MarkAgreementAsExpiredResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      AnalysisResult: this.analysisResult,
-    };
-  }
 }
 
 /**
  * msdyn_MarkAgreementAsExpired response message
  */
 export class msdyn_MarkAgreementAsExpiredResponse extends OrganizationResponse {
-  constructor(public result: msdyn_MarkAgreementAsExpiredResponse) {
+  constructor(public result: msdyn_MarkAgreementAsExpiredResponseData) {
     super("msdyn_MarkAgreementAsExpired");
   }
 
   static fromResponse(data: unknown): msdyn_MarkAgreementAsExpiredResponse {
-    return new msdyn_MarkAgreementAsExpiredResponse((data as any).value);
+    return new msdyn_MarkAgreementAsExpiredResponse(
+      responseObject<msdyn_MarkAgreementAsExpiredResponseData>(data)
+    );
   }
 }

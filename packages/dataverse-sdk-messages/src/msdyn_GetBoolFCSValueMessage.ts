@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetBoolFCSValueResponse as msdyn_GetBoolFCSValueResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetBoolFCSValue request message
@@ -39,24 +41,19 @@ export class msdyn_GetBoolFCSValueRequest
     const data = await response.json();
     return msdyn_GetBoolFCSValueResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_BoolFCSKey: this.msdyn_BoolFCSKey,
-      msdyn_BoolFCSNamespace: this.msdyn_BoolFCSNamespace,
-    };
-  }
 }
 
 /**
  * msdyn_GetBoolFCSValue response message
  */
 export class msdyn_GetBoolFCSValueResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetBoolFCSValueResponse) {
+  constructor(public result: msdyn_GetBoolFCSValueResponseData) {
     super("msdyn_GetBoolFCSValue");
   }
 
   static fromResponse(data: unknown): msdyn_GetBoolFCSValueResponse {
-    return new msdyn_GetBoolFCSValueResponse((data as any).value);
+    return new msdyn_GetBoolFCSValueResponse(
+      responseObject<msdyn_GetBoolFCSValueResponseData>(data)
+    );
   }
 }

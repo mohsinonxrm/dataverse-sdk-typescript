@@ -39,13 +39,6 @@ export class msdyn_GDPROptoutUserRequest
     // No return value (204 No Content)
     return new msdyn_GDPROptoutUserResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.systemuserId,
-      optout: this.optout,
-    };
-  }
 }
 
 /**

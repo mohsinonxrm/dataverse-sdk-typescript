@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_WorkstreamShouldHaveSessionTemplatesRuleResponse as msdyn_WorkstreamShouldHaveSessionTemplatesRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_WorkstreamShouldHaveSessionTemplatesRule request message
@@ -32,21 +34,19 @@ export class msdyn_WorkstreamShouldHaveSessionTemplatesRuleRequest
     const data = await response.json();
     return msdyn_WorkstreamShouldHaveSessionTemplatesRuleResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_WorkstreamShouldHaveSessionTemplatesRule response message
  */
 export class msdyn_WorkstreamShouldHaveSessionTemplatesRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_WorkstreamShouldHaveSessionTemplatesRuleResponse) {
+  constructor(public result: msdyn_WorkstreamShouldHaveSessionTemplatesRuleResponseData) {
     super("msdyn_WorkstreamShouldHaveSessionTemplatesRule");
   }
 
   static fromResponse(data: unknown): msdyn_WorkstreamShouldHaveSessionTemplatesRuleResponse {
-    return new msdyn_WorkstreamShouldHaveSessionTemplatesRuleResponse((data as any).value);
+    return new msdyn_WorkstreamShouldHaveSessionTemplatesRuleResponse(
+      responseObject<msdyn_WorkstreamShouldHaveSessionTemplatesRuleResponseData>(data)
+    );
   }
 }

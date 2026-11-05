@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { AddSolutionComponentResponse as AddSolutionComponentResponseData } from "./types/index.js";
 
 /**
  * AddSolutionComponent request message
@@ -47,28 +49,17 @@ export class AddSolutionComponentRequest
     const data = await response.json();
     return AddSolutionComponentResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ComponentId: this.componentId,
-      ComponentType: this.componentType,
-      SolutionUniqueName: this.solutionUniqueName,
-      AddRequiredComponents: this.addRequiredComponents,
-      DoNotIncludeSubcomponents: this.doNotIncludeSubcomponents,
-      IncludedComponentSettingsValues: this.includedComponentSettingsValues,
-    };
-  }
 }
 
 /**
  * AddSolutionComponent response message
  */
 export class AddSolutionComponentResponse extends OrganizationResponse {
-  constructor(public result: AddSolutionComponentResponse) {
+  constructor(public result: AddSolutionComponentResponseData) {
     super("AddSolutionComponent");
   }
 
   static fromResponse(data: unknown): AddSolutionComponentResponse {
-    return new AddSolutionComponentResponse((data as any).value);
+    return new AddSolutionComponentResponse(responseObject<AddSolutionComponentResponseData>(data));
   }
 }

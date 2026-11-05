@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_OcServiceEndpointShouldBeConfiguredRuleResponse as msdyn_OcServiceEndpointShouldBeConfiguredRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_OcServiceEndpointShouldBeConfiguredRule request message
@@ -32,21 +34,19 @@ export class msdyn_OcServiceEndpointShouldBeConfiguredRuleRequest
     const data = await response.json();
     return msdyn_OcServiceEndpointShouldBeConfiguredRuleResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_OcServiceEndpointShouldBeConfiguredRule response message
  */
 export class msdyn_OcServiceEndpointShouldBeConfiguredRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_OcServiceEndpointShouldBeConfiguredRuleResponse) {
+  constructor(public result: msdyn_OcServiceEndpointShouldBeConfiguredRuleResponseData) {
     super("msdyn_OcServiceEndpointShouldBeConfiguredRule");
   }
 
   static fromResponse(data: unknown): msdyn_OcServiceEndpointShouldBeConfiguredRuleResponse {
-    return new msdyn_OcServiceEndpointShouldBeConfiguredRuleResponse((data as any).value);
+    return new msdyn_OcServiceEndpointShouldBeConfiguredRuleResponse(
+      responseObject<msdyn_OcServiceEndpointShouldBeConfiguredRuleResponseData>(data)
+    );
   }
 }

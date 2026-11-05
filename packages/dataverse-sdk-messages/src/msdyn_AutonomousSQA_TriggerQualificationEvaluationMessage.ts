@@ -47,16 +47,6 @@ export class msdyn_AutonomousSQA_TriggerQualificationEvaluationRequest
     // No return value (204 No Content)
     return new msdyn_AutonomousSQA_TriggerQualificationEvaluationResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_IsResearchOnly: this.msdyn_IsResearchOnly,
-      msdyn_ShouldOverwriteQualificationDecision: this.msdyn_ShouldOverwriteQualificationDecision,
-      msdyn_QualificationDecision: this.msdyn_QualificationDecision,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-      msdyn_SalesAgentRun: this.msdyn_SalesAgentRun,
-    };
-  }
 }
 
 /**

@@ -31,12 +31,6 @@ export class LeaveGroupRequest
     // No return value (204 No Content)
     return new LeaveGroupResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.flowmachineId,
-    };
-  }
 }
 
 /**

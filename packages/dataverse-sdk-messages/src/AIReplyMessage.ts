@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { AIReplyResponse as AIReplyResponseData } from "./types/index.js";
 
 /**
  * AIReply request message
@@ -32,23 +34,17 @@ export class AIReplyRequest extends OrganizationRequest implements Executable<AI
     const data = await response.json();
     return AIReplyResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Text: this.text,
-    };
-  }
 }
 
 /**
  * AIReply response message
  */
 export class AIReplyResponse extends OrganizationResponse {
-  constructor(public result: AIReplyResponse) {
+  constructor(public result: AIReplyResponseData) {
     super("AIReply");
   }
 
   static fromResponse(data: unknown): AIReplyResponse {
-    return new AIReplyResponse((data as any).value);
+    return new AIReplyResponse(responseObject<AIReplyResponseData>(data));
   }
 }

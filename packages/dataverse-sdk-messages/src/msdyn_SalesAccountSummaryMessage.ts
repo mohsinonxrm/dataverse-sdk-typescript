@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_SalesAccountSummaryResponse as msdyn_SalesAccountSummaryResponseData } from "./types/index.js";
 
 /**
  * msdyn_SalesAccountSummary request message
@@ -51,30 +53,19 @@ export class msdyn_SalesAccountSummaryRequest
     const data = await response.json();
     return msdyn_SalesAccountSummaryResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_sessionId: this.msdyn_sessionId,
-      msdyn_lastComputationTime: this.msdyn_lastComputationTime,
-      msdyn_activityId: this.msdyn_activityId,
-      msdyn_isMergedCatchupAndSummary: this.msdyn_isMergedCatchupAndSummary,
-      msdyn_additionalParams: this.msdyn_additionalParams,
-      msdyn_responseFormat: this.msdyn_responseFormat,
-      msdyn_id: this.msdyn_id,
-      msdyn_skipHeader: this.msdyn_skipHeader,
-    };
-  }
 }
 
 /**
  * msdyn_SalesAccountSummary response message
  */
 export class msdyn_SalesAccountSummaryResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAccountSummaryResponse) {
+  constructor(public result: msdyn_SalesAccountSummaryResponseData) {
     super("msdyn_SalesAccountSummary");
   }
 
   static fromResponse(data: unknown): msdyn_SalesAccountSummaryResponse {
-    return new msdyn_SalesAccountSummaryResponse((data as any).value);
+    return new msdyn_SalesAccountSummaryResponse(
+      responseObject<msdyn_SalesAccountSummaryResponseData>(data)
+    );
   }
 }

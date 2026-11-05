@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import { responseObject } from "./internal/responseData.js";
 
 /**
  * msdyn_SuggestPrimaryForMergeAction request message
@@ -36,23 +36,19 @@ export class msdyn_SuggestPrimaryForMergeActionRequest
     const data = await response.json();
     return msdyn_SuggestPrimaryForMergeActionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RecordList: this.recordList,
-    };
-  }
 }
 
 /**
  * msdyn_SuggestPrimaryForMergeAction response message
  */
 export class msdyn_SuggestPrimaryForMergeActionResponse extends OrganizationResponse {
-  constructor(public result: EntityReference) {
+  constructor(public result: Record<string, unknown>) {
     super("msdyn_SuggestPrimaryForMergeAction");
   }
 
   static fromResponse(data: unknown): msdyn_SuggestPrimaryForMergeActionResponse {
-    return new msdyn_SuggestPrimaryForMergeActionResponse((data as any).value);
+    return new msdyn_SuggestPrimaryForMergeActionResponse(
+      responseObject<Record<string, unknown>>(data)
+    );
   }
 }

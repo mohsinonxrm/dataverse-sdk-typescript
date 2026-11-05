@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetTimeLineRecordsResponse as msdyn_GetTimeLineRecordsResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetTimeLineRecords request message
@@ -39,24 +41,19 @@ export class msdyn_GetTimeLineRecordsRequest
     const data = await response.json();
     return msdyn_GetTimeLineRecordsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RegardingObjectId: this.regardingObjectId,
-      NumberOfRecords: this.numberOfRecords,
-    };
-  }
 }
 
 /**
  * msdyn_GetTimeLineRecords response message
  */
 export class msdyn_GetTimeLineRecordsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetTimeLineRecordsResponse) {
+  constructor(public result: msdyn_GetTimeLineRecordsResponseData) {
     super("msdyn_GetTimeLineRecords");
   }
 
   static fromResponse(data: unknown): msdyn_GetTimeLineRecordsResponse {
-    return new msdyn_GetTimeLineRecordsResponse((data as any).value);
+    return new msdyn_GetTimeLineRecordsResponse(
+      responseObject<msdyn_GetTimeLineRecordsResponseData>(data)
+    );
   }
 }

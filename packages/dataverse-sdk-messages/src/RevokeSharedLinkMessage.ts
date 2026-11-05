@@ -41,13 +41,6 @@ export class RevokeSharedLinkRequest
     // No return value (204 No Content)
     return new RevokeSharedLinkResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-      SharedRights: this.sharedRights,
-    };
-  }
 }
 
 /**

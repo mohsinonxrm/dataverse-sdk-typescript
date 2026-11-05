@@ -41,14 +41,6 @@ export class QualifyMemberListRequest
     // No return value (204 No Content)
     return new QualifyMemberListResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.listId,
-      ListMember: this.listMember,
-      OverrideorRemove: this.overrideorRemove,
-    };
-  }
 }
 
 /**

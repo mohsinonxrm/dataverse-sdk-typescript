@@ -43,14 +43,6 @@ export class msdyn_AutonomousSQA_ProcessBANTAndPIExtractionRequest
     // No return value (204 No Content)
     return new msdyn_AutonomousSQA_ProcessBANTAndPIExtractionResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_Thread: this.msdyn_Thread,
-      msdyn_SalesAgentRun: this.msdyn_SalesAgentRun,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-    };
-  }
 }
 
 /**

@@ -35,12 +35,6 @@ export class msdyn_SetLegalAcceptanceStatusRequest
     // No return value (204 No Content)
     return new msdyn_SetLegalAcceptanceStatusResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Status: this.status,
-    };
-  }
 }
 
 /**

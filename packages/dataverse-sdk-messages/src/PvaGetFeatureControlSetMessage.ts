@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { PvaGetFeatureControlSetResponse as PvaGetFeatureControlSetResponseData } from "./types/index.js";
 
 /**
  * PvaGetFeatureControlSet request message
@@ -30,21 +32,19 @@ export class PvaGetFeatureControlSetRequest
     const data = await response.json();
     return PvaGetFeatureControlSetResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * PvaGetFeatureControlSet response message
  */
 export class PvaGetFeatureControlSetResponse extends OrganizationResponse {
-  constructor(public result: PvaGetFeatureControlSetResponse) {
+  constructor(public result: PvaGetFeatureControlSetResponseData) {
     super("PvaGetFeatureControlSet");
   }
 
   static fromResponse(data: unknown): PvaGetFeatureControlSetResponse {
-    return new PvaGetFeatureControlSetResponse((data as any).value);
+    return new PvaGetFeatureControlSetResponse(
+      responseObject<PvaGetFeatureControlSetResponseData>(data)
+    );
   }
 }

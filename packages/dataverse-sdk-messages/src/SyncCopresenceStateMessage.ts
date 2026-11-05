@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { SyncCopresenceStateResponse as SyncCopresenceStateResponseData } from "./types/index.js";
 
 /**
  * SyncCopresenceState request message
@@ -41,25 +43,17 @@ export class SyncCopresenceStateRequest
     const data = await response.json();
     return SyncCopresenceStateResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ResourceId: this.resourceId,
-      ResourceType: this.resourceType,
-      UserConnectionDetails: this.userConnectionDetails,
-    };
-  }
 }
 
 /**
  * SyncCopresenceState response message
  */
 export class SyncCopresenceStateResponse extends OrganizationResponse {
-  constructor(public result: SyncCopresenceStateResponse) {
+  constructor(public result: SyncCopresenceStateResponseData) {
     super("SyncCopresenceState");
   }
 
   static fromResponse(data: unknown): SyncCopresenceStateResponse {
-    return new SyncCopresenceStateResponse((data as any).value);
+    return new SyncCopresenceStateResponse(responseObject<SyncCopresenceStateResponseData>(data));
   }
 }

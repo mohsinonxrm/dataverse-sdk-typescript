@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_RetrieveCadenceSuggestionsResponse as msdyn_RetrieveCadenceSuggestionsResponseData } from "./types/index.js";
 
 /**
  * msdyn_RetrieveCadenceSuggestions request message
@@ -44,26 +46,19 @@ export class msdyn_RetrieveCadenceSuggestionsRequest
     const data = await response.json();
     return msdyn_RetrieveCadenceSuggestionsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntityReference: this.entityReference,
-      ActivityType: this.activityType,
-      LinkedActivityId: this.linkedActivityId,
-      StepType: this.stepType,
-    };
-  }
 }
 
 /**
  * msdyn_RetrieveCadenceSuggestions response message
  */
 export class msdyn_RetrieveCadenceSuggestionsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrieveCadenceSuggestionsResponse) {
+  constructor(public result: msdyn_RetrieveCadenceSuggestionsResponseData) {
     super("msdyn_RetrieveCadenceSuggestions");
   }
 
   static fromResponse(data: unknown): msdyn_RetrieveCadenceSuggestionsResponse {
-    return new msdyn_RetrieveCadenceSuggestionsResponse((data as any).value);
+    return new msdyn_RetrieveCadenceSuggestionsResponse(
+      responseObject<msdyn_RetrieveCadenceSuggestionsResponseData>(data)
+    );
   }
 }

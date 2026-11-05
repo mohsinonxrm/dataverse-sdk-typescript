@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdynmkt_doubleoptinstatusResponse as msdynmkt_doubleoptinstatusResponseData } from "./types/index.js";
 
 /**
  * msdynmkt_doubleoptinstatus request message
@@ -39,24 +41,19 @@ export class msdynmkt_doubleoptinstatusRequest
     const data = await response.json();
     return msdynmkt_doubleoptinstatusResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdynmkt_complianceid: this.msdynmkt_complianceid,
-      DOI_Job_Status: this.dOI_Job_Status,
-    };
-  }
 }
 
 /**
  * msdynmkt_doubleoptinstatus response message
  */
 export class msdynmkt_doubleoptinstatusResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_doubleoptinstatusResponse) {
+  constructor(public result: msdynmkt_doubleoptinstatusResponseData) {
     super("msdynmkt_doubleoptinstatus");
   }
 
   static fromResponse(data: unknown): msdynmkt_doubleoptinstatusResponse {
-    return new msdynmkt_doubleoptinstatusResponse((data as any).value);
+    return new msdynmkt_doubleoptinstatusResponse(
+      responseObject<msdynmkt_doubleoptinstatusResponseData>(data)
+    );
   }
 }

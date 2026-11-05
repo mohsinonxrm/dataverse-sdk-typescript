@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { SubstituteForAttributeResponse as SubstituteForAttributeResponseData } from "./types/index.js";
 
 /**
  * SubstituteForAttribute request message
@@ -41,25 +43,19 @@ export class SubstituteForAttributeRequest
     const data = await response.json();
     return SubstituteForAttributeResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      AttributeName: this.attributeName,
-      AttributeContent: this.attributeContent,
-      SubStore: this.subStore,
-    };
-  }
 }
 
 /**
  * SubstituteForAttribute response message
  */
 export class SubstituteForAttributeResponse extends OrganizationResponse {
-  constructor(public result: SubstituteForAttributeResponse) {
+  constructor(public result: SubstituteForAttributeResponseData) {
     super("SubstituteForAttribute");
   }
 
   static fromResponse(data: unknown): SubstituteForAttributeResponse {
-    return new SubstituteForAttributeResponse((data as any).value);
+    return new SubstituteForAttributeResponse(
+      responseObject<SubstituteForAttributeResponseData>(data)
+    );
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { AIExtractResponse as AIExtractResponseData } from "./types/index.js";
 
 /**
  * AIExtract request message
@@ -36,24 +38,17 @@ export class AIExtractRequest extends OrganizationRequest implements Executable<
     const data = await response.json();
     return AIExtractResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Text: this.text,
-      Entity: this.entity,
-    };
-  }
 }
 
 /**
  * AIExtract response message
  */
 export class AIExtractResponse extends OrganizationResponse {
-  constructor(public result: AIExtractResponse) {
+  constructor(public result: AIExtractResponseData) {
     super("AIExtract");
   }
 
   static fromResponse(data: unknown): AIExtractResponse {
-    return new AIExtractResponse((data as any).value);
+    return new AIExtractResponse(responseObject<AIExtractResponseData>(data));
   }
 }

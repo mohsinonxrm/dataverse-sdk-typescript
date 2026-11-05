@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_SnoozeEmailInfraActionCardResponse as msdyn_SnoozeEmailInfraActionCardResponseData } from "./types/index.js";
 
 /**
  * msdyn_SnoozeEmailInfraActionCard request message
@@ -41,25 +43,19 @@ export class msdyn_SnoozeEmailInfraActionCardRequest
     const data = await response.json();
     return msdyn_SnoozeEmailInfraActionCardResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ActionCardId: this.actionCardId,
-      CardType: this.cardType,
-      MessageId: this.messageId,
-    };
-  }
 }
 
 /**
  * msdyn_SnoozeEmailInfraActionCard response message
  */
 export class msdyn_SnoozeEmailInfraActionCardResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SnoozeEmailInfraActionCardResponse) {
+  constructor(public result: msdyn_SnoozeEmailInfraActionCardResponseData) {
     super("msdyn_SnoozeEmailInfraActionCard");
   }
 
   static fromResponse(data: unknown): msdyn_SnoozeEmailInfraActionCardResponse {
-    return new msdyn_SnoozeEmailInfraActionCardResponse((data as any).value);
+    return new msdyn_SnoozeEmailInfraActionCardResponse(
+      responseObject<msdyn_SnoozeEmailInfraActionCardResponseData>(data)
+    );
   }
 }

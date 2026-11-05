@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_ProductDeterminationProvisioningActionResponse as msdyn_ProductDeterminationProvisioningActionResponseData } from "./types/index.js";
 
 /**
  * msdyn_ProductDeterminationProvisioningAction request message
@@ -37,23 +39,19 @@ export class msdyn_ProductDeterminationProvisioningActionRequest
     const data = await response.json();
     return msdyn_ProductDeterminationProvisioningActionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RequestPayload: this.requestPayload,
-    };
-  }
 }
 
 /**
  * msdyn_ProductDeterminationProvisioningAction response message
  */
 export class msdyn_ProductDeterminationProvisioningActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ProductDeterminationProvisioningActionResponse) {
+  constructor(public result: msdyn_ProductDeterminationProvisioningActionResponseData) {
     super("msdyn_ProductDeterminationProvisioningAction");
   }
 
   static fromResponse(data: unknown): msdyn_ProductDeterminationProvisioningActionResponse {
-    return new msdyn_ProductDeterminationProvisioningActionResponse((data as any).value);
+    return new msdyn_ProductDeterminationProvisioningActionResponse(
+      responseObject<msdyn_ProductDeterminationProvisioningActionResponseData>(data)
+    );
   }
 }

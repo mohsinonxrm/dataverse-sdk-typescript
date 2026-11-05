@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetSalesCopilotEmailInsightsResponse as msdyn_GetSalesCopilotEmailInsightsResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetSalesCopilotEmailInsights request message
@@ -45,27 +47,19 @@ export class msdyn_GetSalesCopilotEmailInsightsRequest
     const data = await response.json();
     return msdyn_GetSalesCopilotEmailInsightsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_activityid: this.msdyn_activityid,
-      msdyn_regardinglogicalname: this.msdyn_regardinglogicalname,
-      msdyn_internetmessageid: this.msdyn_internetmessageid,
-      msdyn_regardingid: this.msdyn_regardingid,
-      msdyn_messageid: this.msdyn_messageid,
-    };
-  }
 }
 
 /**
  * msdyn_GetSalesCopilotEmailInsights response message
  */
 export class msdyn_GetSalesCopilotEmailInsightsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetSalesCopilotEmailInsightsResponse) {
+  constructor(public result: msdyn_GetSalesCopilotEmailInsightsResponseData) {
     super("msdyn_GetSalesCopilotEmailInsights");
   }
 
   static fromResponse(data: unknown): msdyn_GetSalesCopilotEmailInsightsResponse {
-    return new msdyn_GetSalesCopilotEmailInsightsResponse((data as any).value);
+    return new msdyn_GetSalesCopilotEmailInsightsResponse(
+      responseObject<msdyn_GetSalesCopilotEmailInsightsResponseData>(data)
+    );
   }
 }

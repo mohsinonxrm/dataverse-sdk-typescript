@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetSIFeatureConfigurationResponse as msdyn_GetSIFeatureConfigurationResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetSIFeatureConfiguration request message
@@ -39,24 +41,19 @@ export class msdyn_GetSIFeatureConfigurationRequest
     const data = await response.json();
     return msdyn_GetSIFeatureConfigurationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SIParameters: this.sIParameters,
-      OrgMigratedToCoreServices: this.orgMigratedToCoreServices,
-    };
-  }
 }
 
 /**
  * msdyn_GetSIFeatureConfiguration response message
  */
 export class msdyn_GetSIFeatureConfigurationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetSIFeatureConfigurationResponse) {
+  constructor(public result: msdyn_GetSIFeatureConfigurationResponseData) {
     super("msdyn_GetSIFeatureConfiguration");
   }
 
   static fromResponse(data: unknown): msdyn_GetSIFeatureConfigurationResponse {
-    return new msdyn_GetSIFeatureConfigurationResponse((data as any).value);
+    return new msdyn_GetSIFeatureConfigurationResponse(
+      responseObject<msdyn_GetSIFeatureConfigurationResponseData>(data)
+    );
   }
 }

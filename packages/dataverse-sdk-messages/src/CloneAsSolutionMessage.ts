@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { CloneAsSolutionResponse as CloneAsSolutionResponseData } from "./types/index.js";
 
 /**
  * CloneAsSolution request message
@@ -41,25 +43,17 @@ export class CloneAsSolutionRequest
     const data = await response.json();
     return CloneAsSolutionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ParentSolutionUniqueName: this.parentSolutionUniqueName,
-      DisplayName: this.displayName,
-      VersionNumber: this.versionNumber,
-    };
-  }
 }
 
 /**
  * CloneAsSolution response message
  */
 export class CloneAsSolutionResponse extends OrganizationResponse {
-  constructor(public result: CloneAsSolutionResponse) {
+  constructor(public result: CloneAsSolutionResponseData) {
     super("CloneAsSolution");
   }
 
   static fromResponse(data: unknown): CloneAsSolutionResponse {
-    return new CloneAsSolutionResponse((data as any).value);
+    return new CloneAsSolutionResponse(responseObject<CloneAsSolutionResponseData>(data));
   }
 }

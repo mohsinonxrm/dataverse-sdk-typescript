@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckIfActivityMonitorEnabledResponse as msdyn_CheckIfActivityMonitorEnabledResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckIfActivityMonitorEnabled request message
@@ -35,23 +37,19 @@ export class msdyn_CheckIfActivityMonitorEnabledRequest
     const data = await response.json();
     return msdyn_CheckIfActivityMonitorEnabledResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionId: this.solutionId,
-    };
-  }
 }
 
 /**
  * msdyn_CheckIfActivityMonitorEnabled response message
  */
 export class msdyn_CheckIfActivityMonitorEnabledResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfActivityMonitorEnabledResponse) {
+  constructor(public result: msdyn_CheckIfActivityMonitorEnabledResponseData) {
     super("msdyn_CheckIfActivityMonitorEnabled");
   }
 
   static fromResponse(data: unknown): msdyn_CheckIfActivityMonitorEnabledResponse {
-    return new msdyn_CheckIfActivityMonitorEnabledResponse((data as any).value);
+    return new msdyn_CheckIfActivityMonitorEnabledResponse(
+      responseObject<msdyn_CheckIfActivityMonitorEnabledResponseData>(data)
+    );
   }
 }

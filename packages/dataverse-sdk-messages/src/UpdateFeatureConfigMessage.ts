@@ -39,13 +39,6 @@ export class UpdateFeatureConfigRequest
     // No return value (204 No Content)
     return new UpdateFeatureConfigResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      FeatureType: this.featureType,
-      ConfigData: this.configData,
-    };
-  }
 }
 
 /**

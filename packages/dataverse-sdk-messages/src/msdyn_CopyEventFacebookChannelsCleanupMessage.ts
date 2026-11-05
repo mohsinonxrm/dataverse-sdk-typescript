@@ -30,10 +30,6 @@ export class msdyn_CopyEventFacebookChannelsCleanupRequest
     // No return value (204 No Content)
     return new msdyn_CopyEventFacebookChannelsCleanupResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**

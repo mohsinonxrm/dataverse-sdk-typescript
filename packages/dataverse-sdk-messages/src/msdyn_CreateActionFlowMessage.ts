@@ -35,12 +35,6 @@ export class msdyn_CreateActionFlowRequest
     // No return value (204 No Content)
     return new msdyn_CreateActionFlowResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SLAId: this.sLAId,
-    };
-  }
 }
 
 /**

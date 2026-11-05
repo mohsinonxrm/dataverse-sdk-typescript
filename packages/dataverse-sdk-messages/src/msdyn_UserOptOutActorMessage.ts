@@ -35,12 +35,6 @@ export class msdyn_UserOptOutActorRequest
     // No return value (204 No Content)
     return new msdyn_UserOptOutActorResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      InputData: this.inputData,
-    };
-  }
 }
 
 /**

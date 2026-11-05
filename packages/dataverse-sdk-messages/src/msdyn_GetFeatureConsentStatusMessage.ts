@@ -35,12 +35,6 @@ export class msdyn_GetFeatureConsentStatusRequest
     // No return value (204 No Content)
     return new msdyn_GetFeatureConsentStatusResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      payload: this.payload,
-    };
-  }
 }
 
 /**

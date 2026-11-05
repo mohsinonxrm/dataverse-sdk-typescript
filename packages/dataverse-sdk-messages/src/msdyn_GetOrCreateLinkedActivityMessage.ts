@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetOrCreateLinkedActivityResponse as msdyn_GetOrCreateLinkedActivityResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetOrCreateLinkedActivity request message
@@ -39,24 +41,19 @@ export class msdyn_GetOrCreateLinkedActivityRequest
     const data = await response.json();
     return msdyn_GetOrCreateLinkedActivityResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SequenceStepId: this.sequenceStepId,
-      CreateLinkedActivity: this.createLinkedActivity,
-    };
-  }
 }
 
 /**
  * msdyn_GetOrCreateLinkedActivity response message
  */
 export class msdyn_GetOrCreateLinkedActivityResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetOrCreateLinkedActivityResponse) {
+  constructor(public result: msdyn_GetOrCreateLinkedActivityResponseData) {
     super("msdyn_GetOrCreateLinkedActivity");
   }
 
   static fromResponse(data: unknown): msdyn_GetOrCreateLinkedActivityResponse {
-    return new msdyn_GetOrCreateLinkedActivityResponse((data as any).value);
+    return new msdyn_GetOrCreateLinkedActivityResponse(
+      responseObject<msdyn_GetOrCreateLinkedActivityResponseData>(data)
+    );
   }
 }

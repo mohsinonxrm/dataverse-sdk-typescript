@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { InitializeFileBlocksUploadResponse as InitializeFileBlocksUploadResponseData } from "./types/index.js";
 
 /**
  * InitializeFileBlocksUpload request message
@@ -42,25 +44,19 @@ export class InitializeFileBlocksUploadRequest
     const data = await response.json();
     return InitializeFileBlocksUploadResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-      FileName: this.fileName,
-      FileAttributeName: this.fileAttributeName,
-    };
-  }
 }
 
 /**
  * InitializeFileBlocksUpload response message
  */
 export class InitializeFileBlocksUploadResponse extends OrganizationResponse {
-  constructor(public result: InitializeFileBlocksUploadResponse) {
+  constructor(public result: InitializeFileBlocksUploadResponseData) {
     super("InitializeFileBlocksUpload");
   }
 
   static fromResponse(data: unknown): InitializeFileBlocksUploadResponse {
-    return new InitializeFileBlocksUploadResponse((data as any).value);
+    return new InitializeFileBlocksUploadResponse(
+      responseObject<InitializeFileBlocksUploadResponseData>(data)
+    );
   }
 }

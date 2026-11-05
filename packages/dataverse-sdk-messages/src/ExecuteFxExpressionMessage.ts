@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 
 /**
@@ -46,27 +47,17 @@ export class ExecuteFxExpressionRequest
     const data = await response.json();
     return ExecuteFxExpressionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      expression: this.expression,
-      inputparameters: this.inputparameters,
-      context: this.context,
-      entitylogicalname: this.entitylogicalname,
-      outputparameters: this.outputparameters,
-    };
-  }
 }
 
 /**
  * ExecuteFxExpression response message
  */
 export class ExecuteFxExpressionResponse extends OrganizationResponse {
-  constructor(public result: EntityReference) {
+  constructor(public result: Record<string, unknown>) {
     super("ExecuteFxExpression");
   }
 
   static fromResponse(data: unknown): ExecuteFxExpressionResponse {
-    return new ExecuteFxExpressionResponse((data as any).value);
+    return new ExecuteFxExpressionResponse(responseObject<Record<string, unknown>>(data));
   }
 }

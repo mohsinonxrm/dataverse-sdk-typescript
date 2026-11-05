@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { CCaaS_SendHeartbeatResponse as CCaaS_SendHeartbeatResponseData } from "./types/index.js";
 
 /**
  * CCaaS_SendHeartbeat request message
@@ -39,24 +41,17 @@ export class CCaaS_SendHeartbeatRequest
     const data = await response.json();
     return CCaaS_SendHeartbeatResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ApiVersion: this.apiVersion,
-      ClientSessionId: this.clientSessionId,
-    };
-  }
 }
 
 /**
  * CCaaS_SendHeartbeat response message
  */
 export class CCaaS_SendHeartbeatResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_SendHeartbeatResponse) {
+  constructor(public result: CCaaS_SendHeartbeatResponseData) {
     super("CCaaS_SendHeartbeat");
   }
 
   static fromResponse(data: unknown): CCaaS_SendHeartbeatResponse {
-    return new CCaaS_SendHeartbeatResponse((data as any).value);
+    return new CCaaS_SendHeartbeatResponse(responseObject<CCaaS_SendHeartbeatResponseData>(data));
   }
 }

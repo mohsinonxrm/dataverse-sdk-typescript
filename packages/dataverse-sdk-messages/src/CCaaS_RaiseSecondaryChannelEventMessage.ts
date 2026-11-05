@@ -45,16 +45,6 @@ export class CCaaS_RaiseSecondaryChannelEventRequest
     // No return value (204 No Content)
     return new CCaaS_RaiseSecondaryChannelEventResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_ocliveworkitemId,
-      SecondaryChannelEventType: this.secondaryChannelEventType,
-      SecondaryChannelSessionId: this.secondaryChannelSessionId,
-      ApiVersion: this.apiVersion,
-      SecondaryChannelType: this.secondaryChannelType,
-    };
-  }
 }
 
 /**

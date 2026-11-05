@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_ProvisionSharePointDocumentLibrariesResponse as msdyn_ProvisionSharePointDocumentLibrariesResponseData } from "./types/index.js";
 
 /**
  * msdyn_ProvisionSharePointDocumentLibraries request message
@@ -41,24 +43,19 @@ export class msdyn_ProvisionSharePointDocumentLibrariesRequest
     const data = await response.json();
     return msdyn_ProvisionSharePointDocumentLibrariesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SharePointSiteURL: this.sharePointSiteURL,
-      FolderStructureEntityValue: this.folderStructureEntityValue,
-    };
-  }
 }
 
 /**
  * msdyn_ProvisionSharePointDocumentLibraries response message
  */
 export class msdyn_ProvisionSharePointDocumentLibrariesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ProvisionSharePointDocumentLibrariesResponse) {
+  constructor(public result: msdyn_ProvisionSharePointDocumentLibrariesResponseData) {
     super("msdyn_ProvisionSharePointDocumentLibraries");
   }
 
   static fromResponse(data: unknown): msdyn_ProvisionSharePointDocumentLibrariesResponse {
-    return new msdyn_ProvisionSharePointDocumentLibrariesResponse((data as any).value);
+    return new msdyn_ProvisionSharePointDocumentLibrariesResponse(
+      responseObject<msdyn_ProvisionSharePointDocumentLibrariesResponseData>(data)
+    );
   }
 }

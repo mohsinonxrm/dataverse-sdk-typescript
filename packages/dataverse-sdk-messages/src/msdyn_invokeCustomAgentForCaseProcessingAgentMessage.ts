@@ -41,13 +41,6 @@ export class msdyn_invokeCustomAgentForCaseProcessingAgentRequest
     // No return value (204 No Content)
     return new msdyn_invokeCustomAgentForCaseProcessingAgentResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_caseProcessingAgentDetails: this.msdyn_caseProcessingAgentDetails,
-      msdyn_customAgentDetails: this.msdyn_customAgentDetails,
-    };
-  }
 }
 
 /**

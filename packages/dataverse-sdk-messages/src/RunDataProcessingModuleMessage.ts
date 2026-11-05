@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { RunDataProcessingModuleResponse as RunDataProcessingModuleResponseData } from "./types/index.js";
 
 /**
  * RunDataProcessingModule request message
@@ -47,28 +49,19 @@ export class RunDataProcessingModuleRequest
     const data = await response.json();
     return RunDataProcessingModuleResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EndPoints: this.endPoints,
-      JobArguments: this.jobArguments,
-      ScalarInputs: this.scalarInputs,
-      CallbackUri: this.callbackUri,
-      DataProcessingConfigurationId: this.dataProcessingConfigurationId,
-      UpstreamResults: this.upstreamResults,
-    };
-  }
 }
 
 /**
  * RunDataProcessingModule response message
  */
 export class RunDataProcessingModuleResponse extends OrganizationResponse {
-  constructor(public result: RunDataProcessingModuleResponse) {
+  constructor(public result: RunDataProcessingModuleResponseData) {
     super("RunDataProcessingModule");
   }
 
   static fromResponse(data: unknown): RunDataProcessingModuleResponse {
-    return new RunDataProcessingModuleResponse((data as any).value);
+    return new RunDataProcessingModuleResponse(
+      responseObject<RunDataProcessingModuleResponseData>(data)
+    );
   }
 }

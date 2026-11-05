@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_TriggerIntegratedSearchProvisioningApiResponse as msdyn_TriggerIntegratedSearchProvisioningApiResponseData } from "./types/index.js";
 
 /**
  * msdyn_TriggerIntegratedSearchProvisioningApi request message
@@ -37,23 +39,19 @@ export class msdyn_TriggerIntegratedSearchProvisioningApiRequest
     const data = await response.json();
     return msdyn_TriggerIntegratedSearchProvisioningApiResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_DegreeOfParallelism: this.msdyn_DegreeOfParallelism,
-    };
-  }
 }
 
 /**
  * msdyn_TriggerIntegratedSearchProvisioningApi response message
  */
 export class msdyn_TriggerIntegratedSearchProvisioningApiResponse extends OrganizationResponse {
-  constructor(public result: msdyn_TriggerIntegratedSearchProvisioningApiResponse) {
+  constructor(public result: msdyn_TriggerIntegratedSearchProvisioningApiResponseData) {
     super("msdyn_TriggerIntegratedSearchProvisioningApi");
   }
 
   static fromResponse(data: unknown): msdyn_TriggerIntegratedSearchProvisioningApiResponse {
-    return new msdyn_TriggerIntegratedSearchProvisioningApiResponse((data as any).value);
+    return new msdyn_TriggerIntegratedSearchProvisioningApiResponse(
+      responseObject<msdyn_TriggerIntegratedSearchProvisioningApiResponseData>(data)
+    );
   }
 }

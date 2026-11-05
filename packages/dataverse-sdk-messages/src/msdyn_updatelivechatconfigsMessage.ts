@@ -30,10 +30,6 @@ export class msdyn_updatelivechatconfigsRequest
     // No return value (204 No Content)
     return new msdyn_updatelivechatconfigsResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetSuggestedActionsForLeadResponse as msdyn_GetSuggestedActionsForLeadResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetSuggestedActionsForLead request message
@@ -31,23 +33,19 @@ export class msdyn_GetSuggestedActionsForLeadRequest
     const data = await response.json();
     return msdyn_GetSuggestedActionsForLeadResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.leadId,
-    };
-  }
 }
 
 /**
  * msdyn_GetSuggestedActionsForLead response message
  */
 export class msdyn_GetSuggestedActionsForLeadResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetSuggestedActionsForLeadResponse) {
+  constructor(public result: msdyn_GetSuggestedActionsForLeadResponseData) {
     super("msdyn_GetSuggestedActionsForLead");
   }
 
   static fromResponse(data: unknown): msdyn_GetSuggestedActionsForLeadResponse {
-    return new msdyn_GetSuggestedActionsForLeadResponse((data as any).value);
+    return new msdyn_GetSuggestedActionsForLeadResponse(
+      responseObject<msdyn_GetSuggestedActionsForLeadResponseData>(data)
+    );
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_PollCopilotAgentResponsesResponse as msdyn_PollCopilotAgentResponsesResponseData } from "./types/index.js";
 
 /**
  * msdyn_PollCopilotAgentResponses request message
@@ -39,24 +41,19 @@ export class msdyn_PollCopilotAgentResponsesRequest
     const data = await response.json();
     return msdyn_PollCopilotAgentResponsesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      StartMarker: this.startMarker,
-      ConversationId: this.conversationId,
-    };
-  }
 }
 
 /**
  * msdyn_PollCopilotAgentResponses response message
  */
 export class msdyn_PollCopilotAgentResponsesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_PollCopilotAgentResponsesResponse) {
+  constructor(public result: msdyn_PollCopilotAgentResponsesResponseData) {
     super("msdyn_PollCopilotAgentResponses");
   }
 
   static fromResponse(data: unknown): msdyn_PollCopilotAgentResponsesResponse {
-    return new msdyn_PollCopilotAgentResponsesResponse((data as any).value);
+    return new msdyn_PollCopilotAgentResponsesResponse(
+      responseObject<msdyn_PollCopilotAgentResponsesResponseData>(data)
+    );
   }
 }

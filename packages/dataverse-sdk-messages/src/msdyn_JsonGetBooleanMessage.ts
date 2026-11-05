@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_JsonGetBooleanResponse as msdyn_JsonGetBooleanResponseData } from "./types/index.js";
 
 /**
  * msdyn_JsonGetBoolean request message
@@ -41,25 +43,17 @@ export class msdyn_JsonGetBooleanRequest
     const data = await response.json();
     return msdyn_JsonGetBooleanResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Json: this.json,
-      PropertyPath: this.propertyPath,
-      DefaultReturnValue: this.defaultReturnValue,
-    };
-  }
 }
 
 /**
  * msdyn_JsonGetBoolean response message
  */
 export class msdyn_JsonGetBooleanResponse extends OrganizationResponse {
-  constructor(public result: msdyn_JsonGetBooleanResponse) {
+  constructor(public result: msdyn_JsonGetBooleanResponseData) {
     super("msdyn_JsonGetBoolean");
   }
 
   static fromResponse(data: unknown): msdyn_JsonGetBooleanResponse {
-    return new msdyn_JsonGetBooleanResponse((data as any).value);
+    return new msdyn_JsonGetBooleanResponse(responseObject<msdyn_JsonGetBooleanResponseData>(data));
   }
 }

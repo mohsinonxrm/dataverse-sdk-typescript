@@ -36,12 +36,6 @@ export class OnExternalDeletedRequest
     // No return value (204 No Content)
     return new OnExternalDeletedResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-    };
-  }
 }
 
 /**

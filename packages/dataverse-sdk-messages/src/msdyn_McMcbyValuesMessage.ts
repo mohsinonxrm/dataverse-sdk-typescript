@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_McMcbyValuesResponse as msdyn_McMcbyValuesResponseData } from "./types/index.js";
 
 /**
  * msdyn_McMcbyValues request message
@@ -40,24 +42,17 @@ export class msdyn_McMcbyValuesRequest
     const data = await response.json();
     return msdyn_McMcbyValuesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      CrmRecord: this.crmRecord,
-      KPIType: this.kPIType,
-    };
-  }
 }
 
 /**
  * msdyn_McMcbyValues response message
  */
 export class msdyn_McMcbyValuesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_McMcbyValuesResponse) {
+  constructor(public result: msdyn_McMcbyValuesResponseData) {
     super("msdyn_McMcbyValues");
   }
 
   static fromResponse(data: unknown): msdyn_McMcbyValuesResponse {
-    return new msdyn_McMcbyValuesResponse((data as any).value);
+    return new msdyn_McMcbyValuesResponse(responseObject<msdyn_McMcbyValuesResponseData>(data));
   }
 }

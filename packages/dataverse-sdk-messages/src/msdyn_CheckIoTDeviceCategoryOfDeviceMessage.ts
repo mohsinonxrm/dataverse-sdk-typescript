@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckIoTDeviceCategoryOfDeviceResponse as msdyn_CheckIoTDeviceCategoryOfDeviceResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckIoTDeviceCategoryOfDevice request message
@@ -30,21 +32,19 @@ export class msdyn_CheckIoTDeviceCategoryOfDeviceRequest
     const data = await response.json();
     return msdyn_CheckIoTDeviceCategoryOfDeviceResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_CheckIoTDeviceCategoryOfDevice response message
  */
 export class msdyn_CheckIoTDeviceCategoryOfDeviceResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIoTDeviceCategoryOfDeviceResponse) {
+  constructor(public result: msdyn_CheckIoTDeviceCategoryOfDeviceResponseData) {
     super("msdyn_CheckIoTDeviceCategoryOfDevice");
   }
 
   static fromResponse(data: unknown): msdyn_CheckIoTDeviceCategoryOfDeviceResponse {
-    return new msdyn_CheckIoTDeviceCategoryOfDeviceResponse((data as any).value);
+    return new msdyn_CheckIoTDeviceCategoryOfDeviceResponse(
+      responseObject<msdyn_CheckIoTDeviceCategoryOfDeviceResponseData>(data)
+    );
   }
 }

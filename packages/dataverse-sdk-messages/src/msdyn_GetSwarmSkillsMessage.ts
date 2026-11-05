@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseValue } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 
 /**
@@ -36,23 +37,17 @@ export class msdyn_GetSwarmSkillsRequest
     const data = await response.json();
     return msdyn_GetSwarmSkillsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SwarmObject: this.swarmObject,
-    };
-  }
 }
 
 /**
  * msdyn_GetSwarmSkills response message
  */
 export class msdyn_GetSwarmSkillsResponse extends OrganizationResponse {
-  constructor(public result: EntityReference[]) {
+  constructor(public result: Record<string, unknown>[]) {
     super("msdyn_GetSwarmSkills");
   }
 
   static fromResponse(data: unknown): msdyn_GetSwarmSkillsResponse {
-    return new msdyn_GetSwarmSkillsResponse((data as any).value);
+    return new msdyn_GetSwarmSkillsResponse(responseValue<Record<string, unknown>[]>(data));
   }
 }

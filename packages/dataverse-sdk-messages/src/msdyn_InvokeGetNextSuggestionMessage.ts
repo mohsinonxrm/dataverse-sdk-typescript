@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_InvokeGetNextSuggestionResponse as msdyn_InvokeGetNextSuggestionResponseData } from "./types/index.js";
 
 /**
  * msdyn_InvokeGetNextSuggestion request message
@@ -42,25 +44,19 @@ export class msdyn_InvokeGetNextSuggestionRequest
     const data = await response.json();
     return msdyn_InvokeGetNextSuggestionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Entity: this.entity,
-      CustomAgentResponse: this.customAgentResponse,
-      SourceContextEntity: this.sourceContextEntity,
-    };
-  }
 }
 
 /**
  * msdyn_InvokeGetNextSuggestion response message
  */
 export class msdyn_InvokeGetNextSuggestionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_InvokeGetNextSuggestionResponse) {
+  constructor(public result: msdyn_InvokeGetNextSuggestionResponseData) {
     super("msdyn_InvokeGetNextSuggestion");
   }
 
   static fromResponse(data: unknown): msdyn_InvokeGetNextSuggestionResponse {
-    return new msdyn_InvokeGetNextSuggestionResponse((data as any).value);
+    return new msdyn_InvokeGetNextSuggestionResponse(
+      responseObject<msdyn_InvokeGetNextSuggestionResponseData>(data)
+    );
   }
 }

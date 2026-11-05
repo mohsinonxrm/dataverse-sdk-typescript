@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_PerformNotesAnalysisActionResponse as msdyn_PerformNotesAnalysisActionResponseData } from "./types/index.js";
 
 /**
  * msdyn_PerformNotesAnalysisAction request message
@@ -43,26 +45,19 @@ export class msdyn_PerformNotesAnalysisActionRequest
     const data = await response.json();
     return msdyn_PerformNotesAnalysisActionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntityName: this.entityName,
-      SerializedAction: this.serializedAction,
-      ParentEntityName: this.parentEntityName,
-      ParentEntityId: this.parentEntityId,
-    };
-  }
 }
 
 /**
  * msdyn_PerformNotesAnalysisAction response message
  */
 export class msdyn_PerformNotesAnalysisActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_PerformNotesAnalysisActionResponse) {
+  constructor(public result: msdyn_PerformNotesAnalysisActionResponseData) {
     super("msdyn_PerformNotesAnalysisAction");
   }
 
   static fromResponse(data: unknown): msdyn_PerformNotesAnalysisActionResponse {
-    return new msdyn_PerformNotesAnalysisActionResponse((data as any).value);
+    return new msdyn_PerformNotesAnalysisActionResponse(
+      responseObject<msdyn_PerformNotesAnalysisActionResponseData>(data)
+    );
   }
 }

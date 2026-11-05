@@ -48,17 +48,6 @@ export class msdyn_SendEmailFromTemplateRequest
     // No return value (204 No Content)
     return new msdyn_SendEmailFromTemplateResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      From: this.from,
-      To: this.to,
-      Cc: this.cc,
-      Bcc: this.bcc,
-      Regarding: this.regarding,
-      Template: this.template,
-    };
-  }
 }
 
 /**

@@ -39,13 +39,6 @@ export class msdyn_SwarmExpertFinderRequest
     // No return value (204 No Content)
     return new msdyn_SwarmExpertFinderResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SkillList: this.skillList,
-      SwarmId: this.swarmId,
-    };
-  }
 }
 
 /**

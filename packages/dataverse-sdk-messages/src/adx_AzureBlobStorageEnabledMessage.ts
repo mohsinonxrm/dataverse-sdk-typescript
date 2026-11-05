@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { adx_AzureBlobStorageEnabledResponse as adx_AzureBlobStorageEnabledResponseData } from "./types/index.js";
 
 /**
  * adx_AzureBlobStorageEnabled request message
@@ -30,21 +32,19 @@ export class adx_AzureBlobStorageEnabledRequest
     const data = await response.json();
     return adx_AzureBlobStorageEnabledResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * adx_AzureBlobStorageEnabled response message
  */
 export class adx_AzureBlobStorageEnabledResponse extends OrganizationResponse {
-  constructor(public result: adx_AzureBlobStorageEnabledResponse) {
+  constructor(public result: adx_AzureBlobStorageEnabledResponseData) {
     super("adx_AzureBlobStorageEnabled");
   }
 
   static fromResponse(data: unknown): adx_AzureBlobStorageEnabledResponse {
-    return new adx_AzureBlobStorageEnabledResponse((data as any).value);
+    return new adx_AzureBlobStorageEnabledResponse(
+      responseObject<adx_AzureBlobStorageEnabledResponseData>(data)
+    );
   }
 }

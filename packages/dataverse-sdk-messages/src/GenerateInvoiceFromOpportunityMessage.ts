@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import { responseObject } from "./internal/responseData.js";
 import type { ColumnSet } from "./types/index.js";
 
 /**
@@ -41,24 +41,19 @@ export class GenerateInvoiceFromOpportunityRequest
     const data = await response.json();
     return GenerateInvoiceFromOpportunityResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      OpportunityId: this.opportunityId,
-      ColumnSet: this.columnSet,
-    };
-  }
 }
 
 /**
  * GenerateInvoiceFromOpportunity response message
  */
 export class GenerateInvoiceFromOpportunityResponse extends OrganizationResponse {
-  constructor(public result: EntityReference) {
+  constructor(public result: Record<string, unknown>) {
     super("GenerateInvoiceFromOpportunity");
   }
 
   static fromResponse(data: unknown): GenerateInvoiceFromOpportunityResponse {
-    return new GenerateInvoiceFromOpportunityResponse((data as any).value);
+    return new GenerateInvoiceFromOpportunityResponse(
+      responseObject<Record<string, unknown>>(data)
+    );
   }
 }

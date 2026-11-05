@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_SalesAgents_FetchOutreachEmailForAgentResponse as msdyn_SalesAgents_FetchOutreachEmailForAgentResponseData } from "./types/index.js";
 
 /**
  * msdyn_SalesAgents_FetchOutreachEmailForAgent request message
@@ -47,27 +49,19 @@ export class msdyn_SalesAgents_FetchOutreachEmailForAgentRequest
     const data = await response.json();
     return msdyn_SalesAgents_FetchOutreachEmailForAgentResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_SalesAgentRunId: this.msdyn_SalesAgentRunId,
-      msdyn_RegardingEntityName: this.msdyn_RegardingEntityName,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-      msdyn_OutreachConfig: this.msdyn_OutreachConfig,
-      msdyn_RegardingEntityId: this.msdyn_RegardingEntityId,
-    };
-  }
 }
 
 /**
  * msdyn_SalesAgents_FetchOutreachEmailForAgent response message
  */
 export class msdyn_SalesAgents_FetchOutreachEmailForAgentResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgents_FetchOutreachEmailForAgentResponse) {
+  constructor(public result: msdyn_SalesAgents_FetchOutreachEmailForAgentResponseData) {
     super("msdyn_SalesAgents_FetchOutreachEmailForAgent");
   }
 
   static fromResponse(data: unknown): msdyn_SalesAgents_FetchOutreachEmailForAgentResponse {
-    return new msdyn_SalesAgents_FetchOutreachEmailForAgentResponse((data as any).value);
+    return new msdyn_SalesAgents_FetchOutreachEmailForAgentResponse(
+      responseObject<msdyn_SalesAgents_FetchOutreachEmailForAgentResponseData>(data)
+    );
   }
 }

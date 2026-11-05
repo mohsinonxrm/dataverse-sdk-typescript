@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetTalkingPointsResponse as msdyn_GetTalkingPointsResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetTalkingPoints request message
@@ -39,24 +41,19 @@ export class msdyn_GetTalkingPointsRequest
     const data = await response.json();
     return msdyn_GetTalkingPointsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entityId: this.entityId,
-      entityType: this.entityType,
-    };
-  }
 }
 
 /**
  * msdyn_GetTalkingPoints response message
  */
 export class msdyn_GetTalkingPointsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetTalkingPointsResponse) {
+  constructor(public result: msdyn_GetTalkingPointsResponseData) {
     super("msdyn_GetTalkingPoints");
   }
 
   static fromResponse(data: unknown): msdyn_GetTalkingPointsResponse {
-    return new msdyn_GetTalkingPointsResponse((data as any).value);
+    return new msdyn_GetTalkingPointsResponse(
+      responseObject<msdyn_GetTalkingPointsResponseData>(data)
+    );
   }
 }

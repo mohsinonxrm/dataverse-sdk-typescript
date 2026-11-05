@@ -1,7 +1,11 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
-import type { PropagationOwnershipOptions } from "./types/index.js";
+import type {
+  CreateActivitiesListResponse as CreateActivitiesListResponseData,
+  PropagationOwnershipOptions,
+} from "./types/index.js";
 
 /**
  * CreateActivitiesList request message
@@ -57,32 +61,17 @@ export class CreateActivitiesListRequest
     const data = await response.json();
     return CreateActivitiesListResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ListId: this.listId,
-      FriendlyName: this.friendlyName,
-      Activity: this.activity,
-      TemplateId: this.templateId,
-      Propagate: this.propagate,
-      OwnershipOptions: this.ownershipOptions,
-      Owner: this.owner,
-      sendEmail: this.sendEmail,
-      PostWorkflowEvent: this.postWorkflowEvent,
-      QueueId: this.queueId,
-    };
-  }
 }
 
 /**
  * CreateActivitiesList response message
  */
 export class CreateActivitiesListResponse extends OrganizationResponse {
-  constructor(public result: CreateActivitiesListResponse) {
+  constructor(public result: CreateActivitiesListResponseData) {
     super("CreateActivitiesList");
   }
 
   static fromResponse(data: unknown): CreateActivitiesListResponse {
-    return new CreateActivitiesListResponse((data as any).value);
+    return new CreateActivitiesListResponse(responseObject<CreateActivitiesListResponseData>(data));
   }
 }

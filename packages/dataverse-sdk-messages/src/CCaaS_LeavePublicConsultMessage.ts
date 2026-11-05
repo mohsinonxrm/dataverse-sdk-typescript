@@ -39,13 +39,6 @@ export class CCaaS_LeavePublicConsultRequest
     // No return value (204 No Content)
     return new CCaaS_LeavePublicConsultResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_ocliveworkitemId,
-      ApiVersion: this.apiVersion,
-    };
-  }
 }
 
 /**

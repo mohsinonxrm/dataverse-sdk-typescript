@@ -44,14 +44,6 @@ export class msdyn_SalesAgents_SetExecutionConfigPropertyRequest
     // No return value (204 No Content)
     return new msdyn_SalesAgents_SetExecutionConfigPropertyResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_salesagentprofileid: this.msdyn_salesagentprofileid,
-      msdyn_config_key: this.msdyn_config_key,
-      msdyn_config_value: this.msdyn_config_value,
-    };
-  }
 }
 
 /**

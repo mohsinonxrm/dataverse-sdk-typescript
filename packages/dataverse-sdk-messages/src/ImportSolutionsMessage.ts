@@ -49,18 +49,6 @@ export class ImportSolutionsRequest
     // No return value (204 No Content)
     return new ImportSolutionsResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      OverwriteUnmanagedCustomizations: this.overwriteUnmanagedCustomizations,
-      PublishWorkflows: this.publishWorkflows,
-      CustomizationFiles: this.customizationFiles,
-      ImportJobId: this.importJobId,
-      ConvertToManaged: this.convertToManaged,
-      SkipProductUpdateDependencies: this.skipProductUpdateDependencies,
-      HoldingSolution: this.holdingSolution,
-    };
-  }
 }
 
 /**

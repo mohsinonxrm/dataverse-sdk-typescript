@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_ValidateKeyVaultResponse as msdyn_ValidateKeyVaultResponseData } from "./types/index.js";
 
 /**
  * msdyn_ValidateKeyVault request message
@@ -45,27 +47,19 @@ export class msdyn_ValidateKeyVaultRequest
     const data = await response.json();
     return msdyn_ValidateKeyVaultResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      KeyVaultUri: this.keyVaultUri,
-      PlatformType: this.platformType,
-      IsAppSigningEnabled: this.isAppSigningEnabled,
-      BundleIdentifier: this.bundleIdentifier,
-      StorageTypeForUpload: this.storageTypeForUpload,
-    };
-  }
 }
 
 /**
  * msdyn_ValidateKeyVault response message
  */
 export class msdyn_ValidateKeyVaultResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ValidateKeyVaultResponse) {
+  constructor(public result: msdyn_ValidateKeyVaultResponseData) {
     super("msdyn_ValidateKeyVault");
   }
 
   static fromResponse(data: unknown): msdyn_ValidateKeyVaultResponse {
-    return new msdyn_ValidateKeyVaultResponse((data as any).value);
+    return new msdyn_ValidateKeyVaultResponse(
+      responseObject<msdyn_ValidateKeyVaultResponseData>(data)
+    );
   }
 }

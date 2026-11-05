@@ -35,12 +35,6 @@ export class msdyn_ScheduleRealTimeScoringRequest
     // No return value (204 No Content)
     return new msdyn_ScheduleRealTimeScoringResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      InputData: this.inputData,
-    };
-  }
 }
 
 /**

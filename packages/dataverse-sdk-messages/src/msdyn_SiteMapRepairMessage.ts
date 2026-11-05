@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_SiteMapRepairResponse as msdyn_SiteMapRepairResponseData } from "./types/index.js";
 
 /**
  * msdyn_SiteMapRepair request message
@@ -36,23 +38,17 @@ export class msdyn_SiteMapRepairRequest
     const data = await response.json();
     return msdyn_SiteMapRepairResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      AnalysisResult: this.analysisResult,
-    };
-  }
 }
 
 /**
  * msdyn_SiteMapRepair response message
  */
 export class msdyn_SiteMapRepairResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SiteMapRepairResponse) {
+  constructor(public result: msdyn_SiteMapRepairResponseData) {
     super("msdyn_SiteMapRepair");
   }
 
   static fromResponse(data: unknown): msdyn_SiteMapRepairResponse {
-    return new msdyn_SiteMapRepairResponse((data as any).value);
+    return new msdyn_SiteMapRepairResponse(responseObject<msdyn_SiteMapRepairResponseData>(data));
   }
 }

@@ -43,14 +43,6 @@ export class GrantDelegatedAccessRequest
     // No return value (204 No Content)
     return new GrantDelegatedAccessResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      target: this.target,
-      delegatedauthorization: this.delegatedauthorization,
-      owneraccess: this.owneraccess,
-    };
-  }
 }
 
 /**

@@ -37,12 +37,6 @@ export class msdyn_SetupRelationshipForEnablingEntityRoutingRequest
     // No return value (204 No Content)
     return new msdyn_SetupRelationshipForEnablingEntityRoutingResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntityLogicalName: this.entityLogicalName,
-    };
-  }
 }
 
 /**

@@ -30,10 +30,6 @@ export class UpdateRibbonClientMetadataRequest
     // No return value (204 No Content)
     return new UpdateRibbonClientMetadataResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**

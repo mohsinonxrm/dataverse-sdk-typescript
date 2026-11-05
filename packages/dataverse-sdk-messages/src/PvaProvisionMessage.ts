@@ -31,12 +31,6 @@ export class PvaProvisionRequest
     // No return value (204 No Content)
     return new PvaProvisionResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.botId,
-    };
-  }
 }
 
 /**

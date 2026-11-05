@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CreateEntityResponse as msdyn_CreateEntityResponseData } from "./types/index.js";
 
 /**
  * msdyn_CreateEntity request message
@@ -49,29 +51,17 @@ export class msdyn_CreateEntityRequest
     const data = await response.json();
     return msdyn_CreateEntityResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      UseUserSettings: this.useUserSettings,
-      ConnectionInfo: this.connectionInfo,
-      FileInfo: this.fileInfo,
-      PreviewData: this.previewData,
-      IsToExistingTable: this.isToExistingTable,
-      SampleData: this.sampleData,
-      EntityDefinition: this.entityDefinition,
-    };
-  }
 }
 
 /**
  * msdyn_CreateEntity response message
  */
 export class msdyn_CreateEntityResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CreateEntityResponse) {
+  constructor(public result: msdyn_CreateEntityResponseData) {
     super("msdyn_CreateEntity");
   }
 
   static fromResponse(data: unknown): msdyn_CreateEntityResponse {
-    return new msdyn_CreateEntityResponse((data as any).value);
+    return new msdyn_CreateEntityResponse(responseObject<msdyn_CreateEntityResponseData>(data));
   }
 }

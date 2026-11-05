@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_DCA_SendOutreachEmailResponse as msdyn_DCA_SendOutreachEmailResponseData } from "./types/index.js";
 
 /**
  * msdyn_DCA_SendOutreachEmail request message
@@ -39,24 +41,19 @@ export class msdyn_DCA_SendOutreachEmailRequest
     const data = await response.json();
     return msdyn_DCA_SendOutreachEmailResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_TrackingId: this.msdyn_TrackingId,
-      msdyn_SalesAgentRun: this.msdyn_SalesAgentRun,
-    };
-  }
 }
 
 /**
  * msdyn_DCA_SendOutreachEmail response message
  */
 export class msdyn_DCA_SendOutreachEmailResponse extends OrganizationResponse {
-  constructor(public result: msdyn_DCA_SendOutreachEmailResponse) {
+  constructor(public result: msdyn_DCA_SendOutreachEmailResponseData) {
     super("msdyn_DCA_SendOutreachEmail");
   }
 
   static fromResponse(data: unknown): msdyn_DCA_SendOutreachEmailResponse {
-    return new msdyn_DCA_SendOutreachEmailResponse((data as any).value);
+    return new msdyn_DCA_SendOutreachEmailResponse(
+      responseObject<msdyn_DCA_SendOutreachEmailResponseData>(data)
+    );
   }
 }

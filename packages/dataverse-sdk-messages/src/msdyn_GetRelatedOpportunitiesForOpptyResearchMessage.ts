@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetRelatedOpportunitiesForOpptyResearchResponse as msdyn_GetRelatedOpportunitiesForOpptyResearchResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetRelatedOpportunitiesForOpptyResearch request message
@@ -41,24 +43,19 @@ export class msdyn_GetRelatedOpportunitiesForOpptyResearchRequest
     const data = await response.json();
     return msdyn_GetRelatedOpportunitiesForOpptyResearchResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_TopCount: this.msdyn_TopCount,
-      msdyn_OpportunityId: this.msdyn_OpportunityId,
-    };
-  }
 }
 
 /**
  * msdyn_GetRelatedOpportunitiesForOpptyResearch response message
  */
 export class msdyn_GetRelatedOpportunitiesForOpptyResearchResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetRelatedOpportunitiesForOpptyResearchResponse) {
+  constructor(public result: msdyn_GetRelatedOpportunitiesForOpptyResearchResponseData) {
     super("msdyn_GetRelatedOpportunitiesForOpptyResearch");
   }
 
   static fromResponse(data: unknown): msdyn_GetRelatedOpportunitiesForOpptyResearchResponse {
-    return new msdyn_GetRelatedOpportunitiesForOpptyResearchResponse((data as any).value);
+    return new msdyn_GetRelatedOpportunitiesForOpptyResearchResponse(
+      responseObject<msdyn_GetRelatedOpportunitiesForOpptyResearchResponseData>(data)
+    );
   }
 }

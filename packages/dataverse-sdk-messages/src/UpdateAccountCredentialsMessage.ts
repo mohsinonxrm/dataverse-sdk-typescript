@@ -39,13 +39,6 @@ export class UpdateAccountCredentialsRequest
     // No return value (204 No Content)
     return new UpdateAccountCredentialsResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.flowmachinegroupId,
-      groupCredentials: this.groupCredentials,
-    };
-  }
 }
 
 /**

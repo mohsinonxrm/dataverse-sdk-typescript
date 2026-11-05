@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetServiceBaseUrlResponse as msdyn_GetServiceBaseUrlResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetServiceBaseUrl request message
@@ -39,24 +41,19 @@ export class msdyn_GetServiceBaseUrlRequest
     const data = await response.json();
     return msdyn_GetServiceBaseUrlResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      AzureApplicationType: this.azureApplicationType,
-      OrgMigratedToCoreServices: this.orgMigratedToCoreServices,
-    };
-  }
 }
 
 /**
  * msdyn_GetServiceBaseUrl response message
  */
 export class msdyn_GetServiceBaseUrlResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetServiceBaseUrlResponse) {
+  constructor(public result: msdyn_GetServiceBaseUrlResponseData) {
     super("msdyn_GetServiceBaseUrl");
   }
 
   static fromResponse(data: unknown): msdyn_GetServiceBaseUrlResponse {
-    return new msdyn_GetServiceBaseUrlResponse((data as any).value);
+    return new msdyn_GetServiceBaseUrlResponse(
+      responseObject<msdyn_GetServiceBaseUrlResponseData>(data)
+    );
   }
 }

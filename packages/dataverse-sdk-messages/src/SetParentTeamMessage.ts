@@ -42,14 +42,6 @@ export class SetParentTeamRequest
     // No return value (204 No Content)
     return new SetParentTeamResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.teamId,
-      BusinessUnit: this.businessUnit,
-      DoNotMoveAllRecords: this.doNotMoveAllRecords,
-    };
-  }
 }
 
 /**

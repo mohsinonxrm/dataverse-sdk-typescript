@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_FetchEvaluatedEntityInputConfigResponse as msdyn_FetchEvaluatedEntityInputConfigResponseData } from "./types/index.js";
 
 /**
  * msdyn_FetchEvaluatedEntityInputConfig request message
@@ -39,24 +41,19 @@ export class msdyn_FetchEvaluatedEntityInputConfigRequest
     const data = await response.json();
     return msdyn_FetchEvaluatedEntityInputConfigResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      regardingEntityId: this.regardingEntityId,
-      regardingEntityLogicalName: this.regardingEntityLogicalName,
-    };
-  }
 }
 
 /**
  * msdyn_FetchEvaluatedEntityInputConfig response message
  */
 export class msdyn_FetchEvaluatedEntityInputConfigResponse extends OrganizationResponse {
-  constructor(public result: msdyn_FetchEvaluatedEntityInputConfigResponse) {
+  constructor(public result: msdyn_FetchEvaluatedEntityInputConfigResponseData) {
     super("msdyn_FetchEvaluatedEntityInputConfig");
   }
 
   static fromResponse(data: unknown): msdyn_FetchEvaluatedEntityInputConfigResponse {
-    return new msdyn_FetchEvaluatedEntityInputConfigResponse((data as any).value);
+    return new msdyn_FetchEvaluatedEntityInputConfigResponse(
+      responseObject<msdyn_FetchEvaluatedEntityInputConfigResponseData>(data)
+    );
   }
 }

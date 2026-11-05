@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_retrieveConnectionsResponse as msdyn_retrieveConnectionsResponseData } from "./types/index.js";
 
 /**
  * msdyn_retrieveConnections request message
@@ -42,25 +44,19 @@ export class msdyn_retrieveConnectionsRequest
     const data = await response.json();
     return msdyn_retrieveConnectionsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      smtpAdress: this.smtpAdress,
-      CrmRecord: this.crmRecord,
-      callerFeature: this.callerFeature,
-    };
-  }
 }
 
 /**
  * msdyn_retrieveConnections response message
  */
 export class msdyn_retrieveConnectionsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_retrieveConnectionsResponse) {
+  constructor(public result: msdyn_retrieveConnectionsResponseData) {
     super("msdyn_retrieveConnections");
   }
 
   static fromResponse(data: unknown): msdyn_retrieveConnectionsResponse {
-    return new msdyn_retrieveConnectionsResponse((data as any).value);
+    return new msdyn_retrieveConnectionsResponse(
+      responseObject<msdyn_retrieveConnectionsResponseData>(data)
+    );
   }
 }

@@ -40,13 +40,6 @@ export class RemovePrivilegeRoleRequest
     // No return value (204 No Content)
     return new RemovePrivilegeRoleResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.roleId,
-      Privilege: this.privilege,
-    };
-  }
 }
 
 /**

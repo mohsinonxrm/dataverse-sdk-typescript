@@ -41,14 +41,6 @@ export class CCaaS_AssignConversationRequest
     // No return value (204 No Content)
     return new CCaaS_AssignConversationResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_ocliveworkitemId,
-      ApiVersion: this.apiVersion,
-      AgentId: this.agentId,
-    };
-  }
 }
 
 /**

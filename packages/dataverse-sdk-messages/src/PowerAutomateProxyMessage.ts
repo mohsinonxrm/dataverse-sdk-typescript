@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { PowerAutomateProxyResponse as PowerAutomateProxyResponseData } from "./types/index.js";
 
 /**
  * PowerAutomateProxy request message
@@ -43,26 +45,17 @@ export class PowerAutomateProxyRequest
     const data = await response.json();
     return PowerAutomateProxyResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      HttpMethod: this.httpMethod,
-      RelativeUrl: this.relativeUrl,
-      RequestHeaders: this.requestHeaders,
-      RequestBody: this.requestBody,
-    };
-  }
 }
 
 /**
  * PowerAutomateProxy response message
  */
 export class PowerAutomateProxyResponse extends OrganizationResponse {
-  constructor(public result: PowerAutomateProxyResponse) {
+  constructor(public result: PowerAutomateProxyResponseData) {
     super("PowerAutomateProxy");
   }
 
   static fromResponse(data: unknown): PowerAutomateProxyResponse {
-    return new PowerAutomateProxyResponse((data as any).value);
+    return new PowerAutomateProxyResponse(responseObject<PowerAutomateProxyResponseData>(data));
   }
 }

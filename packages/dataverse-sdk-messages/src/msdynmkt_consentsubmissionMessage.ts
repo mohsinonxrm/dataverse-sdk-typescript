@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdynmkt_consentsubmissionResponse as msdynmkt_consentsubmissionResponseData } from "./types/index.js";
 
 /**
  * msdynmkt_consentsubmission request message
@@ -49,29 +51,19 @@ export class msdynmkt_consentsubmissionRequest
     const data = await response.json();
     return msdynmkt_consentsubmissionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdynmkt_preferencecenterid: this.msdynmkt_preferencecenterid,
-      msdynmkt_consentversion: this.msdynmkt_consentversion,
-      msdynmkt_purposeconsents: this.msdynmkt_purposeconsents,
-      msdynmkt_trackingcontextid: this.msdynmkt_trackingcontextid,
-      msdynmkt_contactpointtype: this.msdynmkt_contactpointtype,
-      msdynmkt_contactpointvalue: this.msdynmkt_contactpointvalue,
-      msdynmkt_topicconsents: this.msdynmkt_topicconsents,
-    };
-  }
 }
 
 /**
  * msdynmkt_consentsubmission response message
  */
 export class msdynmkt_consentsubmissionResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_consentsubmissionResponse) {
+  constructor(public result: msdynmkt_consentsubmissionResponseData) {
     super("msdynmkt_consentsubmission");
   }
 
   static fromResponse(data: unknown): msdynmkt_consentsubmissionResponse {
-    return new msdynmkt_consentsubmissionResponse((data as any).value);
+    return new msdynmkt_consentsubmissionResponse(
+      responseObject<msdynmkt_consentsubmissionResponseData>(data)
+    );
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { _DownloademailasattachmentResponse as _DownloademailasattachmentResponseData } from "./types/index.js";
 
 /**
  * _Downloademailasattachment request message
@@ -39,24 +41,19 @@ export class _DownloademailasattachmentRequest
     const data = await response.json();
     return _DownloademailasattachmentResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      emailIdToBeDownloaded: this.emailIdToBeDownloaded,
-      additionalParameter: this.additionalParameter,
-    };
-  }
 }
 
 /**
  * _Downloademailasattachment response message
  */
 export class _DownloademailasattachmentResponse extends OrganizationResponse {
-  constructor(public result: _DownloademailasattachmentResponse) {
+  constructor(public result: _DownloademailasattachmentResponseData) {
     super("_Downloademailasattachment");
   }
 
   static fromResponse(data: unknown): _DownloademailasattachmentResponse {
-    return new _DownloademailasattachmentResponse((data as any).value);
+    return new _DownloademailasattachmentResponse(
+      responseObject<_DownloademailasattachmentResponseData>(data)
+    );
   }
 }

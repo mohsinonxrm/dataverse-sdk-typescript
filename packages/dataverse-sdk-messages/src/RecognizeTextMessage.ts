@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { RecognizeTextResponse as RecognizeTextResponseData } from "./types/index.js";
 
 /**
  * RecognizeText request message
@@ -41,25 +43,17 @@ export class RecognizeTextRequest
     const data = await response.json();
     return RecognizeTextResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      modelId: this.modelId,
-      base64encoded: this.base64encoded,
-      source: this.source,
-    };
-  }
 }
 
 /**
  * RecognizeText response message
  */
 export class RecognizeTextResponse extends OrganizationResponse {
-  constructor(public result: RecognizeTextResponse) {
+  constructor(public result: RecognizeTextResponseData) {
     super("RecognizeText");
   }
 
   static fromResponse(data: unknown): RecognizeTextResponse {
-    return new RecognizeTextResponse((data as any).value);
+    return new RecognizeTextResponse(responseObject<RecognizeTextResponseData>(data));
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdynmkt_StartLoadConsentV4CustomActionResponse as msdynmkt_StartLoadConsentV4CustomActionResponseData } from "./types/index.js";
 
 /**
  * msdynmkt_StartLoadConsentV4CustomAction request message
@@ -61,34 +63,19 @@ export class msdynmkt_StartLoadConsentV4CustomActionRequest
     const data = await response.json();
     return msdynmkt_StartLoadConsentV4CustomActionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      CommercialPurposeId: this.commercialPurposeId,
-      CommercialTopicId: this.commercialTopicId,
-      TransactionalPurposeId: this.transactionalPurposeId,
-      TransactionalTopicId: this.transactionalTopicId,
-      TrackingPurposeId: this.trackingPurposeId,
-      SourceEntity: this.sourceEntity,
-      OwningBusinessUnit: this.owningBusinessUnit,
-      FilterType: this.filterType,
-      FilterId: this.filterId,
-      ConsentValue: this.consentValue,
-      UpdateExistingRecords: this.updateExistingRecords,
-      ComplianceProfileId: this.complianceProfileId,
-    };
-  }
 }
 
 /**
  * msdynmkt_StartLoadConsentV4CustomAction response message
  */
 export class msdynmkt_StartLoadConsentV4CustomActionResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_StartLoadConsentV4CustomActionResponse) {
+  constructor(public result: msdynmkt_StartLoadConsentV4CustomActionResponseData) {
     super("msdynmkt_StartLoadConsentV4CustomAction");
   }
 
   static fromResponse(data: unknown): msdynmkt_StartLoadConsentV4CustomActionResponse {
-    return new msdynmkt_StartLoadConsentV4CustomActionResponse((data as any).value);
+    return new msdynmkt_StartLoadConsentV4CustomActionResponse(
+      responseObject<msdynmkt_StartLoadConsentV4CustomActionResponseData>(data)
+    );
   }
 }

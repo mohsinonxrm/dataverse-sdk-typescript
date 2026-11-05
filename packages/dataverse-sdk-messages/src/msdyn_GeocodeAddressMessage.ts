@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_GeocodeAddressResponse as msdyn_GeocodeAddressResponseData } from "./types/index.js";
 
 /**
  * msdyn_GeocodeAddress request message
@@ -52,30 +54,17 @@ export class msdyn_GeocodeAddressRequest
     const data = await response.json();
     return msdyn_GeocodeAddressResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-      Version: this.version,
-      Line1: this.line1,
-      City: this.city,
-      StateOrProvince: this.stateOrProvince,
-      PostalCode: this.postalCode,
-      Country: this.country,
-      Lcid: this.lcid,
-    };
-  }
 }
 
 /**
  * msdyn_GeocodeAddress response message
  */
 export class msdyn_GeocodeAddressResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GeocodeAddressResponse) {
+  constructor(public result: msdyn_GeocodeAddressResponseData) {
     super("msdyn_GeocodeAddress");
   }
 
   static fromResponse(data: unknown): msdyn_GeocodeAddressResponse {
-    return new msdyn_GeocodeAddressResponse((data as any).value);
+    return new msdyn_GeocodeAddressResponse(responseObject<msdyn_GeocodeAddressResponseData>(data));
   }
 }

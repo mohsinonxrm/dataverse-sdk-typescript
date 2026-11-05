@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import { responseValue } from "./internal/responseData.js";
 
 /**
  * msdyn_CalculateAndUpdateBookingTravel request message
@@ -36,23 +36,19 @@ export class msdyn_CalculateAndUpdateBookingTravelRequest
     const data = await response.json();
     return msdyn_CalculateAndUpdateBookingTravelResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Bookings: this.bookings,
-    };
-  }
 }
 
 /**
  * msdyn_CalculateAndUpdateBookingTravel response message
  */
 export class msdyn_CalculateAndUpdateBookingTravelResponse extends OrganizationResponse {
-  constructor(public result: EntityReference[]) {
+  constructor(public result: Record<string, unknown>[]) {
     super("msdyn_CalculateAndUpdateBookingTravel");
   }
 
   static fromResponse(data: unknown): msdyn_CalculateAndUpdateBookingTravelResponse {
-    return new msdyn_CalculateAndUpdateBookingTravelResponse((data as any).value);
+    return new msdyn_CalculateAndUpdateBookingTravelResponse(
+      responseValue<Record<string, unknown>[]>(data)
+    );
   }
 }

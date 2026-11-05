@@ -1,7 +1,11 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
-import type { teamtemplate } from "./types/index.js";
+import type {
+  RemoveUserFromRecordTeamResponse as RemoveUserFromRecordTeamResponseData,
+  teamtemplate,
+} from "./types/index.js";
 
 /**
  * RemoveUserFromRecordTeam request message
@@ -43,25 +47,19 @@ export class RemoveUserFromRecordTeamRequest
     const data = await response.json();
     return RemoveUserFromRecordTeamResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.systemuserId,
-      Record: this.record,
-      TeamTemplate: this.teamTemplate,
-    };
-  }
 }
 
 /**
  * RemoveUserFromRecordTeam response message
  */
 export class RemoveUserFromRecordTeamResponse extends OrganizationResponse {
-  constructor(public result: RemoveUserFromRecordTeamResponse) {
+  constructor(public result: RemoveUserFromRecordTeamResponseData) {
     super("RemoveUserFromRecordTeam");
   }
 
   static fromResponse(data: unknown): RemoveUserFromRecordTeamResponse {
-    return new RemoveUserFromRecordTeamResponse((data as any).value);
+    return new RemoveUserFromRecordTeamResponse(
+      responseObject<RemoveUserFromRecordTeamResponseData>(data)
+    );
   }
 }

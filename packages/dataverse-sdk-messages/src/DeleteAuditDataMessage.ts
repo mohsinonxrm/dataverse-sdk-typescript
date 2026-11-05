@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { DeleteAuditDataResponse as DeleteAuditDataResponseData } from "./types/index.js";
 
 /**
  * DeleteAuditData request message
@@ -35,23 +37,17 @@ export class DeleteAuditDataRequest
     const data = await response.json();
     return DeleteAuditDataResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EndDate: this.endDate,
-    };
-  }
 }
 
 /**
  * DeleteAuditData response message
  */
 export class DeleteAuditDataResponse extends OrganizationResponse {
-  constructor(public result: DeleteAuditDataResponse) {
+  constructor(public result: DeleteAuditDataResponseData) {
     super("DeleteAuditData");
   }
 
   static fromResponse(data: unknown): DeleteAuditDataResponse {
-    return new DeleteAuditDataResponse((data as any).value);
+    return new DeleteAuditDataResponse(responseObject<DeleteAuditDataResponseData>(data));
   }
 }

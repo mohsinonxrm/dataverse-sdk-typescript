@@ -32,10 +32,6 @@ export class msdynmkt_GetPublicConfigurationCustomActionRequest
     // No return value (204 No Content)
     return new msdynmkt_GetPublicConfigurationCustomActionResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**

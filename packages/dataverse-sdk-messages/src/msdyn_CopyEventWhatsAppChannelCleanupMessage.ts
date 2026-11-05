@@ -30,10 +30,6 @@ export class msdyn_CopyEventWhatsAppChannelCleanupRequest
     // No return value (204 No Content)
     return new msdyn_CopyEventWhatsAppChannelCleanupResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**

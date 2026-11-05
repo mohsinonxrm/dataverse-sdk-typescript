@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_PublishEffortAIModelResponse as msdyn_PublishEffortAIModelResponseData } from "./types/index.js";
 
 /**
  * msdyn_PublishEffortAIModel request message
@@ -39,24 +41,19 @@ export class msdyn_PublishEffortAIModelRequest
     const data = await response.json();
     return msdyn_PublishEffortAIModelResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      AiModelId: this.aiModelId,
-      TrainConfigId: this.trainConfigId,
-    };
-  }
 }
 
 /**
  * msdyn_PublishEffortAIModel response message
  */
 export class msdyn_PublishEffortAIModelResponse extends OrganizationResponse {
-  constructor(public result: msdyn_PublishEffortAIModelResponse) {
+  constructor(public result: msdyn_PublishEffortAIModelResponseData) {
     super("msdyn_PublishEffortAIModel");
   }
 
   static fromResponse(data: unknown): msdyn_PublishEffortAIModelResponse {
-    return new msdyn_PublishEffortAIModelResponse((data as any).value);
+    return new msdyn_PublishEffortAIModelResponse(
+      responseObject<msdyn_PublishEffortAIModelResponseData>(data)
+    );
   }
 }

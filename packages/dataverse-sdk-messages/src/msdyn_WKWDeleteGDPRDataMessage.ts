@@ -35,12 +35,6 @@ export class msdyn_WKWDeleteGDPRDataRequest
     // No return value (204 No Content)
     return new msdyn_WKWDeleteGDPRDataResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      UserIds: this.userIds,
-    };
-  }
 }
 
 /**

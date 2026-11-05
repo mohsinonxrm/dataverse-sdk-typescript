@@ -35,12 +35,6 @@ export class msdyn_IngestAnalyticsDataRequest
     // No return value (204 No Content)
     return new msdyn_IngestAnalyticsDataResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      IngestionRequest: this.ingestionRequest,
-    };
-  }
 }
 
 /**

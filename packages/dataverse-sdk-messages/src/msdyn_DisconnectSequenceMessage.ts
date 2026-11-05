@@ -41,14 +41,6 @@ export class msdyn_DisconnectSequenceRequest
     // No return value (204 No Content)
     return new msdyn_DisconnectSequenceResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RegardingEntityId: this.regardingEntityId,
-      RegardingEntityName: this.regardingEntityName,
-      SequenceTargetId: this.sequenceTargetId,
-    };
-  }
 }
 
 /**

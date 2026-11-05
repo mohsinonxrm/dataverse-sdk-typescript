@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { _SaveServiceTreeDataResponse as _SaveServiceTreeDataResponseData } from "./types/index.js";
 
 /**
  * _SaveServiceTreeData request message
@@ -39,24 +41,17 @@ export class _SaveServiceTreeDataRequest
     const data = await response.json();
     return _SaveServiceTreeDataResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RootNodeId: this.rootNodeId,
-      ResourceRuleList: this.resourceRuleList,
-    };
-  }
 }
 
 /**
  * _SaveServiceTreeData response message
  */
 export class _SaveServiceTreeDataResponse extends OrganizationResponse {
-  constructor(public result: _SaveServiceTreeDataResponse) {
+  constructor(public result: _SaveServiceTreeDataResponseData) {
     super("_SaveServiceTreeData");
   }
 
   static fromResponse(data: unknown): _SaveServiceTreeDataResponse {
-    return new _SaveServiceTreeDataResponse((data as any).value);
+    return new _SaveServiceTreeDataResponse(responseObject<_SaveServiceTreeDataResponseData>(data));
   }
 }

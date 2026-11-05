@@ -70,28 +70,6 @@ export class ImportSolutionRequest
     // No return value (204 No Content)
     return new ImportSolutionResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      OverwriteUnmanagedCustomizations: this.overwriteUnmanagedCustomizations,
-      PublishWorkflows: this.publishWorkflows,
-      CustomizationFile: this.customizationFile,
-      ImportJobId: this.importJobId,
-      ConvertToManaged: this.convertToManaged,
-      SkipProductUpdateDependencies: this.skipProductUpdateDependencies,
-      HoldingSolution: this.holdingSolution,
-      SkipQueueRibbonJob: this.skipQueueRibbonJob,
-      LayerDesiredOrder: this.layerDesiredOrder,
-      AsyncRibbonProcessing: this.asyncRibbonProcessing,
-      ComponentParameters: this.componentParameters,
-      IsTemplateMode: this.isTemplateMode,
-      TemplateSuffix: this.templateSuffix,
-      SolutionParameters: this.solutionParameters,
-      TemplateDisplayNamePrefix: this.templateDisplayNamePrefix,
-      StageAndUpgrade: this.stageAndUpgrade,
-      SchemaUpdatesOnly: this.schemaUpdatesOnly,
-    };
-  }
 }
 
 /**

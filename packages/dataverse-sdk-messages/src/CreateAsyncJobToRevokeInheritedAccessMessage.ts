@@ -35,12 +35,6 @@ export class CreateAsyncJobToRevokeInheritedAccessRequest
     // No return value (204 No Content)
     return new CreateAsyncJobToRevokeInheritedAccessResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RelationshipSchema: this.relationshipSchema,
-    };
-  }
 }
 
 /**

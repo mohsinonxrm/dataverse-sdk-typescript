@@ -35,12 +35,6 @@ export class msdyn_MigrateRICommonRSARequest
     // No return value (204 No Content)
     return new msdyn_MigrateRICommonRSAResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      InputData: this.inputData,
-    };
-  }
 }
 
 /**

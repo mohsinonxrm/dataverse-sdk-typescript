@@ -35,12 +35,6 @@ export class msdyn_PostCreateAutonomousEmailRequest
     // No return value (204 No Content)
     return new msdyn_PostCreateAutonomousEmailResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EmailGuid: this.emailGuid,
-    };
-  }
 }
 
 /**

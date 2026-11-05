@@ -1,6 +1,10 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { msdyn_mobileapp } from "./types/index.js";
+import { responseObject } from "./internal/responseData.js";
+import type {
+  msdyn_MobileAppBuildStatusResponse as msdyn_MobileAppBuildStatusResponseData,
+  msdyn_mobileapp,
+} from "./types/index.js";
 
 /**
  * msdyn_MobileAppBuildStatus request message
@@ -40,24 +44,19 @@ export class msdyn_MobileAppBuildStatusRequest
     const data = await response.json();
     return msdyn_MobileAppBuildStatusResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      OperationId: this.operationId,
-      msdyn_MobileApp: this.msdyn_MobileApp,
-    };
-  }
 }
 
 /**
  * msdyn_MobileAppBuildStatus response message
  */
 export class msdyn_MobileAppBuildStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_MobileAppBuildStatusResponse) {
+  constructor(public result: msdyn_MobileAppBuildStatusResponseData) {
     super("msdyn_MobileAppBuildStatus");
   }
 
   static fromResponse(data: unknown): msdyn_MobileAppBuildStatusResponse {
-    return new msdyn_MobileAppBuildStatusResponse((data as any).value);
+    return new msdyn_MobileAppBuildStatusResponse(
+      responseObject<msdyn_MobileAppBuildStatusResponseData>(data)
+    );
   }
 }

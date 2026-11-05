@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckForDeletedProcessResponse as msdyn_CheckForDeletedProcessResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckForDeletedProcess request message
@@ -39,24 +41,19 @@ export class msdyn_CheckForDeletedProcessRequest
     const data = await response.json();
     return msdyn_CheckForDeletedProcessResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntityIds: this.entityIds,
-      SolutionId: this.solutionId,
-    };
-  }
 }
 
 /**
  * msdyn_CheckForDeletedProcess response message
  */
 export class msdyn_CheckForDeletedProcessResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckForDeletedProcessResponse) {
+  constructor(public result: msdyn_CheckForDeletedProcessResponseData) {
     super("msdyn_CheckForDeletedProcess");
   }
 
   static fromResponse(data: unknown): msdyn_CheckForDeletedProcessResponse {
-    return new msdyn_CheckForDeletedProcessResponse((data as any).value);
+    return new msdyn_CheckForDeletedProcessResponse(
+      responseObject<msdyn_CheckForDeletedProcessResponseData>(data)
+    );
   }
 }

@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { msdyn_analysisjob } from "./types/index.js";
 
 /**
@@ -36,12 +37,6 @@ export class msdyn_CreateNewAnalysisJobRequest
     const data = await response.json();
     return msdyn_CreateNewAnalysisJobResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ComponentInstances: this.componentInstances,
-    };
-  }
 }
 
 /**
@@ -53,6 +48,6 @@ export class msdyn_CreateNewAnalysisJobResponse extends OrganizationResponse {
   }
 
   static fromResponse(data: unknown): msdyn_CreateNewAnalysisJobResponse {
-    return new msdyn_CreateNewAnalysisJobResponse((data as any).value);
+    return new msdyn_CreateNewAnalysisJobResponse(responseObject<msdyn_analysisjob>(data));
   }
 }

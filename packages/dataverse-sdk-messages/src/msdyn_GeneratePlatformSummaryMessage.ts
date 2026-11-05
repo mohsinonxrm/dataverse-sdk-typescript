@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GeneratePlatformSummaryResponse as msdyn_GeneratePlatformSummaryResponseData } from "./types/index.js";
 
 /**
  * msdyn_GeneratePlatformSummary request message
@@ -39,24 +41,19 @@ export class msdyn_GeneratePlatformSummaryRequest
     const data = await response.json();
     return msdyn_GeneratePlatformSummaryResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ClientContext: this.clientContext,
-      OtherData: this.otherData,
-    };
-  }
 }
 
 /**
  * msdyn_GeneratePlatformSummary response message
  */
 export class msdyn_GeneratePlatformSummaryResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GeneratePlatformSummaryResponse) {
+  constructor(public result: msdyn_GeneratePlatformSummaryResponseData) {
     super("msdyn_GeneratePlatformSummary");
   }
 
   static fromResponse(data: unknown): msdyn_GeneratePlatformSummaryResponse {
-    return new msdyn_GeneratePlatformSummaryResponse((data as any).value);
+    return new msdyn_GeneratePlatformSummaryResponse(
+      responseObject<msdyn_GeneratePlatformSummaryResponseData>(data)
+    );
   }
 }

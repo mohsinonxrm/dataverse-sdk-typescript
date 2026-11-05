@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_SalesCopilotM365SkillInfraSetupResponse as msdyn_SalesCopilotM365SkillInfraSetupResponseData } from "./types/index.js";
 
 /**
  * msdyn_SalesCopilotM365SkillInfraSetup request message
@@ -35,23 +37,19 @@ export class msdyn_SalesCopilotM365SkillInfraSetupRequest
     const data = await response.json();
     return msdyn_SalesCopilotM365SkillInfraSetupResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_payload: this.msdyn_payload,
-    };
-  }
 }
 
 /**
  * msdyn_SalesCopilotM365SkillInfraSetup response message
  */
 export class msdyn_SalesCopilotM365SkillInfraSetupResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesCopilotM365SkillInfraSetupResponse) {
+  constructor(public result: msdyn_SalesCopilotM365SkillInfraSetupResponseData) {
     super("msdyn_SalesCopilotM365SkillInfraSetup");
   }
 
   static fromResponse(data: unknown): msdyn_SalesCopilotM365SkillInfraSetupResponse {
-    return new msdyn_SalesCopilotM365SkillInfraSetupResponse((data as any).value);
+    return new msdyn_SalesCopilotM365SkillInfraSetupResponse(
+      responseObject<msdyn_SalesCopilotM365SkillInfraSetupResponseData>(data)
+    );
   }
 }

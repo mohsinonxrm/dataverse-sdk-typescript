@@ -45,15 +45,6 @@ export class msdyn_SalesAgents_UpsertAgentProcessingStateRequest
     // No return value (204 No Content)
     return new msdyn_SalesAgents_UpsertAgentProcessingStateResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_Records: this.msdyn_Records,
-      msdyn_SalesAgentType: this.msdyn_SalesAgentType,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-      msdyn_SkipVersionNumberUpdate: this.msdyn_SkipVersionNumberUpdate,
-    };
-  }
 }
 
 /**

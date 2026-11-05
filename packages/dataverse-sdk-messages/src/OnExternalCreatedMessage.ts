@@ -36,12 +36,6 @@ export class OnExternalCreatedRequest
     // No return value (204 No Content)
     return new OnExternalCreatedResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-    };
-  }
 }
 
 /**

@@ -41,14 +41,6 @@ export class CCaaS_CloseConversationRequest
     // No return value (204 No Content)
     return new CCaaS_CloseConversationResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      AgentId: this.agentId,
-      LiveworkitemId: this.liveworkitemId,
-      ActivityStatusCode: this.activityStatusCode,
-    };
-  }
 }
 
 /**

@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { PredictResponse as PredictResponseData } from "./types/index.js";
 
 /**
  * Predict request message
@@ -43,27 +45,17 @@ export class PredictRequest extends OrganizationRequest implements Executable<Pr
     const data = await response.json();
     return PredictResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_aimodelId,
-      version: this.version,
-      request: this.request,
-      requestv2: this.requestv2,
-      source: this.source,
-    };
-  }
 }
 
 /**
  * Predict response message
  */
 export class PredictResponse extends OrganizationResponse {
-  constructor(public result: PredictResponse) {
+  constructor(public result: PredictResponseData) {
     super("Predict");
   }
 
   static fromResponse(data: unknown): PredictResponse {
-    return new PredictResponse((data as any).value);
+    return new PredictResponse(responseObject<PredictResponseData>(data));
   }
 }

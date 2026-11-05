@@ -30,10 +30,6 @@ export class msdyn_TeamsChannelCleanupRequest
     // No return value (204 No Content)
     return new msdyn_TeamsChannelCleanupResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**

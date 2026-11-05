@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_getCTandEACdisabledEntitiesResponse as msdyn_getCTandEACdisabledEntitiesResponseData } from "./types/index.js";
 
 /**
  * msdyn_getCTandEACdisabledEntities request message
@@ -39,24 +41,19 @@ export class msdyn_getCTandEACdisabledEntitiesRequest
     const data = await response.json();
     return msdyn_getCTandEACdisabledEntitiesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_entityName: this.msdyn_entityName,
-      msdyn_entityList: this.msdyn_entityList,
-    };
-  }
 }
 
 /**
  * msdyn_getCTandEACdisabledEntities response message
  */
 export class msdyn_getCTandEACdisabledEntitiesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_getCTandEACdisabledEntitiesResponse) {
+  constructor(public result: msdyn_getCTandEACdisabledEntitiesResponseData) {
     super("msdyn_getCTandEACdisabledEntities");
   }
 
   static fromResponse(data: unknown): msdyn_getCTandEACdisabledEntitiesResponse {
-    return new msdyn_getCTandEACdisabledEntitiesResponse((data as any).value);
+    return new msdyn_getCTandEACdisabledEntitiesResponse(
+      responseObject<msdyn_getCTandEACdisabledEntitiesResponseData>(data)
+    );
   }
 }

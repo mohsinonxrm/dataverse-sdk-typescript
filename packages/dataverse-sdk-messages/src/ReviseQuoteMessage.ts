@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { ColumnSet, quote } from "./types/index.js";
 
 /**
@@ -40,13 +41,6 @@ export class ReviseQuoteRequest
     const data = await response.json();
     return ReviseQuoteResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      QuoteId: this.quoteId,
-      ColumnSet: this.columnSet,
-    };
-  }
 }
 
 /**
@@ -58,6 +52,6 @@ export class ReviseQuoteResponse extends OrganizationResponse {
   }
 
   static fromResponse(data: unknown): ReviseQuoteResponse {
-    return new ReviseQuoteResponse((data as any).value);
+    return new ReviseQuoteResponse(responseObject<quote>(data));
   }
 }

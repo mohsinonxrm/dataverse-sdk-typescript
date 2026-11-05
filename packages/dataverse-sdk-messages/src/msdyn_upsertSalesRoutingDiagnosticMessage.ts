@@ -42,14 +42,6 @@ export class msdyn_upsertSalesRoutingDiagnosticRequest
     // No return value (204 No Content)
     return new msdyn_upsertSalesRoutingDiagnosticResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      TargetObject: this.targetObject,
-      Payload: this.payload,
-      EventType: this.eventType,
-    };
-  }
 }
 
 /**

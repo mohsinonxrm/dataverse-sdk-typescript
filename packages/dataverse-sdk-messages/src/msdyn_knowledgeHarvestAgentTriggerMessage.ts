@@ -35,12 +35,6 @@ export class msdyn_knowledgeHarvestAgentTriggerRequest
     // No return value (204 No Content)
     return new msdyn_knowledgeHarvestAgentTriggerResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Payload: this.payload,
-    };
-  }
 }
 
 /**

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_StoreQualityEvaluationResultResponse as msdyn_StoreQualityEvaluationResultResponseData } from "./types/index.js";
 
 /**
  * msdyn_StoreQualityEvaluationResult request message
@@ -45,27 +47,19 @@ export class msdyn_StoreQualityEvaluationResultRequest
     const data = await response.json();
     return msdyn_StoreQualityEvaluationResultResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      CriteriaVersionNumber: this.criteriaVersionNumber,
-      EvaluationId: this.evaluationId,
-      EvaluationMethod: this.evaluationMethod,
-      EvaluationInsight: this.evaluationInsight,
-      Status: this.status,
-    };
-  }
 }
 
 /**
  * msdyn_StoreQualityEvaluationResult response message
  */
 export class msdyn_StoreQualityEvaluationResultResponse extends OrganizationResponse {
-  constructor(public result: msdyn_StoreQualityEvaluationResultResponse) {
+  constructor(public result: msdyn_StoreQualityEvaluationResultResponseData) {
     super("msdyn_StoreQualityEvaluationResult");
   }
 
   static fromResponse(data: unknown): msdyn_StoreQualityEvaluationResultResponse {
-    return new msdyn_StoreQualityEvaluationResultResponse((data as any).value);
+    return new msdyn_StoreQualityEvaluationResultResponse(
+      responseObject<msdyn_StoreQualityEvaluationResultResponseData>(data)
+    );
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetAppInsightsTelemetryResponse as msdyn_GetAppInsightsTelemetryResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetAppInsightsTelemetry request message
@@ -41,25 +43,19 @@ export class msdyn_GetAppInsightsTelemetryRequest
     const data = await response.json();
     return msdyn_GetAppInsightsTelemetryResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_Query: this.msdyn_Query,
-      msdyn_Timespan: this.msdyn_Timespan,
-      msdyn_LiveWorkItemIds: this.msdyn_LiveWorkItemIds,
-    };
-  }
 }
 
 /**
  * msdyn_GetAppInsightsTelemetry response message
  */
 export class msdyn_GetAppInsightsTelemetryResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetAppInsightsTelemetryResponse) {
+  constructor(public result: msdyn_GetAppInsightsTelemetryResponseData) {
     super("msdyn_GetAppInsightsTelemetry");
   }
 
   static fromResponse(data: unknown): msdyn_GetAppInsightsTelemetryResponse {
-    return new msdyn_GetAppInsightsTelemetryResponse((data as any).value);
+    return new msdyn_GetAppInsightsTelemetryResponse(
+      responseObject<msdyn_GetAppInsightsTelemetryResponseData>(data)
+    );
   }
 }

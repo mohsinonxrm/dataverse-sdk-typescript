@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { delegatedauthorization, team } from "./types/index.js";
 
 /**
@@ -36,12 +37,6 @@ export class ProvisionDelegationRequest
     const data = await response.json();
     return ProvisionDelegationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      delegatedauthorization: this.delegatedauthorization,
-    };
-  }
 }
 
 /**
@@ -53,6 +48,6 @@ export class ProvisionDelegationResponse extends OrganizationResponse {
   }
 
   static fromResponse(data: unknown): ProvisionDelegationResponse {
-    return new ProvisionDelegationResponse((data as any).value);
+    return new ProvisionDelegationResponse(responseObject<team>(data));
   }
 }

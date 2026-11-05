@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_MarketingMetadataUpdatePostImportResponse as msdyn_MarketingMetadataUpdatePostImportResponseData } from "./types/index.js";
 
 /**
  * msdyn_MarketingMetadataUpdatePostImport request message
@@ -32,21 +34,19 @@ export class msdyn_MarketingMetadataUpdatePostImportRequest
     const data = await response.json();
     return msdyn_MarketingMetadataUpdatePostImportResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_MarketingMetadataUpdatePostImport response message
  */
 export class msdyn_MarketingMetadataUpdatePostImportResponse extends OrganizationResponse {
-  constructor(public result: msdyn_MarketingMetadataUpdatePostImportResponse) {
+  constructor(public result: msdyn_MarketingMetadataUpdatePostImportResponseData) {
     super("msdyn_MarketingMetadataUpdatePostImport");
   }
 
   static fromResponse(data: unknown): msdyn_MarketingMetadataUpdatePostImportResponse {
-    return new msdyn_MarketingMetadataUpdatePostImportResponse((data as any).value);
+    return new msdyn_MarketingMetadataUpdatePostImportResponse(
+      responseObject<msdyn_MarketingMetadataUpdatePostImportResponseData>(data)
+    );
   }
 }

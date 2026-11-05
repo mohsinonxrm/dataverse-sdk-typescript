@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { msdyn_bookingsetupmetadata, msdyn_configuration } from "./types/index.js";
 
 /**
@@ -40,13 +41,6 @@ export class msdyn_initializedefaultclonequeryRequest
     const data = await response.json();
     return msdyn_initializedefaultclonequeryResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      WorkType: this.workType,
-      Configuration: this.configuration,
-    };
-  }
 }
 
 /**
@@ -58,6 +52,6 @@ export class msdyn_initializedefaultclonequeryResponse extends OrganizationRespo
   }
 
   static fromResponse(data: unknown): msdyn_initializedefaultclonequeryResponse {
-    return new msdyn_initializedefaultclonequeryResponse((data as any).value);
+    return new msdyn_initializedefaultclonequeryResponse(responseObject<msdyn_configuration>(data));
   }
 }

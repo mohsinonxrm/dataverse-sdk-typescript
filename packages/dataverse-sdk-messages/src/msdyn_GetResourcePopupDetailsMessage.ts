@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetResourcePopupDetailsResponse as msdyn_GetResourcePopupDetailsResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetResourcePopupDetails request message
@@ -41,25 +43,19 @@ export class msdyn_GetResourcePopupDetailsRequest
     const data = await response.json();
     return msdyn_GetResourcePopupDetailsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      StartDate: this.startDate,
-      EndDate: this.endDate,
-      ResourceId: this.resourceId,
-    };
-  }
 }
 
 /**
  * msdyn_GetResourcePopupDetails response message
  */
 export class msdyn_GetResourcePopupDetailsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetResourcePopupDetailsResponse) {
+  constructor(public result: msdyn_GetResourcePopupDetailsResponseData) {
     super("msdyn_GetResourcePopupDetails");
   }
 
   static fromResponse(data: unknown): msdyn_GetResourcePopupDetailsResponse {
-    return new msdyn_GetResourcePopupDetailsResponse((data as any).value);
+    return new msdyn_GetResourcePopupDetailsResponse(
+      responseObject<msdyn_GetResourcePopupDetailsResponseData>(data)
+    );
   }
 }

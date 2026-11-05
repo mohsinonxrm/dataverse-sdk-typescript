@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckIfActivityMonitorHasErrorLastSevenDaysResponse as msdyn_CheckIfActivityMonitorHasErrorLastSevenDaysResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckIfActivityMonitorHasErrorLastSevenDays request message
@@ -32,21 +34,19 @@ export class msdyn_CheckIfActivityMonitorHasErrorLastSevenDaysRequest
     const data = await response.json();
     return msdyn_CheckIfActivityMonitorHasErrorLastSevenDaysResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_CheckIfActivityMonitorHasErrorLastSevenDays response message
  */
 export class msdyn_CheckIfActivityMonitorHasErrorLastSevenDaysResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfActivityMonitorHasErrorLastSevenDaysResponse) {
+  constructor(public result: msdyn_CheckIfActivityMonitorHasErrorLastSevenDaysResponseData) {
     super("msdyn_CheckIfActivityMonitorHasErrorLastSevenDays");
   }
 
   static fromResponse(data: unknown): msdyn_CheckIfActivityMonitorHasErrorLastSevenDaysResponse {
-    return new msdyn_CheckIfActivityMonitorHasErrorLastSevenDaysResponse((data as any).value);
+    return new msdyn_CheckIfActivityMonitorHasErrorLastSevenDaysResponse(
+      responseObject<msdyn_CheckIfActivityMonitorHasErrorLastSevenDaysResponseData>(data)
+    );
   }
 }

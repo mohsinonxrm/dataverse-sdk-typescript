@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetAllAttributesDataResponse as msdyn_GetAllAttributesDataResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetAllAttributesData request message
@@ -39,24 +41,19 @@ export class msdyn_GetAllAttributesDataRequest
     const data = await response.json();
     return msdyn_GetAllAttributesDataResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      PredictionName: this.predictionName,
-      PredictionType: this.predictionType,
-    };
-  }
 }
 
 /**
  * msdyn_GetAllAttributesData response message
  */
 export class msdyn_GetAllAttributesDataResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetAllAttributesDataResponse) {
+  constructor(public result: msdyn_GetAllAttributesDataResponseData) {
     super("msdyn_GetAllAttributesData");
   }
 
   static fromResponse(data: unknown): msdyn_GetAllAttributesDataResponse {
-    return new msdyn_GetAllAttributesDataResponse((data as any).value);
+    return new msdyn_GetAllAttributesDataResponse(
+      responseObject<msdyn_GetAllAttributesDataResponseData>(data)
+    );
   }
 }

@@ -33,12 +33,6 @@ export class AddRequiredDesktopFlowComponentsToSolutionsRequest
     // No return value (204 No Content)
     return new AddRequiredDesktopFlowComponentsToSolutionsResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.workflowId,
-    };
-  }
 }
 
 /**

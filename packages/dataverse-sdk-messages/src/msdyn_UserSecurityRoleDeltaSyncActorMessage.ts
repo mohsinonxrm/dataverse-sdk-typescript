@@ -35,12 +35,6 @@ export class msdyn_UserSecurityRoleDeltaSyncActorRequest
     // No return value (204 No Content)
     return new msdyn_UserSecurityRoleDeltaSyncActorResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      InputData: this.inputData,
-    };
-  }
 }
 
 /**

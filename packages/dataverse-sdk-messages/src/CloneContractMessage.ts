@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { contract } from "./types/index.js";
 
 /**
@@ -40,13 +41,6 @@ export class CloneContractRequest
     const data = await response.json();
     return CloneContractResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.contractId,
-      IncludeCanceledLines: this.includeCanceledLines,
-    };
-  }
 }
 
 /**
@@ -58,6 +52,6 @@ export class CloneContractResponse extends OrganizationResponse {
   }
 
   static fromResponse(data: unknown): CloneContractResponse {
-    return new CloneContractResponse((data as any).value);
+    return new CloneContractResponse(responseObject<contract>(data));
   }
 }

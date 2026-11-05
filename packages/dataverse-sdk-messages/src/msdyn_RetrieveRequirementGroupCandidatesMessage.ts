@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import { responseObject } from "./internal/responseData.js";
 import type { msdyn_requirementgroup } from "./types/index.js";
 
 /**
@@ -51,28 +51,19 @@ export class msdyn_RetrieveRequirementGroupCandidatesRequest
     const data = await response.json();
     return msdyn_RetrieveRequirementGroupCandidatesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RequirementGroup: this.requirementGroup,
-      StartTime: this.startTime,
-      EndTime: this.endTime,
-      Duration: this.duration,
-      ConstraintBag: this.constraintBag,
-      Version: this.version,
-    };
-  }
 }
 
 /**
  * msdyn_RetrieveRequirementGroupCandidates response message
  */
 export class msdyn_RetrieveRequirementGroupCandidatesResponse extends OrganizationResponse {
-  constructor(public result: EntityReference) {
+  constructor(public result: Record<string, unknown>) {
     super("msdyn_RetrieveRequirementGroupCandidates");
   }
 
   static fromResponse(data: unknown): msdyn_RetrieveRequirementGroupCandidatesResponse {
-    return new msdyn_RetrieveRequirementGroupCandidatesResponse((data as any).value);
+    return new msdyn_RetrieveRequirementGroupCandidatesResponse(
+      responseObject<Record<string, unknown>>(data)
+    );
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetCaseSuggestionsResponse as msdyn_GetCaseSuggestionsResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetCaseSuggestions request message
@@ -39,24 +41,19 @@ export class msdyn_GetCaseSuggestionsRequest
     const data = await response.json();
     return msdyn_GetCaseSuggestionsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.incidentId,
-      Count: this.count,
-    };
-  }
 }
 
 /**
  * msdyn_GetCaseSuggestions response message
  */
 export class msdyn_GetCaseSuggestionsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetCaseSuggestionsResponse) {
+  constructor(public result: msdyn_GetCaseSuggestionsResponseData) {
     super("msdyn_GetCaseSuggestions");
   }
 
   static fromResponse(data: unknown): msdyn_GetCaseSuggestionsResponse {
-    return new msdyn_GetCaseSuggestionsResponse((data as any).value);
+    return new msdyn_GetCaseSuggestionsResponse(
+      responseObject<msdyn_GetCaseSuggestionsResponseData>(data)
+    );
   }
 }

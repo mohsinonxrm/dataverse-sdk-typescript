@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { ClearWorkQueueResponse as ClearWorkQueueResponseData } from "./types/index.js";
 
 /**
  * ClearWorkQueue request message
@@ -31,23 +33,17 @@ export class ClearWorkQueueRequest
     const data = await response.json();
     return ClearWorkQueueResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.workqueueId,
-    };
-  }
 }
 
 /**
  * ClearWorkQueue response message
  */
 export class ClearWorkQueueResponse extends OrganizationResponse {
-  constructor(public result: ClearWorkQueueResponse) {
+  constructor(public result: ClearWorkQueueResponseData) {
     super("ClearWorkQueue");
   }
 
   static fromResponse(data: unknown): ClearWorkQueueResponse {
-    return new ClearWorkQueueResponse((data as any).value);
+    return new ClearWorkQueueResponse(responseObject<ClearWorkQueueResponseData>(data));
   }
 }

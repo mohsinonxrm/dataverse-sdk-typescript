@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecksResponse as msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecksResponseData } from "./types/index.js";
 
 /**
  * msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecks request message
@@ -43,21 +45,15 @@ export class msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecksRequest
     const data = await response.json();
     return msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecksResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_TrackingId: this.msdyn_TrackingId,
-      msdyn_SalesAgentRun: this.msdyn_SalesAgentRun,
-      msdyn_SalesMacroAgentType: this.msdyn_SalesMacroAgentType,
-    };
-  }
 }
 
 /**
  * msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecks response message
  */
 export class msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecksResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecksResponse) {
+  constructor(
+    public result: msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecksResponseData
+  ) {
     super("msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecks");
   }
 
@@ -65,7 +61,7 @@ export class msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecksRespons
     data: unknown
   ): msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecksResponse {
     return new msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecksResponse(
-      (data as any).value
+      responseObject<msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecksResponseData>(data)
     );
   }
 }

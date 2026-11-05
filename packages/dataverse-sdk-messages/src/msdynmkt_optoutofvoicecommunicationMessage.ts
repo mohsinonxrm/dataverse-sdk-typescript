@@ -35,12 +35,6 @@ export class msdynmkt_optoutofvoicecommunicationRequest
     // No return value (204 No Content)
     return new msdynmkt_optoutofvoicecommunicationResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdynmkt_trackingcontextid: this.msdynmkt_trackingcontextid,
-    };
-  }
 }
 
 /**

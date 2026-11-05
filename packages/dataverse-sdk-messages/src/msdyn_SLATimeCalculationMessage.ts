@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_SLATimeCalculationResponse as msdyn_SLATimeCalculationResponseData } from "./types/index.js";
 
 /**
  * msdyn_SLATimeCalculation request message
@@ -47,28 +49,19 @@ export class msdyn_SLATimeCalculationRequest
     const data = await response.json();
     return msdyn_SLATimeCalculationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      calendarId: this.calendarId,
-      startTime: this.startTime,
-      requestType: this.requestType,
-      minutes: this.minutes,
-      logsLevel: this.logsLevel,
-      endTime: this.endTime,
-    };
-  }
 }
 
 /**
  * msdyn_SLATimeCalculation response message
  */
 export class msdyn_SLATimeCalculationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SLATimeCalculationResponse) {
+  constructor(public result: msdyn_SLATimeCalculationResponseData) {
     super("msdyn_SLATimeCalculation");
   }
 
   static fromResponse(data: unknown): msdyn_SLATimeCalculationResponse {
-    return new msdyn_SLATimeCalculationResponse((data as any).value);
+    return new msdyn_SLATimeCalculationResponse(
+      responseObject<msdyn_SLATimeCalculationResponseData>(data)
+    );
   }
 }

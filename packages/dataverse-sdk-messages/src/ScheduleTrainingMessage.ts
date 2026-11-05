@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { ScheduleTrainingResponse as ScheduleTrainingResponseData } from "./types/index.js";
 
 /**
  * ScheduleTraining request message
@@ -39,24 +41,17 @@ export class ScheduleTrainingRequest
     const data = await response.json();
     return ScheduleTrainingResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_aiconfigurationId,
-      version: this.version,
-    };
-  }
 }
 
 /**
  * ScheduleTraining response message
  */
 export class ScheduleTrainingResponse extends OrganizationResponse {
-  constructor(public result: ScheduleTrainingResponse) {
+  constructor(public result: ScheduleTrainingResponseData) {
     super("ScheduleTraining");
   }
 
   static fromResponse(data: unknown): ScheduleTrainingResponse {
-    return new ScheduleTrainingResponse((data as any).value);
+    return new ScheduleTrainingResponse(responseObject<ScheduleTrainingResponseData>(data));
   }
 }

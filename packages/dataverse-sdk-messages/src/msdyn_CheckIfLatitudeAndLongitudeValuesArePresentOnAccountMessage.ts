@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckIfLatitudeAndLongitudeValuesArePresentOnAccountResponse as msdyn_CheckIfLatitudeAndLongitudeValuesArePresentOnAccountResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckIfLatitudeAndLongitudeValuesArePresentOnAccount request message
@@ -37,19 +39,15 @@ export class msdyn_CheckIfLatitudeAndLongitudeValuesArePresentOnAccountRequest
     const data = await response.json();
     return msdyn_CheckIfLatitudeAndLongitudeValuesArePresentOnAccountResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionId: this.solutionId,
-    };
-  }
 }
 
 /**
  * msdyn_CheckIfLatitudeAndLongitudeValuesArePresentOnAccount response message
  */
 export class msdyn_CheckIfLatitudeAndLongitudeValuesArePresentOnAccountResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfLatitudeAndLongitudeValuesArePresentOnAccountResponse) {
+  constructor(
+    public result: msdyn_CheckIfLatitudeAndLongitudeValuesArePresentOnAccountResponseData
+  ) {
     super("msdyn_CheckIfLatitudeAndLongitudeValuesArePresentOnAccount");
   }
 
@@ -57,7 +55,7 @@ export class msdyn_CheckIfLatitudeAndLongitudeValuesArePresentOnAccountResponse 
     data: unknown
   ): msdyn_CheckIfLatitudeAndLongitudeValuesArePresentOnAccountResponse {
     return new msdyn_CheckIfLatitudeAndLongitudeValuesArePresentOnAccountResponse(
-      (data as any).value
+      responseObject<msdyn_CheckIfLatitudeAndLongitudeValuesArePresentOnAccountResponseData>(data)
     );
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdynmkt_ChannelContentPersonalizeResponse as msdynmkt_ChannelContentPersonalizeResponseData } from "./types/index.js";
 
 /**
  * msdynmkt_ChannelContentPersonalize request message
@@ -35,23 +37,19 @@ export class msdynmkt_ChannelContentPersonalizeRequest
     const data = await response.json();
     return msdynmkt_ChannelContentPersonalizeResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdynmkt_PersonalizeContentRequest: this.msdynmkt_PersonalizeContentRequest,
-    };
-  }
 }
 
 /**
  * msdynmkt_ChannelContentPersonalize response message
  */
 export class msdynmkt_ChannelContentPersonalizeResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_ChannelContentPersonalizeResponse) {
+  constructor(public result: msdynmkt_ChannelContentPersonalizeResponseData) {
     super("msdynmkt_ChannelContentPersonalize");
   }
 
   static fromResponse(data: unknown): msdynmkt_ChannelContentPersonalizeResponse {
-    return new msdynmkt_ChannelContentPersonalizeResponse((data as any).value);
+    return new msdynmkt_ChannelContentPersonalizeResponse(
+      responseObject<msdynmkt_ChannelContentPersonalizeResponseData>(data)
+    );
   }
 }

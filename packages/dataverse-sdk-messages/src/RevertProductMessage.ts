@@ -36,12 +36,6 @@ export class RevertProductRequest
     // No return value (204 No Content)
     return new RevertProductResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-    };
-  }
 }
 
 /**

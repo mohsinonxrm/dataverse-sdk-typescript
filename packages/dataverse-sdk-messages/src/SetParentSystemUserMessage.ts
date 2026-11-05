@@ -42,14 +42,6 @@ export class SetParentSystemUserRequest
     // No return value (204 No Content)
     return new SetParentSystemUserResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.systemuserId,
-      Parent: this.parent,
-      KeepChildUsers: this.keepChildUsers,
-    };
-  }
 }
 
 /**

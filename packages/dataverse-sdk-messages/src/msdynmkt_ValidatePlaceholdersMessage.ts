@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdynmkt_ValidatePlaceholdersResponse as msdynmkt_ValidatePlaceholdersResponseData } from "./types/index.js";
 
 /**
  * msdynmkt_ValidatePlaceholders request message
@@ -35,23 +37,19 @@ export class msdynmkt_ValidatePlaceholdersRequest
     const data = await response.json();
     return msdynmkt_ValidatePlaceholdersResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ValidatePlaceholdersRequest: this.validatePlaceholdersRequest,
-    };
-  }
 }
 
 /**
  * msdynmkt_ValidatePlaceholders response message
  */
 export class msdynmkt_ValidatePlaceholdersResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_ValidatePlaceholdersResponse) {
+  constructor(public result: msdynmkt_ValidatePlaceholdersResponseData) {
     super("msdynmkt_ValidatePlaceholders");
   }
 
   static fromResponse(data: unknown): msdynmkt_ValidatePlaceholdersResponse {
-    return new msdynmkt_ValidatePlaceholdersResponse((data as any).value);
+    return new msdynmkt_ValidatePlaceholdersResponse(
+      responseObject<msdynmkt_ValidatePlaceholdersResponseData>(data)
+    );
   }
 }

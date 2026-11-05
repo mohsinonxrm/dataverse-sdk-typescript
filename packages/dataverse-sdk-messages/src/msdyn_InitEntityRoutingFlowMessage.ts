@@ -45,16 +45,6 @@ export class msdyn_InitEntityRoutingFlowRequest
     // No return value (204 No Content)
     return new msdyn_InitEntityRoutingFlowResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      LiveWorkStreamId: this.liveWorkStreamId,
-      QueueId: this.queueId,
-      EntityRecordId: this.entityRecordId,
-      EntityLogicalName: this.entityLogicalName,
-      LiveWorkItemTitle: this.liveWorkItemTitle,
-    };
-  }
 }
 
 /**

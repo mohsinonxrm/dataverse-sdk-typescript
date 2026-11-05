@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_UpgradeTelemetryResponse as msdyn_UpgradeTelemetryResponseData } from "./types/index.js";
 
 /**
  * msdyn_UpgradeTelemetry request message
@@ -59,34 +61,19 @@ export class msdyn_UpgradeTelemetryRequest
     const data = await response.json();
     return msdyn_UpgradeTelemetryResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EventId: this.eventId,
-      RunId: this.runId,
-      PackageName: this.packageName,
-      SolutionName: this.solutionName,
-      StartingVersion: this.startingVersion,
-      TargetVersion: this.targetVersion,
-      DurationSeconds: this.durationSeconds,
-      Success: this.success,
-      StepId: this.stepId,
-      StepName: this.stepName,
-      ErrorMessage: this.errorMessage,
-      Details: this.details,
-    };
-  }
 }
 
 /**
  * msdyn_UpgradeTelemetry response message
  */
 export class msdyn_UpgradeTelemetryResponse extends OrganizationResponse {
-  constructor(public result: msdyn_UpgradeTelemetryResponse) {
+  constructor(public result: msdyn_UpgradeTelemetryResponseData) {
     super("msdyn_UpgradeTelemetry");
   }
 
   static fromResponse(data: unknown): msdyn_UpgradeTelemetryResponse {
-    return new msdyn_UpgradeTelemetryResponse((data as any).value);
+    return new msdyn_UpgradeTelemetryResponse(
+      responseObject<msdyn_UpgradeTelemetryResponseData>(data)
+    );
   }
 }

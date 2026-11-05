@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { InferEntityDefinitionResponse as InferEntityDefinitionResponseData } from "./types/index.js";
 
 /**
  * InferEntityDefinition request message
@@ -57,33 +59,19 @@ export class InferEntityDefinitionRequest
     const data = await response.json();
     return InferEntityDefinitionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      LanguageCode: this.languageCode,
-      UseUserSettings: this.useUserSettings,
-      UserContext: this.userContext,
-      SolutionPrefix: this.solutionPrefix,
-      PreviewData: this.previewData,
-      SourceTimeZone: this.sourceTimeZone,
-      ParseSampleData: this.parseSampleData,
-      FileInfo: this.fileInfo,
-      RecordId: this.recordId,
-      EntityDefinition: this.entityDefinition,
-      EntitiesCollection: this.entitiesCollection,
-    };
-  }
 }
 
 /**
  * InferEntityDefinition response message
  */
 export class InferEntityDefinitionResponse extends OrganizationResponse {
-  constructor(public result: InferEntityDefinitionResponse) {
+  constructor(public result: InferEntityDefinitionResponseData) {
     super("InferEntityDefinition");
   }
 
   static fromResponse(data: unknown): InferEntityDefinitionResponse {
-    return new InferEntityDefinitionResponse((data as any).value);
+    return new InferEntityDefinitionResponse(
+      responseObject<InferEntityDefinitionResponseData>(data)
+    );
   }
 }

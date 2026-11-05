@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { _ServiceCalendarActionResponse as _ServiceCalendarActionResponseData } from "./types/index.js";
 
 /**
  * _ServiceCalendarAction request message
@@ -39,24 +41,19 @@ export class _ServiceCalendarActionRequest
     const data = await response.json();
     return _ServiceCalendarActionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Type: this.type,
-      InputParameter: this.inputParameter,
-    };
-  }
 }
 
 /**
  * _ServiceCalendarAction response message
  */
 export class _ServiceCalendarActionResponse extends OrganizationResponse {
-  constructor(public result: _ServiceCalendarActionResponse) {
+  constructor(public result: _ServiceCalendarActionResponseData) {
     super("_ServiceCalendarAction");
   }
 
   static fromResponse(data: unknown): _ServiceCalendarActionResponse {
-    return new _ServiceCalendarActionResponse((data as any).value);
+    return new _ServiceCalendarActionResponse(
+      responseObject<_ServiceCalendarActionResponseData>(data)
+    );
   }
 }

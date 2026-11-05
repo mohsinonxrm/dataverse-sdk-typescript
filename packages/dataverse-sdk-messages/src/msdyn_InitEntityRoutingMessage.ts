@@ -53,20 +53,6 @@ export class msdyn_InitEntityRoutingRequest
     // No return value (204 No Content)
     return new msdyn_InitEntityRoutingResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      IntentFamilyId: this.intentFamilyId,
-      AppInsightsEnvInformation: this.appInsightsEnvInformation,
-      IntentId: this.intentId,
-      LiveWorkStreamId: this.liveWorkStreamId,
-      AppInsightsAdditionalInformation: this.appInsightsAdditionalInformation,
-      EntityLogicalName: this.entityLogicalName,
-      IntentString: this.intentString,
-      IntentGroupId: this.intentGroupId,
-      EntityRecordId: this.entityRecordId,
-    };
-  }
 }
 
 /**

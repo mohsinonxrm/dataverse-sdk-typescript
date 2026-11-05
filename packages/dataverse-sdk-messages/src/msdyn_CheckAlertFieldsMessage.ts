@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckAlertFieldsResponse as msdyn_CheckAlertFieldsResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckAlertFields request message
@@ -30,21 +32,19 @@ export class msdyn_CheckAlertFieldsRequest
     const data = await response.json();
     return msdyn_CheckAlertFieldsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_CheckAlertFields response message
  */
 export class msdyn_CheckAlertFieldsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckAlertFieldsResponse) {
+  constructor(public result: msdyn_CheckAlertFieldsResponseData) {
     super("msdyn_CheckAlertFields");
   }
 
   static fromResponse(data: unknown): msdyn_CheckAlertFieldsResponse {
-    return new msdyn_CheckAlertFieldsResponse((data as any).value);
+    return new msdyn_CheckAlertFieldsResponse(
+      responseObject<msdyn_CheckAlertFieldsResponseData>(data)
+    );
   }
 }

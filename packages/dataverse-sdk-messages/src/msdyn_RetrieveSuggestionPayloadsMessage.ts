@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseValue } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 
 /**
@@ -44,26 +45,19 @@ export class msdyn_RetrieveSuggestionPayloadsRequest
     const data = await response.json();
     return msdyn_RetrieveSuggestionPayloadsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SuggestionFor: this.suggestionFor,
-      Context: this.context,
-      SuggestionType: this.suggestionType,
-      LanguageLocales: this.languageLocales,
-    };
-  }
 }
 
 /**
  * msdyn_RetrieveSuggestionPayloads response message
  */
 export class msdyn_RetrieveSuggestionPayloadsResponse extends OrganizationResponse {
-  constructor(public result: EntityReference[]) {
+  constructor(public result: Record<string, unknown>[]) {
     super("msdyn_RetrieveSuggestionPayloads");
   }
 
   static fromResponse(data: unknown): msdyn_RetrieveSuggestionPayloadsResponse {
-    return new msdyn_RetrieveSuggestionPayloadsResponse((data as any).value);
+    return new msdyn_RetrieveSuggestionPayloadsResponse(
+      responseValue<Record<string, unknown>[]>(data)
+    );
   }
 }

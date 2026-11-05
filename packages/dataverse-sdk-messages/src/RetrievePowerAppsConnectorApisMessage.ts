@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import { responseValue } from "./internal/responseData.js";
 
 /**
  * RetrievePowerAppsConnectorApis request message
@@ -31,21 +31,19 @@ export class RetrievePowerAppsConnectorApisRequest
     const data = await response.json();
     return RetrievePowerAppsConnectorApisResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * RetrievePowerAppsConnectorApis response message
  */
 export class RetrievePowerAppsConnectorApisResponse extends OrganizationResponse {
-  constructor(public result: EntityReference[]) {
+  constructor(public result: Record<string, unknown>[]) {
     super("RetrievePowerAppsConnectorApis");
   }
 
   static fromResponse(data: unknown): RetrievePowerAppsConnectorApisResponse {
-    return new RetrievePowerAppsConnectorApisResponse((data as any).value);
+    return new RetrievePowerAppsConnectorApisResponse(
+      responseValue<Record<string, unknown>[]>(data)
+    );
   }
 }

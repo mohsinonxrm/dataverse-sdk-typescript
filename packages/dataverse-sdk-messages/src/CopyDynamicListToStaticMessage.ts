@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { list } from "./types/index.js";
 
 /**
@@ -32,12 +33,6 @@ export class CopyDynamicListToStaticRequest
     const data = await response.json();
     return CopyDynamicListToStaticResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.listId,
-    };
-  }
 }
 
 /**
@@ -49,6 +44,6 @@ export class CopyDynamicListToStaticResponse extends OrganizationResponse {
   }
 
   static fromResponse(data: unknown): CopyDynamicListToStaticResponse {
-    return new CopyDynamicListToStaticResponse((data as any).value);
+    return new CopyDynamicListToStaticResponse(responseObject<list>(data));
   }
 }

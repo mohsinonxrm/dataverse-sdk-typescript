@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_cesinvokeResponse as msdyn_cesinvokeResponseData } from "./types/index.js";
 
 /**
  * msdyn_cesinvoke request message
@@ -41,25 +43,17 @@ export class msdyn_cesinvokeRequest
     const data = await response.json();
     return msdyn_cesinvokeResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      CallType: this.callType,
-      EventName: this.eventName,
-      SurveyName: this.surveyName,
-    };
-  }
 }
 
 /**
  * msdyn_cesinvoke response message
  */
 export class msdyn_cesinvokeResponse extends OrganizationResponse {
-  constructor(public result: msdyn_cesinvokeResponse) {
+  constructor(public result: msdyn_cesinvokeResponseData) {
     super("msdyn_cesinvoke");
   }
 
   static fromResponse(data: unknown): msdyn_cesinvokeResponse {
-    return new msdyn_cesinvokeResponse((data as any).value);
+    return new msdyn_cesinvokeResponse(responseObject<msdyn_cesinvokeResponseData>(data));
   }
 }

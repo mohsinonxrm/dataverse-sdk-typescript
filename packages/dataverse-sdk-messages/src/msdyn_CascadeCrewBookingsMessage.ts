@@ -43,15 +43,6 @@ export class msdyn_CascadeCrewBookingsRequest
     // No return value (204 No Content)
     return new msdyn_CascadeCrewBookingsResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      BookingsToCreate: this.bookingsToCreate,
-      BookingsToUpdate: this.bookingsToUpdate,
-      ParentBookingsToUpdate: this.parentBookingsToUpdate,
-      BatchNumber: this.batchNumber,
-    };
-  }
 }
 
 /**

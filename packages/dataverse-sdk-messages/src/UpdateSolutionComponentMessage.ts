@@ -43,15 +43,6 @@ export class UpdateSolutionComponentRequest
     // No return value (204 No Content)
     return new UpdateSolutionComponentResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ComponentId: this.componentId,
-      ComponentType: this.componentType,
-      SolutionUniqueName: this.solutionUniqueName,
-      IncludedComponentSettingsValues: this.includedComponentSettingsValues,
-    };
-  }
 }
 
 /**

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { CCaaS_NotifyAgentResponse as CCaaS_NotifyAgentResponseData } from "./types/index.js";
 
 /**
  * CCaaS_NotifyAgent request message
@@ -43,26 +45,17 @@ export class CCaaS_NotifyAgentRequest
     const data = await response.json();
     return CCaaS_NotifyAgentResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ApiVersion: this.apiVersion,
-      Title: this.title,
-      Message: this.message,
-      AgentIds: this.agentIds,
-    };
-  }
 }
 
 /**
  * CCaaS_NotifyAgent response message
  */
 export class CCaaS_NotifyAgentResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_NotifyAgentResponse) {
+  constructor(public result: CCaaS_NotifyAgentResponseData) {
     super("CCaaS_NotifyAgent");
   }
 
   static fromResponse(data: unknown): CCaaS_NotifyAgentResponse {
-    return new CCaaS_NotifyAgentResponse((data as any).value);
+    return new CCaaS_NotifyAgentResponse(responseObject<CCaaS_NotifyAgentResponseData>(data));
   }
 }

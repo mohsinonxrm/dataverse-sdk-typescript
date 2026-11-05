@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { CreateInstanceResponse as CreateInstanceResponseData } from "./types/index.js";
 
 /**
  * CreateInstance request message
@@ -40,24 +42,17 @@ export class CreateInstanceRequest
     const data = await response.json();
     return CreateInstanceResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-      Count: this.count,
-    };
-  }
 }
 
 /**
  * CreateInstance response message
  */
 export class CreateInstanceResponse extends OrganizationResponse {
-  constructor(public result: CreateInstanceResponse) {
+  constructor(public result: CreateInstanceResponseData) {
     super("CreateInstance");
   }
 
   static fromResponse(data: unknown): CreateInstanceResponse {
-    return new CreateInstanceResponse((data as any).value);
+    return new CreateInstanceResponse(responseObject<CreateInstanceResponseData>(data));
   }
 }

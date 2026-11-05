@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_RetrieveTypeValuesFromDCIResponse as msdyn_RetrieveTypeValuesFromDCIResponseData } from "./types/index.js";
 
 /**
  * msdyn_RetrieveTypeValuesFromDCI request message
@@ -46,27 +48,19 @@ export class msdyn_RetrieveTypeValuesFromDCIRequest
     const data = await response.json();
     return msdyn_RetrieveTypeValuesFromDCIResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      CrmRecord: this.crmRecord,
-      ResourceType: this.resourceType,
-      ResourceTypeName: this.resourceTypeName,
-      StartDate: this.startDate,
-      EndDate: this.endDate,
-    };
-  }
 }
 
 /**
  * msdyn_RetrieveTypeValuesFromDCI response message
  */
 export class msdyn_RetrieveTypeValuesFromDCIResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrieveTypeValuesFromDCIResponse) {
+  constructor(public result: msdyn_RetrieveTypeValuesFromDCIResponseData) {
     super("msdyn_RetrieveTypeValuesFromDCI");
   }
 
   static fromResponse(data: unknown): msdyn_RetrieveTypeValuesFromDCIResponse {
-    return new msdyn_RetrieveTypeValuesFromDCIResponse((data as any).value);
+    return new msdyn_RetrieveTypeValuesFromDCIResponse(
+      responseObject<msdyn_RetrieveTypeValuesFromDCIResponseData>(data)
+    );
   }
 }

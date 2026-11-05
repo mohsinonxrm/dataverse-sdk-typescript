@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRuleResponse as msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRule request message
@@ -32,17 +34,15 @@ export class msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRuleRequest
     const data = await response.json();
     return msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRuleResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRule response message
  */
 export class msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRuleResponse) {
+  constructor(
+    public result: msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRuleResponseData
+  ) {
     super("msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRule");
   }
 
@@ -50,7 +50,7 @@ export class msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRuleResponse 
     data: unknown
   ): msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRuleResponse {
     return new msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRuleResponse(
-      (data as any).value
+      responseObject<msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRuleResponseData>(data)
     );
   }
 }

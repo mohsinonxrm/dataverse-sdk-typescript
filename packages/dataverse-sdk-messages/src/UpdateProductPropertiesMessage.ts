@@ -36,12 +36,6 @@ export class UpdateProductPropertiesRequest
     // No return value (204 No Content)
     return new UpdateProductPropertiesResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      PropertyInstanceList: this.propertyInstanceList,
-    };
-  }
 }
 
 /**

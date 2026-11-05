@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetAuditStateResponse as msdyn_GetAuditStateResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetAuditState request message
@@ -30,21 +32,17 @@ export class msdyn_GetAuditStateRequest
     const data = await response.json();
     return msdyn_GetAuditStateResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_GetAuditState response message
  */
 export class msdyn_GetAuditStateResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetAuditStateResponse) {
+  constructor(public result: msdyn_GetAuditStateResponseData) {
     super("msdyn_GetAuditState");
   }
 
   static fromResponse(data: unknown): msdyn_GetAuditStateResponse {
-    return new msdyn_GetAuditStateResponse((data as any).value);
+    return new msdyn_GetAuditStateResponse(responseObject<msdyn_GetAuditStateResponseData>(data));
   }
 }

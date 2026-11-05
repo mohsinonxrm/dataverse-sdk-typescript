@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { DetectLanguageResponse as DetectLanguageResponseData } from "./types/index.js";
 
 /**
  * DetectLanguage request message
@@ -41,25 +43,17 @@ export class DetectLanguageRequest
     const data = await response.json();
     return DetectLanguageResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      text: this.text,
-      modelId: this.modelId,
-      countryHint: this.countryHint,
-    };
-  }
 }
 
 /**
  * DetectLanguage response message
  */
 export class DetectLanguageResponse extends OrganizationResponse {
-  constructor(public result: DetectLanguageResponse) {
+  constructor(public result: DetectLanguageResponseData) {
     super("DetectLanguage");
   }
 
   static fromResponse(data: unknown): DetectLanguageResponse {
-    return new DetectLanguageResponse((data as any).value);
+    return new DetectLanguageResponse(responseObject<DetectLanguageResponseData>(data));
   }
 }

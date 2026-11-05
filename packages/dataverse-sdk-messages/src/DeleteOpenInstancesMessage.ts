@@ -42,14 +42,6 @@ export class DeleteOpenInstancesRequest
     // No return value (204 No Content)
     return new DeleteOpenInstancesResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-      SeriesEndDate: this.seriesEndDate,
-      StateOfPastInstances: this.stateOfPastInstances,
-    };
-  }
 }
 
 /**

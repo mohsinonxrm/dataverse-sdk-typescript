@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_FieldServiceQuoteBookingIncidentCopyActionResponse as msdyn_FieldServiceQuoteBookingIncidentCopyActionResponseData } from "./types/index.js";
 
 /**
  * msdyn_FieldServiceQuoteBookingIncidentCopyAction request message
@@ -43,25 +45,19 @@ export class msdyn_FieldServiceQuoteBookingIncidentCopyActionRequest
     const data = await response.json();
     return msdyn_FieldServiceQuoteBookingIncidentCopyActionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_quotebookingincidentId,
-      Type: this.type,
-      InputParameter: this.inputParameter,
-    };
-  }
 }
 
 /**
  * msdyn_FieldServiceQuoteBookingIncidentCopyAction response message
  */
 export class msdyn_FieldServiceQuoteBookingIncidentCopyActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_FieldServiceQuoteBookingIncidentCopyActionResponse) {
+  constructor(public result: msdyn_FieldServiceQuoteBookingIncidentCopyActionResponseData) {
     super("msdyn_FieldServiceQuoteBookingIncidentCopyAction");
   }
 
   static fromResponse(data: unknown): msdyn_FieldServiceQuoteBookingIncidentCopyActionResponse {
-    return new msdyn_FieldServiceQuoteBookingIncidentCopyActionResponse((data as any).value);
+    return new msdyn_FieldServiceQuoteBookingIncidentCopyActionResponse(
+      responseObject<msdyn_FieldServiceQuoteBookingIncidentCopyActionResponseData>(data)
+    );
   }
 }

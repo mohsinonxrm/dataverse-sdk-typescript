@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_recurringsegmentactionResponse as msdyn_recurringsegmentactionResponseData } from "./types/index.js";
 
 /**
  * msdyn_recurringsegmentaction request message
@@ -41,25 +43,19 @@ export class msdyn_recurringsegmentactionRequest
     const data = await response.json();
     return msdyn_recurringsegmentactionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      payload: this.payload,
-      operationType: this.operationType,
-      segmentId: this.segmentId,
-    };
-  }
 }
 
 /**
  * msdyn_recurringsegmentaction response message
  */
 export class msdyn_recurringsegmentactionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_recurringsegmentactionResponse) {
+  constructor(public result: msdyn_recurringsegmentactionResponseData) {
     super("msdyn_recurringsegmentaction");
   }
 
   static fromResponse(data: unknown): msdyn_recurringsegmentactionResponse {
-    return new msdyn_recurringsegmentactionResponse((data as any).value);
+    return new msdyn_recurringsegmentactionResponse(
+      responseObject<msdyn_recurringsegmentactionResponseData>(data)
+    );
   }
 }

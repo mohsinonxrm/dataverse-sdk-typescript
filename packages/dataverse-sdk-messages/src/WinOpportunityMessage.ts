@@ -42,14 +42,6 @@ export class WinOpportunityRequest
     // No return value (204 No Content)
     return new WinOpportunityResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      OpportunityClose: this.opportunityClose,
-      Caller: this.caller,
-      Status: this.status,
-    };
-  }
 }
 
 /**

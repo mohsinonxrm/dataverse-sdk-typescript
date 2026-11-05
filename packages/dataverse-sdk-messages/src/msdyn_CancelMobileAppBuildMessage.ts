@@ -1,6 +1,10 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { msdyn_mobileapp } from "./types/index.js";
+import { responseObject } from "./internal/responseData.js";
+import type {
+  msdyn_CancelMobileAppBuildResponse as msdyn_CancelMobileAppBuildResponseData,
+  msdyn_mobileapp,
+} from "./types/index.js";
 
 /**
  * msdyn_CancelMobileAppBuild request message
@@ -40,24 +44,19 @@ export class msdyn_CancelMobileAppBuildRequest
     const data = await response.json();
     return msdyn_CancelMobileAppBuildResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      OperationId: this.operationId,
-      msdyn_MobileApp: this.msdyn_MobileApp,
-    };
-  }
 }
 
 /**
  * msdyn_CancelMobileAppBuild response message
  */
 export class msdyn_CancelMobileAppBuildResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CancelMobileAppBuildResponse) {
+  constructor(public result: msdyn_CancelMobileAppBuildResponseData) {
     super("msdyn_CancelMobileAppBuild");
   }
 
   static fromResponse(data: unknown): msdyn_CancelMobileAppBuildResponse {
-    return new msdyn_CancelMobileAppBuildResponse((data as any).value);
+    return new msdyn_CancelMobileAppBuildResponse(
+      responseObject<msdyn_CancelMobileAppBuildResponseData>(data)
+    );
   }
 }

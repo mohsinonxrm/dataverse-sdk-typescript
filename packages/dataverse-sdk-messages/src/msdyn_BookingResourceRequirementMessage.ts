@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_BookingResourceRequirementResponse as msdyn_BookingResourceRequirementResponseData } from "./types/index.js";
 
 /**
  * msdyn_BookingResourceRequirement request message
@@ -55,32 +57,19 @@ export class msdyn_BookingResourceRequirementRequest
     const data = await response.json();
     return msdyn_BookingResourceRequirementResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_resourcerequirementId,
-      ResourceId: this.resourceId,
-      BookingStatusId: this.bookingStatusId,
-      BookingMethod: this.bookingMethod,
-      BookingType: this.bookingType,
-      StartDateTime: this.startDateTime,
-      EndDateTime: this.endDateTime,
-      Timeframe: this.timeframe,
-      Hours: this.hours,
-      Percentage: this.percentage,
-    };
-  }
 }
 
 /**
  * msdyn_BookingResourceRequirement response message
  */
 export class msdyn_BookingResourceRequirementResponse extends OrganizationResponse {
-  constructor(public result: msdyn_BookingResourceRequirementResponse) {
+  constructor(public result: msdyn_BookingResourceRequirementResponseData) {
     super("msdyn_BookingResourceRequirement");
   }
 
   static fromResponse(data: unknown): msdyn_BookingResourceRequirementResponse {
-    return new msdyn_BookingResourceRequirementResponse((data as any).value);
+    return new msdyn_BookingResourceRequirementResponse(
+      responseObject<msdyn_BookingResourceRequirementResponseData>(data)
+    );
   }
 }

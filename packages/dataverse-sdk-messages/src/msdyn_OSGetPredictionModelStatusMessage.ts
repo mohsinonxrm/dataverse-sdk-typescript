@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_OSGetPredictionModelStatusResponse as msdyn_OSGetPredictionModelStatusResponseData } from "./types/index.js";
 
 /**
  * msdyn_OSGetPredictionModelStatus request message
@@ -35,23 +37,19 @@ export class msdyn_OSGetPredictionModelStatusRequest
     const data = await response.json();
     return msdyn_OSGetPredictionModelStatusResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      PredictionName: this.predictionName,
-    };
-  }
 }
 
 /**
  * msdyn_OSGetPredictionModelStatus response message
  */
 export class msdyn_OSGetPredictionModelStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_OSGetPredictionModelStatusResponse) {
+  constructor(public result: msdyn_OSGetPredictionModelStatusResponseData) {
     super("msdyn_OSGetPredictionModelStatus");
   }
 
   static fromResponse(data: unknown): msdyn_OSGetPredictionModelStatusResponse {
-    return new msdyn_OSGetPredictionModelStatusResponse((data as any).value);
+    return new msdyn_OSGetPredictionModelStatusResponse(
+      responseObject<msdyn_OSGetPredictionModelStatusResponseData>(data)
+    );
   }
 }

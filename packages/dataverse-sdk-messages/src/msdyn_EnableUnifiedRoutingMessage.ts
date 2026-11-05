@@ -35,12 +35,6 @@ export class msdyn_EnableUnifiedRoutingRequest
     // No return value (204 No Content)
     return new msdyn_EnableUnifiedRoutingResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Enable: this.enable,
-    };
-  }
 }
 
 /**

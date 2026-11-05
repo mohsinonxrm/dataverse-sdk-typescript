@@ -35,12 +35,6 @@ export class DeleteAutomatedPluginRequest
     // No return value (204 No Content)
     return new DeleteAutomatedPluginResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      pluginid: this.pluginid,
-    };
-  }
 }
 
 /**

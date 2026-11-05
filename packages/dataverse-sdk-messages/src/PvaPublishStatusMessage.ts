@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import { responseObject } from "./internal/responseData.js";
 
 /**
  * PvaPublishStatus request message
@@ -40,24 +40,17 @@ export class PvaPublishStatusRequest
     const data = await response.json();
     return PvaPublishStatusResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.botId,
-      PublishBotJob: this.publishBotJob,
-    };
-  }
 }
 
 /**
  * PvaPublishStatus response message
  */
 export class PvaPublishStatusResponse extends OrganizationResponse {
-  constructor(public result: EntityReference) {
+  constructor(public result: Record<string, unknown>) {
     super("PvaPublishStatus");
   }
 
   static fromResponse(data: unknown): PvaPublishStatusResponse {
-    return new PvaPublishStatusResponse((data as any).value);
+    return new PvaPublishStatusResponse(responseObject<Record<string, unknown>>(data));
   }
 }

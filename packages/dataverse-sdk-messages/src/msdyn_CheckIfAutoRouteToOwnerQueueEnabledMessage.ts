@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckIfAutoRouteToOwnerQueueEnabledResponse as msdyn_CheckIfAutoRouteToOwnerQueueEnabledResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckIfAutoRouteToOwnerQueueEnabled request message
@@ -37,23 +39,19 @@ export class msdyn_CheckIfAutoRouteToOwnerQueueEnabledRequest
     const data = await response.json();
     return msdyn_CheckIfAutoRouteToOwnerQueueEnabledResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionId: this.solutionId,
-    };
-  }
 }
 
 /**
  * msdyn_CheckIfAutoRouteToOwnerQueueEnabled response message
  */
 export class msdyn_CheckIfAutoRouteToOwnerQueueEnabledResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfAutoRouteToOwnerQueueEnabledResponse) {
+  constructor(public result: msdyn_CheckIfAutoRouteToOwnerQueueEnabledResponseData) {
     super("msdyn_CheckIfAutoRouteToOwnerQueueEnabled");
   }
 
   static fromResponse(data: unknown): msdyn_CheckIfAutoRouteToOwnerQueueEnabledResponse {
-    return new msdyn_CheckIfAutoRouteToOwnerQueueEnabledResponse((data as any).value);
+    return new msdyn_CheckIfAutoRouteToOwnerQueueEnabledResponse(
+      responseObject<msdyn_CheckIfAutoRouteToOwnerQueueEnabledResponseData>(data)
+    );
   }
 }

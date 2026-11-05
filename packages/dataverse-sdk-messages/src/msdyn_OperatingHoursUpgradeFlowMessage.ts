@@ -30,10 +30,6 @@ export class msdyn_OperatingHoursUpgradeFlowRequest
     // No return value (204 No Content)
     return new msdyn_OperatingHoursUpgradeFlowResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**

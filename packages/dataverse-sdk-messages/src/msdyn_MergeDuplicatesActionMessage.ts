@@ -42,14 +42,6 @@ export class msdyn_MergeDuplicatesActionRequest
     // No return value (204 No Content)
     return new msdyn_MergeDuplicatesActionResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-      Duplicates: this.duplicates,
-      PerformParentingChecks: this.performParentingChecks,
-    };
-  }
 }
 
 /**

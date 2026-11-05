@@ -35,12 +35,6 @@ export class GrantAccessUsingSharedLinkRequest
     // No return value (204 No Content)
     return new GrantAccessUsingSharedLinkResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RecordUrlWithSharedLink: this.recordUrlWithSharedLink,
-    };
-  }
 }
 
 /**

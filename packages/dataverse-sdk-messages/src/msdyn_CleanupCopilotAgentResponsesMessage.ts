@@ -39,13 +39,6 @@ export class msdyn_CleanupCopilotAgentResponsesRequest
     // No return value (204 No Content)
     return new msdyn_CleanupCopilotAgentResponsesResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      UntilMarker: this.untilMarker,
-      ConversationId: this.conversationId,
-    };
-  }
 }
 
 /**

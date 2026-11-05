@@ -31,12 +31,6 @@ export class ComputeSlaWorkQueueItemRequest
     // No return value (204 No Content)
     return new ComputeSlaWorkQueueItemResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.workqueueId,
-    };
-  }
 }
 
 /**

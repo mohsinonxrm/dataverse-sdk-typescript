@@ -31,12 +31,6 @@ export class msdyn_StartCaseFollowupMonitoringRequest
     // No return value (204 No Content)
     return new msdyn_StartCaseFollowupMonitoringResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.incidentId,
-    };
-  }
 }
 
 /**

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { McpUpdateTableResponse as McpUpdateTableResponseData } from "./types/index.js";
 
 /**
  * McpUpdateTable request message
@@ -43,26 +45,17 @@ export class McpUpdateTableRequest
     const data = await response.json();
     return McpUpdateTableResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      newDisplayName: this.newDisplayName,
-      tablename: this.tablename,
-      item: this.item,
-      description: this.description,
-    };
-  }
 }
 
 /**
  * McpUpdateTable response message
  */
 export class McpUpdateTableResponse extends OrganizationResponse {
-  constructor(public result: McpUpdateTableResponse) {
+  constructor(public result: McpUpdateTableResponseData) {
     super("McpUpdateTable");
   }
 
   static fromResponse(data: unknown): McpUpdateTableResponse {
-    return new McpUpdateTableResponse((data as any).value);
+    return new McpUpdateTableResponse(responseObject<McpUpdateTableResponseData>(data));
   }
 }

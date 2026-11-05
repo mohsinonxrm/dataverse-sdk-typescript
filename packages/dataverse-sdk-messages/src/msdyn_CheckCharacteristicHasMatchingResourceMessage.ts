@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckCharacteristicHasMatchingResourceResponse as msdyn_CheckCharacteristicHasMatchingResourceResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckCharacteristicHasMatchingResource request message
@@ -37,23 +39,19 @@ export class msdyn_CheckCharacteristicHasMatchingResourceRequest
     const data = await response.json();
     return msdyn_CheckCharacteristicHasMatchingResourceResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionId: this.solutionId,
-    };
-  }
 }
 
 /**
  * msdyn_CheckCharacteristicHasMatchingResource response message
  */
 export class msdyn_CheckCharacteristicHasMatchingResourceResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckCharacteristicHasMatchingResourceResponse) {
+  constructor(public result: msdyn_CheckCharacteristicHasMatchingResourceResponseData) {
     super("msdyn_CheckCharacteristicHasMatchingResource");
   }
 
   static fromResponse(data: unknown): msdyn_CheckCharacteristicHasMatchingResourceResponse {
-    return new msdyn_CheckCharacteristicHasMatchingResourceResponse((data as any).value);
+    return new msdyn_CheckCharacteristicHasMatchingResourceResponse(
+      responseObject<msdyn_CheckCharacteristicHasMatchingResourceResponseData>(data)
+    );
   }
 }

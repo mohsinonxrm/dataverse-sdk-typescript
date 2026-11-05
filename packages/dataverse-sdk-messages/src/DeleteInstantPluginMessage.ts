@@ -35,12 +35,6 @@ export class DeleteInstantPluginRequest
     // No return value (204 No Content)
     return new DeleteInstantPluginResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      FxExpressionUniqueName: this.fxExpressionUniqueName,
-    };
-  }
 }
 
 /**

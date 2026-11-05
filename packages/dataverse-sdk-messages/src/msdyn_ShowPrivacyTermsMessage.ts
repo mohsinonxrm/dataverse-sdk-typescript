@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_ShowPrivacyTermsResponse as msdyn_ShowPrivacyTermsResponseData } from "./types/index.js";
 
 /**
  * msdyn_ShowPrivacyTerms request message
@@ -35,23 +37,19 @@ export class msdyn_ShowPrivacyTermsRequest
     const data = await response.json();
     return msdyn_ShowPrivacyTermsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      StreamSource: this.streamSource,
-    };
-  }
 }
 
 /**
  * msdyn_ShowPrivacyTerms response message
  */
 export class msdyn_ShowPrivacyTermsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ShowPrivacyTermsResponse) {
+  constructor(public result: msdyn_ShowPrivacyTermsResponseData) {
     super("msdyn_ShowPrivacyTerms");
   }
 
   static fromResponse(data: unknown): msdyn_ShowPrivacyTermsResponse {
-    return new msdyn_ShowPrivacyTermsResponse((data as any).value);
+    return new msdyn_ShowPrivacyTermsResponse(
+      responseObject<msdyn_ShowPrivacyTermsResponseData>(data)
+    );
   }
 }

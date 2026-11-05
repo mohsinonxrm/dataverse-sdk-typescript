@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckForRevisionMismatchAgreementBookingDatesWithAgreementBookingSetupsResponse as msdyn_CheckForRevisionMismatchAgreementBookingDatesWithAgreementBookingSetupsResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckForRevisionMismatchAgreementBookingDatesWithAgreementBookingSetups request message
@@ -40,12 +42,6 @@ export class msdyn_CheckForRevisionMismatchAgreementBookingDatesWithAgreementBoo
       data
     );
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      TimeInterval: this.timeInterval,
-    };
-  }
 }
 
 /**
@@ -53,7 +49,7 @@ export class msdyn_CheckForRevisionMismatchAgreementBookingDatesWithAgreementBoo
  */
 export class msdyn_CheckForRevisionMismatchAgreementBookingDatesWithAgreementBookingSetupsResponse extends OrganizationResponse {
   constructor(
-    public result: msdyn_CheckForRevisionMismatchAgreementBookingDatesWithAgreementBookingSetupsResponse
+    public result: msdyn_CheckForRevisionMismatchAgreementBookingDatesWithAgreementBookingSetupsResponseData
   ) {
     super("msdyn_CheckForRevisionMismatchAgreementBookingDatesWithAgreementBookingSetups");
   }
@@ -62,7 +58,9 @@ export class msdyn_CheckForRevisionMismatchAgreementBookingDatesWithAgreementBoo
     data: unknown
   ): msdyn_CheckForRevisionMismatchAgreementBookingDatesWithAgreementBookingSetupsResponse {
     return new msdyn_CheckForRevisionMismatchAgreementBookingDatesWithAgreementBookingSetupsResponse(
-      (data as any).value
+      responseObject<msdyn_CheckForRevisionMismatchAgreementBookingDatesWithAgreementBookingSetupsResponseData>(
+        data
+      )
     );
   }
 }

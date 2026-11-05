@@ -41,14 +41,6 @@ export class SetAutoNumberSeedRequest
     // No return value (204 No Content)
     return new SetAutoNumberSeedResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntityName: this.entityName,
-      AttributeName: this.attributeName,
-      Value: this.value,
-    };
-  }
 }
 
 /**

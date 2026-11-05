@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckForActiveAgreementsHavingPastEndDatesResponse as msdyn_CheckForActiveAgreementsHavingPastEndDatesResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckForActiveAgreementsHavingPastEndDates request message
@@ -37,23 +39,19 @@ export class msdyn_CheckForActiveAgreementsHavingPastEndDatesRequest
     const data = await response.json();
     return msdyn_CheckForActiveAgreementsHavingPastEndDatesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      TimeInterval: this.timeInterval,
-    };
-  }
 }
 
 /**
  * msdyn_CheckForActiveAgreementsHavingPastEndDates response message
  */
 export class msdyn_CheckForActiveAgreementsHavingPastEndDatesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckForActiveAgreementsHavingPastEndDatesResponse) {
+  constructor(public result: msdyn_CheckForActiveAgreementsHavingPastEndDatesResponseData) {
     super("msdyn_CheckForActiveAgreementsHavingPastEndDates");
   }
 
   static fromResponse(data: unknown): msdyn_CheckForActiveAgreementsHavingPastEndDatesResponse {
-    return new msdyn_CheckForActiveAgreementsHavingPastEndDatesResponse((data as any).value);
+    return new msdyn_CheckForActiveAgreementsHavingPastEndDatesResponse(
+      responseObject<msdyn_CheckForActiveAgreementsHavingPastEndDatesResponseData>(data)
+    );
   }
 }

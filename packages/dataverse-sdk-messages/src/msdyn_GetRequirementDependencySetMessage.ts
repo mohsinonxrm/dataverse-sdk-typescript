@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetRequirementDependencySetResponse as msdyn_GetRequirementDependencySetResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetRequirementDependencySet request message
@@ -39,24 +41,19 @@ export class msdyn_GetRequirementDependencySetRequest
     const data = await response.json();
     return msdyn_GetRequirementDependencySetResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Version: this.version,
-      RequirementIds: this.requirementIds,
-    };
-  }
 }
 
 /**
  * msdyn_GetRequirementDependencySet response message
  */
 export class msdyn_GetRequirementDependencySetResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetRequirementDependencySetResponse) {
+  constructor(public result: msdyn_GetRequirementDependencySetResponseData) {
     super("msdyn_GetRequirementDependencySet");
   }
 
   static fromResponse(data: unknown): msdyn_GetRequirementDependencySetResponse {
-    return new msdyn_GetRequirementDependencySetResponse((data as any).value);
+    return new msdyn_GetRequirementDependencySetResponse(
+      responseObject<msdyn_GetRequirementDependencySetResponseData>(data)
+    );
   }
 }

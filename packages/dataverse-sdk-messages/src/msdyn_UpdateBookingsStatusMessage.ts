@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_UpdateBookingsStatusResponse as msdyn_UpdateBookingsStatusResponseData } from "./types/index.js";
 
 /**
  * msdyn_UpdateBookingsStatus request message
@@ -46,27 +48,19 @@ export class msdyn_UpdateBookingsStatusRequest
     const data = await response.json();
     return msdyn_UpdateBookingsStatusResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      TargetStatusId: this.targetStatusId,
-      BookingIds: this.bookingIds,
-      DefaultBookingDetail: this.defaultBookingDetail,
-      BookingStatusChangeContext: this.bookingStatusChangeContext,
-      ConsiderAppointments: this.considerAppointments,
-    };
-  }
 }
 
 /**
  * msdyn_UpdateBookingsStatus response message
  */
 export class msdyn_UpdateBookingsStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_UpdateBookingsStatusResponse) {
+  constructor(public result: msdyn_UpdateBookingsStatusResponseData) {
     super("msdyn_UpdateBookingsStatus");
   }
 
   static fromResponse(data: unknown): msdyn_UpdateBookingsStatusResponse {
-    return new msdyn_UpdateBookingsStatusResponse((data as any).value);
+    return new msdyn_UpdateBookingsStatusResponse(
+      responseObject<msdyn_UpdateBookingsStatusResponseData>(data)
+    );
   }
 }

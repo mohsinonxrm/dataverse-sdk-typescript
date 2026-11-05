@@ -32,10 +32,6 @@ export class msdyn_SyncKnowledgeManagementSettingsV2Request
     // No return value (204 No Content)
     return new msdyn_SyncKnowledgeManagementSettingsV2Response();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**

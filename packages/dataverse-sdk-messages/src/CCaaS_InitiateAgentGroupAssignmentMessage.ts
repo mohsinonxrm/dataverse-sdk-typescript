@@ -41,14 +41,6 @@ export class CCaaS_InitiateAgentGroupAssignmentRequest
     // No return value (204 No Content)
     return new CCaaS_InitiateAgentGroupAssignmentResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_ocliveworkitemId,
-      AgentGroupId: this.agentGroupId,
-      ApiVersion: this.apiVersion,
-    };
-  }
 }
 
 /**

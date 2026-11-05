@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetSequenceAssignedOwnersResponse as msdyn_GetSequenceAssignedOwnersResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetSequenceAssignedOwners request message
@@ -41,25 +43,19 @@ export class msdyn_GetSequenceAssignedOwnersRequest
     const data = await response.json();
     return msdyn_GetSequenceAssignedOwnersResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RegardingEntityId: this.regardingEntityId,
-      RegardingEntityName: this.regardingEntityName,
-      SequenceIds: this.sequenceIds,
-    };
-  }
 }
 
 /**
  * msdyn_GetSequenceAssignedOwners response message
  */
 export class msdyn_GetSequenceAssignedOwnersResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetSequenceAssignedOwnersResponse) {
+  constructor(public result: msdyn_GetSequenceAssignedOwnersResponseData) {
     super("msdyn_GetSequenceAssignedOwners");
   }
 
   static fromResponse(data: unknown): msdyn_GetSequenceAssignedOwnersResponse {
-    return new msdyn_GetSequenceAssignedOwnersResponse((data as any).value);
+    return new msdyn_GetSequenceAssignedOwnersResponse(
+      responseObject<msdyn_GetSequenceAssignedOwnersResponseData>(data)
+    );
   }
 }

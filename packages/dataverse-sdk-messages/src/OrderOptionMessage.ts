@@ -45,16 +45,6 @@ export class OrderOptionRequest
     // No return value (204 No Content)
     return new OrderOptionResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      OptionSetName: this.optionSetName,
-      AttributeLogicalName: this.attributeLogicalName,
-      EntityLogicalName: this.entityLogicalName,
-      Values: this.values,
-      SolutionUniqueName: this.solutionUniqueName,
-    };
-  }
 }
 
 /**

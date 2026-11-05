@@ -41,15 +41,6 @@ export class MergeRequest extends OrganizationRequest implements Executable<Merg
     // No return value (204 No Content)
     return new MergeResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-      Subordinate: this.subordinate,
-      UpdateContent: this.updateContent,
-      PerformParentingChecks: this.performParentingChecks,
-    };
-  }
 }
 
 /**

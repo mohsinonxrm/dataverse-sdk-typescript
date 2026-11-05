@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseValue } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 
 /**
@@ -36,23 +37,17 @@ export class RetrieveConnectorActionsRequest
     const data = await response.json();
     return RetrieveConnectorActionsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ConnectionReference: this.connectionReference,
-    };
-  }
 }
 
 /**
  * RetrieveConnectorActions response message
  */
 export class RetrieveConnectorActionsResponse extends OrganizationResponse {
-  constructor(public result: EntityReference[]) {
+  constructor(public result: Record<string, unknown>[]) {
     super("RetrieveConnectorActions");
   }
 
   static fromResponse(data: unknown): RetrieveConnectorActionsResponse {
-    return new RetrieveConnectorActionsResponse((data as any).value);
+    return new RetrieveConnectorActionsResponse(responseValue<Record<string, unknown>[]>(data));
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetAvailabilitySummaryFromDemandResponse as msdyn_GetAvailabilitySummaryFromDemandResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetAvailabilitySummaryFromDemand request message
@@ -51,30 +53,19 @@ export class msdyn_GetAvailabilitySummaryFromDemandRequest
     const data = await response.json();
     return msdyn_GetAvailabilitySummaryFromDemandResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RequirementIds: this.requirementIds,
-      Timescale: this.timescale,
-      TimeZoneCode: this.timeZoneCode,
-      ResourceIds: this.resourceIds,
-      StartDate: this.startDate,
-      EndDate: this.endDate,
-      ConsiderAppointments: this.considerAppointments,
-      IgnoreTimeZone: this.ignoreTimeZone,
-    };
-  }
 }
 
 /**
  * msdyn_GetAvailabilitySummaryFromDemand response message
  */
 export class msdyn_GetAvailabilitySummaryFromDemandResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetAvailabilitySummaryFromDemandResponse) {
+  constructor(public result: msdyn_GetAvailabilitySummaryFromDemandResponseData) {
     super("msdyn_GetAvailabilitySummaryFromDemand");
   }
 
   static fromResponse(data: unknown): msdyn_GetAvailabilitySummaryFromDemandResponse {
-    return new msdyn_GetAvailabilitySummaryFromDemandResponse((data as any).value);
+    return new msdyn_GetAvailabilitySummaryFromDemandResponse(
+      responseObject<msdyn_GetAvailabilitySummaryFromDemandResponseData>(data)
+    );
   }
 }

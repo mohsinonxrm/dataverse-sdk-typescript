@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { ListConnectionReferencesResponse as ListConnectionReferencesResponseData } from "./types/index.js";
 
 /**
  * ListConnectionReferences request message
@@ -31,23 +33,19 @@ export class ListConnectionReferencesRequest
     const data = await response.json();
     return ListConnectionReferencesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.workflowId,
-    };
-  }
 }
 
 /**
  * ListConnectionReferences response message
  */
 export class ListConnectionReferencesResponse extends OrganizationResponse {
-  constructor(public result: ListConnectionReferencesResponse) {
+  constructor(public result: ListConnectionReferencesResponseData) {
     super("ListConnectionReferences");
   }
 
   static fromResponse(data: unknown): ListConnectionReferencesResponse {
-    return new ListConnectionReferencesResponse((data as any).value);
+    return new ListConnectionReferencesResponse(
+      responseObject<ListConnectionReferencesResponseData>(data)
+    );
   }
 }

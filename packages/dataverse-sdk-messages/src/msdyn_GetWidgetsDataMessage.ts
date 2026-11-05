@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetWidgetsDataResponse as msdyn_GetWidgetsDataResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetWidgetsData request message
@@ -45,27 +47,17 @@ export class msdyn_GetWidgetsDataRequest
     const data = await response.json();
     return msdyn_GetWidgetsDataResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_request: this.msdyn_request,
-      msdyn_entityname: this.msdyn_entityname,
-      msdyn_widgettype: this.msdyn_widgettype,
-      msdyn_widgetid: this.msdyn_widgetid,
-      msdyn_recordid: this.msdyn_recordid,
-    };
-  }
 }
 
 /**
  * msdyn_GetWidgetsData response message
  */
 export class msdyn_GetWidgetsDataResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetWidgetsDataResponse) {
+  constructor(public result: msdyn_GetWidgetsDataResponseData) {
     super("msdyn_GetWidgetsData");
   }
 
   static fromResponse(data: unknown): msdyn_GetWidgetsDataResponse {
-    return new msdyn_GetWidgetsDataResponse((data as any).value);
+    return new msdyn_GetWidgetsDataResponse(responseObject<msdyn_GetWidgetsDataResponseData>(data));
   }
 }

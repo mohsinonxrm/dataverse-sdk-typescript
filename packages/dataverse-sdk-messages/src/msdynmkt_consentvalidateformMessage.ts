@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdynmkt_consentvalidateformResponse as msdynmkt_consentvalidateformResponseData } from "./types/index.js";
 
 /**
  * msdynmkt_consentvalidateform request message
@@ -47,28 +49,19 @@ export class msdynmkt_consentvalidateformRequest
     const data = await response.json();
     return msdynmkt_consentvalidateformResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdynmkt_editorname: this.msdynmkt_editorname,
-      validationType: this.validationType,
-      formBusinessUnitId: this.formBusinessUnitId,
-      complianceProfileId: this.complianceProfileId,
-      isDoubleOptInForciblyDisabled: this.isDoubleOptInForciblyDisabled,
-      msdynmkt_formhtml: this.msdynmkt_formhtml,
-    };
-  }
 }
 
 /**
  * msdynmkt_consentvalidateform response message
  */
 export class msdynmkt_consentvalidateformResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_consentvalidateformResponse) {
+  constructor(public result: msdynmkt_consentvalidateformResponseData) {
     super("msdynmkt_consentvalidateform");
   }
 
   static fromResponse(data: unknown): msdynmkt_consentvalidateformResponse {
-    return new msdynmkt_consentvalidateformResponse((data as any).value);
+    return new msdynmkt_consentvalidateformResponse(
+      responseObject<msdynmkt_consentvalidateformResponseData>(data)
+    );
   }
 }

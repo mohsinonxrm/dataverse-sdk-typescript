@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetDocumentContentResponse as msdyn_GetDocumentContentResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetDocumentContent request message
@@ -47,28 +49,19 @@ export class msdyn_GetDocumentContentRequest
     const data = await response.json();
     return msdyn_GetDocumentContentResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_documents: this.msdyn_documents,
-      msdyn_activityId: this.msdyn_activityId,
-      msdyn_type: this.msdyn_type,
-      msdyn_userQuery: this.msdyn_userQuery,
-      msdyn_shouldUpload: this.msdyn_shouldUpload,
-      msdyn_keywords: this.msdyn_keywords,
-    };
-  }
 }
 
 /**
  * msdyn_GetDocumentContent response message
  */
 export class msdyn_GetDocumentContentResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetDocumentContentResponse) {
+  constructor(public result: msdyn_GetDocumentContentResponseData) {
     super("msdyn_GetDocumentContent");
   }
 
   static fromResponse(data: unknown): msdyn_GetDocumentContentResponse {
-    return new msdyn_GetDocumentContentResponse((data as any).value);
+    return new msdyn_GetDocumentContentResponse(
+      responseObject<msdyn_GetDocumentContentResponseData>(data)
+    );
   }
 }

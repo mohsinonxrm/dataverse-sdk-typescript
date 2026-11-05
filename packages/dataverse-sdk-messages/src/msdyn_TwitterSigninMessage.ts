@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_TwitterSigninResponse as msdyn_TwitterSigninResponseData } from "./types/index.js";
 
 /**
  * msdyn_TwitterSignin request message
@@ -39,24 +41,17 @@ export class msdyn_TwitterSigninRequest
     const data = await response.json();
     return msdyn_TwitterSigninResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      OrgUrl: this.orgUrl,
-      ApplicationId: this.applicationId,
-    };
-  }
 }
 
 /**
  * msdyn_TwitterSignin response message
  */
 export class msdyn_TwitterSigninResponse extends OrganizationResponse {
-  constructor(public result: msdyn_TwitterSigninResponse) {
+  constructor(public result: msdyn_TwitterSigninResponseData) {
     super("msdyn_TwitterSignin");
   }
 
   static fromResponse(data: unknown): msdyn_TwitterSigninResponse {
-    return new msdyn_TwitterSigninResponse((data as any).value);
+    return new msdyn_TwitterSigninResponse(responseObject<msdyn_TwitterSigninResponseData>(data));
   }
 }

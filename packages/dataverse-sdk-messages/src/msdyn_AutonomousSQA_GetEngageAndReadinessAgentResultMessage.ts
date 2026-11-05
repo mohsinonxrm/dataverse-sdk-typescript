@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResponse as msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResponseData } from "./types/index.js";
 
 /**
  * msdyn_AutonomousSQA_GetEngageAndReadinessAgentResult request message
@@ -42,24 +44,19 @@ export class msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultRequest
     const data = await response.json();
     return msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_RegardingObjectId: this.msdyn_RegardingObjectId,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-    };
-  }
 }
 
 /**
  * msdyn_AutonomousSQA_GetEngageAndReadinessAgentResult response message
  */
 export class msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResponse extends OrganizationResponse {
-  constructor(public result: msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResponse) {
+  constructor(public result: msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResponseData) {
     super("msdyn_AutonomousSQA_GetEngageAndReadinessAgentResult");
   }
 
   static fromResponse(data: unknown): msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResponse {
-    return new msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResponse((data as any).value);
+    return new msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResponse(
+      responseObject<msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResponseData>(data)
+    );
   }
 }

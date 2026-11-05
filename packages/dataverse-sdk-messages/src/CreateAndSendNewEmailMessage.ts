@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { CreateAndSendNewEmailResponse as CreateAndSendNewEmailResponseData } from "./types/index.js";
 
 /**
  * CreateAndSendNewEmail request message
@@ -52,30 +54,19 @@ export class CreateAndSendNewEmailRequest
     const data = await response.json();
     return CreateAndSendNewEmailResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Subject: this.subject,
-      Body: this.body,
-      From: this.from,
-      To: this.to,
-      Cc: this.cc,
-      Bcc: this.bcc,
-      Regarding: this.regarding,
-      Importance: this.importance,
-    };
-  }
 }
 
 /**
  * CreateAndSendNewEmail response message
  */
 export class CreateAndSendNewEmailResponse extends OrganizationResponse {
-  constructor(public result: CreateAndSendNewEmailResponse) {
+  constructor(public result: CreateAndSendNewEmailResponseData) {
     super("CreateAndSendNewEmail");
   }
 
   static fromResponse(data: unknown): CreateAndSendNewEmailResponse {
-    return new CreateAndSendNewEmailResponse((data as any).value);
+    return new CreateAndSendNewEmailResponse(
+      responseObject<CreateAndSendNewEmailResponseData>(data)
+    );
   }
 }

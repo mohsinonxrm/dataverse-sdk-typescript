@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_ConnectSequenceResponse as msdyn_ConnectSequenceResponseData } from "./types/index.js";
 
 /**
  * msdyn_ConnectSequence request message
@@ -53,31 +55,19 @@ export class msdyn_ConnectSequenceRequest
     const data = await response.json();
     return msdyn_ConnectSequenceResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RegardingEntityId: this.regardingEntityId,
-      RegardingEntityName: this.regardingEntityName,
-      SequenceId: this.sequenceId,
-      SegmentId: this.segmentId,
-      Source: this.source,
-      WaitTime: this.waitTime,
-      AdvancedToOtherSequenceTargetStepId: this.advancedToOtherSequenceTargetStepId,
-      OwnerEntityId: this.ownerEntityId,
-      OwnerEntityName: this.ownerEntityName,
-    };
-  }
 }
 
 /**
  * msdyn_ConnectSequence response message
  */
 export class msdyn_ConnectSequenceResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ConnectSequenceResponse) {
+  constructor(public result: msdyn_ConnectSequenceResponseData) {
     super("msdyn_ConnectSequence");
   }
 
   static fromResponse(data: unknown): msdyn_ConnectSequenceResponse {
-    return new msdyn_ConnectSequenceResponse((data as any).value);
+    return new msdyn_ConnectSequenceResponse(
+      responseObject<msdyn_ConnectSequenceResponseData>(data)
+    );
   }
 }

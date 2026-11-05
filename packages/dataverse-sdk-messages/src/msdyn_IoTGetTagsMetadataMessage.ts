@@ -1,6 +1,10 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { msdyn_iotdevicecategory } from "./types/index.js";
+import { responseObject } from "./internal/responseData.js";
+import type {
+  msdyn_IoTGetTagsMetadataResponse as msdyn_IoTGetTagsMetadataResponseData,
+  msdyn_iotdevicecategory,
+} from "./types/index.js";
 
 /**
  * msdyn_IoTGetTagsMetadata request message
@@ -36,23 +40,19 @@ export class msdyn_IoTGetTagsMetadataRequest
     const data = await response.json();
     return msdyn_IoTGetTagsMetadataResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      DeviceCategory: this.deviceCategory,
-    };
-  }
 }
 
 /**
  * msdyn_IoTGetTagsMetadata response message
  */
 export class msdyn_IoTGetTagsMetadataResponse extends OrganizationResponse {
-  constructor(public result: msdyn_IoTGetTagsMetadataResponse) {
+  constructor(public result: msdyn_IoTGetTagsMetadataResponseData) {
     super("msdyn_IoTGetTagsMetadata");
   }
 
   static fromResponse(data: unknown): msdyn_IoTGetTagsMetadataResponse {
-    return new msdyn_IoTGetTagsMetadataResponse((data as any).value);
+    return new msdyn_IoTGetTagsMetadataResponse(
+      responseObject<msdyn_IoTGetTagsMetadataResponseData>(data)
+    );
   }
 }

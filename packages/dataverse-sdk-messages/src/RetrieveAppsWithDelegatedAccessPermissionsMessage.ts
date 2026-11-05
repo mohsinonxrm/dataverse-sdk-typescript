@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import { responseValue } from "./internal/responseData.js";
 
 /**
  * RetrieveAppsWithDelegatedAccessPermissions request message
@@ -38,23 +38,19 @@ export class RetrieveAppsWithDelegatedAccessPermissionsRequest
     const data = await response.json();
     return RetrieveAppsWithDelegatedAccessPermissionsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      cloud: this.cloud,
-    };
-  }
 }
 
 /**
  * RetrieveAppsWithDelegatedAccessPermissions response message
  */
 export class RetrieveAppsWithDelegatedAccessPermissionsResponse extends OrganizationResponse {
-  constructor(public result: EntityReference[]) {
+  constructor(public result: Record<string, unknown>[]) {
     super("RetrieveAppsWithDelegatedAccessPermissions");
   }
 
   static fromResponse(data: unknown): RetrieveAppsWithDelegatedAccessPermissionsResponse {
-    return new RetrieveAppsWithDelegatedAccessPermissionsResponse((data as any).value);
+    return new RetrieveAppsWithDelegatedAccessPermissionsResponse(
+      responseValue<Record<string, unknown>[]>(data)
+    );
   }
 }

@@ -35,12 +35,6 @@ export class msdyn_DisableBotUserRequest
     // No return value (204 No Content)
     return new msdyn_DisableBotUserResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      BotApplicationId: this.botApplicationId,
-    };
-  }
 }
 
 /**

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { UninstallSolutionAsyncResponse as UninstallSolutionAsyncResponseData } from "./types/index.js";
 
 /**
  * UninstallSolutionAsync request message
@@ -35,23 +37,19 @@ export class UninstallSolutionAsyncRequest
     const data = await response.json();
     return UninstallSolutionAsyncResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionUniqueName: this.solutionUniqueName,
-    };
-  }
 }
 
 /**
  * UninstallSolutionAsync response message
  */
 export class UninstallSolutionAsyncResponse extends OrganizationResponse {
-  constructor(public result: UninstallSolutionAsyncResponse) {
+  constructor(public result: UninstallSolutionAsyncResponseData) {
     super("UninstallSolutionAsync");
   }
 
   static fromResponse(data: unknown): UninstallSolutionAsyncResponse {
-    return new UninstallSolutionAsyncResponse((data as any).value);
+    return new UninstallSolutionAsyncResponse(
+      responseObject<UninstallSolutionAsyncResponseData>(data)
+    );
   }
 }

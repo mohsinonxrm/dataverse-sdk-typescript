@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetEntityViewsResponse as msdyn_GetEntityViewsResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetEntityViews request message
@@ -35,23 +37,17 @@ export class msdyn_GetEntityViewsRequest
     const data = await response.json();
     return msdyn_GetEntityViewsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_input: this.msdyn_input,
-    };
-  }
 }
 
 /**
  * msdyn_GetEntityViews response message
  */
 export class msdyn_GetEntityViewsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetEntityViewsResponse) {
+  constructor(public result: msdyn_GetEntityViewsResponseData) {
     super("msdyn_GetEntityViews");
   }
 
   static fromResponse(data: unknown): msdyn_GetEntityViewsResponse {
-    return new msdyn_GetEntityViewsResponse((data as any).value);
+    return new msdyn_GetEntityViewsResponse(responseObject<msdyn_GetEntityViewsResponseData>(data));
   }
 }

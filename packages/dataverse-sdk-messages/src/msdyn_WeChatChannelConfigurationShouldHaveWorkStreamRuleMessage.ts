@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRuleResponse as msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRule request message
@@ -32,17 +34,13 @@ export class msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRuleRequest
     const data = await response.json();
     return msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRuleResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRule response message
  */
 export class msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRuleResponse) {
+  constructor(public result: msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRuleResponseData) {
     super("msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRule");
   }
 
@@ -50,7 +48,7 @@ export class msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRuleResponse ex
     data: unknown
   ): msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRuleResponse {
     return new msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRuleResponse(
-      (data as any).value
+      responseObject<msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRuleResponseData>(data)
     );
   }
 }

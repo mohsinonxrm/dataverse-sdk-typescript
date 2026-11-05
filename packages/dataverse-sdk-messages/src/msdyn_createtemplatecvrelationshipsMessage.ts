@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_createtemplatecvrelationshipsResponse as msdyn_createtemplatecvrelationshipsResponseData } from "./types/index.js";
 
 /**
  * msdyn_createtemplatecvrelationships request message
@@ -35,23 +37,19 @@ export class msdyn_createtemplatecvrelationshipsRequest
     const data = await response.json();
     return msdyn_createtemplatecvrelationshipsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_templaterulesetid: this.msdyn_templaterulesetid,
-    };
-  }
 }
 
 /**
  * msdyn_createtemplatecvrelationships response message
  */
 export class msdyn_createtemplatecvrelationshipsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_createtemplatecvrelationshipsResponse) {
+  constructor(public result: msdyn_createtemplatecvrelationshipsResponseData) {
     super("msdyn_createtemplatecvrelationships");
   }
 
   static fromResponse(data: unknown): msdyn_createtemplatecvrelationshipsResponse {
-    return new msdyn_createtemplatecvrelationshipsResponse((data as any).value);
+    return new msdyn_createtemplatecvrelationshipsResponse(
+      responseObject<msdyn_createtemplatecvrelationshipsResponseData>(data)
+    );
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_LogPlatformSummaryInteractionResponse as msdyn_LogPlatformSummaryInteractionResponseData } from "./types/index.js";
 
 /**
  * msdyn_LogPlatformSummaryInteraction request message
@@ -41,25 +43,19 @@ export class msdyn_LogPlatformSummaryInteractionRequest
     const data = await response.json();
     return msdyn_LogPlatformSummaryInteractionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      InteractionData: this.interactionData,
-      Context: this.context,
-      InteractionType: this.interactionType,
-    };
-  }
 }
 
 /**
  * msdyn_LogPlatformSummaryInteraction response message
  */
 export class msdyn_LogPlatformSummaryInteractionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_LogPlatformSummaryInteractionResponse) {
+  constructor(public result: msdyn_LogPlatformSummaryInteractionResponseData) {
     super("msdyn_LogPlatformSummaryInteraction");
   }
 
   static fromResponse(data: unknown): msdyn_LogPlatformSummaryInteractionResponse {
-    return new msdyn_LogPlatformSummaryInteractionResponse((data as any).value);
+    return new msdyn_LogPlatformSummaryInteractionResponse(
+      responseObject<msdyn_LogPlatformSummaryInteractionResponseData>(data)
+    );
   }
 }

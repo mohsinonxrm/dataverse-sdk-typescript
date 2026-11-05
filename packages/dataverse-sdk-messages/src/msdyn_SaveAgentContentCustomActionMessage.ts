@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_SaveAgentContentCustomActionResponse as msdyn_SaveAgentContentCustomActionResponseData } from "./types/index.js";
 
 /**
  * msdyn_SaveAgentContentCustomAction request message
@@ -35,23 +37,19 @@ export class msdyn_SaveAgentContentCustomActionRequest
     const data = await response.json();
     return msdyn_SaveAgentContentCustomActionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      AgentContent: this.agentContent,
-    };
-  }
 }
 
 /**
  * msdyn_SaveAgentContentCustomAction response message
  */
 export class msdyn_SaveAgentContentCustomActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SaveAgentContentCustomActionResponse) {
+  constructor(public result: msdyn_SaveAgentContentCustomActionResponseData) {
     super("msdyn_SaveAgentContentCustomAction");
   }
 
   static fromResponse(data: unknown): msdyn_SaveAgentContentCustomActionResponse {
-    return new msdyn_SaveAgentContentCustomActionResponse((data as any).value);
+    return new msdyn_SaveAgentContentCustomActionResponse(
+      responseObject<msdyn_SaveAgentContentCustomActionResponseData>(data)
+    );
   }
 }

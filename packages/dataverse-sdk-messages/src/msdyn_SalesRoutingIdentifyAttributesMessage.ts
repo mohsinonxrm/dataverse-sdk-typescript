@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_SalesRoutingIdentifyAttributesResponse as msdyn_SalesRoutingIdentifyAttributesResponseData } from "./types/index.js";
 
 /**
  * msdyn_SalesRoutingIdentifyAttributes request message
@@ -30,21 +32,19 @@ export class msdyn_SalesRoutingIdentifyAttributesRequest
     const data = await response.json();
     return msdyn_SalesRoutingIdentifyAttributesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_SalesRoutingIdentifyAttributes response message
  */
 export class msdyn_SalesRoutingIdentifyAttributesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesRoutingIdentifyAttributesResponse) {
+  constructor(public result: msdyn_SalesRoutingIdentifyAttributesResponseData) {
     super("msdyn_SalesRoutingIdentifyAttributes");
   }
 
   static fromResponse(data: unknown): msdyn_SalesRoutingIdentifyAttributesResponse {
-    return new msdyn_SalesRoutingIdentifyAttributesResponse((data as any).value);
+    return new msdyn_SalesRoutingIdentifyAttributesResponse(
+      responseObject<msdyn_SalesRoutingIdentifyAttributesResponseData>(data)
+    );
   }
 }

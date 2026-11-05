@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdynmkt_PersonalizationDynamicTextAiResponse as msdynmkt_PersonalizationDynamicTextAiResponseData } from "./types/index.js";
 
 /**
  * msdynmkt_PersonalizationDynamicTextAi request message
@@ -36,24 +38,19 @@ export class msdynmkt_PersonalizationDynamicTextAiRequest
     const data = await response.json();
     return msdynmkt_PersonalizationDynamicTextAiResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdynmkt_PersonalizationDynamicTextAiRequest:
-        this.msdynmkt_PersonalizationDynamicTextAiRequest,
-    };
-  }
 }
 
 /**
  * msdynmkt_PersonalizationDynamicTextAi response message
  */
 export class msdynmkt_PersonalizationDynamicTextAiResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_PersonalizationDynamicTextAiResponse) {
+  constructor(public result: msdynmkt_PersonalizationDynamicTextAiResponseData) {
     super("msdynmkt_PersonalizationDynamicTextAi");
   }
 
   static fromResponse(data: unknown): msdynmkt_PersonalizationDynamicTextAiResponse {
-    return new msdynmkt_PersonalizationDynamicTextAiResponse((data as any).value);
+    return new msdynmkt_PersonalizationDynamicTextAiResponse(
+      responseObject<msdynmkt_PersonalizationDynamicTextAiResponseData>(data)
+    );
   }
 }

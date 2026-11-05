@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_ActivateSdkMessageProcessingStepsResponse as msdyn_ActivateSdkMessageProcessingStepsResponseData } from "./types/index.js";
 
 /**
  * msdyn_ActivateSdkMessageProcessingSteps request message
@@ -38,23 +40,19 @@ export class msdyn_ActivateSdkMessageProcessingStepsRequest
     const data = await response.json();
     return msdyn_ActivateSdkMessageProcessingStepsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      AnalysisResult: this.analysisResult,
-    };
-  }
 }
 
 /**
  * msdyn_ActivateSdkMessageProcessingSteps response message
  */
 export class msdyn_ActivateSdkMessageProcessingStepsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ActivateSdkMessageProcessingStepsResponse) {
+  constructor(public result: msdyn_ActivateSdkMessageProcessingStepsResponseData) {
     super("msdyn_ActivateSdkMessageProcessingSteps");
   }
 
   static fromResponse(data: unknown): msdyn_ActivateSdkMessageProcessingStepsResponse {
-    return new msdyn_ActivateSdkMessageProcessingStepsResponse((data as any).value);
+    return new msdyn_ActivateSdkMessageProcessingStepsResponse(
+      responseObject<msdyn_ActivateSdkMessageProcessingStepsResponseData>(data)
+    );
   }
 }

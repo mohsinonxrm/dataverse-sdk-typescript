@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { CommitFileBlocksUploadResponse as CommitFileBlocksUploadResponseData } from "./types/index.js";
 
 /**
  * CommitFileBlocksUpload request message
@@ -43,26 +45,19 @@ export class CommitFileBlocksUploadRequest
     const data = await response.json();
     return CommitFileBlocksUploadResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      FileName: this.fileName,
-      MimeType: this.mimeType,
-      BlockList: this.blockList,
-      FileContinuationToken: this.fileContinuationToken,
-    };
-  }
 }
 
 /**
  * CommitFileBlocksUpload response message
  */
 export class CommitFileBlocksUploadResponse extends OrganizationResponse {
-  constructor(public result: CommitFileBlocksUploadResponse) {
+  constructor(public result: CommitFileBlocksUploadResponseData) {
     super("CommitFileBlocksUpload");
   }
 
   static fromResponse(data: unknown): CommitFileBlocksUploadResponse {
-    return new CommitFileBlocksUploadResponse((data as any).value);
+    return new CommitFileBlocksUploadResponse(
+      responseObject<CommitFileBlocksUploadResponseData>(data)
+    );
   }
 }

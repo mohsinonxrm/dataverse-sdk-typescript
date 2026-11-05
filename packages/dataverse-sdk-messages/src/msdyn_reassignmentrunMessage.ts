@@ -35,12 +35,6 @@ export class msdyn_reassignmentrunRequest
     // No return value (204 No Content)
     return new msdyn_reassignmentrunResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      InputData: this.inputData,
-    };
-  }
 }
 
 /**

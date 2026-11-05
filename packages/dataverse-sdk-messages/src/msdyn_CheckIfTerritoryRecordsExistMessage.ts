@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckIfTerritoryRecordsExistResponse as msdyn_CheckIfTerritoryRecordsExistResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckIfTerritoryRecordsExist request message
@@ -30,21 +32,19 @@ export class msdyn_CheckIfTerritoryRecordsExistRequest
     const data = await response.json();
     return msdyn_CheckIfTerritoryRecordsExistResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_CheckIfTerritoryRecordsExist response message
  */
 export class msdyn_CheckIfTerritoryRecordsExistResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfTerritoryRecordsExistResponse) {
+  constructor(public result: msdyn_CheckIfTerritoryRecordsExistResponseData) {
     super("msdyn_CheckIfTerritoryRecordsExist");
   }
 
   static fromResponse(data: unknown): msdyn_CheckIfTerritoryRecordsExistResponse {
-    return new msdyn_CheckIfTerritoryRecordsExistResponse((data as any).value);
+    return new msdyn_CheckIfTerritoryRecordsExistResponse(
+      responseObject<msdyn_CheckIfTerritoryRecordsExistResponseData>(data)
+    );
   }
 }

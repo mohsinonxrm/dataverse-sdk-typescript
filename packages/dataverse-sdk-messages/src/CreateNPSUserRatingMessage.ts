@@ -45,16 +45,6 @@ export class CreateNPSUserRatingRequest
     // No return value (204 No Content)
     return new CreateNPSUserRatingResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Score: this.score,
-      Comment: this.comment,
-      AppModuleId: this.appModuleId,
-      Browser: this.browser,
-      Device: this.device,
-    };
-  }
 }
 
 /**

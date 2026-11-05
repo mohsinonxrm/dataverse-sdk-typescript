@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_EditSequenceResponse as msdyn_EditSequenceResponseData } from "./types/index.js";
 
 /**
  * msdyn_EditSequence request message
@@ -39,24 +41,17 @@ export class msdyn_EditSequenceRequest
     const data = await response.json();
     return msdyn_EditSequenceResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SequenceId: this.sequenceId,
-      DiscardChanges: this.discardChanges,
-    };
-  }
 }
 
 /**
  * msdyn_EditSequence response message
  */
 export class msdyn_EditSequenceResponse extends OrganizationResponse {
-  constructor(public result: msdyn_EditSequenceResponse) {
+  constructor(public result: msdyn_EditSequenceResponseData) {
     super("msdyn_EditSequence");
   }
 
   static fromResponse(data: unknown): msdyn_EditSequenceResponse {
-    return new msdyn_EditSequenceResponse((data as any).value);
+    return new msdyn_EditSequenceResponse(responseObject<msdyn_EditSequenceResponseData>(data));
   }
 }

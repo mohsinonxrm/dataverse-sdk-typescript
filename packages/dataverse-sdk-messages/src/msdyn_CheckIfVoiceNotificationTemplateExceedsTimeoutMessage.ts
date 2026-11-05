@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckIfVoiceNotificationTemplateExceedsTimeoutResponse as msdyn_CheckIfVoiceNotificationTemplateExceedsTimeoutResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckIfVoiceNotificationTemplateExceedsTimeout request message
@@ -32,21 +34,19 @@ export class msdyn_CheckIfVoiceNotificationTemplateExceedsTimeoutRequest
     const data = await response.json();
     return msdyn_CheckIfVoiceNotificationTemplateExceedsTimeoutResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_CheckIfVoiceNotificationTemplateExceedsTimeout response message
  */
 export class msdyn_CheckIfVoiceNotificationTemplateExceedsTimeoutResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfVoiceNotificationTemplateExceedsTimeoutResponse) {
+  constructor(public result: msdyn_CheckIfVoiceNotificationTemplateExceedsTimeoutResponseData) {
     super("msdyn_CheckIfVoiceNotificationTemplateExceedsTimeout");
   }
 
   static fromResponse(data: unknown): msdyn_CheckIfVoiceNotificationTemplateExceedsTimeoutResponse {
-    return new msdyn_CheckIfVoiceNotificationTemplateExceedsTimeoutResponse((data as any).value);
+    return new msdyn_CheckIfVoiceNotificationTemplateExceedsTimeoutResponse(
+      responseObject<msdyn_CheckIfVoiceNotificationTemplateExceedsTimeoutResponseData>(data)
+    );
   }
 }

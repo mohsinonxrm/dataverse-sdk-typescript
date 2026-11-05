@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_BookRequirementGroupResponse as msdyn_BookRequirementGroupResponseData } from "./types/index.js";
 
 /**
  * msdyn_BookRequirementGroup request message
@@ -43,26 +45,19 @@ export class msdyn_BookRequirementGroupRequest
     const data = await response.json();
     return msdyn_BookRequirementGroupResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_requirementgroupId,
-      Start: this.start,
-      Duration: this.duration,
-      BookingResources: this.bookingResources,
-    };
-  }
 }
 
 /**
  * msdyn_BookRequirementGroup response message
  */
 export class msdyn_BookRequirementGroupResponse extends OrganizationResponse {
-  constructor(public result: msdyn_BookRequirementGroupResponse) {
+  constructor(public result: msdyn_BookRequirementGroupResponseData) {
     super("msdyn_BookRequirementGroup");
   }
 
   static fromResponse(data: unknown): msdyn_BookRequirementGroupResponse {
-    return new msdyn_BookRequirementGroupResponse((data as any).value);
+    return new msdyn_BookRequirementGroupResponse(
+      responseObject<msdyn_BookRequirementGroupResponseData>(data)
+    );
   }
 }

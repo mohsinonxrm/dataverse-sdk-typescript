@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_BulkAITestCaseUploadResponse as msdyn_BulkAITestCaseUploadResponseData } from "./types/index.js";
 
 /**
  * msdyn_BulkAITestCaseUpload request message
@@ -35,23 +37,19 @@ export class msdyn_BulkAITestCaseUploadRequest
     const data = await response.json();
     return msdyn_BulkAITestCaseUploadResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      request: this.request,
-    };
-  }
 }
 
 /**
  * msdyn_BulkAITestCaseUpload response message
  */
 export class msdyn_BulkAITestCaseUploadResponse extends OrganizationResponse {
-  constructor(public result: msdyn_BulkAITestCaseUploadResponse) {
+  constructor(public result: msdyn_BulkAITestCaseUploadResponseData) {
     super("msdyn_BulkAITestCaseUpload");
   }
 
   static fromResponse(data: unknown): msdyn_BulkAITestCaseUploadResponse {
-    return new msdyn_BulkAITestCaseUploadResponse((data as any).value);
+    return new msdyn_BulkAITestCaseUploadResponse(
+      responseObject<msdyn_BulkAITestCaseUploadResponseData>(data)
+    );
   }
 }

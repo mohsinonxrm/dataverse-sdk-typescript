@@ -41,13 +41,6 @@ export class msdyn_QueueItemOperationsOnLwiDeleteOrClosureRequest
     // No return value (204 No Content)
     return new msdyn_QueueItemOperationsOnLwiDeleteOrClosureResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      OperationType: this.operationType,
-      QueueItemId: this.queueItemId,
-    };
-  }
 }
 
 /**

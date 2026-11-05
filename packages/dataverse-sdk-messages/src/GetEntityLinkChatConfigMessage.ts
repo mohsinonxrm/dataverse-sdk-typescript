@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import { responseObject } from "./internal/responseData.js";
 
 /**
  * GetEntityLinkChatConfig request message
@@ -36,23 +36,17 @@ export class GetEntityLinkChatConfigRequest
     const data = await response.json();
     return GetEntityLinkChatConfigResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RegardingEntityName: this.regardingEntityName,
-    };
-  }
 }
 
 /**
  * GetEntityLinkChatConfig response message
  */
 export class GetEntityLinkChatConfigResponse extends OrganizationResponse {
-  constructor(public result: EntityReference) {
+  constructor(public result: Record<string, unknown>) {
     super("GetEntityLinkChatConfig");
   }
 
   static fromResponse(data: unknown): GetEntityLinkChatConfigResponse {
-    return new GetEntityLinkChatConfigResponse((data as any).value);
+    return new GetEntityLinkChatConfigResponse(responseObject<Record<string, unknown>>(data));
   }
 }

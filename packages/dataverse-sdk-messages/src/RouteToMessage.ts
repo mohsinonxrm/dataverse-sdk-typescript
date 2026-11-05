@@ -38,13 +38,6 @@ export class RouteToRequest extends OrganizationRequest implements Executable<Ro
     // No return value (204 No Content)
     return new RouteToResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-      QueueItem: this.queueItem,
-    };
-  }
 }
 
 /**

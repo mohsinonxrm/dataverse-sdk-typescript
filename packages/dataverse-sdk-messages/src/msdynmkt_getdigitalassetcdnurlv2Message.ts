@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdynmkt_getdigitalassetcdnurlv2Response as msdynmkt_getdigitalassetcdnurlv2ResponseData } from "./types/index.js";
 
 /**
  * msdynmkt_getdigitalassetcdnurlv2 request message
@@ -39,24 +41,19 @@ export class msdynmkt_getdigitalassetcdnurlv2Request
     const data = await response.json();
     return msdynmkt_getdigitalassetcdnurlv2Response.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdynmkt_filetype: this.msdynmkt_filetype,
-      msdynmkt_fileid: this.msdynmkt_fileid,
-    };
-  }
 }
 
 /**
  * msdynmkt_getdigitalassetcdnurlv2 response message
  */
 export class msdynmkt_getdigitalassetcdnurlv2Response extends OrganizationResponse {
-  constructor(public result: msdynmkt_getdigitalassetcdnurlv2Response) {
+  constructor(public result: msdynmkt_getdigitalassetcdnurlv2ResponseData) {
     super("msdynmkt_getdigitalassetcdnurlv2");
   }
 
   static fromResponse(data: unknown): msdynmkt_getdigitalassetcdnurlv2Response {
-    return new msdynmkt_getdigitalassetcdnurlv2Response((data as any).value);
+    return new msdynmkt_getdigitalassetcdnurlv2Response(
+      responseObject<msdynmkt_getdigitalassetcdnurlv2ResponseData>(data)
+    );
   }
 }

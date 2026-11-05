@@ -1,7 +1,11 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
-import type { AccessRights } from "./types/index.js";
+import type {
+  AccessRights,
+  GenerateSharedLinkResponse as GenerateSharedLinkResponseData,
+} from "./types/index.js";
 
 /**
  * GenerateSharedLink request message
@@ -41,24 +45,17 @@ export class GenerateSharedLinkRequest
     const data = await response.json();
     return GenerateSharedLinkResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-      SharedRights: this.sharedRights,
-    };
-  }
 }
 
 /**
  * GenerateSharedLink response message
  */
 export class GenerateSharedLinkResponse extends OrganizationResponse {
-  constructor(public result: GenerateSharedLinkResponse) {
+  constructor(public result: GenerateSharedLinkResponseData) {
     super("GenerateSharedLink");
   }
 
   static fromResponse(data: unknown): GenerateSharedLinkResponse {
-    return new GenerateSharedLinkResponse((data as any).value);
+    return new GenerateSharedLinkResponse(responseObject<GenerateSharedLinkResponseData>(data));
   }
 }

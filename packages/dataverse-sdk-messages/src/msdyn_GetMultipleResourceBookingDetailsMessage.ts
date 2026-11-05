@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetMultipleResourceBookingDetailsResponse as msdyn_GetMultipleResourceBookingDetailsResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetMultipleResourceBookingDetails request message
@@ -51,29 +53,19 @@ export class msdyn_GetMultipleResourceBookingDetailsRequest
     const data = await response.json();
     return msdyn_GetMultipleResourceBookingDetailsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      StartDate: this.startDate,
-      EndDate: this.endDate,
-      Timescale: this.timescale,
-      SchedulerSettings: this.schedulerSettings,
-      Targets: this.targets,
-      ConsiderAppointments: this.considerAppointments,
-      IgnoreTimeZone: this.ignoreTimeZone,
-    };
-  }
 }
 
 /**
  * msdyn_GetMultipleResourceBookingDetails response message
  */
 export class msdyn_GetMultipleResourceBookingDetailsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetMultipleResourceBookingDetailsResponse) {
+  constructor(public result: msdyn_GetMultipleResourceBookingDetailsResponseData) {
     super("msdyn_GetMultipleResourceBookingDetails");
   }
 
   static fromResponse(data: unknown): msdyn_GetMultipleResourceBookingDetailsResponse {
-    return new msdyn_GetMultipleResourceBookingDetailsResponse((data as any).value);
+    return new msdyn_GetMultipleResourceBookingDetailsResponse(
+      responseObject<msdyn_GetMultipleResourceBookingDetailsResponseData>(data)
+    );
   }
 }

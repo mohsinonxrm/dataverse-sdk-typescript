@@ -30,10 +30,6 @@ export class msdyn_RunSAUpgradeScriptRequest
     // No return value (204 No Content)
     return new msdyn_RunSAUpgradeScriptResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**

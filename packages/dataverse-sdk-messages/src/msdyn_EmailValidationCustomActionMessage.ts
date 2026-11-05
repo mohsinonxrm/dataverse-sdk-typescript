@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_EmailValidationCustomActionResponse as msdyn_EmailValidationCustomActionResponseData } from "./types/index.js";
 
 /**
  * msdyn_EmailValidationCustomAction request message
@@ -35,23 +37,19 @@ export class msdyn_EmailValidationCustomActionRequest
     const data = await response.json();
     return msdyn_EmailValidationCustomActionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EmailValidationRequest: this.emailValidationRequest,
-    };
-  }
 }
 
 /**
  * msdyn_EmailValidationCustomAction response message
  */
 export class msdyn_EmailValidationCustomActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_EmailValidationCustomActionResponse) {
+  constructor(public result: msdyn_EmailValidationCustomActionResponseData) {
     super("msdyn_EmailValidationCustomAction");
   }
 
   static fromResponse(data: unknown): msdyn_EmailValidationCustomActionResponse {
-    return new msdyn_EmailValidationCustomActionResponse((data as any).value);
+    return new msdyn_EmailValidationCustomActionResponse(
+      responseObject<msdyn_EmailValidationCustomActionResponseData>(data)
+    );
   }
 }

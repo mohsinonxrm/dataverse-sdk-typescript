@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { CCaaS_MaskMessageResponse as CCaaS_MaskMessageResponseData } from "./types/index.js";
 
 /**
  * CCaaS_MaskMessage request message
@@ -43,26 +45,17 @@ export class CCaaS_MaskMessageRequest
     const data = await response.json();
     return CCaaS_MaskMessageResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      WidgetId: this.widgetId,
-      MessageId: this.messageId,
-      ApiVersion: this.apiVersion,
-      ConversationId: this.conversationId,
-    };
-  }
 }
 
 /**
  * CCaaS_MaskMessage response message
  */
 export class CCaaS_MaskMessageResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_MaskMessageResponse) {
+  constructor(public result: CCaaS_MaskMessageResponseData) {
     super("CCaaS_MaskMessage");
   }
 
   static fromResponse(data: unknown): CCaaS_MaskMessageResponse {
-    return new CCaaS_MaskMessageResponse((data as any).value);
+    return new CCaaS_MaskMessageResponse(responseObject<CCaaS_MaskMessageResponseData>(data));
   }
 }

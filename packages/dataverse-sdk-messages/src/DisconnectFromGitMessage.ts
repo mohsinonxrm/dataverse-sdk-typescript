@@ -35,12 +35,6 @@ export class DisconnectFromGitRequest
     // No return value (204 No Content)
     return new DisconnectFromGitResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionUniqueName: this.solutionUniqueName,
-    };
-  }
 }
 
 /**

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_UpdateIsCustomFieldForOrganizationEntityResponse as msdyn_UpdateIsCustomFieldForOrganizationEntityResponseData } from "./types/index.js";
 
 /**
  * msdyn_UpdateIsCustomFieldForOrganizationEntity request message
@@ -32,21 +34,19 @@ export class msdyn_UpdateIsCustomFieldForOrganizationEntityRequest
     const data = await response.json();
     return msdyn_UpdateIsCustomFieldForOrganizationEntityResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_UpdateIsCustomFieldForOrganizationEntity response message
  */
 export class msdyn_UpdateIsCustomFieldForOrganizationEntityResponse extends OrganizationResponse {
-  constructor(public result: msdyn_UpdateIsCustomFieldForOrganizationEntityResponse) {
+  constructor(public result: msdyn_UpdateIsCustomFieldForOrganizationEntityResponseData) {
     super("msdyn_UpdateIsCustomFieldForOrganizationEntity");
   }
 
   static fromResponse(data: unknown): msdyn_UpdateIsCustomFieldForOrganizationEntityResponse {
-    return new msdyn_UpdateIsCustomFieldForOrganizationEntityResponse((data as any).value);
+    return new msdyn_UpdateIsCustomFieldForOrganizationEntityResponse(
+      responseObject<msdyn_UpdateIsCustomFieldForOrganizationEntityResponseData>(data)
+    );
   }
 }

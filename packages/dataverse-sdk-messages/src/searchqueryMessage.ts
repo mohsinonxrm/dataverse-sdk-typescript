@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { searchqueryResponse as searchqueryResponseData } from "./types/index.js";
 
 /**
  * searchquery request message
@@ -57,33 +59,17 @@ export class searchqueryRequest
     const data = await response.json();
     return searchqueryResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      options: this.options,
-      filter: this.filter,
-      propertybag: this.propertybag,
-      entities: this.entities,
-      search: this.search,
-      facets: this.facets,
-      skip: this.skip,
-      count: this.count,
-      top: this.top,
-      orderby: this.orderby,
-      semanticquery: this.semanticquery,
-    };
-  }
 }
 
 /**
  * searchquery response message
  */
 export class searchqueryResponse extends OrganizationResponse {
-  constructor(public result: searchqueryResponse) {
+  constructor(public result: searchqueryResponseData) {
     super("searchquery");
   }
 
   static fromResponse(data: unknown): searchqueryResponse {
-    return new searchqueryResponse((data as any).value);
+    return new searchqueryResponse(responseObject<searchqueryResponseData>(data));
   }
 }

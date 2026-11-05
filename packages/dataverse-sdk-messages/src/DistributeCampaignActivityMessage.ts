@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import type { PropagationOwnershipOptions, bulkoperation, queue, template } from "./types/index.js";
 
@@ -55,20 +56,6 @@ export class DistributeCampaignActivityRequest
     const data = await response.json();
     return DistributeCampaignActivityResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.campaignactivityId,
-      Propagate: this.propagate,
-      Activity: this.activity,
-      Template: this.template,
-      OwnershipOptions: this.ownershipOptions,
-      Owner: this.owner,
-      SendEmail: this.sendEmail,
-      Queue: this.queue,
-      PostWorkflowEvent: this.postWorkflowEvent,
-    };
-  }
 }
 
 /**
@@ -80,6 +67,6 @@ export class DistributeCampaignActivityResponse extends OrganizationResponse {
   }
 
   static fromResponse(data: unknown): DistributeCampaignActivityResponse {
-    return new DistributeCampaignActivityResponse((data as any).value);
+    return new DistributeCampaignActivityResponse(responseObject<bulkoperation>(data));
   }
 }

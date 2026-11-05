@@ -35,12 +35,6 @@ export class msdyn_PredictiveScoringDataMigrationRequest
     // No return value (204 No Content)
     return new msdyn_PredictiveScoringDataMigrationResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      InputData: this.inputData,
-    };
-  }
 }
 
 /**

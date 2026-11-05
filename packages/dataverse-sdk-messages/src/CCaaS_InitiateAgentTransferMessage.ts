@@ -43,15 +43,6 @@ export class CCaaS_InitiateAgentTransferRequest
     // No return value (204 No Content)
     return new CCaaS_InitiateAgentTransferResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_ocliveworkitemId,
-      AgentId: this.agentId,
-      ApiVersion: this.apiVersion,
-      QueueId: this.queueId,
-    };
-  }
 }
 
 /**

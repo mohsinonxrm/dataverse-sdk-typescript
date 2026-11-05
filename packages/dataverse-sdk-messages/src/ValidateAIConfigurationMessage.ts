@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { ValidateAIConfigurationResponse as ValidateAIConfigurationResponseData } from "./types/index.js";
 
 /**
  * ValidateAIConfiguration request message
@@ -39,24 +41,19 @@ export class ValidateAIConfigurationRequest
     const data = await response.json();
     return ValidateAIConfigurationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      version: this.version,
-      aiconfigurationId: this.aiconfigurationId,
-    };
-  }
 }
 
 /**
  * ValidateAIConfiguration response message
  */
 export class ValidateAIConfigurationResponse extends OrganizationResponse {
-  constructor(public result: ValidateAIConfigurationResponse) {
+  constructor(public result: ValidateAIConfigurationResponseData) {
     super("ValidateAIConfiguration");
   }
 
   static fromResponse(data: unknown): ValidateAIConfigurationResponse {
-    return new ValidateAIConfigurationResponse((data as any).value);
+    return new ValidateAIConfigurationResponse(
+      responseObject<ValidateAIConfigurationResponseData>(data)
+    );
   }
 }

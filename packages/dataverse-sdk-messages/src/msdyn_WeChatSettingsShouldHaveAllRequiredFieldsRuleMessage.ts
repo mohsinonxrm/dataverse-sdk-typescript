@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_WeChatSettingsShouldHaveAllRequiredFieldsRuleResponse as msdyn_WeChatSettingsShouldHaveAllRequiredFieldsRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_WeChatSettingsShouldHaveAllRequiredFieldsRule request message
@@ -32,21 +34,19 @@ export class msdyn_WeChatSettingsShouldHaveAllRequiredFieldsRuleRequest
     const data = await response.json();
     return msdyn_WeChatSettingsShouldHaveAllRequiredFieldsRuleResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_WeChatSettingsShouldHaveAllRequiredFieldsRule response message
  */
 export class msdyn_WeChatSettingsShouldHaveAllRequiredFieldsRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_WeChatSettingsShouldHaveAllRequiredFieldsRuleResponse) {
+  constructor(public result: msdyn_WeChatSettingsShouldHaveAllRequiredFieldsRuleResponseData) {
     super("msdyn_WeChatSettingsShouldHaveAllRequiredFieldsRule");
   }
 
   static fromResponse(data: unknown): msdyn_WeChatSettingsShouldHaveAllRequiredFieldsRuleResponse {
-    return new msdyn_WeChatSettingsShouldHaveAllRequiredFieldsRuleResponse((data as any).value);
+    return new msdyn_WeChatSettingsShouldHaveAllRequiredFieldsRuleResponse(
+      responseObject<msdyn_WeChatSettingsShouldHaveAllRequiredFieldsRuleResponseData>(data)
+    );
   }
 }

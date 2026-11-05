@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_ProcessPostProposalFollowupResponse as msdyn_ProcessPostProposalFollowupResponseData } from "./types/index.js";
 
 /**
  * msdyn_ProcessPostProposalFollowup request message
@@ -41,25 +43,19 @@ export class msdyn_ProcessPostProposalFollowupRequest
     const data = await response.json();
     return msdyn_ProcessPostProposalFollowupResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_Thread: this.msdyn_Thread,
-      msdyn_SalesAgentRun: this.msdyn_SalesAgentRun,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-    };
-  }
 }
 
 /**
  * msdyn_ProcessPostProposalFollowup response message
  */
 export class msdyn_ProcessPostProposalFollowupResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ProcessPostProposalFollowupResponse) {
+  constructor(public result: msdyn_ProcessPostProposalFollowupResponseData) {
     super("msdyn_ProcessPostProposalFollowup");
   }
 
   static fromResponse(data: unknown): msdyn_ProcessPostProposalFollowupResponse {
-    return new msdyn_ProcessPostProposalFollowupResponse((data as any).value);
+    return new msdyn_ProcessPostProposalFollowupResponse(
+      responseObject<msdyn_ProcessPostProposalFollowupResponseData>(data)
+    );
   }
 }

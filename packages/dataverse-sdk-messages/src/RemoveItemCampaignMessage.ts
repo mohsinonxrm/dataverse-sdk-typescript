@@ -40,13 +40,6 @@ export class RemoveItemCampaignRequest
     // No return value (204 No Content)
     return new RemoveItemCampaignResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.campaignId,
-      CampaignItem: this.campaignItem,
-    };
-  }
 }
 
 /**

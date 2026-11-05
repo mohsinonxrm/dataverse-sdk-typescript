@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import { responseObject } from "./internal/responseData.js";
 
 /**
  * AIModelPublish request message
@@ -50,29 +50,17 @@ export class AIModelPublishRequest
     const data = await response.json();
     return AIModelPublishResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ModelId: this.modelId,
-      ModelName: this.modelName,
-      Source: this.source,
-      RunConfigurationId: this.runConfigurationId,
-      TemplateId: this.templateId,
-      RunConfiguration: this.runConfiguration,
-      CustomConfiguration: this.customConfiguration,
-    };
-  }
 }
 
 /**
  * AIModelPublish response message
  */
 export class AIModelPublishResponse extends OrganizationResponse {
-  constructor(public result: EntityReference) {
+  constructor(public result: Record<string, unknown>) {
     super("AIModelPublish");
   }
 
   static fromResponse(data: unknown): AIModelPublishResponse {
-    return new AIModelPublishResponse((data as any).value);
+    return new AIModelPublishResponse(responseObject<Record<string, unknown>>(data));
   }
 }

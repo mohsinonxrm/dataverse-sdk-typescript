@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 
 /**
@@ -44,26 +45,17 @@ export class msdyn_cloneentityRequest
     const data = await response.json();
     return msdyn_cloneentityResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SourceEntity: this.sourceEntity,
-      QueryReference: this.queryReference,
-      TransformAction: this.transformAction,
-      TransformParams: this.transformParams,
-    };
-  }
 }
 
 /**
  * msdyn_cloneentity response message
  */
 export class msdyn_cloneentityResponse extends OrganizationResponse {
-  constructor(public result: EntityReference) {
+  constructor(public result: Record<string, unknown>) {
     super("msdyn_cloneentity");
   }
 
   static fromResponse(data: unknown): msdyn_cloneentityResponse {
-    return new msdyn_cloneentityResponse((data as any).value);
+    return new msdyn_cloneentityResponse(responseObject<Record<string, unknown>>(data));
   }
 }

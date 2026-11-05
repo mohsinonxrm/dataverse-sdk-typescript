@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetGPT3PredictionResponse as msdyn_GetGPT3PredictionResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetGPT3Prediction request message
@@ -39,24 +41,19 @@ export class msdyn_GetGPT3PredictionRequest
     const data = await response.json();
     return msdyn_GetGPT3PredictionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_input: this.msdyn_input,
-      msdyn_predictiontype: this.msdyn_predictiontype,
-    };
-  }
 }
 
 /**
  * msdyn_GetGPT3Prediction response message
  */
 export class msdyn_GetGPT3PredictionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetGPT3PredictionResponse) {
+  constructor(public result: msdyn_GetGPT3PredictionResponseData) {
     super("msdyn_GetGPT3Prediction");
   }
 
   static fromResponse(data: unknown): msdyn_GetGPT3PredictionResponse {
-    return new msdyn_GetGPT3PredictionResponse((data as any).value);
+    return new msdyn_GetGPT3PredictionResponse(
+      responseObject<msdyn_GetGPT3PredictionResponseData>(data)
+    );
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_D365ChannelsNotificationResponse as msdyn_D365ChannelsNotificationResponseData } from "./types/index.js";
 
 /**
  * msdyn_D365ChannelsNotification request message
@@ -35,23 +37,19 @@ export class msdyn_D365ChannelsNotificationRequest
     const data = await response.json();
     return msdyn_D365ChannelsNotificationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      notificationPayLoad: this.notificationPayLoad,
-    };
-  }
 }
 
 /**
  * msdyn_D365ChannelsNotification response message
  */
 export class msdyn_D365ChannelsNotificationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_D365ChannelsNotificationResponse) {
+  constructor(public result: msdyn_D365ChannelsNotificationResponseData) {
     super("msdyn_D365ChannelsNotification");
   }
 
   static fromResponse(data: unknown): msdyn_D365ChannelsNotificationResponse {
-    return new msdyn_D365ChannelsNotificationResponse((data as any).value);
+    return new msdyn_D365ChannelsNotificationResponse(
+      responseObject<msdyn_D365ChannelsNotificationResponseData>(data)
+    );
   }
 }

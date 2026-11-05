@@ -41,13 +41,6 @@ export class FulfillSalesOrderRequest
     // No return value (204 No Content)
     return new FulfillSalesOrderResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      OrderClose: this.orderClose,
-      Status: this.status,
-    };
-  }
 }
 
 /**

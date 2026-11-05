@@ -41,14 +41,6 @@ export class CCaaS_AgentEndConversationRequest
     // No return value (204 No Content)
     return new CCaaS_AgentEndConversationResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_ocliveworkitemId,
-      ApiVersion: this.apiVersion,
-      SessionId: this.sessionId,
-    };
-  }
 }
 
 /**

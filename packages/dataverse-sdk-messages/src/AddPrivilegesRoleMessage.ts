@@ -40,13 +40,6 @@ export class AddPrivilegesRoleRequest
     // No return value (204 No Content)
     return new AddPrivilegesRoleResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.roleId,
-      Privileges: this.privileges,
-    };
-  }
 }
 
 /**

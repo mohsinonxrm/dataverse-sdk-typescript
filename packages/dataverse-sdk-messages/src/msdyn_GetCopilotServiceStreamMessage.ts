@@ -39,13 +39,6 @@ export class msdyn_GetCopilotServiceStreamRequest
     // No return value (204 No Content)
     return new msdyn_GetCopilotServiceStreamResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RequestPayload: this.requestPayload,
-      Context: this.context,
-    };
-  }
 }
 
 /**

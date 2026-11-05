@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { GetLinkedChatsResponse as GetLinkedChatsResponseData } from "./types/index.js";
 
 /**
  * GetLinkedChats request message
@@ -36,23 +38,17 @@ export class GetLinkedChatsRequest
     const data = await response.json();
     return GetLinkedChatsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RegardingEntity: this.regardingEntity,
-    };
-  }
 }
 
 /**
  * GetLinkedChats response message
  */
 export class GetLinkedChatsResponse extends OrganizationResponse {
-  constructor(public result: GetLinkedChatsResponse) {
+  constructor(public result: GetLinkedChatsResponseData) {
     super("GetLinkedChats");
   }
 
   static fromResponse(data: unknown): GetLinkedChatsResponse {
-    return new GetLinkedChatsResponse((data as any).value);
+    return new GetLinkedChatsResponse(responseObject<GetLinkedChatsResponseData>(data));
   }
 }

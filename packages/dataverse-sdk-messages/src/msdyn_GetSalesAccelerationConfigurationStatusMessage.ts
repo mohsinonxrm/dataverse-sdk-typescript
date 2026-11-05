@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetSalesAccelerationConfigurationStatusResponse as msdyn_GetSalesAccelerationConfigurationStatusResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetSalesAccelerationConfigurationStatus request message
@@ -32,21 +34,19 @@ export class msdyn_GetSalesAccelerationConfigurationStatusRequest
     const data = await response.json();
     return msdyn_GetSalesAccelerationConfigurationStatusResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_GetSalesAccelerationConfigurationStatus response message
  */
 export class msdyn_GetSalesAccelerationConfigurationStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetSalesAccelerationConfigurationStatusResponse) {
+  constructor(public result: msdyn_GetSalesAccelerationConfigurationStatusResponseData) {
     super("msdyn_GetSalesAccelerationConfigurationStatus");
   }
 
   static fromResponse(data: unknown): msdyn_GetSalesAccelerationConfigurationStatusResponse {
-    return new msdyn_GetSalesAccelerationConfigurationStatusResponse((data as any).value);
+    return new msdyn_GetSalesAccelerationConfigurationStatusResponse(
+      responseObject<msdyn_GetSalesAccelerationConfigurationStatusResponseData>(data)
+    );
   }
 }

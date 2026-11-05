@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_ExecuteCopilotServiceJobResponse as msdyn_ExecuteCopilotServiceJobResponseData } from "./types/index.js";
 
 /**
  * msdyn_ExecuteCopilotServiceJob request message
@@ -41,25 +43,19 @@ export class msdyn_ExecuteCopilotServiceJobRequest
     const data = await response.json();
     return msdyn_ExecuteCopilotServiceJobResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_JobPayload: this.msdyn_JobPayload,
-      msdyn_JobType: this.msdyn_JobType,
-      msdyn_AuthFlowType: this.msdyn_AuthFlowType,
-    };
-  }
 }
 
 /**
  * msdyn_ExecuteCopilotServiceJob response message
  */
 export class msdyn_ExecuteCopilotServiceJobResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ExecuteCopilotServiceJobResponse) {
+  constructor(public result: msdyn_ExecuteCopilotServiceJobResponseData) {
     super("msdyn_ExecuteCopilotServiceJob");
   }
 
   static fromResponse(data: unknown): msdyn_ExecuteCopilotServiceJobResponse {
-    return new msdyn_ExecuteCopilotServiceJobResponse((data as any).value);
+    return new msdyn_ExecuteCopilotServiceJobResponse(
+      responseObject<msdyn_ExecuteCopilotServiceJobResponseData>(data)
+    );
   }
 }

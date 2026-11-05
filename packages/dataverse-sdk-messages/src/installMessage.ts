@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { installResponse as installResponseData } from "./types/index.js";
 
 /**
  * install request message
@@ -42,27 +44,17 @@ export class installRequest extends OrganizationRequest implements Executable<in
     const data = await response.json();
     return installResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.workflowId,
-      connectionReferences: this.connectionReferences,
-      appIds: this.appIds,
-      context: this.context,
-      expand: this.expand,
-    };
-  }
 }
 
 /**
  * install response message
  */
 export class installResponse extends OrganizationResponse {
-  constructor(public result: installResponse) {
+  constructor(public result: installResponseData) {
     super("install");
   }
 
   static fromResponse(data: unknown): installResponse {
-    return new installResponse((data as any).value);
+    return new installResponse(responseObject<installResponseData>(data));
   }
 }

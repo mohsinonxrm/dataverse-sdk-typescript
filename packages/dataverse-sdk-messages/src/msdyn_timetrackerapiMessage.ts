@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_timetrackerapiResponse as msdyn_timetrackerapiResponseData } from "./types/index.js";
 
 /**
  * msdyn_timetrackerapi request message
@@ -44,26 +46,17 @@ export class msdyn_timetrackerapiRequest
     const data = await response.json();
     return msdyn_timetrackerapiResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      timeTrackerRecordId: this.timeTrackerRecordId,
-      entitylogicalname: this.entitylogicalname,
-      entityid: this.entityid,
-      timeTrackerRecord: this.timeTrackerRecord,
-    };
-  }
 }
 
 /**
  * msdyn_timetrackerapi response message
  */
 export class msdyn_timetrackerapiResponse extends OrganizationResponse {
-  constructor(public result: msdyn_timetrackerapiResponse) {
+  constructor(public result: msdyn_timetrackerapiResponseData) {
     super("msdyn_timetrackerapi");
   }
 
   static fromResponse(data: unknown): msdyn_timetrackerapiResponse {
-    return new msdyn_timetrackerapiResponse((data as any).value);
+    return new msdyn_timetrackerapiResponse(responseObject<msdyn_timetrackerapiResponseData>(data));
   }
 }

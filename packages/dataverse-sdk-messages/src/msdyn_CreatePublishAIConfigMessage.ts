@@ -1,6 +1,10 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { msdyn_ocsimltraining } from "./types/index.js";
+import { responseObject } from "./internal/responseData.js";
+import type {
+  msdyn_CreatePublishAIConfigResponse as msdyn_CreatePublishAIConfigResponseData,
+  msdyn_ocsimltraining,
+} from "./types/index.js";
 
 /**
  * msdyn_CreatePublishAIConfig request message
@@ -40,24 +44,19 @@ export class msdyn_CreatePublishAIConfigRequest
     const data = await response.json();
     return msdyn_CreatePublishAIConfigResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_ocskillidentmlmodelId,
-      ocsimltraining: this.ocsimltraining,
-    };
-  }
 }
 
 /**
  * msdyn_CreatePublishAIConfig response message
  */
 export class msdyn_CreatePublishAIConfigResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CreatePublishAIConfigResponse) {
+  constructor(public result: msdyn_CreatePublishAIConfigResponseData) {
     super("msdyn_CreatePublishAIConfig");
   }
 
   static fromResponse(data: unknown): msdyn_CreatePublishAIConfigResponse {
-    return new msdyn_CreatePublishAIConfigResponse((data as any).value);
+    return new msdyn_CreatePublishAIConfigResponse(
+      responseObject<msdyn_CreatePublishAIConfigResponseData>(data)
+    );
   }
 }

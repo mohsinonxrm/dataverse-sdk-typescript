@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { _InvokeHideReserveEntitiesResponse as _InvokeHideReserveEntitiesResponseData } from "./types/index.js";
 
 /**
  * _InvokeHideReserveEntities request message
@@ -30,21 +32,19 @@ export class _InvokeHideReserveEntitiesRequest
     const data = await response.json();
     return _InvokeHideReserveEntitiesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * _InvokeHideReserveEntities response message
  */
 export class _InvokeHideReserveEntitiesResponse extends OrganizationResponse {
-  constructor(public result: _InvokeHideReserveEntitiesResponse) {
+  constructor(public result: _InvokeHideReserveEntitiesResponseData) {
     super("_InvokeHideReserveEntities");
   }
 
   static fromResponse(data: unknown): _InvokeHideReserveEntitiesResponse {
-    return new _InvokeHideReserveEntitiesResponse((data as any).value);
+    return new _InvokeHideReserveEntitiesResponse(
+      responseObject<_InvokeHideReserveEntitiesResponseData>(data)
+    );
   }
 }

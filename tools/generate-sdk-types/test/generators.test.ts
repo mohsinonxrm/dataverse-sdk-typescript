@@ -3,7 +3,7 @@
  * $metadata document and check the output for the fixes in #22 (function string literals),
  * #23 (lower-case content-type for actions and messages).
  */
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
@@ -307,7 +307,6 @@ describe("#69: collection-bound operations", () => {
   };
   type Op = new (...args: unknown[]) => {
     toRequestInformation(baseUrl: string): { url: string; body?: unknown };
-    toRequestBody?: () => Record<string, unknown>;
   };
 
   beforeAll(async () => {
@@ -364,7 +363,7 @@ describe("#69: collection-bound operations", () => {
     expect(code).toContain(
       "const url = `${baseUrl}/${this.entitySetName}/Microsoft.Dynamics.CRM.CreateMultiple`;"
     );
-    const body = /toRequestBody\(\)[\s\S]*?\n {2}\}/.exec(code)?.[0] ?? "";
+    const body = /const body: Record<string, unknown> = \{[\s\S]*?\};/.exec(code)?.[0] ?? "";
     expect(body).toContain("Targets: this.targets,");
     expect(body).not.toContain("entitySetName");
   });
@@ -373,5 +372,155 @@ describe("#69: collection-bound operations", () => {
     const code = await read("actions/OrphanAction.ts");
     expect(code).toContain("// WARNING: Entity set not found in metadata");
     expect(code).toContain("`${baseUrl}/nosetentitys/Microsoft.Dynamics.CRM.Orphan`");
+  });
+});
+
+/** #70: message responses read entity and complex returns from the body, not from `value`. */
+describe("#70: message response parsing", () => {
+  const RESPONSES_EDMX = `<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+  <edmx:DataServices>
+    <Schema Namespace="Microsoft.Dynamics.CRM" Alias="mscrm" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+      <EntityType Name="crmbaseentity" Abstract="true" />
+      <EntityType Name="asyncoperation" BaseType="mscrm.crmbaseentity">
+        <Property Name="asyncoperationid" Type="Edm.Guid" />
+      </EntityType>
+      <EntityType Name="workflow" BaseType="mscrm.crmbaseentity">
+        <Property Name="workflowid" Type="Edm.Guid" />
+      </EntityType>
+      <ComplexType Name="QueryExpressionToFetchXmlResponse">
+        <Property Name="FetchXml" Type="Edm.String" />
+      </ComplexType>
+      <Action Name="QueryExpressionToFetchXml">
+        <Parameter Name="Query" Type="Edm.String" Nullable="false" />
+        <ReturnType Type="mscrm.QueryExpressionToFetchXmlResponse" Nullable="false" />
+      </Action>
+      <Action Name="ExecuteWorkflow" IsBound="true">
+        <Parameter Name="entity" Type="mscrm.workflow" Nullable="false" />
+        <Parameter Name="EntityId" Type="Edm.Guid" Nullable="false" />
+        <ReturnType Type="mscrm.asyncoperation" Nullable="false" />
+      </Action>
+      <Action Name="Dequeue">
+        <Parameter Name="QueueItemId" Type="Edm.Guid" Nullable="false" />
+        <ReturnType Type="mscrm.crmbaseentity" Nullable="false" />
+      </Action>
+      <Action Name="InstantiateTemplate">
+        <Parameter Name="TemplateId" Type="Edm.Guid" Nullable="false" />
+        <ReturnType Type="Collection(mscrm.crmbaseentity)" Nullable="false" />
+      </Action>
+      <Action Name="CountThings">
+        <ReturnType Type="Edm.Int32" Nullable="false" />
+      </Action>
+      <Action Name="Ping" />
+      <EntityContainer Name="System">
+        <EntitySet Name="workflows" EntityType="Microsoft.Dynamics.CRM.workflow" />
+      </EntityContainer>
+    </Schema>
+  </edmx:DataServices>
+</edmx:Edmx>`;
+
+  // The hand-written base classes the generated messages extend (read, not modified)
+  const MESSAGES_SRC = new URL("../../../packages/dataverse-sdk-messages/src/", import.meta.url);
+  let out: string;
+  const read = (path: string) => readFile(join(out, path), "utf8");
+  interface ResponseClass {
+    fromResponse(data: unknown): { result: unknown };
+  }
+  const response = async (file: string, name: string) => {
+    const mod = (await import(join(out, "messages", file))) as Record<
+      string,
+      ResponseClass | undefined
+    >;
+    const cls = mod[name];
+    if (!cls) throw new Error(`${file} doesn't export ${name}`);
+    return cls;
+  };
+  const body = (value: Record<string, unknown>) =>
+    new Response(JSON.stringify(value), { headers: { "content-type": "application/json" } });
+
+  beforeAll(async () => {
+    vi.spyOn(console, "log").mockImplementation(() => undefined);
+    out = await mkdtemp(join(tmpdir(), "gen-70-"));
+    const csdl = parseEdmx(RESPONSES_EDMX);
+    await generateComplexTypes(csdl, join(out, "messages", "types"));
+    await generateMessages(csdl, join(out, "messages"), false);
+    for (const file of ["OrganizationRequest.ts", "types.ts"]) {
+      await writeFile(join(out, "messages", file), await readFile(new URL(file, MESSAGES_SRC)));
+    }
+  });
+
+  afterAll(async () => {
+    vi.restoreAllMocks();
+    await rm(out, { recursive: true, force: true });
+  });
+
+  it("a complex-type return is the body itself, imported under an alias", async () => {
+    const code = await read("messages/QueryExpressionToFetchXmlMessage.ts");
+    expect(code).toContain(
+      "QueryExpressionToFetchXmlResponse as QueryExpressionToFetchXmlResponseData"
+    );
+    expect(code).toContain("public result: QueryExpressionToFetchXmlResponseData");
+    const Response_ = await response(
+      "QueryExpressionToFetchXmlMessage.ts",
+      "QueryExpressionToFetchXmlResponse"
+    );
+    const res = Response_.fromResponse({
+      "@odata.context":
+        "https://contoso.crm.dynamics.com/api/data/v9.2/$metadata#Microsoft.Dynamics.CRM.QueryExpressionToFetchXmlResponse",
+      FetchXml: "<fetch/>",
+    });
+    expect(res.result).toEqual({ FetchXml: "<fetch/>" });
+  });
+
+  it("an entity return is the entity without its @odata annotations", async () => {
+    expect(await read("messages/ExecuteWorkflowMessage.ts")).toContain(
+      "public result: asyncoperation"
+    );
+    const Response_ = await response("ExecuteWorkflowMessage.ts", "ExecuteWorkflowResponse");
+    const res = Response_.fromResponse({
+      "@odata.context": "$metadata#asyncoperations/$entity",
+      "@odata.etag": 'W/"1"',
+      asyncoperationid: "aaa",
+    });
+    expect(res.result).toEqual({ asyncoperationid: "aaa" });
+  });
+
+  it("a crmbaseentity return is a record, not an EntityReference", async () => {
+    const code = await read("messages/DequeueMessage.ts");
+    expect(code).toContain("public result: Record<string, unknown>");
+    expect(code).not.toContain("EntityReference");
+    const Response_ = await response("DequeueMessage.ts", "DequeueResponse");
+    expect(Response_.fromResponse({ "@odata.context": "x", emailid: "e1" }).result).toEqual({
+      emailid: "e1",
+    });
+  });
+
+  it("collection and primitive returns are read from value", async () => {
+    expect(await read("messages/InstantiateTemplateMessage.ts")).toContain(
+      "public result: Record<string, unknown>[]"
+    );
+    const many = await response("InstantiateTemplateMessage.ts", "InstantiateTemplateResponse");
+    expect(many.fromResponse({ value: [{ subject: "s" }] }).result).toEqual([{ subject: "s" }]);
+    const count = await response("CountThingsMessage.ts", "CountThingsResponse");
+    expect(count.fromResponse({ "@odata.context": "x", value: 3 }).result).toBe(3);
+  });
+
+  it("parseResponse goes through fromResponse; a message without a return has no result", async () => {
+    const mod = (await import(join(out, "messages", "ExecuteWorkflowMessage.ts"))) as {
+      ExecuteWorkflowRequest: new (...args: string[]) => {
+        parseResponse(r: Response): Promise<{ result: unknown }>;
+      };
+    };
+    const req = new mod.ExecuteWorkflowRequest("w1", "e1");
+    expect((await req.parseResponse(body({ asyncoperationid: "aaa" }))).result).toEqual({
+      asyncoperationid: "aaa",
+    });
+    expect(await read("messages/PingMessage.ts")).not.toContain("result");
+  });
+
+  it("generated messages have no toRequestBody()", async () => {
+    for (const file of ["QueryExpressionToFetchXmlMessage.ts", "ExecuteWorkflowMessage.ts"]) {
+      expect(await read(`messages/${file}`)).not.toContain("toRequestBody");
+    }
   });
 });

@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { entitlement } from "./types/index.js";
 
 /**
@@ -40,13 +41,6 @@ export class RenewEntitlementRequest
     const data = await response.json();
     return RenewEntitlementResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.entitlementId,
-      Status: this.status,
-    };
-  }
 }
 
 /**
@@ -58,6 +52,6 @@ export class RenewEntitlementResponse extends OrganizationResponse {
   }
 
   static fromResponse(data: unknown): RenewEntitlementResponse {
-    return new RenewEntitlementResponse((data as any).value);
+    return new RenewEntitlementResponse(responseObject<entitlement>(data));
   }
 }

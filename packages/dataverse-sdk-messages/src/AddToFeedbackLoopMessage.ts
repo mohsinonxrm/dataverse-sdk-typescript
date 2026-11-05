@@ -44,15 +44,6 @@ export class AddToFeedbackLoopRequest
     // No return value (204 No Content)
     return new AddToFeedbackLoopResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_aimodelId,
-      inputName: this.inputName,
-      predictionOutput: this.predictionOutput,
-      predictionInput: this.predictionInput,
-    };
-  }
 }
 
 /**

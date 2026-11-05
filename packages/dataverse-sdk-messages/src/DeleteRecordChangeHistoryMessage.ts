@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { DeleteRecordChangeHistoryResponse as DeleteRecordChangeHistoryResponseData } from "./types/index.js";
 
 /**
  * DeleteRecordChangeHistory request message
@@ -36,23 +38,19 @@ export class DeleteRecordChangeHistoryRequest
     const data = await response.json();
     return DeleteRecordChangeHistoryResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-    };
-  }
 }
 
 /**
  * DeleteRecordChangeHistory response message
  */
 export class DeleteRecordChangeHistoryResponse extends OrganizationResponse {
-  constructor(public result: DeleteRecordChangeHistoryResponse) {
+  constructor(public result: DeleteRecordChangeHistoryResponseData) {
     super("DeleteRecordChangeHistory");
   }
 
   static fromResponse(data: unknown): DeleteRecordChangeHistoryResponse {
-    return new DeleteRecordChangeHistoryResponse((data as any).value);
+    return new DeleteRecordChangeHistoryResponse(
+      responseObject<DeleteRecordChangeHistoryResponseData>(data)
+    );
   }
 }

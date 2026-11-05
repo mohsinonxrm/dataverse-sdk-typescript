@@ -37,12 +37,6 @@ export class msdyn_UpdateSdkMessageProcessingStepStateRequest
     // No return value (204 No Content)
     return new msdyn_UpdateSdkMessageProcessingStepStateResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_IsEnabled: this.msdyn_IsEnabled,
-    };
-  }
 }
 
 /**

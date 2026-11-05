@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_RetrievePersonalizationFiltersResponse as msdyn_RetrievePersonalizationFiltersResponseData } from "./types/index.js";
 
 /**
  * msdyn_RetrievePersonalizationFilters request message
@@ -35,23 +37,19 @@ export class msdyn_RetrievePersonalizationFiltersRequest
     const data = await response.json();
     return msdyn_RetrievePersonalizationFiltersResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      AttributesToFilter: this.attributesToFilter,
-    };
-  }
 }
 
 /**
  * msdyn_RetrievePersonalizationFilters response message
  */
 export class msdyn_RetrievePersonalizationFiltersResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrievePersonalizationFiltersResponse) {
+  constructor(public result: msdyn_RetrievePersonalizationFiltersResponseData) {
     super("msdyn_RetrievePersonalizationFilters");
   }
 
   static fromResponse(data: unknown): msdyn_RetrievePersonalizationFiltersResponse {
-    return new msdyn_RetrievePersonalizationFiltersResponse((data as any).value);
+    return new msdyn_RetrievePersonalizationFiltersResponse(
+      responseObject<msdyn_RetrievePersonalizationFiltersResponseData>(data)
+    );
   }
 }

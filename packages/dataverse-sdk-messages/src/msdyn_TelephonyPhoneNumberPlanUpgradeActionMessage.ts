@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_TelephonyPhoneNumberPlanUpgradeActionResponse as msdyn_TelephonyPhoneNumberPlanUpgradeActionResponseData } from "./types/index.js";
 
 /**
  * msdyn_TelephonyPhoneNumberPlanUpgradeAction request message
@@ -41,24 +43,19 @@ export class msdyn_TelephonyPhoneNumberPlanUpgradeActionRequest
     const data = await response.json();
     return msdyn_TelephonyPhoneNumberPlanUpgradeActionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_ocphonenumberId,
-      ActionRequest: this.actionRequest,
-    };
-  }
 }
 
 /**
  * msdyn_TelephonyPhoneNumberPlanUpgradeAction response message
  */
 export class msdyn_TelephonyPhoneNumberPlanUpgradeActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_TelephonyPhoneNumberPlanUpgradeActionResponse) {
+  constructor(public result: msdyn_TelephonyPhoneNumberPlanUpgradeActionResponseData) {
     super("msdyn_TelephonyPhoneNumberPlanUpgradeAction");
   }
 
   static fromResponse(data: unknown): msdyn_TelephonyPhoneNumberPlanUpgradeActionResponse {
-    return new msdyn_TelephonyPhoneNumberPlanUpgradeActionResponse((data as any).value);
+    return new msdyn_TelephonyPhoneNumberPlanUpgradeActionResponse(
+      responseObject<msdyn_TelephonyPhoneNumberPlanUpgradeActionResponseData>(data)
+    );
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckForActiveLayersOnProcessesResponse as msdyn_CheckForActiveLayersOnProcessesResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckForActiveLayersOnProcesses request message
@@ -39,24 +41,19 @@ export class msdyn_CheckForActiveLayersOnProcessesRequest
     const data = await response.json();
     return msdyn_CheckForActiveLayersOnProcessesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionId: this.solutionId,
-      ExcludeFormIds: this.excludeFormIds,
-    };
-  }
 }
 
 /**
  * msdyn_CheckForActiveLayersOnProcesses response message
  */
 export class msdyn_CheckForActiveLayersOnProcessesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckForActiveLayersOnProcessesResponse) {
+  constructor(public result: msdyn_CheckForActiveLayersOnProcessesResponseData) {
     super("msdyn_CheckForActiveLayersOnProcesses");
   }
 
   static fromResponse(data: unknown): msdyn_CheckForActiveLayersOnProcessesResponse {
-    return new msdyn_CheckForActiveLayersOnProcessesResponse((data as any).value);
+    return new msdyn_CheckForActiveLayersOnProcessesResponse(
+      responseObject<msdyn_CheckForActiveLayersOnProcessesResponseData>(data)
+    );
   }
 }

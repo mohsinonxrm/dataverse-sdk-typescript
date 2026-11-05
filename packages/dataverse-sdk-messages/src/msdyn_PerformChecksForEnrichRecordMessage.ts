@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_PerformChecksForEnrichRecordResponse as msdyn_PerformChecksForEnrichRecordResponseData } from "./types/index.js";
 
 /**
  * msdyn_PerformChecksForEnrichRecord request message
@@ -36,23 +38,19 @@ export class msdyn_PerformChecksForEnrichRecordRequest
     const data = await response.json();
     return msdyn_PerformChecksForEnrichRecordResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_Target: this.msdyn_Target,
-    };
-  }
 }
 
 /**
  * msdyn_PerformChecksForEnrichRecord response message
  */
 export class msdyn_PerformChecksForEnrichRecordResponse extends OrganizationResponse {
-  constructor(public result: msdyn_PerformChecksForEnrichRecordResponse) {
+  constructor(public result: msdyn_PerformChecksForEnrichRecordResponseData) {
     super("msdyn_PerformChecksForEnrichRecord");
   }
 
   static fromResponse(data: unknown): msdyn_PerformChecksForEnrichRecordResponse {
-    return new msdyn_PerformChecksForEnrichRecordResponse((data as any).value);
+    return new msdyn_PerformChecksForEnrichRecordResponse(
+      responseObject<msdyn_PerformChecksForEnrichRecordResponseData>(data)
+    );
   }
 }

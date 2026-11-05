@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { _CloneRoutingRuleSetResponse as _CloneRoutingRuleSetResponseData } from "./types/index.js";
 
 /**
  * _CloneRoutingRuleSet request message
@@ -42,25 +44,17 @@ export class _CloneRoutingRuleSetRequest
     const data = await response.json();
     return _CloneRoutingRuleSetResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RoutingRuleSetIdToClone: this.routingRuleSetIdToClone,
-      RoutingRuleSetIdToOverwrite: this.routingRuleSetIdToOverwrite,
-      Options: this.options,
-    };
-  }
 }
 
 /**
  * _CloneRoutingRuleSet response message
  */
 export class _CloneRoutingRuleSetResponse extends OrganizationResponse {
-  constructor(public result: _CloneRoutingRuleSetResponse) {
+  constructor(public result: _CloneRoutingRuleSetResponseData) {
     super("_CloneRoutingRuleSet");
   }
 
   static fromResponse(data: unknown): _CloneRoutingRuleSetResponse {
-    return new _CloneRoutingRuleSetResponse((data as any).value);
+    return new _CloneRoutingRuleSetResponse(responseObject<_CloneRoutingRuleSetResponseData>(data));
   }
 }

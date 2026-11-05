@@ -47,17 +47,6 @@ export class msdyn_GenerateGeofenceEventRequest
     // No return value (204 No Content)
     return new msdyn_GenerateGeofenceEventResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      GeofenceId: this.geofenceId,
-      BookableResourceId: this.bookableResourceId,
-      Latitude: this.latitude,
-      Longitude: this.longitude,
-      Timestamp: this.timestamp,
-      UseTargetEntityLocation: this.useTargetEntityLocation,
-    };
-  }
 }
 
 /**

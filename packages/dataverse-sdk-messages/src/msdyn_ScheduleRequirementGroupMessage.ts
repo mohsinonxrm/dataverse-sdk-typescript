@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_ScheduleRequirementGroupResponse as msdyn_ScheduleRequirementGroupResponseData } from "./types/index.js";
 
 /**
  * msdyn_ScheduleRequirementGroup request message
@@ -71,40 +73,19 @@ export class msdyn_ScheduleRequirementGroupRequest
     const data = await response.json();
     return msdyn_ScheduleRequirementGroupResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_requirementgroupId,
-      Start: this.start,
-      End: this.end,
-      Duration: this.duration,
-      Interval: this.interval,
-      ResultsPerInterval: this.resultsPerInterval,
-      TeamsPerInterval: this.teamsPerInterval,
-      SortOption: this.sortOption,
-      PageSize: this.pageSize,
-      PageNumber: this.pageNumber,
-      PagingCookie: this.pagingCookie,
-      ResourceIdsFilter: this.resourceIdsFilter,
-      TeamIdsFilter: this.teamIdsFilter,
-      IntervalsFilter: this.intervalsFilter,
-      GetCandidates: this.getCandidates,
-      OmitPositions: this.omitPositions,
-      ConstraintBag: this.constraintBag,
-      RemoveRedundantCrewCombinations: this.removeRedundantCrewCombinations,
-    };
-  }
 }
 
 /**
  * msdyn_ScheduleRequirementGroup response message
  */
 export class msdyn_ScheduleRequirementGroupResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ScheduleRequirementGroupResponse) {
+  constructor(public result: msdyn_ScheduleRequirementGroupResponseData) {
     super("msdyn_ScheduleRequirementGroup");
   }
 
   static fromResponse(data: unknown): msdyn_ScheduleRequirementGroupResponse {
-    return new msdyn_ScheduleRequirementGroupResponse((data as any).value);
+    return new msdyn_ScheduleRequirementGroupResponse(
+      responseObject<msdyn_ScheduleRequirementGroupResponseData>(data)
+    );
   }
 }

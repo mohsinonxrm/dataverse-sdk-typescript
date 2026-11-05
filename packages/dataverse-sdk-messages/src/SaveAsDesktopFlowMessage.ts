@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { SaveAsDesktopFlowResponse as SaveAsDesktopFlowResponseData } from "./types/index.js";
 
 /**
  * SaveAsDesktopFlow request message
@@ -39,24 +41,17 @@ export class SaveAsDesktopFlowRequest
     const data = await response.json();
     return SaveAsDesktopFlowResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.workflowId,
-      desktopFlowName: this.desktopFlowName,
-    };
-  }
 }
 
 /**
  * SaveAsDesktopFlow response message
  */
 export class SaveAsDesktopFlowResponse extends OrganizationResponse {
-  constructor(public result: SaveAsDesktopFlowResponse) {
+  constructor(public result: SaveAsDesktopFlowResponseData) {
     super("SaveAsDesktopFlow");
   }
 
   static fromResponse(data: unknown): SaveAsDesktopFlowResponse {
-    return new SaveAsDesktopFlowResponse((data as any).value);
+    return new SaveAsDesktopFlowResponse(responseObject<SaveAsDesktopFlowResponseData>(data));
   }
 }

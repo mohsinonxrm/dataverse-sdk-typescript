@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CSCaseClosureProcessAgentResponseResponse as msdyn_CSCaseClosureProcessAgentResponseResponseData } from "./types/index.js";
 
 /**
  * msdyn_CSCaseClosureProcessAgentResponse request message
@@ -37,23 +39,19 @@ export class msdyn_CSCaseClosureProcessAgentResponseRequest
     const data = await response.json();
     return msdyn_CSCaseClosureProcessAgentResponseResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_payload: this.msdyn_payload,
-    };
-  }
 }
 
 /**
  * msdyn_CSCaseClosureProcessAgentResponse response message
  */
 export class msdyn_CSCaseClosureProcessAgentResponseResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CSCaseClosureProcessAgentResponseResponse) {
+  constructor(public result: msdyn_CSCaseClosureProcessAgentResponseResponseData) {
     super("msdyn_CSCaseClosureProcessAgentResponse");
   }
 
   static fromResponse(data: unknown): msdyn_CSCaseClosureProcessAgentResponseResponse {
-    return new msdyn_CSCaseClosureProcessAgentResponseResponse((data as any).value);
+    return new msdyn_CSCaseClosureProcessAgentResponseResponse(
+      responseObject<msdyn_CSCaseClosureProcessAgentResponseResponseData>(data)
+    );
   }
 }

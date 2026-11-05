@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResponse as msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResponseData } from "./types/index.js";
 
 /**
  * msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmail request message
@@ -37,23 +39,19 @@ export class msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailRequest
     const data = await response.json();
     return msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_payload: this.msdyn_payload,
-    };
-  }
 }
 
 /**
  * msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmail response message
  */
 export class msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResponse) {
+  constructor(public result: msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResponseData) {
     super("msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmail");
   }
 
   static fromResponse(data: unknown): msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResponse {
-    return new msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResponse((data as any).value);
+    return new msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResponse(
+      responseObject<msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResponseData>(data)
+    );
   }
 }

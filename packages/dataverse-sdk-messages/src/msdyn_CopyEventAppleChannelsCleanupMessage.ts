@@ -30,10 +30,6 @@ export class msdyn_CopyEventAppleChannelsCleanupRequest
     // No return value (204 No Content)
     return new msdyn_CopyEventAppleChannelsCleanupResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**

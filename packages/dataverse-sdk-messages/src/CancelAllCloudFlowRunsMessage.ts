@@ -31,12 +31,6 @@ export class CancelAllCloudFlowRunsRequest
     // No return value (204 No Content)
     return new CancelAllCloudFlowRunsResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.workflowId,
-    };
-  }
 }
 
 /**

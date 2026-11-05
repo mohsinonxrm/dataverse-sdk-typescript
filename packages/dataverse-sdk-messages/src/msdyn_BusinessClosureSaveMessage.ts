@@ -43,15 +43,6 @@ export class msdyn_BusinessClosureSaveRequest
     // No return value (204 No Content)
     return new msdyn_BusinessClosureSaveResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Id: this.id,
-      Name: this.name,
-      Start: this.start,
-      End: this.end,
-    };
-  }
 }
 
 /**

@@ -31,12 +31,6 @@ export class PublishThemeRequest
     // No return value (204 No Content)
     return new PublishThemeResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.themeId,
-    };
-  }
 }
 
 /**

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdynmkt_DateTimeFormatOptionsResponse as msdynmkt_DateTimeFormatOptionsResponseData } from "./types/index.js";
 
 /**
  * msdynmkt_DateTimeFormatOptions request message
@@ -47,28 +49,19 @@ export class msdynmkt_DateTimeFormatOptionsRequest
     const data = await response.json();
     return msdynmkt_DateTimeFormatOptionsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdynmkt_DateTimeRequestDateOnly: this.msdynmkt_DateTimeRequestDateOnly,
-      msdynmkt_DateTimeRequestTimeZoneId: this.msdynmkt_DateTimeRequestTimeZoneId,
-      msdynmkt_DateTimeRequestTimezoneIndepentent: this.msdynmkt_DateTimeRequestTimezoneIndepentent,
-      msdynmkt_DateTimeRequestDateOnlyV2: this.msdynmkt_DateTimeRequestDateOnlyV2,
-      msdynmkt_DateTimeRequestLCID: this.msdynmkt_DateTimeRequestLCID,
-      msdynmkt_DateTimeRequestCultureName: this.msdynmkt_DateTimeRequestCultureName,
-    };
-  }
 }
 
 /**
  * msdynmkt_DateTimeFormatOptions response message
  */
 export class msdynmkt_DateTimeFormatOptionsResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_DateTimeFormatOptionsResponse) {
+  constructor(public result: msdynmkt_DateTimeFormatOptionsResponseData) {
     super("msdynmkt_DateTimeFormatOptions");
   }
 
   static fromResponse(data: unknown): msdynmkt_DateTimeFormatOptionsResponse {
-    return new msdynmkt_DateTimeFormatOptionsResponse((data as any).value);
+    return new msdynmkt_DateTimeFormatOptionsResponse(
+      responseObject<msdynmkt_DateTimeFormatOptionsResponseData>(data)
+    );
   }
 }

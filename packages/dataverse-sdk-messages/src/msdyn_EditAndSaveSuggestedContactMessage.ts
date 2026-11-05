@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_EditAndSaveSuggestedContactResponse as msdyn_EditAndSaveSuggestedContactResponseData } from "./types/index.js";
 
 /**
  * msdyn_EditAndSaveSuggestedContact request message
@@ -51,30 +53,19 @@ export class msdyn_EditAndSaveSuggestedContactRequest
     const data = await response.json();
     return msdyn_EditAndSaveSuggestedContactResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SuggestedContactId: this.suggestedContactId,
-      FirstName: this.firstName,
-      LastName: this.lastName,
-      Email: this.email,
-      BusinessPhone: this.businessPhone,
-      Address: this.address,
-      MobilePhone: this.mobilePhone,
-      AccountId: this.accountId,
-    };
-  }
 }
 
 /**
  * msdyn_EditAndSaveSuggestedContact response message
  */
 export class msdyn_EditAndSaveSuggestedContactResponse extends OrganizationResponse {
-  constructor(public result: msdyn_EditAndSaveSuggestedContactResponse) {
+  constructor(public result: msdyn_EditAndSaveSuggestedContactResponseData) {
     super("msdyn_EditAndSaveSuggestedContact");
   }
 
   static fromResponse(data: unknown): msdyn_EditAndSaveSuggestedContactResponse {
-    return new msdyn_EditAndSaveSuggestedContactResponse((data as any).value);
+    return new msdyn_EditAndSaveSuggestedContactResponse(
+      responseObject<msdyn_EditAndSaveSuggestedContactResponseData>(data)
+    );
   }
 }

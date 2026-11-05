@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_CreateSuggestedNextActionResponse as msdyn_CreateSuggestedNextActionResponseData } from "./types/index.js";
 
 /**
  * msdyn_CreateSuggestedNextAction request message
@@ -44,26 +46,19 @@ export class msdyn_CreateSuggestedNextActionRequest
     const data = await response.json();
     return msdyn_CreateSuggestedNextActionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SuggestionSubtype: this.suggestionSubtype,
-      Entity: this.entity,
-      DraftEmailId: this.draftEmailId,
-      SuggestionType: this.suggestionType,
-    };
-  }
 }
 
 /**
  * msdyn_CreateSuggestedNextAction response message
  */
 export class msdyn_CreateSuggestedNextActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CreateSuggestedNextActionResponse) {
+  constructor(public result: msdyn_CreateSuggestedNextActionResponseData) {
     super("msdyn_CreateSuggestedNextAction");
   }
 
   static fromResponse(data: unknown): msdyn_CreateSuggestedNextActionResponse {
-    return new msdyn_CreateSuggestedNextActionResponse((data as any).value);
+    return new msdyn_CreateSuggestedNextActionResponse(
+      responseObject<msdyn_CreateSuggestedNextActionResponseData>(data)
+    );
   }
 }

@@ -35,12 +35,6 @@ export class msdyn_SyncODOSProvisioningStatusRequest
     // No return value (204 No Content)
     return new msdyn_SyncODOSProvisioningStatusResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      InputData: this.inputData,
-    };
-  }
 }
 
 /**

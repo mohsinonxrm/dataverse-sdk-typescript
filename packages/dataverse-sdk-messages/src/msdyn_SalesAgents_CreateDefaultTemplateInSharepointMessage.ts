@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_SalesAgents_CreateDefaultTemplateInSharepointResponse as msdyn_SalesAgents_CreateDefaultTemplateInSharepointResponseData } from "./types/index.js";
 
 /**
  * msdyn_SalesAgents_CreateDefaultTemplateInSharepoint request message
@@ -32,21 +34,19 @@ export class msdyn_SalesAgents_CreateDefaultTemplateInSharepointRequest
     const data = await response.json();
     return msdyn_SalesAgents_CreateDefaultTemplateInSharepointResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_SalesAgents_CreateDefaultTemplateInSharepoint response message
  */
 export class msdyn_SalesAgents_CreateDefaultTemplateInSharepointResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgents_CreateDefaultTemplateInSharepointResponse) {
+  constructor(public result: msdyn_SalesAgents_CreateDefaultTemplateInSharepointResponseData) {
     super("msdyn_SalesAgents_CreateDefaultTemplateInSharepoint");
   }
 
   static fromResponse(data: unknown): msdyn_SalesAgents_CreateDefaultTemplateInSharepointResponse {
-    return new msdyn_SalesAgents_CreateDefaultTemplateInSharepointResponse((data as any).value);
+    return new msdyn_SalesAgents_CreateDefaultTemplateInSharepointResponse(
+      responseObject<msdyn_SalesAgents_CreateDefaultTemplateInSharepointResponseData>(data)
+    );
   }
 }

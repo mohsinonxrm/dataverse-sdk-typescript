@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckIfQueueInRTQIsActiveResponse as msdyn_CheckIfQueueInRTQIsActiveResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckIfQueueInRTQIsActive request message
@@ -30,21 +32,19 @@ export class msdyn_CheckIfQueueInRTQIsActiveRequest
     const data = await response.json();
     return msdyn_CheckIfQueueInRTQIsActiveResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_CheckIfQueueInRTQIsActive response message
  */
 export class msdyn_CheckIfQueueInRTQIsActiveResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfQueueInRTQIsActiveResponse) {
+  constructor(public result: msdyn_CheckIfQueueInRTQIsActiveResponseData) {
     super("msdyn_CheckIfQueueInRTQIsActive");
   }
 
   static fromResponse(data: unknown): msdyn_CheckIfQueueInRTQIsActiveResponse {
-    return new msdyn_CheckIfQueueInRTQIsActiveResponse((data as any).value);
+    return new msdyn_CheckIfQueueInRTQIsActiveResponse(
+      responseObject<msdyn_CheckIfQueueInRTQIsActiveResponseData>(data)
+    );
   }
 }

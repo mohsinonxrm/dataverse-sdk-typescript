@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_AssignOwnerToUnassignedRecordsResponse as msdyn_AssignOwnerToUnassignedRecordsResponseData } from "./types/index.js";
 
 /**
  * msdyn_AssignOwnerToUnassignedRecords request message
@@ -39,24 +41,19 @@ export class msdyn_AssignOwnerToUnassignedRecordsRequest
     const data = await response.json();
     return msdyn_AssignOwnerToUnassignedRecordsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Owner: this.owner,
-      UnassignedRecords: this.unassignedRecords,
-    };
-  }
 }
 
 /**
  * msdyn_AssignOwnerToUnassignedRecords response message
  */
 export class msdyn_AssignOwnerToUnassignedRecordsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_AssignOwnerToUnassignedRecordsResponse) {
+  constructor(public result: msdyn_AssignOwnerToUnassignedRecordsResponseData) {
     super("msdyn_AssignOwnerToUnassignedRecords");
   }
 
   static fromResponse(data: unknown): msdyn_AssignOwnerToUnassignedRecordsResponse {
-    return new msdyn_AssignOwnerToUnassignedRecordsResponse((data as any).value);
+    return new msdyn_AssignOwnerToUnassignedRecordsResponse(
+      responseObject<msdyn_AssignOwnerToUnassignedRecordsResponseData>(data)
+    );
   }
 }

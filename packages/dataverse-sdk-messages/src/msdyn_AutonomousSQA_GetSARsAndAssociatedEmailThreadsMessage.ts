@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsResponse as msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsResponseData } from "./types/index.js";
 
 /**
  * msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreads request message
@@ -41,24 +43,19 @@ export class msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsRequest
     const data = await response.json();
     return msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_SalesMacroAgentType: this.msdyn_SalesMacroAgentType,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-    };
-  }
 }
 
 /**
  * msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreads response message
  */
 export class msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsResponse) {
+  constructor(public result: msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsResponseData) {
     super("msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreads");
   }
 
   static fromResponse(data: unknown): msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsResponse {
-    return new msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsResponse((data as any).value);
+    return new msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsResponse(
+      responseObject<msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsResponseData>(data)
+    );
   }
 }

@@ -41,14 +41,6 @@ export class CancelContractRequest
     // No return value (204 No Content)
     return new CancelContractResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.contractId,
-      CancelDate: this.cancelDate,
-      Status: this.status,
-    };
-  }
 }
 
 /**

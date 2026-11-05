@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { CreateHostedFlowMachineGroupResponse as CreateHostedFlowMachineGroupResponseData } from "./types/index.js";
 
 /**
  * CreateHostedFlowMachineGroup request message
@@ -56,32 +58,19 @@ export class CreateHostedFlowMachineGroupRequest
     const data = await response.json();
     return CreateHostedFlowMachineGroupResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      groupImage: this.groupImage,
-      groupCapacityCount: this.groupCapacityCount,
-      groupDomainSetting: this.groupDomainSetting,
-      groupDescription: this.groupDescription,
-      groupMachineNetworkId: this.groupMachineNetworkId,
-      groupMaximumMachineCount: this.groupMaximumMachineCount,
-      groupName: this.groupName,
-      groupCredentials: this.groupCredentials,
-      groupUsageType: this.groupUsageType,
-      groupManagedVersion: this.groupManagedVersion,
-    };
-  }
 }
 
 /**
  * CreateHostedFlowMachineGroup response message
  */
 export class CreateHostedFlowMachineGroupResponse extends OrganizationResponse {
-  constructor(public result: CreateHostedFlowMachineGroupResponse) {
+  constructor(public result: CreateHostedFlowMachineGroupResponseData) {
     super("CreateHostedFlowMachineGroup");
   }
 
   static fromResponse(data: unknown): CreateHostedFlowMachineGroupResponse {
-    return new CreateHostedFlowMachineGroupResponse((data as any).value);
+    return new CreateHostedFlowMachineGroupResponse(
+      responseObject<CreateHostedFlowMachineGroupResponseData>(data)
+    );
   }
 }

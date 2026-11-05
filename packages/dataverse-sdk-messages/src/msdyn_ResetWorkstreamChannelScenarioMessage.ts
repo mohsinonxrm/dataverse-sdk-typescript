@@ -35,12 +35,6 @@ export class msdyn_ResetWorkstreamChannelScenarioRequest
     // No return value (204 No Content)
     return new msdyn_ResetWorkstreamChannelScenarioResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      LiveWorkStreamId: this.liveWorkStreamId,
-    };
-  }
 }
 
 /**

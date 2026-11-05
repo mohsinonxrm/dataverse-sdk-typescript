@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_SalesAgents_HandoverNotifySingleResponse as msdyn_SalesAgents_HandoverNotifySingleResponseData } from "./types/index.js";
 
 /**
  * msdyn_SalesAgents_HandoverNotifySingle request message
@@ -41,25 +43,19 @@ export class msdyn_SalesAgents_HandoverNotifySingleRequest
     const data = await response.json();
     return msdyn_SalesAgents_HandoverNotifySingleResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_SalesAgentRun: this.msdyn_SalesAgentRun,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-      msdyn_HandoverContext: this.msdyn_HandoverContext,
-    };
-  }
 }
 
 /**
  * msdyn_SalesAgents_HandoverNotifySingle response message
  */
 export class msdyn_SalesAgents_HandoverNotifySingleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgents_HandoverNotifySingleResponse) {
+  constructor(public result: msdyn_SalesAgents_HandoverNotifySingleResponseData) {
     super("msdyn_SalesAgents_HandoverNotifySingle");
   }
 
   static fromResponse(data: unknown): msdyn_SalesAgents_HandoverNotifySingleResponse {
-    return new msdyn_SalesAgents_HandoverNotifySingleResponse((data as any).value);
+    return new msdyn_SalesAgents_HandoverNotifySingleResponse(
+      responseObject<msdyn_SalesAgents_HandoverNotifySingleResponseData>(data)
+    );
   }
 }

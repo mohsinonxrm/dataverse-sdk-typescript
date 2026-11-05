@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_RetrieveKnowledgeManagementSettingsResponse as msdyn_RetrieveKnowledgeManagementSettingsResponseData } from "./types/index.js";
 
 /**
  * msdyn_RetrieveKnowledgeManagementSettings request message
@@ -37,23 +39,19 @@ export class msdyn_RetrieveKnowledgeManagementSettingsRequest
     const data = await response.json();
     return msdyn_RetrieveKnowledgeManagementSettingsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RecordTypes: this.recordTypes,
-    };
-  }
 }
 
 /**
  * msdyn_RetrieveKnowledgeManagementSettings response message
  */
 export class msdyn_RetrieveKnowledgeManagementSettingsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrieveKnowledgeManagementSettingsResponse) {
+  constructor(public result: msdyn_RetrieveKnowledgeManagementSettingsResponseData) {
     super("msdyn_RetrieveKnowledgeManagementSettings");
   }
 
   static fromResponse(data: unknown): msdyn_RetrieveKnowledgeManagementSettingsResponse {
-    return new msdyn_RetrieveKnowledgeManagementSettingsResponse((data as any).value);
+    return new msdyn_RetrieveKnowledgeManagementSettingsResponse(
+      responseObject<msdyn_RetrieveKnowledgeManagementSettingsResponseData>(data)
+    );
   }
 }

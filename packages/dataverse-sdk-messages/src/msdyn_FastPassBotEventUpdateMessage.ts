@@ -40,13 +40,6 @@ export class msdyn_FastPassBotEventUpdateRequest
     // No return value (204 No Content)
     return new msdyn_FastPassBotEventUpdateResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_PreImageRecord: this.msdyn_PreImageRecord,
-      msdyn_PostImageRecord: this.msdyn_PostImageRecord,
-    };
-  }
 }
 
 /**

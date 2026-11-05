@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetORReasonExplanationResponse as msdyn_GetORReasonExplanationResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetORReasonExplanation request message
@@ -41,25 +43,19 @@ export class msdyn_GetORReasonExplanationRequest
     const data = await response.json();
     return msdyn_GetORReasonExplanationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntityType: this.entityType,
-      ExplanationObject: this.explanationObject,
-      EntityId: this.entityId,
-    };
-  }
 }
 
 /**
  * msdyn_GetORReasonExplanation response message
  */
 export class msdyn_GetORReasonExplanationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetORReasonExplanationResponse) {
+  constructor(public result: msdyn_GetORReasonExplanationResponseData) {
     super("msdyn_GetORReasonExplanation");
   }
 
   static fromResponse(data: unknown): msdyn_GetORReasonExplanationResponse {
-    return new msdyn_GetORReasonExplanationResponse((data as any).value);
+    return new msdyn_GetORReasonExplanationResponse(
+      responseObject<msdyn_GetORReasonExplanationResponseData>(data)
+    );
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetUserConsentStatusResponse as msdyn_GetUserConsentStatusResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetUserConsentStatus request message
@@ -30,21 +32,19 @@ export class msdyn_GetUserConsentStatusRequest
     const data = await response.json();
     return msdyn_GetUserConsentStatusResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_GetUserConsentStatus response message
  */
 export class msdyn_GetUserConsentStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetUserConsentStatusResponse) {
+  constructor(public result: msdyn_GetUserConsentStatusResponseData) {
     super("msdyn_GetUserConsentStatus");
   }
 
   static fromResponse(data: unknown): msdyn_GetUserConsentStatusResponse {
-    return new msdyn_GetUserConsentStatusResponse((data as any).value);
+    return new msdyn_GetUserConsentStatusResponse(
+      responseObject<msdyn_GetUserConsentStatusResponseData>(data)
+    );
   }
 }

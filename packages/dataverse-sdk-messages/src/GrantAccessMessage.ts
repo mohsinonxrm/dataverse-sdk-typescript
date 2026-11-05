@@ -41,13 +41,6 @@ export class GrantAccessRequest
     // No return value (204 No Content)
     return new GrantAccessResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-      PrincipalAccess: this.principalAccess,
-    };
-  }
 }
 
 /**

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_RequirementGroupOverviewResponse as msdyn_RequirementGroupOverviewResponseData } from "./types/index.js";
 
 /**
  * msdyn_RequirementGroupOverview request message
@@ -53,31 +55,19 @@ export class msdyn_RequirementGroupOverviewRequest
     const data = await response.json();
     return msdyn_RequirementGroupOverviewResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_requirementgroupId,
-      Start: this.start,
-      End: this.end,
-      Duration: this.duration,
-      Interval: this.interval,
-      ResourceIdsFilter: this.resourceIdsFilter,
-      OverviewTypes: this.overviewTypes,
-      ConstraintBag: this.constraintBag,
-      RemoveRedundantCrewCombinations: this.removeRedundantCrewCombinations,
-    };
-  }
 }
 
 /**
  * msdyn_RequirementGroupOverview response message
  */
 export class msdyn_RequirementGroupOverviewResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RequirementGroupOverviewResponse) {
+  constructor(public result: msdyn_RequirementGroupOverviewResponseData) {
     super("msdyn_RequirementGroupOverview");
   }
 
   static fromResponse(data: unknown): msdyn_RequirementGroupOverviewResponse {
-    return new msdyn_RequirementGroupOverviewResponse((data as any).value);
+    return new msdyn_RequirementGroupOverviewResponse(
+      responseObject<msdyn_RequirementGroupOverviewResponseData>(data)
+    );
   }
 }

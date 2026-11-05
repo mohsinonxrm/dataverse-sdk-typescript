@@ -45,16 +45,6 @@ export class DeleteOptionValueRequest
     // No return value (204 No Content)
     return new DeleteOptionValueResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      OptionSetName: this.optionSetName,
-      AttributeLogicalName: this.attributeLogicalName,
-      EntityLogicalName: this.entityLogicalName,
-      Value: this.value,
-      SolutionUniqueName: this.solutionUniqueName,
-    };
-  }
 }
 
 /**

@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { InitializeFileBlocksDownloadResponse as InitializeFileBlocksDownloadResponseData } from "./types/index.js";
 
 /**
  * InitializeFileBlocksDownload request message
@@ -42,25 +44,19 @@ export class InitializeFileBlocksDownloadRequest
     const data = await response.json();
     return InitializeFileBlocksDownloadResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-      FileAttributeName: this.fileAttributeName,
-      DataSource: this.dataSource,
-    };
-  }
 }
 
 /**
  * InitializeFileBlocksDownload response message
  */
 export class InitializeFileBlocksDownloadResponse extends OrganizationResponse {
-  constructor(public result: InitializeFileBlocksDownloadResponse) {
+  constructor(public result: InitializeFileBlocksDownloadResponseData) {
     super("InitializeFileBlocksDownload");
   }
 
   static fromResponse(data: unknown): InitializeFileBlocksDownloadResponse {
-    return new InitializeFileBlocksDownloadResponse((data as any).value);
+    return new InitializeFileBlocksDownloadResponse(
+      responseObject<InitializeFileBlocksDownloadResponseData>(data)
+    );
   }
 }

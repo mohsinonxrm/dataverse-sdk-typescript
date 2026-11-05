@@ -35,12 +35,6 @@ export class msdyn_SetCaseSentimentCustomAPIRequest
     // No return value (204 No Content)
     return new msdyn_SetCaseSentimentCustomAPIResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      emailId: this.emailId,
-    };
-  }
 }
 
 /**

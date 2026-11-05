@@ -40,13 +40,6 @@ export class GetQuoteProductsFromOpportunityRequest
     // No return value (204 No Content)
     return new GetQuoteProductsFromOpportunityResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.quoteId,
-      Opportunity: this.opportunity,
-    };
-  }
 }
 
 /**

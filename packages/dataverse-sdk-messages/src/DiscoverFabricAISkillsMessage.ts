@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { DiscoverFabricAISkillsResponse as DiscoverFabricAISkillsResponseData } from "./types/index.js";
 
 /**
  * DiscoverFabricAISkills request message
@@ -39,24 +41,19 @@ export class DiscoverFabricAISkillsRequest
     const data = await response.json();
     return DiscoverFabricAISkillsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      workspaceId: this.workspaceId,
-      fabricEnvironment: this.fabricEnvironment,
-    };
-  }
 }
 
 /**
  * DiscoverFabricAISkills response message
  */
 export class DiscoverFabricAISkillsResponse extends OrganizationResponse {
-  constructor(public result: DiscoverFabricAISkillsResponse) {
+  constructor(public result: DiscoverFabricAISkillsResponseData) {
     super("DiscoverFabricAISkills");
   }
 
   static fromResponse(data: unknown): DiscoverFabricAISkillsResponse {
-    return new DiscoverFabricAISkillsResponse((data as any).value);
+    return new DiscoverFabricAISkillsResponse(
+      responseObject<DiscoverFabricAISkillsResponseData>(data)
+    );
   }
 }

@@ -41,13 +41,6 @@ export class DeleteOQOILineWithSkipPricingCalculationRequest
     // No return value (204 No Content)
     return new DeleteOQOILineWithSkipPricingCalculationResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entityLogicalName: this.entityLogicalName,
-      entityId: this.entityId,
-    };
-  }
 }
 
 /**

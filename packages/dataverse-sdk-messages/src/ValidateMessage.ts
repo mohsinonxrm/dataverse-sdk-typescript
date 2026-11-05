@@ -1,6 +1,10 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { TypedActivitypointer } from "./types/index.js";
+import { responseObject } from "./internal/responseData.js";
+import type {
+  TypedActivitypointer,
+  ValidateResponse as ValidateResponseData,
+} from "./types/index.js";
 
 /**
  * Validate request message
@@ -33,23 +37,17 @@ export class ValidateRequest extends OrganizationRequest implements Executable<V
     const data = await response.json();
     return ValidateResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Activities: this.activities,
-    };
-  }
 }
 
 /**
  * Validate response message
  */
 export class ValidateResponse extends OrganizationResponse {
-  constructor(public result: ValidateResponse) {
+  constructor(public result: ValidateResponseData) {
     super("Validate");
   }
 
   static fromResponse(data: unknown): ValidateResponse {
-    return new ValidateResponse((data as any).value);
+    return new ValidateResponse(responseObject<ValidateResponseData>(data));
   }
 }

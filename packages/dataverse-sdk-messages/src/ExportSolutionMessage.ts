@@ -1,6 +1,10 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { ExportComponentsParams } from "./types/index.js";
+import { responseObject } from "./internal/responseData.js";
+import type {
+  ExportComponentsParams,
+  ExportSolutionResponse as ExportSolutionResponseData,
+} from "./types/index.js";
 
 /**
  * ExportSolution request message
@@ -66,37 +70,17 @@ export class ExportSolutionRequest
     const data = await response.json();
     return ExportSolutionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionName: this.solutionName,
-      Managed: this.managed,
-      TargetVersion: this.targetVersion,
-      ExportAutoNumberingSettings: this.exportAutoNumberingSettings,
-      ExportCalendarSettings: this.exportCalendarSettings,
-      ExportCustomizationSettings: this.exportCustomizationSettings,
-      ExportEmailTrackingSettings: this.exportEmailTrackingSettings,
-      ExportGeneralSettings: this.exportGeneralSettings,
-      ExportMarketingSettings: this.exportMarketingSettings,
-      ExportOutlookSynchronizationSettings: this.exportOutlookSynchronizationSettings,
-      ExportRelationshipRoles: this.exportRelationshipRoles,
-      ExportIsvConfig: this.exportIsvConfig,
-      ExportSales: this.exportSales,
-      ExportExternalApplications: this.exportExternalApplications,
-      ExportComponentsParams: this.exportComponentsParams,
-    };
-  }
 }
 
 /**
  * ExportSolution response message
  */
 export class ExportSolutionResponse extends OrganizationResponse {
-  constructor(public result: ExportSolutionResponse) {
+  constructor(public result: ExportSolutionResponseData) {
     super("ExportSolution");
   }
 
   static fromResponse(data: unknown): ExportSolutionResponse {
-    return new ExportSolutionResponse((data as any).value);
+    return new ExportSolutionResponse(responseObject<ExportSolutionResponseData>(data));
   }
 }

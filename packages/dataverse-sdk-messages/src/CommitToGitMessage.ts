@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { CommitToGitResponse as CommitToGitResponseData } from "./types/index.js";
 
 /**
  * CommitToGit request message
@@ -39,24 +41,17 @@ export class CommitToGitRequest
     const data = await response.json();
     return CommitToGitResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      CommitMessage: this.commitMessage,
-      SolutionUniqueName: this.solutionUniqueName,
-    };
-  }
 }
 
 /**
  * CommitToGit response message
  */
 export class CommitToGitResponse extends OrganizationResponse {
-  constructor(public result: CommitToGitResponse) {
+  constructor(public result: CommitToGitResponseData) {
     super("CommitToGit");
   }
 
   static fromResponse(data: unknown): CommitToGitResponse {
-    return new CommitToGitResponse((data as any).value);
+    return new CommitToGitResponse(responseObject<CommitToGitResponseData>(data));
   }
 }

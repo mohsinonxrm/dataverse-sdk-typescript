@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckForFailingWorkflowRelatedToAgreementResponse as msdyn_CheckForFailingWorkflowRelatedToAgreementResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckForFailingWorkflowRelatedToAgreement request message
@@ -32,21 +34,19 @@ export class msdyn_CheckForFailingWorkflowRelatedToAgreementRequest
     const data = await response.json();
     return msdyn_CheckForFailingWorkflowRelatedToAgreementResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_CheckForFailingWorkflowRelatedToAgreement response message
  */
 export class msdyn_CheckForFailingWorkflowRelatedToAgreementResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckForFailingWorkflowRelatedToAgreementResponse) {
+  constructor(public result: msdyn_CheckForFailingWorkflowRelatedToAgreementResponseData) {
     super("msdyn_CheckForFailingWorkflowRelatedToAgreement");
   }
 
   static fromResponse(data: unknown): msdyn_CheckForFailingWorkflowRelatedToAgreementResponse {
-    return new msdyn_CheckForFailingWorkflowRelatedToAgreementResponse((data as any).value);
+    return new msdyn_CheckForFailingWorkflowRelatedToAgreementResponse(
+      responseObject<msdyn_CheckForFailingWorkflowRelatedToAgreementResponseData>(data)
+    );
   }
 }

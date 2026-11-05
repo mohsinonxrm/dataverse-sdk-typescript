@@ -35,12 +35,6 @@ export class msdyn_OrphanCalendarCleanupRequest
     // No return value (204 No Content)
     return new msdyn_OrphanCalendarCleanupResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      CalendarId: this.calendarId,
-    };
-  }
 }
 
 /**

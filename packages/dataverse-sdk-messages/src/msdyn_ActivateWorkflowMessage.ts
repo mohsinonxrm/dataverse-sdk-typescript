@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_ActivateWorkflowResponse as msdyn_ActivateWorkflowResponseData } from "./types/index.js";
 
 /**
  * msdyn_ActivateWorkflow request message
@@ -39,24 +41,19 @@ export class msdyn_ActivateWorkflowRequest
     const data = await response.json();
     return msdyn_ActivateWorkflowResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_WorkflowId: this.msdyn_WorkflowId,
-      msdyn_WorkflowUniqueName: this.msdyn_WorkflowUniqueName,
-    };
-  }
 }
 
 /**
  * msdyn_ActivateWorkflow response message
  */
 export class msdyn_ActivateWorkflowResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ActivateWorkflowResponse) {
+  constructor(public result: msdyn_ActivateWorkflowResponseData) {
     super("msdyn_ActivateWorkflow");
   }
 
   static fromResponse(data: unknown): msdyn_ActivateWorkflowResponse {
-    return new msdyn_ActivateWorkflowResponse((data as any).value);
+    return new msdyn_ActivateWorkflowResponse(
+      responseObject<msdyn_ActivateWorkflowResponseData>(data)
+    );
   }
 }

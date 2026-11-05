@@ -36,12 +36,6 @@ export class msdyn_ApplyRoutingRuleEntityRecordRequest
     // No return value (204 No Content)
     return new msdyn_ApplyRoutingRuleEntityRecordResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-    };
-  }
 }
 
 /**

@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_LogCMAEventResponse as msdyn_LogCMAEventResponseData } from "./types/index.js";
 
 /**
  * msdyn_LogCMAEvent request message
@@ -46,27 +48,17 @@ export class msdyn_LogCMAEventRequest
     const data = await response.json();
     return msdyn_LogCMAEventResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EventType: this.eventType,
-      Source: this.source,
-      Component: this.component,
-      EventData: this.eventData,
-      Entity: this.entity,
-    };
-  }
 }
 
 /**
  * msdyn_LogCMAEvent response message
  */
 export class msdyn_LogCMAEventResponse extends OrganizationResponse {
-  constructor(public result: msdyn_LogCMAEventResponse) {
+  constructor(public result: msdyn_LogCMAEventResponseData) {
     super("msdyn_LogCMAEvent");
   }
 
   static fromResponse(data: unknown): msdyn_LogCMAEventResponse {
-    return new msdyn_LogCMAEventResponse((data as any).value);
+    return new msdyn_LogCMAEventResponse(responseObject<msdyn_LogCMAEventResponseData>(data));
   }
 }

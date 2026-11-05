@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_OCResetInviteParamsInfoResponse as msdyn_OCResetInviteParamsInfoResponseData } from "./types/index.js";
 
 /**
  * msdyn_OCResetInviteParamsInfo request message
@@ -35,23 +37,19 @@ export class msdyn_OCResetInviteParamsInfoRequest
     const data = await response.json();
     return msdyn_OCResetInviteParamsInfoResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      LiveWorkItemId: this.liveWorkItemId,
-    };
-  }
 }
 
 /**
  * msdyn_OCResetInviteParamsInfo response message
  */
 export class msdyn_OCResetInviteParamsInfoResponse extends OrganizationResponse {
-  constructor(public result: msdyn_OCResetInviteParamsInfoResponse) {
+  constructor(public result: msdyn_OCResetInviteParamsInfoResponseData) {
     super("msdyn_OCResetInviteParamsInfo");
   }
 
   static fromResponse(data: unknown): msdyn_OCResetInviteParamsInfoResponse {
-    return new msdyn_OCResetInviteParamsInfoResponse((data as any).value);
+    return new msdyn_OCResetInviteParamsInfoResponse(
+      responseObject<msdyn_OCResetInviteParamsInfoResponseData>(data)
+    );
   }
 }

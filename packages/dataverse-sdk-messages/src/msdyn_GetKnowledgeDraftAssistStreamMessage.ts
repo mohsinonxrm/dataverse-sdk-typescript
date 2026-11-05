@@ -39,13 +39,6 @@ export class msdyn_GetKnowledgeDraftAssistStreamRequest
     // No return value (204 No Content)
     return new msdyn_GetKnowledgeDraftAssistStreamResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RequestPayload: this.requestPayload,
-      Context: this.context,
-    };
-  }
 }
 
 /**

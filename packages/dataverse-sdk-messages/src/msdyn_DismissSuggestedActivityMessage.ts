@@ -39,13 +39,6 @@ export class msdyn_DismissSuggestedActivityRequest
     // No return value (204 No Content)
     return new msdyn_DismissSuggestedActivityResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SuggestedActivityId: this.suggestedActivityId,
-      DismissActivity: this.dismissActivity,
-    };
-  }
 }
 
 /**

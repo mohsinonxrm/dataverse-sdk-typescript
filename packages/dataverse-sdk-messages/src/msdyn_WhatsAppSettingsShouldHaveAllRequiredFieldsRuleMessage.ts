@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleResponse as msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRule request message
@@ -32,23 +34,21 @@ export class msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleRequest
     const data = await response.json();
     return msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRule response message
  */
 export class msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleResponse) {
+  constructor(public result: msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleResponseData) {
     super("msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRule");
   }
 
   static fromResponse(
     data: unknown
   ): msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleResponse {
-    return new msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleResponse((data as any).value);
+    return new msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleResponse(
+      responseObject<msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleResponseData>(data)
+    );
   }
 }

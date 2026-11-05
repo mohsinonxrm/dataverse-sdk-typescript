@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_RetrieveActivityAnalyticsConfigurationResponse as msdyn_RetrieveActivityAnalyticsConfigurationResponseData } from "./types/index.js";
 
 /**
  * msdyn_RetrieveActivityAnalyticsConfiguration request message
@@ -37,23 +39,19 @@ export class msdyn_RetrieveActivityAnalyticsConfigurationRequest
     const data = await response.json();
     return msdyn_RetrieveActivityAnalyticsConfigurationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SIParameters: this.sIParameters,
-    };
-  }
 }
 
 /**
  * msdyn_RetrieveActivityAnalyticsConfiguration response message
  */
 export class msdyn_RetrieveActivityAnalyticsConfigurationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrieveActivityAnalyticsConfigurationResponse) {
+  constructor(public result: msdyn_RetrieveActivityAnalyticsConfigurationResponseData) {
     super("msdyn_RetrieveActivityAnalyticsConfiguration");
   }
 
   static fromResponse(data: unknown): msdyn_RetrieveActivityAnalyticsConfigurationResponse {
-    return new msdyn_RetrieveActivityAnalyticsConfigurationResponse((data as any).value);
+    return new msdyn_RetrieveActivityAnalyticsConfigurationResponse(
+      responseObject<msdyn_RetrieveActivityAnalyticsConfigurationResponseData>(data)
+    );
   }
 }

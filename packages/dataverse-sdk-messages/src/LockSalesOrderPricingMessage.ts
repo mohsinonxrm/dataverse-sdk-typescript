@@ -31,12 +31,6 @@ export class LockSalesOrderPricingRequest
     // No return value (204 No Content)
     return new LockSalesOrderPricingResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.salesorderId,
-    };
-  }
 }
 
 /**

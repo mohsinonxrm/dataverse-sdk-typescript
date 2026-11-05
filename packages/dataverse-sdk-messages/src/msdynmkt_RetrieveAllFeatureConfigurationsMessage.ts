@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import { responseValue } from "./internal/responseData.js";
 
 /**
  * msdynmkt_RetrieveAllFeatureConfigurations request message
@@ -33,21 +33,19 @@ export class msdynmkt_RetrieveAllFeatureConfigurationsRequest
     const data = await response.json();
     return msdynmkt_RetrieveAllFeatureConfigurationsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdynmkt_RetrieveAllFeatureConfigurations response message
  */
 export class msdynmkt_RetrieveAllFeatureConfigurationsResponse extends OrganizationResponse {
-  constructor(public result: EntityReference[]) {
+  constructor(public result: Record<string, unknown>[]) {
     super("msdynmkt_RetrieveAllFeatureConfigurations");
   }
 
   static fromResponse(data: unknown): msdynmkt_RetrieveAllFeatureConfigurationsResponse {
-    return new msdynmkt_RetrieveAllFeatureConfigurationsResponse((data as any).value);
+    return new msdynmkt_RetrieveAllFeatureConfigurationsResponse(
+      responseValue<Record<string, unknown>[]>(data)
+    );
   }
 }

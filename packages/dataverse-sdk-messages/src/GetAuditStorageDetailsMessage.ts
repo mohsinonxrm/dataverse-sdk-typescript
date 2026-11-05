@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { GetAuditStorageDetailsResponse as GetAuditStorageDetailsResponseData } from "./types/index.js";
 
 /**
  * GetAuditStorageDetails request message
@@ -30,21 +32,19 @@ export class GetAuditStorageDetailsRequest
     const data = await response.json();
     return GetAuditStorageDetailsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * GetAuditStorageDetails response message
  */
 export class GetAuditStorageDetailsResponse extends OrganizationResponse {
-  constructor(public result: GetAuditStorageDetailsResponse) {
+  constructor(public result: GetAuditStorageDetailsResponseData) {
     super("GetAuditStorageDetails");
   }
 
   static fromResponse(data: unknown): GetAuditStorageDetailsResponse {
-    return new GetAuditStorageDetailsResponse((data as any).value);
+    return new GetAuditStorageDetailsResponse(
+      responseObject<GetAuditStorageDetailsResponseData>(data)
+    );
   }
 }

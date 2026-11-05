@@ -43,14 +43,6 @@ export class SetLocLabelsRequest
     // No return value (204 No Content)
     return new SetLocLabelsResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntityMoniker: this.entityMoniker,
-      AttributeName: this.attributeName,
-      Labels: this.labels,
-    };
-  }
 }
 
 /**

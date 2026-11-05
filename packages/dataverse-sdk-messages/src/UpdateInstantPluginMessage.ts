@@ -51,19 +51,6 @@ export class UpdateInstantPluginRequest
     // No return value (204 No Content)
     return new UpdateInstantPluginResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Description: this.description,
-      FxExpressionUniqueName: this.fxExpressionUniqueName,
-      Parameters: this.parameters,
-      Context: this.context,
-      EntityLogicalName: this.entityLogicalName,
-      SolutionUniqueName: this.solutionUniqueName,
-      Expression: this.expression,
-      Name: this.name,
-    };
-  }
 }
 
 /**

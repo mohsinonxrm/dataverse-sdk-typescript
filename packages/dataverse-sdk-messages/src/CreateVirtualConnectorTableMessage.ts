@@ -1,6 +1,10 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { CreateVirtualConnectorTableMetadata } from "./types/index.js";
+import { responseObject } from "./internal/responseData.js";
+import type {
+  CreateVirtualConnectorTableMetadata,
+  CreateVirtualConnectorTableResponse as CreateVirtualConnectorTableResponseData,
+} from "./types/index.js";
 
 /**
  * CreateVirtualConnectorTable request message
@@ -36,23 +40,19 @@ export class CreateVirtualConnectorTableRequest
     const data = await response.json();
     return CreateVirtualConnectorTableResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      CreateVirtualConnectorTableMetadata: this.createVirtualConnectorTableMetadata,
-    };
-  }
 }
 
 /**
  * CreateVirtualConnectorTable response message
  */
 export class CreateVirtualConnectorTableResponse extends OrganizationResponse {
-  constructor(public result: CreateVirtualConnectorTableResponse) {
+  constructor(public result: CreateVirtualConnectorTableResponseData) {
     super("CreateVirtualConnectorTable");
   }
 
   static fromResponse(data: unknown): CreateVirtualConnectorTableResponse {
-    return new CreateVirtualConnectorTableResponse((data as any).value);
+    return new CreateVirtualConnectorTableResponse(
+      responseObject<CreateVirtualConnectorTableResponseData>(data)
+    );
   }
 }

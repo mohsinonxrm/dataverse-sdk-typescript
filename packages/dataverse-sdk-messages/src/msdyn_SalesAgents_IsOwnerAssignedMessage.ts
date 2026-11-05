@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_SalesAgents_IsOwnerAssignedResponse as msdyn_SalesAgents_IsOwnerAssignedResponseData } from "./types/index.js";
 
 /**
  * msdyn_SalesAgents_IsOwnerAssigned request message
@@ -41,25 +43,19 @@ export class msdyn_SalesAgents_IsOwnerAssignedRequest
     const data = await response.json();
     return msdyn_SalesAgents_IsOwnerAssignedResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_HandoverContext: this.msdyn_HandoverContext,
-      msdyn_SalesAgentRun: this.msdyn_SalesAgentRun,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-    };
-  }
 }
 
 /**
  * msdyn_SalesAgents_IsOwnerAssigned response message
  */
 export class msdyn_SalesAgents_IsOwnerAssignedResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgents_IsOwnerAssignedResponse) {
+  constructor(public result: msdyn_SalesAgents_IsOwnerAssignedResponseData) {
     super("msdyn_SalesAgents_IsOwnerAssigned");
   }
 
   static fromResponse(data: unknown): msdyn_SalesAgents_IsOwnerAssignedResponse {
-    return new msdyn_SalesAgents_IsOwnerAssignedResponse((data as any).value);
+    return new msdyn_SalesAgents_IsOwnerAssignedResponse(
+      responseObject<msdyn_SalesAgents_IsOwnerAssignedResponseData>(data)
+    );
   }
 }

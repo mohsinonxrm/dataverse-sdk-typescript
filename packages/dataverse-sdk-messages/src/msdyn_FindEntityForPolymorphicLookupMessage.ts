@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_FindEntityForPolymorphicLookupResponse as msdyn_FindEntityForPolymorphicLookupResponseData } from "./types/index.js";
 
 /**
  * msdyn_FindEntityForPolymorphicLookup request message
@@ -41,25 +43,19 @@ export class msdyn_FindEntityForPolymorphicLookupRequest
     const data = await response.json();
     return msdyn_FindEntityForPolymorphicLookupResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntityLogicalName: this.entityLogicalName,
-      RecordId: this.recordId,
-      ListOfPolymorphicLookupsFromJSON: this.listOfPolymorphicLookupsFromJSON,
-    };
-  }
 }
 
 /**
  * msdyn_FindEntityForPolymorphicLookup response message
  */
 export class msdyn_FindEntityForPolymorphicLookupResponse extends OrganizationResponse {
-  constructor(public result: msdyn_FindEntityForPolymorphicLookupResponse) {
+  constructor(public result: msdyn_FindEntityForPolymorphicLookupResponseData) {
     super("msdyn_FindEntityForPolymorphicLookup");
   }
 
   static fromResponse(data: unknown): msdyn_FindEntityForPolymorphicLookupResponse {
-    return new msdyn_FindEntityForPolymorphicLookupResponse((data as any).value);
+    return new msdyn_FindEntityForPolymorphicLookupResponse(
+      responseObject<msdyn_FindEntityForPolymorphicLookupResponseData>(data)
+    );
   }
 }

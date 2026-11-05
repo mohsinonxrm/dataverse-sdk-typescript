@@ -39,13 +39,6 @@ export class msdyn_ParentIoTAlertsRequest
     // No return value (204 No Content)
     return new msdyn_ParentIoTAlertsResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_iotalertId,
-      TimespanSeconds: this.timespanSeconds,
-    };
-  }
 }
 
 /**

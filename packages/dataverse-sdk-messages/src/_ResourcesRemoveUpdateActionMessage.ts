@@ -39,13 +39,6 @@ export class _ResourcesRemoveUpdateActionRequest
     // No return value (204 No Content)
     return new _ResourcesRemoveUpdateActionResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ResourcesToBeRemoved: this.resourcesToBeRemoved,
-      ResourceGroupId: this.resourceGroupId,
-    };
-  }
 }
 
 /**

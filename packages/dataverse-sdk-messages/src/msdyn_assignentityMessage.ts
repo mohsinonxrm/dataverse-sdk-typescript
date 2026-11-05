@@ -43,15 +43,6 @@ export class msdyn_assignentityRequest
     // No return value (204 No Content)
     return new msdyn_assignentityResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RegardingEntityId: this.regardingEntityId,
-      RegardingEntityName: this.regardingEntityName,
-      SegmentId: this.segmentId,
-      CorrelationId: this.correlationId,
-    };
-  }
 }
 
 /**

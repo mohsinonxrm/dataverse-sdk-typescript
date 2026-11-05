@@ -35,12 +35,6 @@ export class msdyn_ResetOmnichannelProviderRequest
     // No return value (204 No Content)
     return new msdyn_ResetOmnichannelProviderResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      OrgBaseUrl: this.orgBaseUrl,
-    };
-  }
 }
 
 /**

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { CalculateActualValueOpportunityResponse as CalculateActualValueOpportunityResponseData } from "./types/index.js";
 
 /**
  * CalculateActualValueOpportunity request message
@@ -31,23 +33,19 @@ export class CalculateActualValueOpportunityRequest
     const data = await response.json();
     return CalculateActualValueOpportunityResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.opportunityId,
-    };
-  }
 }
 
 /**
  * CalculateActualValueOpportunity response message
  */
 export class CalculateActualValueOpportunityResponse extends OrganizationResponse {
-  constructor(public result: CalculateActualValueOpportunityResponse) {
+  constructor(public result: CalculateActualValueOpportunityResponseData) {
     super("CalculateActualValueOpportunity");
   }
 
   static fromResponse(data: unknown): CalculateActualValueOpportunityResponse {
-    return new CalculateActualValueOpportunityResponse((data as any).value);
+    return new CalculateActualValueOpportunityResponse(
+      responseObject<CalculateActualValueOpportunityResponseData>(data)
+    );
   }
 }

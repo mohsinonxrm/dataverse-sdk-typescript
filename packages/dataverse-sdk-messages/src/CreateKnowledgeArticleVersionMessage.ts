@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 
 /**
@@ -40,24 +41,17 @@ export class CreateKnowledgeArticleVersionRequest
     const data = await response.json();
     return CreateKnowledgeArticleVersionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Source: this.source,
-      IsMajor: this.isMajor,
-    };
-  }
 }
 
 /**
  * CreateKnowledgeArticleVersion response message
  */
 export class CreateKnowledgeArticleVersionResponse extends OrganizationResponse {
-  constructor(public result: EntityReference) {
+  constructor(public result: Record<string, unknown>) {
     super("CreateKnowledgeArticleVersion");
   }
 
   static fromResponse(data: unknown): CreateKnowledgeArticleVersionResponse {
-    return new CreateKnowledgeArticleVersionResponse((data as any).value);
+    return new CreateKnowledgeArticleVersionResponse(responseObject<Record<string, unknown>>(data));
   }
 }

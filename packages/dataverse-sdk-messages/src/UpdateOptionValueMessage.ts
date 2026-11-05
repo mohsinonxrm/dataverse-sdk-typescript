@@ -60,23 +60,6 @@ export class UpdateOptionValueRequest
     // No return value (204 No Content)
     return new UpdateOptionValueResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Color: this.color,
-      OptionSetName: this.optionSetName,
-      AttributeLogicalName: this.attributeLogicalName,
-      ExternalValue: this.externalValue,
-      EntityLogicalName: this.entityLogicalName,
-      IsHidden: this.isHidden,
-      Value: this.value,
-      Label: this.label,
-      Description: this.description,
-      MergeLabels: this.mergeLabels,
-      ParentValues: this.parentValues,
-      SolutionUniqueName: this.solutionUniqueName,
-    };
-  }
 }
 
 /**

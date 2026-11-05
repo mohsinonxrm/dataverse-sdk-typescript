@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleResponse as msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_GBMSettingsShouldHaveAllRequiredFieldsRule request message
@@ -32,21 +34,19 @@ export class msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleRequest
     const data = await response.json();
     return msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_GBMSettingsShouldHaveAllRequiredFieldsRule response message
  */
 export class msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleResponse) {
+  constructor(public result: msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleResponseData) {
     super("msdyn_GBMSettingsShouldHaveAllRequiredFieldsRule");
   }
 
   static fromResponse(data: unknown): msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleResponse {
-    return new msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleResponse((data as any).value);
+    return new msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleResponse(
+      responseObject<msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleResponseData>(data)
+    );
   }
 }

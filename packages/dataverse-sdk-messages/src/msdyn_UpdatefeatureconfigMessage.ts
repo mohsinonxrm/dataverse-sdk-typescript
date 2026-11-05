@@ -39,13 +39,6 @@ export class msdyn_UpdatefeatureconfigRequest
     // No return value (204 No Content)
     return new msdyn_UpdatefeatureconfigResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      featureType: this.featureType,
-      configuration: this.configuration,
-    };
-  }
 }
 
 /**

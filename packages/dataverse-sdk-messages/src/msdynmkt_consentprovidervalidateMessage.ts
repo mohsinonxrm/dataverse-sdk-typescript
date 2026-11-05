@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdynmkt_consentprovidervalidateResponse as msdynmkt_consentprovidervalidateResponseData } from "./types/index.js";
 
 /**
  * msdynmkt_consentprovidervalidate request message
@@ -36,23 +38,19 @@ export class msdynmkt_consentprovidervalidateRequest
     const data = await response.json();
     return msdynmkt_consentprovidervalidateResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      consentprovider: this.consentprovider,
-    };
-  }
 }
 
 /**
  * msdynmkt_consentprovidervalidate response message
  */
 export class msdynmkt_consentprovidervalidateResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_consentprovidervalidateResponse) {
+  constructor(public result: msdynmkt_consentprovidervalidateResponseData) {
     super("msdynmkt_consentprovidervalidate");
   }
 
   static fromResponse(data: unknown): msdynmkt_consentprovidervalidateResponse {
-    return new msdynmkt_consentprovidervalidateResponse((data as any).value);
+    return new msdynmkt_consentprovidervalidateResponse(
+      responseObject<msdynmkt_consentprovidervalidateResponseData>(data)
+    );
   }
 }

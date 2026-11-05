@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { DiscoverFabricWorkspacesResponse as DiscoverFabricWorkspacesResponseData } from "./types/index.js";
 
 /**
  * DiscoverFabricWorkspaces request message
@@ -35,23 +37,19 @@ export class DiscoverFabricWorkspacesRequest
     const data = await response.json();
     return DiscoverFabricWorkspacesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      fabricEnvironment: this.fabricEnvironment,
-    };
-  }
 }
 
 /**
  * DiscoverFabricWorkspaces response message
  */
 export class DiscoverFabricWorkspacesResponse extends OrganizationResponse {
-  constructor(public result: DiscoverFabricWorkspacesResponse) {
+  constructor(public result: DiscoverFabricWorkspacesResponseData) {
     super("DiscoverFabricWorkspaces");
   }
 
   static fromResponse(data: unknown): DiscoverFabricWorkspacesResponse {
-    return new DiscoverFabricWorkspacesResponse((data as any).value);
+    return new DiscoverFabricWorkspacesResponse(
+      responseObject<DiscoverFabricWorkspacesResponseData>(data)
+    );
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { GetTrackingTokenEmailResponse as GetTrackingTokenEmailResponseData } from "./types/index.js";
 
 /**
  * GetTrackingTokenEmail request message
@@ -35,23 +37,19 @@ export class GetTrackingTokenEmailRequest
     const data = await response.json();
     return GetTrackingTokenEmailResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Subject: this.subject,
-    };
-  }
 }
 
 /**
  * GetTrackingTokenEmail response message
  */
 export class GetTrackingTokenEmailResponse extends OrganizationResponse {
-  constructor(public result: GetTrackingTokenEmailResponse) {
+  constructor(public result: GetTrackingTokenEmailResponseData) {
     super("GetTrackingTokenEmail");
   }
 
   static fromResponse(data: unknown): GetTrackingTokenEmailResponse {
-    return new GetTrackingTokenEmailResponse((data as any).value);
+    return new GetTrackingTokenEmailResponse(
+      responseObject<GetTrackingTokenEmailResponseData>(data)
+    );
   }
 }

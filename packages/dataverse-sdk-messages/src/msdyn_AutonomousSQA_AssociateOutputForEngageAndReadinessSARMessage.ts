@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSARResponse as msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSARResponseData } from "./types/index.js";
 
 /**
  * msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSAR request message
@@ -43,21 +45,15 @@ export class msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSARRequest
     const data = await response.json();
     return msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSARResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_SalesAgentRun: this.msdyn_SalesAgentRun,
-      msdyn_SalesMacroAgentType: this.msdyn_SalesMacroAgentType,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-    };
-  }
 }
 
 /**
  * msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSAR response message
  */
 export class msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSARResponse extends OrganizationResponse {
-  constructor(public result: msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSARResponse) {
+  constructor(
+    public result: msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSARResponseData
+  ) {
     super("msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSAR");
   }
 
@@ -65,7 +61,7 @@ export class msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSARResponse
     data: unknown
   ): msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSARResponse {
     return new msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSARResponse(
-      (data as any).value
+      responseObject<msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSARResponseData>(data)
     );
   }
 }
