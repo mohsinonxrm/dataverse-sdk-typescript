@@ -168,10 +168,18 @@ await builder.delete(); // DELETE
 // All methods support optional RequestOptions
 await builder.get({
   headers: { "Custom-Header": "value" },
-  timeoutMs: 30000,
+  timeoutMs: 30000, // the whole request: attempts, retry waits and the wait for a slot
+  attemptTimeoutMs: 10000, // optional: each attempt
   signal: abortController.signal,
 });
 ```
+
+`timeoutMs` is a deadline for the whole request, from the call until the response headers arrive:
+every attempt, every retry wait (including `Retry-After`) and the wait for a concurrency slot. When it
+passes, the request rejects with `DataverseNetworkError` named `RequestTimeout`, even if retries were
+left. `attemptTimeoutMs` limits a single attempt; a timed-out attempt is not retried. A caller's
+`signal` aborting rejects with `DataverseAbortError`. Neither the SDK's timers nor its listeners stay
+on your `signal` after the request, so one signal can be shared by any number of requests.
 
 ### Fluent API Enhancements
 
@@ -1087,7 +1095,10 @@ export interface RequestInformation {
   /** Query parameters (URL-encoded when sent) */
   query?: Record<string, string | number | boolean | undefined | null>;
   body?: unknown;
+  /** Deadline for the whole request (attempts, retry waits, slot waits) */
   timeoutMs?: number;
+  /** Limit for each attempt */
+  attemptTimeoutMs?: number;
   signal?: AbortSignal;
   /** Sent as x-ms-correlation-id; a new one is generated when omitted */
   correlationId?: string;

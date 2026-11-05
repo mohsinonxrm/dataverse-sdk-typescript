@@ -406,6 +406,7 @@ export class DataverseRequestBuilder {
       query,
       body,
       timeoutMs: options?.timeoutMs,
+      attemptTimeoutMs: options?.attemptTimeoutMs,
       signal: options?.signal,
       correlationId: options?.correlationId,
       middlewareOptions: options?.middlewareOptions,
