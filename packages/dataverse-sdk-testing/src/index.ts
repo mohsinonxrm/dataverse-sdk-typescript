@@ -86,7 +86,7 @@ export interface FakeFetchOptions {
 
 /** Create a recording fake `fetch`. */
 export function createFakeFetch(options: FakeFetchOptions = {}): FakeFetch {
-  const apiUrl = (options.apiUrl ?? TEST_API_URL).replace(/\/+$/, "");
+  const apiUrl = trimTrailingSlashes(options.apiUrl ?? TEST_API_URL);
   const routes: Route[] = [];
   const requests: RecordedRequest[] = [];
 
@@ -131,6 +131,13 @@ export function createFakeFetch(options: FakeFetchOptions = {}): FakeFetch {
     },
   };
   return fake;
+}
+
+/** Remove trailing `/` characters in linear time (a `/\/+$/` regex is quadratic on long runs of `/`). */
+function trimTrailingSlashes(value: string): string {
+  let end = value.length;
+  while (end > 0 && value.charCodeAt(end - 1) === 47) end--;
+  return value.slice(0, end);
 }
 
 async function record(

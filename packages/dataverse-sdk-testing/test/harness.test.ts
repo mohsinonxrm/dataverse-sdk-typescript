@@ -90,3 +90,12 @@ describe("createTestClient", () => {
     expect(tokenProvider.calls).toEqual([undefined]);
   });
 });
+
+describe("apiUrl option", () => {
+  it("ignores trailing slashes on the API root", async () => {
+    const fake = createFakeFetch({ apiUrl: `${TEST_API_URL}///` });
+    fake.on("GET", "/WhoAmI", () => noContent());
+    await fake.fetchProvider.fetch(`${TEST_API_URL}/WhoAmI`);
+    expect(fake.last().path).toBe("/WhoAmI");
+  });
+});
