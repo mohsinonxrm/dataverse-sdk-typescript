@@ -32,7 +32,7 @@ export class msdynmkt_GetMetadataItemsForRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
