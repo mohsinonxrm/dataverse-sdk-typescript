@@ -27,12 +27,15 @@ function query(r: RecordedRequest, name: string): string | null {
   return new URL(r.url).searchParams.get(name);
 }
 
-/** Inject a recording fake fetch (the client calls the global fetch). */
+/** A client whose requests go to a recording fake fetch. */
 function setup() {
   const fake = createFakeFetch({ apiUrl: DISCO });
-  vi.stubGlobal("fetch", fake.fetchProvider.fetch);
   const tokens = fakeTokenProvider("disco-token");
-  return { fake, tokens, client: new DiscoveryClient(tokens) };
+  return {
+    fake,
+    tokens,
+    client: new DiscoveryClient(tokens, { fetchProvider: fake.fetchProvider }),
+  };
 }
 
 /** Answer /Instances like the service: apply the `eq` filters the client sends. */
@@ -108,7 +111,7 @@ describe("DiscoveryClient (Global Discovery Service v2.0)", () => {
       const { fake, client } = setup();
       fake.on("GET", "/Instances", () => odataError(401, "Unauthorized", "Unauthorized"));
 
-      await expect(client.listOrganizations()).rejects.toThrow(/401/);
+      await expect(client.listOrganizations()).rejects.toMatchObject({ status: 401 });
     });
   });
 

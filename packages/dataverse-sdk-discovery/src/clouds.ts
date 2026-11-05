@@ -1,4 +1,10 @@
 import { DataverseInvalidRequestError } from "@mohsinonxrm/dataverse-sdk-core";
+import type {
+  FetchProvider,
+  Logger,
+  RetryOptions,
+  TelemetryClient,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import { trimTrailingSlashes } from "./url.js";
 
 /**
@@ -64,6 +70,24 @@ export interface DiscoveryClientOptions {
    * `https://<host>/.default`. For example `["https://globaldisco.crm.dynamics.com/user_impersonation"]`.
    */
   scopes?: string[];
+
+  /**
+   * The `fetch` to send requests with (tests, proxies, Node polyfills). Defaults to the global
+   * `fetch`.
+   */
+  fetchProvider?: FetchProvider;
+
+  /** Logger for request/response diagnostics, as in `DataverseClientOptions.logger`. */
+  logger?: Logger;
+
+  /** Telemetry client, as in `DataverseClientOptions.telemetry`. */
+  telemetry?: TelemetryClient;
+
+  /**
+   * Retry policy for 429 / 502 / 503 / 504 responses, as in `DataverseClientOptions.retry`.
+   * `Retry-After` is honoured. Defaults to the SDK's defaults.
+   */
+  retry?: RetryOptions;
 }
 
 /** The endpoint and scopes a {@link DiscoveryClientOptions} resolves to. */
