@@ -9,4 +9,5 @@ export type {
   DiscoveredEnvironment,
   DiscoveryResponse,
   DiscoveryOptions,
+  DiscoveryRequestOptions,
 } from "./types.js";

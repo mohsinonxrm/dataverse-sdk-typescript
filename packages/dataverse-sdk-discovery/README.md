@@ -87,15 +87,26 @@ interface DiscoveryClientOptions {
   cloud?: "public" | "gcc" | "usg" | "dod" | "china"; // default "public"
   baseUrl?: string; // overrides the cloud's endpoint; a host-only URL gets /api/discovery/v2.0
   scopes?: string[]; // overrides the default https://<host>/.default
+  fetchProvider?: FetchProvider; // defaults to the global fetch
+  logger?: Logger;
+  telemetry?: TelemetryClient;
+  retry?: RetryOptions; // 429/502/503/504, honouring Retry-After
 }
 ```
 
 **Parameters:**
 
 - `tokenProvider`: An instance of a token provider (e.g., `MsalNodeTokenProvider`, `MsalBrowserTokenProvider`)
-- `options` (optional): the cloud, a custom endpoint and/or scopes. Throws `DataverseInvalidRequestError` for an unknown `cloud` or a `baseUrl` that isn't an absolute http(s) URL.
+- `options` (optional): the cloud, a custom endpoint and/or scopes, and pipeline options. Throws `DataverseInvalidRequestError` for an unknown `cloud` or a `baseUrl` that isn't an absolute https URL (plain http only for localhost).
+
+Requests go through the same pipeline as `DataverseClient`: the injected `fetchProvider`, retries
+with `Retry-After`, logging, telemetry and typed errors. The bearer token is sent only to the
+discovery host, including on `@odata.nextLink` pages.
 
 `getBaseUrl()` and `getScopes()` return the endpoint and scopes the client uses.
+
+Every method takes an optional `{ signal }` (`listOrganizations` takes it in its options) to cancel
+the request, including a retry wait.
 
 ### Methods
 
@@ -105,9 +116,13 @@ Lists all Dataverse organizations the authenticated user has access to.
 
 **Parameters:**
 
-- `options.filter`: OData filter expression (e.g., `"State eq 0"`). String comparisons are case sensitive.
+- `options.filter`: OData filter expression (e.g., `"State eq 0"`). String comparisons are case sensitive. Sent as written: build it with `odata` from `@mohsinonxrm/dataverse-sdk-core` (or double each `'` yourself) when it contains user input. The helper methods escape their arguments.
 - `options.select`: Array of properties to return
 - `options.orderby`: Property to order results by
+- `options.signal`: `AbortSignal` to cancel the request
+
+All query values are percent-encoded. When the service returns `@odata.nextLink`, the pages are
+followed and concatenated.
 
 **Examples:**
 
@@ -267,19 +282,26 @@ selectOrganization().catch(console.error);
 
 ## Error Handling
 
+Error responses are thrown as the core SDK's typed errors: `DataverseODataError`, or
+`DataverseThrottleError` for a 429 that is still throttled after the retries. Both extend
+`DataverseError` and carry `status`, `code`, `requestId` and `raw`; `DataverseThrottleError` also has
+`retryAfterMs`. Aborting rejects with an `AbortError`.
+
 ```typescript
+import { DataverseError, DataverseThrottleError } from "@mohsinonxrm/dataverse-sdk-core";
+
 try {
   const orgs = await discovery.listOrganizations();
   console.log(`Found ${orgs.length} organizations`);
 } catch (error) {
-  if (error instanceof Error) {
-    if (error.message.includes("401")) {
-      console.error("Authentication failed. Check your credentials.");
-    } else if (error.message.includes("403")) {
-      console.error("Access denied. You may not have permission to use the discovery service.");
-    } else {
-      console.error("Discovery request failed:", error.message);
-    }
+  if (error instanceof DataverseThrottleError) {
+    console.error(`Throttled; retry after ${error.retryAfterMs ?? "?"} ms`);
+  } else if (error instanceof DataverseError && error.status === 401) {
+    console.error("Authentication failed. Check your credentials.");
+  } else if (error instanceof DataverseError && error.status === 403) {
+    console.error("Access denied. You may not have permission to use the discovery service.");
+  } else {
+    throw error;
   }
 }
 ```

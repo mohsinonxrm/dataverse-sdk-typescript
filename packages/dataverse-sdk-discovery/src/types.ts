@@ -133,15 +133,29 @@ export interface DiscoveredEnvironment {
  */
 export interface DiscoveryResponse {
   value: OrganizationDetail[];
+  /** Link to the next page of results, when the service pages them. Followed automatically. */
+  "@odata.nextLink"?: string;
+}
+
+/**
+ * Per-call options for {@link DiscoveryClient} methods.
+ */
+export interface DiscoveryRequestOptions {
+  /** Cancels the request, including any retry wait. */
+  signal?: AbortSignal;
 }
 
 /**
  * Options for discovery service requests
  */
-export interface DiscoveryOptions {
+export interface DiscoveryOptions extends DiscoveryRequestOptions {
   /**
    * OData `$filter` expression, e.g. `"State eq 0"` or `"Region eq 'NA'"`.
    * String comparisons in the Global Discovery Service are case sensitive.
+   *
+   * This is sent as written: escape string literals yourself (double each `'`), or build the
+   * expression with `odata` from `@mohsinonxrm/dataverse-sdk-core`. The helper methods escape
+   * their arguments.
    */
   filter?: string;
 

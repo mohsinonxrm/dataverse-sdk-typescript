@@ -8,13 +8,21 @@ import { DataverseInvalidRequestError } from "@mohsinonxrm/dataverse-sdk-core";
 import { DiscoveryClient, DISCOVERY_CLOUDS } from "../src/index.js";
 import type { DiscoveryClientOptions, DiscoveryCloud } from "../src/index.js";
 
-/** Inject a recording fake fetch that answers any …/Instances request with an empty list. */
+/**
+ * A recording fake fetch that answers any …/Instances request with an empty list. Options are
+ * given it as `fetchProvider`; the legacy string form has no options, so it goes through the
+ * global fetch (which is also the default when `fetchProvider` is omitted).
+ */
 function setup(options?: string | DiscoveryClientOptions) {
   const fake = createFakeFetch();
   fake.on("GET", /\/Instances$/, () => jsonResponse({ value: [] }));
-  vi.stubGlobal("fetch", fake.fetchProvider.fetch);
   const tokens = fakeTokenProvider("disco-token");
-  return { fake, tokens, client: new DiscoveryClient(tokens, options) };
+  if (typeof options === "string") {
+    vi.stubGlobal("fetch", fake.fetchProvider.fetch);
+    return { fake, tokens, client: new DiscoveryClient(tokens, options) };
+  }
+  const client = new DiscoveryClient(tokens, { ...options, fetchProvider: fake.fetchProvider });
+  return { fake, tokens, client };
 }
 
 afterEach(() => {
