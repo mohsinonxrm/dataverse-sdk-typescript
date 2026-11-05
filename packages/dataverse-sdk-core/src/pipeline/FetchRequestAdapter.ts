@@ -33,8 +33,9 @@ export class FetchRequestAdapter implements RequestAdapter {
     try {
       return await this.fetchProvider.fetch(url, init);
     } catch (err) {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- timedOut is set in the setTimeout callback before abort fires
       if (timedOut) {
-        throw DataverseNetworkError.timeout(request.timeoutMs!);
+        throw DataverseNetworkError.timeout(request.timeoutMs ?? 0);
       }
       throw err;
     } finally {
