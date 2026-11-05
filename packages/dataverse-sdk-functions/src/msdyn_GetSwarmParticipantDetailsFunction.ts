@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 
 /**
  * Response from msdyn_GetSwarmParticipantDetails function
@@ -23,12 +24,7 @@ export class msdyn_GetSwarmParticipantDetailsFunction implements Executable<msdy
     const aliases: string[] = [];
     if (this.msdyn_SwarmParticipantId !== undefined) {
       aliases.push(`msdyn_SwarmParticipantId=@p1`);
-      params.append(
-        "@p1",
-        typeof this.msdyn_SwarmParticipantId === "string"
-          ? `'${this.msdyn_SwarmParticipantId}'`
-          : String(this.msdyn_SwarmParticipantId)
-      );
+      params.append("@p1", formatAliasValue(this.msdyn_SwarmParticipantId));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 import type { PreferredSolutionDetails } from "./types/index.js";
 
 /**
@@ -25,10 +26,7 @@ export class PreferredSolutionUsedByFunction implements Executable<PreferredSolu
     const aliases: string[] = [];
     if (this.solutionId !== undefined) {
       aliases.push(`SolutionId=@p1`);
-      params.append(
-        "@p1",
-        typeof this.solutionId === "string" ? `'${this.solutionId}'` : String(this.solutionId)
-      );
+      params.append("@p1", formatAliasValue(this.solutionId));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

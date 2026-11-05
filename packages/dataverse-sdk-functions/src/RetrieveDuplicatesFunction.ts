@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 import type { EntityReference } from "./types/EntityReference.js";
 import { getEntitySetNameFromReference } from "./types/EntityReference.js";
 import type { PagingInfo } from "./types/index.js";
@@ -39,12 +40,7 @@ export class RetrieveDuplicatesFunction implements Executable<RetrieveDuplicates
     }
     if (this.matchingEntityName !== undefined) {
       aliases.push(`MatchingEntityName=@p2`);
-      params.append(
-        "@p2",
-        typeof this.matchingEntityName === "string"
-          ? `'${this.matchingEntityName}'`
-          : String(this.matchingEntityName)
-      );
+      params.append("@p2", formatAliasValue(this.matchingEntityName));
     }
     if (this.pagingInfo !== undefined) {
       aliases.push(`PagingInfo=@p3`);

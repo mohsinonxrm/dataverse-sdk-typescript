@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 
 /**
  * Response from RetrieveFormattedImportJobResults function
@@ -23,10 +24,7 @@ export class RetrieveFormattedImportJobResultsFunction implements Executable<Ret
     const aliases: string[] = [];
     if (this.importJobId !== undefined) {
       aliases.push(`ImportJobId=@p1`);
-      params.append(
-        "@p1",
-        typeof this.importJobId === "string" ? `'${this.importJobId}'` : String(this.importJobId)
-      );
+      params.append("@p1", formatAliasValue(this.importJobId));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

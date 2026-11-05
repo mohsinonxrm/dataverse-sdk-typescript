@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 
 /**
  * Response from InOrAfterFiscalPeriodAndYear function
@@ -27,28 +28,15 @@ export class InOrAfterFiscalPeriodAndYearFunction implements Executable<InOrAfte
     const aliases: string[] = [];
     if (this.propertyName !== undefined) {
       aliases.push(`PropertyName=@p1`);
-      params.append(
-        "@p1",
-        typeof this.propertyName === "string" ? `'${this.propertyName}'` : String(this.propertyName)
-      );
+      params.append("@p1", formatAliasValue(this.propertyName));
     }
     if (this.propertyValue1 !== undefined) {
       aliases.push(`PropertyValue1=@p2`);
-      params.append(
-        "@p2",
-        typeof this.propertyValue1 === "string"
-          ? `'${this.propertyValue1}'`
-          : String(this.propertyValue1)
-      );
+      params.append("@p2", formatAliasValue(this.propertyValue1));
     }
     if (this.propertyValue2 !== undefined) {
       aliases.push(`PropertyValue2=@p3`);
-      params.append(
-        "@p3",
-        typeof this.propertyValue2 === "string"
-          ? `'${this.propertyValue2}'`
-          : String(this.propertyValue2)
-      );
+      params.append("@p3", formatAliasValue(this.propertyValue2));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

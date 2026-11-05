@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 
 /**
  * Response from CCaaS_GetPresence function
@@ -30,10 +31,7 @@ export class CCaaS_GetPresenceFunction implements Executable<CCaaS_GetPresenceRe
     const aliases: string[] = [];
     if (this.apiVersion !== undefined) {
       aliases.push(`ApiVersion=@p1`);
-      params.append(
-        "@p1",
-        typeof this.apiVersion === "string" ? `'${this.apiVersion}'` : String(this.apiVersion)
-      );
+      params.append("@p1", formatAliasValue(this.apiVersion));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
