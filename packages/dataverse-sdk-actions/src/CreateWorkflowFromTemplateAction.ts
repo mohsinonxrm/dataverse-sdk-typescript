@@ -32,7 +32,7 @@ export class CreateWorkflowFromTemplateAction implements Executable<CreateWorkfl
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

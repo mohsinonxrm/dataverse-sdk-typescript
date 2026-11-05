@@ -20,7 +20,7 @@ export class msdyn_AutonomousSQA_ProvisionMCSAgentsAction implements Executable<
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

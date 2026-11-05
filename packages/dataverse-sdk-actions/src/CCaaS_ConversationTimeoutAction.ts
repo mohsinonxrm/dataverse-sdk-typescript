@@ -33,7 +33,7 @@ export class CCaaS_ConversationTimeoutAction implements Executable<CCaaS_Convers
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

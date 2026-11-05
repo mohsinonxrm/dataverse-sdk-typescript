@@ -35,7 +35,7 @@ export class msdyn_cloneentityAction implements Executable<msdyn_cloneentityResp
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

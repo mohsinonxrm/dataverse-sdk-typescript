@@ -20,7 +20,7 @@ export class msdyn_ExecuteCustomerNotificationRequestAction implements Executabl
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

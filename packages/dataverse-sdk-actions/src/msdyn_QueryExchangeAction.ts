@@ -32,7 +32,7 @@ export class msdyn_QueryExchangeAction implements Executable<msdyn_QueryExchange
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

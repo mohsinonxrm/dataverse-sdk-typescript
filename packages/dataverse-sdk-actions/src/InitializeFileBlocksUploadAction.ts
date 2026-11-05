@@ -33,7 +33,7 @@ export class InitializeFileBlocksUploadAction implements Executable<InitializeFi
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -26,7 +26,7 @@ export class msdyn_CreateActionFlowAction implements Executable<msdyn_CreateActi
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

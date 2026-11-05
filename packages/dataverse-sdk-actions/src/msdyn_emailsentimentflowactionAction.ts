@@ -26,7 +26,7 @@ export class msdyn_emailsentimentflowactionAction implements Executable<msdyn_em
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

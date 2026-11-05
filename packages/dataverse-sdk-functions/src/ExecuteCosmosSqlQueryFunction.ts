@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 import type { EntityReference } from "./types/EntityReference.js";
 import { getEntitySetNameFromReference } from "./types/EntityReference.js";
 import type { ParameterCollection } from "./types/index.js";
@@ -33,19 +34,11 @@ export class ExecuteCosmosSqlQueryFunction implements Executable<ExecuteCosmosSq
     const aliases: string[] = [];
     if (this.queryText !== undefined) {
       aliases.push(`QueryText=@p1`);
-      params.append(
-        "@p1",
-        typeof this.queryText === "string" ? `'${this.queryText}'` : String(this.queryText)
-      );
+      params.append("@p1", formatAliasValue(this.queryText));
     }
     if (this.entityLogicalName !== undefined) {
       aliases.push(`EntityLogicalName=@p2`);
-      params.append(
-        "@p2",
-        typeof this.entityLogicalName === "string"
-          ? `'${this.entityLogicalName}'`
-          : String(this.entityLogicalName)
-      );
+      params.append("@p2", formatAliasValue(this.entityLogicalName));
     }
     if (this.queryParameters !== undefined) {
       aliases.push(`QueryParameters=@p3`);
@@ -53,24 +46,15 @@ export class ExecuteCosmosSqlQueryFunction implements Executable<ExecuteCosmosSq
     }
     if (this.pageSize !== undefined) {
       aliases.push(`PageSize=@p4`);
-      params.append(
-        "@p4",
-        typeof this.pageSize === "string" ? `'${this.pageSize}'` : String(this.pageSize)
-      );
+      params.append("@p4", formatAliasValue(this.pageSize));
     }
     if (this.pagingCookie !== undefined) {
       aliases.push(`PagingCookie=@p5`);
-      params.append(
-        "@p5",
-        typeof this.pagingCookie === "string" ? `'${this.pagingCookie}'` : String(this.pagingCookie)
-      );
+      params.append("@p5", formatAliasValue(this.pagingCookie));
     }
     if (this.partitionId !== undefined) {
       aliases.push(`PartitionId=@p6`);
-      params.append(
-        "@p6",
-        typeof this.partitionId === "string" ? `'${this.partitionId}'` : String(this.partitionId)
-      );
+      params.append("@p6", formatAliasValue(this.partitionId));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

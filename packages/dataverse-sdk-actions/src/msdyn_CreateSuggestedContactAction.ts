@@ -27,7 +27,7 @@ export class msdyn_CreateSuggestedContactAction implements Executable<msdyn_Crea
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

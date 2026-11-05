@@ -20,7 +20,7 @@ export class _InvokeHideReserveEntitiesAction implements Executable<_InvokeHideR
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

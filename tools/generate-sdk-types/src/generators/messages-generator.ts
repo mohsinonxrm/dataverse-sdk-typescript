@@ -364,7 +364,7 @@ function generateToRequestInformation(
   code += `      method: 'POST',\n`;
   code += `      url,\n`;
   code += `      headers: {\n`;
-  code += `        'Content-Type': 'application/json',\n`;
+  code += `        'content-type': 'application/json',\n`;
   code += `      },\n`;
   if (bodyParams.length > 0) {
     code += `      body,\n`;

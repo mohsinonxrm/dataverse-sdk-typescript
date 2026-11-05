@@ -20,7 +20,7 @@ export class PvaGetFeatureControlSetAction implements Executable<PvaGetFeatureCo
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

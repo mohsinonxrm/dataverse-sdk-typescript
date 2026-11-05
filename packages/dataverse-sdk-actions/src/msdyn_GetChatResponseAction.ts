@@ -26,7 +26,7 @@ export class msdyn_GetChatResponseAction implements Executable<msdyn_GetChatResp
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

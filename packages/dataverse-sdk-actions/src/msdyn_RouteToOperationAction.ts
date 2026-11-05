@@ -26,7 +26,7 @@ export class msdyn_RouteToOperationAction implements Executable<msdyn_RouteToOpe
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

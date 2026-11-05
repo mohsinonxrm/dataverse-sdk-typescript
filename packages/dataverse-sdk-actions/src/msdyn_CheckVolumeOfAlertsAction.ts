@@ -22,7 +22,7 @@ export class msdyn_CheckVolumeOfAlertsAction implements Executable<msdyn_CheckVo
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

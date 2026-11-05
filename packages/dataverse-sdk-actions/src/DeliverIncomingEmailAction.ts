@@ -55,7 +55,7 @@ export class DeliverIncomingEmailAction implements Executable<DeliverIncomingEma
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

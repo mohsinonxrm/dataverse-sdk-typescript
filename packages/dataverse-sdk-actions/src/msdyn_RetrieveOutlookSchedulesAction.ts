@@ -35,7 +35,7 @@ export class msdyn_RetrieveOutlookSchedulesAction implements Executable<msdyn_Re
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

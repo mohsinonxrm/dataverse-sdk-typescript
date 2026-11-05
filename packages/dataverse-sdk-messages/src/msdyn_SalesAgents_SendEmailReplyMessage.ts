@@ -35,7 +35,7 @@ export class msdyn_SalesAgents_SendEmailReplyRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

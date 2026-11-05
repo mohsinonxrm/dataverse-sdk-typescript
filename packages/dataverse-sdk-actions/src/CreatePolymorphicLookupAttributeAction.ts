@@ -37,7 +37,7 @@ export class CreatePolymorphicLookupAttributeAction implements Executable<Create
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

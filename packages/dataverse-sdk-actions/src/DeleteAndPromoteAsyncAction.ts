@@ -26,7 +26,7 @@ export class DeleteAndPromoteAsyncAction implements Executable<DeleteAndPromoteA
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -39,7 +39,7 @@ export class msdyn_GetPromoContentFromIrisRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

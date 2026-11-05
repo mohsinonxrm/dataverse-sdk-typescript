@@ -37,7 +37,7 @@ export class msdyn_ConditionXmlConversionAction implements Executable<msdyn_Cond
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -29,7 +29,7 @@ export class msdynmkt_getdigitalassetcdnurlv2Request
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

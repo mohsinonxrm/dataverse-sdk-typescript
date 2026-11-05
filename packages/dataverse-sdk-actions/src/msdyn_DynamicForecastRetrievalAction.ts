@@ -26,7 +26,7 @@ export class msdyn_DynamicForecastRetrievalAction implements Executable<msdyn_Dy
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

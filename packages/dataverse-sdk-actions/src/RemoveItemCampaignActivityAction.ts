@@ -32,7 +32,7 @@ export class RemoveItemCampaignActivityAction implements Executable<RemoveItemCa
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

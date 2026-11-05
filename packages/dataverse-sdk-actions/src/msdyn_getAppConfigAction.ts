@@ -20,7 +20,7 @@ export class msdyn_getAppConfigAction implements Executable<msdyn_getAppConfigRe
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

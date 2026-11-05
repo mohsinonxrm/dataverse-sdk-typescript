@@ -26,7 +26,7 @@ export class msdyn_UpdateAuditStateAction implements Executable<msdyn_UpdateAudi
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -39,7 +39,7 @@ export class FormPredictAction implements Executable<FormPredictResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

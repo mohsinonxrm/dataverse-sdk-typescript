@@ -34,7 +34,7 @@ export class msdyn_GetSalesCopilotEmailInsightsAction implements Executable<msdy
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

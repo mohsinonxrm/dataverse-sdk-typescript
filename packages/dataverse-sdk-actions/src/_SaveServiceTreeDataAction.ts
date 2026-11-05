@@ -31,7 +31,7 @@ export class _SaveServiceTreeDataAction implements Executable<_SaveServiceTreeDa
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -27,7 +27,7 @@ export class msdyn_SalesAgents_GetOutreachSalesAgentRunRecordsAction implements 
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

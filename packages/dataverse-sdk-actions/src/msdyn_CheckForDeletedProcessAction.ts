@@ -33,7 +33,7 @@ export class msdyn_CheckForDeletedProcessAction implements Executable<msdyn_Chec
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

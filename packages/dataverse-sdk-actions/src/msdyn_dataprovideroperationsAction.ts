@@ -32,7 +32,7 @@ export class msdyn_dataprovideroperationsAction implements Executable<msdyn_data
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

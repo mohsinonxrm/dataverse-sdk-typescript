@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 import type { SettingDetail } from "./types/index.js";
 
 /**
@@ -27,19 +28,11 @@ export class RetrieveSettingFunction implements Executable<RetrieveSettingRespon
     const aliases: string[] = [];
     if (this.appUniqueName !== undefined) {
       aliases.push(`AppUniqueName=@p1`);
-      params.append(
-        "@p1",
-        typeof this.appUniqueName === "string"
-          ? `'${this.appUniqueName}'`
-          : String(this.appUniqueName)
-      );
+      params.append("@p1", formatAliasValue(this.appUniqueName));
     }
     if (this.settingName !== undefined) {
       aliases.push(`SettingName=@p2`);
-      params.append(
-        "@p2",
-        typeof this.settingName === "string" ? `'${this.settingName}'` : String(this.settingName)
-      );
+      params.append("@p2", formatAliasValue(this.settingName));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

@@ -26,7 +26,7 @@ export class msdyn_OCResetLastMessageInfoAction implements Executable<msdyn_OCRe
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

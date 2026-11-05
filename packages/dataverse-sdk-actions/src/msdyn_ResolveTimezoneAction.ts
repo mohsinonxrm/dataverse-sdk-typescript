@@ -30,7 +30,7 @@ export class msdyn_ResolveTimezoneAction implements Executable<msdyn_ResolveTime
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

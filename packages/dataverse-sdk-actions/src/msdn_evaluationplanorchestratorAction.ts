@@ -26,7 +26,7 @@ export class msdn_evaluationplanorchestratorAction implements Executable<msdn_ev
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

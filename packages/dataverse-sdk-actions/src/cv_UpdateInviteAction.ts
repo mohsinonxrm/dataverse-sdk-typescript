@@ -27,7 +27,7 @@ export class cv_UpdateInviteAction implements Executable<cv_UpdateInviteResponse
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

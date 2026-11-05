@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 import type { EntityReference } from "./types/EntityReference.js";
 import { getEntitySetNameFromReference } from "./types/EntityReference.js";
 import type { QueryBase, RollupType } from "./types/index.js";
@@ -43,10 +44,7 @@ export class RollupFunction implements Executable<RollupResponse> {
     }
     if (this.rollupType !== undefined) {
       aliases.push(`RollupType=@p3`);
-      params.append(
-        "@p3",
-        typeof this.rollupType === "string" ? `'${this.rollupType}'` : String(this.rollupType)
-      );
+      params.append("@p3", formatAliasValue(this.rollupType));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

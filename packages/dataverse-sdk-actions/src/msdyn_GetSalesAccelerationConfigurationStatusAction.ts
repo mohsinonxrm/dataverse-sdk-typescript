@@ -22,7 +22,7 @@ export class msdyn_GetSalesAccelerationConfigurationStatusAction implements Exec
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

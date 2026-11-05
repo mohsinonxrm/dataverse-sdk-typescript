@@ -35,7 +35,7 @@ export class CCaaS_RejoinConversationAction implements Executable<CCaaS_RejoinCo
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 import type { MissingComponent } from "./types/index.js";
 
 /**
@@ -24,12 +25,7 @@ export class RetrieveMissingComponentsFunction implements Executable<RetrieveMis
     const aliases: string[] = [];
     if (this.customizationFile !== undefined) {
       aliases.push(`CustomizationFile=@p1`);
-      params.append(
-        "@p1",
-        typeof this.customizationFile === "string"
-          ? `'${this.customizationFile}'`
-          : String(this.customizationFile)
-      );
+      params.append("@p1", formatAliasValue(this.customizationFile));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

@@ -32,7 +32,7 @@ export class msdyn_SignalRInstanceActionsAction implements Executable<msdyn_Sign
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

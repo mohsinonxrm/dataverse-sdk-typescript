@@ -21,7 +21,7 @@ export class RetrieveConnectorSettingsAction implements Executable<RetrieveConne
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

@@ -26,7 +26,7 @@ export class msdyn_FetchAllPredictionModelsAction implements Executable<msdyn_Fe
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

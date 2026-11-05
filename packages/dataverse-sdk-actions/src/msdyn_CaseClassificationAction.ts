@@ -26,7 +26,7 @@ export class msdyn_CaseClassificationAction implements Executable<msdyn_CaseClas
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

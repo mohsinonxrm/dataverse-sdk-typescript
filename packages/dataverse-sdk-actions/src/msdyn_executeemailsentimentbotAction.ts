@@ -30,7 +30,7 @@ export class msdyn_executeemailsentimentbotAction implements Executable<msdyn_ex
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

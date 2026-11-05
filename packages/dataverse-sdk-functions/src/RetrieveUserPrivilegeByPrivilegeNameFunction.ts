@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 import type { RolePrivilege } from "./types/index.js";
 
 /**
@@ -30,21 +31,11 @@ export class RetrieveUserPrivilegeByPrivilegeNameFunction implements Executable<
     const aliases: string[] = [];
     if (this.privilegeName !== undefined) {
       aliases.push(`PrivilegeName=@p1`);
-      params.append(
-        "@p1",
-        typeof this.privilegeName === "string"
-          ? `'${this.privilegeName}'`
-          : String(this.privilegeName)
-      );
+      params.append("@p1", formatAliasValue(this.privilegeName));
     }
     if (this.excludeTeamBasic !== undefined) {
       aliases.push(`ExcludeTeamBasic=@p2`);
-      params.append(
-        "@p2",
-        typeof this.excludeTeamBasic === "string"
-          ? `'${this.excludeTeamBasic}'`
-          : String(this.excludeTeamBasic)
-      );
+      params.append("@p2", formatAliasValue(this.excludeTeamBasic));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

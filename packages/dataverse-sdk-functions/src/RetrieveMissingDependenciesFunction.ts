@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 import type { EntityReference } from "./types/EntityReference.js";
 import { getEntitySetNameFromReference } from "./types/EntityReference.js";
 
@@ -25,12 +26,7 @@ export class RetrieveMissingDependenciesFunction implements Executable<RetrieveM
     const aliases: string[] = [];
     if (this.solutionUniqueName !== undefined) {
       aliases.push(`SolutionUniqueName=@p1`);
-      params.append(
-        "@p1",
-        typeof this.solutionUniqueName === "string"
-          ? `'${this.solutionUniqueName}'`
-          : String(this.solutionUniqueName)
-      );
+      params.append("@p1", formatAliasValue(this.solutionUniqueName));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

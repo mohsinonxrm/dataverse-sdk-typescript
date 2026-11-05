@@ -39,7 +39,7 @@ export class msdynmkt_checkconsentbatchAction implements Executable<msdynmkt_che
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

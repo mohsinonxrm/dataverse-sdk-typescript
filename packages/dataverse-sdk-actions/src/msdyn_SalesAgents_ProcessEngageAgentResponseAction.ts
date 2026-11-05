@@ -41,7 +41,7 @@ export class msdyn_SalesAgents_ProcessEngageAgentResponseAction implements Execu
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

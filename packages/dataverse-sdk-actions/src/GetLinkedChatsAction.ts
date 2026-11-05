@@ -27,7 +27,7 @@ export class GetLinkedChatsAction implements Executable<GetLinkedChatsResponse> 
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

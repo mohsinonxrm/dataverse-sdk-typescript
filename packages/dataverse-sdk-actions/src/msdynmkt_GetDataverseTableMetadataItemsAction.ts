@@ -36,7 +36,7 @@ export class msdynmkt_GetDataverseTableMetadataItemsAction implements Executable
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

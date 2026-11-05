@@ -31,7 +31,7 @@ export class ReviseQuoteAction implements Executable<ReviseQuoteResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -20,7 +20,7 @@ export class msdyn_updatelivechatconfigsAction implements Executable<msdyn_updat
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

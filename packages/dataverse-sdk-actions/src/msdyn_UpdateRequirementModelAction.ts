@@ -34,7 +34,7 @@ export class msdyn_UpdateRequirementModelAction implements Executable<msdyn_Upda
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

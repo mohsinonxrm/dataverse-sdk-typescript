@@ -33,7 +33,7 @@ export class PredictByReferenceAction implements Executable<PredictByReferenceRe
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

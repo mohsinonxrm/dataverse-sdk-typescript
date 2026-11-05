@@ -399,6 +399,7 @@ export class DataverseRequestBuilder {
       timeoutMs: options?.timeoutMs,
       signal: options?.signal,
       correlationId: options?.correlationId,
+      middlewareOptions: options?.middlewareOptions,
     };
 
     // merge option headers/prefer

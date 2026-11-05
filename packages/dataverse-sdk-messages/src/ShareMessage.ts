@@ -28,7 +28,7 @@ export class ShareRequest extends OrganizationRequest implements Executable<Shar
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

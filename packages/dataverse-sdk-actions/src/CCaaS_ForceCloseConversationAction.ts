@@ -31,7 +31,7 @@ export class CCaaS_ForceCloseConversationAction implements Executable<CCaaS_Forc
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

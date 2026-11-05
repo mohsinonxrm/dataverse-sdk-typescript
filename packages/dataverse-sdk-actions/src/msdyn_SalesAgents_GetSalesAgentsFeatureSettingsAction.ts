@@ -20,7 +20,7 @@ export class msdyn_SalesAgents_GetSalesAgentsFeatureSettingsAction implements Ex
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

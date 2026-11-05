@@ -23,7 +23,7 @@ export class msdyn_ValidateTSISecretExpiryAction implements Executable<msdyn_Val
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

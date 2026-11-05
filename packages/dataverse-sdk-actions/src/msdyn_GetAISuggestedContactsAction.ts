@@ -30,7 +30,7 @@ export class msdyn_GetAISuggestedContactsAction implements Executable<msdyn_GetA
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

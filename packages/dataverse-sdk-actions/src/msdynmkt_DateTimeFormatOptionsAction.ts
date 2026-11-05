@@ -38,7 +38,7 @@ export class msdynmkt_DateTimeFormatOptionsAction implements Executable<msdynmkt
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

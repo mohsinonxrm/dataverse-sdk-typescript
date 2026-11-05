@@ -44,7 +44,7 @@ export class msdyn_ConnectSequenceAction implements Executable<msdyn_ConnectSequ
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

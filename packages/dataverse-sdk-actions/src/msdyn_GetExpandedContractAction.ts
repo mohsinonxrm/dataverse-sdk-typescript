@@ -30,7 +30,7 @@ export class msdyn_GetExpandedContractAction implements Executable<msdyn_GetExpa
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 import type {
   ComplexEntityMetadata,
   DeletedMetadataCollection,
@@ -41,37 +42,19 @@ export class RetrieveMetadataChangesFunction implements Executable<RetrieveMetad
     }
     if (this.deletedMetadataFilters !== undefined) {
       aliases.push(`DeletedMetadataFilters=@p2`);
-      params.append(
-        "@p2",
-        typeof this.deletedMetadataFilters === "string"
-          ? `'${this.deletedMetadataFilters}'`
-          : String(this.deletedMetadataFilters)
-      );
+      params.append("@p2", formatAliasValue(this.deletedMetadataFilters));
     }
     if (this.clientVersionStamp !== undefined) {
       aliases.push(`ClientVersionStamp=@p3`);
-      params.append(
-        "@p3",
-        typeof this.clientVersionStamp === "string"
-          ? `'${this.clientVersionStamp}'`
-          : String(this.clientVersionStamp)
-      );
+      params.append("@p3", formatAliasValue(this.clientVersionStamp));
     }
     if (this.appModuleId !== undefined) {
       aliases.push(`AppModuleId=@p4`);
-      params.append(
-        "@p4",
-        typeof this.appModuleId === "string" ? `'${this.appModuleId}'` : String(this.appModuleId)
-      );
+      params.append("@p4", formatAliasValue(this.appModuleId));
     }
     if (this.retrieveAllSettings !== undefined) {
       aliases.push(`RetrieveAllSettings=@p5`);
-      params.append(
-        "@p5",
-        typeof this.retrieveAllSettings === "string"
-          ? `'${this.retrieveAllSettings}'`
-          : String(this.retrieveAllSettings)
-      );
+      params.append("@p5", formatAliasValue(this.retrieveAllSettings));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

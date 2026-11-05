@@ -20,7 +20,7 @@ export class msdyn_GetAllLeadPredictionModelsAction implements Executable<msdyn_
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

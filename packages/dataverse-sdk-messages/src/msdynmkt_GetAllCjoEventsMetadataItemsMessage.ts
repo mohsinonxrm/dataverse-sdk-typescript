@@ -27,7 +27,7 @@ export class msdynmkt_GetAllCjoEventsMetadataItemsRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

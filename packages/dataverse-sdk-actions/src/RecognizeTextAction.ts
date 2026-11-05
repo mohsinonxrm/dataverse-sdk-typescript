@@ -32,7 +32,7 @@ export class RecognizeTextAction implements Executable<RecognizeTextResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

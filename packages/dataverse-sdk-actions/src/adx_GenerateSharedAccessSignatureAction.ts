@@ -32,7 +32,7 @@ export class adx_GenerateSharedAccessSignatureAction implements Executable<adx_G
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

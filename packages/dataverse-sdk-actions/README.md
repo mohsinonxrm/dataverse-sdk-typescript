@@ -445,7 +445,7 @@ class CustomAction implements Executable<CustomActionResponse> {
     return {
       method: "POST",
       url: `${baseUrl}/CustomAction`,
-      headers: { "Content-Type": "application/json" },
+      headers: { "content-type": "application/json" },
       body: { Param: this.param },
     };
   }
