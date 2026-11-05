@@ -2,7 +2,9 @@ import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { DataverseClient } from "../src/client/DataverseClient.js";
-import type { Executable, RequestInformation } from "../src/abstractions/http.js";
+import type { Executable } from "../src/abstractions/executable.js";
+import type { RequestInformation } from "../src/abstractions/http.js";
+import { Prefer } from "../src/abstractions/options.js";
 
 const BASE_URL = "https://org.crm.dynamics.com";
 const API_URL = `${BASE_URL}/api/data/v9.2`;
@@ -168,7 +170,7 @@ describe("DataverseClient.execute()", () => {
 
     await client.execute(mockFunction, {
       headers: { "X-Custom-Header": "custom-value" },
-      prefer: ["return=representation"],
+      prefer: [Prefer.returnRepresentation()],
     });
 
     expect(capturedHeaders?.get("X-Custom-Header")).toBe("custom-value");

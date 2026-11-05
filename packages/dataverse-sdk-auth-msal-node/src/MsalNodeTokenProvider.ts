@@ -412,9 +412,7 @@ export class MsalNodeTokenProvider implements AccessTokenProvider {
 
     // Override authority if specific tenant requested
     if (flowOptions.tenantId || options?.tenantId) {
-      clientCredentialRequest.authority = `https://login.microsoftonline.com/${
-        options?.tenantId ?? flowOptions.tenantId ?? ""
-      }`;
+      clientCredentialRequest.authority = `https://login.microsoftonline.com/${options?.tenantId ?? flowOptions.tenantId ?? ""}`;
     }
 
     return await cca.acquireTokenByClientCredential(clientCredentialRequest);

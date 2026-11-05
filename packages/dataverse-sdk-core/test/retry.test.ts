@@ -114,7 +114,7 @@ describe("Retry behavior", () => {
 
     const result = await promise;
     expect(attemptCount).toBe(3); // initial + 2 retries
-    expect(result.status).toBe(429);
+    expect((result as Response).status).toBe(429);
 
     vi.useRealTimers();
   });

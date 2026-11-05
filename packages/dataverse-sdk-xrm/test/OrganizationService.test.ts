@@ -51,7 +51,7 @@ describe("OrganizationService", () => {
     });
 
     it("should support returnRepresentation option", async () => {
-      const { client, _mockApi, mockRequestBuilder } = createMockClient();
+      const { client, mockApi: _mockApi, mockRequestBuilder } = createMockClient();
       const service = new OrganizationService(client);
 
       const entity = { accountid: "123", name: "Test Account" };
@@ -79,7 +79,7 @@ describe("OrganizationService", () => {
     });
 
     it("should support suppressDuplicateDetection option", async () => {
-      const { client, _mockApi, mockRequestBuilder } = createMockClient();
+      const { client, mockApi: _mockApi, mockRequestBuilder } = createMockClient();
       const service = new OrganizationService(client);
 
       const mockResponse = {
@@ -109,7 +109,7 @@ describe("OrganizationService", () => {
     });
 
     it("should support impersonation", async () => {
-      const { client, _mockApi, mockRequestBuilder } = createMockClient();
+      const { client, mockApi: _mockApi, mockRequestBuilder } = createMockClient();
       const service = new OrganizationService(client);
 
       const mockResponse = {
@@ -173,7 +173,7 @@ describe("OrganizationService", () => {
     });
 
     it("should support select option", async () => {
-      const { client, _mockApi, mockRequestBuilder } = createMockClient();
+      const { client, mockApi: _mockApi, mockRequestBuilder } = createMockClient();
       const service = new OrganizationService(client);
 
       const mockResponse = {
@@ -189,7 +189,7 @@ describe("OrganizationService", () => {
     });
 
     it("should support expand option with string", async () => {
-      const { client, _mockApi, mockRequestBuilder } = createMockClient();
+      const { client, mockApi: _mockApi, mockRequestBuilder } = createMockClient();
       const service = new OrganizationService(client);
 
       const mockResponse = {
@@ -205,7 +205,7 @@ describe("OrganizationService", () => {
     });
 
     it("should support expand option with object", async () => {
-      const { client, _mockApi, mockRequestBuilder } = createMockClient();
+      const { client, mockApi: _mockApi, mockRequestBuilder } = createMockClient();
       const service = new OrganizationService(client);
 
       const mockResponse = {
@@ -232,7 +232,7 @@ describe("OrganizationService", () => {
     });
 
     it("should support impersonation", async () => {
-      const { client, _mockApi, mockRequestBuilder } = createMockClient();
+      const { client, mockApi: _mockApi, mockRequestBuilder } = createMockClient();
       const service = new OrganizationService(client);
 
       const mockResponse = {
@@ -267,7 +267,7 @@ describe("OrganizationService", () => {
     });
 
     it("should support etag for optimistic concurrency", async () => {
-      const { client, _mockApi, mockRequestBuilder } = createMockClient();
+      const { client, mockApi: _mockApi, mockRequestBuilder } = createMockClient();
       const service = new OrganizationService(client);
 
       mockRequestBuilder.patch.mockResolvedValue({});
@@ -288,7 +288,7 @@ describe("OrganizationService", () => {
     });
 
     it("should support returnRepresentation option", async () => {
-      const { client, _mockApi, mockRequestBuilder } = createMockClient();
+      const { client, mockApi: _mockApi, mockRequestBuilder } = createMockClient();
       const service = new OrganizationService(client);
 
       const entity = { accountid: "123", name: "Updated Name" };
@@ -316,7 +316,7 @@ describe("OrganizationService", () => {
     });
 
     it("should support suppressDuplicateDetection option", async () => {
-      const { client, _mockApi, mockRequestBuilder } = createMockClient();
+      const { client, mockApi: _mockApi, mockRequestBuilder } = createMockClient();
       const service = new OrganizationService(client);
 
       mockRequestBuilder.patch.mockResolvedValue({});
@@ -337,7 +337,7 @@ describe("OrganizationService", () => {
     });
 
     it("should support impersonation", async () => {
-      const { client, _mockApi, mockRequestBuilder } = createMockClient();
+      const { client, mockApi: _mockApi, mockRequestBuilder } = createMockClient();
       const service = new OrganizationService(client);
 
       mockRequestBuilder.patch.mockResolvedValue({});
@@ -373,7 +373,7 @@ describe("OrganizationService", () => {
     });
 
     it("should support etag for optimistic concurrency", async () => {
-      const { client, _mockApi, mockRequestBuilder } = createMockClient();
+      const { client, mockApi: _mockApi, mockRequestBuilder } = createMockClient();
       const service = new OrganizationService(client);
 
       mockRequestBuilder.delete.mockResolvedValue({});
@@ -388,7 +388,7 @@ describe("OrganizationService", () => {
     });
 
     it("should support impersonation", async () => {
-      const { client, _mockApi, mockRequestBuilder } = createMockClient();
+      const { client, mockApi: _mockApi, mockRequestBuilder } = createMockClient();
       const service = new OrganizationService(client);
 
       mockRequestBuilder.delete.mockResolvedValue({});
@@ -448,7 +448,7 @@ describe("OrganizationService", () => {
     });
 
     it("should support impersonation", async () => {
-      const { client, _mockApi, mockRequestBuilder } = createMockClient();
+      const { client, mockApi: _mockApi, mockRequestBuilder } = createMockClient();
       const service = new OrganizationService(client);
 
       mockRequestBuilder.post.mockResolvedValue({});
@@ -510,7 +510,7 @@ describe("OrganizationService", () => {
     });
 
     it("should support impersonation", async () => {
-      const { client, _mockApi, mockRequestBuilder } = createMockClient();
+      const { client, mockApi: _mockApi, mockRequestBuilder } = createMockClient();
       const service = new OrganizationService(client);
 
       mockRequestBuilder.delete.mockResolvedValue({});

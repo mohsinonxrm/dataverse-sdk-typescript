@@ -63,7 +63,7 @@ describe("HeaderUtils", () => {
     });
 
     it("replaces existing header (case-insensitive)", () => {
-      const headers = { "content-type": "text/plain" };
+      const headers: Record<string, string> = { "content-type": "text/plain" };
       setRequestHeader(headers, "Content-Type", "application/json");
       expect(headers["Content-Type"]).toBe("application/json");
       expect(headers["content-type"]).toBeUndefined();

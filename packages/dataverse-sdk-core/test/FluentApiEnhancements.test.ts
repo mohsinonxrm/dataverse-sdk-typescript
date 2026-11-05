@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { DataverseClient } from "../src/client/DataverseClient.js";
 import { DataverseDuplicateError } from "../src/errors/DataverseDuplicateError.js";
 import { DataverseUrlError } from "../src/errors/DataverseUrlError.js";
+import { Prefer } from "../src/abstractions/options.js";
 
 describe("DataverseRequestBuilder - Fluent API Enhancements", () => {
   let client: DataverseClient;
@@ -9,7 +10,7 @@ describe("DataverseRequestBuilder - Fluent API Enhancements", () => {
   beforeEach(() => {
     client = new DataverseClient({
       baseUrl: "https://test.crm.dynamics.com",
-      tokenProvider: () => Promise.resolve({ token: "test-token", expiresOn: new Date() }),
+      tokenProvider: { getToken: () => Promise.resolve("test-token") },
     });
   });
 
@@ -25,7 +26,7 @@ describe("DataverseRequestBuilder - Fluent API Enhancements", () => {
 
     it("should still support array-based prefer", () => {
       const builder = client.api("/accounts");
-      builder.prefer(["return=representation"]);
+      builder.prefer([Prefer.returnRepresentation()]);
 
       // Should return builder for chaining
       expect(builder).toBeDefined();

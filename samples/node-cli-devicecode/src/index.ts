@@ -110,7 +110,7 @@ async function getOrganization(tokenProvider: MsalNodeTokenProvider): Promise<Or
     }
 
     if (orgs.length === 1) {
-      console.log(chalk.green(`✓ Found 1 organization: ${orgs[0].FriendlyName}`));
+      console.log(chalk.green(`✓ Found 1 organization: ${String(orgs[0].FriendlyName)}`));
       return orgs[0];
     }
 
@@ -121,7 +121,7 @@ async function getOrganization(tokenProvider: MsalNodeTokenProvider): Promise<Or
       name: "selectedOrg",
       message: "Select an organization:",
       choices: orgs.map((org) => ({
-        title: `${org.FriendlyName} (${org.UniqueName}) - ${org.Geo}`,
+        title: `${String(org.FriendlyName)} (${String(org.UniqueName)}) - ${String(org.Geo)}`,
         value: org,
       })),
     });
@@ -149,9 +149,9 @@ async function callWhoAmI(client: DataverseClient): Promise<void> {
     const response = await client.execute(whoAmI);
 
     console.log(chalk.green("✓ WhoAmI response:"));
-    console.log(chalk.gray(`  User ID: ${response.UserId}`));
-    console.log(chalk.gray(`  Business Unit: ${response.BusinessUnitId}`));
-    console.log(chalk.gray(`  Organization: ${response.OrganizationId}`));
+    console.log(chalk.gray(`  User ID: ${String(response.UserId)}`));
+    console.log(chalk.gray(`  Business Unit: ${String(response.BusinessUnitId)}`));
+    console.log(chalk.gray(`  Organization: ${String(response.OrganizationId)}`));
   } catch (error) {
     console.error(chalk.red("❌ WhoAmI failed:"), error);
     throw error;
@@ -179,7 +179,7 @@ async function createAccount(client: DataverseClient, accountName: string): Prom
       .post<AccountRecord>(accountData);
 
     const accountId = response.accountid;
-    console.log(chalk.green(`✓ Account created with ID: ${accountId}`));
+    console.log(chalk.green(`✓ Account created with ID: ${String(accountId)}`));
     return accountId;
   } catch (error) {
     console.error(chalk.red("❌ Create account failed:"), error);
@@ -301,8 +301,8 @@ async function main() {
 
   // Step 2: Discover and select organization
   const org = await getOrganization(tokenProvider);
-  console.log(chalk.green(`\n✓ Selected: ${org.FriendlyName}`));
-  console.log(chalk.gray(`  Environment: ${org.Endpoints.WebApplicationUrl}`));
+  console.log(chalk.green(`\n✓ Selected: ${String(org.FriendlyName)}`));
+  console.log(chalk.gray(`  Environment: ${String(org.Endpoints.WebApplicationUrl)}`));
 
   // Step 3: Create Dataverse client
   const client = new DataverseClient({
