@@ -3,9 +3,7 @@
  * Provides helpers for header manipulation, UUID generation, and content serialization
  */
 
-// Type-safe reference to Node.js Buffer when available
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-declare const Buffer: any;
+import { toFetchBody } from "./body.js";
 
 /**
  * Supported header formats:
@@ -168,7 +166,9 @@ export function generateUUID(): string {
  * Handles various types and ensures compatibility between Node and browser
  *
  * @param content - The content to serialize
- * @returns Serialized content ready for fetch body
+ * @returns Serialized content ready for fetch body: JSON for plain objects and arrays,
+ *   everything else unchanged (a typed-array view as a `Uint8Array` over exactly its bytes)
+ * @throws When a plain object can't be serialised (e.g. a circular reference)
  *
  * @example
  * ```typescript
@@ -177,58 +177,16 @@ export function generateUUID(): string {
  * ```
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function serializeContent(content: any): string | FormData | Blob | ArrayBuffer {
+export function serializeContent(content: unknown): BodyInit {
   if (content === null || content === undefined) {
     return "";
   }
-
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-  const className = content.constructor?.name;
-
-  // Already in a format fetch accepts
-  if (
-    typeof content === "string" ||
-    className === "FormData" ||
-    className === "Blob" ||
-    className === "File" ||
-    className === "ArrayBuffer" ||
-    className === "Buffer"
-  ) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return content;
-  }
-
-  // TypedArray - convert to buffer/blob
-  if (
-    className === "Int8Array" ||
-    className === "Int16Array" ||
-    className === "Int32Array" ||
-    className === "Uint8Array" ||
-    className === "Uint16Array" ||
-    className === "Uint32Array" ||
-    className === "Uint8ClampedArray" ||
-    className === "Float32Array" ||
-    className === "Float64Array" ||
-    className === "DataView"
-  ) {
-    // In Node, we can use Buffer; in browser, we use the underlying ArrayBuffer
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    if (typeof Buffer !== "undefined" && Buffer.from) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-      return Buffer.from(content.buffer as ArrayBuffer);
-    }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    return content.buffer as ArrayBuffer;
-  }
-
-  // Everything else - serialize to JSON
-  try {
-    return JSON.stringify(content);
-  } catch (error) {
-    throw new Error(
-      `Unable to serialize content: ${error instanceof Error ? error.message : String(error)}`
-    );
-  }
+  // Same rules as the client's own request bodies: raw bodies (string, Blob, FormData,
+  // URLSearchParams, streams, ArrayBuffer and typed-array views) go as-is, and a view sends only
+  // its own bytes (byteOffset/byteLength), never the rest of the underlying buffer (#34).
+  const body = toFetchBody(content);
+  if (body !== undefined) return body;
+  return "";
 }
 
 /**
