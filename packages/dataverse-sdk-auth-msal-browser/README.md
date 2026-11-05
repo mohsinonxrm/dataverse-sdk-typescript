@@ -73,11 +73,15 @@ console.log(`Retrieved ${accounts.value.length} accounts`);
 **How it works:**
 
 1. First API call triggers `getToken()`
-2. Provider attempts silent token acquisition
-3. If no cached token, popup window opens for login
-4. User authenticates in popup
+2. With no signed-in account, the popup opens right away. Otherwise the provider tries silent acquisition first
+3. If MSAL says interaction is required (`interaction_required`, `consent_required`, `login_required`, `no_account_error`, ...), the popup opens, with the signed-in account and `loginHint`, so the user is not asked to pick an account again
+4. User authenticates in popup; the account it returns becomes MSAL's active account
 5. Token cached for future requests
 6. Subsequent calls use cached token (automatic refresh)
+
+Concurrent calls that need interaction share **one** popup: MSAL allows one interaction at a time. A call for other scopes waits for the running popup, then tries silently before prompting.
+
+> Browsers block popups that don't come from a user gesture. A popup opened from a background request can be blocked; see [Popup blocked by browser](#popup-blocked-by-browser).
 
 ### 2. Redirect Flow
 
@@ -565,18 +569,20 @@ interface MsalBrowserTokenProviderOptions {
   scopes: string[]; // Required
   account?: AccountInfo; // Optional
   interactionType?: "popup" | "redirect"; // Default: 'popup'
+  fallbackToRedirect?: boolean; // Default: false
   claims?: string; // Optional
   correlationId?: string; // Optional
 }
 ```
 
-| Property          | Type                    | Required | Default       | Description                               |
-| ----------------- | ----------------------- | -------- | ------------- | ----------------------------------------- |
-| `scopes`          | `string[]`              | ✅ Yes   | -             | OAuth scopes for Dataverse access         |
-| `account`         | `AccountInfo`           | ❌ No    | First account | Specific account for silent auth          |
-| `interactionType` | `'popup' \| 'redirect'` | ❌ No    | `'popup'`     | How to handle interactive auth            |
-| `claims`          | `string`                | ❌ No    | -             | JSON string for Conditional Access claims |
-| `correlationId`   | `string`                | ❌ No    | -             | Correlation ID for tracing                |
+| Property             | Type                    | Required | Default       | Description                                |
+| -------------------- | ----------------------- | -------- | ------------- | ------------------------------------------ |
+| `scopes`             | `string[]`              | ✅ Yes   | -             | OAuth scopes for Dataverse access          |
+| `account`            | `AccountInfo`           | ❌ No    | First account | Specific account for silent auth           |
+| `interactionType`    | `'popup' \| 'redirect'` | ❌ No    | `'popup'`     | How to handle interactive auth             |
+| `fallbackToRedirect` | `boolean`               | ❌ No    | `false`       | Redirect when the browser blocks the popup |
+| `claims`             | `string`                | ❌ No    | -             | JSON string for Conditional Access claims  |
+| `correlationId`      | `string`                | ❌ No    | -             | Correlation ID for tracing                 |
 
 ### Common Scopes
 
@@ -751,16 +757,29 @@ const msalConfig = {
 
 **Problem**: Login popup is blocked
 
+When the browser blocks the popup (MSAL `popup_window_error` or `empty_window_error`), `getToken()` rejects with `MsalBrowserAuthenticationError` (`name: "PopupBlocked"`, `code: "popup_blocked"`, the MSAL error as `cause`). It is also a `DataverseAuthenticationError`.
+
 **Solution**:
 
-- Ensure login is triggered by user action (button click)
+- Ensure login is triggered by user action (button click), for example by catching `popup_blocked` and showing a "Sign in" button that calls `getToken()` again
+- Or fall back to a redirect automatically
 - Or switch to redirect flow
 
 ```typescript
+import { MsalBrowserAuthenticationError } from "@mohsinonxrm/dataverse-sdk-auth-msal-browser";
+
 const tokenProvider = new MsalBrowserTokenProvider(pca, {
   scopes: ["https://org.crm.dynamics.com/.default"],
-  interactionType: "redirect", // Use redirect instead
+  fallbackToRedirect: true, // popup first, redirect if the popup is blocked
 });
+
+try {
+  await client.api("/accounts").get();
+} catch (error) {
+  if (error instanceof MsalBrowserAuthenticationError && error.code === "popup_blocked") {
+    showSignInButton(); // its click handler calls tokenProvider.getToken()
+  }
+}
 ```
 
 ### "Interaction required" errors

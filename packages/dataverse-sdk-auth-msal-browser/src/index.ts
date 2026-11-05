@@ -10,10 +10,13 @@ export type {
 } from "./MsalBrowserTokenProvider.js";
 export {
   isInteractionRequiredError,
+  isPopupBlockedError,
   getMsalErrorCode,
   INTERACTION_REQUIRED_ERROR_CODES,
+  POPUP_BLOCKED_ERROR_CODES,
+  MsalBrowserAuthenticationError,
 } from "./errors.js";
-export type { MsalErrorLike } from "./errors.js";
+export type { MsalErrorLike, MsalErrorDetails } from "./errors.js";
 
 // Re-export commonly used MSAL types for convenience
 export type {

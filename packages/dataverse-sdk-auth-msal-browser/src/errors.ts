@@ -7,6 +7,8 @@
  * their `name` and `errorCode`, which are stable across MSAL 3, 4 and 5.
  */
 
+import { DataverseAuthenticationError } from "@mohsinonxrm/dataverse-sdk-core";
+
 /**
  * MSAL error codes that mean the user must interact (sign in, consent, MFA) before a token can be
  * issued. The server codes match `InteractionRequiredServerErrorMessage` in `@azure/msal-common`,
@@ -24,6 +26,19 @@ export const INTERACTION_REQUIRED_ERROR_CODES: ReadonlySet<string> = new Set([
   "no_tokens_found",
   "native_account_unavailable",
   "refresh_token_expired",
+  // No signed-in account: BrowserAuthError("no_account_error") from acquireTokenSilent. The user
+  // has to sign in, which is an interaction.
+  "no_account_error",
+  "no_account",
+]);
+
+/**
+ * MSAL codes for a popup that the browser blocked or that never loaded, so the user saw nothing.
+ * `user_cancelled` (the user closed the popup) is deliberately not here.
+ */
+export const POPUP_BLOCKED_ERROR_CODES: ReadonlySet<string> = new Set([
+  "popup_window_error",
+  "empty_window_error",
 ]);
 
 /**
@@ -66,4 +81,73 @@ export function isInteractionRequiredError(error: unknown): boolean {
   }
   const code = getMsalErrorCode(err);
   return code !== undefined && INTERACTION_REQUIRED_ERROR_CODES.has(code);
+}
+
+/**
+ * True when `error` means the browser blocked the sign-in popup (`popup_window_error`,
+ * `empty_window_error`), from any MSAL copy.
+ */
+export function isPopupBlockedError(error: unknown): boolean {
+  const code = getMsalErrorCode(error);
+  return code !== undefined && POPUP_BLOCKED_ERROR_CODES.has(code);
+}
+
+function stringField(error: unknown, field: keyof MsalErrorLike): string | undefined {
+  const value = asMsalError(error)?.[field];
+  return typeof value === "string" && value.length > 0 ? value : undefined;
+}
+
+/**
+ * Details copied from the MSAL error that caused a failure.
+ */
+export interface MsalErrorDetails {
+  /** MSAL `errorCode`, e.g. `consent_required` or `popup_window_error`. */
+  errorCode?: string;
+  /** MSAL `subError`, e.g. `consent_required` or `basic_action`. */
+  subError?: string;
+  /** Correlation id of the MSAL request, for support. */
+  correlationId?: string;
+}
+
+/**
+ * A `DataverseAuthenticationError` that keeps what MSAL said: `code`, the MSAL `errorCode`,
+ * `subError`, `correlationId`, and the original error as `cause`.
+ *
+ * It is still `instanceof DataverseAuthenticationError`, so existing handling keeps working.
+ */
+export class MsalBrowserAuthenticationError extends DataverseAuthenticationError {
+  /**
+   * A stable code for this failure: `popup_blocked` for a blocked popup, otherwise the MSAL
+   * `errorCode` when there is one.
+   */
+  readonly code?: string;
+  readonly errorCode?: string;
+  readonly subError?: string;
+  readonly correlationId?: string;
+
+  constructor(message: string, init: { name: string; code?: string; cause?: unknown }) {
+    super(message);
+    Object.setPrototypeOf(this, MsalBrowserAuthenticationError.prototype);
+    this.name = init.name;
+    this.errorCode = stringField(init.cause, "errorCode");
+    this.subError = stringField(init.cause, "subError");
+    this.correlationId = stringField(init.cause, "correlationId");
+    this.code = init.code ?? this.errorCode;
+    if (init.cause !== undefined) {
+      this.cause = init.cause;
+    }
+  }
+
+  /**
+   * The browser blocked the sign-in popup. Start sign-in from a user gesture (a button click),
+   * or set `fallbackToRedirect: true`.
+   */
+  static popupBlocked(cause: unknown): MsalBrowserAuthenticationError {
+    return new MsalBrowserAuthenticationError(
+      "Failed to acquire access token: the browser blocked the sign-in popup. " +
+        "Start sign-in from a user action (for example a button click), " +
+        "or set fallbackToRedirect: true to use a redirect instead.",
+      { name: "PopupBlocked", code: "popup_blocked", cause }
+    );
+  }
 }
