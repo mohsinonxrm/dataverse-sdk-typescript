@@ -297,6 +297,26 @@ export function normalizeHeaderKey(key: string): string {
 }
 
 /**
+ * Return a copy of `headers` with every name lower-cased. When two names differ only in case,
+ * the one that comes later in the object wins, so spreading caller headers after defaults keeps
+ * the caller's value. `fetch` would otherwise combine `Content-Type` and `content-type` into one
+ * comma-separated value.
+ *
+ * @example
+ * ```typescript
+ * normalizeHeaders({ "Content-Type": "a", "content-type": "b" }); // { "content-type": "b" }
+ * ```
+ */
+export function normalizeHeaders(
+  headers: Record<string, string> | undefined
+): Record<string, string> {
+  const out: Record<string, string> = {};
+  if (!headers) return out;
+  for (const [key, value] of Object.entries(headers)) out[key.toLowerCase()] = value;
+  return out;
+}
+
+/**
  * Check if response is a stream/binary content that should not be retried
  *
  * @param contentType - Content-Type header value

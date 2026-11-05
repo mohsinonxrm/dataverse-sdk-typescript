@@ -101,6 +101,22 @@ describe.skipIf(!live)("live: CRUD round trip", () => {
   });
 });
 
+describe.skipIf(!live)("live: headers", () => {
+  it("#9: a caller-set Content-Type is sent once, so Dataverse accepts the create", async () => {
+    // Before #9, the SDK added its own content-type next to the caller's "Content-Type", fetch
+    // combined them, and Dataverse answered 400 0x80048d19.
+    const { client } = liveClient();
+    const res = await client.send({
+      method: "POST",
+      url: `${client.getBaseUrl()}/accounts`,
+      headers: { "Content-Type": "application/json" },
+      body: { name: `${runId} content-type` },
+    });
+    expect(res.status).toBe(204);
+    created.push(idFromEntityId(res.headers.get("odata-entityid")));
+  });
+});
+
 describe.skipIf(!live)("live: query encoding and URL length", () => {
   it("#52: a $filter literal with spaces still matches when encoded with '+'", async () => {
     const { client } = liveClient();

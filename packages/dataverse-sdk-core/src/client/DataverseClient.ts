@@ -12,6 +12,7 @@ import { FetchRequestAdapter } from "../pipeline/FetchRequestAdapter.js";
 import { buildDefaultMiddleware } from "../pipeline/DefaultMiddleware.js";
 import { DataverseRequestBuilder } from "./DataverseRequestBuilder.js";
 import { parseODataError } from "../errors/parseODataError.js";
+import { normalizeHeaders } from "../utils/HeaderUtils.js";
 import { DataverseInvalidRequestError } from "../errors/NamedErrors.js";
 
 export class DataverseClient {
@@ -87,19 +88,24 @@ export class DataverseClient {
   }
 
   async send(request: RequestInformation): Promise<Response> {
-    return this.pipeline.execute(request, this.ctx, (r, c) => this.adapter.send(r, c));
+    // Work on a copy with lower-cased header names: middleware must never see (or send) two
+    // casings of the same header, and the caller's object must not be mutated.
+    const req: RequestInformation = { ...request, headers: normalizeHeaders(request.headers) };
+    return this.pipeline.execute(req, this.ctx, (r, c) => this.adapter.send(r, c));
   }
 }
 
 function applyOptions(req: RequestInformation, opt?: RequestOptions) {
   if (!opt) return;
-  req.headers = { ...req.headers, ...opt.headers };
+  req.headers = normalizeHeaders({
+    ...normalizeHeaders(req.headers),
+    ...normalizeHeaders(opt.headers),
+  });
   if (opt.timeoutMs !== undefined) req.timeoutMs = opt.timeoutMs;
   if (opt.signal) req.signal = opt.signal;
   if (opt.prefer?.length) {
-    // Prefer header can be a single header with comma-separated values
-    // Check both casings as headers can be case-insensitive
-    const existing = req.headers.prefer || req.headers.Prefer;
+    // Prefer is a single header with comma-separated values; names are lower-cased above.
+    const existing = req.headers.prefer;
     const merged = existing ? `${existing}, ${opt.prefer.join(", ")}` : opt.prefer.join(", ");
     req.headers = { ...req.headers, prefer: merged };
   }
