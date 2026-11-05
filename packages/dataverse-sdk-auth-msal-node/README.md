@@ -390,10 +390,10 @@ console.log("Token acquired silently");
 - First checks cache for valid token
 - Falls back to refresh token if cache expired
 - Throws error if no cached account or refresh fails
-- `SilentFlowOptions` has no `forceRefresh` option, and the provider doesn't act on
-  `TokenOptions.forceRefresh` yet: it always calls `acquireTokenSilent` with `forceRefresh: false`
-  ([#167](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/167)). So after a 401,
-  the client's one retry can get the same cached token back
+- `SilentFlowOptions` has no `forceRefresh` option. Instead the provider forwards
+  `TokenOptions.forceRefresh` (which the SDK client sets after a 401) to `acquireTokenSilent`, and
+  passes `skipCache: true` in the client-credentials flow, so the retry gets a new token
+  ([#167](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/167))
 
 ## Complete Examples
 

@@ -657,7 +657,7 @@ const tokenProvider = new MsalBrowserTokenProvider(pca, {
 // Dynamic claims challenges: after a 401, the SDK client gets a new token and resends the
 // request once. In a browser, Dataverse doesn't expose `WWW-Authenticate` to scripts (it isn't a
 // CORS-exposed header), so the claims of a challenge can't be read there and the SDK asks the
-// provider for a fresh token (`forceRefresh`, which this provider doesn't pass on to MSAL yet: #167). In Node.js, the claims are passed to `getToken`
+// provider for a fresh token (`forceRefresh`, passed on to MSAL's `acquireTokenSilent`). In Node.js, the claims are passed to `getToken`
 // automatically. To handle a challenge yourself, read it from the error:
 import { parseClaimsChallenge, DataverseODataError } from "@mohsinonxrm/dataverse-sdk-core";
 
@@ -853,9 +853,9 @@ try {
 **Problem**: API calls fail after some time
 
 **Solution**: MSAL renews tokens before they expire, and after a 401 the SDK client calls
-`getToken(scopes, { forceRefresh: true })` and resends the request once. This provider doesn't pass
-`forceRefresh` on to MSAL yet ([#167](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/167)),
-so that retry can get the same cached token. To skip MSAL's cache yourself, call MSAL directly:
+`getToken(scopes, { forceRefresh: true })` and resends the request once. This provider passes
+`forceRefresh` on to MSAL's `acquireTokenSilent` ([#167](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/167)),
+so that retry gets a new token. To skip MSAL's cache yourself at another time, call MSAL directly:
 
 ```typescript
 // Force a new token from Entra ID, skipping MSAL's cache

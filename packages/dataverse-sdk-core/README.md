@@ -894,8 +894,9 @@ export interface TokenOptions {
 ```
 
 The SDK passes the client's `scopes` option to `getToken` when it is set, and `undefined`
-otherwise, so the provider uses its own default scopes. Whether a provider honours `forceRefresh` is up to the provider: the MSAL and Azure Identity
-providers in this repo don't act on it yet ([#167](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/167)).
+otherwise, so the provider uses its own default scopes. Whether a provider honours `forceRefresh` is up to the provider: the msal-node and msal-browser
+providers skip MSAL's token cache when it is set; Azure Identity has no equivalent option, so that
+provider ignores it ([#167](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/167)).
 
 **Example implementations:**
 
