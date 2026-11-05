@@ -12,6 +12,7 @@ import type {
 import type {
   EntityReference,
   ExpandOption,
+  OrganizationServiceOptions,
   CreateOptions,
   RetrieveOptions,
   RetrieveMultipleOptions,
@@ -73,14 +74,71 @@ interface WriteOptions extends CommonOptions {
  */
 export class OrganizationService {
   private client: DataverseClient;
+  /** Entity set names by lower-cased logical name: overrides, then metadata lookups. */
+  private entitySetNames = new Map<string, Promise<string>>();
 
   /**
    * Creates a new OrganizationService instance
    *
    * @param client - The DataverseClient instance to use for operations
+   * @param options - Optional settings, such as entity set names to use without a metadata lookup
    */
-  constructor(client: DataverseClient) {
+  constructor(client: DataverseClient, options: OrganizationServiceOptions = {}) {
     this.client = client;
+    for (const [logicalName, entitySetName] of Object.entries(options.entitySetNames ?? {})) {
+      this.setEntitySetName(logicalName, entitySetName);
+    }
+  }
+
+  /**
+   * The entity set name of a table, e.g. `"opportunity"` → `"opportunities"`.
+   *
+   * Methods that take a logical name (`assign()`, `setState()`, and the `EntityReference`s of
+   * `associate()`) use this. It reads `EntityDefinitions(LogicalName='…')?$select=EntitySetName`
+   * once per logical name and caches the answer on this service. Names given with
+   * `options.entitySetNames` or {@link setEntitySetName} are used without a lookup. A failed
+   * lookup rejects (with the core `DataverseError`, e.g. 404 for an unknown table) and is not
+   * cached.
+   *
+   * @param logicalName - The table's logical name, e.g. 'account'
+   * @returns The entity set name, e.g. 'accounts'
+   *
+   * @example
+   * ```typescript
+   * await service.getEntitySetName('opportunity'); // 'opportunities'
+   * ```
+   */
+  getEntitySetName(logicalName: string): Promise<string> {
+    const key = logicalName.toLowerCase();
+    const cached = this.entitySetNames.get(key);
+    if (cached) return cached;
+
+    const lookup = this.client
+      .api(`/EntityDefinitions(LogicalName='${key.replace(/'/g, "''")}')`)
+      .select("EntitySetName")
+      .get<{ EntitySetName?: string } | undefined>()
+      .then((definition) => {
+        if (!definition?.EntitySetName) {
+          throw new Error(`EntityDefinitions returned no EntitySetName for '${logicalName}'.`);
+        }
+        return definition.EntitySetName;
+      });
+    // Concurrent callers share one lookup; a failure is forgotten so the next call retries.
+    this.entitySetNames.set(key, lookup);
+    void lookup.catch(() => {
+      if (this.entitySetNames.get(key) === lookup) this.entitySetNames.delete(key);
+    });
+    return lookup;
+  }
+
+  /**
+   * Sets the entity set name to use for a logical name, so no metadata lookup is made for it.
+   *
+   * @param logicalName - The table's logical name, e.g. 'new_widget'
+   * @param entitySetName - Its entity set name, e.g. 'new_widgets'
+   */
+  setEntitySetName(logicalName: string, entitySetName: string): void {
+    this.entitySetNames.set(logicalName.toLowerCase(), Promise.resolve(entitySetName));
   }
 
   /**
@@ -379,8 +437,8 @@ export class OrganizationService {
     for (const related of relatedEntities) {
       const relatedId = this.normalizeGuid(related.id);
 
-      // Determine the related entity set name from logicalName
-      const relatedSetName = this.getEntitySetName(related.logicalName);
+      const relatedSetName =
+        related.entitySetName ?? (await this.getEntitySetName(related.logicalName));
 
       const builder = this.client.api(`/${entitySetName}(${normalizedId})/${relationship}/$ref`);
 
@@ -469,7 +527,8 @@ export class OrganizationService {
   /**
    * Assigns a record to a user or team
    *
-   * @param entityName - The logical name of the entity
+   * @param entityName - The logical name of the entity (its entity set name is resolved with
+   *   {@link getEntitySetName})
    * @param recordId - The ID of the record to assign
    * @param assigneeId - The ID of the user or team to assign to
    * @param assigneeType - The type of assignee ('systemuser' or 'team')
@@ -485,20 +544,22 @@ export class OrganizationService {
     assigneeId: string,
     assigneeType: "systemuser" | "team" = "systemuser"
   ): Promise<void> {
-    const entitySetName = this.getEntitySetName(entityName);
+    const entitySetName = await this.getEntitySetName(entityName);
+    const assigneeSetName = await this.getEntitySetName(assigneeType);
     const normalizedId = this.normalizeGuid(recordId);
     const normalizedAssigneeId = this.normalizeGuid(assigneeId);
 
     const builder = this.client.api(`/${entitySetName}(${normalizedId})`);
     await builder.patch({
-      [`ownerid@odata.bind`]: `/${this.getEntitySetName(assigneeType)}(${normalizedAssigneeId})`,
+      [`ownerid@odata.bind`]: `/${assigneeSetName}(${normalizedAssigneeId})`,
     });
   }
 
   /**
    * Sets the state and status of a record
    *
-   * @param entityName - The logical name of the entity
+   * @param entityName - The logical name of the entity (its entity set name is resolved with
+   *   {@link getEntitySetName})
    * @param recordId - The ID of the record
    * @param stateCode - The state code (0 = Active, 1 = Inactive, etc.)
    * @param statusCode - The status code (specific to entity)
@@ -515,7 +576,7 @@ export class OrganizationService {
     stateCode: number,
     statusCode: number
   ): Promise<void> {
-    const entitySetName = this.getEntitySetName(entityName);
+    const entitySetName = await this.getEntitySetName(entityName);
     const normalizedId = this.normalizeGuid(recordId);
 
     const builder = this.client.api(`/${entitySetName}(${normalizedId})`);
@@ -646,40 +707,5 @@ export class OrganizationService {
     normalized = normalized.toLowerCase();
 
     return normalized;
-  }
-
-  /**
-   * Gets the entity set name from a logical name
-   * Simple pluralization - this should be enhanced or use metadata in the future
-   *
-   * @param logicalName - The entity logical name
-   * @returns The entity set name
-   */
-  private getEntitySetName(logicalName: string): string {
-    // Very basic pluralization - in real implementation this should use metadata
-    // For now, just append 's' if it doesn't end with 's'
-    // Common cases handled explicitly
-    const pluralMap: Record<string, string> = {
-      account: "accounts",
-      contact: "contacts",
-      opportunity: "opportunities",
-      lead: "leads",
-      systemuser: "systemusers",
-      team: "teams",
-      businessunit: "businessunits",
-      organization: "organizations",
-      incident: "incidents",
-      task: "tasks",
-      appointment: "appointments",
-      email: "emails",
-      phonecall: "phonecalls",
-      letter: "letters",
-      fax: "faxes",
-      activityparty: "activityparties",
-      annotation: "annotations",
-      attachment: "attachments",
-    };
-
-    return pluralMap[logicalName.toLowerCase()] || `${logicalName}s`;
   }
 }
