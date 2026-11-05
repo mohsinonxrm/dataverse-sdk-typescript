@@ -1,3 +1,5 @@
+import type { Middleware } from "./middleware.js";
+
 export type PreferOption = string & { __brand: "PreferOption" };
 
 export const Prefer = {
@@ -116,6 +118,16 @@ export interface DiagnosticHeaderOptions {
   retryAttempt?: boolean;
 }
 
+/** See `DataverseClientOptions.middleware`. */
+export interface MiddlewareCustomization {
+  /** Middleware that runs before the defaults (outermost). */
+  prepend?: Middleware[];
+  /** Middleware that runs after the defaults (innermost, right before `fetch`). */
+  append?: Middleware[];
+  /** Receives the default middleware (a fresh array) and returns the list to use. */
+  replace?: (defaults: Middleware[]) => Middleware[];
+}
+
 /** Client-level request logging settings. */
 export interface LoggingConfig {
   /**
@@ -211,10 +223,26 @@ export interface DataverseClientOptions {
   diagnosticHeaders?: boolean | DiagnosticHeaderOptions;
   retry?: RetryOptions;
   concurrency?: ConcurrencyOptions;
+  /** @deprecated Not implemented yet: it has no effect (tracked in #100). */
   circuitBreaker?: CircuitBreakerOptions;
+  /** @deprecated Not implemented yet: it has no effect (tracked in #100). */
   bulkhead?: BulkheadOptions;
+  /** Headers added to every request. A header the request sets itself wins. */
   defaultHeaders?: Record<string, string>;
+  /**
+   * `Prefer` values added to every request, e.g. `[Prefer.includeAnnotations("*")]`. A request
+   * that sets the same preference (`return`, `odata.include-annotations`, `odata.maxpagesize`, …)
+   * keeps its own value.
+   */
   defaultPrefer?: PreferOption[];
+  /**
+   * Customise the middleware pipeline. The defaults run in this order: Auth (when a token
+   * provider is set), ODataHeaders, Concurrency, Retry, Telemetry, Logging; then the request goes
+   * to `fetch`. `replace` receives that list and returns the one to use (for example without
+   * Logging); then `prepend` runs first and `append` runs last, right before `fetch`, so it sees
+   * the final headers including `authorization`.
+   */
+  middleware?: MiddlewareCustomization;
   /**
    * Extra origins (e.g. `"https://other.crm.dynamics.com"`) that may receive the bearer token.
    * By default the token is attached only to requests for the client's own `baseUrl` origin.

@@ -17,3 +17,11 @@ export function buildDefaultMiddleware(options: DataverseClientOptions): Middlew
   list.push(new LoggingMiddleware(options));
   return list;
 }
+
+/** The pipeline a client uses: the defaults, then `options.middleware` applied (see its docs). */
+export function buildMiddleware(options: DataverseClientOptions): Middleware[] {
+  const custom = options.middleware;
+  const defaults = buildDefaultMiddleware(options);
+  const core = custom?.replace ? custom.replace(defaults) : defaults;
+  return [...(custom?.prepend ?? []), ...core, ...(custom?.append ?? [])];
+}

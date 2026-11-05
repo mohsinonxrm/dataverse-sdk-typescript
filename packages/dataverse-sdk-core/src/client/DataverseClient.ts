@@ -9,7 +9,7 @@ import type { DataverseClientOptions, RequestOptions } from "../abstractions/opt
 import { normalizeBaseUrl, resolveRequestUrl } from "../utils/url.js";
 import { Pipeline } from "../pipeline/Pipeline.js";
 import { FetchRequestAdapter } from "../pipeline/FetchRequestAdapter.js";
-import { buildDefaultMiddleware } from "../pipeline/DefaultMiddleware.js";
+import { buildMiddleware } from "../pipeline/DefaultMiddleware.js";
 import { DataverseRequestBuilder } from "./DataverseRequestBuilder.js";
 import { parseODataError } from "../errors/parseODataError.js";
 import { generateUUID, normalizeHeaders } from "../utils/HeaderUtils.js";
@@ -37,7 +37,7 @@ export class DataverseClient {
     };
     this.adapter = new FetchRequestAdapter(fetchProvider);
 
-    const middleware = buildDefaultMiddleware(options);
+    const middleware = buildMiddleware(options);
     this.pipeline = new Pipeline(middleware);
 
     this.baseCtx = {
@@ -47,11 +47,13 @@ export class DataverseClient {
       featureTracker: new FeatureUsageTracker(),
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- warning about the deprecated option itself
     if (options.circuitBreaker?.enabled) {
       options.logger?.warn(
         "circuitBreaker option is configured but not yet implemented — it has no effect."
       );
     }
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- warning about the deprecated option itself
     if (options.bulkhead?.enabled) {
       options.logger?.warn(
         "bulkhead option is configured but not yet implemented — it has no effect."

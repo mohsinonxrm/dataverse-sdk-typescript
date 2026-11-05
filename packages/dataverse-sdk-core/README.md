@@ -94,8 +94,11 @@ const client = new DataverseClient({
   // Optional: Telemetry client (implements TelemetryClient interface)
   telemetry: myTelemetryClient,
 
-  // Optional: Custom middleware (appended to built-in middleware)
-  middleware: [customMiddleware1, customMiddleware2],
+  // Optional: Customise the middleware pipeline (see "Middleware Pipeline")
+  middleware: { append: [customMiddleware] }, // also prepend, replace
+
+  // Optional: Prefer values added to every request (a request's own value for the same preference wins)
+  defaultPrefer: [Prefer.includeAnnotations("*")],
 
   // Optional: Custom fetch provider (for testing/mocking)
   fetchProvider: { fetch: customFetch },
@@ -506,9 +509,8 @@ class CustomHeaderMiddleware implements Middleware {
     ctx: MiddlewareContext,
     next: NextMiddleware
   ): Promise<Response> {
-    // Modify request before sending
-    request.headers["X-Custom-Header"] = "my-value";
-    request.headers["X-Request-Id"] = crypto.randomUUID();
+    // Modify request before sending (header names are lower-case)
+    request.headers["x-custom-header"] = "my-value";
 
     // Log request details
     ctx.logger?.info(`Sending ${request.method} ${request.url}`);
@@ -520,13 +522,6 @@ class CustomHeaderMiddleware implements Middleware {
 
     // Process response
     ctx.logger?.info(`Response ${response.status} in ${duration}ms`);
-    ctx.telemetry?.trackDependency("Dataverse", {
-      target: new URL(request.url).hostname,
-      method: request.method,
-      duration,
-      success: response.ok,
-      resultCode: response.status,
-    });
 
     return response;
   }
@@ -535,20 +530,33 @@ class CustomHeaderMiddleware implements Middleware {
 // ========== Add Middleware to Client ==========
 const client = new DataverseClient({
   baseUrl: "https://org.crm.dynamics.com",
-  middleware: [new CustomHeaderMiddleware()], // Appended to built-in middleware
+  tokenProvider,
+  middleware: {
+    // Runs last, right before fetch: sees the final headers, including authorization.
+    append: [new CustomHeaderMiddleware()],
+    // Runs first, before Auth.
+    prepend: [],
+    // Receives the built-in list (a fresh array) and returns the one to use.
+    replace: (defaults) => defaults.filter((m) => !(m instanceof LoggingMiddleware)),
+  },
 });
 ```
 
+The built-in classes (`AuthMiddleware`, `ODataHeadersMiddleware`, `ConcurrencyMiddleware`,
+`RetryMiddleware`, `TelemetryMiddleware`, `LoggingMiddleware`), `buildDefaultMiddleware`,
+`Pipeline` and `FetchRequestAdapter` are exported.
+
 **Built-in Middleware (Execution Order):**
 
-1. **AuthMiddleware** - Adds `Authorization: Bearer <token>` from `AccessTokenProvider`
-2. **ODataHeadersMiddleware** - Sets `Accept: application/json`, `OData-Version: 4.0`, `OData-MaxVersion: 4.0`
-3. **Custom Middleware** - User-provided middleware (if any)
-4. **RetryMiddleware** - Handles 429/502/503/504 with exponential backoff + jitter
-5. **ConcurrencyMiddleware** - Semaphore-based rate limiting with adaptive concurrency
-6. **TelemetryMiddleware** - Tracks request events and dependencies
-7. **LoggingMiddleware** - Logs request/response details
-8. **FetchRequestAdapter** - Final adapter that calls native `fetch()`
+1. **prepend** middleware (if any)
+2. **AuthMiddleware** - Adds `Authorization: Bearer <token>` from `AccessTokenProvider` (only when a token provider is set)
+3. **ODataHeadersMiddleware** - Sets `Accept`, `OData-Version`, `OData-MaxVersion`, a JSON `Content-Type` for JSON bodies, `defaultHeaders` and `defaultPrefer`
+4. **ConcurrencyMiddleware** - Semaphore-based rate limiting with adaptive concurrency
+5. **RetryMiddleware** - Handles 429/502/503/504 with exponential backoff + jitter
+6. **TelemetryMiddleware** - Diagnostic headers; tracks dependencies and exceptions
+7. **LoggingMiddleware** - Logs request/response details (only when a logger is set)
+8. **append** middleware (if any)
+9. **FetchRequestAdapter** - Final adapter that calls native `fetch()`
 
 **Middleware Features:**
 
@@ -692,13 +700,14 @@ RequestInformation (method, url, headers, query, body)
 Pipeline.execute()
    ↓
 Middleware Chain (sequential execution)
+   ├─ prepend middleware (user-provided, optional)
    ├─ AuthMiddleware (add Bearer token)
-   ├─ ODataHeadersMiddleware (add OData headers)
-   ├─ Custom Middleware (user-provided)
-   ├─ RetryMiddleware (wrap with retry logic)
-   ├─ ConcurrencyMiddleware (semaphore rate limiting)
-   ├─ TelemetryMiddleware (track metrics)
-   └─ LoggingMiddleware (log requests)
+   ├─ ODataHeadersMiddleware (add OData headers, defaultHeaders, defaultPrefer)
+   ├─ ConcurrencyMiddleware (rate limiting)
+   ├─ RetryMiddleware (retry on 429/502/503/504)
+   ├─ TelemetryMiddleware (diagnostic headers, track dependencies)
+   ├─ LoggingMiddleware (log requests, when a logger is set)
+   └─ append middleware (user-provided, optional)
    ↓
 FetchRequestAdapter.send()
    ↓
@@ -717,25 +726,27 @@ User Code (typed result)
 
 **Request Phase (top-down):**
 
-1. AuthMiddleware - Calls `tokenProvider.getToken()` and adds `Authorization` header
-2. ODataHeadersMiddleware - Adds `Accept`, `Content-Type`, `OData-Version`, `OData-MaxVersion`
-3. Custom Middleware - User-provided middleware (if any)
-4. RetryMiddleware - Wraps next middleware with retry logic (doesn't modify request directly)
-5. ConcurrencyMiddleware - Acquires semaphore slot (blocks if at max concurrency)
-6. TelemetryMiddleware - Records start time
+1. `prepend` middleware (if any)
+2. AuthMiddleware - Calls `tokenProvider.getToken()` and adds `Authorization` header
+3. ODataHeadersMiddleware - Adds `Accept`, `Content-Type`, `OData-Version`, `OData-MaxVersion`, `defaultHeaders`, `defaultPrefer`
+4. ConcurrencyMiddleware - Acquires semaphore slot (blocks if at max concurrency)
+5. RetryMiddleware - Wraps the rest of the chain with retry logic (adds `retry-attempt` on retries)
+6. TelemetryMiddleware - Adds diagnostic headers, records start time
 7. LoggingMiddleware - Logs request details
-8. FetchRequestAdapter - Calls `fetch(request.url, { method, headers, body })`
+8. `append` middleware (if any)
+9. FetchRequestAdapter - Calls `fetch(url, { method, headers, body })`
 
 **Response Phase (bottom-up):**
 
 1. FetchRequestAdapter - Returns Response object
-2. LoggingMiddleware - Logs response status and duration
-3. TelemetryMiddleware - Tracks dependency with duration and result
-4. ConcurrencyMiddleware - Releases semaphore, adjusts limit based on `x-ms-dop-hint` header
+2. `append` middleware
+3. LoggingMiddleware - Logs response status and duration
+4. TelemetryMiddleware - Tracks dependency with duration and result
 5. RetryMiddleware - Checks status code, retries if 429/502/503/504 and attempts < maxRetries
-6. Custom Middleware - Process response
+6. ConcurrencyMiddleware - Releases semaphore, adjusts limit based on `x-ms-dop-hint` header
 7. ODataHeadersMiddleware - (no response processing)
 8. AuthMiddleware - (no response processing)
+9. `prepend` middleware
 
 ### Resiliency Features
 
