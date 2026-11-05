@@ -19,22 +19,35 @@ jobs:
           node-version: 24
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
+      # The generator imports the core and auth packages, so build it with its dependencies.
+      - name: Build the generator
+        run: pnpm turbo run build --filter=generate-sdk-types
       - name: Generate
+        # The generator reads DATAVERSE_URL and the AZURE_* names; the repository secrets are the
+        # DATAVERSE_* ones the integration tests use.
         env:
           DATAVERSE_URL: ${{ secrets.DATAVERSE_URL }}
-          TENANT_ID: ${{ secrets.TENANT_ID }}
-          CLIENT_ID: ${{ secrets.CLIENT_ID }}
-          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
-        run: pnpm generate:metadata-types
+          AZURE_TENANT_ID: ${{ secrets.DATAVERSE_TENANT_ID }}
+          AZURE_CLIENT_ID: ${{ secrets.DATAVERSE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.DATAVERSE_CLIENT_SECRET }}
+        run: pnpm --filter generate-sdk-types generate metadata
+      # The committed generated files are prettier-formatted (.prettierignore skips them otherwise).
+      - name: Format the generated files
+        run: pnpm exec prettier --ignore-path /dev/null --log-level warn -w packages/dataverse-sdk-metadata/src/types
       - name: Create PR with generated changes
         uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c # v6.1.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          base: dev
           commit-message: "chore(generated): regenerate metadata types"
           branch: "auto/generate-metadata-types"
           delete-branch: true
+          add-paths: packages/dataverse-sdk-metadata/src/types
           title: "chore(generated): regenerate metadata types"
           body: |
-            Automated PR to update generated metadata types.
+            Automated PR to update generated metadata types from the dev org's $metadata.
             Triggered by: workflow_dispatch
+
+            Review before merging: regeneration can reorder properties and add or remove types
+            that the current org schema doesn't have.
           labels: "automated,generated"
