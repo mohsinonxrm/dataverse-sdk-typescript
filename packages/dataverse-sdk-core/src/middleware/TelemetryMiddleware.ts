@@ -20,7 +20,15 @@ export class TelemetryMiddleware implements Middleware {
     ctx: MiddlewareContext,
     next: NextMiddleware
   ): Promise<Response> {
+    const perRequest = ctx.middlewareOptions?.get("telemetry");
+    if (perRequest?.disable) {
+      // No diagnostic headers and no tracking for this request.
+      return next(request, ctx);
+    }
     const telemetry = this.options.telemetry ?? ctx.telemetry;
+    const customProperties = Object.fromEntries(
+      Object.entries(perRequest?.customProperties ?? {}).map(([k, v]) => [k, String(v)])
+    );
 
     // Always add SDK version header
     request.headers["x-ms-sdk-version"] = `dataverse-sdk-js/${SDK_VERSION}`;
@@ -60,6 +68,7 @@ export class TelemetryMiddleware implements Middleware {
           "correlation.id": ctx.correlationId,
           "feature.usage": featureTracker.getFlagsHex(),
           "retry.attempt": String(ctx.attempt ?? 0),
+          ...customProperties,
         },
       });
 
@@ -76,6 +85,7 @@ export class TelemetryMiddleware implements Middleware {
           "sdk.version": SDK_VERSION,
           "correlation.id": ctx.correlationId,
           "error.type": err instanceof Error ? err.name : "Unknown",
+          ...customProperties,
         },
       });
 

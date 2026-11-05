@@ -15,6 +15,7 @@ export {
   TelemetryOptions,
   LoggingOptions,
   type MiddlewareOptions,
+  type MiddlewareOptionEntry,
 } from "./middleware/RequestOptions.js";
 
 export * from "./utils/HeaderUtils.js";
