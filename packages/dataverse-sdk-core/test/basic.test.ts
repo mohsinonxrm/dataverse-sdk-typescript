@@ -96,7 +96,9 @@ describe("DataverseClient", () => {
     const capturedHeaders: Record<string, string> = {};
     server.use(
       http.patch(`${API_URL}/accounts*`, ({ request }) => {
-        request.headers.forEach((value, key) => { capturedHeaders[key] = value; });
+        request.headers.forEach((value, key) => {
+          capturedHeaders[key] = value;
+        });
         return new HttpResponse(null, { status: 204 });
       })
     );

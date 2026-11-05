@@ -20,6 +20,7 @@ What actually happened, including any error messages or stack traces.
 Which `@mohsinonxrm/dataverse-sdk-*` package versions are you using?
 
 **Environment**
+
 - Node version:
 - Runtime: Node / Browser / Azure Functions / other
 - Auth: MSAL / Azure Identity / custom token provider

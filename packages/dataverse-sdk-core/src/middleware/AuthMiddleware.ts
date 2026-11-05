@@ -21,7 +21,7 @@ export class AuthMiddleware implements Middleware {
       (Array.isArray(this.options.scopes) ? this.options.scopes.length > 0 : true)
         ? this.options.scopes
         : undefined;
-    const token = await tp.getToken(scopes ?? []);
+    const token = await tp.getToken(scopes);
     request.headers = { ...request.headers, authorization: `Bearer ${token}` };
     return next(request, _ctx);
   }

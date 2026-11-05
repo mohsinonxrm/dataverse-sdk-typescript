@@ -121,7 +121,7 @@ async function createMultipleDemo(client: DataverseClient): Promise<void> {
     `  Rate: ${chalk.yellow((result.Ids.length / (duration / 1000)).toFixed(2))} records/sec`
   );
   console.log(
-    `  IDs: ${String(result.Ids.map((id: string) => chalk.dim(id.substring(0, 8) + "...")).join(", "))}`
+    `  IDs: ${result.Ids.map((id: string) => chalk.dim(id.substring(0, 8) + "...")).join(", ")}`
   );
 
   // Track for cleanup
@@ -304,7 +304,7 @@ async function winOpportunityDemo(client: DataverseClient): Promise<void> {
   const opportunityId = opportunity.opportunityid;
   createdRecords.opportunities.push(opportunityId);
 
-  console.log(`  Created: ${chalk.dim(String(opportunityId).substring(0, 8) + "...")}`);
+  console.log(`  Created: ${chalk.dim(opportunityId.substring(0, 8) + "...")}`);
 
   // Win the opportunity
   console.log("\nWinning the opportunity...");
@@ -312,7 +312,7 @@ async function winOpportunityDemo(client: DataverseClient): Promise<void> {
   const opportunityClose: Record<string, unknown> = {
     "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
     subject: "Won: Test Opportunity",
-    "opportunityid@odata.bind": `/opportunities(${String(opportunityId)})`,
+    "opportunityid@odata.bind": `/opportunities(${opportunityId})`,
     actualrevenue: 52000, // Can be different from estimated
     actualend: new Date().toISOString(),
   };
@@ -328,7 +328,7 @@ async function winOpportunityDemo(client: DataverseClient): Promise<void> {
 
   // Verify state change
   const updated = await client
-    .api(`/opportunities(${String(opportunityId)})`)
+    .api(`/opportunities(${opportunityId})`)
     .select("name", "statecode", "statuscode", "actualrevenue")
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .get<any>();
@@ -376,10 +376,10 @@ async function mergeDemo(client: DataverseClient): Promise<void> {
   createdRecords.accounts.push(targetId); // Only track target (subordinate will be deleted)
 
   console.log(
-    `  Target: ${chalk.green(account1.name)} (${chalk.dim(String(targetId).substring(0, 8) + "...")})`
+    `  Target: ${chalk.green(account1.name)} (${chalk.dim(targetId.substring(0, 8) + "...")})`
   );
   console.log(
-    `  Subordinate: ${chalk.yellow(account2.name)} (${chalk.dim(String(subordinateId).substring(0, 8) + "...")})`
+    `  Subordinate: ${chalk.yellow(account2.name)} (${chalk.dim(subordinateId.substring(0, 8) + "...")})`
   );
 
   // Merge subordinate into target
@@ -410,7 +410,7 @@ async function mergeDemo(client: DataverseClient): Promise<void> {
 
   // Verify target account updated
   const merged = await client
-    .api(`/accounts(${String(targetId)})`)
+    .api(`/accounts(${targetId})`)
     .select("name", "accountnumber", "revenue", "description")
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .get<any>();
@@ -427,7 +427,7 @@ async function mergeDemo(client: DataverseClient): Promise<void> {
 
   // Verify subordinate deleted
   try {
-    await client.api(`/accounts(${String(subordinateId)})`).get();
+    await client.api(`/accounts(${subordinateId})`).get();
     console.log(chalk.red("✗ Subordinate account still exists (unexpected)"));
   } catch (error: unknown) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -485,7 +485,7 @@ async function fileOperationsDemo(client: DataverseClient): Promise<void> {
 
   console.log(chalk.green("✓ Upload initialized"));
   console.log(
-    `  Upload Token: ${chalk.dim(String(initResult.FileContinuationToken).substring(0, 20) + "...")}`
+    `  Upload Token: ${chalk.dim(initResult.FileContinuationToken.substring(0, 20) + "...")}`
   );
 
   // Step 2: Upload blocks (using 4MB default chunk size)

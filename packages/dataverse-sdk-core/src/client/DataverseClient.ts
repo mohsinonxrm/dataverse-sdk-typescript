@@ -21,9 +21,9 @@ export class DataverseClient {
   private readonly ctx: MiddlewareContext;
 
   constructor(private options: DataverseClientOptions) {
-    if (!options.baseUrl.toLowerCase().startsWith("https://")) {
+    if (!isAllowedBaseUrl(options.baseUrl)) {
       throw DataverseInvalidRequestError.invalidBaseUrl(
-        `Base URL must use HTTPS. Received: "${options.baseUrl}"`
+        `"${options.baseUrl}" (must use HTTPS; plain http is only allowed for localhost)`
       );
     }
     const apiVersion = options.apiVersion ?? "v9.2";
@@ -103,4 +103,22 @@ function applyOptions(req: RequestInformation, opt?: RequestOptions) {
     const merged = existing ? `${existing}, ${opt.prefer.join(", ")}` : opt.prefer.join(", ");
     req.headers = { ...req.headers, prefer: merged };
   }
+}
+
+/**
+ * Dataverse only serves HTTPS. Plain http is allowed for loopback hosts so local proxies
+ * and test servers keep working.
+ */
+function isAllowedBaseUrl(baseUrl: string): boolean {
+  let url: URL;
+  try {
+    url = new URL(baseUrl);
+  } catch {
+    return false;
+  }
+  if (url.protocol === "https:") return true;
+  return (
+    url.protocol === "http:" &&
+    (url.hostname === "localhost" || url.hostname === "127.0.0.1" || url.hostname === "[::1]")
+  );
 }
