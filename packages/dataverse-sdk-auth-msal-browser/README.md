@@ -183,6 +183,47 @@ const whoami = await client.api("/WhoAmI").get();
 console.log(`User ID: ${whoami.UserId}`);
 ```
 
+### 4. SPA Helpers
+
+Helpers for the setup code every SPA repeats. They don't depend on React or any UI framework.
+
+```typescript
+import { PublicClientApplication } from "@azure/msal-browser";
+import {
+  authorityFor,
+  createMsalBrowserProvider,
+  initializeMsal,
+  scopesForEnvironment,
+} from "@mohsinonxrm/dataverse-sdk-auth-msal-browser";
+import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+
+const environmentUrl = "https://contoso.crm.dynamics.com";
+
+const pca = new PublicClientApplication({
+  auth: {
+    clientId: "your-client-id",
+    authority: authorityFor("public", "contoso.onmicrosoft.com"),
+    redirectUri: window.location.origin,
+  },
+});
+
+// initialize() + handleRedirectPromise() + active account, on every page load
+await initializeMsal(pca);
+
+const tokenProvider = createMsalBrowserProvider(pca, { environmentUrl });
+const client = new DataverseClient({ baseUrl: environmentUrl, tokenProvider });
+
+// For a login button:
+await pca.loginPopup({ scopes: scopesForEnvironment(environmentUrl) });
+```
+
+| Helper                                          | Returns                                                                                                                                                                                   |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `initializeMsal(pca)`                           | Runs `initialize()` and `handleRedirectPromise()`, and returns the redirect result or `null`. It makes the result's account active, or the only cached account when no account is active. |
+| `scopesForEnvironment(url, kind?)`              | `["https://<host>/user_impersonation"]` (default) or `["https://<host>/.default"]`. Throws for a non-`https` URL.                                                                         |
+| `authorityFor(cloud, tenant = "organizations")` | `https://<host>/<tenant>` for `public` (`login.microsoftonline.com`), `usgov` / `usgovdod` (`login.microsoftonline.us`) or `china` (`login.partner.microsoftonline.cn`).                  |
+| `createMsalBrowserProvider(pca, options)`       | A `MsalBrowserTokenProvider`. It takes the same options, plus `environmentUrl` / `scopeKind` in place of `scopes`.                                                                        |
+
 ## React Integration
 
 ### With @azure/msal-react (Recommended)

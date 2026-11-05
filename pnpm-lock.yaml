@@ -125,6 +125,9 @@ importers:
       '@azure/msal-browser':
         specifier: ^3.30.0
         version: 3.30.0
+      '@mohsinonxrm/dataverse-sdk-testing':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-testing
       eslint:
         specifier: ^9.39.5
         version: 9.39.5
