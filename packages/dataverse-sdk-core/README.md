@@ -861,7 +861,16 @@ client.api('https://org.crm.dynamics.com/api/data/v9.2/accounts?$skiptoken=...')
 // Query building
 client.api('accounts').select('name').filter('revenue gt 1000000')
 → 'https://org.crm.dynamics.com/api/data/v9.2/accounts?$select=name&$filter=revenue%20gt%201000000'
+
+// A query string you encoded yourself is kept as written; builder options are added after it
+client.api("accounts?$filter=name%20eq%20'a%26b'").select('name')
+→ "https://org.crm.dynamics.com/api/data/v9.2/accounts?$filter=name%20eq%20'a%26b'&$select=name"
 ```
+
+Query option values are encoded with `encodeURIComponent` (a space is `%20`, not `+`), keeping `$`,
+`'`, `(`, `)`, `,`, `/`, `:`, `@` and `=` literal as in Microsoft's examples. A query string that is
+already in the path is never re-encoded; only an option the builder sets again (for example
+`$select`) replaces the one there.
 
 ## Interfaces
 

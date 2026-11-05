@@ -107,7 +107,7 @@ describe("#35: telemetry URLs are redacted by default", () => {
       .client.api("contacts")
       .filter("name eq 'x'")
       .get();
-    expect(t.dependencies[0]?.url).toContain("%24filter=name+eq+%27x%27");
+    expect(t.dependencies[0]?.url).toContain("$filter=name%20eq%20%27x%27");
 
     const t2 = recordingTelemetry();
     await setup({
