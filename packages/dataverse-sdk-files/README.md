@@ -349,7 +349,7 @@ The underlying `RequestAdapter` handles retry logic for failed requests. Individ
 
 ## Node.js Compatibility
 
-- **Node.js 18+**: Full support
+- **Node.js 22+**: Full support
 - **Older versions**: Not supported (requires native `fetch`)
 
 ## License

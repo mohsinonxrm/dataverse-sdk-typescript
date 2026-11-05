@@ -20,7 +20,7 @@ Complete TypeScript metadata management for Microsoft Dataverse - create, read, 
 - ✅ **Relationship eligibility** - check which entities can participate in relationships
 - ✅ **Metadata change tracking** - RetrieveMetadataChanges with version stamps
 - ✅ **Strict typing** - separate Read/Create/Update types, internal fields excluded
-- ✅ **ESM-only** - works in Node 18+ and browsers
+- ✅ **ESM-only** - works in Node 22+ and browsers
 
 ## Installation
 

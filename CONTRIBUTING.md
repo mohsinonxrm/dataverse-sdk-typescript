@@ -31,7 +31,7 @@ This project follows a **planned, milestone-driven workflow**. Every change star
 
 ## Requirements
 
-- **Node 20+** (Node 18 is end of life)
+- **Node 22+** (Node 18 and 20 are end of life). CI tests on Node 22, 24 and 26.
 - **pnpm** (package manager)
 - **ESM-only** packages
 

@@ -1,6 +1,6 @@
 # Dataverse SDK for TypeScript
 
-A modern, enterprise-grade TypeScript SDK for Microsoft Dataverse (Online), designed for both Node.js 18+ and modern browsers. Built with ESM-only architecture, native `fetch`, and comprehensive TypeScript typing.
+A modern, enterprise-grade TypeScript SDK for Microsoft Dataverse (Online), designed for both Node.js 22+ and modern browsers. Built with ESM-only architecture, native `fetch`, and comprehensive TypeScript typing.
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Node Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org)
@@ -10,7 +10,7 @@ A modern, enterprise-grade TypeScript SDK for Microsoft Dataverse (Online), desi
 
 Provide a **production-ready**, **type-safe**, and **developer-friendly** SDK for Microsoft Dataverse that:
 
-- ✅ **Works everywhere**: Node.js 18+ and modern browsers (ESM-only)
+- ✅ **Works everywhere**: Node.js 22+ and modern browsers (ESM-only)
 - ✅ **Two developer experiences**: HTTP-first fluent API (Microsoft Graph-like) + C#-familiar OrganizationService facade
 - ✅ **Enterprise resilience**: Built-in retry, adaptive concurrency, throttling awareness
 - ✅ **Type-safe operations**: Strongly typed Web API actions/functions, messages, and metadata operations
