@@ -29,7 +29,7 @@ export class InitializeAttachmentBlocksDownloadAction implements Executable<Init
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

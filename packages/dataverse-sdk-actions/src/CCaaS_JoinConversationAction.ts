@@ -37,7 +37,7 @@ export class CCaaS_JoinConversationAction implements Executable<CCaaS_JoinConver
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

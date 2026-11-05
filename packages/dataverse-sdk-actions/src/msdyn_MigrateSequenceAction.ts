@@ -26,7 +26,7 @@ export class msdyn_MigrateSequenceAction implements Executable<msdyn_MigrateSequ
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

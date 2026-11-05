@@ -41,7 +41,7 @@ export class QuickTestAction implements Executable<QuickTestResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -33,7 +33,7 @@ export class msdyn_GetInsightsAction implements Executable<msdyn_GetInsightsResp
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -36,7 +36,7 @@ export class msdyn_ProvisionODOSAction implements Executable<msdyn_ProvisionODOS
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

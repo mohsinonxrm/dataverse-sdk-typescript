@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 import type { EntityReference } from "./types/EntityReference.js";
 import { getEntitySetNameFromReference } from "./types/EntityReference.js";
 
@@ -30,10 +31,7 @@ export class RetrieveTimelineWallRecordsFunction implements Executable<RetrieveT
     const aliases: string[] = [];
     if (this.fetchXml !== undefined) {
       aliases.push(`FetchXml=@p1`);
-      params.append(
-        "@p1",
-        typeof this.fetchXml === "string" ? `'${this.fetchXml}'` : String(this.fetchXml)
-      );
+      params.append("@p1", formatAliasValue(this.fetchXml));
     }
     if (this.target !== undefined) {
       aliases.push(`Target=@p2`);
@@ -46,10 +44,7 @@ export class RetrieveTimelineWallRecordsFunction implements Executable<RetrieveT
     }
     if (this.rollupType !== undefined) {
       aliases.push(`RollupType=@p3`);
-      params.append(
-        "@p3",
-        typeof this.rollupType === "string" ? `'${this.rollupType}'` : String(this.rollupType)
-      );
+      params.append("@p3", formatAliasValue(this.rollupType));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

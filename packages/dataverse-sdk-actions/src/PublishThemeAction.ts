@@ -24,7 +24,7 @@ export class PublishThemeAction implements Executable<PublishThemeResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

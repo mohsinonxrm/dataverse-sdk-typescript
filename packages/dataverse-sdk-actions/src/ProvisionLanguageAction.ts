@@ -26,7 +26,7 @@ export class ProvisionLanguageAction implements Executable<ProvisionLanguageResp
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

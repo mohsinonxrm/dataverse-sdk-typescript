@@ -26,7 +26,7 @@ export class msdyn_BulkAITestRunAction implements Executable<msdyn_BulkAITestRun
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

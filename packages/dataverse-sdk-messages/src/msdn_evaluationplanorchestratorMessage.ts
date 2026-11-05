@@ -25,7 +25,7 @@ export class msdn_evaluationplanorchestratorRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

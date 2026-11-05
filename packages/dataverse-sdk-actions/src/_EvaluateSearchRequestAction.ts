@@ -59,7 +59,7 @@ export class _EvaluateSearchRequestAction implements Executable<_EvaluateSearchR
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

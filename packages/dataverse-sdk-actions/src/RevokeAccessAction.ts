@@ -31,7 +31,7 @@ export class RevokeAccessAction implements Executable<RevokeAccessResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

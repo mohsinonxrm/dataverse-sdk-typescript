@@ -29,7 +29,7 @@ export class msdyn_SaveOpportunityResearchAgentContentCustomActionAction impleme
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

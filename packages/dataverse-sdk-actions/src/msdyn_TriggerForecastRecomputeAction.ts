@@ -26,7 +26,7 @@ export class msdyn_TriggerForecastRecomputeAction implements Executable<msdyn_Tr
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

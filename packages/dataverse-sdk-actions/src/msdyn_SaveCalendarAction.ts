@@ -26,7 +26,7 @@ export class msdyn_SaveCalendarAction implements Executable<msdyn_SaveCalendarRe
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

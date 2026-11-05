@@ -54,7 +54,7 @@ export class CreateMiniCampaignV2Action implements Executable<CreateMiniCampaign
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

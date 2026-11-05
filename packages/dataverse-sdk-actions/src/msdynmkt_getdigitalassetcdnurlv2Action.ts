@@ -30,7 +30,7 @@ export class msdynmkt_getdigitalassetcdnurlv2Action implements Executable<msdynm
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

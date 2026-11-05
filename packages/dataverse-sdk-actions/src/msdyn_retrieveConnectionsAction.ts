@@ -33,7 +33,7 @@ export class msdyn_retrieveConnectionsAction implements Executable<msdyn_retriev
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

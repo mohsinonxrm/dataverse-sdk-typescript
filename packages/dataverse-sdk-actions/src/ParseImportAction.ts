@@ -25,7 +25,7 @@ export class ParseImportAction implements Executable<ParseImportResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

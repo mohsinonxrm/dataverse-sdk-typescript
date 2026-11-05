@@ -35,7 +35,7 @@ export class _RetrieveActivitiesByResourcesAction implements Executable<_Retriev
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

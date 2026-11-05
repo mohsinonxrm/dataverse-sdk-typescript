@@ -67,6 +67,8 @@ export class ConcurrencyMiddleware implements Middleware {
     ctx: MiddlewareContext,
     next: NextMiddleware
   ): Promise<Response> {
+    const perRequest = ctx.middlewareOptions?.get("concurrency");
+    if (perRequest?.bypass) return next(request, ctx);
     const release = await this.sem.acquire();
     try {
       const res = await next(request, ctx);

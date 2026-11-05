@@ -34,7 +34,7 @@ export class msdyn_SalesAgents_LogEngageReadinessFlowRunStateAction implements E
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

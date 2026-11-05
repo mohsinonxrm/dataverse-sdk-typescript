@@ -22,7 +22,7 @@ export class msdyn_CheckIfQueueInWorkstreamHasAgentsAction implements Executable
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

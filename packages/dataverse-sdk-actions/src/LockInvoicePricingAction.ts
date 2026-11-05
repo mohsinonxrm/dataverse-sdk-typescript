@@ -24,7 +24,7 @@ export class LockInvoicePricingAction implements Executable<LockInvoicePricingRe
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

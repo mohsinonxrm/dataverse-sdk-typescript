@@ -30,7 +30,7 @@ export class msdyn_ActivateWorkflowAction implements Executable<msdyn_ActivateWo
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

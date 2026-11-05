@@ -30,7 +30,7 @@ export class RecalculatePriceAction implements Executable<RecalculatePriceRespon
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

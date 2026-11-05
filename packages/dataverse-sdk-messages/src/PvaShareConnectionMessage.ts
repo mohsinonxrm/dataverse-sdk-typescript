@@ -22,7 +22,7 @@ export class PvaShareConnectionRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

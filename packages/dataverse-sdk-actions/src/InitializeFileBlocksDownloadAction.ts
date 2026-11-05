@@ -36,7 +36,7 @@ export class InitializeFileBlocksDownloadAction implements Executable<Initialize
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

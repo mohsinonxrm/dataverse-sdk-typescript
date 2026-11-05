@@ -30,7 +30,7 @@ export class AITranslateAction implements Executable<AITranslateResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

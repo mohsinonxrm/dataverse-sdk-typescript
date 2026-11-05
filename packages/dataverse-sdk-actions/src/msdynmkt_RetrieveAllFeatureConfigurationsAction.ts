@@ -21,7 +21,7 @@ export class msdynmkt_RetrieveAllFeatureConfigurationsAction implements Executab
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

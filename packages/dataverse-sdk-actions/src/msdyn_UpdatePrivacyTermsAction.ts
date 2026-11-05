@@ -30,7 +30,7 @@ export class msdyn_UpdatePrivacyTermsAction implements Executable<msdyn_UpdatePr
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

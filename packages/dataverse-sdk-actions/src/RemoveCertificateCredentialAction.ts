@@ -32,7 +32,7 @@ export class RemoveCertificateCredentialAction implements Executable<RemoveCerti
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

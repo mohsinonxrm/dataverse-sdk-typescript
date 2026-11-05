@@ -32,7 +32,7 @@ export class msdyn_IngestAnalyticsDataCustomChannelsAction implements Executable
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

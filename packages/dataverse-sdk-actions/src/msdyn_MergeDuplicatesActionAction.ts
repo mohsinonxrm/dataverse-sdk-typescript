@@ -33,7 +33,7 @@ export class msdyn_MergeDuplicatesActionAction implements Executable<msdyn_Merge
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

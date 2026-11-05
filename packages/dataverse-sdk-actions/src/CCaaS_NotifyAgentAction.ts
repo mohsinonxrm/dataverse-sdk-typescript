@@ -34,7 +34,7 @@ export class CCaaS_NotifyAgentAction implements Executable<CCaaS_NotifyAgentResp
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

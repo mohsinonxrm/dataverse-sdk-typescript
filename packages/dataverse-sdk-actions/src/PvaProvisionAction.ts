@@ -24,7 +24,7 @@ export class PvaProvisionAction implements Executable<PvaProvisionResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

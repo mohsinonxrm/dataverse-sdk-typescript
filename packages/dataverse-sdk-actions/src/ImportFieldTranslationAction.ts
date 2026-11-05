@@ -27,7 +27,7 @@ export class ImportFieldTranslationAction implements Executable<ImportFieldTrans
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

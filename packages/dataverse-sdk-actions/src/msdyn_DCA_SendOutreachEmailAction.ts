@@ -30,7 +30,7 @@ export class msdyn_DCA_SendOutreachEmailAction implements Executable<msdyn_DCA_S
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

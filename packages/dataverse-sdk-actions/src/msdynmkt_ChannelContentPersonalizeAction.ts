@@ -26,7 +26,7 @@ export class msdynmkt_ChannelContentPersonalizeAction implements Executable<msdy
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

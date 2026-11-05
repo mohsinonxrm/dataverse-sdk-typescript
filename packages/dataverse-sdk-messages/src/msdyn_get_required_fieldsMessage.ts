@@ -33,7 +33,7 @@ export class msdyn_get_required_fieldsRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

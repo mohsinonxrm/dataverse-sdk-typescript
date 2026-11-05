@@ -6,103 +6,120 @@
 
 ## Status
 
-⚠️ **v1.0 - Optional Package** - This package is optional and provides integration with OpenTelemetry for distributed tracing and observability.
+**Optional package.** It records the SDK's telemetry as OpenTelemetry spans, using only
+`@opentelemetry/api`, so it works with any OpenTelemetry SDK and exporter, in Node.js and in
+browsers. You set up the SDK and exporter; this package only creates spans.
 
 ## Installation
 
 ```bash
-pnpm add @mohsinonxrm/dataverse-sdk-otel
+pnpm add @mohsinonxrm/dataverse-sdk-otel @opentelemetry/api
 ```
 
 ## Usage
 
+Pass the adapter as the `telemetry` option:
+
 ```typescript
+import { trace } from "@opentelemetry/api";
 import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
 import { OpenTelemetryClient } from "@mohsinonxrm/dataverse-sdk-otel";
-import { trace } from "@opentelemetry/api";
-
-const tracer = trace.getTracer("dataverse-sdk");
-const telemetryClient = new OpenTelemetryClient({
-  tracer,
-  serviceName: "my-dataverse-app",
-});
 
 const client = new DataverseClient({
   baseUrl: "https://org.crm.dynamics.com",
-  telemetryClient,
+  tokenProvider,
+  telemetry: new OpenTelemetryClient({ tracer: trace.getTracer("my-dataverse-app") }),
 });
 ```
 
-## Features
+With no options (`new OpenTelemetryClient()`), the adapter uses the global tracer provider with
+the instrumentation scope `@mohsinonxrm/dataverse-sdk-otel`.
 
-- **Distributed tracing** - W3C Trace Context propagation
-- **Span creation** - Automatic spans for HTTP requests
-- **Custom events** - Track retry attempts, throttle events
-- **Metrics** - Request duration, success rate, concurrency levels
-- **Flexible backends** - Works with Jaeger, Zipkin, Honeycomb, etc.
+A telemetry failure never changes the outcome of a Dataverse request: every method catches its
+own errors.
 
 ## Configuration
 
-| Option             | Type      | Required | Description                           |
-| ------------------ | --------- | -------- | ------------------------------------- |
-| `tracer`           | `Tracer`  | Yes      | OpenTelemetry tracer instance         |
-| `serviceName`      | `string`  | No       | Service name for spans                |
-| `disableTelemetry` | `boolean` | No       | Disable telemetry (defaults to false) |
+The constructor takes one optional config object.
 
-## Instrumentation
+| Option             | Type             | Description                                                                                                                                 |
+| ------------------ | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tracer`           | `Tracer`         | Tracer for every span. Takes precedence over `tracerProvider`.                                                                              |
+| `tracerProvider`   | `TracerProvider` | Provider to get the tracer from. Defaults to the global provider.                                                                           |
+| `disableTelemetry` | `boolean`        | Make every method a no-op. Defaults to `false`.                                                                                             |
+| `serviceName`      | `string`         | Deprecated and ignored. `service.name` is a resource attribute: set it on your SDK (`new NodeSDK({ serviceName })` or `OTEL_SERVICE_NAME`). |
 
-The client automatically creates spans for:
+## What gets recorded
 
-- **HTTP requests** to Dataverse Web API
-- **Retry attempts** (as span events)
-- **Throttle events** (429 responses)
-- **Batch operations** (parent span with child spans per request)
+| `TelemetryClient` call | OpenTelemetry output                                                                                                        |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `trackDependency`      | A `CLIENT` span per Dataverse HTTP call, named `<METHOD> dataverse`, covering the call's duration.                          |
+| `trackException`       | An `INTERNAL` span `dataverse.exception` (a child of the active span, if any) with an `exception` event and status `ERROR`. |
+| `trackEvent`           | An event on the active span; when no span is active, a short `INTERNAL` span named after the event.                         |
 
-### Span Attributes
+The SDK's `TelemetryMiddleware` calls `trackDependency` for every request and `trackException`
+when a request fails without a response (for example a network error).
 
-All spans include:
+### Dependency span attributes
 
-- `http.method` - HTTP method (GET, POST, etc.)
-- `http.url` - Sanitized request URL
-- `http.status_code` - Response status code
-- `dataverse.operation` - Operation type (query, create, update, etc.)
-- `dataverse.entity` - Entity logical name
+| Attribute                   | Value                                                                                  |
+| --------------------------- | -------------------------------------------------------------------------------------- |
+| `http.request.method`       | `GET`, `POST`, `PATCH`, ...                                                            |
+| `url.full`                  | The request URL, redacted (see [Privacy](#privacy))                                    |
+| `server.address`            | Host name, e.g. `org.crm.dynamics.com`                                                 |
+| `server.port`               | Port, e.g. `443`                                                                       |
+| `http.response.status_code` | Response status, when there is a response                                              |
+| `error.type`                | On failure: the status code, or the error name when there is no response               |
+| `dataverse.correlation_id`  | The `x-ms-correlation-id` sent with the request                                        |
+| `dataverse.*`               | Other properties from the SDK, e.g. `dataverse.sdk.version`, `dataverse.retry.attempt` |
 
-## Example: Full Setup with Jaeger
+Failed calls (`success: false`, or a 4xx/5xx status) get span status `ERROR`. Successful calls
+leave the status unset, as the OpenTelemetry HTTP conventions recommend for client spans.
+
+## Example: full setup with OTLP
+
+The Jaeger exporter is deprecated upstream; Jaeger, Grafana Tempo, Honeycomb and most other
+backends accept OTLP.
 
 ```typescript
 import { NodeSDK } from "@opentelemetry/sdk-node";
-import { JaegerExporter } from "@opentelemetry/exporter-jaeger";
+import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { trace } from "@opentelemetry/api";
 import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
 import { OpenTelemetryClient } from "@mohsinonxrm/dataverse-sdk-otel";
 
-// Initialize OpenTelemetry SDK
 const sdk = new NodeSDK({
-  traceExporter: new JaegerExporter({
-    endpoint: "http://localhost:14268/api/traces",
-  }),
   serviceName: "my-dataverse-app",
+  traceExporter: new OTLPTraceExporter({ url: "http://localhost:4318/v1/traces" }),
 });
-
 sdk.start();
-
-// Create Dataverse client with OpenTelemetry
-const tracer = trace.getTracer("dataverse-sdk");
-const telemetryClient = new OpenTelemetryClient({ tracer });
 
 const client = new DataverseClient({
   baseUrl: "https://org.crm.dynamics.com",
-  telemetryClient,
+  tokenProvider,
+  telemetry: new OpenTelemetryClient({ tracer: trace.getTracer("my-dataverse-app") }),
 });
+
+// On shutdown, flush pending spans.
+await sdk.shutdown();
 ```
 
 ## Privacy
 
-- ✅ No PII is sent by default
-- ✅ Credentials are masked in URLs
-- ✅ Entity IDs are sanitized
-- ✅ Only metadata (durations, status codes) is tracked
+URLs are redacted before they are recorded, in `url.full`, in property values and in exception
+messages and stack traces:
+
+- every query parameter value becomes `REDACTED` and only the names are kept, so
+  `?$filter=emailaddress1 eq 'jane@contoso.com'&$top=5` is recorded as
+  `?$filter=REDACTED&$top=REDACTED`;
+- quoted string literals in the path, such as alternate keys or function parameters, become
+  `'REDACTED'`: `contacts(emailaddress1='jane@contoso.com')` is recorded as
+  `contacts(emailaddress1='REDACTED')`;
+- user info (`user:password@`) and the `#fragment` are dropped.
+
+Record GUIDs in the path are kept. No headers, request bodies or response bodies are recorded.
+Properties you pass to `trackEvent` or `trackException` yourself are recorded as they are (with
+URLs redacted), so don't put personal data in them.
 
 ## License
 

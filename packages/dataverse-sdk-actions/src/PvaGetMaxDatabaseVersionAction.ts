@@ -20,7 +20,7 @@ export class PvaGetMaxDatabaseVersionAction implements Executable<PvaGetMaxDatab
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

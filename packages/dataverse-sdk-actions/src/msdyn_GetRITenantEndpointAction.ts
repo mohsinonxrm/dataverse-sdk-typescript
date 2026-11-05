@@ -20,7 +20,7 @@ export class msdyn_GetRITenantEndpointAction implements Executable<msdyn_GetRITe
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

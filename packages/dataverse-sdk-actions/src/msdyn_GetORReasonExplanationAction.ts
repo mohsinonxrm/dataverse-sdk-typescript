@@ -32,7 +32,7 @@ export class msdyn_GetORReasonExplanationAction implements Executable<msdyn_GetO
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

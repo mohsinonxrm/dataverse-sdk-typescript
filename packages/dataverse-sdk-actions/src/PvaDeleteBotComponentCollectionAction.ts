@@ -24,7 +24,7 @@ export class PvaDeleteBotComponentCollectionAction implements Executable<PvaDele
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

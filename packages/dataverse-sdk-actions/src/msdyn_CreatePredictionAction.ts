@@ -26,7 +26,7 @@ export class msdyn_CreatePredictionAction implements Executable<msdyn_CreatePred
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

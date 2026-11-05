@@ -30,7 +30,7 @@ export class msdyn_CheckGeolocationEnabledAction implements Executable<msdyn_Che
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

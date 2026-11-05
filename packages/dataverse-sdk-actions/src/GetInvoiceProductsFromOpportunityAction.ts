@@ -32,7 +32,7 @@ export class GetInvoiceProductsFromOpportunityAction implements Executable<GetIn
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

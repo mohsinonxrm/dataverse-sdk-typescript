@@ -41,7 +41,7 @@ export class UpdateInstantPluginRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

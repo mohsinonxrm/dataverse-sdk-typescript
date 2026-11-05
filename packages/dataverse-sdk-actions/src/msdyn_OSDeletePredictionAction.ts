@@ -34,7 +34,7 @@ export class msdyn_OSDeletePredictionAction implements Executable<msdyn_OSDelete
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -36,7 +36,7 @@ export class msdyn_InitEntityRoutingFlowAction implements Executable<msdyn_InitE
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

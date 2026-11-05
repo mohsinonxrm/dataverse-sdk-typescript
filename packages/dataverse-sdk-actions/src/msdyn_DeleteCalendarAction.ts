@@ -26,7 +26,7 @@ export class msdyn_DeleteCalendarAction implements Executable<msdyn_DeleteCalend
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

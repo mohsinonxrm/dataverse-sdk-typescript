@@ -24,7 +24,7 @@ export class msdyn_UpdateSurveyBotTopicsAction implements Executable<msdyn_Updat
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

@@ -32,7 +32,7 @@ export class AddCertificateCredentialAction implements Executable<AddCertificate
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

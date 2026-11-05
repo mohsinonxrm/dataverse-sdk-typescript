@@ -34,7 +34,7 @@ export class msdyn_SalesAgents_FetchSARRecordsForAgentProcessingAction implement
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -30,7 +30,7 @@ export class msdyn_GetTalkingPointsAction implements Executable<msdyn_GetTalking
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -26,7 +26,7 @@ export class AISentimentAction implements Executable<AISentimentResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
