@@ -12,6 +12,9 @@ import { FetchRequestAdapter } from "../pipeline/FetchRequestAdapter.js";
 import { buildMiddleware } from "../pipeline/DefaultMiddleware.js";
 import { DataverseRequestBuilder } from "./DataverseRequestBuilder.js";
 import { parseODataError } from "../errors/parseODataError.js";
+import { setResponseCorrelationId } from "../errors/responseDetails.js";
+import { DataverseError } from "../errors/DataverseError.js";
+import { DataverseAbortError } from "../errors/NamedErrors.js";
 import { generateUUID, normalizeHeaders } from "../utils/HeaderUtils.js";
 import { FeatureUsageTracker } from "../telemetry/FeatureUsageTracker.js";
 import { DataverseInvalidRequestError } from "../errors/NamedErrors.js";
@@ -119,7 +122,13 @@ export class DataverseClient {
       attempt: 0,
       middlewareOptions: request.middlewareOptions,
     };
-    return this.pipeline.execute(req, ctx, (r, c) => this.adapter.send(r, c));
+    try {
+      const res = await this.pipeline.execute(req, ctx, (r, c) => this.adapter.send(r, c));
+      setResponseCorrelationId(res, ctx.correlationId);
+      return res;
+    } catch (err) {
+      throw asSdkError(err, ctx.correlationId);
+    }
   }
 }
 
@@ -157,4 +166,21 @@ function isAllowedBaseUrl(baseUrl: string): boolean {
     url.protocol === "http:" &&
     (url.hostname === "localhost" || url.hostname === "127.0.0.1" || url.hostname === "[::1]")
   );
+}
+
+/**
+ * Errors leaving `send()`: an abort (a `DOMException` from fetch or from a retry wait) becomes a
+ * `DataverseAbortError`, and every SDK error gets the request's correlation id. Errors thrown by
+ * the app's own middleware or token provider are passed through unchanged.
+ */
+function asSdkError(err: unknown, correlationId: string | undefined): unknown {
+  const sdkError =
+    err instanceof DataverseError
+      ? err
+      : err instanceof Error && err.name === "AbortError"
+        ? new DataverseAbortError(err.message || undefined, err)
+        : undefined;
+  if (!sdkError) return err;
+  sdkError.correlationId ??= correlationId;
+  return sdkError;
 }

@@ -114,7 +114,7 @@ describe("core: responses", () => {
     await expect(client.api("accounts").get()).resolves.toBeUndefined();
   });
 
-  it.fails("#19: errors expose the x-ms-service-request-id Dataverse sends", async () => {
+  it("#19: errors expose the x-ms-service-request-id Dataverse sends", async () => {
     const { client, fake } = createTestClient();
     fake.on("GET", "/accounts", () => odataError(400, "0x80060888", "Bad request"));
     const err = (await client
