@@ -583,19 +583,32 @@ The built-in classes (`AuthMiddleware`, `ODataHeadersMiddleware`, `ConcurrencyMi
 
 ### Advanced Features
 
-#### Impersonation (MSCRMCallerID Header)
+#### Impersonation (MSCRMCallerID / CallerObjectId Headers)
 
 Execute requests on behalf of another user.
 
 ```typescript
-// Impersonate specific user for single request
+// By the user's Microsoft Entra object id (recommended: the same in every environment)
 await client
   .api("accounts")
-  .impersonate(userId) // Sets MSCRMCallerID header
+  .impersonateByObjectId(entraObjectId) // Sets CallerObjectId; same as impersonate(id, { by: "aadObjectId" })
   .post({ name: "Contoso" });
 
-// The user must have appropriate privileges in Dataverse
+// By systemuserid
+await client
+  .api("accounts")
+  .impersonate(systemUserId) // Sets MSCRMCallerID
+  .post({ name: "Contoso" });
 ```
+
+- Exactly one header is sent; a later `impersonate()` call replaces an earlier one. A request that
+  would carry both (for example one set with `.header()`) is refused with
+  `DataverseInvalidRequestError` (`InvalidParameter`) before it is sent.
+- The calling identity needs the "Act on behalf of another user" privilege (System Administrators
+  have it). The request then runs with the impersonated user's privileges: a user without them gets
+  `0x80040220` naming that user. `createdby` is the impersonated user and `createdonbehalfby` the caller.
+- `WhoAmI` returns the calling identity either way, so it can't be used to check impersonation.
+- Pages after the first carry the same header (see [Paging](#paging)).
 
 #### Custom Headers
 
