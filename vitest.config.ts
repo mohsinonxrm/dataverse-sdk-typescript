@@ -7,9 +7,15 @@ export default defineConfig({
     include: ["packages/**/test/**/*.test.ts", "test/**/*.test.ts"],
     passWithNoTests: true,
     coverage: {
-      reporter: ["text", "html"],
+      reporter: ["text", "html", "lcov"],
       include: ["packages/**/src/**/*.ts"],
-      exclude: ["**/src/generated/**"],
+      exclude: ["**/src/generated/**", "**/src/index.ts"],
+      thresholds: {
+        lines: 80,
+        functions: 80,
+        branches: 75,
+        statements: 80,
+      },
     },
   },
 });

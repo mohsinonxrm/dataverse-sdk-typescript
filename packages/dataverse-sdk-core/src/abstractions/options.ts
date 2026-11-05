@@ -40,6 +40,18 @@ export interface BulkheadOptions {
   maxQueue?: number;
 }
 
+/**
+ * Executor callback for bindMany() — allows the batch package to provide the
+ * implementation without creating a circular package dependency.
+ */
+export type BindManyExecutor = (
+  client: import("../client/DataverseClient.js").DataverseClient,
+  pathOrUrl: string,
+  navigationProperty: string,
+  entitySetName: string,
+  ids: string[]
+) => Promise<void>;
+
 export interface RequestOptions {
   headers?: Record<string, string>;
   prefer?: PreferOption[];
