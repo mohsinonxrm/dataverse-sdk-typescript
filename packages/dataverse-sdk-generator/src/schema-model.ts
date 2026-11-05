@@ -188,11 +188,11 @@ export class SchemaModel {
         .filter((m: any) => m.Value !== null && m.Value !== undefined)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .map((m: any) => ({
-          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions, @typescript-eslint/no-explicit-any
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
           Name: this.extractLabel(m.Label) || `Value${m.Value}`,
           Value: m.Value,
         }))
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         .sort((a: { Value: number }, b: { Value: number }) => a.Value - b.Value),
     };
 

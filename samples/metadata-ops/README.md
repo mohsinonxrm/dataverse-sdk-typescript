@@ -515,9 +515,7 @@ console.log("Version:", initialResult.ServerVersionStamp);
 // Later... query only changes since last sync
 const changesResult = await metadataClient.retrieveMetadataChanges(
   {
-    Criteria: {
-      /* same criteria */
-    },
+    Criteria: {/* same criteria */},
     Properties: { PropertyNames: ["LogicalName", "DisplayName"] },
   },
   "Entity",

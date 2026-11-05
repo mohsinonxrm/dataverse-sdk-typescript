@@ -177,7 +177,6 @@ export class FileColumnClient {
     const response = await this.adapter.send(request);
 
     if (!response.ok) {
-      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       throw new Error(`Failed to download file: ${response.statusText}`);
     }
 

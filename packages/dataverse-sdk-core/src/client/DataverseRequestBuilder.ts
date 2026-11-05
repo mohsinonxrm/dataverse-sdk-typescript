@@ -210,7 +210,7 @@ export class DataverseRequestBuilder {
     executor: BindManyExecutor
   ): Promise<void> {
     // Guard for JavaScript callers still using the old 3-argument signature.
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
     if (typeof executor !== "function") {
       throw new TypeError(
         "bindMany() requires an executor. Pass createBindManyExecutor() from @mohsinonxrm/dataverse-sdk-batch."

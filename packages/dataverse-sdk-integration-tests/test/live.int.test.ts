@@ -218,9 +218,7 @@ describe.skipIf(!live)("live: metadata", () => {
     const { client } = liveClient();
     const metadata = new MetadataClient(client);
     const query = { Properties: { AllProperties: false, PropertyNames: ["LogicalName"] } };
-    await metadata.retrieveMetadataChanges(
-      query as unknown as Parameters<MetadataClient["retrieveMetadataChanges"]>[0]
-    );
+    await metadata.retrieveMetadataChanges(query);
   });
 
   it.fails("#63: MetadataClient.canBeReferenced('account') succeeds", async () => {

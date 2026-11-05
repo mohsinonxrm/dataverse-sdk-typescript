@@ -17,19 +17,19 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@azure/identity": "^4.5.0",
-    "@mohsinonxrm/dataverse-sdk-core": "workspace:*",
+    "@azure/identity": "^4.14.1",
     "@mohsinonxrm/dataverse-sdk-auth-azure-identity": "workspace:*",
-    "commander": "^13.0.0",
-    "dotenv": "^16.5.1",
-    "ejs": "^4.0.0",
-    "fast-xml-parser": "^5.0.0",
-    "zod": "^3.24.3"
+    "@mohsinonxrm/dataverse-sdk-core": "workspace:*",
+    "commander": "^13.1.0",
+    "dotenv": "^16.6.1",
+    "ejs": "^4.0.1",
+    "fast-xml-parser": "^5.12.0",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@types/ejs": "^3.1.5",
-    "@types/node": "^22.10.7",
+    "@types/node": "^22.20.5",
     "tsup": "^8.5.1",
-    "typescript": "^5.7.3"
+    "typescript": "^5.9.3"
   }
 }

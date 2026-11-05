@@ -9,7 +9,7 @@ describe("FileColumnClient", () => {
   beforeEach(() => {
     mockAdapter = {
       send: vi.fn(),
-    } as unknown as RequestAdapter;
+    };
 
     client = new FileColumnClient(mockAdapter, "https://org.crm.dynamics.com/api/data/v9.2");
   });

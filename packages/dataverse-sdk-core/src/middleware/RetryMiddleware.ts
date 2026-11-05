@@ -24,6 +24,9 @@ export class RetryMiddleware implements Middleware {
     next: NextMiddleware
   ): Promise<Response> {
     // Check for per-request retry options override
+    // tsc needs this assertion; typescript-eslint's project service resolves the type differently and
+    // calls it unnecessary. Per-request options are being reworked in #16.
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const perRequestOptions = ctx.middlewareOptions?.get("retry") as RetryOptions | undefined;
     const opt = {
       ...DEFAULTS,

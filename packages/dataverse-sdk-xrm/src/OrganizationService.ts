@@ -128,7 +128,6 @@ export class OrganizationService {
     const regex = /\(([0-9a-f-]{36})\)/i;
     const match = regex.exec(entityIdHeader);
     if (!match) {
-      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       throw new Error(`Could not extract ID from OData-EntityId: ${entityIdHeader}`);
     }
 
@@ -670,10 +669,9 @@ export class OrganizationService {
    */
   async execute<TResponse>(request: unknown): Promise<TResponse> {
     // Check if request implements Executable<T> interface (has toRequestInformation and parseResponse)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     if (this.isExecutable(request)) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return await this.client.execute(request as any);
+      return await this.client.execute(request);
     }
 
     throw new Error(

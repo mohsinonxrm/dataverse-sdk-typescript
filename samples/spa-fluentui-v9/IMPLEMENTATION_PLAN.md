@@ -422,9 +422,7 @@ const entityMetadata: EntityMetadataCreate = {
       },
     ],
   },
-  DisplayCollectionName: {
-    /* ... */
-  },
+  DisplayCollectionName: {/* ... */},
   OwnershipType: 1, // UserOwned
   HasActivities: true,
   HasNotes: true,
@@ -438,9 +436,7 @@ const attributeMetadata: StringAttributeMetadataCreate = {
   AttributeType: 0, // String
   LogicalName: "new_description",
   SchemaName: "new_Description",
-  DisplayName: {
-    /* ... */
-  },
+  DisplayName: {/* ... */},
   RequiredLevel: { Value: 0 }, // None
   MaxLength: 500,
   FormatName: { Value: "Text" },

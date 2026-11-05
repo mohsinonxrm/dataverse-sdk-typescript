@@ -43,7 +43,7 @@ describe("Polymorphic Lookup Consolidation", () => {
           Keys: [],
         },
       ],
-    } as any);
+    });
 
     model.EntityTypes.push({
       Name: "Incident",
@@ -119,7 +119,7 @@ describe("Polymorphic Lookup Consolidation", () => {
           Keys: [],
         },
       ],
-    } as any);
+    });
 
     model.EntityTypes.push({
       Name: "Incident",
@@ -176,7 +176,7 @@ describe("Polymorphic Lookup Consolidation", () => {
           Keys: [],
         },
       ],
-    } as any);
+    });
 
     model.EntityTypes.push({
       Name: "Incident",
@@ -231,7 +231,7 @@ describe("Polymorphic Lookup Consolidation", () => {
           Keys: [],
         },
       ],
-    } as any);
+    });
 
     await model.generate();
 

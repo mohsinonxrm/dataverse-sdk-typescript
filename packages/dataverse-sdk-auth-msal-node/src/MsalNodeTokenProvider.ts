@@ -26,11 +26,7 @@ import {
  * Authentication flow types supported by MSAL Node
  */
 export type AuthFlow =
-  | "deviceCode"
-  | "clientCredentials"
-  | "authorizationCode"
-  | "usernamePassword"
-  | "silent";
+  "deviceCode" | "clientCredentials" | "authorizationCode" | "usernamePassword" | "silent";
 
 /**
  * Base configuration options for MSAL Node token provider
