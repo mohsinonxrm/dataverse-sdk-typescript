@@ -12,6 +12,7 @@ import { FetchRequestAdapter } from "../pipeline/FetchRequestAdapter.js";
 import { buildDefaultMiddleware } from "../pipeline/DefaultMiddleware.js";
 import { DataverseRequestBuilder } from "./DataverseRequestBuilder.js";
 import { parseODataError } from "../errors/parseODataError.js";
+import { DataverseInvalidRequestError } from "../errors/NamedErrors.js";
 
 export class DataverseClient {
   private readonly baseUrl: string;
@@ -20,6 +21,11 @@ export class DataverseClient {
   private readonly ctx: MiddlewareContext;
 
   constructor(private options: DataverseClientOptions) {
+    if (!options.baseUrl.toLowerCase().startsWith("https://")) {
+      throw DataverseInvalidRequestError.invalidBaseUrl(
+        `Base URL must use HTTPS. Received: "${options.baseUrl}"`
+      );
+    }
     const apiVersion = options.apiVersion ?? "v9.2";
     this.baseUrl = normalizeBaseUrl(options.baseUrl, apiVersion);
 
@@ -35,6 +41,17 @@ export class DataverseClient {
       logger: options.logger,
       telemetry: options.telemetry,
     };
+
+    if (options.circuitBreaker?.enabled) {
+      options.logger?.warn(
+        "circuitBreaker option is configured but not yet implemented — it has no effect."
+      );
+    }
+    if (options.bulkhead?.enabled) {
+      options.logger?.warn(
+        "bulkhead option is configured but not yet implemented — it has no effect."
+      );
+    }
   }
 
   getBaseUrl(): string {

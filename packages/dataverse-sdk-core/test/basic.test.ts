@@ -30,6 +30,17 @@ describe("DataverseClient", () => {
     expect(client3.getBaseUrl()).toBe(`${BASE_URL}/api/data/v9.1`);
   });
 
+  it("throws InvalidBaseUrl error when baseUrl uses http://", () => {
+    expect(() => new DataverseClient({ baseUrl: "http://org.crm.dynamics.com" })).toThrow(
+      "must use HTTPS"
+    );
+    try {
+      new DataverseClient({ baseUrl: "http://org.crm.dynamics.com" });
+    } catch (err) {
+      expect((err as Error & { name: string }).name).toBe("InvalidBaseUrl");
+    }
+  });
+
   it("performs GET request", async () => {
     server.use(
       http.get(`${API_URL}/accounts`, () => {
