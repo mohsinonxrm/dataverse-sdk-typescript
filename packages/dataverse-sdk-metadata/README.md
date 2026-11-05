@@ -51,7 +51,7 @@ const entityId = await metadataClient.createEntityDefinition({
   DisplayCollectionName: {
     LocalizedLabels: [{ Label: "Projects", LanguageCode: 1033 }],
   },
-  OwnershipType: 1, // UserOwned
+  OwnershipType: "UserOwned", // or OwnershipTypes.UserOwned
   HasActivities: true,
   HasNotes: true,
   Attributes: [
@@ -83,7 +83,7 @@ const metadataId = await metadataClient.createEntityDefinition({
   DisplayName: { LocalizedLabels: [{ Label: "Task", LanguageCode: 1033 }] },
   DisplayCollectionName: { LocalizedLabels: [{ Label: "Tasks", LanguageCode: 1033 }] },
   Description: { LocalizedLabels: [{ Label: "Project task tracking", LanguageCode: 1033 }] },
-  OwnershipType: 1, // UserOwned
+  OwnershipType: "UserOwned", // or OwnershipTypes.UserOwned
   IsActivity: false,
   HasActivities: true,
   HasNotes: true,
@@ -557,10 +557,23 @@ The SDK automatically sets the `MSCRM.MergeLabels: true` header to merge labels 
 The metadata package uses strict type separation:
 
 - **Read types** - include all properties returned from the server (e.g., `EntityMetadata`)
-- **Create types** - exclude read-only and internal properties (e.g., `EntityMetadataCreate`)
-- **Update types** - similar to Create but may have different required fields (e.g., `EntityMetadataUpdate`)
+- **Create types** - exclude read-only and internal properties, and require what a create needs (e.g., `EntityMetadataCreate`, `StringAttributeMetadataCreate`)
+- **Update types** - every property optional (e.g., `EntityMetadataUpdate`); a retrieved definition can be passed back
 
 This ensures you cannot accidentally send read-only fields like `MetadataId`, `ObjectTypeCode`, or internal-use fields in create/update operations.
+
+Column creates take `AttributeMetadataCreateTypes`, a union discriminated on `@odata.type`
+(`"Microsoft.Dynamics.CRM.StringAttributeMetadata"`, …), so the type-specific properties
+(`MaxLength`, `MinValue`, `Targets`, …) are checked for the type you name. Column, relationship
+and global choice creates require `@odata.type`; for a table it's optional.
+
+### Enums Are Member Names
+
+The Web API reads and writes enum members by name (`"UserOwned"`, `"ApplicationRequired"`); a
+number such as `OwnershipType: 1` is rejected. The exported enums (`OwnershipTypes`,
+`AttributeRequiredLevel`, `StringFormat`, …) are string-valued, so `OwnershipTypes.UserOwned` is
+`"UserOwned"` and you can write either form. Read types use the same names, so
+`entity.OwnershipType === OwnershipTypes.UserOwned` works on a retrieved definition.
 
 ---
 
