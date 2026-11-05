@@ -109,7 +109,7 @@ async function createMultipleDemo(client: DataverseClient): Promise<void> {
   console.log(`Creating ${String(accounts.length)} accounts with CreateMultiple...`);
   const startTime = Date.now();
 
-  const createMultiple = new CreateMultipleAction(accounts);
+  const createMultiple = new CreateMultipleAction("accounts", accounts);
 
   const result = await client.execute(createMultiple);
   const duration = Date.now() - startTime;
@@ -158,7 +158,7 @@ async function updateMultipleDemo(client: DataverseClient): Promise<void> {
   console.log(`Updating ${String(updates.length)} accounts with UpdateMultiple...`);
   const startTime = Date.now();
 
-  const updateMultiple = new UpdateMultipleAction(updates);
+  const updateMultiple = new UpdateMultipleAction("accounts", updates);
 
   await client.execute(updateMultiple);
   const duration = Date.now() - startTime;
@@ -199,7 +199,7 @@ async function upsertMultipleDemo(client: DataverseClient): Promise<void> {
   console.log(`Upserting ${String(accounts.length)} accounts (first run - creates)...`);
   let startTime = Date.now();
 
-  const upsertMultiple1 = new UpsertMultipleAction(accounts);
+  const upsertMultiple1 = new UpsertMultipleAction("accounts", accounts);
 
   await client.execute(upsertMultiple1);
   let duration = Date.now() - startTime;
@@ -215,7 +215,7 @@ async function upsertMultipleDemo(client: DataverseClient): Promise<void> {
 
   startTime = Date.now();
 
-  const upsertMultiple2 = new UpsertMultipleAction(accounts);
+  const upsertMultiple2 = new UpsertMultipleAction("accounts", accounts);
 
   await client.execute(upsertMultiple2);
   duration = Date.now() - startTime;

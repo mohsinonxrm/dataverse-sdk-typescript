@@ -22,7 +22,8 @@ export class CreateFlowMachineNetworkRequest
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
-    const url = `${baseUrl}/CreateFlowMachineNetwork`;
+    // Bound action (entity collection)
+    const url = `${baseUrl}/flowmachinenetworks/Microsoft.Dynamics.CRM.CreateFlowMachineNetwork`;
 
     const body: Record<string, unknown> = {
       subnet: this.subnet,

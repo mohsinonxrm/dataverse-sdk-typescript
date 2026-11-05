@@ -32,7 +32,8 @@ export class RetrieveRecordWallFunction implements Executable<RetrieveRecordWall
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
-    let url = `${baseUrl}/RetrieveRecordWall`;
+    // Bound function (entity collection)
+    let url = `${baseUrl}/posts/Microsoft.Dynamics.CRM.RetrieveRecordWall`;
 
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();

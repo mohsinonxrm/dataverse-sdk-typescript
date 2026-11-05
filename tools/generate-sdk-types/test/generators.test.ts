@@ -254,3 +254,124 @@ new ValidateAction([{ "@odata.type": "Microsoft.Dynamics.CRM.activitypointer", s
     expect(abstract.join("\n")).toMatch(/usage-abstract\.ts\(2\)/);
   });
 });
+
+/** #69: operations bound to an entity collection are called on the entity set. */
+describe("#69: collection-bound operations", () => {
+  const BOUND_EDMX = `<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+  <edmx:DataServices>
+    <Schema Namespace="Microsoft.Dynamics.CRM" Alias="mscrm" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+      <EntityType Name="crmbaseentity" Abstract="true" />
+      <EntityType Name="savedquery" BaseType="mscrm.crmbaseentity" />
+      <EntityType Name="systemform" BaseType="mscrm.crmbaseentity" />
+      <EntityType Name="nosetentity" BaseType="mscrm.crmbaseentity" />
+      <ComplexType Name="CreateMultipleResponse">
+        <Property Name="Ids" Type="Collection(Edm.Guid)" Nullable="false" />
+      </ComplexType>
+      <Action Name="CreateMultiple" IsBound="true">
+        <Parameter Name="entityset" Type="Collection(mscrm.crmbaseentity)" Nullable="false" />
+        <Parameter Name="Targets" Type="Collection(mscrm.crmbaseentity)" Nullable="false" />
+        <ReturnType Type="mscrm.CreateMultipleResponse" Nullable="false" />
+      </Action>
+      <Action Name="ValidateSavedQuery" IsBound="true">
+        <Parameter Name="entityset" Type="Collection(mscrm.savedquery)" Nullable="false" />
+        <Parameter Name="FetchXml" Type="Edm.String" Nullable="false" />
+        <Parameter Name="QueryType" Type="Edm.Int32" Nullable="false" />
+      </Action>
+      <Action Name="Orphan" IsBound="true">
+        <Parameter Name="entityset" Type="Collection(mscrm.nosetentity)" Nullable="false" />
+      </Action>
+      <Function Name="RetrieveFilteredForms" IsBound="true">
+        <Parameter Name="entityset" Type="Collection(mscrm.systemform)" Nullable="false" />
+        <Parameter Name="EntityLogicalName" Type="Edm.String" Nullable="false" />
+        <Parameter Name="FormType" Type="Edm.Int32" Nullable="false" />
+        <ReturnType Type="Collection(mscrm.systemform)" Nullable="false" />
+      </Function>
+      <EntityContainer Name="System">
+        <EntitySet Name="savedqueries" EntityType="Microsoft.Dynamics.CRM.savedquery" />
+        <EntitySet Name="systemforms" EntityType="Microsoft.Dynamics.CRM.systemform" />
+      </EntityContainer>
+    </Schema>
+  </edmx:DataServices>
+</edmx:Edmx>`;
+
+  const BASE = "https://contoso.crm.dynamics.com/api/data/v9.2";
+  let out: string;
+  const read = (path: string) => readFile(join(out, path), "utf8");
+  // The generated operation classes import only types, so vitest can load them directly
+  const load = async <T>(path: string, name: string): Promise<T> => {
+    const mod = (await import(join(out, path))) as Record<string, T | undefined>;
+    const value = mod[name];
+    if (value === undefined) throw new Error(`${path} doesn't export ${name}`);
+    return value;
+  };
+  type Op = new (...args: unknown[]) => {
+    toRequestInformation(baseUrl: string): { url: string; body?: unknown };
+    toRequestBody?: () => Record<string, unknown>;
+  };
+
+  beforeAll(async () => {
+    vi.spyOn(console, "log").mockImplementation(() => undefined);
+    out = await mkdtemp(join(tmpdir(), "gen-69-"));
+    const csdl = parseEdmx(BOUND_EDMX);
+    await generateActions(csdl, join(out, "actions"), false);
+    await generateFunctions(csdl, join(out, "functions"), false);
+    await generateMessages(csdl, join(out, "messages"), false);
+  });
+
+  afterAll(async () => {
+    vi.restoreAllMocks();
+    await rm(out, { recursive: true, force: true });
+  });
+
+  it("an action bound to a concrete collection posts to its entity set", async () => {
+    const Action = await load<Op>(
+      "actions/ValidateSavedQueryAction.ts",
+      "ValidateSavedQueryAction"
+    );
+    const info = new Action("<fetch/>", 0).toRequestInformation(BASE);
+    expect(info.url).toBe(`${BASE}/savedqueries/Microsoft.Dynamics.CRM.ValidateSavedQuery`);
+    expect(info.body).toEqual({ FetchXml: "<fetch/>", QueryType: 0 });
+  });
+
+  it("a Collection(crmbaseentity) action takes the entity set as its first argument", async () => {
+    const code = await read("actions/CreateMultipleAction.ts");
+    expect(code).toContain("public readonly entitySetName: string,");
+    const Action = await load<Op>("actions/CreateMultipleAction.ts", "CreateMultipleAction");
+    const targets = [{ "@odata.type": "Microsoft.Dynamics.CRM.account", name: "A" }];
+    const info = new Action("accounts", targets).toRequestInformation(BASE);
+    expect(info.url).toBe(`${BASE}/accounts/Microsoft.Dynamics.CRM.CreateMultiple`);
+    expect(info.body).toEqual({ Targets: targets });
+  });
+
+  it("a collection-bound function is called on its entity set with parameter aliases", async () => {
+    const Fn = await load<Op>(
+      "functions/RetrieveFilteredFormsFunction.ts",
+      "RetrieveFilteredFormsFunction"
+    );
+    const url = new Fn("account", 2).toRequestInformation(BASE).url;
+    expect(url).toBe(
+      `${BASE}/systemforms/Microsoft.Dynamics.CRM.RetrieveFilteredForms(EntityLogicalName=@p1,FormType=@p2)?%40p1=%27account%27&%40p2=2`
+    );
+  });
+
+  it("messages use the same URLs and keep the entity set out of the request body", async () => {
+    expect(await read("messages/ValidateSavedQueryMessage.ts")).toContain(
+      "const url = `${baseUrl}/savedqueries/Microsoft.Dynamics.CRM.ValidateSavedQuery`;"
+    );
+    const code = await read("messages/CreateMultipleMessage.ts");
+    expect(code).toContain("public entitySetName: string,");
+    expect(code).toContain(
+      "const url = `${baseUrl}/${this.entitySetName}/Microsoft.Dynamics.CRM.CreateMultiple`;"
+    );
+    const body = /toRequestBody\(\)[\s\S]*?\n {2}\}/.exec(code)?.[0] ?? "";
+    expect(body).toContain("Targets: this.targets,");
+    expect(body).not.toContain("entitySetName");
+  });
+
+  it("an entity set missing from the CSDL falls back to <type>s with a warning", async () => {
+    const code = await read("actions/OrphanAction.ts");
+    expect(code).toContain("// WARNING: Entity set not found in metadata");
+    expect(code).toContain("`${baseUrl}/nosetentitys/Microsoft.Dynamics.CRM.Orphan`");
+  });
+});

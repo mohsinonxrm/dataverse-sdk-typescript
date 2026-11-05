@@ -23,7 +23,8 @@ export class SearchByKeywordsKbArticleFunction implements Executable<SearchByKey
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
-    let url = `${baseUrl}/SearchByKeywordsKbArticle`;
+    // Bound function (entity collection)
+    let url = `${baseUrl}/kbarticles/Microsoft.Dynamics.CRM.SearchByKeywordsKbArticle`;
 
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();

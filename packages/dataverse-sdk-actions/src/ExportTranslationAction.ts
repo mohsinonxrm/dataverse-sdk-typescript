@@ -17,7 +17,8 @@ export class ExportTranslationAction implements Executable<ExportTranslationResp
   constructor(public readonly solutionName: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
-    const url = `${baseUrl}/ExportTranslation`;
+    // Bound action (entity collection)
+    const url = `${baseUrl}/solutions/Microsoft.Dynamics.CRM.ExportTranslation`;
 
     const body: Record<string, unknown> = {
       SolutionName: this.solutionName,

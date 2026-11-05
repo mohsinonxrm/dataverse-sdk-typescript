@@ -16,7 +16,8 @@ export interface RetrievePrivilegeSetResponse {
  */
 export class RetrievePrivilegeSetFunction implements Executable<RetrievePrivilegeSetResponse> {
   toRequestInformation(baseUrl: string): RequestInformation {
-    let url = `${baseUrl}/RetrievePrivilegeSet`;
+    // Bound function (entity collection)
+    let url = `${baseUrl}/privileges/Microsoft.Dynamics.CRM.RetrievePrivilegeSet`;
 
     return {
       method: "GET",

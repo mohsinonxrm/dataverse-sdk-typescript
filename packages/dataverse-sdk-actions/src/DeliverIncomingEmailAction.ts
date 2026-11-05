@@ -33,7 +33,8 @@ export class DeliverIncomingEmailAction implements Executable<DeliverIncomingEma
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
-    const url = `${baseUrl}/DeliverIncomingEmail`;
+    // Bound action (entity collection)
+    const url = `${baseUrl}/emails/Microsoft.Dynamics.CRM.DeliverIncomingEmail`;
 
     const body: Record<string, unknown> = {
       MessageId: this.messageId,

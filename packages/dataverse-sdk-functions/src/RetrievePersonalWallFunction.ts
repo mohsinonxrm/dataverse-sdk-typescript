@@ -29,7 +29,8 @@ export class RetrievePersonalWallFunction implements Executable<RetrievePersonal
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
-    let url = `${baseUrl}/RetrievePersonalWall`;
+    // Bound function (entity collection)
+    let url = `${baseUrl}/posts/Microsoft.Dynamics.CRM.RetrievePersonalWall`;
 
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();

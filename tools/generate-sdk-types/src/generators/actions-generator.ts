@@ -19,6 +19,7 @@ import {
   purgeDirectory,
 } from "../utils/file-writer.js";
 import { polymorphicParameterType } from "../utils/polymorphism.js";
+import { collectionBinding, ENTITY_SET_PARAM } from "../utils/binding.js";
 
 /**
  * Map Complex* types to their non-Complex EntityType equivalents.
@@ -243,6 +244,15 @@ function generateActionClass(csdl: CsdlSchema, action: CsdlAction): string {
   if (action.bindingParameter) {
     code += ` * Binding parameter: ${action.bindingParameter.name || "unnamed"} (${action.bindingParameter.type})\n`;
   }
+  // Collection-bound: called on an entity set (#69)
+  const collection =
+    action.isBound && action.bindingParameter && isCollectionType(action.bindingParameter.type)
+      ? collectionBinding(csdl, action.bindingParameter.type)
+      : undefined;
+  if (collection?.needsEntitySetName) {
+    code += ` *\n`;
+    code += ` * The first argument is the entity set to call it on, for example "accounts".\n`;
+  }
   code += ` */\n`;
   code += `export class ${className} implements Executable<${responseInterfaceName}> {\n`;
 
@@ -266,6 +276,16 @@ function generateActionClass(csdl: CsdlSchema, action: CsdlAction): string {
     const entityTypeName = extractEntityTypeName(action.bindingParameter.type);
     constructorParams.push({
       name: `${entityTypeName}Id`,
+      type: "string",
+      tsName: action.bindingParameter.name,
+      isBinding: true,
+    });
+  }
+
+  if (collection?.needsEntitySetName && action.bindingParameter) {
+    // Bound to Collection(mscrm.crmbaseentity): the caller names the entity set
+    constructorParams.push({
+      name: ENTITY_SET_PARAM,
       type: "string",
       tsName: action.bindingParameter.name,
       isBinding: true,
@@ -322,8 +342,13 @@ function generateActionClass(csdl: CsdlSchema, action: CsdlAction): string {
       code += `    // WARNING: Entity set not found in metadata, using entity type name as fallback\n`;
       code += `    const url = \`\${baseUrl}/${entityTypeName}s(\${this.${bindingParam.name}})/Microsoft.Dynamics.CRM.${action.name}\`;\n\n`;
     }
+  } else if (collection) {
+    // Collection-bound action: POST /{entityset}/Microsoft.Dynamics.CRM.{name}
+    code += `    // Bound action (entity collection)\n`;
+    if (collection.warning) code += `    // ${collection.warning}\n`;
+    code += `    const url = \`\${baseUrl}/${collection.segment}/Microsoft.Dynamics.CRM.${action.name}\`;\n\n`;
   } else {
-    // Unbound action OR Collection-bound (treated as unbound for URL)
+    // Unbound action
     code += `    const url = \`\${baseUrl}/${action.name}\`;\n\n`;
   }
 

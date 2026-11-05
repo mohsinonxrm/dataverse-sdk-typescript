@@ -16,7 +16,8 @@ export interface RetrieveUnpublishedMultipleResponse {
  */
 export class RetrieveUnpublishedMultipleFunction implements Executable<RetrieveUnpublishedMultipleResponse> {
   toRequestInformation(baseUrl: string): RequestInformation {
-    let url = `${baseUrl}/RetrieveUnpublishedMultiple`;
+    // Bound function (entity collection)
+    let url = `${baseUrl}/aipluginoperationparameters/Microsoft.Dynamics.CRM.RetrieveUnpublishedMultiple`;
 
     return {
       method: "GET",

@@ -15,6 +15,7 @@ import {
 } from "../utils/typescript-writer.js";
 import { writeTypeScriptFile, purgeDirectory } from "../utils/file-writer.js";
 import { polymorphicParameterType } from "../utils/polymorphism.js";
+import { collectionBinding, ENTITY_SET_PARAM } from "../utils/binding.js";
 
 /**
  * Map Complex* types to their non-Complex EntityType equivalents.
@@ -201,6 +202,15 @@ function generateMessageClass(csdl: CsdlSchema, action: CsdlAction): string {
   code += ` * ${action.name} request message\n`;
   code += ` *\n`;
   code += ` * Web API Action: ${action.name}\n`;
+  // Collection-bound: called on an entity set (#69)
+  const collection =
+    action.isBound && action.bindingParameter && isCollectionType(action.bindingParameter.type)
+      ? collectionBinding(csdl, action.bindingParameter.type)
+      : undefined;
+  if (collection?.needsEntitySetName) {
+    code += ` *\n`;
+    code += ` * The first argument is the entity set to call it on, for example "accounts".\n`;
+  }
   code += ` */\n`;
   code += `export class ${requestClassName} extends OrganizationRequest implements Executable<${responseClassName}> {\n`;
 
@@ -225,6 +235,17 @@ function generateMessageClass(csdl: CsdlSchema, action: CsdlAction): string {
     const entityTypeName = extractEntityTypeName(action.bindingParameter.type);
     constructorParams.push({
       name: `${toCamelCase(entityTypeName)}Id`,
+      type: "string",
+      tsName: action.bindingParameter.name,
+      isBinding: true,
+      nullable: false,
+    });
+  }
+
+  if (collection?.needsEntitySetName && action.bindingParameter) {
+    // Bound to Collection(mscrm.crmbaseentity): the caller names the entity set
+    constructorParams.push({
+      name: ENTITY_SET_PARAM,
       type: "string",
       tsName: action.bindingParameter.name,
       isBinding: true,
@@ -261,7 +282,7 @@ function generateMessageClass(csdl: CsdlSchema, action: CsdlAction): string {
   code += `  }\n\n`;
 
   // Generate toRequestInformation method (for Executable<T> interface)
-  code += generateToRequestInformation(action, constructorParams);
+  code += generateToRequestInformation(csdl, action, constructorParams);
   code += `\n`;
 
   // Generate parseResponse method (for Executable<T> interface)
@@ -272,6 +293,8 @@ function generateMessageClass(csdl: CsdlSchema, action: CsdlAction): string {
   code += `  toRequestBody(): Record<string, unknown> {\n`;
   code += `    return {\n`;
   for (const param of constructorParams) {
+    // The entity set of a collection-bound message is part of the URL, not a parameter
+    if (param.isBinding && param.name === ENTITY_SET_PARAM) continue;
     if (param.nullable) {
       code += `      ...(this.${param.name} !== undefined && { ${param.tsName}: this.${param.name} }),\n`;
     } else {
@@ -317,6 +340,7 @@ function generateMessageClass(csdl: CsdlSchema, action: CsdlAction): string {
  * This matches the logic in actions-generator.ts.
  */
 function generateToRequestInformation(
+  csdl: CsdlSchema,
   action: CsdlAction,
   constructorParams: Array<{
     name: string;
@@ -347,8 +371,14 @@ function generateToRequestInformation(
     const entitySetName = `${entityTypeName.toLowerCase()}s`; // Simple pluralization
 
     code += `    const url = \`\${baseUrl}/${entitySetName}(\${this.${bindingParam.name}})/Microsoft.Dynamics.CRM.${action.name}\`;\n\n`;
+  } else if (isCollectionBound && action.bindingParameter) {
+    // Collection-bound action: POST /{entityset}/Microsoft.Dynamics.CRM.{name} (#69)
+    const collection = collectionBinding(csdl, action.bindingParameter.type);
+    code += `    // Bound action (entity collection)\n`;
+    if (collection.warning) code += `    // ${collection.warning}\n`;
+    code += `    const url = \`\${baseUrl}/${collection.segment}/Microsoft.Dynamics.CRM.${action.name}\`;\n\n`;
   } else {
-    // Unbound action OR Collection-bound (treated as unbound for URL)
+    // Unbound action
     code += `    const url = \`\${baseUrl}/${action.name}\`;\n\n`;
   }
 

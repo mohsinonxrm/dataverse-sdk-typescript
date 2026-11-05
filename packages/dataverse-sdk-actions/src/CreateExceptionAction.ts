@@ -22,7 +22,8 @@ export class CreateExceptionAction implements Executable<CreateExceptionResponse
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
-    const url = `${baseUrl}/CreateException`;
+    // Bound action (entity collection)
+    const url = `${baseUrl}/recurringappointmentmasters/Microsoft.Dynamics.CRM.CreateException`;
 
     const body: Record<string, unknown> = {
       Target: this.target,

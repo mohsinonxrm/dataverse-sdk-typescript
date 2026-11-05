@@ -24,7 +24,8 @@ export class RetrieveTimelineWallRecordsFunction implements Executable<RetrieveT
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
-    let url = `${baseUrl}/RetrieveTimelineWallRecords`;
+    // Bound function (entity collection)
+    let url = `${baseUrl}/activitypointers/Microsoft.Dynamics.CRM.RetrieveTimelineWallRecords`;
 
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
