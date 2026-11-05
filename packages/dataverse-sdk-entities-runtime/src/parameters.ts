@@ -53,6 +53,14 @@ export function formatRecordPath(reference: RecordReference): string {
   return `${reference.entitySetName}(${bareGuid(reference.id)})`;
 }
 
+/** base64 to base64url (the binary literal's alphabet), without padding. */
+function toBase64Url(base64: string): string {
+  let end = base64.length;
+  // A loop rather than /=+$/, which backtracks on long runs of "=".
+  while (end > 0 && base64[end - 1] === "=") end--;
+  return base64.slice(0, end).replace(/\+/g, "-").replace(/\//g, "_");
+}
+
 /** JSON for a structured value; a record reference becomes `{"@odata.id": "<set>(<id>)"}`. */
 function toJson(value: unknown): string {
   return JSON.stringify(value, (_key, item: unknown) =>
@@ -115,8 +123,7 @@ export function formatParameterAlias(
     case "Edm.Duration":
       return `duration'${text}'`;
     case "Edm.Binary":
-      // The literal takes base64url.
-      return `binary'${text.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "")}'`;
+      return `binary'${toBase64Url(text)}'`;
     default:
       // Numbers, booleans, and DateTimeOffset given as an ISO string.
       return text;
