@@ -32,7 +32,7 @@ export class GenerateInvoiceFromOpportunityAction implements Executable<Generate
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

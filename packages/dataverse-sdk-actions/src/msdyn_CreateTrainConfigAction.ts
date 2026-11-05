@@ -25,7 +25,7 @@ export class msdyn_CreateTrainConfigAction implements Executable<msdyn_CreateTra
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

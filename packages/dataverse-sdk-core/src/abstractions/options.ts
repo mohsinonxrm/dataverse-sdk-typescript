@@ -20,6 +20,40 @@ export const Prefer = {
  * The delay before retry `n` (0-based) is `min(maxDelayMs, baseDelayMs * 2^n)`, with ±20% jitter
  * when `jitter` is on. When the response carries `Retry-After`, that wait is used as is instead.
  */
+/** One attempt of a request, as recorded by the retry middleware. */
+export interface RetryAttempt {
+  /** 0 for the first attempt, 1 for the first retry, and so on. */
+  attempt: number;
+  /** Response status, or 0 when `fetch` failed without a response. */
+  status: number;
+  /** The network error, when `status` is 0. */
+  error?: Error;
+  /** `Retry-After` of the response, in ms, when it had one. */
+  retryAfterMs?: number;
+  /** How long the SDK waited after this attempt before the next one; absent on the last attempt. */
+  delayMs?: number;
+}
+
+/** What `RetryOptions.onRetry` receives before each retry. */
+export interface RetryInfo {
+  /** The retry about to happen: 1 for the first retry. */
+  attempt: number;
+  /** `maxRetries` in effect for this request. */
+  maxRetries: number;
+  /** Status of the attempt that failed, or 0 for a network error. */
+  status: number;
+  /** The network error, when `status` is 0. */
+  error?: Error;
+  /** How long the SDK waits before the retry, in ms. */
+  delayMs: number;
+  /** `Retry-After` of the failed response, in ms, when it had one (then `delayMs` equals it). */
+  retryAfterMs?: number;
+  /** The request being retried. Treat it as read-only. */
+  request: import("./http.js").RequestInformation;
+  /** Correlation id of the request (the same on every attempt). */
+  correlationId?: string;
+}
+
 export interface RetryOptions {
   /** Retries after the first attempt. @default 6 */
   maxRetries?: number;
@@ -58,6 +92,12 @@ export interface RetryOptions {
    * with status `0` and the error.
    */
   shouldRetry?: (statusCode: number, error?: Error) => boolean;
+  /**
+   * Called once before each retry, after the delay is known and before the SDK waits. Use it to
+   * show progress ("Throttled, retrying in 12 s (2/6)") or count retries. It must not throw; an
+   * error it throws is logged and ignored. A per-request `onRetry` replaces the client's.
+   */
+  onRetry?: (info: RetryInfo) => void;
   /** @deprecated Use `baseDelayMs`. */
   delay?: number;
   /** @deprecated Has no effect: backoff is always exponential. */

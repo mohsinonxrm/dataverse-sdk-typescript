@@ -33,7 +33,7 @@ export class RescheduleAction implements Executable<RescheduleResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -37,7 +37,7 @@ export class msdyn_CloneMultipleAction implements Executable<msdyn_CloneMultiple
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

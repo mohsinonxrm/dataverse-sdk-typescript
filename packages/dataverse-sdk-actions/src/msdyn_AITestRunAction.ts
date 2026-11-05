@@ -31,7 +31,7 @@ export class msdyn_AITestRunAction implements Executable<msdyn_AITestRunResponse
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

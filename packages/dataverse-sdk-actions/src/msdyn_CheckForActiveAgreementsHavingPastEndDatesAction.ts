@@ -29,7 +29,7 @@ export class msdyn_CheckForActiveAgreementsHavingPastEndDatesAction implements E
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

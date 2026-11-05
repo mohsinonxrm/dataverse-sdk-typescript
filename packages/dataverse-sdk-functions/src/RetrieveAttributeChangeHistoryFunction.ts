@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 import type { EntityReference } from "./types/EntityReference.js";
 import { getEntitySetNameFromReference } from "./types/EntityReference.js";
 import type { AuditDetailCollection, PagingInfo } from "./types/index.js";
@@ -39,12 +40,7 @@ export class RetrieveAttributeChangeHistoryFunction implements Executable<Retrie
     }
     if (this.attributeLogicalName !== undefined) {
       aliases.push(`AttributeLogicalName=@p2`);
-      params.append(
-        "@p2",
-        typeof this.attributeLogicalName === "string"
-          ? `'${this.attributeLogicalName}'`
-          : String(this.attributeLogicalName)
-      );
+      params.append("@p2", formatAliasValue(this.attributeLogicalName));
     }
     if (this.pagingInfo !== undefined) {
       aliases.push(`PagingInfo=@p3`);

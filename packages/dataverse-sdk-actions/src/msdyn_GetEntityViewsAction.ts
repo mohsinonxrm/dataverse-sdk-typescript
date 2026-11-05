@@ -26,7 +26,7 @@ export class msdyn_GetEntityViewsAction implements Executable<msdyn_GetEntityVie
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

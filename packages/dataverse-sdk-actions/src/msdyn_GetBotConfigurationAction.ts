@@ -31,7 +31,7 @@ export class msdyn_GetBotConfigurationAction implements Executable<msdyn_GetBotC
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

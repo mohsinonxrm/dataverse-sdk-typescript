@@ -26,7 +26,7 @@ export class msdyn_RemoveRequirementModelAction implements Executable<msdyn_Remo
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

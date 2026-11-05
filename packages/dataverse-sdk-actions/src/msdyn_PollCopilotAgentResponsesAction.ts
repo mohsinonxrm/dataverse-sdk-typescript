@@ -31,7 +31,7 @@ export class msdyn_PollCopilotAgentResponsesAction implements Executable<msdyn_P
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -26,7 +26,7 @@ export class UninstallSolutionAsyncAction implements Executable<UninstallSolutio
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

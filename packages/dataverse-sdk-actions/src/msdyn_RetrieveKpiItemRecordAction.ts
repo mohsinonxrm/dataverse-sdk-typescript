@@ -27,7 +27,7 @@ export class msdyn_RetrieveKpiItemRecordAction implements Executable<msdyn_Retri
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

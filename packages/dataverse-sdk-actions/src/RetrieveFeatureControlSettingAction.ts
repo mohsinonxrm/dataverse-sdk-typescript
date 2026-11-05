@@ -31,7 +31,7 @@ export class RetrieveFeatureControlSettingAction implements Executable<RetrieveF
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

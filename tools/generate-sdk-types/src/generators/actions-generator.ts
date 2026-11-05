@@ -334,7 +334,9 @@ function generateActionClass(csdl: CsdlSchema, action: CsdlAction): string {
   code += `      method: 'POST',\n`;
   code += `      url,\n`;
   code += `      headers: {\n`;
-  code += `        'Content-Type': 'application/json',\n`;
+  // Lower-case, like the names the core sends: an explicit header then replaces the core's JSON
+  // default instead of being sent next to it under a second casing (#23).
+  code += `        'content-type': 'application/json',\n`;
   code += `      },\n`;
   if (bodyParams.length > 0) {
     code += `      body,\n`;

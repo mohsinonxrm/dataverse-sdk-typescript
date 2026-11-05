@@ -30,7 +30,7 @@ export class msdyn_UpdateEffortModelStatusAction implements Executable<msdyn_Upd
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

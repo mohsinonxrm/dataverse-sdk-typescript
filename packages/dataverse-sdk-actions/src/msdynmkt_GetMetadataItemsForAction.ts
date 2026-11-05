@@ -33,7 +33,7 @@ export class msdynmkt_GetMetadataItemsForAction implements Executable<msdynmkt_G
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

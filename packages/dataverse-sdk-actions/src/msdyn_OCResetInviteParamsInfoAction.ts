@@ -26,7 +26,7 @@ export class msdyn_OCResetInviteParamsInfoAction implements Executable<msdyn_OCR
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

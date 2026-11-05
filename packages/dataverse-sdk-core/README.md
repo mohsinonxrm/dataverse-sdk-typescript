@@ -762,6 +762,26 @@ User Code (typed result)
   with backoff. Aborts and timeouts are never retried.
 - **`shouldRetry(statusCode, error?)`:** replaces the status-code, method and network-error checks
   (called with status `0` for a network error); the counts and delays still apply.
+- **Watching retries:** `onRetry(info)` runs once before each retry, with `attempt`, `maxRetries`,
+  `status` (0 for a network error), `delayMs`, `retryAfterMs`, `correlationId` and the request. A
+  per-request `onRetry` replaces the client's; an error it throws is logged and ignored.
+  `getRetryAttempts(res)` returns every attempt behind a response from `send()` or `response()`:
+
+  ```typescript
+  const client = new DataverseClient({
+    baseUrl,
+    tokenProvider,
+    retry: {
+      onRetry: ({ attempt, maxRetries, status, delayMs }) =>
+        setStatus(
+          `HTTP ${status}, retrying in ${Math.round(delayMs / 1000)} s (${attempt}/${maxRetries})`
+        ),
+    },
+  });
+  const res = await client.api("accounts").response();
+  getRetryAttempts(res); // [{ attempt: 0, status: 429, retryAfterMs: 12000, delayMs: 12000 }, { attempt: 1, status: 200 }]
+  ```
+
 - **Per request:** the same `RetryOptions` type overrides the client's values for one request, e.g.
   `client.api("accounts").get({ middlewareOptions: new MiddlewareRequestOptions([{ type: "retry", maxRetries: 0 }]) })`.
 - **Retry-Attempt header:** Added to retried requests for server-side diagnostics

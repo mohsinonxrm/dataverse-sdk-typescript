@@ -24,7 +24,7 @@ export class LeaveGroupAction implements Executable<LeaveGroupResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

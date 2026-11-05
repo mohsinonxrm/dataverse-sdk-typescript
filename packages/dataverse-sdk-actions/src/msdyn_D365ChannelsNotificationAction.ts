@@ -26,7 +26,7 @@ export class msdyn_D365ChannelsNotificationAction implements Executable<msdyn_D3
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

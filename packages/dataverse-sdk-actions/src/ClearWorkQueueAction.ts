@@ -24,7 +24,7 @@ export class ClearWorkQueueAction implements Executable<ClearWorkQueueResponse> 
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

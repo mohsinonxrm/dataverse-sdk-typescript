@@ -27,7 +27,7 @@ export class UpdateProductPropertiesAction implements Executable<UpdateProductPr
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

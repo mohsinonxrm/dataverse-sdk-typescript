@@ -33,7 +33,7 @@ export class msdyn_UpdateRecordWithRuleBasedPredictionsAction implements Executa
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

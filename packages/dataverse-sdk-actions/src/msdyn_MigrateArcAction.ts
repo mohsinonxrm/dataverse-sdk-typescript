@@ -27,7 +27,7 @@ export class msdyn_MigrateArcAction implements Executable<msdyn_MigrateArcRespon
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

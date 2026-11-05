@@ -32,7 +32,7 @@ export class msdyn_ExecutePrimaryCreatePostActionsRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

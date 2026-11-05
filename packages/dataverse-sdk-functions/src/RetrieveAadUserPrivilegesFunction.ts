@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 import type { RolePrivilege } from "./types/index.js";
 
 /**
@@ -24,12 +25,7 @@ export class RetrieveAadUserPrivilegesFunction implements Executable<RetrieveAad
     const aliases: string[] = [];
     if (this.directoryObjectId !== undefined) {
       aliases.push(`DirectoryObjectId=@p1`);
-      params.append(
-        "@p1",
-        typeof this.directoryObjectId === "string"
-          ? `'${this.directoryObjectId}'`
-          : String(this.directoryObjectId)
-      );
+      params.append("@p1", formatAliasValue(this.directoryObjectId));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

@@ -34,7 +34,7 @@ export class msdyn_msdyn_ValidateWorkStreamSMSConnectionRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

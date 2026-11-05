@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 
 /**
  * Response from CCaaS_GetAgentsForConsultAndTransfer function
@@ -35,56 +36,31 @@ export class CCaaS_GetAgentsForConsultAndTransferFunction implements Executable<
     const aliases: string[] = [];
     if (this.agentSearchText !== undefined) {
       aliases.push(`AgentSearchText=@p1`);
-      params.append(
-        "@p1",
-        typeof this.agentSearchText === "string"
-          ? `'${this.agentSearchText}'`
-          : String(this.agentSearchText)
-      );
+      params.append("@p1", formatAliasValue(this.agentSearchText));
     }
     if (this.agentKind !== undefined) {
       aliases.push(`AgentKind=@p2`);
-      params.append(
-        "@p2",
-        typeof this.agentKind === "string" ? `'${this.agentKind}'` : String(this.agentKind)
-      );
+      params.append("@p2", formatAliasValue(this.agentKind));
     }
     if (this.queueId !== undefined) {
       aliases.push(`QueueId=@p3`);
-      params.append(
-        "@p3",
-        typeof this.queueId === "string" ? `'${this.queueId}'` : String(this.queueId)
-      );
+      params.append("@p3", formatAliasValue(this.queueId));
     }
     if (this.commandType !== undefined) {
       aliases.push(`CommandType=@p4`);
-      params.append(
-        "@p4",
-        typeof this.commandType === "string" ? `'${this.commandType}'` : String(this.commandType)
-      );
+      params.append("@p4", formatAliasValue(this.commandType));
     }
     if (this.getActiveConsultees !== undefined) {
       aliases.push(`GetActiveConsultees=@p5`);
-      params.append(
-        "@p5",
-        typeof this.getActiveConsultees === "string"
-          ? `'${this.getActiveConsultees}'`
-          : String(this.getActiveConsultees)
-      );
+      params.append("@p5", formatAliasValue(this.getActiveConsultees));
     }
     if (this.apiVersion !== undefined) {
       aliases.push(`ApiVersion=@p6`);
-      params.append(
-        "@p6",
-        typeof this.apiVersion === "string" ? `'${this.apiVersion}'` : String(this.apiVersion)
-      );
+      params.append("@p6", formatAliasValue(this.apiVersion));
     }
     if (this.agentGroupId !== undefined) {
       aliases.push(`AgentGroupId=@p7`);
-      params.append(
-        "@p7",
-        typeof this.agentGroupId === "string" ? `'${this.agentGroupId}'` : String(this.agentGroupId)
-      );
+      params.append("@p7", formatAliasValue(this.agentGroupId));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

@@ -20,7 +20,7 @@ export class msdyn_GetSILicenseStatusAction implements Executable<msdyn_GetSILic
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

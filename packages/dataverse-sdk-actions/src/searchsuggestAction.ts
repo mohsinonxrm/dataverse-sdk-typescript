@@ -42,7 +42,7 @@ export class searchsuggestAction implements Executable<searchsuggestResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

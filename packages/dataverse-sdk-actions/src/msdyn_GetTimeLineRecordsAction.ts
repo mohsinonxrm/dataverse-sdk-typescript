@@ -30,7 +30,7 @@ export class msdyn_GetTimeLineRecordsAction implements Executable<msdyn_GetTimeL
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

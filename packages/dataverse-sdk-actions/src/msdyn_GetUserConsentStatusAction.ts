@@ -20,7 +20,7 @@ export class msdyn_GetUserConsentStatusAction implements Executable<msdyn_GetUse
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

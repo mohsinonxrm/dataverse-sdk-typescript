@@ -30,7 +30,7 @@ export class msdyn_CleanupCopilotAgentResponsesAction implements Executable<msdy
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

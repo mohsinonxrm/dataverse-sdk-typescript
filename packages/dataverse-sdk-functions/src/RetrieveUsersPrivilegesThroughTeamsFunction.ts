@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 import type { RolePrivilege } from "./types/index.js";
 
 /**
@@ -30,21 +31,11 @@ export class RetrieveUsersPrivilegesThroughTeamsFunction implements Executable<R
     const aliases: string[] = [];
     if (this.excludeOrgDisabledPrivileges !== undefined) {
       aliases.push(`ExcludeOrgDisabledPrivileges=@p1`);
-      params.append(
-        "@p1",
-        typeof this.excludeOrgDisabledPrivileges === "string"
-          ? `'${this.excludeOrgDisabledPrivileges}'`
-          : String(this.excludeOrgDisabledPrivileges)
-      );
+      params.append("@p1", formatAliasValue(this.excludeOrgDisabledPrivileges));
     }
     if (this.includeSetupUserFiltering !== undefined) {
       aliases.push(`IncludeSetupUserFiltering=@p2`);
-      params.append(
-        "@p2",
-        typeof this.includeSetupUserFiltering === "string"
-          ? `'${this.includeSetupUserFiltering}'`
-          : String(this.includeSetupUserFiltering)
-      );
+      params.append("@p2", formatAliasValue(this.includeSetupUserFiltering));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

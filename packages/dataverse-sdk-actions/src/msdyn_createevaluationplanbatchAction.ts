@@ -26,7 +26,7 @@ export class msdyn_createevaluationplanbatchAction implements Executable<msdyn_c
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

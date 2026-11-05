@@ -26,7 +26,7 @@ export class msdyn_UpdateCopilotSettingsAction implements Executable<msdyn_Updat
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

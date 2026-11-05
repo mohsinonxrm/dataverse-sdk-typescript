@@ -37,7 +37,7 @@ export class msdyn_OpportunityResearchResultUserActionAction implements Executab
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -26,7 +26,7 @@ export class msdyn_GetSIPackageStatusAction implements Executable<msdyn_GetSIPac
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

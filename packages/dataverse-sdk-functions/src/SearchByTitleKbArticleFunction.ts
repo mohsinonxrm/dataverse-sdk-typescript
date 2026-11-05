@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 import type { kbarticle, subject } from "./types/index.js";
 
 /**
@@ -29,10 +30,7 @@ export class SearchByTitleKbArticleFunction implements Executable<SearchByTitleK
     const aliases: string[] = [];
     if (this.searchText !== undefined) {
       aliases.push(`SearchText=@p1`);
-      params.append(
-        "@p1",
-        typeof this.searchText === "string" ? `'${this.searchText}'` : String(this.searchText)
-      );
+      params.append("@p1", formatAliasValue(this.searchText));
     }
     if (this.subject !== undefined) {
       aliases.push(`Subject=@p2`);
@@ -40,12 +38,7 @@ export class SearchByTitleKbArticleFunction implements Executable<SearchByTitleK
     }
     if (this.useInflection !== undefined) {
       aliases.push(`UseInflection=@p3`);
-      params.append(
-        "@p3",
-        typeof this.useInflection === "string"
-          ? `'${this.useInflection}'`
-          : String(this.useInflection)
-      );
+      params.append("@p3", formatAliasValue(this.useInflection));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

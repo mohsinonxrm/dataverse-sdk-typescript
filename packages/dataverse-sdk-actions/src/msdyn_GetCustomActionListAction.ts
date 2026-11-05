@@ -33,7 +33,7 @@ export class msdyn_GetCustomActionListAction implements Executable<msdyn_GetCust
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

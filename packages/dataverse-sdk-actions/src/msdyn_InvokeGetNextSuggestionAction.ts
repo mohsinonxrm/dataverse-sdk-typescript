@@ -33,7 +33,7 @@ export class msdyn_InvokeGetNextSuggestionAction implements Executable<msdyn_Inv
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

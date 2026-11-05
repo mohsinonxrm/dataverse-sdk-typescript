@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 import type { RibbonLocationFilters } from "./types/index.js";
 
 /**
@@ -27,19 +28,11 @@ export class RetrieveEntityRibbonFunction implements Executable<RetrieveEntityRi
     const aliases: string[] = [];
     if (this.entityName !== undefined) {
       aliases.push(`EntityName=@p1`);
-      params.append(
-        "@p1",
-        typeof this.entityName === "string" ? `'${this.entityName}'` : String(this.entityName)
-      );
+      params.append("@p1", formatAliasValue(this.entityName));
     }
     if (this.ribbonLocationFilter !== undefined) {
       aliases.push(`RibbonLocationFilter=@p2`);
-      params.append(
-        "@p2",
-        typeof this.ribbonLocationFilter === "string"
-          ? `'${this.ribbonLocationFilter}'`
-          : String(this.ribbonLocationFilter)
-      );
+      params.append("@p2", formatAliasValue(this.ribbonLocationFilter));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

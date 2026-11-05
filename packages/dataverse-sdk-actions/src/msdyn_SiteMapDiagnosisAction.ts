@@ -35,7 +35,7 @@ export class msdyn_SiteMapDiagnosisAction implements Executable<msdyn_SiteMapDia
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -33,7 +33,7 @@ export class SubstituteForAttributeAction implements Executable<SubstituteForAtt
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

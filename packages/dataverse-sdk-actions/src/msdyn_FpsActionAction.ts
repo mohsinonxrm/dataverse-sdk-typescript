@@ -30,7 +30,7 @@ export class msdyn_FpsActionAction implements Executable<msdyn_FpsActionResponse
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

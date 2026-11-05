@@ -32,7 +32,7 @@ export class installRequest extends OrganizationRequest implements Executable<in
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -26,7 +26,7 @@ export class msdyn_ScheduleRealTimeScoringAction implements Executable<msdyn_Sch
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

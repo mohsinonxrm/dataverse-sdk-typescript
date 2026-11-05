@@ -20,7 +20,7 @@ export class UpdateRibbonClientMetadataAction implements Executable<UpdateRibbon
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

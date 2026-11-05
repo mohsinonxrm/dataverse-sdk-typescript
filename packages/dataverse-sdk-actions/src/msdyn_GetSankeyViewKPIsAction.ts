@@ -32,7 +32,7 @@ export class msdyn_GetSankeyViewKPIsAction implements Executable<msdyn_GetSankey
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -44,7 +44,7 @@ export class msdyn_ActionCardActionLoggerAction implements Executable<msdyn_Acti
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

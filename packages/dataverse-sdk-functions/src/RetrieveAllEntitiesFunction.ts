@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 import type { ComplexEntityMetadata, EntityFilters } from "./types/index.js";
 
 /**
@@ -28,21 +29,11 @@ export class RetrieveAllEntitiesFunction implements Executable<RetrieveAllEntiti
     const aliases: string[] = [];
     if (this.entityFilters !== undefined) {
       aliases.push(`EntityFilters=@p1`);
-      params.append(
-        "@p1",
-        typeof this.entityFilters === "string"
-          ? `'${this.entityFilters}'`
-          : String(this.entityFilters)
-      );
+      params.append("@p1", formatAliasValue(this.entityFilters));
     }
     if (this.retrieveAsIfPublished !== undefined) {
       aliases.push(`RetrieveAsIfPublished=@p2`);
-      params.append(
-        "@p2",
-        typeof this.retrieveAsIfPublished === "string"
-          ? `'${this.retrieveAsIfPublished}'`
-          : String(this.retrieveAsIfPublished)
-      );
+      params.append("@p2", formatAliasValue(this.retrieveAsIfPublished));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

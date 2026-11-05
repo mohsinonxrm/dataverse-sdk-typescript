@@ -31,7 +31,7 @@ export class msdyn_McMcbyValuesAction implements Executable<msdyn_McMcbyValuesRe
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

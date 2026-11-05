@@ -37,7 +37,7 @@ export class _MoveRoutingRuleItemAtAction implements Executable<_MoveRoutingRule
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

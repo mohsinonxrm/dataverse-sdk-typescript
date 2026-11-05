@@ -26,7 +26,7 @@ export class msdyn_GetBookableResourcesAction implements Executable<msdyn_GetBoo
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -24,7 +24,7 @@ export class CancelDesktopFlowRunAction implements Executable<CancelDesktopFlowR
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

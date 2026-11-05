@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 import type { EntityReference } from "./types/EntityReference.js";
 import { getEntitySetNameFromReference } from "./types/EntityReference.js";
 
@@ -39,21 +40,15 @@ export class IncrementKnowledgeArticleViewCountFunction implements Executable<In
     }
     if (this.viewDate !== undefined) {
       aliases.push(`ViewDate=@p2`);
-      params.append(
-        "@p2",
-        typeof this.viewDate === "string" ? `'${this.viewDate}'` : String(this.viewDate)
-      );
+      params.append("@p2", formatAliasValue(this.viewDate));
     }
     if (this.location !== undefined) {
       aliases.push(`Location=@p3`);
-      params.append(
-        "@p3",
-        typeof this.location === "string" ? `'${this.location}'` : String(this.location)
-      );
+      params.append("@p3", formatAliasValue(this.location));
     }
     if (this.count !== undefined) {
       aliases.push(`Count=@p4`);
-      params.append("@p4", typeof this.count === "string" ? `'${this.count}'` : String(this.count));
+      params.append("@p4", formatAliasValue(this.count));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

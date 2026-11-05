@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 import type { EntityReference } from "./types/EntityReference.js";
 import { getEntitySetNameFromReference } from "./types/EntityReference.js";
 import type { post } from "./types/index.js";
@@ -47,67 +48,39 @@ export class RetrieveRecordWallFunction implements Executable<RetrieveRecordWall
     }
     if (this.pageNumber !== undefined) {
       aliases.push(`PageNumber=@p2`);
-      params.append(
-        "@p2",
-        typeof this.pageNumber === "string" ? `'${this.pageNumber}'` : String(this.pageNumber)
-      );
+      params.append("@p2", formatAliasValue(this.pageNumber));
     }
     if (this.pageSize !== undefined) {
       aliases.push(`PageSize=@p3`);
-      params.append(
-        "@p3",
-        typeof this.pageSize === "string" ? `'${this.pageSize}'` : String(this.pageSize)
-      );
+      params.append("@p3", formatAliasValue(this.pageSize));
     }
     if (this.commentsPerPost !== undefined) {
       aliases.push(`CommentsPerPost=@p4`);
-      params.append(
-        "@p4",
-        typeof this.commentsPerPost === "string"
-          ? `'${this.commentsPerPost}'`
-          : String(this.commentsPerPost)
-      );
+      params.append("@p4", formatAliasValue(this.commentsPerPost));
     }
     if (this.startDate !== undefined) {
       aliases.push(`StartDate=@p5`);
-      params.append(
-        "@p5",
-        typeof this.startDate === "string" ? `'${this.startDate}'` : String(this.startDate)
-      );
+      params.append("@p5", formatAliasValue(this.startDate));
     }
     if (this.endDate !== undefined) {
       aliases.push(`EndDate=@p6`);
-      params.append(
-        "@p6",
-        typeof this.endDate === "string" ? `'${this.endDate}'` : String(this.endDate)
-      );
+      params.append("@p6", formatAliasValue(this.endDate));
     }
     if (this.type !== undefined) {
       aliases.push(`Type=@p7`);
-      params.append("@p7", typeof this.type === "string" ? `'${this.type}'` : String(this.type));
+      params.append("@p7", formatAliasValue(this.type));
     }
     if (this.source !== undefined) {
       aliases.push(`Source=@p8`);
-      params.append(
-        "@p8",
-        typeof this.source === "string" ? `'${this.source}'` : String(this.source)
-      );
+      params.append("@p8", formatAliasValue(this.source));
     }
     if (this.sortDirection !== undefined) {
       aliases.push(`SortDirection=@p9`);
-      params.append(
-        "@p9",
-        typeof this.sortDirection === "string"
-          ? `'${this.sortDirection}'`
-          : String(this.sortDirection)
-      );
+      params.append("@p9", formatAliasValue(this.sortDirection));
     }
     if (this.keyword !== undefined) {
       aliases.push(`Keyword=@p10`);
-      params.append(
-        "@p10",
-        typeof this.keyword === "string" ? `'${this.keyword}'` : String(this.keyword)
-      );
+      params.append("@p10", formatAliasValue(this.keyword));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

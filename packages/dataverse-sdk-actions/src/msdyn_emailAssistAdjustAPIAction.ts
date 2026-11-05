@@ -37,7 +37,7 @@ export class msdyn_emailAssistAdjustAPIAction implements Executable<msdyn_emailA
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

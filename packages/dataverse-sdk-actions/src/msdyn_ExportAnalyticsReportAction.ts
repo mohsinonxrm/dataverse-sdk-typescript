@@ -26,7 +26,7 @@ export class msdyn_ExportAnalyticsReportAction implements Executable<msdyn_Expor
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

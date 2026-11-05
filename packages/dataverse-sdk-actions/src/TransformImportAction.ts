@@ -27,7 +27,7 @@ export class TransformImportAction implements Executable<TransformImportResponse
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

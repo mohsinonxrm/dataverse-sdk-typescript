@@ -27,7 +27,7 @@ export class msdyn_TriggerSummarySynthesizerAction implements Executable<msdyn_T
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

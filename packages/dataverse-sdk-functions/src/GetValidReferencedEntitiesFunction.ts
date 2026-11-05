@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 
 /**
  * Response from GetValidReferencedEntities function
@@ -23,12 +24,7 @@ export class GetValidReferencedEntitiesFunction implements Executable<GetValidRe
     const aliases: string[] = [];
     if (this.referencingEntityName !== undefined) {
       aliases.push(`ReferencingEntityName=@p1`);
-      params.append(
-        "@p1",
-        typeof this.referencingEntityName === "string"
-          ? `'${this.referencingEntityName}'`
-          : String(this.referencingEntityName)
-      );
+      params.append("@p1", formatAliasValue(this.referencingEntityName));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

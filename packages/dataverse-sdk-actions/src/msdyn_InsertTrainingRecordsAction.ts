@@ -36,7 +36,7 @@ export class msdyn_InsertTrainingRecordsAction implements Executable<msdyn_Inser
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

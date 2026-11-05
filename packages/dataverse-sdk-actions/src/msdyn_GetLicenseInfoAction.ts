@@ -20,7 +20,7 @@ export class msdyn_GetLicenseInfoAction implements Executable<msdyn_GetLicenseIn
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

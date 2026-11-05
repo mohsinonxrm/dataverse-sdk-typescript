@@ -20,7 +20,7 @@ export class msdyn_ProvisionAnalyticsAction implements Executable<msdyn_Provisio
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

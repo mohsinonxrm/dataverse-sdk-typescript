@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 
 /**
  * Response from RetrieveUserApplicationLicenseAccess function
@@ -28,12 +29,7 @@ export class RetrieveUserApplicationLicenseAccessFunction implements Executable<
     const aliases: string[] = [];
     if (this.applicationId !== undefined) {
       aliases.push(`ApplicationId=@p1`);
-      params.append(
-        "@p1",
-        typeof this.applicationId === "string"
-          ? `'${this.applicationId}'`
-          : String(this.applicationId)
-      );
+      params.append("@p1", formatAliasValue(this.applicationId));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

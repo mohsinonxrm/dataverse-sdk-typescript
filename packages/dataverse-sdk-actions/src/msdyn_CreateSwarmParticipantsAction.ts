@@ -27,7 +27,7 @@ export class msdyn_CreateSwarmParticipantsAction implements Executable<msdyn_Cre
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

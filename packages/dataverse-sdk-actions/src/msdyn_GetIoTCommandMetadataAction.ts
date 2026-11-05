@@ -27,7 +27,7 @@ export class msdyn_GetIoTCommandMetadataAction implements Executable<msdyn_GetIo
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
