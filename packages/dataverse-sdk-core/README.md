@@ -10,7 +10,7 @@
 - 📄 **Smart paging** - AsyncIterable pattern with automatic `@odata.nextLink` following
 - 🔌 **Extensible middleware** - Built-in auth, retry, concurrency, telemetry, and logging middleware
 - 🎨 **Type-safe** - Full TypeScript support with strict types and typed error classes
-- 🌍 **Universal** - Works in Node 18+ and modern browsers (ESM-only, uses native `fetch`)
+- 🌍 **Universal** - Works in Node 22+ and modern browsers (ESM-only, uses native `fetch`)
 - 🛡️ **Built-in validation** - Automatic URL length validation (32KB limit per Microsoft specs)
 - 🔄 **Duplicate detection** - First-class support for Dataverse duplicate detection with typed errors
 
@@ -1031,7 +1031,7 @@ pnpm test --coverage        # Generate coverage report
 
 ## Node.js Compatibility
 
-- **Node.js 18+** (native `fetch()` available)
+- **Node.js 22+** (native `fetch()` available)
 - ES Modules (ESM) only - no CommonJS build
 - Works with TypeScript 4.9+
 
