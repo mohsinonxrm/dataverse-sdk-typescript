@@ -30,7 +30,7 @@ export class msdyn_ClassifySegmentsAction implements Executable<msdyn_ClassifySe
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

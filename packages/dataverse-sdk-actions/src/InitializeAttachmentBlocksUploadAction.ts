@@ -27,7 +27,7 @@ export class InitializeAttachmentBlocksUploadAction implements Executable<Initia
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

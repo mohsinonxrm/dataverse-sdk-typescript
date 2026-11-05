@@ -26,7 +26,7 @@ export class CardGetFullJsonAction implements Executable<CardGetFullJsonResponse
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

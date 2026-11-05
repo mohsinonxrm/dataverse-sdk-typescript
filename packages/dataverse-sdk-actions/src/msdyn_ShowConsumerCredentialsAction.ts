@@ -32,7 +32,7 @@ export class msdyn_ShowConsumerCredentialsAction implements Executable<msdyn_Sho
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

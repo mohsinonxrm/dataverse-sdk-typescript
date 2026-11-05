@@ -31,7 +31,7 @@ export class msdyn_transformentityAction implements Executable<msdyn_transformen
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

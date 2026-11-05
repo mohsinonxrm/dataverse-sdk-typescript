@@ -36,7 +36,7 @@ export class msdyn_AIBRealTimePredictAction implements Executable<msdyn_AIBRealT
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

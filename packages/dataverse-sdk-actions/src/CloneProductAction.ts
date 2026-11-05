@@ -25,7 +25,7 @@ export class CloneProductAction implements Executable<CloneProductResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

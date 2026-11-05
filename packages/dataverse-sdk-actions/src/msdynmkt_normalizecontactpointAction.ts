@@ -30,7 +30,7 @@ export class msdynmkt_normalizecontactpointAction implements Executable<msdynmkt
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

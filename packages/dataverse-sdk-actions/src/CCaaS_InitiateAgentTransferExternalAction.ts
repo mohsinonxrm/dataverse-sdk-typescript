@@ -41,7 +41,7 @@ export class CCaaS_InitiateAgentTransferExternalAction implements Executable<CCa
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

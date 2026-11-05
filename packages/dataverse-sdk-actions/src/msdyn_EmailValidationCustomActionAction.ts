@@ -29,7 +29,7 @@ export class msdyn_EmailValidationCustomActionAction implements Executable<msdyn
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -31,7 +31,7 @@ export class msdyn_GDPROptoutContactAction implements Executable<msdyn_GDPROptou
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

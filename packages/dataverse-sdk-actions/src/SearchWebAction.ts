@@ -37,7 +37,7 @@ export class SearchWebAction implements Executable<SearchWebResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

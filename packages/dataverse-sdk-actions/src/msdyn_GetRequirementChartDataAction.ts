@@ -26,7 +26,7 @@ export class msdyn_GetRequirementChartDataAction implements Executable<msdyn_Get
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

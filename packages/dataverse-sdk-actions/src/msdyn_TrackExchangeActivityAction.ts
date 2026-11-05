@@ -33,7 +33,7 @@ export class msdyn_TrackExchangeActivityAction implements Executable<msdyn_Track
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

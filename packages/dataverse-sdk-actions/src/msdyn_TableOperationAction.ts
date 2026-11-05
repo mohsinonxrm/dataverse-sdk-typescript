@@ -30,7 +30,7 @@ export class msdyn_TableOperationAction implements Executable<msdyn_TableOperati
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

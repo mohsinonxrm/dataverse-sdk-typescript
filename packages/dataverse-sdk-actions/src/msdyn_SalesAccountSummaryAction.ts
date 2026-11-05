@@ -47,7 +47,7 @@ export class msdyn_SalesAccountSummaryAction implements Executable<msdyn_SalesAc
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

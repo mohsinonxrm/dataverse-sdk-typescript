@@ -26,7 +26,7 @@ export class msdyn_CreateWorkOrderAction implements Executable<msdyn_CreateWorkO
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

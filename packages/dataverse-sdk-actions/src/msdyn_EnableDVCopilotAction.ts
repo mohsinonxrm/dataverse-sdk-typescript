@@ -20,7 +20,7 @@ export class msdyn_EnableDVCopilotAction implements Executable<msdyn_EnableDVCop
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

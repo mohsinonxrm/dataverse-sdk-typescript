@@ -45,7 +45,7 @@ export class adx_SendPasswordResetToContactAction implements Executable<adx_Send
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

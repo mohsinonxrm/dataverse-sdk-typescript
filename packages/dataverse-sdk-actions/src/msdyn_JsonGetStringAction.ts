@@ -32,7 +32,7 @@ export class msdyn_JsonGetStringAction implements Executable<msdyn_JsonGetString
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

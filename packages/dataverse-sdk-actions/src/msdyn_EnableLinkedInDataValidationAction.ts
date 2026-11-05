@@ -20,7 +20,7 @@ export class msdyn_EnableLinkedInDataValidationAction implements Executable<msdy
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

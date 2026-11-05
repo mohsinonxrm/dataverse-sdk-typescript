@@ -26,7 +26,7 @@ export class QueryDvUnstructuredDataAction implements Executable<QueryDvUnstruct
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

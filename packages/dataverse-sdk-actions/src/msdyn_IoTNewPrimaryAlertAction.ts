@@ -27,7 +27,7 @@ export class msdyn_IoTNewPrimaryAlertAction implements Executable<msdyn_IoTNewPr
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

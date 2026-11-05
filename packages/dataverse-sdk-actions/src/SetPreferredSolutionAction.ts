@@ -26,7 +26,7 @@ export class SetPreferredSolutionAction implements Executable<SetPreferredSoluti
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

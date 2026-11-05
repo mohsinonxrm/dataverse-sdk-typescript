@@ -30,7 +30,7 @@ export class msdyn_IoTSetConfigurationAction implements Executable<msdyn_IoTSetC
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

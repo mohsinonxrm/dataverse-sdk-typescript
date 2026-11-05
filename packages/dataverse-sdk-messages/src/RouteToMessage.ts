@@ -28,7 +28,7 @@ export class RouteToRequest extends OrganizationRequest implements Executable<Ro
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -32,7 +32,7 @@ export class DownloadBlockAction implements Executable<DownloadBlockResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

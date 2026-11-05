@@ -24,7 +24,7 @@ export class RotateGroupKeyAction implements Executable<RotateGroupKeyResponse> 
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

@@ -36,7 +36,7 @@ export class ValidateRetentionConfigAction implements Executable<ValidateRetenti
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

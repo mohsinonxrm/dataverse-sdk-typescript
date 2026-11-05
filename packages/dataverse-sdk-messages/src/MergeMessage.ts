@@ -31,7 +31,7 @@ export class MergeRequest extends OrganizationRequest implements Executable<Merg
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

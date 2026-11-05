@@ -20,7 +20,7 @@ export class msdyn_CheckDVCopilotStatusAction implements Executable<msdyn_CheckD
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

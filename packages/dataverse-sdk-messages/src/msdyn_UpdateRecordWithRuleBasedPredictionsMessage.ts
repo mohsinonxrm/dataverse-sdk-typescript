@@ -32,7 +32,7 @@ export class msdyn_UpdateRecordWithRuleBasedPredictionsRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

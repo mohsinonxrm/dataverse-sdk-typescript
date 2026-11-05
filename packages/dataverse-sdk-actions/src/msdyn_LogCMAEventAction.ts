@@ -38,7 +38,7 @@ export class msdyn_LogCMAEventAction implements Executable<msdyn_LogCMAEventResp
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

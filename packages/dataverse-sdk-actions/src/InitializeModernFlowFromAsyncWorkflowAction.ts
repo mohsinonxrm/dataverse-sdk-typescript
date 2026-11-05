@@ -25,7 +25,7 @@ export class InitializeModernFlowFromAsyncWorkflowAction implements Executable<I
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

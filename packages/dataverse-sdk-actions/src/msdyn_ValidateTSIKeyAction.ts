@@ -20,7 +20,7 @@ export class msdyn_ValidateTSIKeyAction implements Executable<msdyn_ValidateTSIK
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

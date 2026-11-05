@@ -47,7 +47,7 @@ export class CCaaS_InitiateAgentConsultExternalAction implements Executable<CCaa
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

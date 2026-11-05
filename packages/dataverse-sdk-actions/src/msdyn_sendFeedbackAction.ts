@@ -26,7 +26,7 @@ export class msdyn_sendFeedbackAction implements Executable<msdyn_sendFeedbackRe
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

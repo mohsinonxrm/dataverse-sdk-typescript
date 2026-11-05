@@ -35,7 +35,7 @@ export class msdyn_getAppConfigByContextAction implements Executable<msdyn_getAp
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

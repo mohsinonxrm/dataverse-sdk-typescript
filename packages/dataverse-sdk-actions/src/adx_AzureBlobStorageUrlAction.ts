@@ -27,7 +27,7 @@ export class adx_AzureBlobStorageUrlAction implements Executable<adx_AzureBlobSt
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

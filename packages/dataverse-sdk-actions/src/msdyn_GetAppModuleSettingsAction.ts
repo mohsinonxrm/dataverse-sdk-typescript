@@ -20,7 +20,7 @@ export class msdyn_GetAppModuleSettingsAction implements Executable<msdyn_GetApp
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

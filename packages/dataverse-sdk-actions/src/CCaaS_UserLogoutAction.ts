@@ -30,7 +30,7 @@ export class CCaaS_UserLogoutAction implements Executable<CCaaS_UserLogoutRespon
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

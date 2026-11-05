@@ -26,7 +26,7 @@ export class msdyn_AcquireTokenAction implements Executable<msdyn_AcquireTokenRe
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

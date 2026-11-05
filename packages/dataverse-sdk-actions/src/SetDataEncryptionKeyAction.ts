@@ -30,7 +30,7 @@ export class SetDataEncryptionKeyAction implements Executable<SetDataEncryptionK
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -25,7 +25,7 @@ export class CopyCampaignResponseAction implements Executable<CopyCampaignRespon
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

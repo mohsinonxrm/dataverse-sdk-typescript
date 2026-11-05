@@ -41,7 +41,7 @@ export class PredictAction implements Executable<PredictResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

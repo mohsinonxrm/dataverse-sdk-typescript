@@ -34,7 +34,7 @@ export class msdyn_BusinessClosureSaveAction implements Executable<msdyn_Busines
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

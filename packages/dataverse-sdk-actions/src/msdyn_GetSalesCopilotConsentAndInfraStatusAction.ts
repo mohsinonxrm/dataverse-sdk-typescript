@@ -26,7 +26,7 @@ export class msdyn_GetSalesCopilotConsentAndInfraStatusAction implements Executa
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

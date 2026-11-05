@@ -26,7 +26,7 @@ export class msdynmkt_EnableDoubleOptInComplianceV2Action implements Executable<
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

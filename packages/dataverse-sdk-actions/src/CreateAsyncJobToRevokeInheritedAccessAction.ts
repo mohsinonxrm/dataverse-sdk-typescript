@@ -26,7 +26,7 @@ export class CreateAsyncJobToRevokeInheritedAccessAction implements Executable<C
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -33,7 +33,7 @@ export class CCaaS_MonitorConversationAction implements Executable<CCaaS_Monitor
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

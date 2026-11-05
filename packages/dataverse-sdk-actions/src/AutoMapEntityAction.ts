@@ -26,7 +26,7 @@ export class AutoMapEntityAction implements Executable<AutoMapEntityResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

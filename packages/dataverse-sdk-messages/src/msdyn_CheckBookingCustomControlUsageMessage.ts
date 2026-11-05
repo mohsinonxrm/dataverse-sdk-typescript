@@ -25,7 +25,7 @@ export class msdyn_CheckBookingCustomControlUsageRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

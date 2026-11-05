@@ -30,7 +30,7 @@ export class CCaaS_BulkForceCloseAction implements Executable<CCaaS_BulkForceClo
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -24,7 +24,7 @@ export class PvaDeleteBotAction implements Executable<PvaDeleteBotResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

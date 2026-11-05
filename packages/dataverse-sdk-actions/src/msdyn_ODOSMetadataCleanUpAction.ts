@@ -26,7 +26,7 @@ export class msdyn_ODOSMetadataCleanUpAction implements Executable<msdyn_ODOSMet
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

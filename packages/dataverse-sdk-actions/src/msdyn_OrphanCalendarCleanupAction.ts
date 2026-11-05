@@ -26,7 +26,7 @@ export class msdyn_OrphanCalendarCleanupAction implements Executable<msdyn_Orpha
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

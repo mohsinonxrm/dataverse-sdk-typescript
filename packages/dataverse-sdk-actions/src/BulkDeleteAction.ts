@@ -45,7 +45,7 @@ export class BulkDeleteAction implements Executable<BulkDeleteResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

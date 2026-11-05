@@ -26,7 +26,7 @@ export class msdyn_RegisterIoTDeviceAction implements Executable<msdyn_RegisterI
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

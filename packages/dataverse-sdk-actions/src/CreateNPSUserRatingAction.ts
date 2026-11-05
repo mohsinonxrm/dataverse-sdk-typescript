@@ -36,7 +36,7 @@ export class CreateNPSUserRatingAction implements Executable<CreateNPSUserRating
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

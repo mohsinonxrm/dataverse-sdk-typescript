@@ -37,7 +37,7 @@ export class msdyn_SendRecordEventUpdateAction implements Executable<msdyn_SendR
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

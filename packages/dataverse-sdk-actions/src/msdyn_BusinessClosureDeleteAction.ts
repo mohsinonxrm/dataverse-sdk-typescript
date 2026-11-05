@@ -26,7 +26,7 @@ export class msdyn_BusinessClosureDeleteAction implements Executable<msdyn_Busin
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

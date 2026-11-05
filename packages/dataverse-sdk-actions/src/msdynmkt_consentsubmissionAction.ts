@@ -40,7 +40,7 @@ export class msdynmkt_consentsubmissionAction implements Executable<msdynmkt_con
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

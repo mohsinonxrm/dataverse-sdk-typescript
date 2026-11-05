@@ -30,7 +30,7 @@ export class AlmHandlerAction implements Executable<AlmHandlerResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

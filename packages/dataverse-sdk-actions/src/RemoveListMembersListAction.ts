@@ -31,7 +31,7 @@ export class RemoveListMembersListAction implements Executable<RemoveListMembers
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

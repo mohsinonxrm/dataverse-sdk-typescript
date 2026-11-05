@@ -31,7 +31,7 @@ export class CCaaS_InitiateQueueTransferRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -26,7 +26,7 @@ export class msdyn_PollODOSForConsentAction implements Executable<msdyn_PollODOS
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

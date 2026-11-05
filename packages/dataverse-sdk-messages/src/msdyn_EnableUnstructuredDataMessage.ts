@@ -21,7 +21,7 @@ export class msdyn_EnableUnstructuredDataRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

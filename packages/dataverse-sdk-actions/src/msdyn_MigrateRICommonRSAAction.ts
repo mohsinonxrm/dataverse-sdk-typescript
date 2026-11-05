@@ -26,7 +26,7 @@ export class msdyn_MigrateRICommonRSAAction implements Executable<msdyn_MigrateR
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

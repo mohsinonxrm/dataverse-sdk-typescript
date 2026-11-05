@@ -20,7 +20,7 @@ export class msdyn_DeleteFlowAction implements Executable<msdyn_DeleteFlowRespon
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

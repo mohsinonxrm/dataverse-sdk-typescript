@@ -33,7 +33,7 @@ export class InstantiateTemplateAction implements Executable<InstantiateTemplate
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
