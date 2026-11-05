@@ -165,6 +165,11 @@ await builder.patch<T>(body); // PATCH - update
 await builder.put<T>(body); // PUT - full replace
 await builder.delete(); // DELETE
 
+// Non-JSON content: these send Accept: */* unless you set an Accept header
+await client.api("$metadata").text(); // CSDL XML
+await client.api(`annotations(${id})/documentbody/$value`).text();
+await client.api(`accounts(${id})/entityimage/$value`).blob(); // or .arrayBuffer()
+
 // All methods support optional RequestOptions
 await builder.get({
   headers: { "Custom-Header": "value" },
