@@ -36,7 +36,7 @@ export class msdyn_ValidateKeyVaultAction implements Executable<msdyn_ValidateKe
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

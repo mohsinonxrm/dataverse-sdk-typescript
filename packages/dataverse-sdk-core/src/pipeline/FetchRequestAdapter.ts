@@ -41,7 +41,11 @@ export class FetchRequestAdapter implements RequestAdapter {
       if (timedOut) {
         throw DataverseNetworkError.timeout(request.timeoutMs ?? 0);
       }
-      throw err;
+      // A caller's abort (or an error the fetch provider already typed) passes through as is.
+      if (request.signal?.aborted || !(err instanceof TypeError)) throw err;
+      // fetch rejects with a TypeError ("Failed to fetch", "fetch failed") when the request never
+      // got a response: DNS, TLS, a dropped connection, or a CORS rejection in a browser.
+      throw DataverseNetworkError.connectionFailed(err.message, err);
     } finally {
       if (timeout) clearTimeout(timeout);
     }

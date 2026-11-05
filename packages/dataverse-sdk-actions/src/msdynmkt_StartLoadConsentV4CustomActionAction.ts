@@ -51,7 +51,7 @@ export class msdynmkt_StartLoadConsentV4CustomActionAction implements Executable
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

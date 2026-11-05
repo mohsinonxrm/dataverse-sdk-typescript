@@ -21,7 +21,7 @@ export class msdyn_MigrateSlaProactiveRunAction implements Executable<msdyn_Migr
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

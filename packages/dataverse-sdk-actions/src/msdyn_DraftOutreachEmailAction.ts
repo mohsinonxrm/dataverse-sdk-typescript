@@ -28,7 +28,7 @@ export class msdyn_DraftOutreachEmailAction implements Executable<msdyn_DraftOut
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

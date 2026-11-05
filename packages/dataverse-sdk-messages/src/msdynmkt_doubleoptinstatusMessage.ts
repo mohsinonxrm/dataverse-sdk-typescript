@@ -29,7 +29,7 @@ export class msdynmkt_doubleoptinstatusRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

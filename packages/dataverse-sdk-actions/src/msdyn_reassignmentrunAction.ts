@@ -26,7 +26,7 @@ export class msdyn_reassignmentrunAction implements Executable<msdyn_reassignmen
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

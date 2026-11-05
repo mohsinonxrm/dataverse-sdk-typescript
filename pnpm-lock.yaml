@@ -60,6 +60,9 @@ importers:
         specifier: workspace:*
         version: link:../dataverse-sdk-messages
     devDependencies:
+      '@mohsinonxrm/dataverse-sdk-testing':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-testing
       eslint:
         specifier: ^9.39.5
         version: 9.39.5
@@ -81,7 +84,25 @@ importers:
       '@mohsinonxrm/dataverse-sdk-core':
         specifier: workspace:*
         version: link:../dataverse-sdk-core
+      '@opentelemetry/api':
+        specifier: ^1.9.0
+        version: 1.10.0
+      '@opentelemetry/api-logs':
+        specifier: ^0.221.0
+        version: 0.221.0
+      '@opentelemetry/resources':
+        specifier: ^2.10.0
+        version: 2.12.0(@opentelemetry/api@1.10.0)
     devDependencies:
+      '@mohsinonxrm/dataverse-sdk-testing':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-testing
+      '@opentelemetry/sdk-logs':
+        specifier: ^0.221.0
+        version: 0.221.0(@opentelemetry/api@1.10.0)
+      '@opentelemetry/sdk-trace-base':
+        specifier: ^2.10.0
+        version: 2.12.0(@opentelemetry/api@1.10.0)
       eslint:
         specifier: ^9.39.5
         version: 9.39.5
@@ -252,6 +273,9 @@ importers:
         specifier: workspace:*
         version: link:../dataverse-sdk-core
     devDependencies:
+      '@mohsinonxrm/dataverse-sdk-testing':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-testing
       eslint:
         specifier: ^9.39.5
         version: 9.39.5
@@ -314,6 +338,9 @@ importers:
         specifier: workspace:*
         version: link:../dataverse-sdk-core
     devDependencies:
+      '@mohsinonxrm/dataverse-sdk-testing':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-testing
       eslint:
         specifier: ^9.39.5
         version: 9.39.5
@@ -387,6 +414,12 @@ importers:
       '@mohsinonxrm/dataverse-sdk-core':
         specifier: workspace:*
         version: link:../dataverse-sdk-core
+      '@mohsinonxrm/dataverse-sdk-discovery':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-discovery
+      '@mohsinonxrm/dataverse-sdk-functions':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-functions
       '@mohsinonxrm/dataverse-sdk-metadata':
         specifier: workspace:*
         version: link:../dataverse-sdk-metadata
@@ -451,9 +484,18 @@ importers:
         specifier: workspace:*
         version: link:../dataverse-sdk-core
       '@opentelemetry/api':
-        specifier: ^1.0.0
+        specifier: ^1.9.0
         version: 1.10.0
     devDependencies:
+      '@mohsinonxrm/dataverse-sdk-testing':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-testing
+      '@opentelemetry/context-async-hooks':
+        specifier: ^2.10.0
+        version: 2.12.0(@opentelemetry/api@1.10.0)
+      '@opentelemetry/sdk-trace-base':
+        specifier: ^2.10.0
+        version: 2.12.0(@opentelemetry/api@1.10.0)
       eslint:
         specifier: ^9.39.5
         version: 9.39.5

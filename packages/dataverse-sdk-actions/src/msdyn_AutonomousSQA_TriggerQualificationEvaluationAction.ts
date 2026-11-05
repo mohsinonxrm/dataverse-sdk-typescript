@@ -36,7 +36,7 @@ export class msdyn_AutonomousSQA_TriggerQualificationEvaluationAction implements
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

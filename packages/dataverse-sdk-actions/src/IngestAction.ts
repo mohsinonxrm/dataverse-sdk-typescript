@@ -31,7 +31,7 @@ export class IngestAction implements Executable<IngestResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

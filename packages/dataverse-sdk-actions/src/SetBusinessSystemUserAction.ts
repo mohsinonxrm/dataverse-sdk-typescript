@@ -37,7 +37,7 @@ export class SetBusinessSystemUserAction implements Executable<SetBusinessSystem
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

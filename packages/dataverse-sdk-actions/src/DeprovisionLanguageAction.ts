@@ -30,7 +30,7 @@ export class DeprovisionLanguageAction implements Executable<DeprovisionLanguage
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

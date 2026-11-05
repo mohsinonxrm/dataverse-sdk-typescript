@@ -30,7 +30,7 @@ export class _GetServiceTreeDataAction implements Executable<_GetServiceTreeData
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

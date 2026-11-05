@@ -30,7 +30,7 @@ export class msdynmkt_doubleoptinstatusAction implements Executable<msdynmkt_dou
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

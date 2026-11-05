@@ -32,7 +32,7 @@ export class CCaaS_SendAgentTypingIndicatorAction implements Executable<CCaaS_Se
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

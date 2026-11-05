@@ -232,34 +232,35 @@ export function serializeContent(content: any): string | FormData | Blob | Array
 }
 
 /**
- * Parse Retry-After header value
- * Supports both seconds (integer) and HTTP-date formats
+ * Parse a `Retry-After` header value: delta-seconds (decimals allowed, e.g. `"1.5"`) or an
+ * HTTP-date. A date in the past gives 0.
  *
  * @param retryAfter - The Retry-After header value
- * @returns Delay in milliseconds, or undefined if invalid
+ * @returns Delay in milliseconds, or undefined if the value is missing or invalid
  *
  * @example
  * ```typescript
  * const delay1 = parseRetryAfter('120'); // 120000 ms (120 seconds)
- * const delay2 = parseRetryAfter('Wed, 21 Oct 2015 07:28:00 GMT'); // milliseconds until that time
+ * const delay2 = parseRetryAfter('1.5'); // 1500 ms
+ * const delay3 = parseRetryAfter('Wed, 21 Oct 2015 07:28:00 GMT'); // milliseconds until that time
  * ```
  */
 export function parseRetryAfter(retryAfter: string | null | undefined): number | undefined {
-  if (!retryAfter) {
+  const value = retryAfter?.trim();
+  if (!value) {
     return undefined;
   }
 
-  // Try parsing as seconds
-  const seconds = parseInt(retryAfter, 10);
-  if (!isNaN(seconds)) {
-    return seconds * 1000;
+  if (/^\d+(\.\d+)?$/.test(value)) {
+    return Math.round(Number(value) * 1000);
   }
 
-  // Try parsing as HTTP-date
-  const date = new Date(retryAfter);
-  if (!isNaN(date.getTime())) {
-    const delay = date.getTime() - Date.now();
-    return Math.max(0, delay);
+  // An HTTP-date always names the day; this keeps strings like "-5" or "12abc" out of Date.parse.
+  if (/[a-z]/i.test(value)) {
+    const date = Date.parse(value);
+    if (!Number.isNaN(date)) {
+      return Math.max(0, date - Date.now());
+    }
   }
 
   return undefined;

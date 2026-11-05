@@ -28,7 +28,7 @@ export class _RoutingRuleSetValidationAction implements Executable<_RoutingRuleS
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

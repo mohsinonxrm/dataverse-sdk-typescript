@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 import type { DependencyMetadataCollection } from "./types/index.js";
 
 /**
@@ -27,21 +28,11 @@ export class RetrieveMissingDependenciesWithMetadataFunction implements Executab
     const aliases: string[] = [];
     if (this.solutionUniqueName !== undefined) {
       aliases.push(`SolutionUniqueName=@p1`);
-      params.append(
-        "@p1",
-        typeof this.solutionUniqueName === "string"
-          ? `'${this.solutionUniqueName}'`
-          : String(this.solutionUniqueName)
-      );
+      params.append("@p1", formatAliasValue(this.solutionUniqueName));
     }
     if (this.skipManagedDependencies !== undefined) {
       aliases.push(`SkipManagedDependencies=@p2`);
-      params.append(
-        "@p2",
-        typeof this.skipManagedDependencies === "string"
-          ? `'${this.skipManagedDependencies}'`
-          : String(this.skipManagedDependencies)
-      );
+      params.append("@p2", formatAliasValue(this.skipManagedDependencies));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

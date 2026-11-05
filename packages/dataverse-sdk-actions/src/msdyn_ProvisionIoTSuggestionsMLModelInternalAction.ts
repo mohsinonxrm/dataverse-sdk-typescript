@@ -26,7 +26,7 @@ export class msdyn_ProvisionIoTSuggestionsMLModelInternalAction implements Execu
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

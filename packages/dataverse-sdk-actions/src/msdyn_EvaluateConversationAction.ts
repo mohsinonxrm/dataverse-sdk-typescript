@@ -41,7 +41,7 @@ export class msdyn_EvaluateConversationAction implements Executable<msdyn_Evalua
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

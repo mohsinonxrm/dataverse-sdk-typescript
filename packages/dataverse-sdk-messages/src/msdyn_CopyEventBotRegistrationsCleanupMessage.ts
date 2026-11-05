@@ -21,7 +21,7 @@ export class msdyn_CopyEventBotRegistrationsCleanupRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

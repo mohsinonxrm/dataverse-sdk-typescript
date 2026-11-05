@@ -195,7 +195,9 @@ For a complete list of all 229 functions with descriptions and examples, see [do
 - **Functions** (this package):
   - HTTP method: `GET`
   - Side effects: **No** - functions should be read-only
-  - Parameters: Passed as query string with parameter aliases
+  - Parameters: Passed as query string with parameter aliases. String values are sent as OData
+    string literals, quoted with every embedded `'` doubled, so FetchXML with single-quoted
+    attributes or a value such as `O'Brien` can be passed as is.
   - Use for: Queries, calculations, retrieving information
 
 - **Actions** (`@mohsinonxrm/dataverse-sdk-actions`):

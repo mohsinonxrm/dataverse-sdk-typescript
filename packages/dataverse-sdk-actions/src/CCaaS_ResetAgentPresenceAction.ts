@@ -33,7 +33,7 @@ export class CCaaS_ResetAgentPresenceAction implements Executable<CCaaS_ResetAge
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

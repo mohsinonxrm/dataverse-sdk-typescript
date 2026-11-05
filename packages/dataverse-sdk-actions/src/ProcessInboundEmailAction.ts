@@ -24,7 +24,7 @@ export class ProcessInboundEmailAction implements Executable<ProcessInboundEmail
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

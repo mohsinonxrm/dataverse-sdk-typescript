@@ -26,7 +26,7 @@ export class msdyn_BulkAITestCaseUploadAction implements Executable<msdyn_BulkAI
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

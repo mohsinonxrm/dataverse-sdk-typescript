@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 import type { EntityReference } from "./types/EntityReference.js";
 import { getEntitySetNameFromReference } from "./types/EntityReference.js";
 import type { FileSasUrlResponse } from "./types/index.js";
@@ -39,19 +40,11 @@ export class GetFileSasUrlFunction implements Executable<GetFileSasUrlResponse> 
     }
     if (this.fileAttributeName !== undefined) {
       aliases.push(`FileAttributeName=@p2`);
-      params.append(
-        "@p2",
-        typeof this.fileAttributeName === "string"
-          ? `'${this.fileAttributeName}'`
-          : String(this.fileAttributeName)
-      );
+      params.append("@p2", formatAliasValue(this.fileAttributeName));
     }
     if (this.dataSource !== undefined) {
       aliases.push(`DataSource=@p3`);
-      params.append(
-        "@p3",
-        typeof this.dataSource === "string" ? `'${this.dataSource}'` : String(this.dataSource)
-      );
+      params.append("@p3", formatAliasValue(this.dataSource));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

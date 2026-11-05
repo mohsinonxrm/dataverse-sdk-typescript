@@ -26,7 +26,7 @@ export class IngestRequest extends OrganizationRequest implements Executable<Ing
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

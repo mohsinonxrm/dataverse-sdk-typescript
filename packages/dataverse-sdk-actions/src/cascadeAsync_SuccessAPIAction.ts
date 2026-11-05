@@ -26,7 +26,7 @@ export class cascadeAsync_SuccessAPIAction implements Executable<cascadeAsync_Su
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

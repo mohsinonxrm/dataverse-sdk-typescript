@@ -37,7 +37,7 @@ export class msdynmkt_checkconsentbatchRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

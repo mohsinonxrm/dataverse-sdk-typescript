@@ -72,8 +72,11 @@ const client = new DataverseClient({
     maxRetries: 6, // Default: 6 retries
     baseDelayMs: 3000, // Default: 3 seconds
     maxDelayMs: 30000, // Default: 30 seconds (max backoff)
-    jitter: true, // Default: true (adds randomness to avoid thundering herd)
+    maxRetryAfterMs: 30000, // Default: maxDelayMs (a longer Retry-After is returned to you, not waited out)
+    jitter: true, // Default: true (±20% on the computed backoff, never on Retry-After)
     retryableStatusCodes: [429, 502, 503, 504], // Default codes
+    retryNonIdempotent: false, // Default: false (POST / PATCH without If-Match not replayed after 5xx)
+    retryNetworkErrors: false, // Default: false (retry idempotent requests when fetch itself fails)
   },
 
   // Optional: Concurrency configuration
@@ -446,8 +449,7 @@ try {
   await client.api("accounts").get();
 } catch (error) {
   if (error instanceof DataverseThrottleError) {
-    console.log(`Throttled! Retry after ${error.retryAfterSeconds} seconds`);
-    console.log(`Retry-After header: ${error.retryAfterSeconds}`);
+    console.log(`Throttled! Retry after ${String(error.retryAfterMs)} ms`);
   } else if (error instanceof DataverseODataError) {
     console.log(`OData error code: ${error.odataError.code}`);
     console.log(`Message: ${error.odataError.message}`);
@@ -472,7 +474,7 @@ try {
 ```
 DataverseError (base)
 ├── DataverseODataError (has odataError payload)
-│   ├── DataverseThrottleError (429, has retryAfterSeconds)
+│   ├── DataverseThrottleError (429, has retryAfterMs)
 │   ├── DataverseDuplicateError (412, has duplicates array)
 │   ├── DataverseAuthenticationError (401)
 │   ├── DataverseInvalidRequestError (400)
@@ -738,14 +740,49 @@ User Code (typed result)
 
 #### Retry with Exponential Backoff
 
-- **Retryable status codes:** 429 (throttle), 502/503/504 (server errors)
+- **Retryable status codes:** 429 (throttle), 502/503/504 (server errors); change with `retryableStatusCodes`
 - **Default settings:**
   - `maxRetries: 6`
   - `baseDelayMs: 3000` (3 seconds)
   - `maxDelayMs: 30000` (30 seconds)
-  - `jitter: true` (adds randomness to delays)
-- **Retry-After header:** Honored for 429 responses (takes precedence over backoff calculation)
-- **Backoff formula:** `min(maxDelayMs, baseDelayMs * 2^attempt)` with optional jitter
+  - `maxRetryAfterMs`: same as `maxDelayMs`
+  - `jitter: true` (±20% on the computed backoff)
+  - `retryNonIdempotent: false`, `retryNetworkErrors: false`
+- **Retry-After header:** Waited out exactly (no jitter) when it is at most `maxRetryAfterMs`. A longer
+  `Retry-After` is not waited out: the response is returned at once (a 429 throws
+  `DataverseThrottleError` with `retryAfterMs`), so your code decides whether to wait. Delta-seconds
+  (including decimals such as `1.5`) and HTTP-dates are both understood.
+- **Backoff formula:** `min(maxDelayMs, baseDelayMs * 2^attempt)`, then ±20% jitter (still capped at `maxDelayMs`)
+- **Methods:** 429 is retried for every method (Dataverse rejects throttled requests before doing any
+  work). After 502/503/504 only idempotent requests are replayed: GET, HEAD, OPTIONS, PUT, DELETE, and
+  PATCH with `If-Match`.
+- **Network errors:** a `fetch` rejection becomes a `DataverseNetworkError` named `ConnectionFailed`
+  (the original error is its `cause`). With `retryNetworkErrors: true` idempotent requests are retried
+  with backoff. Aborts and timeouts are never retried.
+- **`shouldRetry(statusCode, error?)`:** replaces the status-code, method and network-error checks
+  (called with status `0` for a network error); the counts and delays still apply.
+- **Watching retries:** `onRetry(info)` runs once before each retry, with `attempt`, `maxRetries`,
+  `status` (0 for a network error), `delayMs`, `retryAfterMs`, `correlationId` and the request. A
+  per-request `onRetry` replaces the client's; an error it throws is logged and ignored.
+  `getRetryAttempts(res)` returns every attempt behind a response from `send()` or `response()`:
+
+  ```typescript
+  const client = new DataverseClient({
+    baseUrl,
+    tokenProvider,
+    retry: {
+      onRetry: ({ attempt, maxRetries, status, delayMs }) =>
+        setStatus(
+          `HTTP ${status}, retrying in ${Math.round(delayMs / 1000)} s (${attempt}/${maxRetries})`
+        ),
+    },
+  });
+  const res = await client.api("accounts").response();
+  getRetryAttempts(res); // [{ attempt: 0, status: 429, retryAfterMs: 12000, delayMs: 12000 }, { attempt: 1, status: 200 }]
+  ```
+
+- **Per request:** the same `RetryOptions` type overrides the client's values for one request, e.g.
+  `client.api("accounts").get({ middlewareOptions: new MiddlewareRequestOptions([{ type: "retry", maxRetries: 0 }]) })`.
 - **Retry-Attempt header:** Added to retried requests for server-side diagnostics
 - **Stream content:** Not retried (detected via Content-Type header)
 

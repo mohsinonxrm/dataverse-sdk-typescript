@@ -20,7 +20,7 @@ export class msdyn_GetPremiumOrgStatusAction implements Executable<msdyn_GetPrem
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

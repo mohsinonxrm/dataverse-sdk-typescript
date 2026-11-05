@@ -21,7 +21,7 @@ export class msdyn_IsMSTeamsUserSyncFeatureEnabledRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

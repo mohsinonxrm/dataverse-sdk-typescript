@@ -24,7 +24,7 @@ export class LockSalesOrderPricingAction implements Executable<LockSalesOrderPri
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

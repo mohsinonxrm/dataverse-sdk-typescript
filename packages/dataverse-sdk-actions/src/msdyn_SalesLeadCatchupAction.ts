@@ -43,7 +43,7 @@ export class msdyn_SalesLeadCatchupAction implements Executable<msdyn_SalesLeadC
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

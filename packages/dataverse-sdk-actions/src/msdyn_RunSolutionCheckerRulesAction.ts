@@ -30,7 +30,7 @@ export class msdyn_RunSolutionCheckerRulesAction implements Executable<msdyn_Run
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

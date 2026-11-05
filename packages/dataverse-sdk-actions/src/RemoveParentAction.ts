@@ -27,7 +27,7 @@ export class RemoveParentAction implements Executable<RemoveParentResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

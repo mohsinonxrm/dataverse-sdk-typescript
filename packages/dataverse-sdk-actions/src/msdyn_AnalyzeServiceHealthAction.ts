@@ -20,7 +20,7 @@ export class msdyn_AnalyzeServiceHealthAction implements Executable<msdyn_Analyz
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

@@ -31,7 +31,7 @@ export class CancelTrainingAction implements Executable<CancelTrainingResponse> 
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

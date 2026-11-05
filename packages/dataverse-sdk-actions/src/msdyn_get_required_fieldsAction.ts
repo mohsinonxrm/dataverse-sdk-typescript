@@ -41,7 +41,7 @@ export class msdyn_get_required_fieldsAction implements Executable<msdyn_get_req
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

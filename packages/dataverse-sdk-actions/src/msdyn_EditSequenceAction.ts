@@ -30,7 +30,7 @@ export class msdyn_EditSequenceAction implements Executable<msdyn_EditSequenceRe
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

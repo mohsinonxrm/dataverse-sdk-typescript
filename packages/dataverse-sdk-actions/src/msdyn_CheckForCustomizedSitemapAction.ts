@@ -37,7 +37,7 @@ export class msdyn_CheckForCustomizedSitemapAction implements Executable<msdyn_C
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -30,7 +30,7 @@ export class msdyn_EffortModelPredictionAction implements Executable<msdyn_Effor
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

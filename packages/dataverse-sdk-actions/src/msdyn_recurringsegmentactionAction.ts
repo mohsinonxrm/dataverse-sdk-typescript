@@ -32,7 +32,7 @@ export class msdyn_recurringsegmentactionAction implements Executable<msdyn_recu
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -35,7 +35,7 @@ export class pbi_CloneAndAddPowerBIDatasetAction implements Executable<pbi_Clone
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

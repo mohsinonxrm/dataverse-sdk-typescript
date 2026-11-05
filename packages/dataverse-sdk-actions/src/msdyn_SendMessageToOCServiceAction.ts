@@ -30,7 +30,7 @@ export class msdyn_SendMessageToOCServiceAction implements Executable<msdyn_Send
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

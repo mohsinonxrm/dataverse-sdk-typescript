@@ -33,7 +33,7 @@ export class CCaaS_StartSecondaryChannelAction implements Executable<CCaaS_Start
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

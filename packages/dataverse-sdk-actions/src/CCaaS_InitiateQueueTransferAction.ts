@@ -33,7 +33,7 @@ export class CCaaS_InitiateQueueTransferAction implements Executable<CCaaS_Initi
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

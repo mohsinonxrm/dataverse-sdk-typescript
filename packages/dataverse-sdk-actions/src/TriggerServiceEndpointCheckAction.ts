@@ -24,7 +24,7 @@ export class TriggerServiceEndpointCheckAction implements Executable<TriggerServ
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

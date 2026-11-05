@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 import type { EntityReference } from "./types/EntityReference.js";
 import { getEntitySetNameFromReference } from "./types/EntityReference.js";
 
@@ -37,10 +38,7 @@ export class CalculateRollupFieldFunction implements Executable<CalculateRollupF
     }
     if (this.fieldName !== undefined) {
       aliases.push(`FieldName=@p2`);
-      params.append(
-        "@p2",
-        typeof this.fieldName === "string" ? `'${this.fieldName}'` : String(this.fieldName)
-      );
+      params.append("@p2", formatAliasValue(this.fieldName));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

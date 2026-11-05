@@ -47,7 +47,7 @@ export class RegisterFlowMachineAction implements Executable<RegisterFlowMachine
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

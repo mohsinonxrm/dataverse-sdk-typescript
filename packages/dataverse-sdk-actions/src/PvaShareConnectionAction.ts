@@ -24,7 +24,7 @@ export class PvaShareConnectionAction implements Executable<PvaShareConnectionRe
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

@@ -51,7 +51,7 @@ export class msdynmkt_getunsubscribelinkAction implements Executable<msdynmkt_ge
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

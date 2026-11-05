@@ -31,7 +31,7 @@ export class msdyn_MobileAppBuildAction implements Executable<msdyn_MobileAppBui
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 import type { ComplexEntityMetadata, EntityFilters } from "./types/index.js";
 
 /**
@@ -29,35 +30,19 @@ export class RetrieveEntityFunction implements Executable<RetrieveEntityResponse
     const aliases: string[] = [];
     if (this.entityFilters !== undefined) {
       aliases.push(`EntityFilters=@p1`);
-      params.append(
-        "@p1",
-        typeof this.entityFilters === "string"
-          ? `'${this.entityFilters}'`
-          : String(this.entityFilters)
-      );
+      params.append("@p1", formatAliasValue(this.entityFilters));
     }
     if (this.logicalName !== undefined) {
       aliases.push(`LogicalName=@p2`);
-      params.append(
-        "@p2",
-        typeof this.logicalName === "string" ? `'${this.logicalName}'` : String(this.logicalName)
-      );
+      params.append("@p2", formatAliasValue(this.logicalName));
     }
     if (this.metadataId !== undefined) {
       aliases.push(`MetadataId=@p3`);
-      params.append(
-        "@p3",
-        typeof this.metadataId === "string" ? `'${this.metadataId}'` : String(this.metadataId)
-      );
+      params.append("@p3", formatAliasValue(this.metadataId));
     }
     if (this.retrieveAsIfPublished !== undefined) {
       aliases.push(`RetrieveAsIfPublished=@p4`);
-      params.append(
-        "@p4",
-        typeof this.retrieveAsIfPublished === "string"
-          ? `'${this.retrieveAsIfPublished}'`
-          : String(this.retrieveAsIfPublished)
-      );
+      params.append("@p4", formatAliasValue(this.retrieveAsIfPublished));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

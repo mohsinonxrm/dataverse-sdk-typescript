@@ -31,7 +31,7 @@ export class msdyn_GetCaseSuggestionsAction implements Executable<msdyn_GetCaseS
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

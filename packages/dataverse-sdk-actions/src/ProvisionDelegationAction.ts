@@ -27,7 +27,7 @@ export class ProvisionDelegationAction implements Executable<ProvisionDelegation
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

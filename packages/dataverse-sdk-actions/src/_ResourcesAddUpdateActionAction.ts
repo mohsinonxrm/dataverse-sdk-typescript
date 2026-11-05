@@ -32,7 +32,7 @@ export class _ResourcesAddUpdateActionAction implements Executable<_ResourcesAdd
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

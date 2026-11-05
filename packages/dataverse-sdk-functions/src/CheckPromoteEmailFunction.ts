@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 
 /**
  * Response from CheckPromoteEmail function
@@ -28,26 +29,15 @@ export class CheckPromoteEmailFunction implements Executable<CheckPromoteEmailRe
     const aliases: string[] = [];
     if (this.messageId !== undefined) {
       aliases.push(`MessageId=@p1`);
-      params.append(
-        "@p1",
-        typeof this.messageId === "string" ? `'${this.messageId}'` : String(this.messageId)
-      );
+      params.append("@p1", formatAliasValue(this.messageId));
     }
     if (this.subject !== undefined) {
       aliases.push(`Subject=@p2`);
-      params.append(
-        "@p2",
-        typeof this.subject === "string" ? `'${this.subject}'` : String(this.subject)
-      );
+      params.append("@p2", formatAliasValue(this.subject));
     }
     if (this.directionCode !== undefined) {
       aliases.push(`DirectionCode=@p3`);
-      params.append(
-        "@p3",
-        typeof this.directionCode === "string"
-          ? `'${this.directionCode}'`
-          : String(this.directionCode)
-      );
+      params.append("@p3", formatAliasValue(this.directionCode));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

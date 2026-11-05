@@ -48,7 +48,7 @@ export class msdyn_RecommendedEmailTemplatesAction implements Executable<msdyn_R
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

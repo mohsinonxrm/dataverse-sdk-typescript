@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 
 /**
  * Response from RetrieveEnvironmentVariableValue function
@@ -23,12 +24,7 @@ export class RetrieveEnvironmentVariableValueFunction implements Executable<Retr
     const aliases: string[] = [];
     if (this.definitionSchemaName !== undefined) {
       aliases.push(`DefinitionSchemaName=@p1`);
-      params.append(
-        "@p1",
-        typeof this.definitionSchemaName === "string"
-          ? `'${this.definitionSchemaName}'`
-          : String(this.definitionSchemaName)
-      );
+      params.append("@p1", formatAliasValue(this.definitionSchemaName));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

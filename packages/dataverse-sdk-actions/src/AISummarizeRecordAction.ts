@@ -34,7 +34,7 @@ export class AISummarizeRecordAction implements Executable<AISummarizeRecordResp
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

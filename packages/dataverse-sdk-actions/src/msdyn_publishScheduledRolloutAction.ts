@@ -26,7 +26,7 @@ export class msdyn_publishScheduledRolloutAction implements Executable<msdyn_pub
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

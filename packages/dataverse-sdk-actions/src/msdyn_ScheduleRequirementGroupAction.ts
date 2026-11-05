@@ -63,7 +63,7 @@ export class msdyn_ScheduleRequirementGroupAction implements Executable<msdyn_Sc
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -30,7 +30,7 @@ export class _ResourcesRemoveUpdateActionAction implements Executable<_Resources
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -43,7 +43,7 @@ export class CCaaS_InitiateAgentGroupConsultAction implements Executable<CCaaS_I
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

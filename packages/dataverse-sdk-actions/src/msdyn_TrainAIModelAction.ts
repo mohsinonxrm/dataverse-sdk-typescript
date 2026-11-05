@@ -24,7 +24,7 @@ export class msdyn_TrainAIModelAction implements Executable<msdyn_TrainAIModelRe
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

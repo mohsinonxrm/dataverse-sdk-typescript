@@ -22,7 +22,7 @@ export class AddRequiredDesktopFlowComponentsToSolutionsRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

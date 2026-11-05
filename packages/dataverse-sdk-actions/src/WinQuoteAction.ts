@@ -31,7 +31,7 @@ export class WinQuoteAction implements Executable<WinQuoteResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
