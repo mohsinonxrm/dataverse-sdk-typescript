@@ -65,35 +65,42 @@ pnpm add @mohsinonxrm/dataverse-sdk-metadata
    - Set redirect URI (e.g., `http://localhost` for device code flow)
    - Note the Application (client) ID and Directory (tenant) ID
 
-2. **Configure API Permissions**:
-   - Add Dynamics CRM API permission
-   - Grant `user_impersonation` delegated permission
-   - (For daemon apps) Grant admin consent for application permissions
+2. **Configure API Permissions** (apps where a user signs in):
+   - Add the Dynamics CRM API permission
+   - Grant the `user_impersonation` delegated permission
 
 3. **Create Client Secret** (for daemon apps):
    - Certificates & secrets → New client secret
    - Note the secret value immediately
+
+4. **Create an Application User** (for daemon apps):
+   - App-only access isn't granted by an API permission: Dynamics CRM has no application
+     permissions. Instead, in the [Power Platform admin center](https://admin.powerplatform.microsoft.com),
+     open the environment → Settings → Users + permissions → Application users → **New app user**,
+     pick the app registration and give it a security role
 
 ### Device Code Flow (CLI Applications)
 
 Perfect for interactive command-line tools:
 
 ```typescript
+import { PublicClientApplication } from "@azure/msal-node";
 import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
 import { MsalNodeTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-msal-node";
 
-// MSAL configuration
-const msalConfig = {
+// MSAL public client application
+const pca = new PublicClientApplication({
   auth: {
     clientId: "YOUR_CLIENT_ID",
     authority: "https://login.microsoftonline.com/YOUR_TENANT_ID",
   },
-};
+});
 
 // Token provider using device code flow
-const tokenProvider = new MsalNodeTokenProvider(msalConfig, {
+const tokenProvider = new MsalNodeTokenProvider(pca, {
+  flow: "deviceCode",
   scopes: ["https://YOUR_ORG.crm.dynamics.com/.default"],
-  useDeviceCodeFlow: true,
+  deviceCodeCallback: (response) => console.log(response.message),
 });
 
 // Create Dataverse client
@@ -110,20 +117,21 @@ const client = new DataverseClient({
 For background services and automation:
 
 ```typescript
+import { ConfidentialClientApplication } from "@azure/msal-node";
 import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
 import { MsalNodeTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-msal-node";
 
-const msalConfig = {
+const cca = new ConfidentialClientApplication({
   auth: {
     clientId: "YOUR_CLIENT_ID",
     authority: "https://login.microsoftonline.com/YOUR_TENANT_ID",
-    clientSecret: "YOUR_CLIENT_SECRET",
+    clientSecret: process.env.CLIENT_SECRET!, // never hard-code the secret
   },
-};
+});
 
-const tokenProvider = new MsalNodeTokenProvider(msalConfig, {
+const tokenProvider = new MsalNodeTokenProvider(cca, {
+  flow: "clientCredentials",
   scopes: ["https://YOUR_ORG.crm.dynamics.com/.default"],
-  useClientCredentials: true,
 });
 
 const client = new DataverseClient({
@@ -135,18 +143,21 @@ const client = new DataverseClient({
 ### Browser Authentication (SPA)
 
 ```typescript
+import { PublicClientApplication } from "@azure/msal-browser";
 import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
 import { MsalBrowserTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-msal-browser";
 
-const msalConfig = {
+// The provider takes an initialized PublicClientApplication, not an MSAL config
+const pca = new PublicClientApplication({
   auth: {
     clientId: "YOUR_CLIENT_ID",
     authority: "https://login.microsoftonline.com/YOUR_TENANT_ID",
     redirectUri: window.location.origin,
   },
-};
+});
+await pca.initialize();
 
-const tokenProvider = new MsalBrowserTokenProvider(msalConfig, {
+const tokenProvider = new MsalBrowserTokenProvider(pca, {
   scopes: ["https://YOUR_ORG.crm.dynamics.com/user_impersonation"],
 });
 
@@ -169,9 +180,10 @@ const account = {
   address1_stateorprovince: "WA",
 };
 
-const response = await client.api("/accounts").post(account);
+// Dataverse answers a create with 204 No Content and the new record's URL in OData-EntityId
+const accountId = await client.api("/accounts").createAndGetId(account);
 
-console.log("Created account:", response["@odata.id"]);
+console.log("Created account:", accountId);
 ```
 
 ### Create with Return Representation
@@ -186,8 +198,8 @@ const account = {
 
 const newAccount = await client
   .api("/accounts")
-  .header(Prefer.returnRepresentation())
-  .post(account);
+  .prefer(Prefer.returnRepresentation()) // or .header("Prefer", "return=representation")
+  .post<{ accountid: string; name: string }>(account);
 
 console.log("Created account ID:", newAccount.accountid);
 console.log("Created account name:", newAccount.name);
@@ -200,8 +212,8 @@ console.log("Created account name:", newAccount.name);
 const accountId = "00000000-0000-0000-0000-000000000001";
 const account = await client
   .api(`/accounts(${accountId})`)
-  .select(["name", "revenue", "industrycode"])
-  .get();
+  .select("name", "revenue", "industrycode")
+  .get<{ "@odata.etag": string; name: string; revenue: number; industrycode: number }>();
 
 console.log("Account name:", account.name);
 console.log("Revenue:", account.revenue);
@@ -223,7 +235,8 @@ console.log("Account updated successfully");
 ### Update with Optimistic Concurrency
 
 ```typescript
-await client.api(`/accounts(${accountId})`).header("If-Match", account["@odata.etag"]).patch({
+// .ifMatch(etag) sets the If-Match header; a 412 means the record changed since you read it
+await client.api(`/accounts(${accountId})`).ifMatch(account["@odata.etag"]).patch({
   revenue: 6000000,
 });
 ```
@@ -245,11 +258,11 @@ console.log("Account deleted successfully");
 ```typescript
 const accounts = await client
   .api("/accounts")
-  .select(["name", "revenue", "createdon"])
+  .select("name", "revenue", "createdon")
   .filter("revenue gt 100000")
-  .orderby("revenue desc")
+  .orderBy("revenue desc")
   .top(10)
-  .get();
+  .get<{ value: { name: string; revenue: number; createdon: string }[] }>();
 
 console.log(`Found ${accounts.value.length} accounts`);
 accounts.value.forEach((account) => {
@@ -260,20 +273,19 @@ accounts.value.forEach((account) => {
 ### Expand Related Records
 
 ```typescript
+// expand() takes strings: write nested query options inline, in OData syntax
 const account = await client
   .api(`/accounts(${accountId})`)
-  .select(["name", "revenue"])
-  .expand({
-    primarycontactid: {
-      select: ["fullname", "emailaddress1"],
-    },
-    Account_Tasks: {
-      select: ["subject", "scheduledend"],
-      filter: "statecode eq 0", // Active tasks
-      top: 5,
-    },
-  })
-  .get();
+  .select("name", "revenue")
+  .expand(
+    "primarycontactid($select=fullname,emailaddress1)",
+    "Account_Tasks($select=subject,scheduledend;$filter=statecode eq 0;$top=5)" // Active tasks
+  )
+  .get<{
+    name: string;
+    primarycontactid?: { fullname: string };
+    Account_Tasks: { subject: string }[];
+  }>();
 
 console.log("Account:", account.name);
 console.log("Primary Contact:", account.primarycontactid?.fullname);
@@ -286,7 +298,7 @@ console.log("Active Tasks:", account.Account_Tasks.length);
 // Iterate through all records (handles paging automatically)
 const allAccounts = [];
 
-for await (const account of client.api("/accounts").select(["name"]).iterate()) {
+for await (const account of client.api("/accounts").select("name").iterate()) {
   allAccounts.push(account);
 
   // Optional: early termination
@@ -301,7 +313,7 @@ console.log(`Total accounts: ${allAccounts.length}`);
 ```typescript
 const accounts = await client
   .api("/accounts")
-  .select(["name", "revenue"])
+  .select("name", "revenue")
   .filter("revenue gt 50000")
   .getAll({ maxItems: 500, maxPages: 10 });
 
@@ -526,12 +538,19 @@ The SDK automatically retries 429 errors with `Retry-After` header respect. To a
 const client = new DataverseClient({
   baseUrl: "https://YOUR_ORG.crm.dynamics.com/api/data/v9.2",
   tokenProvider,
-  retryOptions: {
-    maxRetries: 5,
-    retryDelay: 1000,
+  retry: {
+    maxRetries: 5, // default 6
+    baseDelayMs: 1000, // default 3000; the backoff doubles per retry
+    maxDelayMs: 30000, // default 30000
+    jitter: true, // default true (±20% on the computed backoff)
   },
 });
 ```
+
+`Retry-After` is waited out as sent when it's at most `maxRetryAfterMs` (default: `maxDelayMs`);
+a longer wait is returned to you as a `DataverseThrottleError` with `retryAfterMs`. See the
+[core README](../packages/dataverse-sdk-core/README.md#retry-with-exponential-backoff) for
+`retryableStatusCodes`, `retryNonIdempotent`, `retryNetworkErrors`, `shouldRetry` and `onRetry`.
 
 ### Type Safety
 
@@ -546,17 +565,17 @@ const account: Account = await client.api(`/accounts(${id})`).get();
 
 ### Debugging
 
-Enable detailed logging:
+The SDK logs nothing by default. Pass a `Logger` (`debug`, `info`, `warn` and `error` methods) to
+see its diagnostics; `ConsoleLogger` writes to the console:
 
 ```typescript
+import { ConsoleLogger, DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+
 const client = new DataverseClient({
   baseUrl: "https://YOUR_ORG.crm.dynamics.com/api/data/v9.2",
   tokenProvider,
-  logger: {
-    log: (level, message, data) => {
-      console.log(`[${level}] ${message}`, data);
-    },
-  },
+  logger: new ConsoleLogger(), // or new ConsoleLogger({ level: "warn" })
+  logging: { fullUrls: true }, // while debugging; by default the query and keys are hidden
 });
 ```
 

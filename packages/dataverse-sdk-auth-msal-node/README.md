@@ -18,10 +18,10 @@
 pnpm add @mohsinonxrm/dataverse-sdk-auth-msal-node @mohsinonxrm/dataverse-sdk-core @azure/msal-node
 ```
 
-**Peer dependencies:**
-
-- `@azure/msal-node` (^2.0.0)
-- `@mohsinonxrm/dataverse-sdk-core` (workspace dependency)
+**Dependencies:** `@azure/msal-node` (`^2.16.3`) and `@mohsinonxrm/dataverse-sdk-core` are regular
+dependencies of this package. The provider checks the client application with `instanceof`, so
+create your `PublicClientApplication` / `ConfidentialClientApplication` from the same
+`@azure/msal-node` copy (install a matching version so your package manager dedupes them).
 
 ## Authentication Flows
 
@@ -68,7 +68,7 @@ const client = new DataverseClient({
 });
 
 // First API call triggers device code flow
-const whoami = await client.api("/WhoAmI").get();
+const whoami = await client.api("/WhoAmI").get<{ UserId: string }>();
 console.log(`✓ Authenticated as user: ${whoami.UserId}`);
 ```
 
@@ -77,7 +77,11 @@ console.log(`✓ Authenticated as user: ${whoami.UserId}`);
 - Requires `PublicClientApplication`
 - User sees code and URL in terminal
 - User authenticates in browser on any device
-- Token automatically cached for subsequent requests
+- The provider calls `acquireTokenByDeviceCode` on every `getToken()` call and doesn't try the
+  cache first, and the client asks for a token on every request, so each request prompts again
+  (tracked in [#85](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/85)). For
+  more than one request, sign in once, then use the [silent flow](#5-silent-flow-token-cache--refresh)
+  with the account from `getCachedAccount()`
 - Ideal for CLI tools where browser redirect isn't available
 
 ### 2. Client Credentials Flow (Daemon Applications)
@@ -128,7 +132,11 @@ const client = new DataverseClient({
 });
 
 // Daemon can now make unattended API calls
-const accounts = await client.api("/accounts").select("name", "accountnumber").top(100).get();
+const accounts = await client
+  .api("/accounts")
+  .select("name", "accountnumber")
+  .top(100)
+  .get<{ value: { name: string }[] }>();
 
 console.log(`Retrieved ${accounts.value.length} accounts`);
 ```
@@ -137,17 +145,22 @@ console.log(`Retrieved ${accounts.value.length} accounts`);
 
 - Requires `ConfidentialClientApplication`
 - **No user interaction** - fully automated
-- Application must have **Application Permissions** (not Delegated) in Azure AD
-- Requires Dataverse **Application User** setup
+- Use the `https://<org>.crm.dynamics.com/.default` scope
+- Requires a Dataverse **Application User** for the app registration: that, and its security
+  roles, is what grants access. Dynamics CRM has no application permissions to add in Entra ID
 - Tokens acquired on behalf of the application, not a user
 - Suitable for background tasks, data synchronization, reporting
 
-**Azure AD App Setup:**
+**App setup:**
 
-1. Register app in Azure AD
-2. Add API Permission: `Dynamics CRM` → `Application Permissions` → `user_impersonation`
-3. Admin consent required
-4. Create Application User in Dataverse with appropriate security role
+1. Register an app in Microsoft Entra ID and add a client secret or certificate
+2. In the [Power Platform admin center](https://admin.powerplatform.microsoft.com), open the
+   environment → Settings → Users + permissions → Application users → **New app user**, and pick
+   the app registration
+3. Assign the application user a security role with the privileges your code needs
+
+No API permission or admin consent is needed for app-only access. The `Dynamics CRM` →
+`user_impersonation` API permission is a **delegated** permission, for flows where a user signs in.
 
 ### 3. Authorization Code Flow with PKCE (Web Server Applications)
 
@@ -158,11 +171,23 @@ Authorization code flow uses browser-based login with PKCE (Proof Key for Code E
 ```typescript
 import express, { Request, Response } from "express";
 import session from "express-session";
-import { ConfidentialClientApplication } from "@azure/msal-node";
+import { AccountInfo, ConfidentialClientApplication, CryptoProvider } from "@azure/msal-node";
 import { MsalNodeTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-msal-node";
 import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
 
+// What this app keeps in the session
+declare module "express-session" {
+  interface SessionData {
+    oauthState?: string;
+    pkceVerifier?: string;
+    account?: AccountInfo;
+  }
+}
+
 const app = express();
+const cryptoProvider = new CryptoProvider();
+const scopes = ["https://your-org.crm.dynamics.com/.default"];
+const redirectUri = "http://localhost:3000/auth/callback";
 
 // Configure session middleware
 app.use(
@@ -182,14 +207,20 @@ const cca = new ConfidentialClientApplication({
   },
 });
 
-// Login route - Redirect user to Azure AD
+// Login route - Redirect user to Entra ID
 app.get("/auth/login", async (req: Request, res: Response) => {
   try {
-    // Generate authorization URL with PKCE
+    // PKCE: a one-time verifier, kept on the server, and its challenge, sent to Entra ID
+    const { verifier, challenge } = await cryptoProvider.generatePkceCodes();
+    req.session.pkceVerifier = verifier;
+    req.session.oauthState = cryptoProvider.createNewGuid(); // CSRF protection
+
     const authCodeUrl = await cca.getAuthCodeUrl({
-      scopes: ["https://your-org.crm.dynamics.com/.default"],
-      redirectUri: "http://localhost:3000/auth/callback",
-      state: "random-state-value", // CSRF protection
+      scopes,
+      redirectUri,
+      state: req.session.oauthState,
+      codeChallenge: challenge,
+      codeChallengeMethod: "S256",
     });
 
     res.redirect(authCodeUrl);
@@ -204,21 +235,24 @@ app.get("/auth/callback", async (req: Request, res: Response) => {
   const state = req.query.state as string;
 
   // Validate state for CSRF protection
-  if (state !== "random-state-value") {
-    return res.status(400).send("State mismatch");
+  if (!req.session.oauthState || state !== req.session.oauthState) {
+    res.status(400).send("State mismatch");
+    return;
   }
 
   try {
-    // Exchange authorization code for token
+    // Exchange the authorization code (single use) for tokens, proving PKCE with the verifier
     const tokenResponse = await cca.acquireTokenByCode({
       code,
-      scopes: ["https://your-org.crm.dynamics.com/.default"],
-      redirectUri: "http://localhost:3000/auth/callback",
+      scopes,
+      redirectUri,
+      codeVerifier: req.session.pkceVerifier,
     });
 
-    // Store tokens in session
-    req.session.accessToken = tokenResponse.accessToken;
-    req.session.account = tokenResponse.account;
+    // MSAL caches the tokens; the session only needs the account
+    req.session.account = tokenResponse.account ?? undefined;
+    req.session.pkceVerifier = undefined;
+    req.session.oauthState = undefined;
 
     res.redirect("/dashboard");
   } catch (error) {
@@ -226,17 +260,19 @@ app.get("/auth/callback", async (req: Request, res: Response) => {
   }
 });
 
-// Protected route - Use token to call Dataverse
+// Protected route - Use the cached tokens to call Dataverse
 app.get("/api/accounts", async (req: Request, res: Response) => {
-  if (!req.session.accessToken) {
-    return res.redirect("/auth/login");
+  const account = req.session.account;
+  if (!account) {
+    res.redirect("/auth/login");
+    return;
   }
 
-  // Create token provider with stored account
+  // Silent flow: tokens come from MSAL's cache (refreshed with the refresh token when needed)
   const tokenProvider = new MsalNodeTokenProvider(cca, {
     flow: "silent",
-    scopes: ["https://your-org.crm.dynamics.com/.default"],
-    account: req.session.account,
+    scopes,
+    account,
   });
 
   const client = new DataverseClient({
@@ -244,7 +280,11 @@ app.get("/api/accounts", async (req: Request, res: Response) => {
     tokenProvider,
   });
 
-  const accounts = await client.api("/accounts").select("name", "accountnumber").top(10).get();
+  const accounts = await client
+    .api("/accounts")
+    .select("name", "accountnumber")
+    .top(10)
+    .get<{ value: unknown[] }>();
 
   res.json(accounts.value);
 });
@@ -254,11 +294,18 @@ app.listen(3000, () => console.log("Server running on port 3000"));
 
 **Authorization code flow details:**
 
-- Requires `ConfidentialClientApplication` (can use Public Client but not recommended)
+- Uses `ConfidentialClientApplication` here; MSAL redeems the code with `acquireTokenByCode`
 - User authenticates via browser redirect
-- PKCE (Proof Key for Code Exchange) provides additional security
-- Redirect URI must match Azure AD app registration exactly
-- Token cached in MSAL automatically, can also store in session
+- PKCE: `CryptoProvider.generatePkceCodes()` gives a verifier and a challenge. The challenge goes
+  to `getAuthCodeUrl({ codeChallenge, codeChallengeMethod: "S256" })`, the verifier to
+  `acquireTokenByCode({ codeVerifier })`. `MsalNodeTokenProvider.getAuthCodeUrl(redirectUri, scopes, state, codeChallenge)`
+  does the same as the first call
+- Redirect URI must match the app registration exactly
+- MSAL caches the tokens in the `ConfidentialClientApplication`'s cache (in memory by default; see
+  [Token Caching & Persistence](#token-caching--persistence)), and the silent flow reads them
+- `flow: "authorizationCode"` (with `code` and `codeVerifier`) redeems the code on every
+  `getToken()` call, but a code is single use, so redeem it yourself as above and use the silent
+  flow for requests ([#85](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/85))
 - Suitable for web apps where users log in via browser
 
 ### 4. Username/Password Flow (Resource Owner Password Credentials)
@@ -292,7 +339,7 @@ const client = new DataverseClient({
 });
 
 // Token acquired automatically on first call
-const result = await client.api("/WhoAmI").get();
+const result = await client.api("/WhoAmI").get<{ UserId: string }>();
 console.log(`User ID: ${result.UserId}`);
 ```
 
@@ -308,7 +355,7 @@ console.log(`User ID: ${result.UserId}`);
 
 **Best for:** Token refresh, subsequent requests after interactive login
 
-Silent flow attempts to acquire tokens from cache or refresh tokens without user interaction. **Automatically used by all other flows** for token refresh.
+Silent flow acquires tokens from MSAL's cache, or with a refresh token, without user interaction. The other flows don't fall back to it: each of them goes to Entra ID on every `getToken()` call ([#85](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/85)), so after an interactive sign-in, create a silent provider for the account.
 
 ```typescript
 import { PublicClientApplication, AccountInfo } from "@azure/msal-node";
@@ -335,14 +382,6 @@ const tokenProvider = new MsalNodeTokenProvider(pca, {
 // Token acquired from cache or refresh token
 const token = await tokenProvider.getToken();
 console.log("Token acquired silently");
-
-// Silent flow with force refresh
-const tokenProviderForceRefresh = new MsalNodeTokenProvider(pca, {
-  flow: "silent",
-  scopes: ["https://your-org.crm.dynamics.com/.default"],
-  account,
-  forceRefresh: true, // Skip cache, always refresh
-});
 ```
 
 **Silent flow details:**
@@ -351,8 +390,10 @@ const tokenProviderForceRefresh = new MsalNodeTokenProvider(pca, {
 - First checks cache for valid token
 - Falls back to refresh token if cache expired
 - Throws error if no cached account or refresh fails
-- Use `forceRefresh: true` to bypass cache
-- MSAL automatically uses silent flow internally for token refresh
+- `SilentFlowOptions` has no `forceRefresh` option. Instead the provider forwards
+  `TokenOptions.forceRefresh` (which the SDK client sets after a 401) to `acquireTokenSilent`, and
+  passes `skipCache: true` in the client-credentials flow, so the retry gets a new token
+  ([#167](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/167))
 
 ## Complete Examples
 
@@ -391,10 +432,14 @@ async function main() {
   });
 
   console.log(chalk.cyan("\nFetching accounts..."));
-  const result = await client.api("/accounts").select("name", "accountnumber").top(10).get();
+  const result = await client
+    .api("/accounts")
+    .select("name", "accountnumber")
+    .top(10)
+    .get<{ value: { name: string; accountnumber?: string }[] }>();
 
   console.log(chalk.green(`\n✓ Found ${result.value.length} accounts\n`));
-  result.value.forEach((account: any, i: number) => {
+  result.value.forEach((account, i) => {
     console.log(chalk.white(`${i + 1}. ${account.name}`));
     console.log(chalk.gray(`   Account #: ${account.accountnumber || "N/A"}`));
   });
@@ -441,7 +486,7 @@ class DataverseSyncService {
       .api("/accounts")
       .filter(`modifiedon gt ${this.getLastSyncTime()}`)
       .select("accountid", "name", "modifiedon")
-      .get();
+      .get<{ value: { accountid: string; name: string; modifiedon: string }[] }>();
 
     console.log(`Synced ${accounts.value.length} modified accounts`);
     // Process accounts...
@@ -600,7 +645,6 @@ await tokenProvider.clearCache();
   flow: 'silent';
   scopes: string[];
   account: AccountInfo; // Required
-  forceRefresh?: boolean; // Skip cache
   correlationId?: string;
   claims?: string;
 }
@@ -608,15 +652,29 @@ await tokenProvider.clearCache();
 
 ## Token Caching & Persistence
 
-MSAL Node automatically caches tokens in memory. For persistent caching across application restarts:
+MSAL Node caches tokens in memory, per client application. `@azure/msal-node` has no file cache of
+its own: for a cache that survives restarts, use Microsoft's
+[`@azure/msal-node-extensions`](https://www.npmjs.com/package/@azure/msal-node-extensions), which
+stores it encrypted with DPAPI on Windows, the Keychain on macOS and libsecret on Linux:
+
+```bash
+pnpm add @azure/msal-node-extensions
+```
 
 ```typescript
-import { DataProtectionScope } from "@azure/msal-node";
-import { FilePersistencePlugin } from "@azure/msal-node/dist/cache/FilePersistence";
+import { PublicClientApplication } from "@azure/msal-node";
+import {
+  DataProtectionScope,
+  PersistenceCachePlugin,
+  PersistenceCreator,
+} from "@azure/msal-node-extensions";
 
-const cachePlugin = new FilePersistencePlugin({
+const persistence = await PersistenceCreator.createPersistence({
   cachePath: "./data/token-cache.json",
-  dataProtectionScope: DataProtectionScope.CurrentUser,
+  dataProtectionScope: DataProtectionScope.CurrentUser, // Windows (DPAPI)
+  serviceName: "my-dataverse-app", // macOS Keychain / Linux libsecret
+  accountName: "msal-token-cache",
+  usePlaintextFileOnLinux: false,
 });
 
 const pca = new PublicClientApplication({
@@ -625,7 +683,7 @@ const pca = new PublicClientApplication({
     authority: "https://login.microsoftonline.com/your-tenant-id",
   },
   cache: {
-    cachePlugin,
+    cachePlugin: new PersistenceCachePlugin(persistence),
   },
 });
 ```
@@ -633,7 +691,8 @@ const pca = new PublicClientApplication({
 **Security notes:**
 
 - Cache files contain sensitive tokens
-- Use `DataProtectionScope.CurrentUser` to encrypt cache
+- Keep `usePlaintextFileOnLinux: false` unless the machine has no libsecret and you accept a
+  plain-text file
 - Ensure appropriate file permissions (e.g., `chmod 600`)
 - Never commit cache files to version control
 
@@ -723,21 +782,14 @@ const tokenProvider = new MsalNodeTokenProvider(pca, {
 
 **Checklist:**
 
-1. App registration has API permission: `Dynamics CRM` → `user_impersonation` (Application permission)
-2. Admin consent granted for permission
-3. Application user created in Dataverse with appropriate security role
-4. Application user security role has required privileges
+1. An application user exists in the Dataverse environment for the app registration's client ID
+   (Power Platform admin center → environment → Settings → Users + permissions → Application users)
+2. The application user has a security role, and the role has the privileges the request needs
+3. The token is for the environment: scope `https://<org>.crm.dynamics.com/.default`
+4. The tenant in the authority (or `tenantId`) is the environment's tenant
 
-**Create application user in Dataverse:**
-
-```powershell
-# PowerShell example
-$appId = "your-app-client-id"
-$tenantId = "your-tenant-id"
-
-# In Dataverse: Settings → Security → Application Users → New
-# Set Client ID and grant security role
-```
+API permissions and admin consent don't matter for app-only access: Dynamics CRM exposes no
+application permissions, only the delegated `user_impersonation`.
 
 ### Authorization Code: State Mismatch
 
@@ -811,6 +863,6 @@ See [LICENSE](../../LICENSE) in repository root.
 
 ## Support
 
-- **Issues:** [GitHub Issues](https://github.com/mohsinonxrm/mxrm-dataverse-sdk-typescript/issues)
+- **Issues:** [GitHub Issues](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues)
 - **Documentation:** [docs/](../../docs/)
 - **Samples:** [samples/node-cli-devicecode](../../samples/node-cli-devicecode), [samples/daemon-clientcredentials](../../samples/daemon-clientcredentials)
