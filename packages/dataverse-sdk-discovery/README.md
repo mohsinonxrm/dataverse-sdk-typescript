@@ -1,6 +1,6 @@
 # @mohsinonxrm/dataverse-sdk-discovery
 
-Global Discovery Service (GDS) v2.0 client: find the Dataverse environments the signed-in user can access.
+Global Discovery Service (GDS) v2.0 client: find the Dataverse environments the signed-in user can access, in the Commercial, GCC, GCC High (USG), DoD or China cloud.
 
 ## Features
 
@@ -48,15 +48,30 @@ The Global Discovery Service returns the environments of a **signed-in user** (a
 for example device code, authorization code or interactive). An app-only (client credentials)
 token gets no environments.
 
-## Authentication Scopes
+## Clouds and Authentication Scopes
 
-The Discovery Service requires the following scope:
+The Global Discovery Service runs in five clouds. Pick one with `cloud`; the client calls that
+cloud's endpoint and requests a token for its `/.default` scope (the token audience is the
+discovery host). Endpoints are from Microsoft Learn, [Discover user organizations](https://learn.microsoft.com/power-apps/developer/data-platform/discovery-service).
+
+| `cloud`              | Cloud                         | Endpoint                                                          | Default scope                                           |
+| -------------------- | ----------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------- |
+| `"public"` (default) | Commercial                    | `https://globaldisco.crm.dynamics.com/api/discovery/v2.0`         | `https://globaldisco.crm.dynamics.com/.default`         |
+| `"gcc"`              | US Government Community Cloud | `https://globaldisco.crm9.dynamics.com/api/discovery/v2.0`        | `https://globaldisco.crm9.dynamics.com/.default`        |
+| `"usg"`              | US Government (GCC High)      | `https://globaldisco.crm.microsoftdynamics.us/api/discovery/v2.0` | `https://globaldisco.crm.microsoftdynamics.us/.default` |
+| `"dod"`              | US Department of Defense      | `https://globaldisco.crm.appsplatform.us/api/discovery/v2.0`      | `https://globaldisco.crm.appsplatform.us/.default`      |
+| `"china"`            | China (21Vianet)              | `https://globaldisco.crm.dynamics.cn/api/discovery/v2.0`          | `https://globaldisco.crm.dynamics.cn/.default`          |
 
 ```typescript
-const DISCOVERY_SCOPES = ["https://globaldisco.crm.dynamics.com/.default"];
+const gccHigh = new DiscoveryClient(tokenProvider, { cloud: "usg" });
 ```
 
-This scope is automatically used by the `DiscoveryClient` when requesting tokens.
+The table is exported as `DISCOVERY_CLOUDS`. For a sovereign cloud, configure your token provider
+with that cloud's Microsoft Entra authority (see Microsoft Entra "national clouds").
+
+Pass `scopes` to request something else, for example the delegated permission
+`https://globaldisco.crm.dynamics.com/user_impersonation` in a single-page app. With a custom
+`baseUrl` and no `scopes`, the scope is `https://<baseUrl host>/.default`.
 
 ## API Reference
 
@@ -65,13 +80,22 @@ This scope is automatically used by the `DiscoveryClient` when requesting tokens
 #### Constructor
 
 ```typescript
-new DiscoveryClient(tokenProvider: AccessTokenProvider, baseUrl?: string)
+new DiscoveryClient(tokenProvider: AccessTokenProvider, options?: DiscoveryClientOptions)
+new DiscoveryClient(tokenProvider: AccessTokenProvider, baseUrl?: string) // same as { baseUrl }
+
+interface DiscoveryClientOptions {
+  cloud?: "public" | "gcc" | "usg" | "dod" | "china"; // default "public"
+  baseUrl?: string; // overrides the cloud's endpoint; a host-only URL gets /api/discovery/v2.0
+  scopes?: string[]; // overrides the default https://<host>/.default
+}
 ```
 
 **Parameters:**
 
 - `tokenProvider`: An instance of a token provider (e.g., `MsalNodeTokenProvider`, `MsalBrowserTokenProvider`)
-- `baseUrl` (optional): Custom discovery endpoint. Defaults to Commercial cloud global discovery.
+- `options` (optional): the cloud, a custom endpoint and/or scopes. Throws `DataverseInvalidRequestError` for an unknown `cloud` or a `baseUrl` that isn't an absolute http(s) URL.
+
+`getBaseUrl()` and `getScopes()` return the endpoint and scopes the client uses.
 
 ### Methods
 
