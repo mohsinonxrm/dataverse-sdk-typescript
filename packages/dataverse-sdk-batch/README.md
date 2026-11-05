@@ -341,10 +341,15 @@ Requests and changesets are sent in the order they're added. Dataverse answers i
 
 ### Error Handling
 
-- By default, batch execution stops on first error
+- By default, Dataverse stops at the first failed request; later requests get no response
 - Use `continueOnError: true` to process all requests
 - `DataverseBatchError` provides detailed per-request error information
 - Check `result.success` to determine if all requests succeeded
+- When the batch as a whole fails (a malformed batch, auth, throttling), Dataverse answers with a JSON error instead of a multipart body, and `execute()` throws the typed error: `DataverseODataError`, or `DataverseThrottleError` for 429
+
+### How it is sent
+
+`execute()` sends one `POST $batch` through `client.send()`, so it goes through the client's pipeline (auth, retries, telemetry). The body is the multipart string exactly as encoded (see `encode(boundary)`), with `Content-Type: multipart/mixed; boundary=…`. Headers from `options.headers` are added to that request; a `Prefer` value there is combined with `odata.continue-on-error`.
 
 ## Types
 

@@ -278,7 +278,7 @@ describe.skipIf(!live)("live: $batch", () => {
     expect(text).toContain('"UserId"');
   });
 
-  it.fails("#54: BatchRequestBuilder.execute() runs a batch", async () => {
+  it("#54: BatchRequestBuilder.execute() runs a batch", async () => {
     const { client } = liveClient();
     const batch = new BatchRequestBuilder(client);
     batch.addRequest("whoami", "GET", "/WhoAmI");

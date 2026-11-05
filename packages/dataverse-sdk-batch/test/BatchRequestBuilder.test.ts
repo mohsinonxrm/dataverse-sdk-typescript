@@ -1,29 +1,26 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { createTestClient, TEST_API_URL } from "@mohsinonxrm/dataverse-sdk-testing";
+import { describe, it, expect, beforeEach } from "vitest";
+import { createTestClient, TEST_API_URL, type FakeFetch } from "@mohsinonxrm/dataverse-sdk-testing";
 import { BatchRequestBuilder } from "../src/BatchRequestBuilder.js";
 import { DataverseBatchError } from "../src/errors.js";
 import type { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
 import * as recorded from "./fixtures/recorded.js";
 
-// A real client, with `api().post()` replaced so execute() can be fed recorded responses.
-// (The transport itself is covered by contract.test.ts.)
-const withResponse = (client: DataverseClient, r: recorded.RecordedBatchResponse) => {
-  const post = vi.fn().mockResolvedValue({
-    headers: new Headers({ "content-type": r.contentType }),
-    text: () => Promise.resolve(r.body),
-  });
-  vi.spyOn(client, "api").mockReturnValue({ post } as unknown as ReturnType<
-    DataverseClient["api"]
-  >);
-  return post;
-};
-
 describe("BatchRequestBuilder", () => {
   let client: DataverseClient;
+  let fake: FakeFetch;
   let builder: BatchRequestBuilder;
 
+  // A real client and a fake fetch that answers $batch with a response recorded from Dataverse.
+  const withResponse = (_client: DataverseClient, r: recorded.RecordedBatchResponse) => {
+    fake.on(
+      "POST",
+      "/$batch",
+      () => new Response(r.body, { status: r.status, headers: { "content-type": r.contentType } })
+    );
+  };
+
   beforeEach(() => {
-    client = createTestClient().client;
+    ({ client, fake } = createTestClient());
     builder = new BatchRequestBuilder(client);
   });
 
