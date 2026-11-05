@@ -12,6 +12,7 @@ import { FetchRequestAdapter } from "../pipeline/FetchRequestAdapter.js";
 import { buildDefaultMiddleware } from "../pipeline/DefaultMiddleware.js";
 import { DataverseRequestBuilder } from "./DataverseRequestBuilder.js";
 import { parseODataError } from "../errors/parseODataError.js";
+import { DataverseInvalidRequestError } from "../errors/NamedErrors.js";
 
 export class DataverseClient {
   private readonly baseUrl: string;
@@ -20,6 +21,11 @@ export class DataverseClient {
   private readonly ctx: MiddlewareContext;
 
   constructor(private options: DataverseClientOptions) {
+    if (!isAllowedBaseUrl(options.baseUrl)) {
+      throw DataverseInvalidRequestError.invalidBaseUrl(
+        `"${options.baseUrl}" (must use HTTPS; plain http is only allowed for localhost)`
+      );
+    }
     const apiVersion = options.apiVersion ?? "v9.2";
     this.baseUrl = normalizeBaseUrl(options.baseUrl, apiVersion);
 
@@ -35,6 +41,17 @@ export class DataverseClient {
       logger: options.logger,
       telemetry: options.telemetry,
     };
+
+    if (options.circuitBreaker?.enabled) {
+      options.logger?.warn(
+        "circuitBreaker option is configured but not yet implemented — it has no effect."
+      );
+    }
+    if (options.bulkhead?.enabled) {
+      options.logger?.warn(
+        "bulkhead option is configured but not yet implemented — it has no effect."
+      );
+    }
   }
 
   getBaseUrl(): string {
@@ -86,4 +103,22 @@ function applyOptions(req: RequestInformation, opt?: RequestOptions) {
     const merged = existing ? `${existing}, ${opt.prefer.join(", ")}` : opt.prefer.join(", ");
     req.headers = { ...req.headers, prefer: merged };
   }
+}
+
+/**
+ * Dataverse only serves HTTPS. Plain http is allowed for loopback hosts so local proxies
+ * and test servers keep working.
+ */
+function isAllowedBaseUrl(baseUrl: string): boolean {
+  let url: URL;
+  try {
+    url = new URL(baseUrl);
+  } catch {
+    return false;
+  }
+  if (url.protocol === "https:") return true;
+  return (
+    url.protocol === "http:" &&
+    (url.hostname === "localhost" || url.hostname === "127.0.0.1" || url.hostname === "[::1]")
+  );
 }

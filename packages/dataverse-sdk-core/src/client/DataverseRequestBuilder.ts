@@ -1,5 +1,5 @@
 import type { RequestInformation } from "../abstractions/http.js";
-import type { PreferOption, RequestOptions } from "../abstractions/options.js";
+import type { BindManyExecutor, PreferOption, RequestOptions } from "../abstractions/options.js";
 import { buildQuery } from "../odata/query.js";
 import type { QueryState } from "../odata/query.js";
 import type { PageResponse } from "../paging/types.js";
@@ -187,46 +187,36 @@ export class DataverseRequestBuilder {
   }
 
   /**
-   * Associate multiple records in batch
+   * Associate multiple records in batch using a provided executor.
+   *
+   * The executor is supplied by the batch package to avoid a circular package dependency.
+   * Import `createBindManyExecutor` from `@mohsinonxrm/dataverse-sdk-batch`.
+   *
+   * @example
+   * ```typescript
+   * import { createBindManyExecutor } from '@mohsinonxrm/dataverse-sdk-batch';
+   * await client.api('accounts(id)').bindMany('contact_customer_accounts', 'contacts', ids, createBindManyExecutor());
+   * ```
+   *
    * @param navigationProperty - The navigation property name
    * @param entitySetName - The target entity set
    * @param ids - Array of target record IDs
+   * @param executor - Batch executor from createBindManyExecutor()
    */
-  async bindMany(navigationProperty: string, entitySetName: string, ids: string[]): Promise<void> {
-    // Use batch API for efficiency - dynamic import to avoid circular dependency
-    // Using Function constructor to prevent TypeScript from analyzing the import during type checking
-    // eslint-disable-next-line @typescript-eslint/no-implied-eval
-    const importBatch = new Function(
-      "return import('@mohsinonxrm/dataverse-sdk-batch')"
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ) as () => Promise<any>;
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const batchModule = await importBatch().catch(() => {
-      throw new Error(
-        "bindMany requires @mohsinonxrm/dataverse-sdk-batch to be installed. " +
-          "Install it with: pnpm add @mohsinonxrm/dataverse-sdk-batch"
-      );
-    });
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const { BatchRequestBuilder } = batchModule;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    const batch = new BatchRequestBuilder(this.client);
-
-    for (const id of ids) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-      batch.addRequest(
-        `assoc-${id}`,
-        "POST",
-        `${this.pathOrUrl}/${navigationProperty}/$ref`,
-        undefined,
-        { "@odata.id": `/${entitySetName}(${id})` }
+  async bindMany(
+    navigationProperty: string,
+    entitySetName: string,
+    ids: string[],
+    executor: BindManyExecutor
+  ): Promise<void> {
+    // Guard for JavaScript callers still using the old 3-argument signature.
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (typeof executor !== "function") {
+      throw new TypeError(
+        "bindMany() requires an executor. Pass createBindManyExecutor() from @mohsinonxrm/dataverse-sdk-batch."
       );
     }
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    await batch.execute();
+    await executor(this.client, this.pathOrUrl, navigationProperty, entitySetName, ids);
   }
 
   /**
@@ -284,17 +274,18 @@ export class DataverseRequestBuilder {
     return (txt ? JSON.parse(txt) : (undefined as any)) as T;
   }
 
-  async getPage<T = unknown>(): Promise<PageResponse<T>> {
-    return this.get<PageResponse<T>>();
+  async getPage<T = unknown>(options?: RequestOptions): Promise<PageResponse<T>> {
+    return this.get<PageResponse<T>>(options);
   }
 
-  iterate<T = unknown>(): AsyncIterable<T> {
+  iterate<T = unknown>(options?: { signal?: AbortSignal }): AsyncIterable<T> {
     // `getPage` already knows how to follow nextLink via client.api(nextLink)
-    const firstPromise = this.getPage<T>();
+    const firstPromise = this.getPage<T>(options);
     const client = this.client;
+    const signal = options?.signal;
     async function* generator(): AsyncIterator<T> {
       const first = await firstPromise;
-      for await (const item of new PageIterator<T>(client, first)) {
+      for await (const item of new PageIterator<T>(client, first, signal)) {
         yield item;
       }
     }
@@ -303,13 +294,21 @@ export class DataverseRequestBuilder {
 
   async getAll<T = unknown>(opts: { maxItems?: number; maxPages?: number } = {}): Promise<T[]> {
     const out: T[] = [];
+    let page = await this.getPage<T>();
     let pages = 0;
-    for await (const item of this.iterate<T>()) {
-      out.push(item);
-      if (opts.maxItems && out.length >= opts.maxItems) break;
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- intentional infinite loop with explicit break statements
+    while (true) {
+      pages++;
+      for (const item of page.value) {
+        out.push(item);
+        if (opts.maxItems && out.length >= opts.maxItems) return out;
+      }
+      if (!page["@odata.nextLink"]) break;
+      if (opts.maxPages && pages >= opts.maxPages) break;
+      page = await this.client.api(page["@odata.nextLink"]).getPage<T>();
     }
-    pages++;
-    if (opts.maxPages && pages >= opts.maxPages) return out;
+
     return out;
   }
 

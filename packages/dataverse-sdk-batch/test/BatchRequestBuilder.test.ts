@@ -76,7 +76,7 @@ describe("BatchRequestBuilder", () => {
 
     it("should support dependsOn parameter", () => {
       builder.addRequest("req1", "POST", "/accounts", {}, { name: "Test" });
-      builder.addRequest("req2", "POST", "/contacts", {}, { name: "Contact" }, "req1");
+      builder.addRequest("req2", "POST", "/contacts", {}, { name: "Contact" }, ["req1"]);
       expect(builder.getTotalRequestCount()).toBe(2);
     });
   });

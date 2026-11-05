@@ -26,8 +26,19 @@ describe("DataverseClient", () => {
     const client2 = new DataverseClient({ baseUrl: `${BASE_URL}/api/data/v9.2` });
     expect(client2.getBaseUrl()).toBe(API_URL);
 
-    const client3 = new DataverseClient({ baseUrl: BASE_URL, apiVersion: "v9.1" });
-    expect(client3.getBaseUrl()).toBe(`${BASE_URL}/api/data/v9.1`);
+    const client3 = new DataverseClient({ baseUrl: BASE_URL, apiVersion: "v9.2" });
+    expect(client3.getBaseUrl()).toBe(`${BASE_URL}/api/data/v9.2`);
+  });
+
+  it("throws InvalidBaseUrl error when baseUrl uses http://", () => {
+    expect(() => new DataverseClient({ baseUrl: "http://org.crm.dynamics.com" })).toThrow(
+      "must use HTTPS"
+    );
+    try {
+      new DataverseClient({ baseUrl: "http://org.crm.dynamics.com" });
+    } catch (err) {
+      expect((err as Error & { name: string }).name).toBe("InvalidBaseUrl");
+    }
   });
 
   it("performs GET request", async () => {
@@ -82,10 +93,12 @@ describe("DataverseClient", () => {
   });
 
   it("handles impersonation and If-Match headers", async () => {
-    let capturedHeaders: Record<string, string> = {};
+    const capturedHeaders: Record<string, string> = {};
     server.use(
       http.patch(`${API_URL}/accounts*`, ({ request }) => {
-        capturedHeaders = Object.fromEntries(request.headers.entries());
+        request.headers.forEach((value, key) => {
+          capturedHeaders[key] = value;
+        });
         return new HttpResponse(null, { status: 204 });
       })
     );

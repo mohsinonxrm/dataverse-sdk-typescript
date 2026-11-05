@@ -5,15 +5,20 @@ import type {
   RequestInformation,
 } from "../abstractions/http.js";
 import { buildUrl } from "../utils/url.js";
+import { DataverseNetworkError } from "../errors/NamedErrors.js";
 
 export class FetchRequestAdapter implements RequestAdapter {
   constructor(private fetchProvider: FetchProvider) {}
 
   async send(request: RequestInformation, _ctx?: MiddlewareContext): Promise<Response> {
     const url = buildUrl(request);
+    let timedOut = false;
     const controller = request.timeoutMs ? new AbortController() : undefined;
     const timeout = request.timeoutMs
-      ? setTimeout(() => controller?.abort(), request.timeoutMs)
+      ? setTimeout(() => {
+          timedOut = true;
+          controller?.abort();
+        }, request.timeoutMs)
       : undefined;
 
     const signal = mergeSignals(request.signal, controller?.signal);
@@ -27,6 +32,12 @@ export class FetchRequestAdapter implements RequestAdapter {
 
     try {
       return await this.fetchProvider.fetch(url, init);
+    } catch (err) {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- timedOut is set in the setTimeout callback before abort fires
+      if (timedOut) {
+        throw DataverseNetworkError.timeout(request.timeoutMs ?? 0);
+      }
+      throw err;
     } finally {
       if (timeout) clearTimeout(timeout);
     }

@@ -13,7 +13,7 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
       - name: Generate
@@ -23,5 +23,15 @@ jobs:
           CLIENT_ID: ${{ secrets.CLIENT_ID }}
           CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
         run: pnpm generate:metadata-types
-      - name: Create PR (placeholder)
-        run: echo "Create PR with changes (use peter-evans/create-pull-request)"
+      - name: Create PR with generated changes
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore(generated): regenerate metadata types"
+          branch: "auto/generate-metadata-types"
+          delete-branch: true
+          title: "chore(generated): regenerate metadata types"
+          body: |
+            Automated PR to update generated metadata types.
+            Triggered by: workflow_dispatch
+          labels: "automated,generated"

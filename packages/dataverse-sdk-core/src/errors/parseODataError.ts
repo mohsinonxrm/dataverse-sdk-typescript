@@ -12,7 +12,7 @@ export async function parseODataError(res: Response, rawText?: string): Promise<
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const parsed = safeJson(bodyText);
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unnecessary-condition
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const message =
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     parsed?.error?.message ?? parsed?.message ?? `HTTP ${String(status)}`;

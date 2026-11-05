@@ -1,0 +1,21 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    groups:
+      dev-dependencies:
+        dependency-type: "development"
+    ignore:
+      # Vitest 2.x has breaking changes — track manually
+      - dependency-name: "vitest"
+        update-types: ["version-update:semver-major"]
+      # TypeScript minor upgrades — track manually
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-minor"]
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
