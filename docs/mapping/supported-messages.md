@@ -341,37 +341,40 @@ const request2 = new SetStateRequest({
 
 ### Batch Execute Messages
 
-Combine multiple messages in a single batch:
+Combine the Web API forms of several messages in a single batch. `BatchRequestBuilder.addRequest()` takes the HTTP request itself (`id, method, url, headers?, body?`), not a message object, so write each message as the request it maps to (see the table above):
 
 ```typescript
-import { BatchBuilder } from "@mohsinonxrm/dataverse-sdk-batch";
-import { AssignRequest, SetStateRequest } from "@mohsinonxrm/dataverse-sdk-messages";
+import { BatchRequestBuilder } from "@mohsinonxrm/dataverse-sdk-batch";
 
-const batch = new BatchBuilder(client);
+const batch = new BatchRequestBuilder(client);
 
 // Begin changeset for transactional execution
-batch.beginChangeSet();
+batch.beginChangeset();
 
-// Add multiple message executions
-batch.addRequest(
-  new AssignRequest({
-    Target: { entityLogicalName: "account", id: accountId },
-    Assignee: { entityLogicalName: "systemuser", id: newOwnerId },
-  })
-);
+// Assign: PATCH the record's owner
+batch.addRequest("assign", "PATCH", `accounts(${accountId})`, undefined, {
+  "ownerid@odata.bind": `/systemusers(${newOwnerId})`,
+});
 
-batch.addRequest(
-  new SetStateRequest({
-    EntityMoniker: { entityLogicalName: "account", id: accountId },
-    State: 0,
-    Status: 1,
-  })
-);
+// SetState: PATCH statecode and statuscode
+batch.addRequest("setState", "PATCH", `accounts(${accountId})`, undefined, {
+  statecode: 0,
+  statuscode: 1,
+});
 
-batch.endChangeSet();
+// An action: POST to the action's URL with its parameters as the body
+batch.addRequest("win", "POST", "WinOpportunity", undefined, {
+  Status: 3,
+  OpportunityClose: {
+    subject: "Won",
+    "opportunityid@odata.bind": `/opportunities(${opportunityId})`,
+  },
+});
 
-// Execute all messages atomically
-const results = await batch.execute();
+batch.endChangeset();
+
+// Execute all requests atomically; results are keyed by the ids above
+const result = await batch.execute();
 ```
 
 ### Metadata Operations

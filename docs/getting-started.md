@@ -348,42 +348,59 @@ import { BatchRequestBuilder } from "@mohsinonxrm/dataverse-sdk-batch";
 
 const batch = new BatchRequestBuilder(client);
 
-// Add multiple operations
-batch.addRequest(client.api("/accounts").select(["name"]));
-batch.addRequest(client.api("/contacts").select(["fullname"]).top(10));
-batch.addRequest(client.api(`/accounts(${accountId})`));
+// addRequest(id, method, url, headers?, body?, dependsOn?)
+// URLs are relative to the Web API root (or absolute).
+batch.addRequest("accounts", "GET", "accounts?$select=name");
+batch.addRequest("contacts", "GET", "contacts?$select=fullname&$top=10");
+batch.addRequest("account", "GET", `accounts(${accountId})`);
 
-// Execute batch
-const responses = await batch.execute();
+// Execute batch: one POST $batch
+const result = await batch.execute();
 
-console.log("Accounts:", responses[0].value);
-console.log("Contacts:", responses[1].value);
-console.log("Account detail:", responses[2]);
+// Responses are keyed by the ids above (and listed in order in result.results)
+console.log("Accounts:", result.responses.get("accounts")?.body.value);
+console.log("Contacts:", result.responses.get("contacts")?.body.value);
+console.log("Account detail:", result.responses.get("account")?.body);
 ```
 
 ### Batch with Change Sets
 
 ```typescript
+import { BatchRequestBuilder, DataverseBatchError } from "@mohsinonxrm/dataverse-sdk-batch";
+
 const batch = new BatchRequestBuilder(client);
 
 // Begin change set for transactional updates
-batch.beginChangeSet();
+batch.beginChangeset();
 
 // All operations in change set succeed or fail together
-batch.addRequest(client.api("/accounts").post({ name: "Account 1" }));
-batch.addRequest(client.api("/accounts").post({ name: "Account 2" }));
-batch.addRequest(client.api(`/accounts(${existingId})`).patch({ revenue: 100000 }));
+batch.addRequest("a1", "POST", "accounts", undefined, { name: "Account 1" });
+// "$a1" refers to the account created by request "a1"
+batch.addRequest(
+  "c1",
+  "POST",
+  "contacts",
+  undefined,
+  { lastname: "Smith", "parentcustomerid_account@odata.bind": "$a1" },
+  ["a1"]
+);
+batch.addRequest("upd", "PATCH", `accounts(${existingId})`, undefined, { revenue: 100000 });
 
-batch.endChangeSet();
+batch.endChangeset();
 
 // Execute with error handling
 try {
-  const responses = await batch.execute();
-  console.log("All changes committed successfully");
+  const result = await batch.execute();
+  console.log("All changes committed:", result.responses.get("a1")?.headers["odata-entityid"]);
 } catch (error) {
-  console.error("Batch failed, all changes rolled back:", error);
+  if (error instanceof DataverseBatchError) {
+    // The change set was rolled back; error.result has the failing response
+    console.error("Batch failed, all changes rolled back:", error.result?.errors);
+  }
 }
 ```
+
+Without `continueOnError`, Dataverse stops at the first failure and `execute()` throws `DataverseBatchError`. With `execute({ continueOnError: true })` it runs every request and returns the result. More than 1000 requests are split into several `$batch` requests. See the [batch package README](../packages/dataverse-sdk-batch/README.md).
 
 ### Bulk Operations (Alternative to $batch)
 
