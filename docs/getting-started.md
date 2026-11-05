@@ -554,10 +554,12 @@ a longer wait is returned to you as a `DataverseThrottleError` with `retryAfterM
 
 ### Type Safety
 
-All operations support TypeScript auto-completion. Use generated types:
+All operations support TypeScript auto-completion. Business entity types such as `Account` are
+generated for your org by `@mohsinonxrm/dataverse-sdk-generator` (the metadata package holds only
+metadata types such as `EntityMetadata`):
 
 ```typescript
-import type { Account } from "@mohsinonxrm/dataverse-sdk-metadata";
+import type { Account } from "./generated/entities/Account.js";
 
 const account: Account = await client.api(`/accounts(${id})`).get();
 //    ^^^^^^^ Full type safety

@@ -575,8 +575,8 @@ const entityDef: EntityMetadataCreate = {
   HasNotes: true,
 };
 
-const createdEntity = await metadataClient.createEntity(entityDef);
-console.log(`Created entity: ${createdEntity.LogicalName}`);
+const entityMetadataId = await metadataClient.createEntityDefinition(entityDef);
+console.log(`Created entity: ${entityMetadataId}`);
 
 // ========== CREATE ATTRIBUTE ==========
 const attrDef: StringAttributeMetadataCreate = {
@@ -588,7 +588,7 @@ const attrDef: StringAttributeMetadataCreate = {
   FormatName: { Value: "Text" },
 };
 
-await metadataClient.createAttribute("new_project", attrDef);
+await metadataClient.createAttributeDefinition("new_project", attrDef);
 console.log("Attribute created");
 
 // ========== CREATE 1:N RELATIONSHIP ==========

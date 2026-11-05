@@ -365,19 +365,33 @@ await org.execute(mergeRequest);
 ### Metadata Operations
 
 ```typescript
-import { MetadataClient, StringAttributeMetadataCreate } from "@mohsinonxrm/dataverse-sdk-metadata";
+import { MetadataClient } from "@mohsinonxrm/dataverse-sdk-metadata";
+import type { StringAttributeMetadataCreate } from "@mohsinonxrm/dataverse-sdk-metadata";
 
 const metadata = new MetadataClient(client);
 
-// Create custom entity
-await metadata.createEntity({
+// Create custom entity (returns its MetadataId); Attributes must include the primary name column
+const entityId = await metadata.createEntityDefinition({
   "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
   SchemaName: "new_CustomEntity",
   DisplayName: {
     LocalizedLabels: [{ Label: "Custom Entity", LanguageCode: 1033 }],
   },
-  PrimaryNameAttribute: "new_name",
-  Attributes: [/* ... */],
+  DisplayCollectionName: {
+    LocalizedLabels: [{ Label: "Custom Entities", LanguageCode: 1033 }],
+  },
+  OwnershipType: "UserOwned",
+  HasActivities: false,
+  HasNotes: false,
+  Attributes: [
+    {
+      "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
+      SchemaName: "new_Name",
+      IsPrimaryName: true,
+      MaxLength: 100,
+      DisplayName: { LocalizedLabels: [{ Label: "Name", LanguageCode: 1033 }] },
+    },
+  ],
 });
 
 // Create string attribute
@@ -390,7 +404,7 @@ const attribute: StringAttributeMetadataCreate = {
   },
 };
 
-await metadata.createAttribute("new_custentity", attribute);
+await metadata.createAttributeDefinition("new_customentity", attribute);
 ```
 
 ### File Upload (Chunked)
