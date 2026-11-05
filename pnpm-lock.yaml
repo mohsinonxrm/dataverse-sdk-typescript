@@ -139,16 +139,25 @@ importers:
 
   packages/dataverse-sdk-auth-msal-browser:
     dependencies:
-      '@azure/msal-browser':
-        specifier: ^3.30.0
-        version: 3.30.0
       '@mohsinonxrm/dataverse-sdk-core':
         specifier: workspace:*
         version: link:../dataverse-sdk-core
     devDependencies:
+      '@azure/msal-browser':
+        specifier: ^3.30.0
+        version: 3.30.0
+      '@mohsinonxrm/dataverse-sdk-testing':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-testing
       eslint:
         specifier: ^9.39.5
         version: 9.39.5
+      msal-browser-v4:
+        specifier: npm:@azure/msal-browser@^4.30.0
+        version: '@azure/msal-browser@4.30.0'
+      msal-browser-v5:
+        specifier: npm:@azure/msal-browser@^5.28.0
+        version: '@azure/msal-browser@5.28.0'
       tsup:
         specifier: ^8.5.1
         version: 8.5.1(postcss@8.5.32)(tsx@4.23.15)(typescript@5.9.3)(yaml@2.9.1)
@@ -264,6 +273,9 @@ importers:
         specifier: workspace:*
         version: link:../dataverse-sdk-core
     devDependencies:
+      '@mohsinonxrm/dataverse-sdk-testing':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-testing
       eslint:
         specifier: ^9.39.5
         version: 9.39.5
@@ -402,6 +414,9 @@ importers:
       '@mohsinonxrm/dataverse-sdk-core':
         specifier: workspace:*
         version: link:../dataverse-sdk-core
+      '@mohsinonxrm/dataverse-sdk-discovery':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-discovery
       '@mohsinonxrm/dataverse-sdk-functions':
         specifier: workspace:*
         version: link:../dataverse-sdk-functions
@@ -906,12 +921,20 @@ packages:
     resolution: {integrity: sha512-I0XlIGVdM4E9kYP5eTjgW8fgATdzwxJvQ6bm2PNiHaZhEuUz47NYw1xHthC9R+lXz4i9zbShS0VdLyxd7n0GGA==}
     engines: {node: '>=0.8.0'}
 
+  '@azure/msal-browser@4.30.0':
+    resolution: {integrity: sha512-HBBKfbZkMVzzF5bofvS1cXuNHFVc+gt4/HOnCmG/0hsHuZRJvJvDg/+7nTwIpoqvJc8BQp5o23rBUfisOLxR+w==}
+    engines: {node: '>=0.8.0'}
+
   '@azure/msal-browser@5.28.0':
     resolution: {integrity: sha512-f3yY518Z++x3ZogCbcLK6vnABgpxc8rAKGKtQibcUJKAVU9gamgh5mNAPJIRwduzXQvO2xtHx/gtmPz8iuZ8+w==}
     engines: {node: '>=0.8.0'}
 
   '@azure/msal-common@14.16.1':
     resolution: {integrity: sha512-nyxsA6NA4SVKh5YyRpbSXiMr7oQbwark7JU9LMeg6tJYTSPyAGkdx61wPT4gyxZfxlSxMMEyAsWaubBlNyIa1w==}
+    engines: {node: '>=0.8.0'}
+
+  '@azure/msal-common@15.17.0':
+    resolution: {integrity: sha512-VQ5/gTLFADkwue+FohVuCqlzFPUq4xSrX8jeZe+iwZuY6moliNC8xt86qPVNYdtbQfELDf2Nu6LI+demFPHGgw==}
     engines: {node: '>=0.8.0'}
 
   '@azure/msal-common@16.16.0':
@@ -4975,11 +4998,17 @@ snapshots:
     dependencies:
       '@azure/msal-common': 14.16.1
 
+  '@azure/msal-browser@4.30.0':
+    dependencies:
+      '@azure/msal-common': 15.17.0
+
   '@azure/msal-browser@5.28.0':
     dependencies:
       '@azure/msal-common': 16.16.0
 
   '@azure/msal-common@14.16.1': {}
+
+  '@azure/msal-common@15.17.0': {}
 
   '@azure/msal-common@16.16.0': {}
 
