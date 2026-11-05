@@ -6,6 +6,7 @@ import type {
 } from "../abstractions/http.js";
 import { buildUrl } from "../utils/url.js";
 import { DataverseNetworkError } from "../errors/NamedErrors.js";
+import { isStreamBody, toFetchBody } from "../utils/body.js";
 
 export class FetchRequestAdapter implements RequestAdapter {
   constructor(private fetchProvider: FetchProvider) {}
@@ -23,12 +24,15 @@ export class FetchRequestAdapter implements RequestAdapter {
 
     const signal = mergeSignals(request.signal, controller?.signal);
 
-    const init: RequestInit = {
+    const init: RequestInit & { duplex?: "half" } = {
       method: request.method,
       headers: request.headers,
-      body: request.body === undefined ? undefined : JSON.stringify(request.body),
+      // Plain objects and arrays become JSON; strings, binary, Blob, FormData and streams go as-is.
+      body: toFetchBody(request.body),
       signal,
     };
+    // Streaming request bodies require half-duplex in fetch implementations that support them.
+    if (isStreamBody(request.body)) init.duplex = "half";
 
     try {
       return await this.fetchProvider.fetch(url, init);

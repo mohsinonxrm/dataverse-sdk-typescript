@@ -216,6 +216,34 @@ describe.skipIf(!live)("live: $batch", () => {
     expect(text).toMatch(/Content-ID: 1\r\n\r\nHTTP\/1\.1 204/i);
   });
 
+  it("#7: a raw multipart $batch string goes through client.send() unchanged", async () => {
+    // Before #7 the SDK JSON-quoted string bodies, and Dataverse answered 400 0x80060888.
+    const { client } = liveClient();
+    const api = client.getBaseUrl();
+    const b = "batch_sdkit_send";
+    const body = [
+      `--${b}`,
+      "Content-Type: application/http",
+      "Content-Transfer-Encoding: binary",
+      "",
+      `GET ${api}/WhoAmI HTTP/1.1`,
+      "Accept: application/json",
+      "",
+      `--${b}--`,
+      "",
+    ].join("\r\n");
+    const res = await client.send({
+      method: "POST",
+      url: `${api}/$batch`,
+      headers: { "Content-Type": `multipart/mixed; boundary=${b}` },
+      body,
+    });
+    expect(res.status).toBe(200);
+    const text = await res.text();
+    expect(text).toContain("HTTP/1.1 200 OK");
+    expect(text).toContain('"UserId"');
+  });
+
   it.fails("#54: BatchRequestBuilder.execute() runs a batch", async () => {
     const { client } = liveClient();
     const batch = new BatchRequestBuilder(client);
