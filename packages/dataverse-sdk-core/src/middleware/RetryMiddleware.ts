@@ -1,11 +1,39 @@
 import type { Middleware, NextMiddleware } from "../abstractions/middleware.js";
 import type { MiddlewareContext, RequestInformation } from "../abstractions/http.js";
-import type { DataverseClientOptions, RetryOptions } from "../abstractions/options.js";
+import type {
+  DataverseClientOptions,
+  RetryAttempt,
+  RetryOptions,
+} from "../abstractions/options.js";
 import { DataverseNetworkError } from "../errors/NamedErrors.js";
 import { withJitter } from "../utils/jitter.js";
 import { sleep } from "../utils/sleep.js";
 import { isStreamBody } from "../utils/body.js";
 import { parseRetryAfter, isStreamContent } from "../utils/HeaderUtils.js";
+
+const attemptsByResponse = new WeakMap<Response, readonly RetryAttempt[]>();
+
+function attemptEntry(attempt: number, status: number, retryAfterMs?: number): RetryAttempt {
+  return retryAfterMs === undefined ? { attempt, status } : { attempt, status, retryAfterMs };
+}
+
+function recordAttempts(res: Response, history: RetryAttempt[]): void {
+  attemptsByResponse.set(res, Object.freeze([...history]));
+}
+
+/**
+ * The attempts the retry middleware made for the request that produced `res`, oldest first: one
+ * entry when there was no retry. `undefined` for a response that did not come through a client.
+ *
+ * @example
+ * ```typescript
+ * const res = await client.send({ method: "GET", url: "WhoAmI", headers: {} });
+ * const retries = (getRetryAttempts(res)?.length ?? 1) - 1;
+ * ```
+ */
+export function getRetryAttempts(res: Response): readonly RetryAttempt[] | undefined {
+  return attemptsByResponse.get(res);
+}
 
 const DEFAULTS = {
   maxRetries: 6,
@@ -31,10 +59,41 @@ export class RetryMiddleware implements Middleware {
 
     // A stream body can be read only once, so a request carrying one is never retried.
     if (isStreamBody(request.body)) {
-      return next(request, ctx);
+      const res = await next(request, ctx);
+      recordAttempts(res, [{ attempt: 0, status: res.status }]);
+      return res;
     }
 
     let attempt = 0;
+    const history: RetryAttempt[] = [];
+    /** Record the attempt, tell `onRetry`, then wait. */
+    const waitBeforeRetry = async (entry: RetryAttempt, delayMs: number) => {
+      history.push({ ...entry, delayMs });
+      if (opt.onRetry) {
+        try {
+          opt.onRetry({
+            attempt: attempt + 1,
+            maxRetries: opt.maxRetries,
+            status: entry.status,
+            error: entry.error,
+            delayMs,
+            retryAfterMs: entry.retryAfterMs,
+            request,
+            correlationId: ctx.correlationId,
+          });
+        } catch (hookError) {
+          ctx.logger?.warn("onRetry threw; ignoring", { error: String(hookError) });
+        }
+      }
+      await sleep(delayMs, request.signal);
+      attempt++;
+    };
+    const done = (res: Response): Response => {
+      const retryAfterMs = parseRetryAfter(res.headers.get("retry-after"));
+      history.push(attemptEntry(attempt, res.status, retryAfterMs));
+      recordAttempts(res, history);
+      return res;
+    };
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     while (true) {
@@ -56,8 +115,7 @@ export class RetryMiddleware implements Middleware {
           maxRetries: opt.maxRetries,
           delayMs: delay,
         });
-        await sleep(delay, request.signal);
-        attempt++;
+        await waitBeforeRetry({ attempt, status: 0, error: err as Error }, delay);
         continue;
       }
 
@@ -65,15 +123,15 @@ export class RetryMiddleware implements Middleware {
       const contentType = res.headers.get("Content-Type");
       if (isStreamContent(contentType)) {
         ctx.logger?.debug("Skipping retry for stream content", { contentType });
-        return res;
+        return done(res);
       }
 
       if (opt.shouldRetry) {
         if (!opt.shouldRetry(res.status)) {
-          return res;
+          return done(res);
         }
       } else if (!opt.retryableStatusCodes.includes(res.status)) {
-        return res;
+        return done(res);
       } else if (
         res.status !== 429 &&
         !opt.retryNonIdempotent &&
@@ -85,11 +143,11 @@ export class RetryMiddleware implements Middleware {
           method: request.method,
           statusCode: res.status,
         });
-        return res;
+        return done(res);
       }
 
       if (attempt >= opt.maxRetries) {
-        return res;
+        return done(res);
       }
 
       const retryAfterMs = parseRetryAfter(res.headers.get("retry-after"));
@@ -101,7 +159,7 @@ export class RetryMiddleware implements Middleware {
           maxRetryAfterMs: opt.maxRetryAfterMs,
           statusCode: res.status,
         });
-        return res;
+        return done(res);
       }
       const delay = retryAfterMs ?? computeBackoff(opt, attempt);
 
@@ -113,8 +171,7 @@ export class RetryMiddleware implements Middleware {
       });
 
       // Important: for 429/5xx, we wait and retry.
-      await sleep(delay, request.signal);
-      attempt++;
+      await waitBeforeRetry(attemptEntry(attempt, res.status, retryAfterMs), delay);
     }
   }
 
@@ -131,7 +188,7 @@ export class RetryMiddleware implements Middleware {
 }
 
 type ResolvedOptions = typeof DEFAULTS &
-  Pick<RetryOptions, "shouldRetry"> & {
+  Pick<RetryOptions, "shouldRetry" | "onRetry"> & {
     maxRetryAfterMs: number;
   };
 
