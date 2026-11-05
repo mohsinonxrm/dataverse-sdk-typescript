@@ -57,17 +57,60 @@ Edit `.dataverse-gen.json`:
 - **entities**: Array of entity logical names to generate (empty = all)
 - **actions**: Array of action names to generate (empty = all)
 - **functions**: Array of function names to generate (empty = all)
-- **auth**: MSAL authentication configuration
+- **auth**: how the generator signs in to read metadata (see [Authentication](#-authentication))
 
 ### 3. Generate Code
 
 ```bash
-# With authentication flow (future implementation)
+# Sign in with the configured auth flow
 pnpm dataverse-gen generate
 
-# With manual access token
+# Or pass an access token for the environment yourself
 pnpm dataverse-gen generate --token "eyJ0eXAi..."
 ```
+
+---
+
+## 🔐 Authentication
+
+`generate` gets a token for `<environmentUrl>/.default` through
+`@mohsinonxrm/dataverse-sdk-auth-msal-node`. The token is acquired once per run, before generation
+starts, and `--token` takes precedence over `auth`.
+
+| `auth.flow`                                    | Client application                                 | Use it for                                                     |
+| ---------------------------------------------- | -------------------------------------------------- | -------------------------------------------------------------- |
+| `"deviceCode"`                                 | public client (enable "Allow public client flows") | a developer signing in; the code is shown in the terminal      |
+| `"clientCredentials"` (alias `"clientSecret"`) | confidential client with a client secret           | CI and scripts; the app must be an application user in the org |
+
+Settings left out of `auth` are read from the environment, so the config file can be committed
+without them:
+
+| Setting             | Environment variable      |
+| ------------------- | ------------------------- |
+| `auth.tenantId`     | `DATAVERSE_TENANT_ID`     |
+| `auth.clientId`     | `DATAVERSE_CLIENT_ID`     |
+| `auth.clientSecret` | `DATAVERSE_CLIENT_SECRET` |
+
+Keep the client secret in the environment variable rather than in the file (`validate` warns
+when the file has one). For a sovereign cloud, set `auth.authority`
+(e.g. `"https://login.microsoftonline.us/<tenant-id>"`).
+
+```json
+{
+  "environmentUrl": "https://yourorg.crm.dynamics.com",
+  "entities": ["account", "contact"],
+  "auth": { "flow": "clientCredentials" }
+}
+```
+
+```bash
+DATAVERSE_TENANT_ID=... DATAVERSE_CLIENT_ID=... DATAVERSE_CLIENT_SECRET=... pnpm dataverse-gen generate
+```
+
+With device code, the CLI prints the sign-in instructions
+("To sign in, use a web browser to open the page https://login.microsoft.com/device and enter the
+code ...") and continues once you have signed in. `"interactive"` is not supported; use
+`"deviceCode"`.
 
 ### 4. Use Generated Types
 
@@ -112,7 +155,7 @@ dataverse-gen generate [options]
 
 Options:
   -c, --config <path>  Path to configuration file (default: ".dataverse-gen.json")
-  --token <token>      Access token (if not using auth flow)
+  --token <token>      Access token to use instead of the configured auth flow
 ```
 
 ### `validate`
@@ -161,12 +204,13 @@ interface DataverseGenConfig {
     fileSuffix?: string;
   };
 
-  /** MSAL authentication (future feature) */
+  /** How `generate` signs in (see Authentication) */
   auth?: {
-    tenantId: string;
-    clientId: string;
-    flow: "deviceCode" | "clientSecret" | "interactive";
-    clientSecret?: string;
+    flow: "deviceCode" | "clientCredentials" | "clientSecret";
+    tenantId?: string; // default: DATAVERSE_TENANT_ID
+    clientId?: string; // default: DATAVERSE_CLIENT_ID
+    clientSecret?: string; // default: DATAVERSE_CLIENT_SECRET
+    authority?: string; // default: https://login.microsoftonline.com/<tenantId>
   };
 }
 ```
@@ -402,6 +446,9 @@ await generateCode(config, accessToken);
 
 console.log("✓ Code generation complete!");
 ```
+
+Without an access token, `generateCode(config)` signs in with `config.auth`, as the CLI does.
+`createCliTokenProvider(config)` returns the token provider for those settings.
 
 ---
 
@@ -660,7 +707,7 @@ export function getLogicalName(schemaName: string): string | undefined {
 - ✅ Polymorphic lookup consolidation
 - ✅ Calculated/rollup field annotations
 - ✅ Alternate keys support
-- ⏳ MSAL authentication flows (device code, client credentials)
+- ✅ MSAL authentication flows (device code, client credentials)
 - ⏳ Create/Update type splitting (exclude read-only fields)
 - ⏳ Custom template support (eject command)
 - ⏳ Incremental generation (only changed entities)

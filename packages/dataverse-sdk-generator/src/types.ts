@@ -49,29 +49,45 @@ export interface DataverseGenConfig {
   };
 
   /**
-   * MSAL authentication configuration for metadata retrieval
+   * MSAL authentication for metadata retrieval (used by `dataverse-gen generate`).
+   * `--token` on the command line takes precedence.
    */
-  auth?: {
-    /**
-     * Azure AD tenant ID
-     */
-    tenantId: string;
+  auth?: DataverseGenAuthConfig;
+}
 
-    /**
-     * Azure AD client/app ID
-     */
-    clientId: string;
+/**
+ * How `dataverse-gen` signs in to read metadata. Values left out are read from the
+ * `DATAVERSE_TENANT_ID`, `DATAVERSE_CLIENT_ID` and `DATAVERSE_CLIENT_SECRET` environment
+ * variables, so the config file can be committed without them.
+ */
+export interface DataverseGenAuthConfig {
+  /**
+   * Authentication flow:
+   * - `"deviceCode"`: sign in as a user with a code shown in the terminal (public client app);
+   * - `"clientCredentials"` (or `"clientSecret"`): an app registration with a client secret,
+   *   added to the org as an application user.
+   *
+   * `"interactive"` is not supported; use `"deviceCode"`.
+   */
+  flow: "deviceCode" | "clientCredentials" | "clientSecret" | "interactive";
 
-    /**
-     * Authentication flow: "deviceCode" | "clientSecret" | "interactive"
-     */
-    flow: "deviceCode" | "clientSecret" | "interactive";
+  /** Microsoft Entra tenant ID (default: `DATAVERSE_TENANT_ID`) */
+  tenantId?: string;
 
-    /**
-     * Client secret (required for clientSecret flow)
-     */
-    clientSecret?: string;
-  };
+  /** App registration (client) ID (default: `DATAVERSE_CLIENT_ID`) */
+  clientId?: string;
+
+  /**
+   * Client secret, for client credentials (default: `DATAVERSE_CLIENT_SECRET`). Prefer the
+   * environment variable to keep the secret out of the config file.
+   */
+  clientSecret?: string;
+
+  /**
+   * Authority URL (default: `https://login.microsoftonline.com/<tenantId>`). Set it for a
+   * sovereign cloud, e.g. `https://login.microsoftonline.us/<tenantId>`.
+   */
+  authority?: string;
 }
 
 /**

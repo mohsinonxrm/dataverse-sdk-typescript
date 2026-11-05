@@ -27,8 +27,12 @@ export type {
 } from "./types.js";
 
 export { DEFAULT_CONFIG } from "./types.js";
+export type { DataverseGenAuthConfig } from "./types.js";
+export { acquireCliToken, createCliTokenProvider, dataverseScope } from "./auth.js";
+export type { CliAuthOptions } from "./auth.js";
 
 import type { DataverseGenConfig } from "./types.js";
+import { acquireCliToken } from "./auth.js";
 
 /**
  * Generate TypeScript code from Dataverse metadata
@@ -45,6 +49,9 @@ import type { DataverseGenConfig } from "./types.js";
  *
  * await generateCode(config, accessToken);
  * ```
+ *
+ * Without an access token, a token is acquired from `config.auth` (device code or client
+ * credentials), as the CLI does.
  */
 export async function generateCode(
   config: DataverseGenConfig,
@@ -54,7 +61,8 @@ export async function generateCode(
   const { TypescriptGenerator } = await import("./typescript-generator.js");
   const { MetadataService } = await import("./metadata-service.js");
 
-  const metadataService = new MetadataService(config, accessToken);
+  const token = accessToken ?? (config.auth ? await acquireCliToken(config, undefined) : undefined);
+  const metadataService = new MetadataService(config, token);
   const model = new SchemaModel(metadataService, config);
 
   await model.generate();
