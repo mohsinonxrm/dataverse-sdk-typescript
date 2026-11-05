@@ -423,12 +423,30 @@ if (activeAccount) {
   console.log('No active account set');
 }
 
-// Use specific account for token provider
+// The account is resolved on every request: MSAL's active account wins, so after
+// setActiveAccount(), the next request uses the new account.
+// To pin a provider to one account whatever the active account is, pass a function:
 const specificTokenProvider = new MsalBrowserTokenProvider(pca, {
   scopes: ['https://your-org.crm.dynamics.com/.default'],
-  account: accounts[0], // Use first account explicitly
+  account: () => accounts[0], // called on every request
 });
 ````
+
+**Account resolution, on every `getToken()` call:**
+
+1. `account` function, if given and it returns an account
+2. MSAL's active account (`pca.setActiveAccount()` / `tokenProvider.setActiveAccount()`)
+3. `account` `AccountInfo`, if given
+4. The first cached account
+5. None: sign in interactively
+
+### Guest users and other tenants
+
+Pass `tenantId` to get a token from a specific tenant, for example a guest account whose home tenant isn't the Dataverse organization's tenant. It becomes the request's `authority`, on the host of your MSAL configuration's authority (for example `https://login.microsoftonline.com/<tenantId>`).
+
+```typescript
+const token = await tokenProvider.getToken(undefined, { tenantId: "<dataverse-tenant-id>" });
+```
 
 ### Sign Out
 
@@ -567,7 +585,7 @@ await tokenProvider.signOut(accounts[0]);
 ```typescript
 interface MsalBrowserTokenProviderOptions {
   scopes: string[]; // Required
-  account?: AccountInfo; // Optional
+  account?: AccountInfo | (() => AccountInfo | null | undefined); // Optional
   interactionType?: "popup" | "redirect"; // Default: 'popup'
   fallbackToRedirect?: boolean; // Default: false
   claims?: string; // Optional
@@ -575,14 +593,14 @@ interface MsalBrowserTokenProviderOptions {
 }
 ```
 
-| Property             | Type                    | Required | Default       | Description                                |
-| -------------------- | ----------------------- | -------- | ------------- | ------------------------------------------ |
-| `scopes`             | `string[]`              | ✅ Yes   | -             | OAuth scopes for Dataverse access          |
-| `account`            | `AccountInfo`           | ❌ No    | First account | Specific account for silent auth           |
-| `interactionType`    | `'popup' \| 'redirect'` | ❌ No    | `'popup'`     | How to handle interactive auth             |
-| `fallbackToRedirect` | `boolean`               | ❌ No    | `false`       | Redirect when the browser blocks the popup |
-| `claims`             | `string`                | ❌ No    | -             | JSON string for Conditional Access claims  |
-| `correlationId`      | `string`                | ❌ No    | -             | Correlation ID for tracing                 |
+| Property             | Type                                       | Required | Default                    | Description                                |
+| -------------------- | ------------------------------------------ | -------- | -------------------------- | ------------------------------------------ |
+| `scopes`             | `string[]`                                 | ✅ Yes   | -                          | OAuth scopes for Dataverse access          |
+| `account`            | `AccountInfo \| () => AccountInfo \| null` | ❌ No    | Active account, then first | Account to use; see account resolution     |
+| `interactionType`    | `'popup' \| 'redirect'`                    | ❌ No    | `'popup'`                  | How to handle interactive auth             |
+| `fallbackToRedirect` | `boolean`                                  | ❌ No    | `false`                    | Redirect when the browser blocks the popup |
+| `claims`             | `string`                                   | ❌ No    | -                          | JSON string for Conditional Access claims  |
+| `correlationId`      | `string`                                   | ❌ No    | -                          | Correlation ID for tracing                 |
 
 ### Common Scopes
 
@@ -676,20 +694,29 @@ const client2 = new DataverseClient({
 
 ## Error Handling
 
+Token failures reject with `MsalBrowserAuthenticationError`, a `DataverseAuthenticationError` that keeps what MSAL said:
+
+| Property        | Example                                  | Meaning                                        |
+| --------------- | ---------------------------------------- | ---------------------------------------------- |
+| `name`          | `TokenAcquisitionFailed`, `PopupBlocked` | Kind of failure                                |
+| `code`          | `consent_required`, `popup_blocked`      | Stable code: `popup_blocked`, else MSAL's code |
+| `errorCode`     | `consent_required`, `user_cancelled`     | MSAL `errorCode`                               |
+| `subError`      | `consent_required`, `basic_action`       | MSAL `subError`                                |
+| `errorNo`       | `65001`                                  | Entra ID error number (`AADSTS65001`)          |
+| `correlationId` | `…`                                      | MSAL correlation id, for support               |
+| `cause`         | the MSAL error                           | The original error                             |
+
 ```typescript
 import { DataverseAuthenticationError } from "@mohsinonxrm/dataverse-sdk-core";
+import { MsalBrowserAuthenticationError } from "@mohsinonxrm/dataverse-sdk-auth-msal-browser";
 
 try {
-  const client = new DataverseClient({
-    baseUrl: "https://your-org.crm.dynamics.com",
-    tokenProvider,
-  });
-
   const accounts = await client.api("/accounts").get();
 } catch (error) {
-  if (error instanceof DataverseAuthenticationError) {
+  if (error instanceof MsalBrowserAuthenticationError && error.errorNo === "65001") {
+    showMessage("An administrator must consent to this app for your organization.");
+  } else if (error instanceof DataverseAuthenticationError) {
     console.error("Authentication failed:", error.message);
-    // Handle auth error (e.g., show login button)
   } else {
     console.error("API call failed:", error);
   }

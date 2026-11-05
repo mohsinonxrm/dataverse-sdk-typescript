@@ -306,7 +306,7 @@ describe("blocked popup (#25)", () => {
 
     const error: unknown = await provider.getToken().catch((e: unknown) => e);
 
-    expect(error).not.toBeInstanceOf(MsalBrowserAuthenticationError);
+    expect(error).not.toMatchObject({ code: "popup_blocked" });
     expect(pca.acquireTokenRedirect).not.toHaveBeenCalled();
   });
 });

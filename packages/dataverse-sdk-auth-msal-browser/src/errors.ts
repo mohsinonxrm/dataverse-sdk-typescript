@@ -50,6 +50,7 @@ export interface MsalErrorLike {
   errorCode?: unknown;
   subError?: unknown;
   correlationId?: unknown;
+  errorNo?: unknown;
   message?: unknown;
 }
 
@@ -107,6 +108,8 @@ export interface MsalErrorDetails {
   subError?: string;
   /** Correlation id of the MSAL request, for support. */
   correlationId?: string;
+  /** Entra ID error number from a server error, e.g. `65001` for AADSTS65001 (consent needed). */
+  errorNo?: string;
 }
 
 /**
@@ -124,6 +127,7 @@ export class MsalBrowserAuthenticationError extends DataverseAuthenticationError
   readonly errorCode?: string;
   readonly subError?: string;
   readonly correlationId?: string;
+  readonly errorNo?: string;
 
   constructor(message: string, init: { name: string; code?: string; cause?: unknown }) {
     super(message);
@@ -132,10 +136,24 @@ export class MsalBrowserAuthenticationError extends DataverseAuthenticationError
     this.errorCode = stringField(init.cause, "errorCode");
     this.subError = stringField(init.cause, "subError");
     this.correlationId = stringField(init.cause, "correlationId");
+    this.errorNo = stringField(init.cause, "errorNo");
     this.code = init.code ?? this.errorCode;
     if (init.cause !== undefined) {
       this.cause = init.cause;
     }
+  }
+
+  /**
+   * MSAL (or anything else) failed to issue a token. `code`/`errorCode` hold MSAL's error code,
+   * for example `consent_required` or `user_cancelled`.
+   */
+  static tokenAcquisitionFailed(cause: unknown): MsalBrowserAuthenticationError {
+    const details =
+      cause instanceof Error ? cause.message : typeof cause === "string" ? cause : String(cause);
+    return new MsalBrowserAuthenticationError(
+      `Failed to acquire access token${details ? ": " + details : ""}`,
+      { name: "TokenAcquisitionFailed", cause }
+    );
   }
 
   /**
