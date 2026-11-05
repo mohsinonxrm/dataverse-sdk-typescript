@@ -66,7 +66,7 @@ describe("core: request wire format", () => {
     expect(Array.from(fake.last().bodyBytes ?? [])).toEqual([0, 1, 2, 255]);
   });
 
-  it.fails("#9: a caller's Content-Type is not duplicated by the SDK default", async () => {
+  it("#9: a caller's Content-Type is not duplicated by the SDK default", async () => {
     const { client, fake } = createTestClient();
     fake.on("POST", "/accounts", () => noContent());
     await client.send({

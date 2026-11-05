@@ -42,7 +42,7 @@ export class RetryMiddleware implements Middleware {
 
       // Add Retry-Attempt header for server-side diagnostics
       if (attempt > 0) {
-        request.headers["Retry-Attempt"] = attempt.toString();
+        request.headers["retry-attempt"] = attempt.toString();
       }
 
       const res = await next(request, ctx);
