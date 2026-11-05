@@ -322,25 +322,29 @@ await client
   .api(`/accounts(${accountId})`)
   .associate("contact_customer_accounts", "contacts", contactId);
 // POST /accounts(accountId)/contact_customer_accounts/$ref
-// Body: { "@odata.id": "/contacts(contactId)" }
+// Body: { "@odata.id": "https://org.crm.dynamics.com/api/data/v9.2/contacts(contactId)" }
 
 // Disassociate single record
 await client.api(`/accounts(${accountId})`).disassociate("contact_customer_accounts", contactId);
 // DELETE /accounts(accountId)/contact_customer_accounts(contactId)/$ref
 
-// Batch associate multiple records (requires @mohsinonxrm/dataverse-sdk-batch)
+// Associate several records: one $ref POST per id, in order (bindMany returns a Promise)
 await client
   .api(`/accounts(${accountId})`)
   .bindMany("contact_customer_accounts", "contacts", [contactId1, contactId2, contactId3]);
-// Internally uses BatchRequestBuilder for efficiency
-// Throws error if batch package not installed
+
+// Or as a single $batch, with the executor from the batch package
+import { createBindManyExecutor } from "@mohsinonxrm/dataverse-sdk-batch";
+await client
+  .api(`/accounts(${accountId})`)
+  .bindMany("contact_customer_accounts", "contacts", ids, createBindManyExecutor());
 ```
 
 **Navigation property binding details:**
 
 - Single-valued: Uses `@odata.bind` annotation in request body
 - Collection-valued: Uses `/$ref` endpoint for associate/disassociate
-- `bindMany()` dynamically imports `@mohsinonxrm/dataverse-sdk-batch` to avoid circular dependency
+- `bindMany()` sends one `$ref` POST per id by default; it stops at the first failure (earlier ids stay associated). It never uses `eval` or `new Function`, so it works under a strict CSP
 - All methods properly construct entity set paths and GUIDs
 
 #### URL Validation

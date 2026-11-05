@@ -172,8 +172,10 @@ export class DataverseRequestBuilder {
    */
   async associate(navigationProperty: string, entitySetName: string, id: string): Promise<void> {
     const refUrl = `${this.pathOrUrl}/${navigationProperty}/$ref`;
+    // Dataverse rejects a relative @odata.id here ("the odata.context annotation is missing"),
+    // so the reference is the absolute URL of the target record.
     await this.client.api(refUrl).post({
-      "@odata.id": `/${entitySetName}(${id})`,
+      "@odata.id": `${this.client.getBaseUrl()}/${entitySetName}(${id})`,
     });
   }
 
@@ -188,36 +190,43 @@ export class DataverseRequestBuilder {
   }
 
   /**
-   * Associate multiple records in batch using a provided executor.
+   * Associate several records with a collection-valued navigation property.
    *
-   * The executor is supplied by the batch package to avoid a circular package dependency.
-   * Import `createBindManyExecutor` from `@mohsinonxrm/dataverse-sdk-batch`.
+   * Without an executor, this sends one `POST …/{navigationProperty}/$ref` per id, one after the
+   * other, through the client (so auth, retry and the rest of the pipeline apply). It stops at the
+   * first failure and rejects with that error; ids before it stay associated. Pass an executor,
+   * such as `createBindManyExecutor()` from `@mohsinonxrm/dataverse-sdk-batch`, to send them as a
+   * single `$batch` instead.
    *
    * @example
    * ```typescript
-   * import { createBindManyExecutor } from '@mohsinonxrm/dataverse-sdk-batch';
-   * await client.api('accounts(id)').bindMany('contact_customer_accounts', 'contacts', ids, createBindManyExecutor());
+   * await client.api(`accounts(${id})`).bindMany("contact_customer_accounts", "contacts", ids);
    * ```
    *
    * @param navigationProperty - The navigation property name
    * @param entitySetName - The target entity set
-   * @param ids - Array of target record IDs
-   * @param executor - Batch executor from createBindManyExecutor()
+   * @param ids - Target record ids
+   * @param executor - Optional; how to send the associations (default: one request per id)
    */
   async bindMany(
     navigationProperty: string,
     entitySetName: string,
     ids: string[],
-    executor: BindManyExecutor
+    executor?: BindManyExecutor
   ): Promise<void> {
-    // Guard for JavaScript callers still using the old 3-argument signature.
-
-    if (typeof executor !== "function") {
-      throw new TypeError(
-        "bindMany() requires an executor. Pass createBindManyExecutor() from @mohsinonxrm/dataverse-sdk-batch."
-      );
+    if (executor !== undefined) {
+      // Guard for JavaScript callers passing something that isn't an executor.
+      if (typeof executor !== "function") {
+        throw new TypeError(
+          "bindMany(): the executor must be a function, e.g. createBindManyExecutor() from @mohsinonxrm/dataverse-sdk-batch."
+        );
+      }
+      await executor(this.client, this.pathOrUrl, navigationProperty, entitySetName, ids);
+      return;
     }
-    await executor(this.client, this.pathOrUrl, navigationProperty, entitySetName, ids);
+    for (const id of ids) {
+      await this.associate(navigationProperty, entitySetName, id);
+    }
   }
 
   /**

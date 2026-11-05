@@ -22,7 +22,7 @@ export function createBindManyExecutor(): BindManyExecutor {
         "POST",
         `${pathOrUrl}/${navigationProperty}/$ref`,
         undefined,
-        { "@odata.id": `/${entitySetName}(${id})` }
+        { "@odata.id": `${client.getBaseUrl()}/${entitySetName}(${id})` }
       );
     }
     await batch.execute();
