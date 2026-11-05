@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 import type { EntityReference } from "./types/EntityReference.js";
 import { getEntitySetNameFromReference } from "./types/EntityReference.js";
 import type { TargetFieldType } from "./types/index.js";
@@ -41,39 +42,19 @@ export class InitializeFromFunction implements Executable<InitializeFromResponse
     }
     if (this.skipParentalRelationshipMapping !== undefined) {
       aliases.push(`SkipParentalRelationshipMapping=@p2`);
-      params.append(
-        "@p2",
-        typeof this.skipParentalRelationshipMapping === "string"
-          ? `'${this.skipParentalRelationshipMapping}'`
-          : String(this.skipParentalRelationshipMapping)
-      );
+      params.append("@p2", formatAliasValue(this.skipParentalRelationshipMapping));
     }
     if (this.targetEntityName !== undefined) {
       aliases.push(`TargetEntityName=@p3`);
-      params.append(
-        "@p3",
-        typeof this.targetEntityName === "string"
-          ? `'${this.targetEntityName}'`
-          : String(this.targetEntityName)
-      );
+      params.append("@p3", formatAliasValue(this.targetEntityName));
     }
     if (this.targetFieldType !== undefined) {
       aliases.push(`TargetFieldType=@p4`);
-      params.append(
-        "@p4",
-        typeof this.targetFieldType === "string"
-          ? `'${this.targetFieldType}'`
-          : String(this.targetFieldType)
-      );
+      params.append("@p4", formatAliasValue(this.targetFieldType));
     }
     if (this.retrieveConsumableRecord !== undefined) {
       aliases.push(`RetrieveConsumableRecord=@p5`);
-      params.append(
-        "@p5",
-        typeof this.retrieveConsumableRecord === "string"
-          ? `'${this.retrieveConsumableRecord}'`
-          : String(this.retrieveConsumableRecord)
-      );
+      params.append("@p5", formatAliasValue(this.retrieveConsumableRecord));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

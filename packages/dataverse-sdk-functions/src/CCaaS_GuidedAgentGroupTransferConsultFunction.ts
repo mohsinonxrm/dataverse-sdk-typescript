@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 
 /**
  * Response from CCaaS_GuidedAgentGroupTransferConsult function
@@ -34,28 +35,15 @@ export class CCaaS_GuidedAgentGroupTransferConsultFunction implements Executable
     const aliases: string[] = [];
     if (this.intentFamilyId !== undefined) {
       aliases.push(`IntentFamilyId=@p1`);
-      params.append(
-        "@p1",
-        typeof this.intentFamilyId === "string"
-          ? `'${this.intentFamilyId}'`
-          : String(this.intentFamilyId)
-      );
+      params.append("@p1", formatAliasValue(this.intentFamilyId));
     }
     if (this.intentGroupId !== undefined) {
       aliases.push(`IntentGroupId=@p2`);
-      params.append(
-        "@p2",
-        typeof this.intentGroupId === "string"
-          ? `'${this.intentGroupId}'`
-          : String(this.intentGroupId)
-      );
+      params.append("@p2", formatAliasValue(this.intentGroupId));
     }
     if (this.intentId !== undefined) {
       aliases.push(`IntentId=@p3`);
-      params.append(
-        "@p3",
-        typeof this.intentId === "string" ? `'${this.intentId}'` : String(this.intentId)
-      );
+      params.append("@p3", formatAliasValue(this.intentId));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

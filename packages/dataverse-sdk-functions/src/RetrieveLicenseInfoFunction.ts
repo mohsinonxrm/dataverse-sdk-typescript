@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 
 /**
  * Response from RetrieveLicenseInfo function
@@ -24,10 +25,7 @@ export class RetrieveLicenseInfoFunction implements Executable<RetrieveLicenseIn
     const aliases: string[] = [];
     if (this.accessMode !== undefined) {
       aliases.push(`AccessMode=@p1`);
-      params.append(
-        "@p1",
-        typeof this.accessMode === "string" ? `'${this.accessMode}'` : String(this.accessMode)
-      );
+      params.append("@p1", formatAliasValue(this.accessMode));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 
 /**
  * Response from msdyn_getnotificationurl function
@@ -28,19 +29,11 @@ export class msdyn_getnotificationurlFunction implements Executable<msdyn_getnot
     const aliases: string[] = [];
     if (this.contactpoint !== undefined) {
       aliases.push(`contactpoint=@p1`);
-      params.append(
-        "@p1",
-        typeof this.contactpoint === "string" ? `'${this.contactpoint}'` : String(this.contactpoint)
-      );
+      params.append("@p1", formatAliasValue(this.contactpoint));
     }
     if (this.channeldefinitionid !== undefined) {
       aliases.push(`channeldefinitionid=@p2`);
-      params.append(
-        "@p2",
-        typeof this.channeldefinitionid === "string"
-          ? `'${this.channeldefinitionid}'`
-          : String(this.channeldefinitionid)
-      );
+      params.append("@p2", formatAliasValue(this.channeldefinitionid));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

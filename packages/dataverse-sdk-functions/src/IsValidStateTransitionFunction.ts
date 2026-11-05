@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 import type { EntityReference } from "./types/EntityReference.js";
 import { getEntitySetNameFromReference } from "./types/EntityReference.js";
 
@@ -38,17 +39,11 @@ export class IsValidStateTransitionFunction implements Executable<IsValidStateTr
     }
     if (this.newState !== undefined) {
       aliases.push(`NewState=@p2`);
-      params.append(
-        "@p2",
-        typeof this.newState === "string" ? `'${this.newState}'` : String(this.newState)
-      );
+      params.append("@p2", formatAliasValue(this.newState));
     }
     if (this.newStatus !== undefined) {
       aliases.push(`NewStatus=@p3`);
-      params.append(
-        "@p3",
-        typeof this.newStatus === "string" ? `'${this.newStatus}'` : String(this.newStatus)
-      );
+      params.append("@p3", formatAliasValue(this.newStatus));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

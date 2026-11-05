@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 import type { AppValidationResponse } from "./types/index.js";
 
 /**
@@ -24,10 +25,7 @@ export class ValidateAppFunction implements Executable<ValidateAppResponse> {
     const aliases: string[] = [];
     if (this.appModuleId !== undefined) {
       aliases.push(`AppModuleId=@p1`);
-      params.append(
-        "@p1",
-        typeof this.appModuleId === "string" ? `'${this.appModuleId}'` : String(this.appModuleId)
-      );
+      params.append("@p1", formatAliasValue(this.appModuleId));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

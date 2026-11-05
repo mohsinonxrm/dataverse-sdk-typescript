@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 import type { EntityReference } from "./types/EntityReference.js";
 import { getEntitySetNameFromReference } from "./types/EntityReference.js";
 
@@ -28,17 +29,11 @@ export class RetrieveExchangeAppointmentsFunction implements Executable<Retrieve
     const aliases: string[] = [];
     if (this.startDate !== undefined) {
       aliases.push(`StartDate=@p1`);
-      params.append(
-        "@p1",
-        typeof this.startDate === "string" ? `'${this.startDate}'` : String(this.startDate)
-      );
+      params.append("@p1", formatAliasValue(this.startDate));
     }
     if (this.endDate !== undefined) {
       aliases.push(`EndDate=@p2`);
-      params.append(
-        "@p2",
-        typeof this.endDate === "string" ? `'${this.endDate}'` : String(this.endDate)
-      );
+      params.append("@p2", formatAliasValue(this.endDate));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
