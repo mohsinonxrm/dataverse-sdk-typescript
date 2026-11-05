@@ -21,7 +21,8 @@
       "StatusMessage": 6,
       "TenantId": "00000000-0000-0000-0000-000000000010",
       "EnvironmentId": "00000000-0000-0000-0000-000000000020",
-      "TrialExpirationDate": null
+      "TrialExpirationDate": null,
+      "FinOpsUrl": null
     },
     {
       "Id": "00000000-0000-0000-0000-000000000002",
@@ -43,7 +44,8 @@
       "StatusMessage": 6,
       "TenantId": "00000000-0000-0000-0000-000000000010",
       "EnvironmentId": "00000000-0000-0000-0000-000000000030",
-      "TrialExpirationDate": "2026-12-01T00:00:00Z"
+      "TrialExpirationDate": "2026-12-01T00:00:00Z",
+      "FinOpsUrl": null
     },
     {
       "Id": "00000000-0000-0000-0000-000000000003",
@@ -65,7 +67,8 @@
       "StatusMessage": 4,
       "TenantId": "00000000-0000-0000-0000-000000000010",
       "EnvironmentId": "00000000-0000-0000-0000-000000000040",
-      "TrialExpirationDate": null
+      "TrialExpirationDate": null,
+      "FinOpsUrl": null
     }
   ]
 }

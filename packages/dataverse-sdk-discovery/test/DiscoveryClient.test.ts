@@ -15,9 +15,10 @@ import instancesV2 from "./fixtures/instances-v2.json";
 const DISCO = "https://globaldisco.crm.dynamics.com/api/discovery/v2.0";
 
 /**
- * A v2.0 `Instances` response shaped like the one documented in Microsoft Learn,
- * "Discover user organizations" (Instance entity properties). Not captured live: GDS needs a
- * delegated user token.
+ * A v2.0 `Instances` response with the properties documented in Microsoft Learn,
+ * "Discover user organizations" (Instance entity), plus `FinOpsUrl`. Its property names and JSON
+ * types match a live response (checked for names and types only); the values are Contoso
+ * placeholders, so no real org details are committed.
  */
 // Checked against the public type: a property the type lacks, or a wrong value type, fails typecheck.
 const fixture: DiscoveryResponse & { "@odata.context": string } = instancesV2;

@@ -18,6 +18,7 @@
     "@mohsinonxrm/dataverse-sdk-auth-msal-node": "workspace:*",
     "@mohsinonxrm/dataverse-sdk-batch": "workspace:*",
     "@mohsinonxrm/dataverse-sdk-core": "workspace:*",
+    "@mohsinonxrm/dataverse-sdk-discovery": "workspace:*",
     "@mohsinonxrm/dataverse-sdk-metadata": "workspace:*",
     "@mohsinonxrm/dataverse-sdk-xrm": "workspace:*"
   },
