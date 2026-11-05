@@ -64,14 +64,27 @@ const response = await orgService.execute(request);
 For messages not yet typed or custom messages:
 
 ```typescript
-import { OrganizationRequest } from "@mohsinonxrm/dataverse-sdk-messages";
+import { OrganizationRequest, OrganizationResponse } from "@mohsinonxrm/dataverse-sdk-messages";
 
+// Unbound action: POST /CustomAction. Values are sent as given, so an entity parameter uses
+// the Web API shape.
 const request = new OrganizationRequest("CustomAction", {
-  Target: { entityLogicalName: "account", id: accountId },
+  Account: { "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: accountId },
   Parameter1: "value",
 });
+const response = await orgService.execute<OrganizationResponse>(request);
+console.log(response.Results);
 
-const response = await orgService.execute(request);
+// Bound action: POST /accounts({accountId})/Microsoft.Dynamics.CRM.new_BoundAction
+await orgService.execute(
+  new OrganizationRequest(
+    "new_BoundAction",
+    { Parameter1: "value" },
+    {
+      boundTo: { entitySetName: "accounts", id: accountId },
+    }
+  )
+);
 ```
 
 ---
