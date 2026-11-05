@@ -217,12 +217,10 @@ const accountId = await org.create("accounts", {
 // Retrieve
 const account = await org.retrieve("accounts", accountId, {
   select: ["name", "revenue"],
-  expand: {
-    primarycontactid: { select: ["fullname"] },
-  },
+  expand: [{ navigationProperty: "primarycontactid", select: ["fullname"] }],
 });
 
-// Update
+// Update (never creates a missing record; with an etag, fails with 412 if it changed)
 await org.update(
   "accounts",
   accountId,
@@ -232,11 +230,14 @@ await org.update(
   { etag: account["@odata.etag"] }
 );
 
+// Associate (EntityReference uses the logical name)
+await org.associate("accounts", accountId, "contact_customer_accounts", [
+  { logicalName: "contact", id: contactId1 },
+  { logicalName: "contact", id: contactId2 },
+]);
+
 // Delete
 await org.delete("accounts", accountId);
-
-// Associate
-await org.associate("accounts", accountId, "contact_customer_accounts", [contactId1, contactId2]);
 ```
 
 ### Typed Actions & Functions

@@ -23,6 +23,37 @@ export interface EntityReference {
 }
 
 /**
+ * One navigation property to expand, with its nested query options. Becomes
+ * `navigationProperty($select=…;$filter=…;$orderby=…;$top=…)` in `$expand`.
+ */
+export interface ExpandOption {
+  /**
+   * Navigation property name (e.g. 'primarycontactid', 'contact_customer_accounts')
+   */
+  navigationProperty: string;
+
+  /**
+   * Specific fields to select from the expanded entity
+   */
+  select?: string[];
+
+  /**
+   * Filter for the expanded entity (collection-valued navigation properties only)
+   */
+  filter?: string;
+
+  /**
+   * OrderBy for the expanded entity (collection-valued navigation properties only)
+   */
+  orderBy?: string;
+
+  /**
+   * Top for the expanded entity (collection-valued navigation properties only)
+   */
+  top?: number;
+}
+
+/**
  * Options for create operations
  */
 export interface CreateOptions {
@@ -38,8 +69,15 @@ export interface CreateOptions {
   select?: string[];
 
   /**
-   * Suppress duplicate detection rules
-   * Sets MSCRM.SuppressDuplicateDetection header
+   * Run duplicate detection rules for this request: sends `MSCRM.SuppressDuplicateDetection: false`,
+   * and a duplicate rejects with `DataverseDuplicateError` (412). The Web API skips duplicate
+   * detection by default, so leave this off to skip it.
+   */
+  detectDuplicates?: boolean;
+
+  /**
+   * The Web API skips duplicate detection by default, so `true` (or leaving it out) changes
+   * nothing. `false` runs duplicate detection, the same as `detectDuplicates: true`.
    */
   suppressDuplicateDetection?: boolean;
 
@@ -65,36 +103,10 @@ export interface RetrieveOptions {
   select?: string[];
 
   /**
-   * Related entities to expand
+   * Related entities to expand: a raw `$expand` value, or a list of {@link ExpandOption}s that
+   * are combined into one `$expand`
    */
-  expand?:
-    | string
-    | Array<{
-        /**
-         * Navigation property name
-         */
-        navigationProperty: string;
-
-        /**
-         * Specific fields to select from the expanded entity
-         */
-        select?: string[];
-
-        /**
-         * Filter for the expanded entity
-         */
-        filter?: string;
-
-        /**
-         * OrderBy for the expanded entity
-         */
-        orderBy?: string;
-
-        /**
-         * Top for the expanded entity
-         */
-        top?: number;
-      }>;
+  expand?: string | ExpandOption[];
 
   /**
    * User ID to impersonate for this operation
@@ -113,8 +125,8 @@ export interface RetrieveOptions {
  */
 export interface UpdateOptions {
   /**
-   * ETag value for optimistic concurrency
-   * Sets If-Match header
+   * ETag value for optimistic concurrency, sent as `If-Match`. Without it, `If-Match: *` is sent,
+   * so the update fails with 404 instead of creating a missing record.
    */
   etag?: string;
 
@@ -130,8 +142,15 @@ export interface UpdateOptions {
   select?: string[];
 
   /**
-   * Suppress duplicate detection rules
-   * Sets MSCRM.SuppressDuplicateDetection header
+   * Run duplicate detection rules for this request: sends `MSCRM.SuppressDuplicateDetection: false`,
+   * and a duplicate rejects with `DataverseDuplicateError` (412). The Web API skips duplicate
+   * detection by default, so leave this off to skip it.
+   */
+  detectDuplicates?: boolean;
+
+  /**
+   * The Web API skips duplicate detection by default, so `true` (or leaving it out) changes
+   * nothing. `false` runs duplicate detection, the same as `detectDuplicates: true`.
    */
   suppressDuplicateDetection?: boolean;
 
@@ -236,17 +255,10 @@ export interface RetrieveMultipleOptions {
   count?: boolean;
 
   /**
-   * Related entities to expand
+   * Related entities to expand: a raw `$expand` value, or a list of {@link ExpandOption}s that
+   * are combined into one `$expand`
    */
-  expand?:
-    | string
-    | Array<{
-        navigationProperty: string;
-        select?: string[];
-        filter?: string;
-        orderBy?: string;
-        top?: number;
-      }>;
+  expand?: string | ExpandOption[];
 
   /**
    * User ID to impersonate for this operation

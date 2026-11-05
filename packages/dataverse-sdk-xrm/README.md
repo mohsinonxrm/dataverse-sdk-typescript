@@ -21,6 +21,8 @@ const client = new DataverseClient({
 
 const service = new OrganizationService(client);
 
+// CRUD methods take the entity set name ("accounts"), not the logical name ("account").
+
 // Create
 const accountId = await service.create("accounts", {
   name: "Contoso Ltd",
@@ -41,6 +43,11 @@ await service.update("accounts", accountId, {
 await service.delete("accounts", accountId);
 ```
 
+Every method goes through the client's request builder (`client.api()`), so auth, retry and
+throttling handling apply, and a failed request rejects with the core error types
+(`DataverseError` and its subclasses, such as `DataverseDuplicateError` for a 412 from duplicate
+detection).
+
 ## API Reference
 
 ### create
@@ -48,11 +55,12 @@ await service.delete("accounts", accountId);
 Creates a new entity record.
 
 ```typescript
-async create<T = unknown>(
+create(entitySetName: string, entity: Record<string, unknown>, options?: CreateOptions): Promise<string>;
+create<T>(
   entitySetName: string,
   entity: Record<string, unknown>,
-  options?: CreateOptions
-): Promise<string | T>
+  options: CreateOptions & { returnRepresentation: true }
+): Promise<T>;
 ```
 
 **Parameters:**
@@ -63,13 +71,14 @@ async create<T = unknown>(
 
 **Options:**
 
-- `returnRepresentation?: boolean` - Return the created entity instead of just the ID
+- `returnRepresentation?: boolean` - Return the created entity instead of just the ID (sends `Prefer: return=representation`)
 - `select?: string[]` - Columns to return when using returnRepresentation
-- `suppressDuplicateDetection?: boolean` - Bypass duplicate detection rules
-- `impersonateUserId?: string` - User ID to impersonate
+- `detectDuplicates?: boolean` - Run duplicate detection rules (sends `MSCRM.SuppressDuplicateDetection: false`); a duplicate rejects with `DataverseDuplicateError`
+- `suppressDuplicateDetection?: boolean` - The Web API skips duplicate detection by default, so `true` changes nothing; `false` is the same as `detectDuplicates: true`
+- `impersonateUserId?: string` - User ID to impersonate (sends `MSCRMCallerID`)
 - `headers?: Record<string, string>` - Additional custom headers
 
-**Returns:** Entity ID (GUID string) by default, or the full entity if `returnRepresentation: true`
+**Returns:** Entity ID (GUID string, read from the `OData-EntityId` response header) by default, or the full entity if `returnRepresentation: true`
 
 **Examples:**
 
@@ -90,11 +99,11 @@ const account = await service.create<Account>(
   }
 );
 
-// Create with duplicate detection suppression
+// Create with duplicate detection (off by default in the Web API)
 const contactId = await service.create(
   "contacts",
   { firstname: "John", lastname: "Doe" },
-  { suppressDuplicateDetection: true }
+  { detectDuplicates: true }
 );
 
 // Create with impersonation
@@ -185,8 +194,12 @@ async update<T = unknown>(
   id: string,
   entity: Record<string, unknown>,
   options?: UpdateOptions
-): Promise<T | void>
+): Promise<T | undefined>
 ```
+
+Like the C# `Update`, this never creates a record. The PATCH carries `If-Match: *` (or
+`If-Match: <etag>` when `etag` is set), so updating a record that doesn't exist rejects with a
+404 instead of creating it. For an upsert, use `client.api(...).patch()`.
 
 **Parameters:**
 
@@ -197,10 +210,11 @@ async update<T = unknown>(
 
 **Options:**
 
-- `etag?: string` - ETag for optimistic concurrency
-- `returnRepresentation?: boolean` - Return the updated entity
+- `etag?: string` - ETag for optimistic concurrency, sent as `If-Match` (default `*`); a stale ETag rejects with 412
+- `returnRepresentation?: boolean` - Return the updated entity (sends `Prefer: return=representation`)
 - `select?: string[]` - Columns to return when using returnRepresentation
-- `suppressDuplicateDetection?: boolean` - Bypass duplicate detection rules
+- `detectDuplicates?: boolean` - Run duplicate detection rules
+- `suppressDuplicateDetection?: boolean` - `false` is the same as `detectDuplicates: true`; `true` is the default
 - `impersonateUserId?: string` - User ID to impersonate
 - `headers?: Record<string, string>` - Additional custom headers
 
@@ -220,7 +234,7 @@ await service.update(
   "accounts",
   accountId,
   { revenue: 6000000 },
-  { etag: "*" } // or specific ETag value
+  { etag: account["@odata.etag"] } // rejects with 412 if the record changed since it was read
 );
 
 // Update with returnRepresentation
@@ -234,12 +248,12 @@ const updatedAccount = await service.update<Account>(
   }
 );
 
-// Update with duplicate detection suppression
+// Update with duplicate detection
 await service.update(
   "contacts",
   contactId,
   { emailaddress1: "new@email.com" },
-  { suppressDuplicateDetection: true }
+  { detectDuplicates: true }
 );
 ```
 
@@ -316,11 +330,11 @@ async retrieveMultiple<T = any>(
 - `impersonateUserId?: string` - User ID to impersonate
 - `headers?: Record<string, string>` - Additional custom headers
 
-**Returns:** `RetrieveMultipleResult<T>` with properties:
+**Returns:** one page, as `RetrieveMultipleResult<T>` with properties:
 
 - `value: T[]` - Array of entity records
 - `@odata.count?: number` - Total count (if `count: true`)
-- `@odata.nextLink?: string` - URL for next page (if results are paginated)
+- `@odata.nextLink?: string` - URL for next page (if results are paginated); fetch it with `client.api(nextLink).get()`, or use `client.api(...).iterate()` to walk every page
 
 **Examples:**
 
@@ -379,8 +393,8 @@ async associate(
 
 - `entitySetName` - The plural entity set name
 - `id` - The GUID of the primary record
-- `relationship` - The relationship schema name (navigation property)
-- `relatedEntities` - Array of entities to associate
+- `relationship` - The collection-valued navigation property name
+- `relatedEntities` - Array of `EntityReference`s (`{ logicalName, id }`, with the logical name such as `"contact"`) to associate; each is sent as one `POST …/$ref`
 - `options` - Optional association settings
 
 **Options:**
@@ -474,9 +488,7 @@ Works with:
 - Messages from `@mohsinonxrm/dataverse-sdk-messages`
 
 ```typescript
-async execute<TRequest, TResponse>(
-  request: TRequest
-): Promise<TResponse>
+async execute<TResponse>(request: unknown): Promise<TResponse>
 ```
 
 **Parameters:**
@@ -500,25 +512,25 @@ console.log("User ID:", whoAmI.UserId);
 console.log("Business Unit:", whoAmI.BusinessUnitId);
 console.log("Organization:", whoAmI.OrganizationId);
 
-// Execute an action
+// Execute an action: constructor arguments are positional (opportunityClose, caller, status)
 import { WinOpportunityAction } from "@mohsinonxrm/dataverse-sdk-actions";
 
-const request = new WinOpportunityAction({
-  OpportunityClose: {
-    "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
+const winRequest = new WinOpportunityAction(
+  {
     subject: "Won!",
     "opportunityid@odata.bind": `/opportunities(${opportunityId})`,
   },
-  Status: -1, // Won
-});
-const response = await service.execute(request);
+  "",
+  3 // a statuscode of the Won state, e.g. 3 = Won
+);
+await service.execute(winRequest);
 
-// Execute a message (when available)
+// Execute a message: ExecuteWorkflowRequest(workflowId, entityId, inputArguments)
 import { ExecuteWorkflowRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 
-const request = new ExecuteWorkflowRequest(workflowId, entityId);
-const response = await service.execute(request);
-console.log("Async Operation ID:", response.asyncOperationId);
+const workflowResponse = await service.execute(
+  new ExecuteWorkflowRequest(workflowId, entityId, {})
+);
 ```
 
 ---
@@ -635,7 +647,8 @@ interface EntityReference {
 
 ### ExpandOption
 
-Detailed expand configuration for retrieve operations.
+Detailed expand configuration for retrieve operations. A list of them becomes one `$expand`,
+e.g. `primarycontactid($select=fullname),Account_Tasks($select=subject;$top=5)`.
 
 ```typescript
 interface ExpandOption {
@@ -656,25 +669,20 @@ interface ExpandOption {
 Prevent concurrent update conflicts using ETags:
 
 ```typescript
-// Retrieve with ETag
-const response = await client
-  .api(`/accounts(${accountId})`)
-  .header("Prefer", "return=representation")
-  .get();
-
-const etag = response.headers.get("ETag");
-const account = await response.json();
+// Every retrieved record carries its ETag
+const account = await service.retrieve("accounts", accountId, { select: ["revenue"] });
+const etag = account["@odata.etag"];
 
 // Update with ETag check
 try {
   await service.update("accounts", accountId, { revenue: account.revenue + 100000 }, { etag });
 } catch (error) {
-  // Handle 412 Precondition Failed if record was modified
+  // 412 Precondition Failed: the record was modified since it was read
   console.error("Record was modified by another user");
 }
 
-// Use wildcard to require record exists but skip version check
-await service.update("accounts", accountId, { revenue: 7000000 }, { etag: "*" });
+// Without an etag, update() sends If-Match: * (the record must exist; no version check)
+await service.update("accounts", accountId, { revenue: 7000000 });
 ```
 
 ### Impersonation
@@ -700,18 +708,29 @@ await service.delete("accounts", accountId, {
 
 ### Duplicate Detection
 
-Bypass duplicate detection rules when needed:
+The Web API skips duplicate detection rules unless a request asks for them. Turn them on per
+request with `detectDuplicates`; a duplicate rejects with `DataverseDuplicateError` (412):
 
 ```typescript
-await service.create(
-  "contacts",
-  {
-    firstname: "John",
-    lastname: "Doe",
-    emailaddress1: "john.doe@contoso.com",
-  },
-  { suppressDuplicateDetection: true }
-);
+import { DataverseDuplicateError } from "@mohsinonxrm/dataverse-sdk-core";
+
+try {
+  await service.create(
+    "contacts",
+    {
+      firstname: "John",
+      lastname: "Doe",
+      emailaddress1: "john.doe@contoso.com",
+    },
+    { detectDuplicates: true }
+  );
+} catch (error) {
+  if (error instanceof DataverseDuplicateError) {
+    console.warn("A matching contact already exists");
+  } else {
+    throw error;
+  }
+}
 ```
 
 ### GUID Normalization
@@ -735,7 +754,7 @@ await service.retrieve("accounts", "{12345678-1234-1234-1234-123456789012}".toUp
 | -------------------------- | ----------- | -------------------------------------------------------- |
 | `create()`                 | POST        | `/{entitySetName}`                                       |
 | `retrieve()`               | GET         | `/{entitySetName}({id})`                                 |
-| `update()`                 | PATCH       | `/{entitySetName}({id})`                                 |
+| `update()`                 | PATCH       | `/{entitySetName}({id})` with `If-Match`                 |
 | `delete()`                 | DELETE      | `/{entitySetName}({id})`                                 |
 | `retrieveMultiple()`       | GET         | `/{entitySetName}?query`                                 |
 | `associate()`              | POST        | `/{entitySetName}({id})/{relationship}/$ref`             |
@@ -752,8 +771,7 @@ You can use `OrganizationService` for convenience or use `DataverseClient` direc
 const id = await service.create("accounts", { name: "Contoso" });
 
 // Using DataverseClient directly (HTTP-first)
-const response = await client.api("/accounts").post({ name: "Contoso" });
-const id = extractIdFromHeader(response.headers.get("OData-EntityId"));
+const id = await client.api("/accounts").createAndGetId({ name: "Contoso" });
 ```
 
 ---
