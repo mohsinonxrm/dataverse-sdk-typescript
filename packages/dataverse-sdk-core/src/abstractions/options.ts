@@ -104,6 +104,18 @@ export interface RetryOptions {
   useExponentialBackoff?: boolean;
 }
 
+/** Per-header switches for `DataverseClientOptions.diagnosticHeaders`. Each defaults to `true`. */
+export interface DiagnosticHeaderOptions {
+  /** `x-ms-sdk-version: dataverse-sdk-js/<version>`. */
+  sdkVersion?: boolean;
+  /** `x-ms-correlation-id: <per-request id>`. */
+  correlationId?: boolean;
+  /** `x-ms-feature-usage: <hex flags>`. */
+  featureUsage?: boolean;
+  /** `retry-attempt: <n>` on retried requests. */
+  retryAttempt?: boolean;
+}
+
 /** Client-level request logging settings. */
 export interface LoggingConfig {
   /**
@@ -190,6 +202,13 @@ export interface DataverseClientOptions {
    * the default is used.
    */
   redactUrl?: (url: URL) => string;
+  /**
+   * The SDK's own diagnostic request headers: `x-ms-sdk-version`, `x-ms-correlation-id`,
+   * `x-ms-feature-usage`, and `retry-attempt` on retries. Default `true` (all sent). `false`
+   * sends none of them, so `fetch` sees only the headers the request itself needs; an object
+   * turns them off one by one (omitted ones stay on). Telemetry still records the correlation id.
+   */
+  diagnosticHeaders?: boolean | DiagnosticHeaderOptions;
   retry?: RetryOptions;
   concurrency?: ConcurrencyOptions;
   circuitBreaker?: CircuitBreakerOptions;
