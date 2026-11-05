@@ -35,8 +35,8 @@ const client = new DataverseClient({
   tokenProvider,
 });
 
-// A DataverseClient is a RequestAdapter: client.send() runs each request through its pipeline.
-const fileClient = new FileColumnClient(client, client.getBaseUrl());
+// Every request runs through client.send(): auth, retry, logging and telemetry apply.
+const fileClient = new FileColumnClient(client);
 
 // Upload file to account logo (image column)
 const accountId = 'aaaa-bbbb-cccc-dddd';
@@ -170,7 +170,7 @@ function ProfilePictureUpload({ client, accountId }) {
   const [progress, setProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
 
-  const fileClient = new FileColumnClient(client, client.getBaseUrl());
+  const fileClient = new FileColumnClient(client);
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
@@ -224,11 +224,13 @@ function ProfilePictureUpload({ client, accountId }) {
 #### Constructor
 
 ```typescript
+new FileColumnClient(client: DataverseClient)
 new FileColumnClient(adapter: RequestAdapter, baseUrl?: string)
 ```
 
-- `adapter`: any object with `send(request: RequestInformation): Promise<Response>`. Pass your `DataverseClient` (it has no `requestAdapter` property; the client itself satisfies the interface, and `client.send()` applies its auth, retry and logging).
-- `baseUrl`: the Web API root, e.g. `client.getBaseUrl()` (`https://org.crm.dynamics.com/api/data/v9.2`). Pass it explicitly: the default `""` is tracked in #59.
+- `client`: your `DataverseClient`. Requests go through `client.send()`, so its auth, retry, logging and telemetry apply, and URLs are built on `client.getBaseUrl()`.
+- `adapter`: any object with `send(request: RequestInformation): Promise<Response>`. A raw adapter such as `FetchRequestAdapter` adds no auth or retry.
+- `baseUrl`: the Web API root, e.g. `https://contoso.crm.dynamics.com/api/data/v9.2`. Optional when the adapter has a `getBaseUrl()` method (a `DataverseClient` does). Without either, the constructor throws a `DataverseInvalidRequestError` (name `MissingParameter`).
 
 #### Methods
 

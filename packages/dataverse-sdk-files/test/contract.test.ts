@@ -16,9 +16,9 @@ import { FileColumnClient } from "../src/index.js";
 
 const ID = "00000000-0000-0000-0000-000000000001";
 
-/** The only way to give FileColumnClient auth and retry today (#59). */
+/** A FileColumnClient on a real DataverseClient: requests run through its pipeline (#59). */
 function filesClientFor(client: DataverseClient): FileColumnClient {
-  return new FileColumnClient({ send: (r) => client.send(r) }, client.getBaseUrl());
+  return new FileColumnClient(client);
 }
 
 function uploadRoutes(fake: ReturnType<typeof createTestClient>["fake"], blockStatus = 204) {
