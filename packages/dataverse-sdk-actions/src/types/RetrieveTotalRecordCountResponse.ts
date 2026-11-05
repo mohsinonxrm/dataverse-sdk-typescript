@@ -4,5 +4,5 @@ import type { EntityRecordCountCollection } from "./EntityRecordCountCollection.
  * RetrieveTotalRecordCountResponse complex type
  */
 export interface RetrieveTotalRecordCountResponse {
-  EntityRecordCountCollection: EntityRecordCountCollection;
+  EntityRecordCountCollection?: EntityRecordCountCollection;
 }

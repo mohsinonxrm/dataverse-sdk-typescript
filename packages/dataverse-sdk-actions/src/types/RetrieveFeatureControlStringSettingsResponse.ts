@@ -4,5 +4,5 @@ import type { FeatureControlStringSettingData } from "./FeatureControlStringSett
  * RetrieveFeatureControlStringSettingsResponse complex type
  */
 export interface RetrieveFeatureControlStringSettingsResponse {
-  FeatureControlStringSettingCollection: FeatureControlStringSettingData[];
+  FeatureControlStringSettingCollection?: FeatureControlStringSettingData[];
 }

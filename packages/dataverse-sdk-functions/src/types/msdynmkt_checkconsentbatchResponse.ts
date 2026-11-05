@@ -2,6 +2,6 @@
  * msdynmkt_checkconsentbatchResponse complex type
  */
 export interface msdynmkt_checkconsentbatchResponse {
-  msdynmkt_errormessage: string;
-  msdynmkt_issuccess: boolean;
+  msdynmkt_errormessage?: string;
+  msdynmkt_issuccess?: boolean;
 }

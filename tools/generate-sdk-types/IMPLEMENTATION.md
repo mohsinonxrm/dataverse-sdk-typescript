@@ -250,11 +250,21 @@ csdlTypeToTs(csdlType: string): string {
 
 ### Nullable Handling
 
-- CSDL `Nullable="true"` → TypeScript `?` operator
-- Applied to:
-  - Interface properties (metadata)
-  - Constructor parameters (messages)
-  - Request body fields (actions/functions)
+- In CSDL a property without the `Nullable` facet is nullable (the default is `true`). Complex-type
+  and entity-type interface properties are optional (`?`) unless the CSDL says `Nullable="false"`.
+- The response interfaces of actions and functions keep the properties of a complex return type
+  required: Dataverse always includes them (as `null` when empty).
+
+### Base types and `@odata.type`
+
+- A complex or entity type with a generated `BaseType` extends it (`interface QueryExpression extends QueryBase`).
+- A type that other types derive from also gets a `Typed<Name>` union of its concrete types (not
+  `Abstract`, and not empty), each with a required `"@odata.type"` literal, for example
+  `TypedQueryBase = (FetchExpression & { "@odata.type": "Microsoft.Dynamics.CRM.FetchExpression" }) | …`.
+- Operation parameters declared with such a type (`QueryExpressionToFetchXml(Query: QueryBase)`)
+  use the union, so the value must say which derived type it is. Dataverse rejects a `QueryBase`
+  without `@odata.type` (HTTP 400, "The property 'EntityName' does not exist on type
+  'Microsoft.Dynamics.CRM.QueryBase'").
 
 ### Namespace Filtering
 

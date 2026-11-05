@@ -2,5 +2,5 @@
  * DownloadSolutionExportDataResponse complex type
  */
 export interface DownloadSolutionExportDataResponse {
-  ExportSolutionFile: string;
+  ExportSolutionFile?: string;
 }

@@ -4,5 +4,5 @@ import type { MailboxTrackingFolderMapping } from "./MailboxTrackingFolderMappin
  * RetrieveMailboxTrackingFoldersResponse complex type
  */
 export interface RetrieveMailboxTrackingFoldersResponse {
-  MailboxTrackingFolderMappings: MailboxTrackingFolderMapping[];
+  MailboxTrackingFolderMappings?: MailboxTrackingFolderMapping[];
 }

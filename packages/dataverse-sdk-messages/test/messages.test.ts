@@ -65,14 +65,14 @@ describe("Message Classes", () => {
     });
 
     it("should create ExecuteWorkflow response", () => {
-      const response = new ExecuteWorkflowResponse({} as any);
+      const response = new ExecuteWorkflowResponse({});
       expect(response.messageName).toBe("ExecuteWorkflow");
     });
   });
 
   describe("WinOpportunityRequest/Response", () => {
     it("should create WinOpportunity request with correct message name", () => {
-      const request = new WinOpportunityRequest({} as any, "", 3);
+      const request = new WinOpportunityRequest({}, "", 3);
       expect(request.messageName).toBe("WinOpportunity");
     });
 

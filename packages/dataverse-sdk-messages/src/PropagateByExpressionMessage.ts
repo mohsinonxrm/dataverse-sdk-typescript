@@ -1,7 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
-import type { PropagationOwnershipOptions, QueryBase } from "./types/index.js";
+import type { PropagationOwnershipOptions, TypedQueryBase } from "./types/index.js";
 
 /**
  * PropagateByExpression request message
@@ -13,7 +13,7 @@ export class PropagateByExpressionRequest
   implements Executable<PropagateByExpressionResponse>
 {
   constructor(
-    public queryExpression: QueryBase,
+    public queryExpression: TypedQueryBase,
     public friendlyName: string,
     public executeImmediately: boolean,
     public activity: EntityReference,

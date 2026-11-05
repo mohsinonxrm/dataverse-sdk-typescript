@@ -7,6 +7,7 @@ import type {
 import { resolve, join } from "path";
 import { csdlTypeToTs, toPascalCase as _toPascalCase } from "../utils/typescript-writer.js";
 import { writeTypeScriptFile, purgeDirectory } from "../utils/file-writer.js";
+import { concreteTypesOf, generatedBaseType, typedUnionName } from "../utils/polymorphism.js";
 
 /**
  * Generate TypeScript interfaces for all complex types, entity types, AND enums from CSDL.
@@ -62,7 +63,7 @@ export async function generateComplexTypes(
 
   // Generate one file per complex type
   for (const complexType of complexTypes) {
-    const content = generateComplexTypeInterface(complexType);
+    const content = generateComplexTypeInterface(csdl, complexType);
     const filename = `${complexType.name}.ts`;
     await writeTypeScriptFile(join(absolutePath, filename), content);
   }
@@ -70,7 +71,7 @@ export async function generateComplexTypes(
   // Generate one file per entity type (with conflict resolution)
   const entityTypeMetadata: Array<{ type: CsdlEntityType; filename: string }> = [];
   for (const entityType of entityTypes) {
-    const content = generateEntityTypeInterface(entityType);
+    const content = generateEntityTypeInterface(csdl, entityType);
     let filename = `${entityType.name}.ts`;
 
     // Check for case conflicts on case-insensitive filesystems
@@ -95,6 +96,7 @@ export async function generateComplexTypes(
 
   // Generate index.ts that exports all types with correct filenames
   const indexContent = generateIndexFile(
+    csdl,
     complexTypes.map((ct) => ({ name: ct.name, filename: ct.name })),
     enumTypes.map((et) => ({ name: et.name, filename: et.name })),
     entityTypeMetadata.map((et) => ({ name: et.type.name, filename: et.filename }))
@@ -110,11 +112,15 @@ export async function generateComplexTypes(
 /**
  * Generate TypeScript interface for a complex type.
  */
-function generateComplexTypeInterface(complexType: CsdlComplexType): string {
+function generateComplexTypeInterface(csdl: CsdlSchema, complexType: CsdlComplexType): string {
   const safeName = makeCodeSafe(complexType.name);
+  const baseTypeName = generatedBaseType(csdl, complexType.name);
+  const concreteTypes = concreteTypesOf(csdl, complexType.name);
 
   // Collect complex types used by this complex type
-  const importsNeeded = new Set<string>();
+  const importsNeeded = new Set<string>(
+    inheritanceImports(complexType.name, baseTypeName, concreteTypes)
+  );
   for (const prop of complexType.properties) {
     const tsType = csdlTypeToTs(prop.type);
     // Extract base type if it's an array
@@ -144,7 +150,7 @@ function generateComplexTypeInterface(complexType: CsdlComplexType): string {
   code += `/**\n`;
   code += ` * ${complexType.name} complex type\n`;
   code += ` */\n`;
-  code += `export interface ${safeName} {\n`;
+  code += `export interface ${safeName}${extendsClause(baseTypeName)} {\n`;
 
   if (complexType.properties.length === 0) {
     code += `  // No properties defined\n`;
@@ -157,12 +163,12 @@ function generateComplexTypeInterface(complexType: CsdlComplexType): string {
         const safeName = makeCodeSafe(baseType);
         tsType = tsType.endsWith("[]") ? `${safeName}[]` : safeName;
       }
-      const optional = prop.nullable ? "?" : "";
-      code += `  ${prop.name}${optional}: ${tsType};\n`;
+      code += `  ${prop.name}${optionalMark(prop)}: ${tsType};\n`;
     }
   }
 
   code += `}\n`;
+  code += typedUnion(complexType.name, concreteTypes);
 
   return code;
 }
@@ -170,11 +176,15 @@ function generateComplexTypeInterface(complexType: CsdlComplexType): string {
 /**
  * Generate TypeScript interface for an entity type.
  */
-function generateEntityTypeInterface(entityType: CsdlEntityType): string {
+function generateEntityTypeInterface(csdl: CsdlSchema, entityType: CsdlEntityType): string {
   const safeName = makeCodeSafe(entityType.name);
+  const baseTypeName = generatedBaseType(csdl, entityType.name);
+  const concreteTypes = concreteTypesOf(csdl, entityType.name);
 
   // Collect complex types used by this entity
-  const importsNeeded = new Set<string>();
+  const importsNeeded = new Set<string>(
+    inheritanceImports(entityType.name, baseTypeName, concreteTypes)
+  );
   for (const prop of entityType.properties) {
     const tsType = csdlTypeToTs(prop.type);
     // Extract base type if it's an array
@@ -201,7 +211,7 @@ function generateEntityTypeInterface(entityType: CsdlEntityType): string {
   code += `/**\n`;
   code += ` * ${entityType.name} entity type\n`;
   code += ` */\n`;
-  code += `export interface ${safeName} {\n`;
+  code += `export interface ${safeName}${extendsClause(baseTypeName)} {\n`;
 
   if (entityType.properties.length === 0) {
     code += `  // No properties defined\n`;
@@ -214,13 +224,56 @@ function generateEntityTypeInterface(entityType: CsdlEntityType): string {
         const safeName = makeCodeSafe(baseType);
         tsType = tsType.endsWith("[]") ? `${safeName}[]` : safeName;
       }
-      const optional = prop.nullable ? "?" : "";
-      code += `  ${prop.name}${optional}: ${tsType};\n`;
+      code += `  ${prop.name}${optionalMark(prop)}: ${tsType};\n`;
     }
   }
 
   code += `}\n`;
+  code += typedUnion(entityType.name, concreteTypes);
 
+  return code;
+}
+
+/**
+ * `?` unless the CSDL says `Nullable="false"`: in CSDL a property without the facet is nullable
+ * (#73), so Dataverse accepts it omitted from a request and may leave it out of a response.
+ */
+function optionalMark(prop: { nullable?: boolean }): string {
+  return prop.nullable === false ? "" : "?";
+}
+
+/** ` extends Base` when the type derives from another generated type. */
+function extendsClause(baseTypeName: string | undefined): string {
+  return baseTypeName ? ` extends ${makeCodeSafe(baseTypeName)}` : "";
+}
+
+/** The base type and the derived types of the `Typed<Name>` union, which the file must import. */
+function inheritanceImports(
+  typeName: string,
+  baseTypeName: string | undefined,
+  concreteTypes: string[]
+): string[] {
+  const names = concreteTypes.filter((t) => t !== typeName);
+  if (baseTypeName) names.push(baseTypeName);
+  return names;
+}
+
+/**
+ * For a type that other types derive from, a `Typed<Name>` union of its concrete types, each with a
+ * required `@odata.type` literal. Parameters declared with the base type use it, so the request
+ * says which derived type the value is (#73).
+ */
+function typedUnion(typeName: string, concreteTypes: string[]): string {
+  if (concreteTypes.length === 0) return "";
+  let code = `\n/**\n`;
+  code += ` * A ${typeName} value: one of the concrete types below, with the \`@odata.type\` that tells\n`;
+  code += ` * Dataverse which one it is.\n`;
+  code += ` */\n`;
+  code += `export type ${typedUnionName(typeName)} =\n`;
+  for (const t of concreteTypes) {
+    code += `  | (${makeCodeSafe(t)} & { "@odata.type": "Microsoft.Dynamics.CRM.${t}" })\n`;
+  }
+  code += `;\n`;
   return code;
 }
 
@@ -293,6 +346,7 @@ function makeCodeSafe(name: string): string {
  * Generate index.ts that exports all types (complex + entity + enum).
  */
 function generateIndexFile(
+  csdl: CsdlSchema,
   complexTypes: Array<{ name: string; filename: string }>,
   enumTypes: Array<{ name: string; filename: string }>,
   entityTypes: Array<{ name: string; filename: string }>
@@ -326,11 +380,14 @@ function generateIndexFile(
     // So we should export { safeName } without alias if they match,
     // or export { safeName } as well if they differ
     // Use the filename from metadata (may have _entity suffix for conflicts)
+    // The file also exports the Typed<Name> union when other types derive from this one
+    const union =
+      concreteTypesOf(csdl, type.name).length > 0 ? `, ${typedUnionName(type.name)}` : "";
     if (safeName !== type.name) {
       // File exports safeName (escaped), we just export it as-is
-      code += `export type { ${safeName} } from './${type.filename}.js';\n`;
+      code += `export type { ${safeName}${union} } from './${type.filename}.js';\n`;
     } else {
-      code += `export type { ${type.name} } from './${type.filename}.js';\n`;
+      code += `export type { ${type.name}${union} } from './${type.filename}.js';\n`;
     }
   }
 

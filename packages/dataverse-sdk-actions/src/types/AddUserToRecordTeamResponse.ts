@@ -2,5 +2,5 @@
  * AddUserToRecordTeamResponse complex type
  */
 export interface AddUserToRecordTeamResponse {
-  AccessTeamId: string;
+  AccessTeamId?: string;
 }

@@ -4,5 +4,5 @@ import type { FeatureControlStringSettingData } from "./FeatureControlStringSett
  * GetFeatureControlStringSettingsForNamespaceWithUserContextResponse complex type
  */
 export interface GetFeatureControlStringSettingsForNamespaceWithUserContextResponse {
-  FeatureControlStringSettingCollection: FeatureControlStringSettingData[];
+  FeatureControlStringSettingCollection?: FeatureControlStringSettingData[];
 }

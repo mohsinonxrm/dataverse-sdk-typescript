@@ -1,7 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
-import type { QueryBase } from "./types/index.js";
+import type { TypedQueryBase } from "./types/index.js";
 
 /**
  * SendBulkMail request message
@@ -17,7 +17,7 @@ export class SendBulkMailRequest
     public templateId: string,
     public regardingType: string,
     public regardingId: string,
-    public query: QueryBase
+    public query: TypedQueryBase
   ) {
     super("SendBulkMail");
   }

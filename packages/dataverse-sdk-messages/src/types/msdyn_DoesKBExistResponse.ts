@@ -2,5 +2,5 @@
  * msdyn_DoesKBExistResponse complex type
  */
 export interface msdyn_DoesKBExistResponse {
-  Response: string;
+  Response?: string;
 }

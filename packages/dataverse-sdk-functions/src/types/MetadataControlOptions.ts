@@ -4,5 +4,5 @@ import type { MetadataEntityOptionsControlMapping } from "./MetadataEntityOption
  * MetadataControlOptions complex type
  */
 export interface MetadataControlOptions {
-  ControlMappings: MetadataEntityOptionsControlMapping[];
+  ControlMappings?: MetadataEntityOptionsControlMapping[];
 }

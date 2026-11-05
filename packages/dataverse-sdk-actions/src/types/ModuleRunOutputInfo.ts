@@ -4,5 +4,5 @@ import type { ModuleEndpointOutputPathInfo } from "./ModuleEndpointOutputPathInf
  * ModuleRunOutputInfo complex type
  */
 export interface ModuleRunOutputInfo {
-  EndpointsOutputPathInfo: ModuleEndpointOutputPathInfo[];
+  EndpointsOutputPathInfo?: ModuleEndpointOutputPathInfo[];
 }

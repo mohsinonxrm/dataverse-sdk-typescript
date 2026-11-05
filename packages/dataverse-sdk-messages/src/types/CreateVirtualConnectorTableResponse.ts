@@ -2,5 +2,5 @@
  * CreateVirtualConnectorTableResponse complex type
  */
 export interface CreateVirtualConnectorTableResponse {
-  EntityId: string;
+  EntityId?: string;
 }

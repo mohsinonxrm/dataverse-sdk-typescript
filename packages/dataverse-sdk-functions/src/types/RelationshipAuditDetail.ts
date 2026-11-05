@@ -1,6 +1,8 @@
+import type { AuditDetail } from "./AuditDetail.js";
+
 /**
  * RelationshipAuditDetail complex type
  */
-export interface RelationshipAuditDetail {
-  RelationshipName: string;
+export interface RelationshipAuditDetail extends AuditDetail {
+  RelationshipName?: string;
 }

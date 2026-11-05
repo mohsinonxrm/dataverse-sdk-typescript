@@ -2,6 +2,6 @@
  * ActionLink complex type
  */
 export interface ActionLink {
-  Label: string;
-  Target: string;
+  Label?: string;
+  Target?: string;
 }

@@ -2,5 +2,5 @@
  * copilotquerytextcontextResponse complex type
  */
 export interface copilotquerytextcontextResponse {
-  response: string;
+  response?: string;
 }

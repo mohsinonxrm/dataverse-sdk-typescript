@@ -5,6 +5,6 @@ import type { MetadataPropertiesExpression } from "./MetadataPropertiesExpressio
  * AttributeQueryExpression complex type
  */
 export interface AttributeQueryExpression {
-  Criteria: MetadataFilterExpression;
-  Properties: MetadataPropertiesExpression;
+  Criteria?: MetadataFilterExpression;
+  Properties?: MetadataPropertiesExpression;
 }

@@ -2,5 +2,5 @@
  * msdyn_GetChildrensForHierarchyResponse complex type
  */
 export interface msdyn_GetChildrensForHierarchyResponse {
-  msdyn_AgentGroupToHierarchy: string;
+  msdyn_AgentGroupToHierarchy?: string;
 }

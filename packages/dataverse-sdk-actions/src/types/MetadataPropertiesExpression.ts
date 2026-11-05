@@ -2,6 +2,6 @@
  * MetadataPropertiesExpression complex type
  */
 export interface MetadataPropertiesExpression {
-  AllProperties: boolean;
-  PropertyNames: string[];
+  AllProperties?: boolean;
+  PropertyNames?: string[];
 }

@@ -4,10 +4,10 @@ import type { MissingPackageResolutionAction } from "./MissingPackageResolutionA
  * MissingPackage complex type
  */
 export interface MissingPackage {
-  AppName: string;
-  Version: string;
-  PackageName: string;
-  ResolutionAction: MissingPackageResolutionAction;
-  ResolutionActionValue: string;
-  IsFirstParty: boolean;
+  AppName?: string;
+  Version?: string;
+  PackageName?: string;
+  ResolutionAction?: MissingPackageResolutionAction;
+  ResolutionActionValue?: string;
+  IsFirstParty?: boolean;
 }

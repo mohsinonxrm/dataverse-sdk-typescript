@@ -2,5 +2,5 @@
  * ModuleRunIncrementalSettings complex type
  */
 export interface ModuleRunIncrementalSettings {
-  UseLatestInputDataOnFailure: boolean;
+  UseLatestInputDataOnFailure?: boolean;
 }

@@ -408,6 +408,9 @@ importers:
       '@azure/msal-node':
         specifier: ^2.16.3
         version: 2.16.3
+      '@mohsinonxrm/dataverse-sdk-actions':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-actions
       '@mohsinonxrm/dataverse-sdk-auth-msal-node':
         specifier: workspace:*
         version: link:../dataverse-sdk-auth-msal-node

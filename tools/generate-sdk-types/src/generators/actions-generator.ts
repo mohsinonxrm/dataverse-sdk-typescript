@@ -18,6 +18,7 @@ import {
   generateIndexFile as _generateIndexFile,
   purgeDirectory,
 } from "../utils/file-writer.js";
+import { polymorphicParameterType } from "../utils/polymorphism.js";
 
 /**
  * Map Complex* types to their non-Complex EntityType equivalents.
@@ -176,6 +177,12 @@ function generateActionClass(csdl: CsdlSchema, action: CsdlAction): string {
   // Check parameters
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   for (const param of action.parameters || []) {
+    // A parameter of a base type takes the Typed<Base> union of its derived types (#73)
+    const polymorphic = polymorphicParameterType(csdl, param.type);
+    if (polymorphic) {
+      complexTypesUsed.add(polymorphic.union);
+      continue;
+    }
     const typeName = csdlTypeToTs(param.type);
     const baseType = typeName.replace("[]", "");
     if (
@@ -277,7 +284,7 @@ function generateActionClass(csdl: CsdlSchema, action: CsdlAction): string {
 
     constructorParams.push({
       name: toCamelCase(param.name),
-      type: csdlTypeToTs(param.type, true),
+      type: polymorphicParameterType(csdl, param.type)?.tsType ?? csdlTypeToTs(param.type, true),
       tsName: param.name,
       isBinding: false,
     });

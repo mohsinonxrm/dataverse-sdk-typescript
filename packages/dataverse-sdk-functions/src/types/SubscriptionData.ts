@@ -5,6 +5,6 @@ import type { SubscriptionUpdatedEntityData } from "./SubscriptionUpdatedEntityD
  * SubscriptionData complex type
  */
 export interface SubscriptionData {
-  UpdatedEntityData: SubscriptionUpdatedEntityData[];
-  DeletedEntityData: SubscriptionDeletedEntityData[];
+  UpdatedEntityData?: SubscriptionUpdatedEntityData[];
+  DeletedEntityData?: SubscriptionDeletedEntityData[];
 }

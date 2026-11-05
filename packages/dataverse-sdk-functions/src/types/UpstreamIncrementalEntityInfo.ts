@@ -5,8 +5,8 @@ import type { UpstreamIncrementalEntityVersionInfo } from "./UpstreamIncremental
  * UpstreamIncrementalEntityInfo complex type
  */
 export interface UpstreamIncrementalEntityInfo {
-  DatasourceName: string;
-  EntityName: string;
-  VersionInfo: UpstreamIncrementalEntityVersionInfo;
-  TimestampInfo: UpstreamIncrementalEntityTimestampInfo;
+  DatasourceName?: string;
+  EntityName?: string;
+  VersionInfo?: UpstreamIncrementalEntityVersionInfo;
+  TimestampInfo?: UpstreamIncrementalEntityTimestampInfo;
 }

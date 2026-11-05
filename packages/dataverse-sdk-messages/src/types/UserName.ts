@@ -2,7 +2,7 @@
  * UserName complex type
  */
 export interface UserName {
-  FirstName: string;
-  LastName: string;
-  SystemUserId: string;
+  FirstName?: string;
+  LastName?: string;
+  SystemUserId?: string;
 }

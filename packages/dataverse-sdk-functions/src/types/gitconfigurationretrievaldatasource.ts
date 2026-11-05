@@ -2,6 +2,6 @@
  * gitconfigurationretrievaldatasource entity type
  */
 export interface gitconfigurationretrievaldatasource {
-  name: string;
-  gitconfigurationretrievaldatasourceid: string;
+  name?: string;
+  gitconfigurationretrievaldatasourceid?: string;
 }

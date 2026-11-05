@@ -2,6 +2,6 @@
  * RetrieveCascadeDeleteAsyncJobIdResponse complex type
  */
 export interface RetrieveCascadeDeleteAsyncJobIdResponse {
-  AsyncJobName: string;
-  AsyncJobId: string;
+  AsyncJobName?: string;
+  AsyncJobId?: string;
 }

@@ -2,5 +2,5 @@
  * BulkDetectDuplicatesResponse complex type
  */
 export interface BulkDetectDuplicatesResponse {
-  JobId: string;
+  JobId?: string;
 }

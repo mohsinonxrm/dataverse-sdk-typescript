@@ -2,5 +2,5 @@
  * GetNextAutoNumberValueResponse complex type
  */
 export interface GetNextAutoNumberValueResponse {
-  NextAutoNumberValue: number;
+  NextAutoNumberValue?: number;
 }

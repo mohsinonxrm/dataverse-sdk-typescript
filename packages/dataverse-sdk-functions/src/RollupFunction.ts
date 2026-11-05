@@ -2,7 +2,7 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatAliasValue } from "./internal/odataLiteral.js";
 import type { EntityReference } from "./types/EntityReference.js";
 import { getEntitySetNameFromReference } from "./types/EntityReference.js";
-import type { QueryBase, RollupType } from "./types/index.js";
+import type { RollupType, TypedQueryBase } from "./types/index.js";
 
 /**
  * Response from Rollup function
@@ -19,7 +19,7 @@ export interface RollupResponse {
 export class RollupFunction implements Executable<RollupResponse> {
   constructor(
     public readonly target: EntityReference,
-    public readonly query: QueryBase,
+    public readonly query: TypedQueryBase,
     public readonly rollupType: RollupType
   ) {}
 

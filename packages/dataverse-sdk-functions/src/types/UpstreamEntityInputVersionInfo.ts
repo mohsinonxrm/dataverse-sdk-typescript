@@ -2,7 +2,7 @@
  * UpstreamEntityInputVersionInfo complex type
  */
 export interface UpstreamEntityInputVersionInfo {
-  DatalakeFolderId: string;
-  SnapshotFileName: string;
-  EntityName: string;
+  DatalakeFolderId?: string;
+  SnapshotFileName?: string;
+  EntityName?: string;
 }

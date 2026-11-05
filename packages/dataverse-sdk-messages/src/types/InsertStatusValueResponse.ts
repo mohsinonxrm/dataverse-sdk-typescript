@@ -2,5 +2,5 @@
  * InsertStatusValueResponse complex type
  */
 export interface InsertStatusValueResponse {
-  NewOptionValue: number;
+  NewOptionValue?: number;
 }

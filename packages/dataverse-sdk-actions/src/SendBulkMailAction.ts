@@ -1,6 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
-import type { QueryBase } from "./types/index.js";
+import type { TypedQueryBase } from "./types/index.js";
 
 /**
  * Response from SendBulkMail action
@@ -20,7 +20,7 @@ export class SendBulkMailAction implements Executable<SendBulkMailResponse> {
     public readonly templateId: string,
     public readonly regardingType: string,
     public readonly regardingId: string,
-    public readonly query: QueryBase
+    public readonly query: TypedQueryBase
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -4,5 +4,5 @@ import type { AddComponentToSolutionParameters } from "./AddComponentToSolutionP
  * AddComponentToSolutionParametersCollection complex type
  */
 export interface AddComponentToSolutionParametersCollection {
-  ParameterCollection: AddComponentToSolutionParameters[];
+  ParameterCollection?: AddComponentToSolutionParameters[];
 }

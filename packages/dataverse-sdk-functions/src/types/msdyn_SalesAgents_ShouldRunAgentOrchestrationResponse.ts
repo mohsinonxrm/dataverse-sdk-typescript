@@ -2,5 +2,5 @@
  * msdyn_SalesAgents_ShouldRunAgentOrchestrationResponse complex type
  */
 export interface msdyn_SalesAgents_ShouldRunAgentOrchestrationResponse {
-  msdyn_ShouldRun: boolean;
+  msdyn_ShouldRun?: boolean;
 }

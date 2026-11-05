@@ -2,8 +2,8 @@
  * CanvasAppsDetails complex type
  */
 export interface CanvasAppsDetails {
-  UniqueName: string;
-  AppId: string;
-  Type: number;
-  PublishConfiguration: string;
+  UniqueName?: string;
+  AppId?: string;
+  Type?: number;
+  PublishConfiguration?: string;
 }

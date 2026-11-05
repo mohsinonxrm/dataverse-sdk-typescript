@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { QueryBase } from "./types/index.js";
+import type { TypedQueryBase } from "./types/index.js";
 
 /**
  * Response from QueryExpressionToFetchXml action
@@ -14,7 +14,7 @@ export interface QueryExpressionToFetchXmlResponse {
  * Unbound action
  */
 export class QueryExpressionToFetchXmlAction implements Executable<QueryExpressionToFetchXmlResponse> {
-  constructor(public readonly query: QueryBase) {}
+  constructor(public readonly query: TypedQueryBase) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/QueryExpressionToFetchXml`;

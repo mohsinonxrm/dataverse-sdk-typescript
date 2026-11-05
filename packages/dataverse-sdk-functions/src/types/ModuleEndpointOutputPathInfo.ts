@@ -2,6 +2,6 @@
  * ModuleEndpointOutputPathInfo complex type
  */
 export interface ModuleEndpointOutputPathInfo {
-  EndpointName: string;
-  UniqueRelativePath: string;
+  EndpointName?: string;
+  UniqueRelativePath?: string;
 }

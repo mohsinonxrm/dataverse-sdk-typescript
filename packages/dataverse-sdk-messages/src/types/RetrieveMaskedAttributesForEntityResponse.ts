@@ -2,5 +2,5 @@
  * RetrieveMaskedAttributesForEntityResponse complex type
  */
 export interface RetrieveMaskedAttributesForEntityResponse {
-  AttributeLogicalNames: string[];
+  AttributeLogicalNames?: string[];
 }

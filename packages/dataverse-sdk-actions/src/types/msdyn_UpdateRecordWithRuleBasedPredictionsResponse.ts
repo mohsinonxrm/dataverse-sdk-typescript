@@ -2,5 +2,5 @@
  * msdyn_UpdateRecordWithRuleBasedPredictionsResponse complex type
  */
 export interface msdyn_UpdateRecordWithRuleBasedPredictionsResponse {
-  msdyn_UpdatedRecords: string[];
+  msdyn_UpdatedRecords?: string[];
 }

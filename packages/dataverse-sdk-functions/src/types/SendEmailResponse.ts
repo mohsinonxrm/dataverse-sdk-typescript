@@ -2,5 +2,5 @@
  * SendEmailResponse complex type
  */
 export interface SendEmailResponse {
-  Subject: string;
+  Subject?: string;
 }
