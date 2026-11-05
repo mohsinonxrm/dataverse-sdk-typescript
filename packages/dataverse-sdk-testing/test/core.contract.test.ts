@@ -40,7 +40,7 @@ describe("core: request wire format", () => {
     expect(r.headers["content-type"]).toMatch(/^application\/json/);
   });
 
-  it.fails("#7: a string body reaches fetch unchanged (today it is JSON-stringified)", async () => {
+  it("#7: a string body reaches fetch unchanged", async () => {
     const { client, fake } = createTestClient();
     fake.on("POST", "/accounts", () => noContent());
     const raw = '{"name":"Contoso"}';
@@ -53,7 +53,7 @@ describe("core: request wire format", () => {
     expect(fake.last().bodyText).toBe(raw);
   });
 
-  it.fails("#7: binary bodies reach fetch unchanged", async () => {
+  it("#7: binary bodies reach fetch unchanged", async () => {
     const { client, fake } = createTestClient();
     fake.on("PATCH", /^\/accounts/, () => noContent());
     const bytes = new Uint8Array([0, 1, 2, 255]);
@@ -151,9 +151,15 @@ describe("core: retries", () => {
 });
 
 describe("core: token handling", () => {
-  it.fails("#8: the bearer token is not sent to a different origin", async () => {
-    const { client, fake } = createTestClient({}, { onUnhandled: () => jsonResponse({}) });
-    await client.api("https://evil.example.com/collect").get();
-    expect(fake.last().headers.authorization).toBeUndefined();
+  it("#8: the bearer token is not sent to a different origin", async () => {
+    const { client, fake, tokenProvider } = createTestClient(
+      {},
+      { onUnhandled: () => jsonResponse({}) }
+    );
+    await expect(client.api("https://evil.example.com/collect").get()).rejects.toMatchObject({
+      name: "TokenOriginRefused",
+    });
+    expect(fake.requests).toHaveLength(0);
+    expect(tokenProvider.calls).toHaveLength(0);
   });
 });

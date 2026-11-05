@@ -82,4 +82,15 @@ export interface DataverseClientOptions {
   bulkhead?: BulkheadOptions;
   defaultHeaders?: Record<string, string>;
   defaultPrefer?: PreferOption[];
+  /**
+   * Extra origins (e.g. `"https://other.crm.dynamics.com"`) that may receive the bearer token.
+   * By default the token is attached only to requests for the client's own `baseUrl` origin.
+   */
+  allowedTokenOrigins?: string[];
+  /**
+   * What to do with a request for an origin that may not receive the token:
+   * `"throw"` (default) rejects it with `DataverseInvalidRequestError` before anything is sent;
+   * `"strip"` sends it without the `authorization` header.
+   */
+  onForeignOrigin?: "throw" | "strip";
 }

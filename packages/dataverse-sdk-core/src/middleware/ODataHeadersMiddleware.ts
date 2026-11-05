@@ -2,6 +2,7 @@ import type { Middleware, NextMiddleware } from "../abstractions/middleware.js";
 import type { MiddlewareContext, RequestInformation } from "../abstractions/http.js";
 import type { DataverseClientOptions } from "../abstractions/options.js";
 import { normalizeHeaders } from "../utils/HeaderUtils.js";
+import { isJsonBody } from "../utils/body.js";
 
 export class ODataHeadersMiddleware implements Middleware {
   name = "ODataHeadersMiddleware";
@@ -27,8 +28,12 @@ export class ODataHeadersMiddleware implements Middleware {
       headers.accept = "application/json";
     }
 
-    // If body present, set content-type unless user set it
-    if (request.body !== undefined && !headers["content-type"]) {
+    // Default content-type for bodies the SDK serialises to JSON, and for strings (usually raw JSON).
+    // Binary, Blob, FormData, URLSearchParams and stream bodies are left to the caller or to fetch.
+    if (
+      !headers["content-type"] &&
+      (isJsonBody(request.body) || typeof request.body === "string")
+    ) {
       headers["content-type"] = "application/json; charset=utf-8";
     }
 
