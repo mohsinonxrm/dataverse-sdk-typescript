@@ -1,7 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { EntityReference } from "./types/EntityReference.js";
-import { getEntitySetNameFromReference } from "./types/EntityReference.js";
 import type { PagingInfo } from "./types/index.js";
 
 /**
@@ -33,9 +32,7 @@ export class RetrieveDuplicatesFunction implements Executable<RetrieveDuplicates
       aliases.push(`BusinessEntity=@p1`);
       params.append(
         "@p1",
-        JSON.stringify({
-          "@odata.id": `${getEntitySetNameFromReference(this.businessEntity)}(${this.businessEntity.id})`,
-        })
+        formatParameterAlias(this.businessEntity, "mscrm.crmbaseentity", "EntityType")
       );
     }
     if (this.matchingEntityName !== undefined) {

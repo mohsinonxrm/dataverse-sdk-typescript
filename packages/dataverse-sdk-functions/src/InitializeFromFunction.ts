@@ -1,7 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { EntityReference } from "./types/EntityReference.js";
-import { getEntitySetNameFromReference } from "./types/EntityReference.js";
 import type { TargetFieldType } from "./types/index.js";
 
 /**
@@ -35,9 +34,7 @@ export class InitializeFromFunction implements Executable<InitializeFromResponse
       aliases.push(`EntityMoniker=@p1`);
       params.append(
         "@p1",
-        JSON.stringify({
-          "@odata.id": `${getEntitySetNameFromReference(this.entityMoniker)}(${this.entityMoniker.id})`,
-        })
+        formatParameterAlias(this.entityMoniker, "mscrm.crmbaseentity", "EntityType")
       );
     }
     if (this.skipParentalRelationshipMapping !== undefined) {

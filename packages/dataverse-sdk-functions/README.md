@@ -188,14 +188,15 @@ const response = await client.execute(metadataFunc);
 
 Each parameter is sent as the OData literal of its CSDL type:
 
-| Type                       | You pass                                                                                   | Sent as                                   |
-| -------------------------- | ------------------------------------------------------------------------------------------ | ----------------------------------------- |
-| `Edm.String`               | `"O'Brien"`                                                                                | `'O''Brien'` (quoted, every `'` doubled)  |
-| `Edm.Guid`                 | `"00000000-0000-0000-0000-000000000000"`                                                   | unquoted                                  |
-| `Edm.DateTimeOffset`       | an ISO string or a `Date`                                                                  | unquoted, e.g. `2026-01-01T00:00:00.000Z` |
-| numbers, `Edm.Boolean`     | `85`, `false`                                                                              | `85`, `false`                             |
-| enum                       | a value (`EntityFilters.Entity \| EntityFilters.Attributes`) or a member name (`"Entity"`) | `Microsoft.Dynamics.CRM.EntityFilters'3'` |
-| complex types, collections | an object or array                                                                         | JSON                                      |
+| Type                       | You pass                                                                                   | Sent as                                                                        |
+| -------------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
+| `Edm.String`               | `"O'Brien"`                                                                                | `'O''Brien'` (quoted, every `'` doubled)                                       |
+| `Edm.Guid`                 | `"00000000-0000-0000-0000-000000000000"`                                                   | unquoted                                                                       |
+| `Edm.DateTimeOffset`       | an ISO string or a `Date`                                                                  | unquoted, e.g. `2026-01-01T00:00:00.000Z`                                      |
+| numbers, `Edm.Boolean`     | `85`, `false`                                                                              | `85`, `false`                                                                  |
+| enum                       | a value (`EntityFilters.Entity \| EntityFilters.Attributes`) or a member name (`"Entity"`) | `Microsoft.Dynamics.CRM.EntityFilters'3'`                                      |
+| complex types, collections | an object or array                                                                         | JSON                                                                           |
+| entity reference           | `createEntityReference("account", id)`                                                     | `{"@odata.id":"accounts(<id>)"}` (entity set from the CSDL; throws if unknown) |
 
 The enums are exported from the package root:
 

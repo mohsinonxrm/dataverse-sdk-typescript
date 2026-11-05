@@ -749,6 +749,7 @@ export { YesterdayFunction, type YesterdayResponse } from "./YesterdayFunction.j
 
 export {
   type EntityReference,
+  type EntityReferenceOptions,
   createEntityReference,
   getEntitySetNameFromReference,
 } from "./types/EntityReference.js";
