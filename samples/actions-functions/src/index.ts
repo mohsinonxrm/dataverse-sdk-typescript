@@ -317,8 +317,7 @@ async function winOpportunityDemo(client: DataverseClient): Promise<void> {
     actualend: new Date().toISOString(),
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const winOpp = new WinOpportunityAction(opportunityClose as any, "", 3); // 3 = Won status, '' = system caller
+  const winOpp = new WinOpportunityAction(opportunityClose, "", 3); // 3 = Won status, '' = system caller
 
   await client.execute(winOpp);
 

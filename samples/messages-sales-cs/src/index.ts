@@ -419,8 +419,7 @@ async function exportSolutionDemo(orgService: OrganizationService): Promise<void
     false, // exportIsvConfig
     false, // exportSales
     false, // exportExternalApplications
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    {} as any // exportComponentsParams
+    {} // exportComponentsParams
   );
 
   const startTime = Date.now();
