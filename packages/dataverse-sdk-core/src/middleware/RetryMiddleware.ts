@@ -4,6 +4,7 @@ import type { DataverseClientOptions } from "../abstractions/options.js";
 import type { RetryOptions } from "./RequestOptions.js";
 import { withJitter } from "../utils/jitter.js";
 import { sleep } from "../utils/sleep.js";
+import { isStreamBody } from "../utils/body.js";
 import { parseRetryAfter, isStreamContent } from "../utils/HeaderUtils.js";
 
 const DEFAULTS = {
@@ -33,6 +34,11 @@ export class RetryMiddleware implements Middleware {
       ...this.options.retry,
       ...perRequestOptions,
     };
+
+    // A stream body can be read only once, so a request carrying one is never retried.
+    if (isStreamBody(request.body)) {
+      return next(request, ctx);
+    }
 
     let attempt = 0;
 
