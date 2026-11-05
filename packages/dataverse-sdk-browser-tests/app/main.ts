@@ -1,0 +1,143 @@
+/**
+ * Browser smoke app. Imports every browser-facing SDK package, exactly as a consumer SPA would,
+ * and exposes small scenarios on `window.__smoke` that the Playwright test drives.
+ * Nothing here talks to a real org: requests go to an in-page fake fetch.
+ */
+import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+import type { FetchProvider } from "@mohsinonxrm/dataverse-sdk-core";
+import { MsalBrowserTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-msal-browser";
+import { DiscoveryClient } from "@mohsinonxrm/dataverse-sdk-discovery";
+import { BatchRequestBuilder } from "@mohsinonxrm/dataverse-sdk-batch";
+import { FileColumnClient } from "@mohsinonxrm/dataverse-sdk-files";
+import { MetadataClient } from "@mohsinonxrm/dataverse-sdk-metadata";
+
+const ORG = "https://contoso.crm.dynamics.com";
+
+/** Every CSP violation the page reports. */
+const cspViolations: string[] = [];
+document.addEventListener("securitypolicyviolation", (e) => {
+  cspViolations.push(`${e.violatedDirective}: ${e.blockedURI}`);
+});
+
+interface Recorded {
+  method: string;
+  url: string;
+  headers: Record<string, string>;
+}
+
+function fakeFetch(respond: (r: Recorded) => Response): {
+  provider: FetchProvider;
+  calls: Recorded[];
+} {
+  const calls: Recorded[] = [];
+  return {
+    calls,
+    provider: {
+      fetch: (input: RequestInfo | URL, init?: RequestInit) => {
+        const headers: Record<string, string> = {};
+        new Headers(init?.headers).forEach((v, k) => {
+          headers[k] = v;
+        });
+        const url =
+          typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+        const r = { method: (init?.method ?? "GET").toUpperCase(), url, headers };
+        calls.push(r);
+        return Promise.resolve(respond(r));
+      },
+    },
+  };
+}
+
+const json = (body: unknown, status = 200): Response =>
+  new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
+
+function client(provider: FetchProvider): DataverseClient {
+  return new DataverseClient({
+    baseUrl: ORG,
+    fetchProvider: provider,
+    tokenProvider: { getToken: () => Promise.resolve("test-token") },
+    retry: { maxRetries: 0 },
+  });
+}
+
+/** Count console calls made while `fn` runs. */
+async function countConsole(fn: () => Promise<unknown>): Promise<number> {
+  let n = 0;
+  const methods = ["debug", "info", "log", "warn", "error"] as const;
+  const saved = new Map(methods.map((m) => [m, Reflect.get(console, m) as unknown]));
+  const count = (): void => {
+    n++;
+  };
+  for (const m of methods) Reflect.set(console, m, count);
+  try {
+    await fn();
+  } finally {
+    for (const [m, original] of saved) Reflect.set(console, m, original);
+  }
+  return n;
+}
+
+const smoke = {
+  /** The packages' entry points evaluated without throwing. */
+  loaded: (): Record<string, string> =>
+    Object.fromEntries(
+      Object.entries({
+        DataverseClient,
+        MsalBrowserTokenProvider,
+        DiscoveryClient,
+        BatchRequestBuilder,
+        FileColumnClient,
+        MetadataClient,
+      }).map(([name, value]) => [name, typeof value])
+    ),
+
+  cspViolations: (): string[] => [...cspViolations],
+
+  /** A GET through the real client and pipeline. */
+  async whoAmI(): Promise<{ userId: string; authorization: string | undefined }> {
+    const fake = fakeFetch(() => json({ UserId: "u1" }));
+    const res = await client(fake.provider).api("WhoAmI").get<{ UserId: string }>();
+    return { userId: res.UserId, authorization: fake.calls[0]?.headers.authorization };
+  },
+
+  /** Console calls made by one request with the default logger (#33 says this should be 0). */
+  async consoleCallsPerRequest(): Promise<number> {
+    const fake = fakeFetch(() => json({ UserId: "u1" }));
+    const c = new DataverseClient({
+      baseUrl: ORG,
+      fetchProvider: fake.provider,
+      tokenProvider: { getToken: () => Promise.resolve("test-token") },
+      retry: { maxRetries: 0 },
+    });
+    return countConsole(() => c.api("WhoAmI").get());
+  },
+
+  /** A file upload from a Blob, as a browser app would do it (#58). */
+  async uploadBlob(): Promise<string[]> {
+    const fake = fakeFetch((r) =>
+      r.url.endsWith("/InitializeFileBlocksUpload")
+        ? json({ FileContinuationToken: "tok" })
+        : r.url.endsWith("/CommitFileBlocksUpload")
+          ? json({ FileId: "f1", FileSizeInBytes: 3 })
+          : new Response(null, { status: 204 })
+    );
+    const c = client(fake.provider);
+    const files = new FileColumnClient({ send: (req) => c.send(req) }, c.getBaseUrl());
+    await files.upload(
+      "accounts",
+      "00000000-0000-0000-0000-000000000001",
+      "new_file",
+      new Blob(["abc"], { type: "text/plain" }),
+      "a.txt"
+    );
+    return fake.calls.map((r) => new URL(r.url).pathname.split("/").pop() ?? "");
+  },
+};
+
+declare global {
+  interface Window {
+    __smoke: typeof smoke;
+  }
+}
+window.__smoke = smoke;
+document.body.dataset.ready = "true";
