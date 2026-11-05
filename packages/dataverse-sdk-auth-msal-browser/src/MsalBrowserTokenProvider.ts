@@ -11,12 +11,12 @@ import type {
   RedirectRequest,
   EndSessionRequest,
 } from "@azure/msal-browser";
-import { InteractionRequiredAuthError } from "@azure/msal-browser";
 import type { AccessTokenProvider, TokenOptions } from "@mohsinonxrm/dataverse-sdk-core";
 import {
   DataverseAuthenticationError,
   DataverseInvalidRequestError,
 } from "@mohsinonxrm/dataverse-sdk-core";
+import { isInteractionRequiredError } from "./errors.js";
 
 /**
  * Interaction type for acquiring tokens when silent acquisition fails
@@ -168,8 +168,9 @@ export class MsalBrowserTokenProvider implements AccessTokenProvider {
 
       return response.accessToken;
     } catch (error) {
-      // If interaction is required, use configured interaction type
-      if (error instanceof InteractionRequiredAuthError) {
+      // If interaction is required, use configured interaction type. Detected by name/errorCode,
+      // not instanceof: the app's MSAL copy is not this package's copy.
+      if (isInteractionRequiredError(error)) {
         return this.acquireTokenInteractive(requestScopes, options);
       }
 
