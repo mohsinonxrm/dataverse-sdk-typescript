@@ -10,9 +10,19 @@ const GUID = /^\{?[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\}
  * `https://org.crm.dynamics.com/api/data/v9.2/accounts({id})?…`.
  */
 export function defaultRedactUrl(url: URL): string {
-  const path = url.pathname.replace(/\(([^/]*)\)/g, (_m, key: string) =>
-    GUID.test(decodeSafe(key)) ? "({id})" : "(…)"
-  );
+  // Per path segment, everything from its first "(" to its last ")" is the key. A linear scan,
+  // not a regex: backtracking on input like "((((…" would be polynomial (CodeQL js/polynomial-redos).
+  const path = url.pathname
+    .split("/")
+    .map((segment) => {
+      const open = segment.indexOf("(");
+      const close = segment.lastIndexOf(")");
+      if (open < 0 || close <= open) return segment;
+      const key = segment.slice(open + 1, close);
+      const masked = GUID.test(decodeSafe(key)) ? "({id})" : "(…)";
+      return segment.slice(0, open) + masked + segment.slice(close + 1);
+    })
+    .join("/");
   return `${url.origin}${path}${url.search ? "?…" : ""}`;
 }
 
