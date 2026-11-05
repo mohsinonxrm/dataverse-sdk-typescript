@@ -290,6 +290,7 @@ export class DataverseRequestBuilder {
     let page = await this.getPage<T>();
     let pages = 0;
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- intentional infinite loop with explicit break statements
     while (true) {
       pages++;
       for (const item of page.value) {
