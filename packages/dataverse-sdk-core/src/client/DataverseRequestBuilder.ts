@@ -10,6 +10,7 @@ import { parseODataError } from "../errors/parseODataError.js";
 import { DataverseDuplicateError } from "../errors/DataverseDuplicateError.js";
 import { validateUrl, type UrlValidationOptions } from "../utils/validateUrl.js";
 import { PreferBuilder } from "./PreferBuilder.js";
+import { odataKey, type ODataKey } from "../odata/literal.js";
 import type { DataverseClient } from "./DataverseClient.js";
 
 export class DataverseRequestBuilder {
@@ -157,10 +158,11 @@ export class DataverseRequestBuilder {
    * Bind a single-valued navigation property (lookup)
    * @param navigationProperty - The navigation property name (e.g., 'parentcustomerid_account')
    * @param entitySetName - The target entity set (e.g., 'accounts')
-   * @param id - The target record ID
+   * @param id - The target record: a GUID, or an alternate key such as `{ accountnumber: "A-1" }`
+   *   (values are escaped; see `odataKey`)
    */
-  bind(navigationProperty: string, entitySetName: string, id: string): this {
-    this.bindings[`${navigationProperty}@odata.bind`] = `/${entitySetName}(${id})`;
+  bind(navigationProperty: string, entitySetName: string, id: ODataKey): this {
+    this.bindings[`${navigationProperty}@odata.bind`] = `/${entitySetName}(${odataKey(id)})`;
     return this;
   }
 
@@ -168,24 +170,24 @@ export class DataverseRequestBuilder {
    * Associate a record with a collection-valued navigation property
    * @param navigationProperty - The navigation property name
    * @param entitySetName - The target entity set
-   * @param id - The target record ID
+   * @param id - The target record: a GUID, or an alternate key object
    */
-  async associate(navigationProperty: string, entitySetName: string, id: string): Promise<void> {
+  async associate(navigationProperty: string, entitySetName: string, id: ODataKey): Promise<void> {
     const refUrl = `${this.pathOrUrl}/${navigationProperty}/$ref`;
     // Dataverse rejects a relative @odata.id here ("the odata.context annotation is missing"),
     // so the reference is the absolute URL of the target record.
     await this.client.api(refUrl).post({
-      "@odata.id": `${this.client.getBaseUrl()}/${entitySetName}(${id})`,
+      "@odata.id": `${this.client.getBaseUrl()}/${entitySetName}(${odataKey(id)})`,
     });
   }
 
   /**
    * Disassociate a record from a collection-valued navigation property
    * @param navigationProperty - The navigation property name
-   * @param id - The related record ID to remove
+   * @param id - The related record to remove: a GUID, or an alternate key object
    */
-  async disassociate(navigationProperty: string, id: string): Promise<void> {
-    const refUrl = `${this.pathOrUrl}/${navigationProperty}(${id})/$ref`;
+  async disassociate(navigationProperty: string, id: ODataKey): Promise<void> {
+    const refUrl = `${this.pathOrUrl}/${navigationProperty}(${odataKey(id)})/$ref`;
     await this.client.api(refUrl).delete();
   }
 

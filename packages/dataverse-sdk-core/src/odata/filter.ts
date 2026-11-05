@@ -1,16 +1,15 @@
-/**
- * Escape a string value for safe use in OData filter expressions.
- * Doubles single-quote characters per OData spec (ABNF section 7.3.1).
- */
-function escapeString(value: string): string {
-  return `'${value.replace(/'/g, "''")}'`;
-}
+import { odataLiteral } from "./literal.js";
+
+/** A value `odata.eq()` and `odata.ne()` compare with. */
+type EqValue = string | number | boolean | Date | null;
 
 /**
  * Type-safe OData filter expression builder with automatic value escaping.
  *
  * Use this instead of raw string interpolation to prevent OData injection
- * when user-supplied values are included in filters.
+ * when user-supplied values are included in filters. Values are written with
+ * {@link odataLiteral}: strings are quoted with `'` doubled, numbers must be finite, and a `Date`
+ * becomes an `Edm.DateTimeOffset` literal. For a GUID, use `odataLiteral.guid()` in the expression.
  *
  * @example
  * ```typescript
@@ -26,27 +25,23 @@ function escapeString(value: string): string {
  * ```
  */
 export const odata = {
-  eq: (field: string, value: string | number | boolean | null): string =>
-    typeof value === "string"
-      ? `${field} eq ${escapeString(value)}`
-      : `${field} eq ${String(value)}`,
+  eq: (field: string, value: EqValue): string => `${field} eq ${odataLiteral.value(value)}`,
 
-  ne: (field: string, value: string | number | boolean | null): string =>
-    typeof value === "string"
-      ? `${field} ne ${escapeString(value)}`
-      : `${field} ne ${String(value)}`,
+  ne: (field: string, value: EqValue): string => `${field} ne ${odataLiteral.value(value)}`,
 
-  gt: (field: string, value: number): string => `${field} gt ${String(value)}`,
-  ge: (field: string, value: number): string => `${field} ge ${String(value)}`,
-  lt: (field: string, value: number): string => `${field} lt ${String(value)}`,
-  le: (field: string, value: number): string => `${field} le ${String(value)}`,
+  gt: (field: string, value: number | Date): string => `${field} gt ${odataLiteral.value(value)}`,
+  ge: (field: string, value: number | Date): string => `${field} ge ${odataLiteral.value(value)}`,
+  lt: (field: string, value: number | Date): string => `${field} lt ${odataLiteral.value(value)}`,
+  le: (field: string, value: number | Date): string => `${field} le ${odataLiteral.value(value)}`,
 
-  contains: (field: string, value: string): string => `contains(${field},${escapeString(value)})`,
+  contains: (field: string, value: string): string =>
+    `contains(${field},${odataLiteral.string(value)})`,
 
   startsWith: (field: string, value: string): string =>
-    `startswith(${field},${escapeString(value)})`,
+    `startswith(${field},${odataLiteral.string(value)})`,
 
-  endsWith: (field: string, value: string): string => `endswith(${field},${escapeString(value)})`,
+  endsWith: (field: string, value: string): string =>
+    `endswith(${field},${odataLiteral.string(value)})`,
 
   and: (...clauses: string[]): string => `(${clauses.join(" and ")})`,
   or: (...clauses: string[]): string => `(${clauses.join(" or ")})`,

@@ -353,6 +353,46 @@ await client
 - Collection-valued: Uses `/$ref` endpoint for associate/disassociate
 - `bindMany()` sends one `$ref` POST per id by default; it stops at the first failure (earlier ids stay associated). It never uses `eval` or `new Function`, so it works under a strict CSP
 - All methods properly construct entity set paths and GUIDs
+- The target can be a GUID (braces are removed) or an alternate key object, whose values are
+  escaped: `bind("parentcustomerid_account", "accounts", { accountnumber: "O'Brien" })` binds
+  `/accounts(accountnumber='O''Brien')`. Any other string is used as written.
+
+#### OData Literals
+
+Values put inside a URL must be OData literals: a string is wrapped in `'` with every embedded
+`'` doubled. Interpolating `'${value}'` breaks on `O'Brien`, and a value from user input can change
+the query. `odataLiteral`, `odataKey` and the `odata` filter helpers do the escaping.
+
+```typescript
+import { odata, odataKey, odataLiteral } from "@mohsinonxrm/dataverse-sdk-core";
+
+// Filters: values are escaped and typed
+client.api("contacts").filter(odata.and(odata.eq("lastname", input), odata.ge("createdon", since)));
+client.api("contacts").filter(`_parentcustomerid_value eq ${odataLiteral.guid(accountId)}`);
+
+// Keys: a GUID, or an alternate key object (escaped, and safe for the URL path)
+client.api(`accounts(${odataKey({ accountnumber: input })})`); // accounts(accountnumber='O''Brien')
+client.api(`EntityDefinitions(${odataKey({ LogicalName: name })})`);
+
+// Function parameters, inline or as an alias (URL-encode an alias value)
+client.api(`MyFunction(Name=${odataLiteral.string(input)})`);
+client.api(`MyFunction(Name=@p1)?@p1=${encodeURIComponent(odataLiteral.string(input))}`);
+```
+
+| Helper                                    | Writes                                                |
+| ----------------------------------------- | ----------------------------------------------------- |
+| `odataLiteral.string("O'Brien")`          | `'O''Brien'`                                          |
+| `odataLiteral.guid("{0000…}")`            | `0000…` (unquoted; anything but a GUID throws)        |
+| `odataLiteral.int(5)` / `.number(1.5)`    | `5` / `1.5` (non-integers or non-finite throw)        |
+| `odataLiteral.bool(true)`                 | `true`                                                |
+| `odataLiteral.datetime(date)`             | `2024-05-01T08:30:00.000Z` (`Edm.DateTimeOffset`)     |
+| `odataLiteral.date(date)`                 | `2024-05-01` (`Edm.Date`)                             |
+| `odataLiteral.enum("NS.Type", ["A","B"])` | `NS.Type'A,B'`                                        |
+| `odataLiteral.value(v)`                   | picks one of the above from the JavaScript type       |
+| `odataKey(guid \| { col: value, … })`     | `guid` or `col='…',col2=5`, percent-encoded for paths |
+
+A value that doesn't fit the helper throws `DataverseInvalidRequestError` (`InvalidParameter`)
+instead of producing a broken URL.
 
 #### URL Validation
 

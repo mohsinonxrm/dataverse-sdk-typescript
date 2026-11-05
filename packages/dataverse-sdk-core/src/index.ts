@@ -49,3 +49,4 @@ export {
 export * from "./telemetry/FeatureUsageTracker.js";
 
 export { odata } from "./odata/filter.js";
+export { odataLiteral, odataKey, type ODataKey, type ODataScalar } from "./odata/literal.js";
