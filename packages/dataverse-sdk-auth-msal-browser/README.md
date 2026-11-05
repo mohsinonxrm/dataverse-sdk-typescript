@@ -672,19 +672,19 @@ const tokenProvider = new MsalBrowserTokenProvider(pca, {
   }),
 });
 
-// Or pass claims at token acquisition time (dynamic claims challenge)
+// Dynamic claims challenges: after a 401, the SDK client gets a new token and resends the
+// request once. In a browser, Dataverse doesn't expose `WWW-Authenticate` to scripts (it isn't a
+// CORS-exposed header), so the claims of a challenge can't be read there and the SDK asks the
+// provider for a fresh token (`forceRefresh`). In Node.js, the claims are passed to `getToken`
+// automatically. To handle a challenge yourself, read it from the error:
+import { parseClaimsChallenge, DataverseODataError } from "@mohsinonxrm/dataverse-sdk-core";
+
 try {
   await client.api("/accounts").get();
 } catch (error) {
-  // If Dataverse returns 401 with claims challenge
-  if (error.status === 401 && error.headers["www-authenticate"]) {
-    const claimsChallenge = parseClaimsFromHeader(error.headers["www-authenticate"]);
-
-    const token = await tokenProvider.getToken(undefined, {
-      claims: claimsChallenge,
-    });
-
-    // Retry request with new token
+  if (error instanceof DataverseODataError && error.status === 401) {
+    const claims = parseClaimsChallenge(error.headers?.["www-authenticate"]);
+    if (claims) await tokenProvider.getToken(undefined, { claims });
   }
 }
 ```

@@ -555,10 +555,10 @@ The built-in classes (`AuthMiddleware`, `ODataHeadersMiddleware`, `ConcurrencyMi
 **Built-in Middleware (Execution Order):**
 
 1. **prepend** middleware (if any)
-2. **AuthMiddleware** - Adds `Authorization: Bearer <token>` from `AccessTokenProvider` (only when a token provider is set)
-3. **ODataHeadersMiddleware** - Sets `Accept`, `OData-Version`, `OData-MaxVersion`, a JSON `Content-Type` for JSON bodies, `defaultHeaders` and `defaultPrefer`
-4. **ConcurrencyMiddleware** - Semaphore-based rate limiting with adaptive concurrency
-5. **RetryMiddleware** - Handles 429/502/503/504 with exponential backoff + jitter
+2. **ODataHeadersMiddleware** - Sets `Accept`, `OData-Version`, `OData-MaxVersion`, a JSON `Content-Type` for JSON bodies, `defaultHeaders` and `defaultPrefer`
+3. **ConcurrencyMiddleware** - Semaphore-based rate limiting with adaptive concurrency
+4. **RetryMiddleware** - Handles 429/502/503/504 with exponential backoff + jitter
+5. **AuthMiddleware** - Adds `Authorization: Bearer <token>` on every attempt; after a 401 gets a new token (passing a claims challenge) and retries once (only when a token provider is set)
 6. **TelemetryMiddleware** - Diagnostic headers; tracks dependencies and exceptions
 7. **LoggingMiddleware** - Logs request/response details (only when a logger is set)
 8. **append** middleware (if any)
@@ -707,10 +707,10 @@ Pipeline.execute()
    ↓
 Middleware Chain (sequential execution)
    ├─ prepend middleware (user-provided, optional)
-   ├─ AuthMiddleware (add Bearer token)
    ├─ ODataHeadersMiddleware (add OData headers, defaultHeaders, defaultPrefer)
    ├─ ConcurrencyMiddleware (rate limiting)
    ├─ RetryMiddleware (retry on 429/502/503/504)
+   ├─ AuthMiddleware (Bearer token per attempt; one refresh-and-retry after a 401)
    ├─ TelemetryMiddleware (diagnostic headers, track dependencies)
    ├─ LoggingMiddleware (log requests, when a logger is set)
    └─ append middleware (user-provided, optional)
@@ -733,10 +733,10 @@ User Code (typed result)
 **Request Phase (top-down):**
 
 1. `prepend` middleware (if any)
-2. AuthMiddleware - Calls `tokenProvider.getToken()` and adds `Authorization` header
-3. ODataHeadersMiddleware - Adds `Accept`, `Content-Type`, `OData-Version`, `OData-MaxVersion`, `defaultHeaders`, `defaultPrefer`
-4. ConcurrencyMiddleware - Acquires semaphore slot (blocks if at max concurrency)
-5. RetryMiddleware - Wraps the rest of the chain with retry logic (adds `retry-attempt` on retries)
+2. ODataHeadersMiddleware - Adds `Accept`, `Content-Type`, `OData-Version`, `OData-MaxVersion`, `defaultHeaders`, `defaultPrefer`
+3. ConcurrencyMiddleware - Acquires semaphore slot (blocks if at max concurrency)
+4. RetryMiddleware - Wraps the rest of the chain with retry logic (adds `retry-attempt` on retries)
+5. AuthMiddleware - Calls `tokenProvider.getToken()` (every attempt) and adds `Authorization` header
 6. TelemetryMiddleware - Adds diagnostic headers, records start time
 7. LoggingMiddleware - Logs request details
 8. `append` middleware (if any)
@@ -748,13 +748,26 @@ User Code (typed result)
 2. `append` middleware
 3. LoggingMiddleware - Logs response status and duration
 4. TelemetryMiddleware - Tracks dependency with duration and result
-5. RetryMiddleware - Checks status code, retries if 429/502/503/504 and attempts < maxRetries
-6. ConcurrencyMiddleware - Releases semaphore, adjusts limit based on `x-ms-dop-hint` header
-7. ODataHeadersMiddleware - (no response processing)
-8. AuthMiddleware - (no response processing)
+5. AuthMiddleware - On a 401, gets a new token (with the claims challenge, if any) and resends once
+6. RetryMiddleware - Checks status code, retries if 429/502/503/504 and attempts < maxRetries
+7. ConcurrencyMiddleware - Releases semaphore, adjusts limit based on `x-ms-dop-hint` header
+8. ODataHeadersMiddleware - (no response processing)
 9. `prepend` middleware
 
 ### Resiliency Features
+
+#### Token per attempt and 401 recovery
+
+- `AuthMiddleware` runs inside `RetryMiddleware`, so every attempt gets a current token from the
+  provider (providers cache, so this is cheap) and a long retry wait can't send an expired token.
+- After a `401`, it gets a new token and resends the request **once**. If `WWW-Authenticate` carries a
+  Conditional Access / CAE claims challenge, the decoded claims go to `getToken(scopes, { claims })`;
+  otherwise it calls `getToken(scopes, { forceRefresh: true })`. A second `401` is returned as the error
+  (with `headers["www-authenticate"]`). Turn it off with `refreshTokenOn401: false`.
+- In browsers, Dataverse doesn't expose `WWW-Authenticate` to scripts (not a CORS-exposed header), so
+  claims can't be read there; the recovery is always a forced refresh. `parseClaimsChallenge(header)` is
+  exported for handling a challenge yourself in Node.js.
+- `getToken` also receives the request's `correlationId`.
 
 #### Retry with Exponential Backoff
 

@@ -28,9 +28,19 @@ export interface RequestAdapter {
 }
 
 export interface TokenOptions {
+  /**
+   * Claims from a Conditional Access / CAE challenge (decoded JSON), to pass to the identity
+   * library (MSAL `claims`). Set by the SDK after a 401 carrying a claims challenge.
+   */
   claims?: string;
   tenantId?: string;
+  /** The SDK's correlation id for the request, for the identity library's logs. */
   correlationId?: string;
+  /**
+   * Skip any cached token and get a new one. Set by the SDK after a 401 without a claims
+   * challenge (expired or revoked token).
+   */
+  forceRefresh?: boolean;
 }
 
 export interface AccessTokenProvider {
