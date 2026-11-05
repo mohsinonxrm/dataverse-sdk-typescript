@@ -564,8 +564,8 @@ The built-in classes (`AuthMiddleware`, `ODataHeadersMiddleware`, `ConcurrencyMi
 
 1. **prepend** middleware (if any)
 2. **ODataHeadersMiddleware** - Sets `Accept`, `OData-Version`, `OData-MaxVersion`, a JSON `Content-Type` for JSON bodies, `defaultHeaders` and `defaultPrefer`
-3. **ConcurrencyMiddleware** - Semaphore-based rate limiting with adaptive concurrency
-4. **RetryMiddleware** - Handles 429/502/503/504 with exponential backoff + jitter
+3. **RetryMiddleware** - Handles 429/502/503/504 with exponential backoff + jitter
+4. **ConcurrencyMiddleware** - Semaphore-based rate limiting with adaptive concurrency, one slot per attempt
 5. **AuthMiddleware** - Adds `Authorization: Bearer <token>` on every attempt; after a 401 gets a new token (passing a claims challenge) and retries once (only when a token provider is set)
 6. **TelemetryMiddleware** - Diagnostic headers; tracks dependencies and exceptions
 7. **LoggingMiddleware** - Logs request/response details (only when a logger is set)
@@ -716,8 +716,8 @@ Pipeline.execute()
 Middleware Chain (sequential execution)
    ├─ prepend middleware (user-provided, optional)
    ├─ ODataHeadersMiddleware (add OData headers, defaultHeaders, defaultPrefer)
-   ├─ ConcurrencyMiddleware (rate limiting)
    ├─ RetryMiddleware (retry on 429/502/503/504)
+   ├─ ConcurrencyMiddleware (rate limiting, a slot per attempt)
    ├─ AuthMiddleware (Bearer token per attempt; one refresh-and-retry after a 401)
    ├─ TelemetryMiddleware (diagnostic headers, track dependencies)
    ├─ LoggingMiddleware (log requests, when a logger is set)
@@ -742,8 +742,8 @@ User Code (typed result)
 
 1. `prepend` middleware (if any)
 2. ODataHeadersMiddleware - Adds `Accept`, `Content-Type`, `OData-Version`, `OData-MaxVersion`, `defaultHeaders`, `defaultPrefer`
-3. ConcurrencyMiddleware - Acquires semaphore slot (blocks if at max concurrency)
-4. RetryMiddleware - Wraps the rest of the chain with retry logic (adds `retry-attempt` on retries)
+3. RetryMiddleware - Wraps the rest of the chain with retry logic (adds `retry-attempt` on retries)
+4. ConcurrencyMiddleware - Acquires a semaphore slot for this attempt (blocks if at max concurrency)
 5. AuthMiddleware - Calls `tokenProvider.getToken()` (every attempt) and adds `Authorization` header
 6. TelemetryMiddleware - Adds diagnostic headers, records start time
 7. LoggingMiddleware - Logs request details
@@ -757,8 +757,8 @@ User Code (typed result)
 3. LoggingMiddleware - Logs response status and duration
 4. TelemetryMiddleware - Tracks dependency with duration and result
 5. AuthMiddleware - On a 401, gets a new token (with the claims challenge, if any) and resends once
-6. RetryMiddleware - Checks status code, retries if 429/502/503/504 and attempts < maxRetries
-7. ConcurrencyMiddleware - Releases semaphore, adjusts limit based on `x-ms-dop-hint` header
+6. ConcurrencyMiddleware - Releases the semaphore slot, adjusts limit based on `x-ms-dop-hint` header
+7. RetryMiddleware - Checks status code, waits and retries if 429/502/503/504 and attempts < maxRetries (the wait holds no slot)
 8. ODataHeadersMiddleware - (no response processing)
 9. `prepend` middleware
 
@@ -835,6 +835,11 @@ User Code (typed result)
 - **Bounds:** `min: 2`, `max: 16` (configurable)
 - **Semaphore:** Queue-based implementation with `acquire()` and `release()`
 - **Clamp function:** Ensures concurrency stays within `[min, max]` range
+- **A slot per attempt:** each attempt takes a slot and releases it when its response arrives, so a
+  request waiting on `Retry-After` or a backoff doesn't block other requests. A retry queues for
+  a slot again like any new request.
+- **Browsers:** `x-ms-dop-hint` isn't readable there (see [docs/browser.md](../../docs/browser.md)),
+  so the limit stays at `maxConcurrentRequests`.
 
 #### Circuit Breaker & Bulkhead
 
