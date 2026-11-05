@@ -34,7 +34,7 @@ export class pbi_CloneAndAddPowerBIDatasetRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

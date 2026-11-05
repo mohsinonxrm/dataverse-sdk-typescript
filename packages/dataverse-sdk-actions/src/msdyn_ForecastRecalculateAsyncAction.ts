@@ -31,7 +31,7 @@ export class msdyn_ForecastRecalculateAsyncAction implements Executable<msdyn_Fo
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

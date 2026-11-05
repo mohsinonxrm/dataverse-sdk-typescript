@@ -30,7 +30,7 @@ export class _SkillToUserAction implements Executable<_SkillToUserResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

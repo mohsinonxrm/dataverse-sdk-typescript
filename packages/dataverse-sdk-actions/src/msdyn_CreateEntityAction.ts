@@ -41,7 +41,7 @@ export class msdyn_CreateEntityAction implements Executable<msdyn_CreateEntityRe
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

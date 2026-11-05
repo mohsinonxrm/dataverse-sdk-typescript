@@ -40,7 +40,7 @@ export class msdyn_GetSummaryBookingsAction implements Executable<msdyn_GetSumma
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

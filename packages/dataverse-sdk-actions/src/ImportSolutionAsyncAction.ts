@@ -62,7 +62,7 @@ export class ImportSolutionAsyncAction implements Executable<ImportSolutionAsync
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

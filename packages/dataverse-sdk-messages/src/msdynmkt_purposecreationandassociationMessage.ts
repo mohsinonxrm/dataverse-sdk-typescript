@@ -44,7 +44,7 @@ export class msdynmkt_purposecreationandassociationRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

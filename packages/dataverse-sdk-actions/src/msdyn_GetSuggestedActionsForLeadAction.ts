@@ -24,7 +24,7 @@ export class msdyn_GetSuggestedActionsForLeadAction implements Executable<msdyn_
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

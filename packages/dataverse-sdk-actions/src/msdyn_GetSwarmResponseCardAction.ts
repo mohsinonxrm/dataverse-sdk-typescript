@@ -28,7 +28,7 @@ export class msdyn_GetSwarmResponseCardAction implements Executable<msdyn_GetSwa
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

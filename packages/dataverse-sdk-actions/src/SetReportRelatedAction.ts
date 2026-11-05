@@ -34,7 +34,7 @@ export class SetReportRelatedAction implements Executable<SetReportRelatedRespon
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

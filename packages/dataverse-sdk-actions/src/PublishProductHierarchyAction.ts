@@ -24,7 +24,7 @@ export class PublishProductHierarchyAction implements Executable<PublishProductH
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

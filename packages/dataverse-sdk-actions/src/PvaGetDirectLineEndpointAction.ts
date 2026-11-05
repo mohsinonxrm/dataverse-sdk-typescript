@@ -24,7 +24,7 @@ export class PvaGetDirectLineEndpointAction implements Executable<PvaGetDirectLi
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

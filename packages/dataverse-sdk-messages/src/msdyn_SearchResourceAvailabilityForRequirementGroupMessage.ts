@@ -36,7 +36,7 @@ export class msdyn_SearchResourceAvailabilityForRequirementGroupRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

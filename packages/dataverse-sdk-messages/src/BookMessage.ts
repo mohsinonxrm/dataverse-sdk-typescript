@@ -27,7 +27,7 @@ export class BookRequest extends OrganizationRequest implements Executable<BookR
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

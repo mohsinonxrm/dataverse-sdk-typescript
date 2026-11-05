@@ -30,7 +30,7 @@ export class msdyn_GetSalesRowSummaryAction implements Executable<msdyn_GetSales
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

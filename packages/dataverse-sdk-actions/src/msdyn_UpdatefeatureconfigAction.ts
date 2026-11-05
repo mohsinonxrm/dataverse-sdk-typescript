@@ -30,7 +30,7 @@ export class msdyn_UpdatefeatureconfigAction implements Executable<msdyn_Updatef
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

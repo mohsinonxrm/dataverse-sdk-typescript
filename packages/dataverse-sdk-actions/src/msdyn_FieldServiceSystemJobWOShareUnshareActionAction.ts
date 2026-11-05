@@ -33,7 +33,7 @@ export class msdyn_FieldServiceSystemJobWOShareUnshareActionAction implements Ex
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

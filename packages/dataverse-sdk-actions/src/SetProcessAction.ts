@@ -33,7 +33,7 @@ export class SetProcessAction implements Executable<SetProcessResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

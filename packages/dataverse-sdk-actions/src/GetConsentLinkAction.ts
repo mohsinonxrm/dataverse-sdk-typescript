@@ -38,7 +38,7 @@ export class GetConsentLinkAction implements Executable<GetConsentLinkResponse> 
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -26,7 +26,7 @@ export class msdyn_GetRequirementModelsAction implements Executable<msdyn_GetReq
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

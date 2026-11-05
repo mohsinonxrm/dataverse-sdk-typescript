@@ -39,7 +39,7 @@ export class msdyn_GetExtractsFromContentAction implements Executable<msdyn_GetE
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -30,7 +30,7 @@ export class NotifyEnvironmentVariableSecretChangeAction implements Executable<N
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

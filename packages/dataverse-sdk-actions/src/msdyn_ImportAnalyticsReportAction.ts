@@ -32,7 +32,7 @@ export class msdyn_ImportAnalyticsReportAction implements Executable<msdyn_Impor
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

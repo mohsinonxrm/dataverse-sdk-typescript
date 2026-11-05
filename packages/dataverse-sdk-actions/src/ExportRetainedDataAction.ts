@@ -30,7 +30,7 @@ export class ExportRetainedDataAction implements Executable<ExportRetainedDataRe
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -37,7 +37,7 @@ export class msdyn_CSCopilotResolveCaseAction implements Executable<msdyn_CSCopi
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

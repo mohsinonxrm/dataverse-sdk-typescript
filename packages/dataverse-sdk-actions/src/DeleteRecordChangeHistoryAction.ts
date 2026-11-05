@@ -27,7 +27,7 @@ export class DeleteRecordChangeHistoryAction implements Executable<DeleteRecordC
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

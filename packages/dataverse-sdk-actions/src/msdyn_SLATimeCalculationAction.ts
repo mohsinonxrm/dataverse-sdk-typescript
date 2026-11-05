@@ -39,7 +39,7 @@ export class msdyn_SLATimeCalculationAction implements Executable<msdyn_SLATimeC
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

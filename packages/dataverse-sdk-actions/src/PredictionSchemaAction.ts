@@ -33,7 +33,7 @@ export class PredictionSchemaAction implements Executable<PredictionSchemaRespon
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

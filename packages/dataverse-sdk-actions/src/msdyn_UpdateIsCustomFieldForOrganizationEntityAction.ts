@@ -20,7 +20,7 @@ export class msdyn_UpdateIsCustomFieldForOrganizationEntityAction implements Exe
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

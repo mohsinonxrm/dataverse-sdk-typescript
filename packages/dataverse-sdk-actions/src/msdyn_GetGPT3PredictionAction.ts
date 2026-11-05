@@ -31,7 +31,7 @@ export class msdyn_GetGPT3PredictionAction implements Executable<msdyn_GetGPT3Pr
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 
 /**
  * Response from FormatAddress function
@@ -29,34 +30,23 @@ export class FormatAddressFunction implements Executable<FormatAddressResponse> 
     const aliases: string[] = [];
     if (this.line1 !== undefined) {
       aliases.push(`Line1=@p1`);
-      params.append("@p1", typeof this.line1 === "string" ? `'${this.line1}'` : String(this.line1));
+      params.append("@p1", formatAliasValue(this.line1));
     }
     if (this.city !== undefined) {
       aliases.push(`City=@p2`);
-      params.append("@p2", typeof this.city === "string" ? `'${this.city}'` : String(this.city));
+      params.append("@p2", formatAliasValue(this.city));
     }
     if (this.stateOrProvince !== undefined) {
       aliases.push(`StateOrProvince=@p3`);
-      params.append(
-        "@p3",
-        typeof this.stateOrProvince === "string"
-          ? `'${this.stateOrProvince}'`
-          : String(this.stateOrProvince)
-      );
+      params.append("@p3", formatAliasValue(this.stateOrProvince));
     }
     if (this.postalCode !== undefined) {
       aliases.push(`PostalCode=@p4`);
-      params.append(
-        "@p4",
-        typeof this.postalCode === "string" ? `'${this.postalCode}'` : String(this.postalCode)
-      );
+      params.append("@p4", formatAliasValue(this.postalCode));
     }
     if (this.country !== undefined) {
       aliases.push(`Country=@p5`);
-      params.append(
-        "@p5",
-        typeof this.country === "string" ? `'${this.country}'` : String(this.country)
-      );
+      params.append("@p5", formatAliasValue(this.country));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

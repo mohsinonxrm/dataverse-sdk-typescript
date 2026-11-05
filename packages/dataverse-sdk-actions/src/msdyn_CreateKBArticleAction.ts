@@ -26,7 +26,7 @@ export class msdyn_CreateKBArticleAction implements Executable<msdyn_CreateKBArt
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

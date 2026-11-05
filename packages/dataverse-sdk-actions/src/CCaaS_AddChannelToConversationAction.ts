@@ -37,7 +37,7 @@ export class CCaaS_AddChannelToConversationAction implements Executable<CCaaS_Ad
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

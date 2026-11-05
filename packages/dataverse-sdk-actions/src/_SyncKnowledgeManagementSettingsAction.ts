@@ -20,7 +20,7 @@ export class _SyncKnowledgeManagementSettingsAction implements Executable<_SyncK
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

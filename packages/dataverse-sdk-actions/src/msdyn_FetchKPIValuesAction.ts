@@ -35,7 +35,7 @@ export class msdyn_FetchKPIValuesAction implements Executable<msdyn_FetchKPIValu
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

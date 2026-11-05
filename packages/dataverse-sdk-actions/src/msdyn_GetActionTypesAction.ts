@@ -31,7 +31,7 @@ export class msdyn_GetActionTypesAction implements Executable<msdyn_GetActionTyp
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -41,7 +41,7 @@ export class msdyn_AddBotUserAction implements Executable<msdyn_AddBotUserRespon
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

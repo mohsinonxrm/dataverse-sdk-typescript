@@ -26,7 +26,7 @@ export class msdynmkt_optoutofvoicecommunicationAction implements Executable<msd
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

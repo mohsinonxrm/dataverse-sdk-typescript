@@ -26,7 +26,7 @@ export class msdyn_AddTeamsAppToLinkedChatAction implements Executable<msdyn_Add
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

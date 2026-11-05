@@ -25,7 +25,7 @@ export class ImportRecordsImportAction implements Executable<ImportRecordsImport
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

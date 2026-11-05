@@ -31,7 +31,7 @@ export class CCaaS_LeavePublicConsultAction implements Executable<CCaaS_LeavePub
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

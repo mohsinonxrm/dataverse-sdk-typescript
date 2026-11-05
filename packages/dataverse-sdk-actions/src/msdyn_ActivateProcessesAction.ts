@@ -28,7 +28,7 @@ export class msdyn_ActivateProcessesAction implements Executable<msdyn_ActivateP
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

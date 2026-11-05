@@ -34,7 +34,7 @@ export class msdyn_AddSuggestedCardsAction implements Executable<msdyn_AddSugges
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

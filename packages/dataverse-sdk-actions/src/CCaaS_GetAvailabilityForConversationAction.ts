@@ -39,7 +39,7 @@ export class CCaaS_GetAvailabilityForConversationAction implements Executable<CC
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

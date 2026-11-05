@@ -32,7 +32,7 @@ export class msdyn_GetSalesMeetingsAction implements Executable<msdyn_GetSalesMe
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

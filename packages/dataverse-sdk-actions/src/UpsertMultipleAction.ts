@@ -28,7 +28,7 @@ export class UpsertMultipleAction implements Executable<UpsertMultipleResponse> 
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

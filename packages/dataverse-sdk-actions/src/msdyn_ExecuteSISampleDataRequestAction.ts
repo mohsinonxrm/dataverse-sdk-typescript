@@ -32,7 +32,7 @@ export class msdyn_ExecuteSISampleDataRequestAction implements Executable<msdyn_
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

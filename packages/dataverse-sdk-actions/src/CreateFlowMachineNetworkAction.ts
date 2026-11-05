@@ -39,7 +39,7 @@ export class CreateFlowMachineNetworkAction implements Executable<CreateFlowMach
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

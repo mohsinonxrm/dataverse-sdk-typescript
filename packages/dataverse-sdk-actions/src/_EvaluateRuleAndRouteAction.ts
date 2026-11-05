@@ -31,7 +31,7 @@ export class _EvaluateRuleAndRouteAction implements Executable<_EvaluateRuleAndR
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

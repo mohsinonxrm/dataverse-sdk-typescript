@@ -21,7 +21,7 @@ export class msdyn_SalesAgents_GetM365ConsentAction implements Executable<msdyn_
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

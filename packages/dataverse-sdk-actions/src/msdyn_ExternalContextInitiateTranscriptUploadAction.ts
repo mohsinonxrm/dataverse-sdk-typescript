@@ -32,7 +32,7 @@ export class msdyn_ExternalContextInitiateTranscriptUploadAction implements Exec
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

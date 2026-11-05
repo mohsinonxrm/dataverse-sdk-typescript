@@ -12,6 +12,11 @@ export interface RequestInformation {
   signal?: AbortSignal;
   /** Correlation id for this request (sent as `x-ms-correlation-id`). A new one is generated when omitted. */
   correlationId?: string;
+  /**
+   * Per-request middleware overrides, e.g.
+   * `new MiddlewareRequestOptions([{ type: "retry", maxRetries: 0 }])`.
+   */
+  middlewareOptions?: import("../middleware/RequestOptions.js").RequestOptions;
 }
 
 export interface FetchProvider {

@@ -32,7 +32,7 @@ export class AddRecurrenceAction implements Executable<AddRecurrenceResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

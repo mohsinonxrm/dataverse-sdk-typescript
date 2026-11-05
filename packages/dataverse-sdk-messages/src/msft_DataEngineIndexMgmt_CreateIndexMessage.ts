@@ -31,7 +31,7 @@ export class msft_DataEngineIndexMgmt_CreateIndexRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

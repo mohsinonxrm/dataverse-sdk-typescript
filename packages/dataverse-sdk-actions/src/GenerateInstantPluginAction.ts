@@ -42,7 +42,7 @@ export class GenerateInstantPluginAction implements Executable<GenerateInstantPl
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

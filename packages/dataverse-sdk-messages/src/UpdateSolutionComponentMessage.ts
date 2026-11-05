@@ -33,7 +33,7 @@ export class UpdateSolutionComponentRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

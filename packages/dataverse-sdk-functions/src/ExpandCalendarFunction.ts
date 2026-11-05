@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatAliasValue } from "./internal/odataLiteral.js";
 import type { TimeInfo } from "./types/index.js";
 
 /**
@@ -30,11 +31,11 @@ export class ExpandCalendarFunction implements Executable<ExpandCalendarResponse
     const aliases: string[] = [];
     if (this.start !== undefined) {
       aliases.push(`Start=@p1`);
-      params.append("@p1", typeof this.start === "string" ? `'${this.start}'` : String(this.start));
+      params.append("@p1", formatAliasValue(this.start));
     }
     if (this.end !== undefined) {
       aliases.push(`End=@p2`);
-      params.append("@p2", typeof this.end === "string" ? `'${this.end}'` : String(this.end));
+      params.append("@p2", formatAliasValue(this.end));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

@@ -30,7 +30,7 @@ export class msdyn_ExecuteSandboxRequestAction implements Executable<msdyn_Execu
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -26,7 +26,7 @@ export class msdyn_D365ChannelsInboundAction implements Executable<msdyn_D365Cha
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -30,7 +30,7 @@ export class msdyn_invokeCaseProcessingAgentAction implements Executable<msdyn_i
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

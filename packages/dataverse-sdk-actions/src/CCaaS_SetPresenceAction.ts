@@ -30,7 +30,7 @@ export class CCaaS_SetPresenceAction implements Executable<CCaaS_SetPresenceResp
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

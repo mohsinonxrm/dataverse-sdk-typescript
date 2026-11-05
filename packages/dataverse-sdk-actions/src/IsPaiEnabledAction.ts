@@ -24,7 +24,7 @@ export class IsPaiEnabledAction implements Executable<IsPaiEnabledResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

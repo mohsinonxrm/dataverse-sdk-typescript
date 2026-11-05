@@ -34,7 +34,7 @@ export class msdyn_InvokeEvaluationActionAction implements Executable<msdyn_Invo
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
