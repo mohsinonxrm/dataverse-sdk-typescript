@@ -100,10 +100,10 @@ describe("#18: middleware can be added, removed and reordered", () => {
     await without.client.api("WhoAmI").get();
     expect(lines).toEqual([]);
     expect(names).toEqual([
-      "AuthMiddleware",
       "ODataHeadersMiddleware",
       "ConcurrencyMiddleware",
       "RetryMiddleware",
+      "AuthMiddleware",
       "TelemetryMiddleware",
       "LoggingMiddleware",
     ]);

@@ -236,8 +236,8 @@ export interface DataverseClientOptions {
    */
   defaultPrefer?: PreferOption[];
   /**
-   * Customise the middleware pipeline. The defaults run in this order: Auth (when a token
-   * provider is set), ODataHeaders, Concurrency, Retry, Telemetry, Logging; then the request goes
+   * Customise the middleware pipeline. The defaults run in this order: ODataHeaders,
+   * Concurrency, Retry, Auth (when a token provider is set), Telemetry, Logging; then the request goes
    * to `fetch`. `replace` receives that list and returns the one to use (for example without
    * Logging); then `prepend` runs first and `append` runs last, right before `fetch`, so it sees
    * the final headers including `authorization`.
@@ -248,6 +248,14 @@ export interface DataverseClientOptions {
    * By default the token is attached only to requests for the client's own `baseUrl` origin.
    */
   allowedTokenOrigins?: string[];
+  /**
+   * After a 401, get a new token and send the request once more. With a claims challenge in
+   * `WWW-Authenticate` (Conditional Access, CAE), the claims are passed to `getToken`;
+   * otherwise `getToken` is called with `forceRefresh: true`. Default `true`. Browsers can't
+   * read `WWW-Authenticate` on Dataverse responses (it isn't a CORS-exposed header), so there it
+   * is always a forced refresh.
+   */
+  refreshTokenOn401?: boolean;
   /**
    * What to do with a request for an origin that may not receive the token:
    * `"throw"` (default) rejects it with `DataverseInvalidRequestError` before anything is sent;

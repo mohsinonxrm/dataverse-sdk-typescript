@@ -9,10 +9,11 @@ import { TelemetryMiddleware } from "../middleware/TelemetryMiddleware.js";
 
 export function buildDefaultMiddleware(options: DataverseClientOptions): Middleware[] {
   const list: Middleware[] = [];
-  if (options.tokenProvider) list.push(new AuthMiddleware(options));
   list.push(new ODataHeadersMiddleware(options));
   list.push(new ConcurrencyMiddleware(options));
   list.push(new RetryMiddleware(options));
+  // Inside Retry, so every attempt gets a current token (#21); providers cache, so it's cheap.
+  if (options.tokenProvider) list.push(new AuthMiddleware(options));
   list.push(new TelemetryMiddleware(options));
   list.push(new LoggingMiddleware(options));
   return list;

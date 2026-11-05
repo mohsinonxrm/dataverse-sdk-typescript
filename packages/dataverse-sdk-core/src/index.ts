@@ -23,6 +23,7 @@ export { entityIdFromResponse } from "./utils/response.js";
 export { ConsoleLogger, type LogLevel } from "./utils/consoleLogger.js";
 export { defaultRedactUrl } from "./utils/redact.js";
 export { SDK_VERSION } from "./version.js";
+export { parseClaimsChallenge } from "./utils/claimsChallenge.js";
 
 // Pipeline building blocks, for `DataverseClientOptions.middleware` (#18).
 export { Pipeline } from "./pipeline/Pipeline.js";
