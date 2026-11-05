@@ -339,7 +339,7 @@ The generated metadata **EntityTypes**, **ComplexTypes** and **EnumTypes** are e
   - `mergeAndUpdateEntityDefinition(logicalName, changes, options?)`: retrieve, merge and `PUT` a table definition
   - Option value operations (`insertOptionValue`, `updateOptionValue`, `deleteOptionValue`, `orderOptions`, `insertStatusValue`)
   - `retrieveMetadataChanges(...)`: returns `RetrieveMetadataChangesResponse` (#62 tracks that it is sent as POST)
-- `interface MetadataQueryOptions`, `interface MetadataWriteOptions`
+- `interface MetadataQueryOptions`
 
 Strict metadata builders (`const Metadata`) are [planned](#16-planned-not-exported-yet).
 
