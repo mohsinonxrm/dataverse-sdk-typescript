@@ -47,7 +47,7 @@
   },
   "dependencies": {
     "@mohsinonxrm/dataverse-sdk-core": "workspace:*",
-    "@azure/monitor-opentelemetry": "^1.0.0"
+    "@azure/monitor-opentelemetry": "^1.20.1"
   },
   "devDependencies": {
     "typescript": "^5.4.0",

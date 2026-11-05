@@ -44,11 +44,11 @@
     "node": ">=20"
   },
   "peerDependencies": {
-    "@azure/identity": "^4.0.0",
+    "@azure/identity": "^4.14.1",
     "@mohsinonxrm/dataverse-sdk-core": "workspace:*"
   },
   "devDependencies": {
-    "@azure/identity": "^4.0.0",
+    "@azure/identity": "^4.14.1",
     "@mohsinonxrm/dataverse-sdk-core": "workspace:*",
     "@types/node": "^20.0.0",
     "tsup": "^8.0.0",
