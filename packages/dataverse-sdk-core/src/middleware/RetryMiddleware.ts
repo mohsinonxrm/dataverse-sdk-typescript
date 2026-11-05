@@ -171,7 +171,10 @@ export class RetryMiddleware implements Middleware {
         statusCode: res.status,
       });
 
-      // Important: for 429/5xx, we wait and retry.
+      // Important: for 429/5xx, we wait and retry. The response is dropped, so release its body
+      // now: an unread body keeps the connection busy (undici) until garbage collection (#45).
+      // Not awaited: a tee'd stream only settles once every branch is done.
+      res.body?.cancel().catch(() => undefined);
       await waitBeforeRetry(attemptEntry(attempt, res.status, retryAfterMs), delay);
     }
   }
