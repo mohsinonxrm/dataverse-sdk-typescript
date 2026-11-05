@@ -17,6 +17,15 @@ export {
   MsalBrowserAuthenticationError,
 } from "./errors.js";
 export type { MsalErrorLike, MsalErrorDetails } from "./errors.js";
+export {
+  initializeMsal,
+  scopesForEnvironment,
+  authorityFor,
+  createMsalBrowserProvider,
+} from "./spa.js";
+export type { DataverseScopeKind, CreateMsalBrowserProviderOptions } from "./spa.js";
+export { AUTHORITY_HOSTS } from "./authority.js";
+export type { EntraCloud } from "./authority.js";
 
 // Re-export commonly used MSAL types for convenience
 export type {

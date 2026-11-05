@@ -22,6 +22,7 @@ import {
   isInteractionRequiredError,
   isPopupBlockedError,
 } from "./errors.js";
+import { AUTHORITY_HOSTS, assertValidTenant } from "./authority.js";
 
 /**
  * Wraps a failure as `MsalBrowserAuthenticationError` (keeping MSAL's details and the error as
@@ -38,12 +39,6 @@ function toAuthenticationError(error: unknown): DataverseAuthenticationError {
  * Interaction type for acquiring tokens when silent acquisition fails
  */
 export type InteractionType = "popup" | "redirect";
-
-/** Authority host used for `tenantId` when the MSAL configuration has no authority. */
-const DEFAULT_AUTHORITY_HOST = "https://login.microsoftonline.com";
-
-/** A tenant id (GUID) or tenant domain such as `contoso.onmicrosoft.com`. */
-const TENANT_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9.-]*$/;
 
 /**
  * Configuration options for MSAL Browser token provider
@@ -193,7 +188,7 @@ export class MsalBrowserTokenProvider implements AccessTokenProvider {
       throw DataverseInvalidRequestError.emptyScopes();
     }
 
-    const authority = this.authorityFor(options);
+    const authority = this.tenantAuthority(options);
 
     // Resolved on every call: the app may have switched accounts since the last one.
     const account = this.resolveAccount();
@@ -398,18 +393,12 @@ export class MsalBrowserTokenProvider implements AccessTokenProvider {
    * Maps `TokenOptions.tenantId` to an authority on the configured authority's host, so the
    * token is issued by that tenant (guest users, multi-tenant apps).
    */
-  private authorityFor(options?: TokenOptions): string | undefined {
+  private tenantAuthority(options?: TokenOptions): string | undefined {
     const tenantId = options?.tenantId;
     if (!tenantId) {
       return undefined;
     }
-    if (!TENANT_ID_PATTERN.test(tenantId)) {
-      const error = new DataverseInvalidRequestError(
-        `Invalid tenantId: expected a tenant id (GUID) or domain, got "${tenantId}"`
-      );
-      error.name = "InvalidTenantId";
-      throw error;
-    }
+    assertValidTenant(tenantId);
     return `${this.authorityHost()}/${tenantId}`;
   }
 
@@ -422,7 +411,7 @@ export class MsalBrowserTokenProvider implements AccessTokenProvider {
     } catch {
       // No configuration (a minimal IPublicClientApplication) or an unparsable authority.
     }
-    return DEFAULT_AUTHORITY_HOST;
+    return AUTHORITY_HOSTS.public;
   }
 
   /**
