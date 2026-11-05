@@ -47,7 +47,7 @@ export class msdyn_SalesOpportunitySummaryAction implements Executable<msdyn_Sal
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

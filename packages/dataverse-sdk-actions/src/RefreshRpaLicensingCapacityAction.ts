@@ -20,7 +20,7 @@ export class RefreshRpaLicensingCapacityAction implements Executable<RefreshRpaL
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

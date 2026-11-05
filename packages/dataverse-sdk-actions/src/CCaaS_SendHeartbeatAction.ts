@@ -37,7 +37,7 @@ export class CCaaS_SendHeartbeatAction implements Executable<CCaaS_SendHeartbeat
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

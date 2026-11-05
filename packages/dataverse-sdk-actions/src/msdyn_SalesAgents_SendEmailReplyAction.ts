@@ -36,7 +36,7 @@ export class msdyn_SalesAgents_SendEmailReplyAction implements Executable<msdyn_
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -24,7 +24,7 @@ export class ListChildDesktopFlowsAction implements Executable<ListChildDesktopF
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

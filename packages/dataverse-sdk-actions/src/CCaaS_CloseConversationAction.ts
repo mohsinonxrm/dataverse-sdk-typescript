@@ -32,7 +32,7 @@ export class CCaaS_CloseConversationAction implements Executable<CCaaS_CloseConv
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

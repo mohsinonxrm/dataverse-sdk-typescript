@@ -22,7 +22,7 @@ export class msdyncrm_GetFileAttributesFromConfigurationAction implements Execut
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

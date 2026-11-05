@@ -51,7 +51,7 @@ export class UpdateOptionValueAction implements Executable<UpdateOptionValueResp
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

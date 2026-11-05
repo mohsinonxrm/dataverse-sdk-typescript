@@ -26,7 +26,7 @@ export class UninstallSolutionAction implements Executable<UninstallSolutionResp
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

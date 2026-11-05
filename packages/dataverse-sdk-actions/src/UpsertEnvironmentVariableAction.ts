@@ -42,7 +42,7 @@ export class UpsertEnvironmentVariableAction implements Executable<UpsertEnviron
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

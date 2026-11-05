@@ -34,7 +34,7 @@ export class RenewContractAction implements Executable<RenewContractResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

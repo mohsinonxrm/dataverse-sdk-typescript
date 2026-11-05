@@ -33,7 +33,7 @@ export class CCaaS_AssignConversationAction implements Executable<CCaaS_AssignCo
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -30,7 +30,7 @@ export class msdyn_RetrieveActivitiesAction implements Executable<msdyn_Retrieve
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -34,7 +34,7 @@ export class msdyn_knowledgeHarvestCreateArticleAction implements Executable<msd
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

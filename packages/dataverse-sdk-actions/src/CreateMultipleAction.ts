@@ -27,7 +27,7 @@ export class CreateMultipleAction implements Executable<CreateMultipleResponse> 
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

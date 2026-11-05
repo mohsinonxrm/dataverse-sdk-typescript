@@ -38,7 +38,7 @@ export class msdyn_UpdateBookingsStatusAction implements Executable<msdyn_Update
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

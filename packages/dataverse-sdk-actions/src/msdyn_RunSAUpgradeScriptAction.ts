@@ -20,7 +20,7 @@ export class msdyn_RunSAUpgradeScriptAction implements Executable<msdyn_RunSAUpg
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

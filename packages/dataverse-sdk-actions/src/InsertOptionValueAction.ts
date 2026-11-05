@@ -49,7 +49,7 @@ export class InsertOptionValueAction implements Executable<InsertOptionValueResp
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

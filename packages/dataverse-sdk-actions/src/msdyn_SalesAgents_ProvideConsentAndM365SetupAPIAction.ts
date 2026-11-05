@@ -21,7 +21,7 @@ export class msdyn_SalesAgents_ProvideConsentAndM365SetupAPIAction implements Ex
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

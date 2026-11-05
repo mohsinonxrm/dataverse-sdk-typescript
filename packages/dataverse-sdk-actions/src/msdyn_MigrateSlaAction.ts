@@ -27,7 +27,7 @@ export class msdyn_MigrateSlaAction implements Executable<msdyn_MigrateSlaRespon
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -38,7 +38,7 @@ export class msdyn_GenerateGeofenceEventAction implements Executable<msdyn_Gener
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

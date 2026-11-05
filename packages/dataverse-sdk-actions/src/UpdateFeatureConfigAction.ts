@@ -30,7 +30,7 @@ export class UpdateFeatureConfigAction implements Executable<UpdateFeatureConfig
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

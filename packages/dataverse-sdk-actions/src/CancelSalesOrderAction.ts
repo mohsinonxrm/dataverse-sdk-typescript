@@ -31,7 +31,7 @@ export class CancelSalesOrderAction implements Executable<CancelSalesOrderRespon
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -31,7 +31,7 @@ export class AddListMembersListAction implements Executable<AddListMembersListRe
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

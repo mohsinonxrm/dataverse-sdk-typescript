@@ -45,7 +45,7 @@ export class SendAppNotificationAction implements Executable<SendAppNotification
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

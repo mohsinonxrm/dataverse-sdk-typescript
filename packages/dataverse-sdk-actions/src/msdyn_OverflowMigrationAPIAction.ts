@@ -20,7 +20,7 @@ export class msdyn_OverflowMigrationAPIAction implements Executable<msdyn_Overfl
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

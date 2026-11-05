@@ -30,7 +30,7 @@ export class msdyn_GetCJOTreeNodesAction implements Executable<msdyn_GetCJOTreeN
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

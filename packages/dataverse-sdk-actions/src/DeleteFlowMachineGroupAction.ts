@@ -24,7 +24,7 @@ export class DeleteFlowMachineGroupAction implements Executable<DeleteFlowMachin
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

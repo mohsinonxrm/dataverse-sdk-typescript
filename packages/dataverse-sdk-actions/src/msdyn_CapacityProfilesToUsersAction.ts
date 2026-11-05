@@ -30,7 +30,7 @@ export class msdyn_CapacityProfilesToUsersAction implements Executable<msdyn_Cap
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

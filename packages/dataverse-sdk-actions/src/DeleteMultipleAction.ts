@@ -27,7 +27,7 @@ export class DeleteMultipleAction implements Executable<DeleteMultipleResponse> 
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

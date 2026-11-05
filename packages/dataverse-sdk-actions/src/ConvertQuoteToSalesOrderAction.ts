@@ -42,7 +42,7 @@ export class ConvertQuoteToSalesOrderAction implements Executable<ConvertQuoteTo
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -20,7 +20,7 @@ export class msdyn_GetSellerAuditStateAction implements Executable<msdyn_GetSell
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

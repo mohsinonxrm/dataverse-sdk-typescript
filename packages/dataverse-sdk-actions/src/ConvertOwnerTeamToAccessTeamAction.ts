@@ -24,7 +24,7 @@ export class ConvertOwnerTeamToAccessTeamAction implements Executable<ConvertOwn
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

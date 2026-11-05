@@ -27,7 +27,7 @@ export class RetrieveFeatureControlStringSettingsForNamespaceAction implements E
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

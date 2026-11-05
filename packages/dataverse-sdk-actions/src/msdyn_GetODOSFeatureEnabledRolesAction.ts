@@ -26,7 +26,7 @@ export class msdyn_GetODOSFeatureEnabledRolesAction implements Executable<msdyn_
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

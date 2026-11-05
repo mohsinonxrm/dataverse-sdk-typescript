@@ -30,7 +30,7 @@ export class AIExtractAction implements Executable<AIExtractResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

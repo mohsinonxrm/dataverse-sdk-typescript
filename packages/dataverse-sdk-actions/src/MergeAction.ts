@@ -35,7 +35,7 @@ export class MergeAction implements Executable<MergeResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

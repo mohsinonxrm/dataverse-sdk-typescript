@@ -20,7 +20,7 @@ export class msdynmkt_GetPublicConfigurationCustomActionAction implements Execut
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

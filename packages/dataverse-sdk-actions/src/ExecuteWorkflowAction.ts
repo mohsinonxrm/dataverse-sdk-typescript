@@ -34,7 +34,7 @@ export class ExecuteWorkflowAction implements Executable<ExecuteWorkflowResponse
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

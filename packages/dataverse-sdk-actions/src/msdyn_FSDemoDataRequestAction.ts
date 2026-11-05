@@ -26,7 +26,7 @@ export class msdyn_FSDemoDataRequestAction implements Executable<msdyn_FSDemoDat
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

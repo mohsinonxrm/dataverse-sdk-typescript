@@ -31,7 +31,7 @@ export class msdyn_ForecastRecalculateAction implements Executable<msdyn_Forecas
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

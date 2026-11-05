@@ -34,7 +34,7 @@ export class msdyn_GetCaseAggregationAction implements Executable<msdyn_GetCaseA
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

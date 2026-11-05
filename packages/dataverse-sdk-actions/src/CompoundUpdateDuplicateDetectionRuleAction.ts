@@ -31,7 +31,7 @@ export class CompoundUpdateDuplicateDetectionRuleAction implements Executable<Co
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

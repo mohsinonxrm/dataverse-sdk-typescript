@@ -27,7 +27,7 @@ export class msdyn_SetAutoBlockedFlagAction implements Executable<msdyn_SetAutoB
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

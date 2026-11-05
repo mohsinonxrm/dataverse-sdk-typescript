@@ -34,7 +34,7 @@ export class msdyn_IoTHubQueryDeviceReadingsAction implements Executable<msdyn_I
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

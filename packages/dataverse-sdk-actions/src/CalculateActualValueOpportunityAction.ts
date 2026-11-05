@@ -24,7 +24,7 @@ export class CalculateActualValueOpportunityAction implements Executable<Calcula
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

@@ -26,7 +26,7 @@ export class msdyn_SalesInsightsTpsPackageAction implements Executable<msdyn_Sal
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

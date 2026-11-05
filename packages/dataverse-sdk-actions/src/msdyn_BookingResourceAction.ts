@@ -93,7 +93,7 @@ export class msdyn_BookingResourceAction implements Executable<msdyn_BookingReso
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

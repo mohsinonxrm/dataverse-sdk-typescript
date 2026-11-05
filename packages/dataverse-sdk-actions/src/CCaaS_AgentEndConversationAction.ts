@@ -33,7 +33,7 @@ export class CCaaS_AgentEndConversationAction implements Executable<CCaaS_AgentE
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

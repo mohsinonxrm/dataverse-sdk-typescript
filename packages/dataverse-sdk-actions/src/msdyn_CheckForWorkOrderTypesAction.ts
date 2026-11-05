@@ -23,7 +23,7 @@ export class msdyn_CheckForWorkOrderTypesAction implements Executable<msdyn_Chec
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

@@ -35,7 +35,7 @@ export class ExportSolutionFromGitAction implements Executable<ExportSolutionFro
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -30,7 +30,7 @@ export class msdyn_GeneratePlatformSummaryAction implements Executable<msdyn_Gen
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

@@ -38,7 +38,7 @@ export class msdyn_CheckIfFormsHaveTooManyCustomControlsAction implements Execut
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

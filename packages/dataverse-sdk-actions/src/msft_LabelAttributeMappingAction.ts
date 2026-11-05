@@ -27,7 +27,7 @@ export class msft_LabelAttributeMappingAction implements Executable<msft_LabelAt
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

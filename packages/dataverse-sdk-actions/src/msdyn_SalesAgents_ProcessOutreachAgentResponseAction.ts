@@ -32,7 +32,7 @@ export class msdyn_SalesAgents_ProcessOutreachAgentResponseAction implements Exe
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

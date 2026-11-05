@@ -34,7 +34,7 @@ export class CCaaS_BroadcastMessageAction implements Executable<CCaaS_BroadcastM
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

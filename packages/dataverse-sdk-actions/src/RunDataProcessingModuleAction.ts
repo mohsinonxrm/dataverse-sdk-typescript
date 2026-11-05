@@ -39,7 +39,7 @@ export class RunDataProcessingModuleAction implements Executable<RunDataProcessi
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

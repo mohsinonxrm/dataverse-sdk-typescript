@@ -20,7 +20,7 @@ export class msdyn_MarketingMetadataUpdateAction implements Executable<msdyn_Mar
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

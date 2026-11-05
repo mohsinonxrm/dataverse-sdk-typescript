@@ -37,7 +37,7 @@ export class CCaaS_InitiateQueueConsultAction implements Executable<CCaaS_Initia
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

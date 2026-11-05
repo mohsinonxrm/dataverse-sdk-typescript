@@ -26,7 +26,7 @@ export class AIReplyAction implements Executable<AIReplyResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

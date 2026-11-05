@@ -26,7 +26,7 @@ export class msdyn_IoTSendTestAlertAction implements Executable<msdyn_IoTSendTes
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

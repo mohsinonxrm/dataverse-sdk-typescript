@@ -43,7 +43,7 @@ export class CreateAndSendNewEmailAction implements Executable<CreateAndSendNewE
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

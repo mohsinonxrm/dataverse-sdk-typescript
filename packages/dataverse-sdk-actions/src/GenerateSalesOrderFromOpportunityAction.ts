@@ -32,7 +32,7 @@ export class GenerateSalesOrderFromOpportunityAction implements Executable<Gener
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

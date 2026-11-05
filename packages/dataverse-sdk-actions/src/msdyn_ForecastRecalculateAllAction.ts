@@ -20,7 +20,7 @@ export class msdyn_ForecastRecalculateAllAction implements Executable<msdyn_Fore
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

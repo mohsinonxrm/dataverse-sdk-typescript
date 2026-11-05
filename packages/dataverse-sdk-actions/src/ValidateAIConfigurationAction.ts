@@ -30,7 +30,7 @@ export class ValidateAIConfigurationAction implements Executable<ValidateAIConfi
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

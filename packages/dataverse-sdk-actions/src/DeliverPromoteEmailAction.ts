@@ -55,7 +55,7 @@ export class DeliverPromoteEmailAction implements Executable<DeliverPromoteEmail
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

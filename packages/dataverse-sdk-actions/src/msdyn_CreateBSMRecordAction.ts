@@ -28,7 +28,7 @@ export class msdyn_CreateBSMRecordAction implements Executable<msdyn_CreateBSMRe
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

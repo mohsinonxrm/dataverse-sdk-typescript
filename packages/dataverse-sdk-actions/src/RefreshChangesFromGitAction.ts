@@ -26,7 +26,7 @@ export class RefreshChangesFromGitAction implements Executable<RefreshChangesFro
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

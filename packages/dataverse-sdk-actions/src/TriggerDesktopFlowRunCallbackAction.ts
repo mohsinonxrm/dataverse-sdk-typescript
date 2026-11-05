@@ -24,7 +24,7 @@ export class TriggerDesktopFlowRunCallbackAction implements Executable<TriggerDe
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }

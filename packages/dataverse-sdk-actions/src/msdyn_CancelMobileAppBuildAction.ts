@@ -31,7 +31,7 @@ export class msdyn_CancelMobileAppBuildAction implements Executable<msdyn_Cancel
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };

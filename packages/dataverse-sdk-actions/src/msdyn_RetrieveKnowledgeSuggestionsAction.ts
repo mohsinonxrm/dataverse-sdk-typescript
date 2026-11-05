@@ -31,7 +31,7 @@ export class msdyn_RetrieveKnowledgeSuggestionsAction implements Executable<msdy
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
