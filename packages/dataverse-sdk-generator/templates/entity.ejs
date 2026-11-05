@@ -4,7 +4,6 @@
  * Entity Set: <%- doc(entity.EntitySetName) %>
  */
 export interface <%- typeName %> extends IEntity {
-  logicalName: <%- literal(entity.LogicalName) %>;
 <%_ entity.Properties.forEach(function(prop){ _%>
 
   /** <%- doc(prop.Description || prop.DisplayName || prop.LogicalName) %> */

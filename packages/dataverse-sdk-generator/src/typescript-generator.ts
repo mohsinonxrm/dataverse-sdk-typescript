@@ -473,8 +473,11 @@ export * from './metadata${suffix}.js';
       resolved.includes("IEntity") || resolved.includes("unknown") ? ["IEntity"] : resolved;
     if (types.includes("IEntity")) imports.type("IEntity", RUNTIME_PACKAGE);
     const union = types.join(" | ");
-    if (!nav.IsCollection) return union;
-    return types.length > 1 ? `(${union})[]` : `${union}[]`;
+    if (nav.IsCollection) return types.length > 1 ? `(${union})[]` : `${union}[]`;
+    // A lookup is read as the related record (with $expand) and written as a reference, which
+    // formatEntityForWrite() turns into `<nav>@odata.bind`.
+    imports.type("EntityReference", RUNTIME_PACKAGE);
+    return `${union} | EntityReference`;
   }
 
   /** Import specifier from a file in `from` to a generated module in `to`. */
