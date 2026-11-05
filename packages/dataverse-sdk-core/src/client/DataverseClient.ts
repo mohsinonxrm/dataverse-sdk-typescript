@@ -12,14 +12,16 @@ import { FetchRequestAdapter } from "../pipeline/FetchRequestAdapter.js";
 import { buildDefaultMiddleware } from "../pipeline/DefaultMiddleware.js";
 import { DataverseRequestBuilder } from "./DataverseRequestBuilder.js";
 import { parseODataError } from "../errors/parseODataError.js";
-import { normalizeHeaders } from "../utils/HeaderUtils.js";
+import { generateUUID, normalizeHeaders } from "../utils/HeaderUtils.js";
+import { FeatureUsageTracker } from "../telemetry/FeatureUsageTracker.js";
 import { DataverseInvalidRequestError } from "../errors/NamedErrors.js";
 
 export class DataverseClient {
   private readonly baseUrl: string;
   private readonly pipeline: Pipeline;
   private readonly adapter: RequestAdapter;
-  private readonly ctx: MiddlewareContext;
+  /** Shared by every request; each request gets its own copy (see send()). */
+  private readonly baseCtx: MiddlewareContext;
 
   constructor(private options: DataverseClientOptions) {
     if (!isAllowedBaseUrl(options.baseUrl)) {
@@ -38,9 +40,11 @@ export class DataverseClient {
     const middleware = buildDefaultMiddleware(options);
     this.pipeline = new Pipeline(middleware);
 
-    this.ctx = {
+    this.baseCtx = {
       logger: options.logger,
       telemetry: options.telemetry,
+      // Per client, so feature flags from one client never leak into another's telemetry.
+      featureTracker: new FeatureUsageTracker(),
     };
 
     if (options.circuitBreaker?.enabled) {
@@ -104,7 +108,15 @@ export class DataverseClient {
       url: this.resolveUrl(request.url),
       headers: normalizeHeaders(request.headers),
     };
-    return this.pipeline.execute(req, this.ctx, (r, c) => this.adapter.send(r, c));
+    // A fresh context per request: middleware writes to it (correlation id, retry attempt), so a
+    // shared one would give every request the same correlation id and let concurrent requests
+    // overwrite each other's attempt numbers.
+    const ctx: MiddlewareContext = {
+      ...this.baseCtx,
+      correlationId: request.correlationId ?? generateUUID(),
+      attempt: 0,
+    };
+    return this.pipeline.execute(req, ctx, (r, c) => this.adapter.send(r, c));
   }
 }
 
@@ -115,6 +127,7 @@ function applyOptions(req: RequestInformation, opt?: RequestOptions) {
     ...normalizeHeaders(opt.headers),
   });
   if (opt.timeoutMs !== undefined) req.timeoutMs = opt.timeoutMs;
+  if (opt.correlationId) req.correlationId = opt.correlationId;
   if (opt.signal) req.signal = opt.signal;
   if (opt.prefer?.length) {
     // Prefer is a single header with comma-separated values; names are lower-cased above.

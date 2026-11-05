@@ -57,6 +57,8 @@ export interface RequestOptions {
   prefer?: PreferOption[];
   timeoutMs?: number;
   signal?: AbortSignal;
+  /** Correlation id for this request. A new one is generated per request when omitted. */
+  correlationId?: string;
   /**
    * Per-request middleware options overrides
    * Allows fine-grained control of middleware behavior on a per-request basis

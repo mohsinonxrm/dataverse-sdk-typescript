@@ -10,6 +10,8 @@ export interface RequestInformation {
   body?: unknown;
   timeoutMs?: number;
   signal?: AbortSignal;
+  /** Correlation id for this request (sent as `x-ms-correlation-id`). A new one is generated when omitted. */
+  correlationId?: string;
 }
 
 export interface FetchProvider {
