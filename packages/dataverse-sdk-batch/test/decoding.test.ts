@@ -194,6 +194,14 @@ describe("decoding", () => {
       expect(part.statusText).toBe("Internal Server Error");
     });
 
+    it("parses a status line with a long run of whitespace", () => {
+      const spaces = " ".repeat(100_000);
+      const body = `--b\r\nContent-Type: application/http\r\n\r\nHTTP/1.1${spaces}404${spaces}Not Found\r\n\r\n\r\n--b--`;
+      const [part] = decodeBatchResponse(body, "multipart/mixed; boundary=b");
+      expect(part.status).toBe(404);
+      expect(part.statusText).toBe("Not Found");
+    });
+
     it("throws on a part without an HTTP status line", () => {
       const body = "--b\r\nContent-Type: application/http\r\n\r\nnot http\r\n--b--";
       expect(() => decodeBatchResponse(body, "multipart/mixed; boundary=b")).toThrow(
