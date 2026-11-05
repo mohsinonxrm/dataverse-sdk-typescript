@@ -145,7 +145,7 @@ export class MetadataClient {
    *   DisplayCollectionName: {
    *     LocalizedLabels: [{ Label: 'Custom Entities', LanguageCode: 1033 }]
    *   },
-   *   OwnershipType: 1,
+   *   OwnershipType: "UserOwned",
    *   HasActivities: true
    * });
    * ```
