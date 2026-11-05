@@ -41,7 +41,7 @@
   "author": "Mohsin On xRM",
   "license": "AGPL-3.0-only",
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "peerDependencies": {
     "@azure/identity": "^4.0.0",

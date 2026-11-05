@@ -17,4 +17,4 @@
 "@mohsinonxrm/dataverse-sdk-xrm": patch
 ---
 
-Declare `engines: { "node": ">=20" }`. Node 18 reached end of life in April 2025, and CI now tests on Node 20, 22 and 24. Installing on Node 18 shows an engine warning (or fails with `engine-strict`).
+Declare `engines: { "node": ">=22" }`. Node 18 and Node 20 are end of life (April 2025 and April 2026). CI now tests on Node 22, 24 and 26. Installing on an older Node shows an engine warning, or fails with `engine-strict`.
