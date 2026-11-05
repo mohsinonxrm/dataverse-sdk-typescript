@@ -10,7 +10,7 @@
     "dev": "tsx watch src/index.ts",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest"
+    "test": "vitest run"
   },
   "dependencies": {
     "@mohsinonxrm/dataverse-sdk-core": "workspace:*",

@@ -14,7 +14,7 @@
     "generate": "node dist/cli.js",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest"
+    "test": "vitest run"
   },
   "dependencies": {
     "@azure/identity": "^4.5.0",
