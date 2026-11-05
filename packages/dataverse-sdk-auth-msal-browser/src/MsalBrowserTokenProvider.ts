@@ -232,6 +232,8 @@ export class MsalBrowserTokenProvider implements AccessTokenProvider {
       authority,
       claims: options?.claims ?? this.options.claims,
       correlationId: options?.correlationId ?? this.options.correlationId,
+      // After a 401 the SDK asks for a new token: bypass MSAL's cached access token (#167).
+      ...(options?.forceRefresh ? { forceRefresh: true } : {}),
     };
 
     const response = await this.publicClientApplication.acquireTokenSilent(silentRequest);
