@@ -1,353 +1,234 @@
-import { describe, it, expect, beforeAll, afterAll, afterEach, vi } from "vitest";
-import { http, HttpResponse } from "msw";
-import { setupServer } from "msw/node";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import {
+  createFakeFetch,
+  fakeTokenProvider,
+  jsonResponse,
+  odataError,
+} from "@mohsinonxrm/dataverse-sdk-testing";
+import type { RecordedRequest } from "@mohsinonxrm/dataverse-sdk-testing";
+import { DataverseInvalidRequestError } from "@mohsinonxrm/dataverse-sdk-core";
 import { DiscoveryClient } from "../src/DiscoveryClient.js";
-import type { AccessTokenProvider } from "@mohsinonxrm/dataverse-sdk-core";
-import type { DiscoveryResponse, OrganizationDetail } from "../src/types.js";
+import { OrganizationState, toEnvironment } from "../src/index.js";
+import type { DiscoveryResponse, OrganizationDetail } from "../src/index.js";
+import instancesV2 from "./fixtures/instances-v2.json";
 
-// Mock token provider
-const mockTokenProvider: AccessTokenProvider = {
-  getToken: vi.fn().mockResolvedValue("mock-token"),
-};
+const DISCO = "https://globaldisco.crm.dynamics.com/api/discovery/v2.0";
 
-// Mock organization data
-const mockOrganizations: OrganizationDetail[] = [
-  {
-    Id: "00000000-0000-0000-0000-000000000001",
-    UniqueName: "contoso",
-    FriendlyName: "Contoso Corporation",
-    Endpoints: {
-      WebApiUrl: "https://contoso.api.crm.dynamics.com",
-      WebApplicationUrl: "https://contoso.crm.dynamics.com",
-    },
-    State: "Enabled",
-    Version: "9.2.23114.00188",
-    UrlName: "contoso",
-    Geo: "NA",
-    TenantId: "00000000-0000-0000-0000-000000000010",
-    EnvironmentId: "00000000-0000-0000-0000-000000000020",
-    Region: "NA001",
-  },
-  {
-    Id: "00000000-0000-0000-0000-000000000002",
-    UniqueName: "fabrikam",
-    FriendlyName: "Fabrikam Inc",
-    Endpoints: {
-      WebApiUrl: "https://fabrikam.api.crm4.dynamics.com",
-      WebApplicationUrl: "https://fabrikam.crm4.dynamics.com",
-    },
-    State: "Enabled",
-    Version: "9.2.23114.00188",
-    UrlName: "fabrikam",
-    Geo: "EMEA",
-    TenantId: "00000000-0000-0000-0000-000000000010",
-    EnvironmentId: "00000000-0000-0000-0000-000000000030",
-    Region: "EMEA001",
-  },
-  {
-    Id: "00000000-0000-0000-0000-000000000003",
-    UniqueName: "adventureworks",
-    FriendlyName: "Adventure Works",
-    Endpoints: {
-      WebApiUrl: "https://adventureworks.api.crm.dynamics.com",
-      WebApplicationUrl: "https://adventureworks.crm.dynamics.com",
-    },
-    State: "Disabled",
-    Version: "9.2.23114.00188",
-    UrlName: "adventureworks",
-    Geo: "NA",
-    TenantId: "00000000-0000-0000-0000-000000000010",
-    EnvironmentId: "00000000-0000-0000-0000-000000000040",
-    Region: "NA001",
-  },
-];
+/**
+ * A v2.0 `Instances` response with the properties documented in Microsoft Learn,
+ * "Discover user organizations" (Instance entity), plus `FinOpsUrl`. Its property names and JSON
+ * types match a live response (checked for names and types only); the values are Contoso
+ * placeholders, so no real org details are committed.
+ */
+// Checked against the public type: a property the type lacks, or a wrong value type, fails typecheck.
+const fixture: DiscoveryResponse & { "@odata.context": string } = instancesV2;
+const orgs: OrganizationDetail[] = fixture.value;
 
-// MSW server setup
-const server = setupServer();
+function query(r: RecordedRequest, name: string): string | null {
+  return new URL(r.url).searchParams.get(name);
+}
 
-beforeAll(() => {
-  server.listen({ onUnhandledRequest: "error" });
-});
-afterAll(() => {
-  server.close();
-});
-afterEach(() => {
-  server.resetHandlers();
-  vi.clearAllMocks();
-});
+/** Inject a recording fake fetch (the client calls the global fetch). */
+function setup() {
+  const fake = createFakeFetch({ apiUrl: DISCO });
+  vi.stubGlobal("fetch", fake.fetchProvider.fetch);
+  const tokens = fakeTokenProvider("disco-token");
+  return { fake, tokens, client: new DiscoveryClient(tokens) };
+}
 
-describe("DiscoveryClient", () => {
-  describe("Constructor", () => {
-    it("should create instance with default URL", () => {
-      const client = new DiscoveryClient(mockTokenProvider);
-      expect(client).toBeInstanceOf(DiscoveryClient);
-    });
-
-    it("should create instance with custom URL", () => {
-      const customUrl = "https://custom.disco.endpoint/api/discovery/v2.0";
-      const client = new DiscoveryClient(mockTokenProvider, customUrl);
-      expect(client).toBeInstanceOf(DiscoveryClient);
-    });
+/** Answer /Instances like the service: apply the `eq` filters the client sends. */
+function serveFixture(fake: ReturnType<typeof setup>["fake"]) {
+  fake.on("GET", "/Instances", (r) => {
+    const filter = query(r, "$filter");
+    let value = orgs;
+    const state = /^State eq (\d+)$/.exec(filter ?? "");
+    const str = /^(\w+) eq '(.*)'$/.exec(filter ?? "");
+    if (state) value = orgs.filter((o) => o.State === Number(state[1]));
+    else if (str) {
+      const [, prop, literal] = str;
+      value = orgs.filter((o) => o[prop as keyof OrganizationDetail] === literal);
+    }
+    return jsonResponse({ ...fixture, value });
   });
+}
 
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
+describe("DiscoveryClient (Global Discovery Service v2.0)", () => {
   describe("listOrganizations", () => {
-    it("should list all organizations", async () => {
-      server.use(
-        http.get("https://globaldisco.crm.dynamics.com/api/discovery/v2.0/Instances", () => {
-          return HttpResponse.json<DiscoveryResponse>({
-            value: mockOrganizations,
-          });
-        })
-      );
+    it("returns the flat v2.0 Instance objects (Url, ApiUrl, integer State)", async () => {
+      const { fake, client } = setup();
+      serveFixture(fake);
 
-      const client = new DiscoveryClient(mockTokenProvider);
-      const orgs = await client.listOrganizations();
+      const result = await client.listOrganizations();
 
-      expect(orgs).toHaveLength(3);
-      expect(orgs[0].UniqueName).toBe("contoso");
-      expect(orgs[1].UniqueName).toBe("fabrikam");
-      expect(orgs[2].UniqueName).toBe("adventureworks");
+      expect(result).toHaveLength(3);
+      const [contoso] = result;
+      expect(contoso.Url).toBe("https://contoso.crm.dynamics.com");
+      expect(contoso.ApiUrl).toBe("https://contoso.api.crm.dynamics.com");
+      expect(contoso.State).toBe(0);
+      expect(contoso.Region).toBe("NA");
+      expect(contoso.EnvironmentId).toBe("00000000-0000-0000-0000-000000000020");
+      expect(contoso).not.toHaveProperty("Endpoints");
+      expect(contoso).not.toHaveProperty("Geo");
     });
 
-    it("should request token with correct scopes", async () => {
-      server.use(
-        http.get("https://globaldisco.crm.dynamics.com/api/discovery/v2.0/Instances", () => {
-          return HttpResponse.json<DiscoveryResponse>({ value: [] });
-        })
-      );
+    it("sends GET /Instances with the bearer token, OData headers and the discovery scope", async () => {
+      const { fake, tokens, client } = setup();
+      serveFixture(fake);
 
-      const client = new DiscoveryClient(mockTokenProvider);
       await client.listOrganizations();
 
-      expect(mockTokenProvider.getToken).toHaveBeenCalledWith([
-        "https://globaldisco.crm.dynamics.com/.default",
-      ]);
+      expect(fake.requests).toHaveLength(1);
+      const r = fake.last();
+      expect(r.method).toBe("GET");
+      expect(r.url).toBe(`${DISCO}/Instances`);
+      expect(r.headers.authorization).toBe("Bearer disco-token");
+      expect(r.headers.accept).toBe("application/json");
+      expect(r.headers["odata-version"]).toBe("4.0");
+      expect(r.headers["odata-maxversion"]).toBe("4.0");
+      expect(tokens.calls).toEqual([["https://globaldisco.crm.dynamics.com/.default"]]);
     });
 
-    it("should include authorization header", async () => {
-      server.use(
-        http.get(
-          "https://globaldisco.crm.dynamics.com/api/discovery/v2.0/Instances",
-          ({ request }) => {
-            const authHeader = request.headers.get("Authorization");
-            expect(authHeader).toBe("Bearer mock-token");
-            return HttpResponse.json<DiscoveryResponse>({ value: [] });
-          }
-        )
-      );
+    it("passes $select and $orderby through", async () => {
+      const { fake, client } = setup();
+      serveFixture(fake);
 
-      const client = new DiscoveryClient(mockTokenProvider);
-      await client.listOrganizations();
-    });
-
-    it("should include OData headers", async () => {
-      server.use(
-        http.get(
-          "https://globaldisco.crm.dynamics.com/api/discovery/v2.0/Instances",
-          ({ request }) => {
-            expect(request.headers.get("Accept")).toBe("application/json");
-            expect(request.headers.get("OData-MaxVersion")).toBe("4.0");
-            expect(request.headers.get("OData-Version")).toBe("4.0");
-            return HttpResponse.json<DiscoveryResponse>({ value: [] });
-          }
-        )
-      );
-
-      const client = new DiscoveryClient(mockTokenProvider);
-      await client.listOrganizations();
-    });
-
-    it("should filter organizations", async () => {
-      server.use(
-        http.get(
-          "https://globaldisco.crm.dynamics.com/api/discovery/v2.0/Instances",
-          ({ request }) => {
-            const url = new URL(request.url);
-            const filter = url.searchParams.get("$filter");
-            expect(filter).toBe("State eq 'Enabled'");
-
-            return HttpResponse.json<DiscoveryResponse>({
-              value: mockOrganizations.filter((org) => org.State === "Enabled"),
-            });
-          }
-        )
-      );
-
-      const client = new DiscoveryClient(mockTokenProvider);
-      const orgs = await client.listOrganizations({
-        filter: "State eq 'Enabled'",
-      });
-
-      expect(orgs).toHaveLength(2);
-      expect(orgs.every((org) => org.State === "Enabled")).toBe(true);
-    });
-
-    it("should select specific properties", async () => {
-      server.use(
-        http.get(
-          "https://globaldisco.crm.dynamics.com/api/discovery/v2.0/Instances",
-          ({ request }) => {
-            const url = new URL(request.url);
-            const select = url.searchParams.get("$select");
-            expect(select).toBe("UniqueName,FriendlyName,Geo");
-
-            return HttpResponse.json<DiscoveryResponse>({ value: mockOrganizations });
-          }
-        )
-      );
-
-      const client = new DiscoveryClient(mockTokenProvider);
       await client.listOrganizations({
-        select: ["UniqueName", "FriendlyName", "Geo"],
-      });
-    });
-
-    it("should order results", async () => {
-      server.use(
-        http.get(
-          "https://globaldisco.crm.dynamics.com/api/discovery/v2.0/Instances",
-          ({ request }) => {
-            const url = new URL(request.url);
-            const orderby = url.searchParams.get("$orderby");
-            expect(orderby).toBe("FriendlyName");
-
-            return HttpResponse.json<DiscoveryResponse>({ value: mockOrganizations });
-          }
-        )
-      );
-
-      const client = new DiscoveryClient(mockTokenProvider);
-      await client.listOrganizations({
+        select: ["FriendlyName", "ApiUrl"],
         orderby: "FriendlyName",
       });
+
+      expect(query(fake.last(), "$select")).toBe("FriendlyName,ApiUrl");
+      expect(query(fake.last(), "$orderby")).toBe("FriendlyName");
     });
 
-    it("should throw error on HTTP failure", async () => {
-      server.use(
-        http.get("https://globaldisco.crm.dynamics.com/api/discovery/v2.0/Instances", () => {
-          return HttpResponse.json(
-            { error: { message: "Unauthorized" } },
-            { status: 401, statusText: "Unauthorized" }
-          );
-        })
-      );
+    it("rejects on an HTTP error", async () => {
+      const { fake, client } = setup();
+      fake.on("GET", "/Instances", () => odataError(401, "Unauthorized", "Unauthorized"));
 
-      const client = new DiscoveryClient(mockTokenProvider);
-
-      await expect(client.listOrganizations()).rejects.toThrow(/401.*Unauthorized/);
-    });
-  });
-
-  describe("getOrganization", () => {
-    it("should get organization by unique name", async () => {
-      server.use(
-        http.get(
-          "https://globaldisco.crm.dynamics.com/api/discovery/v2.0/Instances",
-          ({ request }) => {
-            const url = new URL(request.url);
-            const filter = url.searchParams.get("$filter");
-            expect(filter).toBe("UniqueName eq 'contoso'");
-
-            return HttpResponse.json<DiscoveryResponse>({
-              value: mockOrganizations.filter((org) => org.UniqueName === "contoso"),
-            });
-          }
-        )
-      );
-
-      const client = new DiscoveryClient(mockTokenProvider);
-      const org = await client.getOrganization("contoso");
-
-      expect(org).not.toBeNull();
-      expect(org?.UniqueName).toBe("contoso");
-      expect(org?.FriendlyName).toBe("Contoso Corporation");
-    });
-
-    it("should return null if organization not found", async () => {
-      server.use(
-        http.get("https://globaldisco.crm.dynamics.com/api/discovery/v2.0/Instances", () => {
-          return HttpResponse.json<DiscoveryResponse>({ value: [] });
-        })
-      );
-
-      const client = new DiscoveryClient(mockTokenProvider);
-      const org = await client.getOrganization("nonexistent");
-
-      expect(org).toBeNull();
-    });
-  });
-
-  describe("getOrganizationsByRegion", () => {
-    it("should filter organizations by region", async () => {
-      server.use(
-        http.get(
-          "https://globaldisco.crm.dynamics.com/api/discovery/v2.0/Instances",
-          ({ request }) => {
-            const url = new URL(request.url);
-            const filter = url.searchParams.get("$filter");
-            expect(filter).toBe("Geo eq 'NA'");
-
-            return HttpResponse.json<DiscoveryResponse>({
-              value: mockOrganizations.filter((org) => org.Geo === "NA"),
-            });
-          }
-        )
-      );
-
-      const client = new DiscoveryClient(mockTokenProvider);
-      const orgs = await client.getOrganizationsByRegion("NA");
-
-      expect(orgs).toHaveLength(2);
-      expect(orgs.every((org) => org.Geo === "NA")).toBe(true);
-    });
-
-    it("should handle EMEA region", async () => {
-      server.use(
-        http.get(
-          "https://globaldisco.crm.dynamics.com/api/discovery/v2.0/Instances",
-          ({ request }) => {
-            const url = new URL(request.url);
-            const filter = url.searchParams.get("$filter");
-            expect(filter).toBe("Geo eq 'EMEA'");
-
-            return HttpResponse.json<DiscoveryResponse>({
-              value: mockOrganizations.filter((org) => org.Geo === "EMEA"),
-            });
-          }
-        )
-      );
-
-      const client = new DiscoveryClient(mockTokenProvider);
-      const orgs = await client.getOrganizationsByRegion("EMEA");
-
-      expect(orgs).toHaveLength(1);
-      expect(orgs[0].UniqueName).toBe("fabrikam");
+      await expect(client.listOrganizations()).rejects.toThrow(/401/);
     });
   });
 
   describe("getEnabledOrganizations", () => {
-    it("should filter for enabled organizations only", async () => {
-      server.use(
-        http.get(
-          "https://globaldisco.crm.dynamics.com/api/discovery/v2.0/Instances",
-          ({ request }) => {
-            const url = new URL(request.url);
-            const filter = url.searchParams.get("$filter");
-            expect(filter).toBe("State eq 'Enabled'");
+    it("filters with the integer State (State eq 0), not the string 'Enabled'", async () => {
+      const { fake, client } = setup();
+      serveFixture(fake);
 
-            return HttpResponse.json<DiscoveryResponse>({
-              value: mockOrganizations.filter((org) => org.State === "Enabled"),
-            });
-          }
-        )
-      );
+      const enabled = await client.getEnabledOrganizations();
 
-      const client = new DiscoveryClient(mockTokenProvider);
-      const orgs = await client.getEnabledOrganizations();
-
-      expect(orgs).toHaveLength(2);
-      expect(orgs.every((org) => org.State === "Enabled")).toBe(true);
-      expect(orgs.map((o) => o.UniqueName).sort()).toEqual(["contoso", "fabrikam"]);
+      expect(query(fake.last(), "$filter")).toBe("State eq 0");
+      expect(fake.last().url).toBe(`${DISCO}/Instances?$filter=State%20eq%200`);
+      expect(enabled.map((o) => o.UrlName)).toEqual(["contoso", "contoso-test"]);
+      expect(enabled.every((o) => o.State === OrganizationState.Enabled)).toBe(true);
     });
+  });
+
+  describe("getOrganizationsByRegion", () => {
+    it("filters on Region (the v2.0 response has no Geo)", async () => {
+      const { fake, client } = setup();
+      serveFixture(fake);
+
+      const na = await client.getOrganizationsByRegion("NA");
+
+      expect(query(fake.last(), "$filter")).toBe("Region eq 'NA'");
+      expect(na.map((o) => o.UrlName)).toEqual(["contoso", "contoso-archive"]);
+    });
+  });
+
+  describe("getOrganization", () => {
+    it("filters on UniqueName", async () => {
+      const { fake, client } = setup();
+      serveFixture(fake);
+
+      const org = await client.getOrganization("unq00000000000000000000000000002");
+
+      expect(query(fake.last(), "$filter")).toBe(
+        "UniqueName eq 'unq00000000000000000000000000002'"
+      );
+      expect(org?.FriendlyName).toBe("Contoso (Test)");
+    });
+
+    it("returns null when nothing matches", async () => {
+      const { fake, client } = setup();
+      serveFixture(fake);
+
+      expect(await client.getOrganization("nope")).toBeNull();
+    });
+  });
+
+  describe("getOrganizationByUrl", () => {
+    it.each([
+      ["the application URL", "https://contoso-test.crm4.dynamics.com"],
+      [
+        "the application URL with a trailing slash and upper case",
+        "https://Contoso-Test.CRM4.dynamics.com/",
+      ],
+      ["the ApiUrl", "https://contoso-test.api.crm4.dynamics.com"],
+      ["the Web API root", "https://contoso-test.api.crm4.dynamics.com/api/data/v9.2/"],
+    ])("finds the environment by %s", async (_label, url) => {
+      const { fake, client } = setup();
+      serveFixture(fake);
+
+      const org = await client.getOrganizationByUrl(url);
+
+      expect(org?.UrlName).toBe("contoso-test");
+      expect(fake.last().url).toBe(`${DISCO}/Instances`);
+    });
+
+    it("returns null when no environment is served at the URL", async () => {
+      const { fake, client } = setup();
+      serveFixture(fake);
+
+      expect(await client.getOrganizationByUrl("https://fabrikam.crm.dynamics.com")).toBeNull();
+    });
+
+    it("rejects a value that is not an absolute URL without calling the service", async () => {
+      const { fake, client } = setup();
+      serveFixture(fake);
+
+      await expect(client.getOrganizationByUrl("contoso")).rejects.toBeInstanceOf(
+        DataverseInvalidRequestError
+      );
+      expect(fake.requests).toHaveLength(0);
+    });
+  });
+});
+
+describe("toEnvironment", () => {
+  it("summarises an enabled Instance", () => {
+    expect(toEnvironment(orgs[0])).toEqual({
+      id: "00000000-0000-0000-0000-000000000001",
+      url: "https://contoso.crm.dynamics.com",
+      apiUrl: "https://contoso.api.crm.dynamics.com",
+      webApiUrl: "https://contoso.api.crm.dynamics.com/api/data/v9.2",
+      name: "Contoso",
+      uniqueName: "unq00000000000000000000000000001",
+      enabled: true,
+      version: "9.2.24101.00177",
+      region: "NA",
+      environmentId: "00000000-0000-0000-0000-000000000020",
+    });
+  });
+
+  it("marks State 1 as disabled", () => {
+    expect(toEnvironment(orgs[2]).enabled).toBe(false);
+  });
+
+  it("drops trailing slashes and omits missing optional properties", () => {
+    const env = toEnvironment({
+      ...orgs[1],
+      Url: "https://contoso-test.crm4.dynamics.com/",
+      ApiUrl: "https://contoso-test.api.crm4.dynamics.com/",
+      Region: null,
+      EnvironmentId: undefined,
+    });
+    expect(env.url).toBe("https://contoso-test.crm4.dynamics.com");
+    expect(env.webApiUrl).toBe("https://contoso-test.api.crm4.dynamics.com/api/data/v9.2");
+    expect(env).not.toHaveProperty("region");
+    expect(env).not.toHaveProperty("environmentId");
   });
 });

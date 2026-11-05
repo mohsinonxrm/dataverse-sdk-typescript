@@ -4,8 +4,11 @@
  * @packageDocumentation
  */
 
+import { DataverseInvalidRequestError } from "@mohsinonxrm/dataverse-sdk-core";
 import type { AccessTokenProvider } from "@mohsinonxrm/dataverse-sdk-core";
 import type { OrganizationDetail, DiscoveryOptions, DiscoveryResponse } from "./types.js";
+import { OrganizationState } from "./types.js";
+import { originOf } from "./environment.js";
 
 /**
  * Global Discovery Service endpoint for Commercial cloud
@@ -23,9 +26,12 @@ const DISCOVERY_SCOPES = ["https://globaldisco.crm.dynamics.com/.default"];
  * The Discovery Service allows you to discover which Dataverse organizations
  * a user has access to across all regions in the Commercial cloud.
  *
+ * The service only returns environments for a signed-in user (a delegated token). An app-only
+ * (client credentials) token gets no environments.
+ *
  * @example
  * ```typescript
- * import { DiscoveryClient } from '@mohsinonxrm/dataverse-sdk-discovery';
+ * import { DiscoveryClient, toEnvironment } from '@mohsinonxrm/dataverse-sdk-discovery';
  * import { MsalNodeTokenProvider } from '@mohsinonxrm/dataverse-sdk-auth-msal-node';
  *
  * // Create token provider
@@ -45,14 +51,13 @@ const DISCOVERY_SCOPES = ["https://globaldisco.crm.dynamics.com/.default"];
  *
  * orgs.forEach(org => {
  *   console.log(`${org.FriendlyName} (${org.UniqueName})`);
- *   console.log(`  Region: ${org.Geo}`);
- *   console.log(`  Web API: ${org.Endpoints.WebApiUrl}`);
+ *   console.log(`  Region: ${org.Region}`);
+ *   console.log(`  Web API: ${org.ApiUrl}`);
  * });
  *
- * // Filter for enabled organizations only
- * const enabledOrgs = await discovery.listOrganizations({
- *   filter: "State eq 'Enabled'"
- * });
+ * // Enabled organizations only (State is an integer: 0 = enabled, 1 = disabled)
+ * const enabledOrgs = await discovery.getEnabledOrganizations();
+ * const environments = enabledOrgs.map(toEnvironment);
  * ```
  */
 export class DiscoveryClient {
@@ -88,14 +93,14 @@ export class DiscoveryClient {
    * // List all organizations
    * const orgs = await discovery.listOrganizations();
    *
-   * // Filter for enabled organizations
+   * // Filter for enabled organizations (State is an integer: 0 = enabled)
    * const enabledOrgs = await discovery.listOrganizations({
-   *   filter: "State eq 'Enabled'"
+   *   filter: "State eq 0"
    * });
    *
    * // Select specific properties
    * const basicInfo = await discovery.listOrganizations({
-   *   select: ['UniqueName', 'FriendlyName', 'Geo', 'Endpoints']
+   *   select: ['FriendlyName', 'ApiUrl']
    * });
    *
    * // Order by friendly name
@@ -166,7 +171,7 @@ export class DiscoveryClient {
    * const org = await discovery.getOrganization('contoso');
    * if (org) {
    *   console.log(`Found: ${org.FriendlyName}`);
-   *   console.log(`Web API: ${org.Endpoints.WebApiUrl}`);
+   *   console.log(`Web API: ${org.ApiUrl}`);
    * } else {
    *   console.log('Organization not found');
    * }
@@ -181,9 +186,47 @@ export class DiscoveryClient {
   }
 
   /**
-   * Gets all organizations in a specific geographic region.
+   * Gets the organization served at a URL.
    *
-   * @param geo - Geographic region code (e.g., 'NA', 'EMEA', 'APAC')
+   * `url` can be the environment's application URL (`Url`, e.g. `https://contoso.crm.dynamics.com`),
+   * its web services URL (`ApiUrl`, e.g. `https://contoso.api.crm.dynamics.com`) or any URL on
+   * either origin, such as a Web API root (`…/api/data/v9.2`). Origins are compared
+   * case-insensitively; the path, query and trailing slashes are ignored.
+   *
+   * The match is made on the client, against the full list of environments, because the service
+   * compares strings case-sensitively and stores each URL in one exact form.
+   *
+   * @param url - An absolute http(s) URL of the environment
+   * @returns Organization detail if found, null otherwise
+   *
+   * @throws {DataverseInvalidRequestError} If `url` is not an absolute http(s) URL
+   *
+   * @example
+   * ```typescript
+   * const org = await discovery.getOrganizationByUrl('https://contoso.crm.dynamics.com/');
+   * ```
+   */
+  async getOrganizationByUrl(url: string): Promise<OrganizationDetail | null> {
+    const wanted = originOf(url);
+    if (!wanted) {
+      throw DataverseInvalidRequestError.invalidParameter(
+        "url",
+        "must be an absolute http(s) URL such as https://contoso.crm.dynamics.com"
+      );
+    }
+    const orgs = await this.listOrganizations();
+    return (
+      orgs.find((org) => originOf(org.Url) === wanted || originOf(org.ApiUrl) === wanted) ?? null
+    );
+  }
+
+  /**
+   * Gets all organizations in a specific region.
+   *
+   * Filters on the `Region` property (the v2.0 response has no `Geo` property). Region codes are
+   * 2-3 letters, such as `'NA'`, and the service compares them case-sensitively.
+   *
+   * @param region - Region code (e.g., 'NA')
    * @returns Array of organizations in the specified region
    *
    * @throws {Error} If the request fails
@@ -192,19 +235,16 @@ export class DiscoveryClient {
    * ```typescript
    * // Get all North American organizations
    * const naOrgs = await discovery.getOrganizationsByRegion('NA');
-   *
-   * // Get all European organizations
-   * const emeaOrgs = await discovery.getOrganizationsByRegion('EMEA');
    * ```
    */
-  async getOrganizationsByRegion(geo: string): Promise<OrganizationDetail[]> {
+  async getOrganizationsByRegion(region: string): Promise<OrganizationDetail[]> {
     return await this.listOrganizations({
-      filter: `Geo eq '${geo}'`,
+      filter: `Region eq '${region}'`,
     });
   }
 
   /**
-   * Gets all enabled organizations.
+   * Gets all enabled organizations (`$filter=State eq 0`).
    *
    * @returns Array of enabled organizations
    *
@@ -218,7 +258,7 @@ export class DiscoveryClient {
    */
   async getEnabledOrganizations(): Promise<OrganizationDetail[]> {
     return await this.listOrganizations({
-      filter: "State eq 'Enabled'",
+      filter: `State eq ${String(OrganizationState.Enabled)}`,
     });
   }
 }
