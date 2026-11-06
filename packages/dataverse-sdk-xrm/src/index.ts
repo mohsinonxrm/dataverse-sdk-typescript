@@ -2,6 +2,7 @@
 export { OrganizationService } from "./OrganizationService.js";
 export type {
   EntityReference,
+  ExpandOption,
   CreateOptions,
   RetrieveOptions,
   RetrieveMultipleOptions,

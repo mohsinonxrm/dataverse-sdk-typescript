@@ -195,6 +195,7 @@ const account = await service.retrieve("accounts", accountId, {
 console.log(`Account: ${account.name}`);
 
 // ========== UPDATE ==========
+// Sends If-Match: * so, like the C# Update, it never creates a missing record (404 instead).
 await service.update("accounts", accountId, {
   telephone1: "555-9999",
   revenue: 2000000,
@@ -228,9 +229,9 @@ const updated = await service.update(
 // ========== DELETE ==========
 await service.delete("accounts", accountId);
 
-// With optimistic concurrency
-await service.delete("accounts", accountId, {
-  etag: account["@odata.etag"],
+// Or, with optimistic concurrency (rejects with 412 if the record changed since it was read)
+await service.delete("accounts", otherAccountId, {
+  etag: otherAccount["@odata.etag"],
 });
 
 // ========== RETRIEVE MULTIPLE ==========
@@ -245,9 +246,10 @@ const result = await service.retrieveMultiple("accounts", {
 console.log(`Found ${result.value.length} of ${result["@odata.count"]} total`);
 
 // ========== ASSOCIATE ==========
+// EntityReference takes the logical name ("contact"), not the entity set name.
 await service.associate("accounts", accountId, "contact_customer_accounts", [
-  { logicalName: "contacts", id: contactId1 },
-  { logicalName: "contacts", id: contactId2 },
+  { logicalName: "contact", id: contactId1 },
+  { logicalName: "contact", id: contactId2 },
 ]);
 
 // ========== DISASSOCIATE ==========
@@ -272,12 +274,14 @@ const accountTyped = await service.retrieve<Account>("accounts", accountId, {
 console.log(accountTyped.name); // ✅ Type-safe
 console.log(accountTyped.invalidProp); // ❌ Compile error
 
-// Create with typed interface
-await service.create<Account>("accounts", {
-  name: "Typed Account",
-  revenue: 1000000,
-  // invalidProp: 'x' // ❌ Compile error
-});
+// With returnRepresentation, create() resolves the record (string | T, so narrow it). The
+// entity argument is not checked against T.
+const created = (await service.create<Account>(
+  "accounts",
+  { name: "Typed Account", revenue: 1000000 },
+  { returnRepresentation: true, select: ["accountid", "name"] }
+)) as Account;
+console.log(created.accountid);
 ```
 
 ---
@@ -777,7 +781,8 @@ OrganizationService is built **on top of** HTTP primitives:
 ```typescript
 // OrganizationService.create() internally does:
 const builder = this.client.api(`/${entitySetName}`);
-const response = await builder.post(entity, headers);
+if (options?.impersonateUserId) builder.impersonate(options.impersonateUserId);
+const id = await builder.createAndGetId(entity, { headers: options?.headers });
 ```
 
 It's a **convenience layer**, not a separate execution path.
