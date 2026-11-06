@@ -22,7 +22,7 @@ import { polymorphicParameterType } from "../utils/polymorphism.js";
 import { entityReturn, entityResponseInterface } from "../utils/entity-return.js";
 import { entityReferenceSource } from "../utils/entity-reference.js";
 import { ENTITY_PAYLOAD_MODULE, ENTITY_PAYLOAD_SOURCE } from "../utils/entity-payload.js";
-import { deprecatedAliasSource, operationNames } from "../utils/overloads.js";
+import { operationNames } from "../utils/overloads.js";
 import { exportedEnumNames } from "./complex-types-generator.js";
 import { collectionBinding, ENTITY_SET_PARAM } from "../utils/binding.js";
 
@@ -321,7 +321,7 @@ export async function generateFunctions(
   const generatedFiles: string[] = [];
 
   // One file per function; overloads with different bindings each get their own (#75)
-  const { stems, aliases } = operationNames(functions);
+  const stems = operationNames(functions);
   for (const func of functions) {
     const stem = stems.get(func) ?? func.name;
     const content = generateFunctionClass(csdl, func, stem);
@@ -330,15 +330,9 @@ export async function generateFunctions(
     generatedFiles.push(`${stem}Function`);
     console.log(`  ✅ Generated ${filename}`);
   }
-  for (const alias of aliases) {
-    await writeTypeScriptFile(
-      join(absolutePath, `${alias.name}Function.ts`),
-      deprecatedAliasSource(alias, "Function", ["Function", "Response"], ["Function"])
-    );
-  }
 
   // Generate index.ts
-  const indexContent = generateFunctionsIndex(functions, stems, aliases, exportedEnumNames(csdl));
+  const indexContent = generateFunctionsIndex(functions, stems, exportedEnumNames(csdl));
   await writeTypeScriptFile(join(absolutePath, "index.ts"), indexContent);
   console.log(`  ✅ Generated index.ts`);
 
@@ -750,7 +744,6 @@ function generateResponseInterface(
 function generateFunctionsIndex(
   operations: CsdlFunction[],
   stems: Map<CsdlFunction, string>,
-  aliases: ReadonlyArray<{ name: string }>,
   enumNames: string[]
 ): string {
   let code = `/**\n`;
@@ -759,11 +752,11 @@ function generateFunctionsIndex(
   code += ` * Auto-generated typed Web API functions.\n`;
   code += ` */\n\n`;
 
-  // One export per class: overloads have their own (#75), plus the deprecated plain-name aliases
-  const entries = [
-    ...operations.map((op) => stems.get(op) ?? op.name),
-    ...aliases.map((a) => a.name),
-  ].sort((a, b) => a.localeCompare(b));
+  // One export per class: overloads have their own (#75), and a name with no unbound overload
+  // has no plain-name export (#286)
+  const entries = operations
+    .map((op) => stems.get(op) ?? op.name)
+    .sort((a, b) => a.localeCompare(b));
   for (const stem of entries) {
     code += `export { ${stem}Function, type ${stem}Response } from './${stem}Function.js';\n`;
   }

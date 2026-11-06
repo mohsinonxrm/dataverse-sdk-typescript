@@ -1,7 +1,8 @@
 /**
  * #75: ExportToExcel isn't in `$metadata`, so it wasn't generated. It now comes from the
  * generator's supplemental definition, with the five parameters a live org requires. AddItemCampaign
- * (bound to campaign, list, product and salesliterature) has one class per binding.
+ * (bound to campaign, list, product and salesliterature) has one class per binding, and no
+ * plain-name `AddItemCampaignAction` (#286).
  */
 import { describe, expect, it } from "vitest";
 import { createTestClient, jsonResponse } from "@mohsinonxrm/dataverse-sdk-testing";
@@ -51,7 +52,15 @@ describe("#75: ExportToExcel and action overloads", () => {
       "AddItemCampaign_productAction",
       "AddItemCampaign_salesliteratureAction",
     ]);
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- checking the alias itself
-    expect(actions.AddItemCampaignAction).toBe(actions.AddItemCampaign_salesliteratureAction);
+  });
+
+  it("#286: AddItemCampaign has no plain-name class, since it has no unbound overload", () => {
+    expect(Object.keys(actions).filter((n) => /^AddItemCampaign(_|Action$)/.test(n))).toEqual([
+      "AddItemCampaign_campaignAction",
+      "AddItemCampaign_listAction",
+      "AddItemCampaign_productAction",
+      "AddItemCampaign_salesliteratureAction",
+    ]);
+    expect("AddItemCampaignAction" in actions).toBe(false);
   });
 });

@@ -2,9 +2,11 @@
  * #75: operations with the same name but different bindings each get their own class
  * (`<Name>_<binding>`, as #202 does for the entities generator) instead of overwriting each other
  * in one file per name. The unbound overload keeps the plain name; a name with no unbound overload
- * keeps it as a deprecated alias of the overload it exported before. ExportToExcel, which
- * `$metadata` leaves out, comes from the supplemental definition.
+ * has no plain-name class at all (#286), since one name for one of its bindings reads as a class
+ * for all of them. ExportToExcel, which `$metadata` leaves out, comes from the supplemental
+ * definition.
  */
+import { existsSync } from "node:fs";
 import { mkdtemp, readFile, readdir, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -22,6 +24,7 @@ const OUT_ROOT = fileURLToPath(new URL(".", import.meta.url));
 const MESSAGES_SRC = fileURLToPath(
   new URL("../../../packages/dataverse-sdk-messages/src", import.meta.url)
 );
+const PACKAGES = fileURLToPath(new URL("../../../packages/", import.meta.url));
 
 const EDMX = `<?xml version="1.0" encoding="utf-8"?>
 <edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
@@ -68,6 +71,12 @@ const EDMX = `<?xml version="1.0" encoding="utf-8"?>
         <Parameter Name="entityset" Type="Collection(mscrm.team)" Nullable="false" />
         <ReturnType Type="Collection(mscrm.team)" Nullable="false" />
       </Function>
+      <Action Name="AddToTeam" IsBound="true">
+        <Parameter Name="entity" Type="mscrm.systemuser" Nullable="false" />
+      </Action>
+      <Action Name="AddToTeam" IsBound="true">
+        <Parameter Name="entity" Type="mscrm.savedquery" Nullable="false" />
+      </Action>
       <Action Name="ShareRecord">
         <Parameter Name="Target" Type="mscrm.crmbaseentity" Nullable="false" />
       </Action>
@@ -115,7 +124,6 @@ describe("operation overloads (#75)", () => {
       expect.arrayContaining([
         "RetrievePrincipalAccess_systemuserFunction.ts",
         "RetrievePrincipalAccess_teamFunction.ts",
-        "RetrievePrincipalAccessFunction.ts",
         "RetrieveUnpublishedMultiple_savedquery_collectionFunction.ts",
         "RetrieveUnpublishedMultiple_team_collectionFunction.ts",
       ])
@@ -142,25 +150,67 @@ describe("operation overloads (#75)", () => {
     );
   });
 
-  it("keeps a name with no unbound overload as a deprecated alias of its last binding", async () => {
-    const alias = await read("functions/RetrievePrincipalAccessFunction.ts");
-    expect(alias).toContain("@deprecated Use `RetrievePrincipalAccess_teamFunction`");
-    expect(alias).toContain(
-      "export const RetrievePrincipalAccessFunction = RetrievePrincipalAccess_teamFunction;"
-    );
-    const index = await read("functions/index.ts");
-    for (const stem of [
-      "RetrievePrincipalAccess",
-      "RetrievePrincipalAccess_systemuser",
-      "RetrievePrincipalAccess_team",
-    ]) {
-      expect(index).toContain(
+  it("#286: writes no plain-name class for a name with no unbound overload", async () => {
+    const plain = {
+      functions: ["RetrievePrincipalAccessFunction.ts", "RetrieveUnpublishedMultipleFunction.ts"],
+      actions: ["AddToTeamAction.ts"],
+      messages: ["AddToTeamMessage.ts"],
+    };
+    for (const [kind, files] of Object.entries(plain)) {
+      const written = await readdir(join(dir, kind));
+      for (const file of files) expect(written, `${kind}/${file}`).not.toContain(file);
+      expect(await read(`${kind}/index.ts`)).not.toMatch(
+        /export \{ (RetrievePrincipalAccess|RetrieveUnpublishedMultiple|AddToTeam)(Function|Action|Request)\b/
+      );
+    }
+    const functionsIndex = await read("functions/index.ts");
+    for (const stem of ["RetrievePrincipalAccess_systemuser", "RetrievePrincipalAccess_team"]) {
+      expect(functionsIndex).toContain(
         `export { ${stem}Function, type ${stem}Response } from './${stem}Function.js';`
       );
     }
+    expect(await read("actions/index.ts")).toContain(
+      "export { AddToTeam_systemuserAction, type AddToTeam_systemuserResponse } from './AddToTeam_systemuserAction.js';"
+    );
+    expect(await read("messages/index.ts")).toContain(
+      "export { AddToTeam_savedqueryRequest, AddToTeam_savedqueryResponse } from './AddToTeam_savedqueryMessage.js';"
+    );
+    for (const kind of ["actions", "functions", "messages"]) {
+      for (const file of await readdir(join(dir, kind))) {
+        if (!file.endsWith(".ts")) continue;
+        expect(await read(`${kind}/${file}`), `${kind}/${file}`).not.toContain("@deprecated");
+      }
+    }
   });
 
-  it("compiles every overload and the aliases", async () => {
+  it("#286: the committed packages have no plain-name alias files", async () => {
+    const removed = {
+      actions: ["AddItemCampaignAction.ts"],
+      messages: ["AddItemCampaignMessage.ts"],
+      functions: [
+        "GetQuantityDecimalFunction.ts",
+        "RetrieveAbsoluteAndSiteCollectionUrlFunction.ts",
+        "RetrievePrincipalAccessFunction.ts",
+        "RetrievePrincipalAccessInfoFunction.ts",
+        "RetrievePrincipalAttributePrivilegesFunction.ts",
+        "RetrievePrincipalSyncAttributeMappingsFunction.ts",
+        "RetrieveProductPropertiesFunction.ts",
+        "RetrieveUnpublishedFunction.ts",
+        "RetrieveUnpublishedMultipleFunction.ts",
+      ],
+    };
+    for (const [kind, files] of Object.entries(removed)) {
+      const src = join(PACKAGES, `dataverse-sdk-${kind}`, "src");
+      for (const file of files) expect(existsSync(join(src, file)), `${kind}/${file}`).toBe(false);
+      for (const file of await readdir(src)) {
+        if (!file.endsWith(".ts")) continue;
+        const code = await readFile(join(src, file), "utf8");
+        expect(code, `${kind}/${file}`).not.toContain("has a class per binding");
+      }
+    }
+  });
+
+  it("compiles every overload", async () => {
     const errors = await typecheck(
       dir,
       "use-overloads.ts",
@@ -170,7 +220,8 @@ import * as m from "./messages/index.js";
 const target = f.createEntityReference("account", "a1", { entitySetName: "accounts" });
 export const byUser = new f.RetrievePrincipalAccess_systemuserFunction("u1", target);
 export const byTeam = new f.RetrievePrincipalAccess_teamFunction("t1", target);
-export const old: f.RetrievePrincipalAccessFunction = new f.RetrievePrincipalAccessFunction("t1", target);
+export const addUser = new a.AddToTeam_systemuserAction("u1");
+export const addView = new m.AddToTeam_savedqueryRequest("v1");
 export const views = new f.RetrieveUnpublishedMultiple_savedquery_collectionFunction();
 export const share = new a.ShareRecordAction(a.createEntityReference("account", "a1"));
 export const shareTeam = new m.ShareRecord_teamRequest("t1", m.createEntityReference("account", "a1"));
@@ -188,7 +239,7 @@ export const shareTeam = new m.ShareRecord_teamRequest("t1", m.createEntityRefer
       parameters: [],
     };
     const warnings: string[] = [];
-    const { stems } = operationNames([op, { ...op }], (w) => warnings.push(w));
+    const stems = operationNames([op, { ...op }], (w) => warnings.push(w));
     expect([...stems.values()]).toEqual(["Twice_team", "Twice_team_2"]);
     expect(warnings).toHaveLength(1);
   });

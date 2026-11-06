@@ -86,7 +86,6 @@ export {
   AddComponentToSolutionAsyncAction,
   type AddComponentToSolutionAsyncResponse,
 } from "./AddComponentToSolutionAsyncAction.js";
-export { AddItemCampaignAction, type AddItemCampaignResponse } from "./AddItemCampaignAction.js";
 export {
   AddItemCampaign_campaignAction,
   type AddItemCampaign_campaignResponse,

@@ -23,7 +23,7 @@ import {
   entityParameterType,
 } from "../utils/entity-payload.js";
 import { entityReferenceSource } from "../utils/entity-reference.js";
-import { deprecatedAliasSource, operationNames } from "../utils/overloads.js";
+import { operationNames } from "../utils/overloads.js";
 import { polymorphicParameterType } from "../utils/polymorphism.js";
 import { collectionBinding, ENTITY_SET_PARAM } from "../utils/binding.js";
 
@@ -210,22 +210,16 @@ export async function generateMessages(
   // Generate all messages
   console.log(`\n  Generating ${String(allActions.length)} Web API action messages...`);
   // Overloads with different bindings each get their own classes (#75)
-  const { stems, aliases } = operationNames(allActions);
+  const stems = operationNames(allActions);
   for (const action of allActions) {
     const stem = stems.get(action) ?? action.name;
     const content = generateMessageClass(csdl, action, stem);
     const filename = `${stem}Message.ts`;
     await writeTypeScriptFile(join(absolutePath, filename), content);
   }
-  for (const alias of aliases) {
-    await writeTypeScriptFile(
-      join(absolutePath, `${alias.name}Message.ts`),
-      deprecatedAliasSource(alias, "Message", ["Request", "Response"], ["Request", "Response"])
-    );
-  }
 
   // Generate index
-  const indexContent = generateMessagesIndex(allActions, stems, aliases, exportedEnumNames(csdl));
+  const indexContent = generateMessagesIndex(allActions, stems, exportedEnumNames(csdl));
   await writeTypeScriptFile(join(absolutePath, "index.ts"), indexContent);
   console.log(`  ✅ Generated index.ts`);
 
@@ -555,7 +549,6 @@ function generateParseResponse(action: CsdlAction, responseClassName: string): s
 function generateMessagesIndex(
   operations: CsdlAction[],
   stems: Map<CsdlAction, string>,
-  aliases: ReadonlyArray<{ name: string }>,
   enumNames: string[]
 ): string {
   let code = `/**\n`;
@@ -577,11 +570,11 @@ function generateMessagesIndex(
   // Export all message classes
   code += `// Message classes\n`;
 
-  // One export per class: overloads have their own (#75), plus the deprecated plain-name aliases
-  const entries = [
-    ...operations.map((op) => stems.get(op) ?? op.name),
-    ...aliases.map((a) => a.name),
-  ].sort((a, b) => a.localeCompare(b));
+  // One export per class: overloads have their own (#75), and a name with no unbound overload
+  // has no plain-name export (#286)
+  const entries = operations
+    .map((op) => stems.get(op) ?? op.name)
+    .sort((a, b) => a.localeCompare(b));
   for (const stem of entries) {
     code += `export { ${stem}Request, ${stem}Response } from './${stem}Message.js';\n`;
   }
