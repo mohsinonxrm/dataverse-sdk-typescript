@@ -79,6 +79,9 @@ const useStyles = makeStyles({
   },
 });
 
+/** Deterministic sample revenue for the demo records (no randomness needed). */
+const demoRevenue = (index: number) => (index * 137_000) % 10_000_000;
+
 export default function BulkOperations() {
   const styles = useStyles();
   const { client, isReady } = useDataverse();
@@ -110,8 +113,8 @@ export default function BulkOperations() {
         targets.push({
           "@odata.type": "Microsoft.Dynamics.CRM.account",
           name: `Bulk Account ${Date.now()}-${i}`,
-          revenue: Math.floor(Math.random() * 10000000),
-          numberofemployees: Math.floor(Math.random() * 1000),
+          revenue: demoRevenue(i),
+          numberofemployees: 10 + ((i * 37) % 990),
         });
 
         // Update progress
@@ -168,7 +171,7 @@ export default function BulkOperations() {
           "@odata.type": "Microsoft.Dynamics.CRM.account",
           accountid: account.accountid,
           name: `${account.name} (Updated ${Date.now()})`,
-          revenue: Math.floor(Math.random() * 10000000),
+          revenue: demoRevenue(i),
         };
       });
 
@@ -221,7 +224,7 @@ export default function BulkOperations() {
         const target: JsonObject = {
           "@odata.type": "Microsoft.Dynamics.CRM.account",
           name: `Upsert Account ${Date.now()}-${i}`,
-          revenue: Math.floor(Math.random() * 10000000),
+          revenue: demoRevenue(i),
         };
 
         // 50% will be updates (if we have existing accounts)
