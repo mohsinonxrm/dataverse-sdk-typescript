@@ -1,205 +1,116 @@
 # spa-fluentui-v9
 
-A React 18 + Fluent UI v9 single-page app that signs in with MSAL and walks through the
-`@mohsinonxrm/dataverse-sdk-*` packages one scenario at a time: CRUD, querying, bulk and batch
-operations, relationships, metadata, files, actions, messages, discovery, observability and type
-safety. Each scenario page runs the call against your Dataverse environment and shows the code
-next to the result.
+A React 18 single-page app, built with [Fluent UI React v9](https://react.fluentui.dev/) and
+following Fluent 2, that runs the `@mohsinonxrm/dataverse-sdk-*` packages in the browser. Every
+scenario page runs real SDK calls and shows, for each scenario:
 
-It is a private sample (not published to npm) and is built against the packages in this
-workspace. It compiles with `strict` TypeScript and contains no `any`.
+1. what it demonstrates, its inputs and a **Run** button;
+2. **Code**: the exact code the Run button calls. It is read from the scenario module's own source
+   (`src/scenarios/*.ts`, between `// #region` and `// #endregion`), so it can't drift from what
+   runs;
+3. **Result**: the value returned, or a card for the error thrown, laid out for its class;
+4. **Requests**: every request the scenario sent, with method, URL, status, timing, headers and
+   bodies, recorded by a middleware appended to the SDK pipeline (`middleware: { append: [...] }`).
 
-## What it uses
-
-Packages the code imports today:
-
-| Package                                        | Used for                                                                              |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------- |
-| `@mohsinonxrm/dataverse-sdk-core`              | `DataverseClient`, the request builder (`client.api(...)`), paging types              |
-| `@mohsinonxrm/dataverse-sdk-auth-msal-browser` | `initializeMsal`, `authorityFor`, `scopesForEnvironment`, `createMsalBrowserProvider` |
-| `@mohsinonxrm/dataverse-sdk-xrm`               | `OrganizationService` (create, associate, disassociate)                               |
-| `@mohsinonxrm/dataverse-sdk-batch`             | `BatchRequestBuilder` on the Batch page                                               |
-| `@mohsinonxrm/dataverse-sdk-discovery`         | `DiscoveryClient` on the Discovery page                                               |
-| `@mohsinonxrm/dataverse-sdk-files`             | `FileColumnClient` on the Files page                                                  |
-
-## Known gaps
-
-- **Typed packages are not wired in yet.** `dataverse-sdk-actions`, `-functions`, `-messages`,
-  and `-metadata` are dependencies of the sample but nothing imports them. The Bulk,
-  Actions & Functions, Messages and Metadata pages call the Web API endpoints directly
-  through `client.api(...)` (for example `/CreateMultiple` and `/WhoAmI`).
-- **The Observability page is simulated.** Its retry, backoff and concurrency demos use timers and
-  `Math.random`; they do not run the SDK's middleware.
-- **Not audited** for accessibility (WCAG) or responsive layout.
+It is a private sample (not published to npm), built against the packages in this workspace, and
+compiles with `strict` TypeScript and no `any`.
 
 ## Run it
 
-You need Node.js 22 or later, pnpm 9, a Dataverse environment, and a Microsoft Entra app
-registration.
+You need Node.js 22 or later and pnpm 9. From the repository root:
+
+```bash
+pnpm install
+pnpm build                                  # the SDK packages the sample imports
+pnpm --filter spa-fluentui-v9-sample dev    # http://localhost:3000
+```
+
+### Demo mode (no org needed)
+
+Choose **Explore with demo data** on the sign-in page. The SDK clients are real; only their `fetch`
+is replaced by an in-browser fake of a small Dataverse environment (`src/demo/`), so every request
+still goes through the SDK pipeline and the inspector. Data lives in memory and resets on reload.
+
+### Your own environment
 
 1. **Register an app** in Microsoft Entra ID: platform "Single-page application", redirect URI
    `http://localhost:3000`, and the delegated permission `Dynamics CRM / user_impersonation`.
-2. **Install** from the repository root:
-
-   ```bash
-   pnpm install
-   pnpm build        # builds the SDK packages the sample imports
-   ```
-
-3. **Configure** the sample. It reads `VITE_*` variables from `.env`:
-
-   ```bash
-   cd samples/spa-fluentui-v9
-   cp .env.example .env
-   ```
+2. **Configure** the sample: `cp .env.example .env` in this folder, then set:
 
    | Variable                  | Meaning                                                         |
    | ------------------------- | --------------------------------------------------------------- |
    | `VITE_AZURE_CLIENT_ID`    | Application (client) id of the app registration                 |
-   | `VITE_AZURE_TENANT_ID`    | Directory (tenant) id; defaults to `organizations` when unset   |
-   | `VITE_AZURE_REDIRECT_URI` | Redirect URI; defaults to `http://localhost:3000`               |
+   | `VITE_AZURE_TENANT_ID`    | Directory (tenant) id; defaults to `organizations`              |
+   | `VITE_AZURE_REDIRECT_URI` | Redirect URI; defaults to the page's origin                     |
    | `VITE_DATAVERSE_URL`      | Environment URL, for example `https://yourorg.crm.dynamics.com` |
 
-4. **Start** the dev server and sign in:
+3. **Sign in with Microsoft** on the sign-in page. Write scenarios create, change and delete
+   records in that environment.
 
-   ```bash
-   pnpm dev          # http://localhost:3000
-   ```
-
-Other scripts: `pnpm build` (type-check, then `vite build`), `pnpm typecheck`, `pnpm lint`,
-`pnpm preview`.
+MSAL is loaded only when you sign in with Microsoft, so demo mode never downloads it.
 
 ## Pages
 
-| Route                      | Page                | What it shows                                                                   |
-| -------------------------- | ------------------- | ------------------------------------------------------------------------------- |
-| `/login`                   | Login               | MSAL redirect sign-in                                                           |
-| `/dashboard`               | Dashboard           | Account statistics and recent accounts                                          |
-| `/accounts`                | Account list        | Search and list accounts                                                        |
-| `/accounts/new`            | Create account      | Form that creates an account                                                    |
-| `/accounts/:id`            | Account detail      | View, edit and delete one account                                               |
-| `/scenarios/crud`          | CRUD Operations     | Raw, typed and `OrganizationService` create, side by side                       |
-| `/scenarios/querying`      | Advanced Querying   | `$filter`, paging (`get`, `getPage`, `iterate`, `getAll`), `$expand`, FetchXML  |
-| `/scenarios/bulk`          | Bulk Operations     | `CreateMultiple`, `UpdateMultiple`, `UpsertMultiple`                            |
-| `/scenarios/batch`         | Batch Operations    | `BatchRequestBuilder` with a changeset and `continueOnError`                    |
-| `/scenarios/relationships` | Relationships       | Associate, disassociate, bind on create, retrieve related                       |
-| `/scenarios/metadata`      | Metadata Explorer   | Create an entity and attributes, `RetrieveMetadataChanges`                      |
-| `/scenarios/files`         | File Operations     | Upload and download with `FileColumnClient`                                     |
-| `/scenarios/actions`       | Actions & Functions | `WhoAmI`, `RetrieveVersion`, `WinOpportunity`, `ExecuteWorkflow`, `GrantAccess` |
-| `/scenarios/messages`      | Messages            | `Assign`, `SetState`, `Merge`, solution export and import                       |
-| `/scenarios/discovery`     | Discovery           | `DiscoveryClient.listOrganizations()`                                           |
-| `/scenarios/observability` | Observability       | Simulated retry and concurrency demos (see Known gaps)                          |
-| `/scenarios/typesafety`    | Type Safety         | Read, create and update type examples                                           |
-| `/scenarios/reference`     | API Reference       | When to use the raw API, typed calls or `OrganizationService`                   |
+| Group       | Route                 | Page           | What it shows                                                                                                                                                                              |
+| ----------- | --------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Overview    | `/`                   | Overview       | `WhoAmI` through `client.api()` and the typed `WhoAmIFunction`, and how the client is configured                                                                                           |
+| Diagnostics | `/diagnostics/errors` | Error handling | `DataverseODataError` (400, 404), `DataverseThrottleError`, `DataverseNetworkError`, `DataverseAbortError`, `DataverseInvalidRequestError`, `DataverseBatchError`, and the `ErrorBoundary` |
+
+## Design
+
+- **Shell:** `FluentProvider` with `webLightTheme` or `webDarkTheme`; the header's toggle switches
+  them and remembers the choice in `localStorage`. The header shows the environment, a Demo badge in
+  demo mode, and the signed-in user with **Sign out**.
+- **Navigation:** `NavDrawer`, grouped by scenario area. It is inline on wide screens and an overlay
+  below 64em, opened from the header.
+- **Styling:** `makeStyles` and Fluent `tokens` only.
+- **Components:** `Card` per scenario, `Field` and inputs, `MessageBar` for results and errors,
+  `Toast` for copy and destructive actions, `Skeleton` and `Spinner` while loading, `Dialog` before
+  destructive runs, `Badge` for methods and HTTP status.
+- **Accessibility:** a skip link, one `h1` per page and `h2` per scenario, labelled fields, focus
+  moved to the page after navigation, and an `aria-live` summary of each run.
+- **Code splitting:** the sign-in page, the shell, MSAL, demo mode and every page are separate
+  chunks, loaded with `React.lazy` when first needed.
 
 ## Layout
 
 ```
 src/
-├── components/
-│   ├── Header.tsx        # Navigation bar
-│   ├── demo/             # CodeComparison, ProgressTracker, LoadingState
-│   └── errors/           # ErrorDisplay (one generic error panel)
-├── context/              # DataverseContext: client, orgService, tokenProvider
-├── hooks/                # useTheme
-├── pages/                # One folder per scenario, plus the account pages
-├── types/                # Account types and small shared types (JsonObject, ProgressState)
-├── config.ts             # MSAL configuration and Dataverse URL, from VITE_* variables
-└── main.tsx              # MSAL initialisation and rendering
+├── auth/         # AuthProvider; MSAL sign-in (msalSession.ts, loaded on demand)
+├── components/   # Scenario (the page pattern), CodeBlock, RequestInspector, ErrorCard, ErrorBoundary
+├── demo/         # Demo mode: an in-browser fake of the Web API and the Global Discovery Service
+├── lib/          # Snippet extraction, error classification, safe storage
+├── pages/        # One lazily loaded page per route
+├── scenarios/    # The code each scenario runs; its #regions are what the Code panels show
+├── sdk/          # Client setup, the inspector middleware, the activity log
+├── shell/        # Header, navigation, sign-in page
+├── theme/        # Light and dark theme
+└── routes.ts     # Every page, its group and its lazy import
 ```
 
-`DataverseProvider` creates one `DataverseClient` and one `OrganizationService` per signed-in
-account and shares them, with the MSAL token provider, through `useDataverse()`. The account list,
-detail, create and dashboard pages still build their own client.
+## Scripts
 
-## Code examples
+| Script           | What it does                                                                                |
+| ---------------- | ------------------------------------------------------------------------------------------- |
+| `pnpm dev`       | Vite dev server on port 3000                                                                |
+| `pnpm build`     | Type-check, then `vite build`                                                               |
+| `pnpm typecheck` | Type-check the app and the tests                                                            |
+| `pnpm lint`      | ESLint with type-aware rules                                                                |
+| `pnpm test`      | Unit tests: the scenarios against the SDK's recording fake fetch and against demo mode      |
+| `pnpm test:e2e`  | Browser smoke tests: builds the app and drives it in Chromium with Playwright, in demo mode |
 
-These match what the pages run.
-
-### Three ways to create an account
-
-```typescript
-// Raw request builder
-const created = await client.api("/accounts").post({ name: "Contoso Ltd", revenue: 1000000 });
-
-// Typed response
-const account = await client.api("/accounts").post<Account>({ name: "Contoso Ltd" });
-
-// OrganizationService
-const id = await orgService.create<string>("accounts", { name: "Contoso Ltd" });
-```
-
-### Batch with a changeset
-
-```typescript
-import { BatchRequestBuilder } from "@mohsinonxrm/dataverse-sdk-batch";
-
-const batch = new BatchRequestBuilder(client);
-
-batch.beginChangeset();
-batch.addRequest("1", "POST", "/accounts", undefined, { name: "Parent Account" });
-batch.addRequest("2", "POST", "/contacts", undefined, {
-  firstname: "John",
-  lastname: "Doe",
-  "parentcustomerid_account@odata.bind": "$1", // refers to the first request in the changeset
-});
-batch.endChangeset();
-batch.addRequest("3", "GET", "/accounts?$select=name&$top=5");
-
-const result = await batch.execute({ continueOnError: true });
-console.log(result.success, result.successfulRequests, result.failedRequests);
-```
-
-`execute()` throws a `DataverseBatchError` when any request fails; its `requestErrors` map has
-the failed responses by request id.
-
-### Discovery
-
-```typescript
-import { DiscoveryClient } from "@mohsinonxrm/dataverse-sdk-discovery";
-
-const discovery = new DiscoveryClient(tokenProvider); // from useDataverse()
-const organizations = await discovery.listOrganizations();
-```
-
-### Associate and disassociate
-
-```typescript
-// The account owns the collection-valued contact_customer_accounts property.
-await orgService.associate("accounts", accountId, "contact_customer_accounts", [
-  { logicalName: "contact", id: contactId },
-]);
-await orgService.disassociate("accounts", accountId, "contact_customer_accounts", contactId);
-```
-
-### Paging
-
-```typescript
-const builder = client.api("/accounts").select("name").orderBy("name").top(5);
-
-const page = await builder.getPage<Account>(); // page.value, page["@odata.nextLink"]
-for await (const account of builder.iterate<Account>()) {
-  // every item, following @odata.nextLink
-}
-const first10 = await builder.getAll<Account>({ maxItems: 10 });
-```
+`pnpm test:e2e` uses the Chromium installed with Playwright (`pnpm exec playwright install chromium`);
+set `PLAYWRIGHT_CHROMIUM_PATH` to use another one.
 
 ## Troubleshooting
 
-- **Sign-in fails or loops:** check that the redirect URI in the app registration matches
-  `VITE_AZURE_REDIRECT_URI` exactly, and that `VITE_AZURE_CLIENT_ID` and `VITE_AZURE_TENANT_ID` are set.
-- **Calls fail with 401 or 403:** `VITE_DATAVERSE_URL` must be the environment you were granted
+- **Sign-in fails or loops:** the redirect URI in the app registration must match
+  `VITE_AZURE_REDIRECT_URI` (or the page's origin) exactly.
+- **Calls fail with 401 or 403:** `VITE_DATAVERSE_URL` must be the environment you consented
   `user_impersonation` for, and your user needs a security role in it.
-- **Pages show "Initializing Dataverse SDK...":** you are not signed in yet, or `VITE_DATAVERSE_URL` is empty.
 - **Build errors about missing SDK exports:** run `pnpm build` at the repository root first.
-
-## More
-
-- [Design record](./docs/IMPLEMENTATION_PLAN.md): the plan the sample was built from (not a status report)
-- [SDK documentation](../../docs/)
-- [Contributing](../../CONTRIBUTING.md)
-- [CHANGELOG](./CHANGELOG.md): generated by Changesets
 
 ## License
 
-Part of `@mohsinonxrm/dataverse-sdk-typescript`, licensed under GNU AGPL v3.0. See [LICENSE](../../LICENSE).
+Part of `@mohsinonxrm/dataverse-sdk-typescript`, licensed under GNU AGPL v3.0. See
+[LICENSE](../../LICENSE).

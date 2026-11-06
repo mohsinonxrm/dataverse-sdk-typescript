@@ -1,23 +1,20 @@
 /**
- * MSAL Configuration for SPA
+ * Settings read from the `VITE_*` variables in `.env` (see `.env.example`).
+ *
+ * Sign-in with Microsoft needs a client id and an environment URL. Without them the app still
+ * runs, in demo mode only, against an in-browser fake of the Web API.
  */
-
-import type { Configuration, RedirectRequest } from "@azure/msal-browser";
-import { authorityFor, scopesForEnvironment } from "@mohsinonxrm/dataverse-sdk-auth-msal-browser";
-
-export const msalConfig: Configuration = {
-  auth: {
-    clientId: import.meta.env.VITE_AZURE_CLIENT_ID || "",
-    authority: authorityFor("public", import.meta.env.VITE_AZURE_TENANT_ID || "organizations"),
-    redirectUri: import.meta.env.VITE_AZURE_REDIRECT_URI || "http://localhost:3000",
-  },
-  cache: {
-    cacheLocation: "sessionStorage",
-  },
+export const settings = {
+  clientId: import.meta.env.VITE_AZURE_CLIENT_ID?.trim() ?? "",
+  tenantId: import.meta.env.VITE_AZURE_TENANT_ID?.trim() || "organizations",
+  redirectUri:
+    import.meta.env.VITE_AZURE_REDIRECT_URI?.trim() ||
+    (typeof window === "undefined" ? "" : window.location.origin),
+  environmentUrl: import.meta.env.VITE_DATAVERSE_URL?.trim().replace(/\/+$/, "") ?? "",
 };
 
-export const dataverseUrl = import.meta.env.VITE_DATAVERSE_URL || "";
+/** Whether the `.env` settings that Microsoft sign-in needs are present. */
+export const isMsalConfigured = settings.clientId !== "" && settings.environmentUrl !== "";
 
-export const loginRequest: RedirectRequest = {
-  scopes: dataverseUrl ? scopesForEnvironment(dataverseUrl) : [],
-};
+/** The environment the demo mode pretends to be. */
+export const DEMO_ENVIRONMENT_URL = "https://contoso.crm.dynamics.com";
