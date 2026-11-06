@@ -861,7 +861,9 @@ User Code (typed result)
 - **Backoff formula:** `min(maxDelayMs, baseDelayMs * 2^attempt)`, then ±20% jitter (still capped at `maxDelayMs`)
 - **Methods:** 429 is retried for every method (Dataverse rejects throttled requests before doing any
   work). After 502/503/504 only idempotent requests are replayed: GET, HEAD, OPTIONS, PUT, DELETE, and
-  PATCH with `If-Match`.
+  PATCH with `If-Match`. The one exception for 429: a non-idempotent request (such as a `$batch`
+  POST) whose 429 response has a `multipart/mixed` body is handed back, not replayed, because
+  Dataverse processed the batch and some of its parts may have run.
 - **Network errors:** a `fetch` rejection becomes a `DataverseNetworkError` named `ConnectionFailed`
   (the original error is its `cause`). With `retryNetworkErrors: true` idempotent requests are retried
   with backoff. Aborts and timeouts are never retried.
