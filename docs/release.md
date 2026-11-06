@@ -37,7 +37,8 @@ Both workflows publish with provenance (`id-token: write`) and authenticate with
 ## Versioning
 
 - **SemVer** via changesets
-- Each package versioned independently, but we may use coordinated releases for major milestones
+- **All published packages share one version.** They are one `fixed` group in `.changeset/config.json` (#313), so every release bumps all of them together, and `@mohsinonxrm/dataverse-sdk-*` packages with the same version always work together. A package with no changes of its own still gets the new version.
+- A new published package must be added to that `fixed` group.
 - Version bumps: `patch` (bug fix) | `minor` (feature) | `major` (breaking)
 
 ## Development Workflow
