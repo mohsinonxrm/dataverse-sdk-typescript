@@ -58,7 +58,9 @@ The SDK includes **229 typed functions** organized into the following categories
 
 **Security & Access:**
 
-- `RetrievePrincipalAccessFunction` - Get user access rights to a record
+- `RetrievePrincipalAccess_systemuserFunction`, `RetrievePrincipalAccess_teamFunction` - Get a
+  user's or a team's access rights to a record (one class per binding, and no plain-name class:
+  see [Overloads](#overloads-one-class-per-binding))
 - `RetrieveSharedPrincipalsAndAccessFunction` - Get sharing information
 - `RetrieveUserPrivilegesFunction` - Get user privileges
 - `RetrieveTeamPrivilegesFunction` - Get team privileges
@@ -193,8 +195,10 @@ const { EntityMetadata, ServerVersionStamp } = await client.execute(
 
 When `$metadata` declares an operation several times with different bindings, each binding has its
 own class: `<Name>_<table>Function`, with `_collection` for a collection binding. An unbound
-overload keeps the plain name. A name with no unbound overload is still exported under the plain
-name, as a `@deprecated` alias of the binding it exported before.
+overload keeps the plain name. A name with no unbound overload has no plain-name class, so you
+pick the binding: there is `RetrievePrincipalAccess_systemuserFunction`,
+`RetrievePrincipalAccess_teamFunction` and `RetrievePrincipalAccess_organizationFunction`, but no
+`RetrievePrincipalAccess` class without a table.
 
 ```typescript
 import {

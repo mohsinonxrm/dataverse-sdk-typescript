@@ -96,7 +96,6 @@ export {
   AddComponentToSolutionAsyncRequest,
   AddComponentToSolutionAsyncResponse,
 } from "./AddComponentToSolutionAsyncMessage.js";
-export { AddItemCampaignRequest, AddItemCampaignResponse } from "./AddItemCampaignMessage.js";
 export {
   AddItemCampaign_campaignRequest,
   AddItemCampaign_campaignResponse,

@@ -24,7 +24,7 @@ import { entityReturn, entityResponseInterface } from "../utils/entity-return.js
 import { entityReferenceSource } from "../utils/entity-reference.js";
 import { bodyEnumType, ENUM_BODY_MODULE, enumBodySource } from "../utils/enum-body.js";
 import { exportedEnumNames } from "./complex-types-generator.js";
-import { deprecatedAliasSource, operationNames } from "../utils/overloads.js";
+import { operationNames } from "../utils/overloads.js";
 import {
   ENTITY_PAYLOAD_MODULE,
   ENTITY_PAYLOAD_SOURCE,
@@ -124,7 +124,7 @@ export async function generateActions(
   const generatedFiles: string[] = [];
 
   // One file per action; overloads with different bindings each get their own (#75)
-  const { stems, aliases } = operationNames(actions);
+  const stems = operationNames(actions);
   for (const action of actions) {
     const stem = stems.get(action) ?? action.name;
     try {
@@ -138,15 +138,9 @@ export async function generateActions(
       throw error;
     }
   }
-  for (const alias of aliases) {
-    await writeTypeScriptFile(
-      join(absolutePath, `${alias.name}Action.ts`),
-      deprecatedAliasSource(alias, "Action", ["Action", "Response"], ["Action"])
-    );
-  }
 
   // Generate index.ts
-  const indexContent = generateActionsIndex(actions, stems, aliases, exportedEnumNames(csdl));
+  const indexContent = generateActionsIndex(actions, stems, exportedEnumNames(csdl));
   await writeTypeScriptFile(join(absolutePath, "index.ts"), indexContent);
   console.log(`  ✅ Generated index.ts`);
 
@@ -501,7 +495,6 @@ function generateResponseInterface(
 function generateActionsIndex(
   operations: CsdlAction[],
   stems: Map<CsdlAction, string>,
-  aliases: ReadonlyArray<{ name: string }>,
   enumNames: string[]
 ): string {
   let code = `/**\n`;
@@ -510,11 +503,11 @@ function generateActionsIndex(
   code += ` * Auto-generated typed Web API actions.\n`;
   code += ` */\n\n`;
 
-  // One export per class: overloads have their own (#75), plus the deprecated plain-name aliases
-  const entries = [
-    ...operations.map((op) => stems.get(op) ?? op.name),
-    ...aliases.map((a) => a.name),
-  ].sort((a, b) => a.localeCompare(b));
+  // One export per class: overloads have their own (#75), and a name with no unbound overload
+  // has no plain-name export (#286)
+  const entries = operations
+    .map((op) => stems.get(op) ?? op.name)
+    .sort((a, b) => a.localeCompare(b));
   for (const stem of entries) {
     code += `export { ${stem}Action, type ${stem}Response } from './${stem}Action.js';\n`;
   }

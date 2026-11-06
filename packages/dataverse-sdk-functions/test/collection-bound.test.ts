@@ -27,7 +27,7 @@ type FunctionClass = new (...args: unknown[]) => Executable<unknown>;
 
 /**
  * RetrieveUnpublishedMultiple is bound to many tables; each binding has its own class (#75), and
- * the plain name is a deprecated alias of the one it exported before. [table, entity set]
+ * there is no plain-name class (#286). [table, entity set]
  */
 const RETRIEVE_UNPUBLISHED_MULTIPLE: Array<[string, string]> = [
   ["aiplugin", "aiplugins"],
@@ -86,12 +86,11 @@ describe("#69: collection-bound functions", () => {
     });
   });
 
-  it("the deprecated plain RetrieveUnpublishedMultipleFunction keeps its old binding", () => {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- checking the alias itself
-    const Fn = functions.RetrieveUnpublishedMultipleFunction;
-    expect(Fn).toBe(
-      functions.RetrieveUnpublishedMultiple_aipluginoperationparameter_collectionFunction
-    );
+  it("#286: RetrieveUnpublishedMultiple has a class per collection and no plain-name class", () => {
+    expect("RetrieveUnpublishedMultipleFunction" in functions).toBe(false);
+    expect(
+      Object.keys(functions).filter((n) => n.startsWith("RetrieveUnpublishedMultiple_"))
+    ).toHaveLength(RETRIEVE_UNPUBLISHED_MULTIPLE.length);
   });
 
   it("RetrievePrivilegeSet reaches /privileges/Microsoft.Dynamics.CRM.RetrievePrivilegeSet", async () => {

@@ -29,8 +29,6 @@ export interface OperationDoc {
   route: string;
   /** `optional`: the argument can be left out (a trailing optional parameter). */
   params: Array<{ name: string; type: string; optional: boolean }>;
-  /** The class this name is a deprecated alias of (#75). */
-  aliasOf?: string;
 }
 
 const SUFFIX: Record<OperationKind, { file: string; cls: string }> = {
@@ -70,11 +68,6 @@ export function readOperation(
   if (!existsSync(path)) return undefined;
   const src = readFileSync(path, "utf8");
   const className = `${name}${cls}`;
-  const alias = new RegExp(`export const ${className} = (\\w+);`).exec(src);
-  if (alias?.[1]) {
-    const target = readOperation(srcDir, kind, alias[1].slice(0, -cls.length));
-    return target && { ...target, className, aliasOf: alias[1] };
-  }
   const classAt = src.indexOf(`export class ${className}`);
   if (classAt < 0) return undefined;
   const params: OperationDoc["params"] = [];
@@ -109,9 +102,8 @@ export function readOperation(
 /** The markdown line for one listed operation: its constructor, route and description. */
 export function renderOperation(op: OperationDoc, description: string): string {
   const args = op.params.map((p) => `${p.name}${p.optional ? "?" : ""}`).join(", ");
-  const alias = op.aliasOf ? ` Deprecated alias of \`${op.aliasOf}\`.` : "";
   const desc = description ? ` ${description}` : "";
-  return `- \`new ${op.className}(${args})\` (\`${op.method} ${op.route}\`):${desc}${alias}`;
+  return `- \`new ${op.className}(${args})\` (\`${op.method} ${op.route}\`):${desc}`;
 }
 
 const BLOCK =
@@ -147,17 +139,12 @@ export function renderOperationBlocks(markdown: string, root: string): string {
 
 const COUNT = /<!-- count:(actions|functions|messages) -->[^<]*<!-- \/count -->/g;
 
-/** How many operation classes a package exports, not counting the deprecated aliases. */
+/** How many operation classes a package exports: one per operation file its index re-exports. */
 export function operationCount(root: string, kind: OperationKind): number {
   const srcDir = join(root, "packages", `dataverse-sdk-${kind}`, "src");
   const { file } = SUFFIX[kind];
   const index = readFileSync(join(srcDir, "index.ts"), "utf8");
-  let count = 0;
-  for (const m of index.matchAll(new RegExp(`from "\\./(\\w+)${file}\\.js";`, "g"))) {
-    const src = readFileSync(join(srcDir, `${m[1]}${file}.ts`), "utf8");
-    if (!src.includes("@deprecated Use")) count++;
-  }
-  return count;
+  return [...index.matchAll(new RegExp(`from "\\./(\\w+)${file}\\.js";`, "g"))].length;
 }
 
 /** The docs about the operation packages, relative to the repository root. */

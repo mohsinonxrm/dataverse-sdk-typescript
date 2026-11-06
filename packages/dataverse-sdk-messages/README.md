@@ -310,8 +310,9 @@ await service.execute(request);
 
 When `$metadata` declares an operation several times with different bindings, each binding has its
 own class: `<Name>_<table>Request` / `<Name>_<table>Response`, with `_collection` for a collection binding. An unbound
-overload keeps the plain name. A name with no unbound overload is still exported under the plain
-name, as a `@deprecated` alias of the binding it exported before.
+overload keeps the plain name. A name with no unbound overload has no plain-name class, so you
+pick the binding: there is `AddItemCampaign_listRequest` and `AddItemCampaign_campaignRequest`,
+but no `AddItemCampaign` request without a table.
 
 ```typescript
 import {

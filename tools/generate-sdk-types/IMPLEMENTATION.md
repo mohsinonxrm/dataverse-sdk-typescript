@@ -324,10 +324,10 @@ package root.
 
 - `src/utils/overloads.ts`: an operation name declared with several bindings gets a class per
   binding, `<Name>_<table>` (`_collection` for a collection binding), as `packages/dataverse-sdk-generator`
-  does (#202). An unbound overload keeps the plain name. A name with no unbound overload keeps a
-  plain-name file that re-exports the last binding (the one the plain name used to be) as
-  `@deprecated` aliases. A definition that still collides gets `_2`, `_3`, … and a warning, so
-  nothing is overwritten silently.
+  does (#202). An unbound overload keeps the plain name. A name with no unbound overload has no
+  plain-name class at all (#286): the caller picks the binding, so `RetrievePrincipalAccessFunction`
+  doesn't exist and `RetrievePrincipalAccess_teamFunction` and its siblings do. A definition that
+  still collides gets `_2`, `_3`, … and a warning, so nothing is overwritten silently.
 - `src/supplemental/supplemental-metadata.ts`: operations Dataverse runs but leaves out of
   `$metadata` (`ExportToExcel`), as EDMX. `generateTargets` merges them into the CSDL for the
   actions, functions and messages targets; an org's own definition of the same name wins.

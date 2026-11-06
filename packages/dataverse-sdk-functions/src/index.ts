@@ -131,10 +131,6 @@ export {
   type GetPreferredSolutionResponse,
 } from "./GetPreferredSolutionFunction.js";
 export {
-  GetQuantityDecimalFunction,
-  type GetQuantityDecimalResponse,
-} from "./GetQuantityDecimalFunction.js";
-export {
   GetQuantityDecimal_invoiceFunction,
   type GetQuantityDecimal_invoiceResponse,
 } from "./GetQuantityDecimal_invoiceFunction.js";
@@ -364,10 +360,6 @@ export {
   type RetrieveAadUserSetOfPrivilegesByNamesResponse,
 } from "./RetrieveAadUserSetOfPrivilegesByNamesFunction.js";
 export {
-  RetrieveAbsoluteAndSiteCollectionUrlFunction,
-  type RetrieveAbsoluteAndSiteCollectionUrlResponse,
-} from "./RetrieveAbsoluteAndSiteCollectionUrlFunction.js";
-export {
   RetrieveAbsoluteAndSiteCollectionUrl_sharepointdocumentlocationFunction,
   type RetrieveAbsoluteAndSiteCollectionUrl_sharepointdocumentlocationResponse,
 } from "./RetrieveAbsoluteAndSiteCollectionUrl_sharepointdocumentlocationFunction.js";
@@ -593,10 +585,6 @@ export {
   type RetrievePersonalWallResponse,
 } from "./RetrievePersonalWallFunction.js";
 export {
-  RetrievePrincipalAccessFunction,
-  type RetrievePrincipalAccessResponse,
-} from "./RetrievePrincipalAccessFunction.js";
-export {
   RetrievePrincipalAccess_organizationFunction,
   type RetrievePrincipalAccess_organizationResponse,
 } from "./RetrievePrincipalAccess_organizationFunction.js";
@@ -609,10 +597,6 @@ export {
   type RetrievePrincipalAccess_teamResponse,
 } from "./RetrievePrincipalAccess_teamFunction.js";
 export {
-  RetrievePrincipalAccessInfoFunction,
-  type RetrievePrincipalAccessInfoResponse,
-} from "./RetrievePrincipalAccessInfoFunction.js";
-export {
   RetrievePrincipalAccessInfo_systemuserFunction,
   type RetrievePrincipalAccessInfo_systemuserResponse,
 } from "./RetrievePrincipalAccessInfo_systemuserFunction.js";
@@ -621,10 +605,6 @@ export {
   type RetrievePrincipalAccessInfo_teamResponse,
 } from "./RetrievePrincipalAccessInfo_teamFunction.js";
 export {
-  RetrievePrincipalAttributePrivilegesFunction,
-  type RetrievePrincipalAttributePrivilegesResponse,
-} from "./RetrievePrincipalAttributePrivilegesFunction.js";
-export {
   RetrievePrincipalAttributePrivileges_systemuserFunction,
   type RetrievePrincipalAttributePrivileges_systemuserResponse,
 } from "./RetrievePrincipalAttributePrivileges_systemuserFunction.js";
@@ -632,10 +612,6 @@ export {
   RetrievePrincipalAttributePrivileges_teamFunction,
   type RetrievePrincipalAttributePrivileges_teamResponse,
 } from "./RetrievePrincipalAttributePrivileges_teamFunction.js";
-export {
-  RetrievePrincipalSyncAttributeMappingsFunction,
-  type RetrievePrincipalSyncAttributeMappingsResponse,
-} from "./RetrievePrincipalSyncAttributeMappingsFunction.js";
 export {
   RetrievePrincipalSyncAttributeMappings_systemuserFunction,
   type RetrievePrincipalSyncAttributeMappings_systemuserResponse,
@@ -652,10 +628,6 @@ export {
   RetrieveProcessInstancesFunction,
   type RetrieveProcessInstancesResponse,
 } from "./RetrieveProcessInstancesFunction.js";
-export {
-  RetrieveProductPropertiesFunction,
-  type RetrieveProductPropertiesResponse,
-} from "./RetrieveProductPropertiesFunction.js";
 export {
   RetrieveProductProperties_invoicedetailFunction,
   type RetrieveProductProperties_invoicedetailResponse,
@@ -728,10 +700,6 @@ export {
   RetrieveTotalRecordCountFunction,
   type RetrieveTotalRecordCountResponse,
 } from "./RetrieveTotalRecordCountFunction.js";
-export {
-  RetrieveUnpublishedFunction,
-  type RetrieveUnpublishedResponse,
-} from "./RetrieveUnpublishedFunction.js";
 export {
   RetrieveUnpublished_aipluginFunction,
   type RetrieveUnpublished_aipluginResponse,
@@ -816,10 +784,6 @@ export {
   RetrieveUnpublished_workflowFunction,
   type RetrieveUnpublished_workflowResponse,
 } from "./RetrieveUnpublished_workflowFunction.js";
-export {
-  RetrieveUnpublishedMultipleFunction,
-  type RetrieveUnpublishedMultipleResponse,
-} from "./RetrieveUnpublishedMultipleFunction.js";
 export {
   RetrieveUnpublishedMultiple_aiplugin_collectionFunction,
   type RetrieveUnpublishedMultiple_aiplugin_collectionResponse,

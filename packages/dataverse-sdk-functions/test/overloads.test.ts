@@ -1,7 +1,8 @@
 /**
  * #75: RetrievePrincipalAccess is bound to systemuser, team and organization. There was one file
- * per name, so only the organization binding survived. Each binding now has its own class, and
- * the plain name is a deprecated alias of the organization one it exported before.
+ * per name, so only the organization binding survived. Each binding now has its own class. A name
+ * with no unbound overload has no plain-name class (#286): `RetrievePrincipalAccessFunction` read
+ * as one class for every binding when it was only the organization one.
  */
 import { describe, expect, it } from "vitest";
 import { createTestClient, jsonResponse } from "@mohsinonxrm/dataverse-sdk-testing";
@@ -42,10 +43,19 @@ describe("#75: function overloads", () => {
     expect(names.filter((n) => n.startsWith("GetQuantityDecimal_"))).toHaveLength(4);
   });
 
-  it("the plain name is still the binding it exported before", () => {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- checking the alias itself
-    expect(functions.RetrievePrincipalAccessFunction).toBe(
-      functions.RetrievePrincipalAccess_organizationFunction
-    );
+  it.each([
+    "GetQuantityDecimal",
+    "RetrieveAbsoluteAndSiteCollectionUrl",
+    "RetrievePrincipalAccess",
+    "RetrievePrincipalAccessInfo",
+    "RetrievePrincipalAttributePrivileges",
+    "RetrievePrincipalSyncAttributeMappings",
+    "RetrieveProductProperties",
+    "RetrieveUnpublished",
+    "RetrieveUnpublishedMultiple",
+  ])("#286: %s has only its per-binding classes, no plain-name class", (name) => {
+    const names = Object.keys(functions);
+    expect(names).not.toContain(`${name}Function`);
+    expect(names.filter((n) => n.startsWith(`${name}_`)).length).toBeGreaterThan(1);
   });
 });
