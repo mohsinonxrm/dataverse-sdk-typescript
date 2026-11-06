@@ -1,5 +1,5 @@
 import { DataverseError } from "../src/errors/DataverseError.js";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, expectTypeOf } from "vitest";
 import {
   DataverseAuthenticationError,
   DataverseInvalidRequestError,
@@ -140,6 +140,56 @@ describe("NamedErrors", () => {
       expect(error.code).toBe("InvalidRequest");
       expect(error.message).toBe("The request is invalid");
       expect(error.body).toEqual(errorBody);
+    });
+
+    it("takes the body as unknown (#294)", () => {
+      expectTypeOf<
+        Parameters<typeof DataverseServiceError.fromResponse>[1]
+      >().toEqualTypeOf<unknown>();
+    });
+
+    it("reads an OData error from the response when no body is passed", async () => {
+      const response = new Response(
+        JSON.stringify({ error: { code: "0x80040217", message: "Does Not Exist" } }),
+        { status: 404, headers: { "x-ms-service-request-id": "req-1" } }
+      );
+      const error = await DataverseServiceError.fromResponse(response);
+      expect(error.code).toBe("0x80040217");
+      expect(error.message).toBe("Does Not Exist");
+      expect(error.requestId).toBe("req-1");
+    });
+
+    it("keeps a body that isn't JSON as the text (#294)", async () => {
+      const response = new Response("<html>Bad Gateway</html>", { status: 502 });
+      const error = await DataverseServiceError.fromResponse(response);
+      expect(error.status).toBe(502);
+      expect(error.message).toBe("HTTP 502");
+      expect(error.code).toBeUndefined();
+      expect(error.body).toBe("<html>Bad Gateway</html>");
+      expect(error.name).toBe("ServerError");
+    });
+
+    it("ignores an error body whose code or message isn't a string (#294)", async () => {
+      const response = new Response(null, { status: 400 });
+      const error = await DataverseServiceError.fromResponse(response, {
+        error: { code: 42, message: { text: "nested" } },
+      });
+      expect(error.code).toBeUndefined();
+      expect(error.message).toBe("HTTP 400");
+      expect(error.body).toEqual({ error: { code: 42, message: { text: "nested" } } });
+    });
+
+    it("keeps a text or array body without reading code or message from it (#294)", async () => {
+      const text = await DataverseServiceError.fromResponse(
+        new Response(null, { status: 500 }),
+        "boom"
+      );
+      expect(text.body).toBe("boom");
+      expect(text.message).toBe("HTTP 500");
+      const array = await DataverseServiceError.fromResponse(new Response(null, { status: 400 }), [
+        { error: { code: "x" } },
+      ]);
+      expect(array.code).toBeUndefined();
     });
   });
 

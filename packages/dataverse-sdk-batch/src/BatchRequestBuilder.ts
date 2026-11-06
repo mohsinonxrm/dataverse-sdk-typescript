@@ -60,9 +60,10 @@ function requestsOf(item: BatchItem): BatchRequestStep[] {
  * }, ['acct']);
  * batch.endChangeset();
  *
- * // Execute
+ * // Execute. Bodies are `unknown`: name the type of the one you read.
  * const result = await batch.execute();
- * result.responses.get('who')?.body.UserId;
+ * const who = result.responses.get('who') as BatchResponseStep<{ UserId: string }> | undefined;
+ * who?.body?.UserId;
  * ```
  */
 export class BatchRequestBuilder {
@@ -97,8 +98,8 @@ export class BatchRequestBuilder {
    * @param url - Request URL: relative to the Web API root (`accounts`, `/accounts`), absolute,
    *   or a `$<id>` reference inside a change set
    * @param headers - Optional request headers
-   * @param body - Optional request body. Objects are JSON-encoded; strings are sent as they are.
-   *   Either way the part gets `Content-Type: application/json; type=entry` unless `headers`
+   * @param body - Optional request body. Strings are sent as they are; anything else is
+   *   JSON-encoded (`null` and `undefined` send no body). Either way the part gets `Content-Type: application/json; type=entry` unless `headers`
    *   sets one.
    * @param dependsOn - Optional ids of earlier requests in the same change set that this request
    *   refers to with `$<id>`. They are checked here; an id that is not an earlier request of the
@@ -119,8 +120,7 @@ export class BatchRequestBuilder {
     method: string,
     url: string,
     headers?: Record<string, string>,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    body?: any,
+    body?: unknown,
     dependsOn?: string[]
   ): this {
     // Validate ID uniqueness

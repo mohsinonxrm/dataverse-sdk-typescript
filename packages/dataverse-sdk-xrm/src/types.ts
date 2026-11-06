@@ -29,6 +29,30 @@ export interface EntityReference {
 }
 
 /**
+ * A record as the Web API returns it: its columns, and annotations such as
+ * `_parentaccountid_value@OData.Community.Display.V1.FormattedValue`, by name.
+ *
+ * `retrieve()`, `retrieveMultiple()`, and `create()`/`update()` with `returnRepresentation`
+ * resolve this type unless you pass your own, e.g. `service.retrieve<Account>(…)`. Each column
+ * is `unknown`, so narrow it (or pass a type) before using it.
+ *
+ * @example
+ * ```typescript
+ * const account = await service.retrieve('accounts', id, { select: ['name'] });
+ * const name = typeof account.name === 'string' ? account.name : '';
+ * await service.update('accounts', id, { name: 'New name' }, { etag: account['@odata.etag'] });
+ * ```
+ */
+export interface EntityRecord {
+  /** The record's version, for optimistic concurrency (`UpdateOptions.etag`, `DeleteOptions.etag`). */
+  "@odata.etag"?: string;
+  /** The metadata URL of the response. */
+  "@odata.context"?: string;
+  /** A column or an annotation. */
+  [property: string]: unknown;
+}
+
+/**
  * Options every OrganizationService method takes.
  */
 export interface OperationOptions {
@@ -302,10 +326,10 @@ export interface RetrieveMultipleOptions extends OperationOptions {
 }
 
 /**
- * Result from retrieveMultiple operation
+ * Result from retrieveMultiple operation. `T` is the record type: {@link EntityRecord} unless
+ * you pass your own.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface RetrieveMultipleResult<T = any> {
+export interface RetrieveMultipleResult<T = EntityRecord> {
   /**
    * Array of retrieved entities
    */

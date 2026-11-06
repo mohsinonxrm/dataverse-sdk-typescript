@@ -124,7 +124,7 @@ describe.skipIf(!live)("live: batch codec (#55, #56)", () => {
     expect(status).toBe(404);
     expect(parts).toHaveLength(1);
     expect(parts[0]).toMatchObject({ contentId: "b", status: 404 });
-    expect(parts[0]?.body.error.code).toBe("0x80040217");
+    expect(parts[0]?.body).toMatchObject({ error: { code: "0x80040217" } });
 
     // The account create was rolled back.
     const left = await client

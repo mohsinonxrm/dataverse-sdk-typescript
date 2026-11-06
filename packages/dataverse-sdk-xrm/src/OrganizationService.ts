@@ -15,6 +15,7 @@ import type {
   RequestOptions,
 } from "@mohsinonxrm/dataverse-sdk-core";
 import type {
+  EntityRecord,
   EntityReference,
   ExpandOption,
   OrganizationServiceOptions,
@@ -223,8 +224,10 @@ export class OrganizationService {
    * `OData-EntityId` response header. With it, the request sends
    * `Prefer: return=representation` and resolves the created record.
    *
+   * @typeParam T - The created record's type when `returnRepresentation` is true; without one,
+   *   {@link EntityRecord}
    * @param entitySetName - The entity set name (plural, e.g., 'accounts', 'contacts')
-   * @param entity - The entity data to create
+   * @param entity - The columns to set: an object literal, or an object of your own record type
    * @param options - Optional creation settings
    * @returns The ID of the created record, or the record when `returnRepresentation` is true
    *
@@ -235,7 +238,7 @@ export class OrganizationService {
    *   telephone1: '555-1234'
    * });
    *
-   * // With options
+   * // With options: resolves the created record (an EntityRecord, or pass a type)
    * const account = await service.create('accounts', {
    *   name: 'Contoso Ltd'
    * }, {
@@ -246,29 +249,22 @@ export class OrganizationService {
    */
   create(
     entitySetName: string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    entity: Record<string, any>,
+    entity: object,
     options?: CreateOptions & { returnRepresentation?: false }
   ): Promise<string>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  create<T = any>(
+  create<T = EntityRecord>(
     entitySetName: string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    entity: Record<string, any>,
+    entity: object,
     options: CreateOptions & { returnRepresentation: true }
   ): Promise<T>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  create<T = any>(
+  create<T = EntityRecord>(
     entitySetName: string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    entity: Record<string, any>,
+    entity: object,
     options?: CreateOptions
   ): Promise<string | T>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async create<T = any>(
+  async create<T = EntityRecord>(
     entitySetName: string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    entity: Record<string, any>,
+    entity: object,
     options?: CreateOptions
   ): Promise<string | T> {
     const builder = this.client.api(`/${entitySetName}`);
@@ -285,6 +281,7 @@ export class OrganizationService {
   /**
    * Retrieves an entity record by ID
    *
+   * @typeParam T - The record's type; without one, {@link EntityRecord} (each column `unknown`)
    * @param entitySetName - The entity set name (plural, e.g., 'accounts', 'contacts')
    * @param id - The GUID of the record to retrieve
    * @param options - Optional retrieval settings
@@ -292,11 +289,12 @@ export class OrganizationService {
    *
    * @example
    * ```typescript
-   * // Basic retrieve
+   * // Basic retrieve: an EntityRecord, whose columns are `unknown`
    * const account = await service.retrieve('accounts', accountId);
    *
-   * // With select
-   * const account = await service.retrieve('accounts', accountId, {
+   * // With select, typed
+   * interface Account { name: string; telephone1: string | null; revenue: number | null }
+   * const account = await service.retrieve<Account>('accounts', accountId, {
    *   select: ['name', 'telephone1', 'revenue']
    * });
    *
@@ -309,8 +307,7 @@ export class OrganizationService {
    * });
    * ```
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async retrieve<T = any>(
+  async retrieve<T = EntityRecord>(
     entitySetName: string,
     id: string,
     options?: RetrieveOptions
@@ -333,11 +330,13 @@ export class OrganizationService {
    * `If-Match: *` (or `If-Match: <etag>` when `etag` is given), so a missing record rejects with
    * a 404 instead of being created. Use `client.api(...).patch()` for an upsert.
    *
+   * @typeParam T - The updated record's type when `returnRepresentation` is true; without one,
+   *   {@link EntityRecord}
    * @param entitySetName - The entity set name (plural, e.g., 'accounts', 'contacts')
    * @param id - The GUID of the record to update
-   * @param entity - The entity data to update
+   * @param entity - The columns to change: an object literal, or an object of your own record type
    * @param options - Optional update settings
-   * @returns The updated entity if returnRepresentation is true, otherwise void
+   * @returns The updated record if returnRepresentation is true, otherwise nothing
    *
    * @example
    * ```typescript
@@ -362,12 +361,28 @@ export class OrganizationService {
    * });
    * ```
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async update<T = any>(
+  update(
     entitySetName: string,
     id: string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    entity: Record<string, any>,
+    entity: object,
+    options?: UpdateOptions & { returnRepresentation?: false }
+  ): Promise<void>;
+  update<T = EntityRecord>(
+    entitySetName: string,
+    id: string,
+    entity: object,
+    options: UpdateOptions & { returnRepresentation: true }
+  ): Promise<T>;
+  update<T = EntityRecord>(
+    entitySetName: string,
+    id: string,
+    entity: object,
+    options?: UpdateOptions
+  ): Promise<T | undefined>;
+  async update<T = EntityRecord>(
+    entitySetName: string,
+    id: string,
+    entity: object,
     options?: UpdateOptions
   ): Promise<T | undefined> {
     const normalizedId = this.normalizeGuid(id);
@@ -425,6 +440,7 @@ export class OrganizationService {
    * This returns one page. When `@odata.nextLink` is set, pass it to
    * `client.api(nextLink).get()` for the next page, or use `client.api(...).iterate()`.
    *
+   * @typeParam T - The type of each record; without one, {@link EntityRecord}
    * @param entitySetName - The entity set name (plural, e.g., 'accounts', 'contacts')
    * @param options - Optional query settings
    * @returns Result containing array of entities and optional pagination info
@@ -460,8 +476,7 @@ export class OrganizationService {
    * });
    * ```
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async retrieveMultiple<T = any>(
+  async retrieveMultiple<T = EntityRecord>(
     entitySetName: string,
     options?: RetrieveMultipleOptions
   ): Promise<RetrieveMultipleResult<T>> {
@@ -695,9 +710,15 @@ export class OrganizationService {
   /**
    * Executes a message request
    *
+   * The response type comes from the request, as with `client.execute()`: a request that
+   * implements `Executable<T>` resolves `T`.
+   *
+   * @typeParam T - The response type, inferred from the request
    * @param request - The message request to execute (must implement Executable<T> interface)
    * @param options - Optional settings, such as a `signal` to cancel the request
    * @returns The message response
+   * @throws Error when `request` has no `toRequestInformation()` and `parseResponse()` methods
+   *   (possible only from JavaScript or through a cast)
    *
    * @example
    * ```typescript
@@ -705,19 +726,22 @@ export class OrganizationService {
    * import { ExecuteWorkflowRequest } from '@mohsinonxrm/dataverse-sdk-messages';
    *
    * const response = await service.execute(new ExecuteWorkflowRequest(workflowId, accountId));
+   * console.log(response.result.asyncoperationid); // response: ExecuteWorkflowResponse
    *
    * // Also works with Actions/Functions directly
    * import { WhoAmIFunction } from '@mohsinonxrm/dataverse-sdk-functions';
    *
-   * const whoAmI = await service.execute(new WhoAmIFunction());
+   * const whoAmI = await service.execute(new WhoAmIFunction()); // WhoAmIResponse
+   * console.log(whoAmI.UserId);
    *
    * // Cancellable: aborting the controller rejects with DataverseAbortError
    * await service.execute(new WhoAmIFunction(), { signal: controller.signal });
    * ```
    */
-  async execute<TResponse>(request: unknown, options?: OperationOptions): Promise<TResponse> {
-    // Check if request implements Executable<T> interface (has toRequestInformation and parseResponse)
-    if (this.isExecutable<TResponse>(request)) {
+  async execute<T>(request: Executable<T>, options?: OperationOptions): Promise<T> {
+    // The type rules out anything else, but a JavaScript caller (or a cast) can still pass an
+    // object without the Executable<T> methods: fail with a clear message instead of a TypeError.
+    if (this.isExecutable<T>(request)) {
       return await this.client.execute(request, signalOptions(options));
     }
 

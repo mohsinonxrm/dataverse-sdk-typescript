@@ -178,25 +178,26 @@ Peer dependency: `@azure/identity` `^4.0.0`.
 ### 5.1 OrganizationService facade
 
 - `class OrganizationService` (`new OrganizationService(client: DataverseClient)`)
-  - `create<T>(entitySetName: string, entity: Record<string, any>, options?: CreateOptions): Promise<string | T>`
-  - `retrieve<T>(entitySetName: string, id: string, options?: RetrieveOptions): Promise<T>`
-  - `update<T>(entitySetName: string, id: string, entity: Record<string, any>, options?: UpdateOptions): Promise<T | undefined>`
+  - `create(entitySetName: string, entity: object, options?: CreateOptions): Promise<string>`; with `returnRepresentation: true`, `create<T = EntityRecord>(…): Promise<T>`
+  - `retrieve<T = EntityRecord>(entitySetName: string, id: string, options?: RetrieveOptions): Promise<T>`
+  - `update(entitySetName: string, id: string, entity: object, options?: UpdateOptions): Promise<void>`; with `returnRepresentation: true`, `update<T = EntityRecord>(…): Promise<T>`
   - `delete(entitySetName: string, id: string, options?: DeleteOptions): Promise<void>`
-  - `retrieveMultiple<T>(entitySetName: string, options?: RetrieveMultipleOptions): Promise<RetrieveMultipleResult<T>>`
+  - `retrieveMultiple<T = EntityRecord>(entitySetName: string, options?: RetrieveMultipleOptions): Promise<RetrieveMultipleResult<T>>`
   - `associate(entitySetName: string, id: string, relationship: string, relatedEntities: EntityReference[], options?: AssociateOptions): Promise<void>`
   - `disassociate(entitySetName: string, id: string, relationship: string, relatedId?: string, options?: DisassociateOptions): Promise<void>`
   - `whoAmI(): Promise<{ UserId: string; BusinessUnitId: string; OrganizationId: string }>`
   - `assign(entityName: string, recordId: string, assigneeId: string, assigneeType?: "systemuser" | "team"): Promise<void>`
   - `setState(entityName: string, recordId: string, stateCode: number, statusCode: number): Promise<void>`
-  - `execute<TResponse>(request: unknown): Promise<TResponse>` _(runs `Executable<T>` instances)_
+  - `execute<T>(request: Executable<T>, options?: OperationOptions): Promise<T>` _(the response type comes from the request)_
 
 ### 5.2 Types
 
+- `interface EntityRecord` _(a record: `@odata.etag`, `@odata.context`, and `unknown` columns)_
 - `interface EntityReference`
 - `interface CreateOptions`
 - `interface RetrieveOptions`
 - `interface RetrieveMultipleOptions`
-- `interface RetrieveMultipleResult<T>`
+- `interface RetrieveMultipleResult<T = EntityRecord>`
 - `interface UpdateOptions`
 - `interface DeleteOptions`
 - `interface AssociateOptions`
@@ -274,14 +275,14 @@ Message classes implement the `Executable<TResponse>` interface from `@mohsinonx
 
 ### 7.2 Batch results and errors
 
-- `interface BatchResponseStep`
+- `interface BatchResponseStep<TBody = unknown>` _(`body` is `unknown` unless the caller names its type)_
 - `interface BatchExecutionResult` (`responses`, `results`, `errors`, `success`, `skippedRequestIds`, `stoppedEarly`, counts)
 - `class DataverseBatchError` _(this package's own class, with `result`, `requestErrors` and `totalRequests`; distinct from core's `DataverseBatchError`)_, `interface DataverseBatchErrorInit`
 
 ### 7.3 Codec
 
 - `function encodeBatchRequest(items, boundary, options?)`, `interface EncodeBatchOptions`, `const JSON_PART_CONTENT_TYPE`
-- `function decodeBatchResponse(body, contentType)`, `interface BatchResponsePart`, `function extractBoundary(contentType)`
+- `function decodeBatchResponse(body, contentType)`, `interface BatchResponsePart<TBody = unknown>`, `function extractBoundary(contentType)`
 - `function generateBoundary()`, `function generateChangesetBoundary()`
 
 ---

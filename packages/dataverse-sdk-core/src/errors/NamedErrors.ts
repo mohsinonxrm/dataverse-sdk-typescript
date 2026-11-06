@@ -161,21 +161,25 @@ export class DataverseServiceError extends DataverseError {
   }
 
   /**
-   * Create error from HTTP response
+   * Create error from HTTP response.
+   *
+   * @param response - The HTTP response
+   * @param body - The response body, if you have already read it (parsed JSON or text). Without
+   *   it, the body is read from `response`. An OData error body (`{ error: { code, message } }`)
+   *   sets `code` and `message`; any other value is only kept as `body`.
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static async fromResponse(response: Response, body?: any): Promise<DataverseServiceError> {
+  static async fromResponse(response: Response, body?: unknown): Promise<DataverseServiceError> {
     const statusCode = response.status;
     const requestId = requestIdFrom(response.headers);
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     let errorBody = body;
     if (!errorBody && response.body) {
+      // Read the text once, so a body that isn't JSON is still kept (as the text).
+      const text = await response.text();
       try {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        errorBody = await response.json();
+        errorBody = JSON.parse(text) as unknown;
       } catch {
-        errorBody = await response.text();
+        errorBody = text;
       }
     }
 
@@ -183,12 +187,10 @@ export class DataverseServiceError extends DataverseError {
     let code: string | undefined;
 
     // Parse OData error format
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    if (errorBody && typeof errorBody === "object" && errorBody.error) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-      code = errorBody.error.code;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      message = errorBody.error.message ?? message;
+    const odataError = isRecord(errorBody) ? errorBody.error : undefined;
+    if (isRecord(odataError)) {
+      if (typeof odataError.code === "string") code = odataError.code;
+      if (typeof odataError.message === "string") message = odataError.message;
     }
 
     const error = new DataverseServiceError(statusCode, message);
@@ -318,4 +320,9 @@ export class DataverseAbortError extends DataverseError {
     Object.setPrototypeOf(this, DataverseAbortError.prototype);
     this.name = "AbortError";
   }
+}
+
+/** A plain object (not null, not an array). */
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }

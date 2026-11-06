@@ -1,6 +1,7 @@
 // Public exports for this package
 export { OrganizationService } from "./OrganizationService.js";
 export type {
+  EntityRecord,
   EntityReference,
   ExpandOption,
   OrganizationServiceOptions,

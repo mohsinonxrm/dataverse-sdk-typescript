@@ -361,12 +361,15 @@ export class MsalNodeTokenProvider implements AccessTokenProvider {
           result = await this.acquireTokenSilent(requestScopes, options);
           break;
 
-        default:
+        default: {
+          // Only a JavaScript caller (or a cast) gets here: TypeScript has narrowed the options
+          // to `never`, so read the flow it passed as unknown.
+          const { flow } = this.options as { flow: unknown };
           throw DataverseInvalidRequestError.invalidParameter(
             "flow",
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/restrict-template-expressions, @typescript-eslint/no-unsafe-member-access
-            `Unsupported flow: ${(this.options as any).flow}`
+            `Unsupported flow: ${String(flow)}`
           );
+        }
       }
 
       if (!result?.accessToken) {

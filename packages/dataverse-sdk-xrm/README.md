@@ -48,6 +48,24 @@ throttling handling apply, and a failed request rejects with the core error type
 (`DataverseError` and its subclasses, such as `DataverseDuplicateError` for a 412 from duplicate
 detection).
 
+Records come back as an [`EntityRecord`](#entityrecord), whose columns are `unknown` until you
+narrow them, unless you pass your own type. The examples below use this one:
+
+```typescript
+interface Account {
+  accountid: string;
+  name: string;
+  revenue: number | null;
+}
+
+const typed = await service.retrieve<Account>("accounts", accountId, {
+  select: ["name", "revenue"],
+});
+typed.revenue; // number | null
+```
+
+`execute()` gets its result type from the request, as `client.execute()` does.
+
 ## API Reference
 
 ### create
@@ -55,17 +73,15 @@ detection).
 Creates a new entity record.
 
 ```typescript
-async create<T = any>(
-  entitySetName: string,
-  entity: Record<string, unknown>,
-  options?: CreateOptions
-): Promise<string | T>
+create(entitySetName: string, entity: object, options?: CreateOptions & { returnRepresentation?: false }): Promise<string>
+create<T = EntityRecord>(entitySetName: string, entity: object, options: CreateOptions & { returnRepresentation: true }): Promise<T>
+create<T = EntityRecord>(entitySetName: string, entity: object, options?: CreateOptions): Promise<string | T>
 ```
 
 **Parameters:**
 
 - `entitySetName` - The plural entity set name (e.g., 'accounts', 'contacts')
-- `entity` - The entity data to create
+- `entity` - The columns to set: an object literal, or an object of your own record type
 - `options` - Optional creation settings
 
 **Options:**
@@ -78,7 +94,7 @@ async create<T = any>(
 - `headers?: Record<string, string>` - Additional custom headers
 - `signal?: AbortSignal` - Cancels the request; see [Cancellation](#cancellation)
 
-**Returns:** Entity ID (GUID string, read from the `OData-EntityId` response header) by default, or the full entity if `returnRepresentation: true`
+**Returns:** Entity ID (GUID string, read from the `OData-EntityId` response header) by default, or the created record (`T`, an `EntityRecord` unless you pass a type) if `returnRepresentation: true`
 
 **Examples:**
 
@@ -121,7 +137,7 @@ const leadId = await service.create(
 Retrieves an entity record by ID.
 
 ```typescript
-async retrieve<T = any>(
+retrieve<T = EntityRecord>(
   entitySetName: string,
   id: string,
   options?: RetrieveOptions
@@ -190,12 +206,9 @@ await service.retrieve("accounts", "{12345678-1234-1234-1234-123456789012}".toUp
 Updates an existing entity record.
 
 ```typescript
-async update<T = any>(
-  entitySetName: string,
-  id: string,
-  entity: Record<string, unknown>,
-  options?: UpdateOptions
-): Promise<T | undefined>
+update(entitySetName: string, id: string, entity: object, options?: UpdateOptions & { returnRepresentation?: false }): Promise<void>
+update<T = EntityRecord>(entitySetName: string, id: string, entity: object, options: UpdateOptions & { returnRepresentation: true }): Promise<T>
+update<T = EntityRecord>(entitySetName: string, id: string, entity: object, options?: UpdateOptions): Promise<T | undefined>
 ```
 
 Like the C# `Update`, this never creates a record. The PATCH carries `If-Match: *` (or
@@ -206,7 +219,7 @@ Like the C# `Update`, this never creates a record. The PATCH carries `If-Match: 
 
 - `entitySetName` - The plural entity set name
 - `id` - The GUID of the record to update
-- `entity` - The entity data to update
+- `entity` - The columns to change: an object literal, or an object of your own record type
 - `options` - Optional update settings
 
 **Options:**
@@ -220,7 +233,7 @@ Like the C# `Update`, this never creates a record. The PATCH carries `If-Match: 
 - `headers?: Record<string, string>` - Additional custom headers
 - `signal?: AbortSignal` - Cancels the request; see [Cancellation](#cancellation)
 
-**Returns:** `void` by default, or the updated entity if `returnRepresentation: true`
+**Returns:** nothing by default, or the updated record (`T`, an `EntityRecord` unless you pass a type) if `returnRepresentation: true`
 
 **Examples:**
 
@@ -310,7 +323,7 @@ await service.delete("leads", leadId, {
 Retrieves multiple entity records matching a query.
 
 ```typescript
-async retrieveMultiple<T = any>(
+retrieveMultiple<T = EntityRecord>(
   entitySetName: string,
   options?: RetrieveMultipleOptions
 ): Promise<RetrieveMultipleResult<T>>
@@ -336,7 +349,7 @@ async retrieveMultiple<T = any>(
 
 **Returns:** one page, as `RetrieveMultipleResult<T>` with properties:
 
-- `value: T[]` - Array of entity records
+- `value: T[]` - Array of entity records (`EntityRecord`s unless you pass a type)
 - `@odata.count?: number` - Total count (if `count: true`)
 - `@odata.nextLink?: string` - URL for next page (if results are paginated); fetch it with `client.api(nextLink).get()`, or use `client.api(...).iterate()` to walk every page
 
@@ -494,7 +507,7 @@ Works with:
 - Messages from `@mohsinonxrm/dataverse-sdk-messages`
 
 ```typescript
-async execute<TResponse>(request: unknown, options?: OperationOptions): Promise<TResponse>
+execute<T>(request: Executable<T>, options?: OperationOptions): Promise<T>
 ```
 
 **Parameters:**
@@ -504,9 +517,12 @@ async execute<TResponse>(request: unknown, options?: OperationOptions): Promise<
   - `parseResponse(response: Response)` method
 - `options.signal` - Cancels the request; see [Cancellation](#cancellation)
 
-**Returns:** Response object of type `TResponse`
+**Returns:** The request's response, typed `T` from its `Executable<T>`: `new WhoAmIFunction()`
+resolves a `WhoAmIResponse`, `new ExecuteWorkflowRequest(…)` an `ExecuteWorkflowResponse`. No
+type argument is needed.
 
-**Throws:** Error if request doesn't implement `Executable<T>` interface
+**Throws:** Error if request doesn't implement `Executable<T>` interface (the type rules this
+out, so only JavaScript callers or a cast can reach it)
 
 **Examples:**
 
@@ -537,6 +553,7 @@ import { ExecuteWorkflowRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 const workflowResponse = await service.execute(
   new ExecuteWorkflowRequest(workflowId, { EntityId: entityId, InputArguments: {} })
 );
+console.log("Async operation:", workflowResponse.result.asyncoperationid);
 ```
 
 ---
@@ -682,6 +699,30 @@ await service.setState("opportunity", opportunityId, 2, 5);
 
 ## Types
 
+### EntityRecord
+
+A record as the Web API returns it, and what `retrieve()`, `retrieveMultiple()` and
+`create()`/`update()` with `returnRepresentation` resolve unless you pass a type. Its columns are
+`unknown`, so the compiler makes you check them (or pass a type) before you use them.
+
+```typescript
+interface EntityRecord {
+  "@odata.etag"?: string; // the record's version, for UpdateOptions.etag / DeleteOptions.etag
+  "@odata.context"?: string;
+  [property: string]: unknown; // columns and annotations
+}
+```
+
+### RetrieveMultipleResult
+
+```typescript
+interface RetrieveMultipleResult<T = EntityRecord> {
+  value: T[];
+  "@odata.count"?: number; // with count: true
+  "@odata.nextLink"?: string; // the next page, if there is one
+}
+```
+
 ### EntityReference
 
 Represents a reference to an entity record.
@@ -740,12 +781,21 @@ Prevent concurrent update conflicts using ETags:
 
 ```typescript
 // Every retrieved record carries its ETag
-const account = await service.retrieve("accounts", accountId, { select: ["revenue"] });
+const account = await service.retrieve<{ revenue: number | null; "@odata.etag": string }>(
+  "accounts",
+  accountId,
+  { select: ["revenue"] }
+);
 const etag = account["@odata.etag"];
 
 // Update with ETag check
 try {
-  await service.update("accounts", accountId, { revenue: account.revenue + 100000 }, { etag });
+  await service.update(
+    "accounts",
+    accountId,
+    { revenue: (account.revenue ?? 0) + 100000 },
+    { etag }
+  );
 } catch (error) {
   // 412 Precondition Failed: the record was modified since it was read
   console.error("Record was modified by another user");

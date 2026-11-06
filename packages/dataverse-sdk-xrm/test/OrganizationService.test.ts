@@ -468,6 +468,8 @@ describe("OrganizationService", () => {
 
     it("rejects a request that isn't Executable", async () => {
       const { service } = setup();
+      // The type rules this out (#284); a JavaScript caller can still pass one.
+      // @ts-expect-error -- not an Executable<T>
       await expect(service.execute({ name: "NotExecutable" })).rejects.toThrow(
         /Executable<T> interface/
       );

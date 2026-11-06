@@ -123,8 +123,7 @@ function parseHttpResponse(
   const rest = lineEnd ? text.slice(lineEnd.index + lineEnd[0].length) : "";
   const { headers, body: bodyText } = splitHeaderBlock(rest);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let body: any;
+  let body: unknown;
   if (bodyText !== "") {
     body = bodyText;
     if (isJsonContentType(headers["content-type"])) {

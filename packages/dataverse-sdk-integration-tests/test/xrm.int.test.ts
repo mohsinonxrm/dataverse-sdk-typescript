@@ -71,7 +71,7 @@ describe.skipIf(!live)("live: OrganizationService (#83, #84)", () => {
       { telephone1: "555-0400" },
       { returnRepresentation: true, select: ["telephone1"] }
     );
-    expect(updated?.telephone1).toBe("555-0400");
+    expect(updated.telephone1).toBe("555-0400");
 
     // delete, then the record is gone
     await org.delete("accounts", id);

@@ -164,7 +164,7 @@ describe("without continueOnError (#57)", () => {
       ["who", 200],
       ["del", 404],
     ]);
-    expect(err.result?.responses.get("who")?.body.UserId).toBeDefined();
+    expect(err.result?.responses.get("who")?.body).toHaveProperty("UserId");
     expect(err.result?.skippedRequestIds).toEqual(["never"]);
     expect(err.result?.stoppedEarly).toBe(true);
     expect(err.result?.errors.get("del")).toBeInstanceOf(DataverseODataError);
@@ -192,7 +192,9 @@ describe("auto-split (#57)", () => {
     expect(result.results.map((r) => r.id)).toEqual(
       Array.from({ length: 2500 }, (_, i) => `r${String(i)}`)
     );
-    expect(result.responses.get("r2499")?.body.url).toMatch(/accounts\?n=2499$/);
+    expect(result.responses.get("r2499")?.body).toMatchObject({
+      url: expect.stringMatching(/accounts\?n=2499$/),
+    });
     expect(result.success).toBe(true);
     // Each batch has its own boundary.
     const boundaries = fake.requests.map((r) => r.headers["content-type"]);

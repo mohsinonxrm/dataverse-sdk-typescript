@@ -58,8 +58,8 @@ describe("decoding", () => {
         [0, false, undefined, 200],
         [1, false, undefined, 200],
       ]);
-      expect(parts[0]?.body.UserId).toBe("10000000-0000-0000-0000-000000000003");
-      expect(parts[1]?.body.value).toEqual([]);
+      expect(parts[0]?.body).toMatchObject({ UserId: "10000000-0000-0000-0000-000000000003" });
+      expect(parts[1]?.body).toMatchObject({ value: [] });
       expect(parts[0]?.statusText).toBe("OK");
       expect(parts[0]?.headers["content-type"]).toBe("application/json; odata.metadata=minimal");
       expect(parts[0]?.headers["odata-version"]).toBe("4.0");
@@ -100,7 +100,7 @@ describe("decoding", () => {
       expect(parts[1]?.headers["content-type"]).toBe(
         "application/json; odata.metadata=minimal; odata.streaming=true"
       );
-      expect(parts[1]?.body.error.code).toBe("0x80040217");
+      expect(parts[1]?.body).toMatchObject({ error: { code: "0x80040217" } });
     });
 
     it("a continue-on-error mix: the failure and the parts after it", () => {
