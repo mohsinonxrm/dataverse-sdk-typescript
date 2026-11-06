@@ -17,8 +17,8 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     }
   },
   "sideEffects": false,
@@ -46,11 +46,14 @@
     "node": ">=22"
   },
   "dependencies": {
-    "@mohsinonxrm/dataverse-sdk-core": "workspace:*",
+    "@mohsinonxrm/dataverse-sdk-core": "workspace:*"
+  },
+  "peerDependencies": {
     "@opentelemetry/api": "^1.9.0"
   },
   "devDependencies": {
     "@mohsinonxrm/dataverse-sdk-testing": "workspace:*",
+    "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/context-async-hooks": "^2.10.0",
     "@opentelemetry/sdk-trace-base": "^2.10.0",
     "eslint": "^9.39.5",
