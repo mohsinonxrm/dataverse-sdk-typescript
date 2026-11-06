@@ -21,7 +21,7 @@ Developers coming from .NET expect:
 
 1.  **Messages package:** Provide `@mohsinonxrm/dataverse-sdk-messages` exporting **all message request/response classes directly** (no namespaces). Import pattern:
     ```typescript
-    import { WhoAmIRequest, ExecuteWorkflowRequest } from "@mohsinonxrm/dataverse-sdk-messages";
+    import { ExecuteWorkflowRequest, MergeRequest } from "@mohsinonxrm/dataverse-sdk-messages";
     ```
     All 1,356+ message classes follow the `<MessageName>Request` / `<MessageName>Response` naming convention, making them easy to discover and import.
 2.  **Request/Response parity:** For each implemented message, implement both:
