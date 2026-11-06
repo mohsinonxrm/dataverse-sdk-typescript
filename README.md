@@ -173,10 +173,10 @@ const highValueAccounts = await client
   .api("/accounts")
   .select("name", "revenue", "industrycode")
   .filter("revenue gt 5000000 and industrycode eq 6")
-  .expand("primarycontactid($select=fullname,emailaddress1)")
+  .expand("primarycontactid", { select: ["fullname", "emailaddress1"] })
   .orderBy("revenue desc")
   .top(25)
-  .get<Account[]>();
+  .get<{ value: Account[] }>();
 
 // Create with return
 const newAccount = await client
@@ -499,7 +499,7 @@ const client = new DataverseClient({
 
 ## 🔨 Early-Bound Entity Generation
 
-Generate strongly-typed entity classes from your Dataverse metadata:
+Generate strongly-typed entity interfaces from your Dataverse metadata:
 
 ```bash
 # Install generator
@@ -518,27 +518,37 @@ Configuration example (`.dataverse-gen.json`):
 
 ```json
 {
-  "serverUrl": "https://yourorg.crm.dynamics.com",
-  "output": "./src/generated",
+  "environmentUrl": "https://yourorg.crm.dynamics.com",
   "entities": ["account", "contact", "opportunity"],
-  "actions": true,
-  "functions": true,
-  "generateEnums": true
+  "actions": [],
+  "functions": [],
+  "output": { "outputRoot": "./src/generated" },
+  "auth": { "flow": "clientCredentials" }
 }
 ```
 
-Use generated entities:
+`actions` and `functions` list the operations to generate by name; an empty list generates all of them. With the client-credentials flow,
+the tenant id, client id and secret come from `DATAVERSE_TENANT_ID`, `DATAVERSE_CLIENT_ID` and
+`DATAVERSE_CLIENT_SECRET`. See the [generator README](./packages/dataverse-sdk-generator) for every option.
+
+Use generated entities (plain interfaces, with a metadata constant per table):
 
 ```typescript
-import { Account } from "./generated/entities/Account";
-import { Contact } from "./generated/entities/Contact";
+import { formatEntityForWrite } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { type Account, AccountMetadata } from "./generated/entities/Account.js";
+import { EntityMetadataCache } from "./generated/metadata.js";
 
-// Type-safe entity creation
-const account = new Account();
-account.name = "Contoso Ltd";
-account.revenue = 5000000;
+const account: Account = {
+  name: "Contoso Ltd",
+  revenue: 5000000,
+};
 
-const id = await account.save(client);
+// formatEntityForWrite adds @odata.type and turns lookups into @odata.bind entries
+const id = await client
+  .api(`/${AccountMetadata.collectionName}`)
+  .createAndGetId(
+    formatEntityForWrite(account, AccountMetadata, { metadataCache: EntityMetadataCache })
+  );
 ```
 
 ## 📚 Samples
