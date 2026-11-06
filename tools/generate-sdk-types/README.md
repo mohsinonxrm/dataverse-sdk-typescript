@@ -15,7 +15,8 @@ This tool generates the **SDK's internal types**:
 1. **Metadata API Types** → `packages/dataverse-sdk-metadata/src/types/`
    - `EntityMetadata`, `AttributeMetadata`, `RelationshipMetadata`, etc.
 2. **SDK Messages** → `packages/dataverse-sdk-messages/src/`
-   - `CrmSdkMessages.*` and `XrmSdkMessages.*`
+   - One `<Name>Message.ts` per Web API action, exporting `<Name>Request` and `<Name>Response`
+     (direct exports, no `CrmSdkMessages`/`XrmSdkMessages` namespaces; see ADR-0004)
 3. **Typed Actions** → `packages/dataverse-sdk-actions/src/`
    - All Web API actions (bound and unbound)
 4. **Typed Functions** → `packages/dataverse-sdk-functions/src/`
@@ -90,11 +91,13 @@ Options:
   -c, --config <path>   Path to config file (default: sdk-gen.config.json)
   --url <url>           Dataverse URL (overrides .env)
   --dry-run             Preview what would be generated without writing files
+  --save-csdl           Also save the fetched $metadata to ./dataverse-metadata.xml
+  --purge               Delete the existing output before generating
   -h, --help            Display help
 
 Targets:
   metadata              Generate metadata API types
-  messages              Generate SDK messages (CrmSdkMessages, XrmSdkMessages)
+  messages              Generate SDK messages (<Name>Request / <Name>Response)
   actions               Generate typed Web API actions
   functions             Generate typed Web API functions
 
@@ -102,7 +105,13 @@ Examples:
   generate-sdk-types                    # Generate all
   generate-sdk-types metadata actions   # Generate metadata + actions only
   generate-sdk-types --dry-run          # Preview without writing
+  generate-sdk-types actions --save-csdl  # Generate actions and keep the $metadata used
 ```
+
+Without a config file the tool reads `DATAVERSE_URL`, `AZURE_TENANT_ID`, `AZURE_CLIENT_ID` and
+`AZURE_CLIENT_SECRET`, and the output paths `METADATA_OUTPUT_PATH`, `MESSAGES_OUTPUT_PATH`,
+`ACTIONS_OUTPUT_PATH` and `FUNCTIONS_OUTPUT_PATH` (defaults: the packages below, relative to this
+directory).
 
 ## Output Structure
 
@@ -114,28 +123,31 @@ packages/
     RelationshipMetadata.ts
     ...
 
-  dataverse-sdk-messages/src/
-    crm/
-      ExecuteWorkflowRequest.ts
-      WinOpportunityRequest.ts
-      ...
-    xrm/
-      WhoAmIRequest.ts
-      AssignRequest.ts
-      ...
+  dataverse-sdk-messages/src/          # flat: one file per action
+    ExecuteWorkflowMessage.ts           # ExecuteWorkflowRequest + ExecuteWorkflowResponse
+    WinOpportunityMessage.ts
+    ...
+    types/                              # complex types, entity types and enums from the CSDL
+    index.ts
+    OrganizationRequest.ts, EntityReference.ts, types.ts   # hand-written, not generated
 
-  dataverse-sdk-actions/src/
-    CalculateRollupFieldAction.ts
+  dataverse-sdk-actions/src/            # flat: one file per action
     CreateMultipleAction.ts
     ExecuteWorkflowAction.ts
-    MergeAction.ts
-    WinOpportunityAction.ts
     ...
+    types/                              # complex types, entity types, enums, EntityReference.ts
+    index.ts
 
-  dataverse-sdk-functions/src/
+  dataverse-sdk-functions/src/          # flat: one file per function
     WhoAmIFunction.ts
     ...
+    internal/odataLiteral.ts            # parameter-alias literal helper (not exported)
+    types/
+    index.ts
 ```
+
+The generated `.ts` files are committed, formatted with prettier (`.prettierignore` skips them, so
+format with `prettier --ignore-path /dev/null`), and excluded from lint.
 
 ## Architecture
 
@@ -155,16 +167,17 @@ src/
     edmx-parser.ts        # Parse CSDL XML from $metadata
     csdl-types.ts         # TypeScript types for CSDL structure
 
-  templates/
-    metadata/             # EJS templates for metadata types
-    messages/             # EJS templates for message request/response
-    actions/              # EJS templates for actions
-    functions/            # EJS templates for functions
+  generators/complex-types-generator.ts  # types/ folder of messages, actions and functions
 
   utils/
-    typescript-writer.ts  # TS code generation helpers
+    typescript-writer.ts  # CSDL-to-TypeScript type mapping, entity set lookup
     file-writer.ts        # Write files to package directories
+
+test/
+  generators.test.ts      # runs the real parser and generators on small EDMX fixtures
 ```
+
+The generators build the code as strings; there are no templates (the `ejs` dependency is unused).
 
 ## Development
 
@@ -181,7 +194,13 @@ node dist/cli.js --help
 - **Source of truth**: Dataverse v9.2 `$metadata` with Sales + Customer Service
 - **Run frequency**: When Microsoft updates Web API schema or adds new actions/functions
 - **Git workflow**: Generated files should be committed to repo
-- **Versioning**: When regenerating, review diffs carefully for breaking changes
+- **Versioning**: When regenerating, review diffs carefully for breaking changes. A fresh
+  `$metadata` reorders constructor parameters, adds and removes operations, and reorders
+  `types/` properties, so a full regeneration is a large, partly breaking diff. Generator fixes
+  have instead been applied to the committed files with a script, checked to be byte-identical to
+  the new generator's output on the same `$metadata`.
+- **CI**: `.github/workflows/generate-metadata-types.yml` (manual) regenerates the metadata types
+  and opens a PR for review.
 
 ## Troubleshooting
 
