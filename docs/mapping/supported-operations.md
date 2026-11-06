@@ -47,7 +47,7 @@ Familiar patterns for developers coming from .NET SDK:
 
 ```typescript
 import { OrganizationService } from "@mohsinonxrm/dataverse-sdk-xrm";
-import { WhoAmIRequest } from "@mohsinonxrm/dataverse-sdk-messages";
+import { PublishAllXmlRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 
 const service = new OrganizationService(client);
 
@@ -55,9 +55,8 @@ const service = new OrganizationService(client);
 const accountId = await service.create("accounts", { name: "Contoso" });
 const account = await service.retrieve("accounts", accountId, { select: ["name"] });
 
-// Message execution
-const whoAmIRequest = new WhoAmIRequest();
-const response = await service.execute(whoAmIRequest);
+// Message execution (messages are Web API actions; WhoAmI is a function, WhoAmIFunction)
+await service.execute(new PublishAllXmlRequest());
 ```
 
 ## Operation Categories
@@ -74,7 +73,7 @@ const response = await service.execute(whoAmIRequest);
 **Actions (Modify Data):**
 
 - Bulk operations (CreateMultiple, UpdateMultiple, UpsertMultiple)
-- Entity operations (Assign, SetState, Merge)
+- Merge (assign and change state are record updates, not actions)
 - Solution management (ExportSolution, ImportSolution, PublishXml)
 - File operations (InitializeFileBlocksUpload, UploadBlock, CommitFileBlocksUpload)
 

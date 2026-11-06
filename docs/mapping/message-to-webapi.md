@@ -47,126 +47,100 @@ Microsoft recommends using **parameter aliases** for function parameters to avoi
 
 ### 2.1 WhoAmI
 
-- Web API: **WhoAmI function** (GET) returns `WhoAmIResponse`
-- Messages: `WhoAmIRequest` → `WhoAmIResponse` (import from `@mohsinonxrm/dataverse-sdk-messages`)
-- Typed function wrapper: `dataverse-sdk-functions` provides `WhoAmIFunction` (client-side executable)
+- Web API: **WhoAmI function** (GET `/WhoAmI`) returns `WhoAmIResponse`.
+- Typed: `WhoAmIFunction` from `@mohsinonxrm/dataverse-sdk-functions`. Functions aren't messages,
+  so the messages package has no WhoAmI request (the .NET `WhoAmIRequest` maps to the function).
 
 ### 2.2 ExecuteWorkflow
 
-- Web API: **ExecuteWorkflow action** (bound to `workflow`) returns `asyncoperation`
-- Messages: `ExecuteWorkflowRequest` → `ExecuteWorkflowResponse.result.asyncoperationid` (import from `@mohsinonxrm/dataverse-sdk-messages`)
-- Typed action wrapper: `dataverse-sdk-actions` provides `ExecuteWorkflowAction` (client-side executable)
+- Web API: **ExecuteWorkflow action** (bound to `workflow`) returns `asyncoperation`.
+- Messages: `ExecuteWorkflowRequest` → `ExecuteWorkflowResponse.result.asyncoperationid`.
+- Actions: `ExecuteWorkflowAction`.
 
 ### 2.3 WinOpportunity (Sales)
 
-Opportunity supports **WinOpportunity action** and maps to `WinOpportunityRequest`.
+- Web API: `POST /WinOpportunity`.
+- Messages: `WinOpportunityRequest` → `WinOpportunityResponse`. Actions: `WinOpportunityAction`.
 
-- Web API: `POST /WinOpportunity` with parameters
-- Messages: `WinOpportunityRequest` → `WinOpportunityResponse` (import from `@mohsinonxrm/dataverse-sdk-messages`)
-- Typed action wrapper: `dataverse-sdk-actions` provides `WinOpportunityAction` (v1 minimal)
+### 2.4 Assign and SetState (Platform)
 
-### 2.4 Assign (Platform)
+- Web API: there is **no Assign or SetState action**. Both are updates of the record
+  (`PATCH /{entitySet}({id})`): assign with `"ownerid@odata.bind": "/systemusers(<id>)"`, change
+  state with `statecode` and `statuscode`. The .NET `AssignRequest` and `SetStateRequest` have no
+  class here; use `client.api(...).patch(...)` or `OrganizationService.update`.
 
-- Web API: **Assign action** (POST) with Target and Assignee
-- Messages: `AssignRequest` → `AssignResponse` (import from `@mohsinonxrm/dataverse-sdk-messages`)
+### 2.5 Merge (Business)
 
-### 2.5 SetState (Platform)
+- Web API: **Merge action** (POST, unbound) with Target, Subordinate, UpdateContent and
+  PerformParentingChecks. Tables: account, contact, lead and incident.
+- Messages: `MergeRequest` → `MergeResponse`. Actions: `MergeAction`.
 
-- Web API: PATCH on entity with `statecode` and `statuscode`
-- Messages: `SetStateRequest` → `SetStateResponse` (import from `@mohsinonxrm/dataverse-sdk-messages`)
+### 2.6 ExportSolution and ImportSolution (ALM)
 
-### 2.6 Merge (Business)
+- Messages: `ExportSolutionRequest` → `ExportSolutionResponse.result.ExportSolutionFile` (base64);
+  `ImportSolutionRequest` → `ImportSolutionResponse`.
 
-- Web API: **Merge action** (POST, unbound) with Target, Subordinate, UpdateContent, PerformParentingChecks
-- Messages: `MergeRequest` → `MergeResponse` (import from `@mohsinonxrm/dataverse-sdk-messages`)
-- Supported entities: account, contact, lead, incident
+### 2.7 PublishXml and PublishAllXml (ALM)
 
-### 2.7 ExportSolution (ALM)
-
-- Web API: **ExportSolution action** (POST, unbound)
-- Messages: `ExportSolutionRequest` → `ExportSolutionResponse.ExportSolutionFile` (base64) (import from `@mohsinonxrm/dataverse-sdk-messages`)
-
-### 2.8 ImportSolution (ALM)
-
-- Web API: **ImportSolution action** (POST, unbound)
-- Messages: `ImportSolutionRequest` → `ImportSolutionResponse.ImportJobId` (import from `@mohsinonxrm/dataverse-sdk-messages`)
-
-### 2.9 PublishXml (ALM)
-
-- Web API: **PublishXml action** (POST, unbound) with ParameterXml
-- Messages: `PublishXmlRequest` → `PublishXmlResponse` (import from `@mohsinonxrm/dataverse-sdk-messages`)
-
-### 2.10 PublishAllXml (ALM)
-
-- Web API: **PublishAllXml action** (POST, unbound)
-- Messages: `PublishAllXmlRequest` → `PublishAllXmlResponse` (import from `@mohsinonxrm/dataverse-sdk-messages`)
+- Messages: `PublishXmlRequest`, `PublishAllXmlRequest`.
 
 ---
 
-## 3. Complete v1 Message Mapping Table
+## 3. Mapping table
 
-| Message Request Class  | Web API Endpoint                                        | HTTP Method | Binding           | Type     |
-| ---------------------- | ------------------------------------------------------- | ----------- | ----------------- | -------- |
-| WhoAmIRequest          | /WhoAmI                                                 | GET         | Unbound           | Platform |
-| AssignRequest          | /Assign                                                 | POST        | Unbound           | Platform |
-| SetStateRequest        | /{entitySet}({id})                                      | PATCH       | N/A               | Platform |
-| ExecuteWorkflowRequest | /workflows({id})/Microsoft.Dynamics.CRM.ExecuteWorkflow | POST        | Bound to workflow | Business |
-| WinOpportunityRequest  | /WinOpportunity                                         | POST        | Unbound           | Business |
-| MergeRequest           | /Merge                                                  | POST        | Unbound           | Business |
-| ExportSolutionRequest  | /ExportSolution                                         | POST        | Unbound           | ALM      |
-| ImportSolutionRequest  | /ImportSolution                                         | POST        | Unbound           | ALM      |
-| PublishXmlRequest      | /PublishXml                                             | POST        | Unbound           | ALM      |
-| PublishAllXmlRequest   | /PublishAllXml                                          | POST        | Unbound           | ALM      |
-
-**Note:** All messages are imported directly: `import { WhoAmIRequest } from '@mohsinonxrm/dataverse-sdk-messages'`
+| .NET message    | This SDK                         | Web API endpoint                                          | Method |
+| --------------- | -------------------------------- | --------------------------------------------------------- | ------ |
+| WhoAmI          | `WhoAmIFunction` (functions)     | `/WhoAmI`                                                 | GET    |
+| Assign          | update `ownerid@odata.bind`      | `/{entitySet}({id})`                                      | PATCH  |
+| SetState        | update `statecode`, `statuscode` | `/{entitySet}({id})`                                      | PATCH  |
+| ExecuteWorkflow | `ExecuteWorkflowRequest`         | `/workflows({id})/Microsoft.Dynamics.CRM.ExecuteWorkflow` | POST   |
+| WinOpportunity  | `WinOpportunityRequest`          | `/WinOpportunity`                                         | POST   |
+| Merge           | `MergeRequest`                   | `/Merge`                                                  | POST   |
+| ExportSolution  | `ExportSolutionRequest`          | `/ExportSolution`                                         | POST   |
+| ImportSolution  | `ImportSolutionRequest`          | `/ImportSolution`                                         | POST   |
+| PublishXml      | `PublishXmlRequest`              | `/PublishXml`                                             | POST   |
+| PublishAllXml   | `PublishAllXmlRequest`           | `/PublishAllXml`                                          | POST   |
 
 ---
 
-## 4. Fallback rule for unsupported typed operations
+## 4. Fallback for operations without a typed class
 
-If an action/function is not typed in v1:
-
-- Use raw `client.api()` to call the endpoint directly (escape hatch).
-- Or use `OrganizationRequest("OperationName")` with parameters from the messages package.
+- Use `client.api()` to call the endpoint directly.
+- Or use `new OrganizationRequest("OperationName", parameters)` from the messages package (POST
+  actions only).
 
 ---
 
 ## 5. Usage Examples
 
-### 5.1 WhoAmI Function
+### 5.1 WhoAmI
 
 ```typescript
-import { OrganizationService } from "@mohsinonxrm/dataverse-sdk-xrm";
-import { WhoAmIRequest } from "@mohsinonxrm/dataverse-sdk-messages";
+import { WhoAmIFunction } from "@mohsinonxrm/dataverse-sdk-functions";
 
-const request = new WhoAmIRequest();
-const response = await service.execute(request);
-
-console.log("User ID:", response.UserId);
-console.log("Business Unit ID:", response.BusinessUnitId);
+const { UserId, BusinessUnitId } = await client.execute(new WhoAmIFunction());
 ```
 
-### 5.2 Assign Action
+### 5.2 Assign (an update)
 
 ```typescript
-import { AssignRequest, createEntityReference } from "@mohsinonxrm/dataverse-sdk-messages";
+await client.api(`accounts(${accountId})`).patch({
+  "ownerid@odata.bind": `/systemusers(${newOwnerId})`,
+});
+```
 
-const request = new AssignRequest(
-  createEntityReference("account", accountId),
-  createEntityReference("systemuser", newOwnerId)
+### 5.3 ExecuteWorkflow (bound)
+
+```typescript
+import {
+  ExecuteWorkflowRequest,
+  ExecuteWorkflowResponse,
+} from "@mohsinonxrm/dataverse-sdk-messages";
+
+const response = await service.execute<ExecuteWorkflowResponse>(
+  new ExecuteWorkflowRequest(workflowId, recordId) // InputArguments is optional
 );
-await service.execute(request);
-```
-
-### 5.3 ExecuteWorkflow Action (bound)
-
-```typescript
-import { ExecuteWorkflowRequest } from "@mohsinonxrm/dataverse-sdk-messages";
-
-const request = new ExecuteWorkflowRequest(workflowId, recordId, {});
-const response = await service.execute(request);
-
-console.log("Async Operation ID:", response.Id);
+console.log("Async Operation ID:", response.result.asyncoperationid);
 ```
 
 ### 5.4 Generic OrganizationRequest
@@ -174,11 +148,10 @@ console.log("Async Operation ID:", response.Id);
 ```typescript
 import { OrganizationRequest, OrganizationResponse } from "@mohsinonxrm/dataverse-sdk-messages";
 
-// POST /CustomAction with the parameters as the JSON body
-const request = new OrganizationRequest("CustomAction", {
-  InputParameter: "value",
-});
-const response = await service.execute<OrganizationResponse>(request);
+// POST /new_CustomAction with the parameters as the JSON body
+const response = await service.execute<OrganizationResponse>(
+  new OrganizationRequest("new_CustomAction", { InputParameter: "value" })
+);
 console.log("Results:", response.Results); // response properties, without @odata.* annotations
 
 // Bound: POST /accounts({id})/Microsoft.Dynamics.CRM.new_BoundAction
