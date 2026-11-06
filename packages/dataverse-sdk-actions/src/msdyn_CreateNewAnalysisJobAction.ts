@@ -3,9 +3,12 @@ import type { msdyn_analysisjob } from "./types/index.js";
 
 /**
  * Response from msdyn_CreateNewAnalysisJob action
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
-export interface msdyn_CreateNewAnalysisJobResponse {
-  value: msdyn_analysisjob;
+export interface msdyn_CreateNewAnalysisJobResponse extends msdyn_analysisjob {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
 }
 
 /**

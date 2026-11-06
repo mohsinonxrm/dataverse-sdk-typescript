@@ -3,9 +3,12 @@ import type { workflow } from "./types/index.js";
 
 /**
  * Response from CreateWorkflowFromTemplate action
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
-export interface CreateWorkflowFromTemplateResponse {
-  value: workflow;
+export interface CreateWorkflowFromTemplateResponse extends workflow {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
 }
 
 /**

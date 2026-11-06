@@ -4,9 +4,13 @@ import type { EntityReference } from "./types/EntityReference.js";
 
 /**
  * Response from CalculateRollupField function
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
 export interface CalculateRollupFieldResponse {
-  value: EntityReference;
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
+  [column: string]: unknown;
 }
 
 /**

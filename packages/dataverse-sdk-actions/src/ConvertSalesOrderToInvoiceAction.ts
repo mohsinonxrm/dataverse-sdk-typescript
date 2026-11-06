@@ -4,9 +4,12 @@ import type { ColumnSet, invoice } from "./types/index.js";
 
 /**
  * Response from ConvertSalesOrderToInvoice action
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
-export interface ConvertSalesOrderToInvoiceResponse {
-  value: invoice;
+export interface ConvertSalesOrderToInvoiceResponse extends invoice {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
 }
 
 /**

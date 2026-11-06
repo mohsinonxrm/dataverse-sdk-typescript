@@ -3,9 +3,12 @@ import type { systemform } from "./types/index.js";
 
 /**
  * Response from CopySystemForm action
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
-export interface CopySystemFormResponse {
-  value: systemform;
+export interface CopySystemFormResponse extends systemform {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
 }
 
 /**

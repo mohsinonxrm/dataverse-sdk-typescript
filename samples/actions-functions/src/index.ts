@@ -279,7 +279,7 @@ async function executeWorkflowDemo(client: DataverseClient): Promise<void> {
   const result = await client.execute(executeWorkflow);
 
   console.log(chalk.green("✓ Workflow execution initiated"));
-  console.log(`  Async Operation ID: ${chalk.yellow(result.value.asyncoperationid)}`);
+  console.log(`  Async Operation ID: ${chalk.yellow(result.asyncoperationid ?? "")}`);
   console.log(chalk.dim("\nℹ️  Monitor workflow execution in Settings > System Jobs"));
 }
 

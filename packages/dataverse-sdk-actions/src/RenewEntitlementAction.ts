@@ -3,9 +3,12 @@ import type { entitlement } from "./types/index.js";
 
 /**
  * Response from RenewEntitlement action
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
-export interface RenewEntitlementResponse {
-  value: entitlement;
+export interface RenewEntitlementResponse extends entitlement {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
 }
 
 /**

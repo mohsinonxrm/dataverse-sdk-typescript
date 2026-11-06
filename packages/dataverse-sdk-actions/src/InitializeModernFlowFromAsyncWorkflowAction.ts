@@ -3,9 +3,12 @@ import type { workflow } from "./types/index.js";
 
 /**
  * Response from InitializeModernFlowFromAsyncWorkflow action
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
-export interface InitializeModernFlowFromAsyncWorkflowResponse {
-  value: workflow;
+export interface InitializeModernFlowFromAsyncWorkflowResponse extends workflow {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
 }
 
 /**

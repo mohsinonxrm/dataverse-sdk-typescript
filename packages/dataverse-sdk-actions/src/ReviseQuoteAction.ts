@@ -3,9 +3,12 @@ import type { ColumnSet, quote } from "./types/index.js";
 
 /**
  * Response from ReviseQuote action
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
-export interface ReviseQuoteResponse {
-  value: quote;
+export interface ReviseQuoteResponse extends quote {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
 }
 
 /**

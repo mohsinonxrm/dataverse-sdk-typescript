@@ -4,9 +4,12 @@ import type { PropagationOwnershipOptions, bulkoperation, queue, template } from
 
 /**
  * Response from DistributeCampaignActivity action
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
-export interface DistributeCampaignActivityResponse {
-  value: bulkoperation;
+export interface DistributeCampaignActivityResponse extends bulkoperation {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
 }
 
 /**

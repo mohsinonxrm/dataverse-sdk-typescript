@@ -4,9 +4,12 @@ import type { msdyn_nottoexceed } from "./types/index.js";
 
 /**
  * Response from msdyn_SelectNotToExceed function
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
-export interface msdyn_SelectNotToExceedResponse {
-  value: msdyn_nottoexceed;
+export interface msdyn_SelectNotToExceedResponse extends msdyn_nottoexceed {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
 }
 
 /**

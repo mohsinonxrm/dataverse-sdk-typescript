@@ -3,9 +3,12 @@ import type { product } from "./types/index.js";
 
 /**
  * Response from CloneProduct action
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
-export interface CloneProductResponse {
-  value: product;
+export interface CloneProductResponse extends product {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
 }
 
 /**

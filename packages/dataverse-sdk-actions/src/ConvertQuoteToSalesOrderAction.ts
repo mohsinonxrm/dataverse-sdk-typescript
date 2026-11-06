@@ -4,9 +4,12 @@ import type { ColumnSet, salesorder } from "./types/index.js";
 
 /**
  * Response from ConvertQuoteToSalesOrder action
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
-export interface ConvertQuoteToSalesOrderResponse {
-  value: salesorder;
+export interface ConvertQuoteToSalesOrderResponse extends salesorder {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
 }
 
 /**
