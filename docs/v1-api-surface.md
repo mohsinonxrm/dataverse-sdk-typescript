@@ -266,18 +266,23 @@ Message classes implement the `Executable<TResponse>` interface from `@mohsinonx
 ### 7.1 Batch construction and execution
 
 - `class BatchRequestBuilder` (`new BatchRequestBuilder(client: DataverseClient)`)
-  - `addRequest(...)`, `beginChangeset()`, `endChangeset()`, `getTotalRequestCount()`, `execute(options?)`, `clear()`
-- `interface BatchRequestStep`
-- `interface BatchExecutionOptions`
+  - `addRequest(id, method, url, headers?, body?, dependsOn?)`, `beginChangeset()`, `endChangeset()`, `getTotalRequestCount()`, `encode(boundary)`, `execute(options?)`, `clear()`
+  - `execute()` splits more than `batchSize` (default and maximum 1000) requests into several `$batch` requests, keeping change sets whole
+- `interface BatchRequestStep`, `interface BatchChangeset`, `type BatchItem`
+- `interface BatchExecutionOptions` (`continueOnError`, `batchSize`, `headers`)
 - `function createBindManyExecutor()` _(lets `DataverseRequestBuilder.bindMany()` use `$batch`)_
 
 ### 7.2 Batch results and errors
 
 - `interface BatchResponseStep`
-- `interface BatchExecutionResult`
-- `class DataverseBatchError` _(this package's own class, with `requestErrors` and `totalRequests`; distinct from core's `DataverseBatchError`)_
+- `interface BatchExecutionResult` (`responses`, `results`, `errors`, `success`, `skippedRequestIds`, `stoppedEarly`, counts)
+- `class DataverseBatchError` _(this package's own class, with `result`, `requestErrors` and `totalRequests`; distinct from core's `DataverseBatchError`)_, `interface DataverseBatchErrorInit`
 
-Splitting a large batch automatically is [planned](#16-planned-not-exported-yet) (#57).
+### 7.3 Codec
+
+- `function encodeBatchRequest(items, boundary, options?)`, `interface EncodeBatchOptions`, `const JSON_PART_CONTENT_TYPE`
+- `function decodeBatchResponse(body, contentType)`, `interface BatchResponsePart`, `function extractBoundary(contentType)`
+- `function generateBoundary()`, `function generateChangesetBoundary()`
 
 ---
 
@@ -335,9 +340,11 @@ The generated metadata **EntityTypes**, **ComplexTypes** and **EnumTypes** are e
 ### 10.2 Metadata client
 
 - `class MetadataClient` (`new MetadataClient(client: DataverseClient)`)
-  - Entity, attribute, relationship and global option set CRUD (`getEntityDefinitions`, `createAttributeDefinition`, `createOneToManyRelationship`, `createGlobalOptionSet`, …)
+  - Entity, attribute, relationship and global option set CRUD (`getEntityDefinitions`, `createAttributeDefinition`, `createOneToManyRelationship`, `createGlobalOptionSet`, …). Creates return the `MetadataId` from `OData-EntityId`; creates and updates take an optional `MetadataWriteOptions` (`{ solutionUniqueName }`)
+  - `mergeAndUpdateEntityDefinition(logicalName, changes, options?)`: retrieve, merge and `PUT` a table definition
   - Option value operations (`insertOptionValue`, `updateOptionValue`, `deleteOptionValue`, `orderOptions`, `insertStatusValue`)
-  - `retrieveMetadataChanges(...)`: returns `RetrieveMetadataChangesResponse` (#62 tracks that it is sent as POST)
+  - `retrieveMetadataChanges(query, clientVersionStamp?, deletedMetadataFilters?)`: sends the `RetrieveMetadataChanges` function (GET) and returns `RetrieveMetadataChangesResponse`
+  - Relationship eligibility: `canBeReferenced`, `canBeReferencing`, `canManyToMany` (actions, return `boolean`); `getValidReferencingEntities`, `getValidReferencedEntities`, `getValidManyToMany` (functions, return `string[]`)
 - `interface MetadataQueryOptions`
 
 Strict metadata builders (`const Metadata`) are [planned](#16-planned-not-exported-yet).
@@ -428,7 +435,6 @@ Earlier drafts of this document listed these. They don't exist in the packages t
 | API                                                                                  | Package     | Tracking                                                                   |
 | ------------------------------------------------------------------------------------ | ----------- | -------------------------------------------------------------------------- |
 | Circuit breaker and bulkhead middleware (the options exist and have no effect)       | core        | [#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100) |
-| Automatic splitting of large batches                                                 | batch       | [#57](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/57)   |
 | `const Metadata` strict builders (`Label`, `Attribute`, `Entity`, `Relationship`, …) | metadata    | [#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100) |
 | Function-backed and CRUD messages (`WhoAmIRequest`, `RetrieveEntityRequest`, …)      | messages    | [#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100) |
 | Browser Application Insights adapter                                                 | appinsights | [#158](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/158) |

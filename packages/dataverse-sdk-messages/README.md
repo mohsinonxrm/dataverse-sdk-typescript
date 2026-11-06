@@ -368,22 +368,39 @@ await service.execute(request);
 ## Generic OrganizationRequest
 
 For custom actions, custom APIs, or messages not yet implemented, use the generic `OrganizationRequest`.
+It runs as a Web API action: `POST /{messageName}` with `Parameters` as the JSON body, or
+`POST /{entitySetName}({id})/Microsoft.Dynamics.CRM.{messageName}` when bound to a record.
 
 ```typescript
-import { OrganizationRequest } from "@mohsinonxrm/dataverse-sdk-messages";
+import { OrganizationRequest, OrganizationResponse } from "@mohsinonxrm/dataverse-sdk-messages";
 
 const request = new OrganizationRequest("my_CustomAction");
 request.Parameters["StringParameter"] = "value";
 request.Parameters["IntParameter"] = 42;
-request.Parameters["EntityParameter"] = createEntityReference("account", accountId);
+// Values are sent as given, so an entity parameter uses the Web API shape
+request.Parameters["EntityParameter"] = {
+  "@odata.type": "Microsoft.Dynamics.CRM.account",
+  accountid: accountId,
+};
 
-const response = await service.execute(request);
+const response = await service.execute<OrganizationResponse>(request);
 console.log("Results:", response.Results);
+
+// Bound to a record
+await service.execute(
+  new OrganizationRequest(
+    "my_BoundAction",
+    {},
+    { boundTo: { entitySetName: "accounts", id: accountId } }
+  )
+);
 ```
 
 **Constructor:**
 
 - `messageName: string` - The name of the action/custom API
+- `parameters?: Record<string, unknown>` - The parameters for the action (default `{}`)
+- `options?: { boundTo?: { entitySetName: string; id: string } }` - Bind the action to a record
 
 **Properties:**
 
@@ -391,7 +408,10 @@ console.log("Results:", response.Results);
 
 **Response:**
 
-- `Results: Record<string, unknown>` - The result values from the action
+- `Results: Record<string, unknown>` - The response's properties, without the `@odata.*` annotations (empty for `204 No Content`)
+
+Functions (GET) are not supported by `OrganizationRequest`: use the typed classes from
+`@mohsinonxrm/dataverse-sdk-functions`, or `client.api("my_Function(...)").get()`.
 
 ---
 

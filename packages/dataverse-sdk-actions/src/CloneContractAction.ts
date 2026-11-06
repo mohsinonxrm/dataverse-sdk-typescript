@@ -3,9 +3,12 @@ import type { contract } from "./types/index.js";
 
 /**
  * Response from CloneContract action
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
-export interface CloneContractResponse {
-  value: contract;
+export interface CloneContractResponse extends contract {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
 }
 
 /**

@@ -174,7 +174,14 @@ export type BindManyExecutor = (
 export interface RequestOptions {
   headers?: Record<string, string>;
   prefer?: PreferOption[];
+  /**
+   * Time limit for the whole request, in ms, from the call until the response headers arrive:
+   * every attempt, retry wait and wait for a concurrency slot. When it passes, the request rejects
+   * with `DataverseNetworkError` (`RequestTimeout`). Reading the body afterwards isn't limited.
+   */
   timeoutMs?: number;
+  /** Time limit for each attempt, in ms. A timed-out attempt is not retried. */
+  attemptTimeoutMs?: number;
   signal?: AbortSignal;
   /** Correlation id for this request. A new one is generated per request when omitted. */
   correlationId?: string;
@@ -236,9 +243,10 @@ export interface DataverseClientOptions {
    */
   defaultPrefer?: PreferOption[];
   /**
-   * Customise the middleware pipeline. The defaults run in this order: ODataHeaders,
-   * Concurrency, Retry, Auth (when a token provider is set), Telemetry, Logging; then the request goes
-   * to `fetch`. `replace` receives that list and returns the one to use (for example without
+   * Customise the middleware pipeline. The defaults run in this order: ODataHeaders, Retry,
+   * Concurrency, Auth (when a token provider is set), Telemetry, Logging; then the request goes
+   * to `fetch`. Retry wraps Concurrency, so each attempt takes a concurrency slot and releases it
+   * before a retry wait. `replace` receives that list and returns the one to use (for example without
    * Logging); then `prepend` runs first and `append` runs last, right before `fetch`, so it sees
    * the final headers including `authorization`.
    */

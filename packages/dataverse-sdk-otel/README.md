@@ -16,6 +16,11 @@ browsers. You set up the SDK and exporter; this package only creates spans.
 pnpm add @mohsinonxrm/dataverse-sdk-otel @opentelemetry/api
 ```
 
+`@opentelemetry/api` (`^1.9.0`) is a **peer dependency**: install it in your app, next to your
+OpenTelemetry SDK. The adapter then uses your app's copy, so its spans go to the tracer provider
+and context your SDK registered, and join the active trace. With a second copy, a span can end up
+in a no-op tracer (`npm ls @opentelemetry/api` should show one version).
+
 ## Usage
 
 Pass the adapter as the `telemetry` option:

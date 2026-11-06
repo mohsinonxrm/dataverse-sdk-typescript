@@ -647,9 +647,9 @@ const publishAfterMetadataChange = async (entityLogicalName: string) => {
 };
 
 // 2. Batch metadata changes, then publish once
-await metadataClient.createEntity(/* ... */);
-await metadataClient.createAttribute(/* ... */);
-await metadataClient.createAttribute(/* ... */);
+await metadataClient.createEntityDefinition(/* ... */);
+await metadataClient.createAttributeDefinition(/* ... */);
+await metadataClient.createAttributeDefinition(/* ... */);
 
 // Publish all changes at once
 await orgService.execute(new PublishAllXmlRequest());

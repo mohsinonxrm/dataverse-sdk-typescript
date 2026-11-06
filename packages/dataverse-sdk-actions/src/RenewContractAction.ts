@@ -3,9 +3,12 @@ import type { contract } from "./types/index.js";
 
 /**
  * Response from RenewContract action
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
-export interface RenewContractResponse {
-  value: contract;
+export interface RenewContractResponse extends contract {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
 }
 
 /**

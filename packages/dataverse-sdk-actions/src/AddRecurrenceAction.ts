@@ -3,9 +3,12 @@ import type { recurringappointmentmaster } from "./types/index.js";
 
 /**
  * Response from AddRecurrence action
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
-export interface AddRecurrenceResponse {
-  value: recurringappointmentmaster;
+export interface AddRecurrenceResponse extends recurringappointmentmaster {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
 }
 
 /**

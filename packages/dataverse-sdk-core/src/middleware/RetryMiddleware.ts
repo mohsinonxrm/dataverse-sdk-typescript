@@ -145,6 +145,19 @@ export class RetryMiddleware implements Middleware {
           statusCode: res.status,
         });
         return done(res);
+      } else if (
+        res.status === 429 &&
+        !opt.retryNonIdempotent &&
+        !isIdempotent(request.method, request.headers) &&
+        /^multipart\/mixed/i.test(contentType ?? "")
+      ) {
+        // A 429 is normally safe to replay: Dataverse rejects a throttled request before doing
+        // any work. A multipart body means it processed the $batch and some parts may have run,
+        // so replaying would run them twice (#211). Hand the response back instead.
+        ctx.logger?.debug("Not retrying a $batch whose 429 response has per-request results", {
+          method: request.method,
+        });
+        return done(res);
       }
 
       if (attempt >= opt.maxRetries) {
@@ -171,7 +184,10 @@ export class RetryMiddleware implements Middleware {
         statusCode: res.status,
       });
 
-      // Important: for 429/5xx, we wait and retry.
+      // Important: for 429/5xx, we wait and retry. The response is dropped, so release its body
+      // now: an unread body keeps the connection busy (undici) until garbage collection (#45).
+      // Not awaited: a tee'd stream only settles once every branch is done.
+      res.body?.cancel().catch(() => undefined);
       await waitBeforeRetry(attemptEntry(attempt, res.status, retryAfterMs), delay);
     }
   }

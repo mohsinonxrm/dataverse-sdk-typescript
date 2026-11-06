@@ -240,7 +240,8 @@ describe("#17: network errors", () => {
     const { client, calls } = setup([status(204)], { retryNetworkErrors: true, baseDelayMs: 1 });
     const err = await send(client, "GET", { signal: controller.signal }).catch((e: unknown) => e);
     expect((err as Error).name).toBe("AbortError");
-    expect(calls()).toBe(1);
+    // Already aborted: it stops before taking a concurrency slot, so it never reaches fetch.
+    expect(calls()).toBe(0);
   });
 
   it("a timeout is never retried", async () => {

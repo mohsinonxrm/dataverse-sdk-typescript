@@ -1,7 +1,12 @@
-import type { EntityMetadata } from "./EntityMetadata.js";
+import type { EntityMetadataCreate } from "./EntityMetadataCreate.js";
 
 /**
- * EntityMetadataUpdate - type for updating an entity
- * Uses EntityMetadata (per Microsoft Web API documentation)
+ * EntityMetadataUpdate - the payload for updating a table. Updates are `PUT`s that replace the
+ * definition, so send the complete definition (a retrieved `EntityMetadata` is accepted), or use
+ * `mergeAndUpdateEntityDefinition`.
  */
-export type EntityMetadataUpdate = EntityMetadata;
+export type EntityMetadataUpdate = Partial<
+  Omit<EntityMetadataCreate, "@odata.type" | "Attributes">
+> & {
+  "@odata.type"?: string;
+};

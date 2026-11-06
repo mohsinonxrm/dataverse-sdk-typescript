@@ -7,19 +7,43 @@ import { PageIterator } from "../paging/PageIterator.js";
 import { buildUrl } from "../utils/url.js";
 import { entityIdFromResponse, readJson } from "../utils/response.js";
 import { parseODataError } from "../errors/parseODataError.js";
-import { DataverseDuplicateError } from "../errors/DataverseDuplicateError.js";
-import { validateUrl, type UrlValidationOptions } from "../utils/validateUrl.js";
+import {
+  DataverseDuplicateError,
+  type DuplicateRecord,
+} from "../errors/DataverseDuplicateError.js";
+import { URL_LIMITS, validateUrl, type UrlValidationOptions } from "../utils/validateUrl.js";
+import { DataverseInvalidRequestError } from "../errors/NamedErrors.js";
+import { mergePrefer, splitPrefer } from "../middleware/ODataHeadersMiddleware.js";
+import {
+  annotationsPreference,
+  toFetchXmlPage,
+  type FetchXmlOptions,
+  type FetchXmlPage,
+} from "../fetchxml/page.js";
+import { buildSingleGetBatch, readSingleBatchResponse } from "../fetchxml/singleGetBatch.js";
 import { PreferBuilder } from "./PreferBuilder.js";
+import { formatExpand, type ExpandOptions } from "../odata/expand.js";
+import { odataKey, type ODataKey } from "../odata/literal.js";
 import type { DataverseClient } from "./DataverseClient.js";
+
+/** Headers that are not carried from the first page to the next ones. */
+const FIRST_PAGE_ONLY = new Set([
+  "authorization",
+  "if-match",
+  "if-none-match",
+  "content-type",
+  "content-length",
+]);
 
 export class DataverseRequestBuilder {
   private state: QueryState = {};
   private headers: Record<string, string> = {};
   private preferValues: PreferOption[] = [];
-  private preferBuilder?: PreferBuilder;
+  private preferBuilder?: PreferBuilder<unknown>;
+  private expansions: string[] = [];
   private ifMatchValue?: string;
   private ifNoneMatchValue?: string;
-  private impersonateUserId?: string;
+  private impersonation?: { id: string; by: "systemuserid" | "aadObjectId" };
   private bindings: Record<string, string> = {};
   private suppressDuplicateDetection = true; // Default per Microsoft
   private urlValidationOptions: UrlValidationOptions = {};
@@ -39,8 +63,35 @@ export class DataverseRequestBuilder {
     return this;
   }
 
-  expand(...expands: string[]): this {
-    this.state.$expand = expands.join(",");
+  /**
+   * `$expand`. Pass navigation properties as strings (nested options may be written inline,
+   * `"primarycontactid($select=fullname)"`), and follow one with an {@link ExpandOptions} object to
+   * give it options:
+   *
+   * ```typescript
+   * .expand("primarycontactid", { select: ["fullname"] }, "contact_customer_accounts", { top: 5 })
+   * ```
+   *
+   * Calls add up: `.expand("a").expand("b")` expands both.
+   */
+  expand(...items: Array<string | ExpandOptions>): this {
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (typeof item !== "string") {
+        throw DataverseInvalidRequestError.invalidParameter(
+          "expand",
+          "an options object must follow the navigation property it belongs to"
+        );
+      }
+      const next = items.at(i + 1);
+      if (next !== undefined && typeof next !== "string") {
+        this.expansions.push(formatExpand(item, next));
+        i++;
+      } else {
+        this.expansions.push(item);
+      }
+    }
+    this.state.$expand = this.expansions.join(",");
     return this;
   }
 
@@ -80,23 +131,33 @@ export class DataverseRequestBuilder {
   }
 
   /**
-   * Build Prefer header fluently
+   * Build the Prefer header fluently. Call `done()` to get back to this builder:
+   * `client.api("accounts").prefer().allAnnotations().maxPageSize(50).done().get()`.
    */
-  prefer(): PreferBuilder;
+  prefer(): PreferBuilder<this>;
   /**
-   * Set Prefer header from array of options
+   * Set Prefer header from options
    */
   prefer(...values: PreferOption[]): this;
-  prefer(values: PreferOption[]): this;
-  prefer(...valuesOrArray: PreferOption[] | [PreferOption[]]): PreferBuilder | this {
-    if (valuesOrArray.length === 0) {
-      this.preferBuilder = new PreferBuilder();
-      return this.preferBuilder;
+  /**
+   * Set Prefer header from an array of options, or build it in a callback that keeps the chain:
+   * `client.api("accounts").prefer((p) => p.allAnnotations().maxPageSize(50)).get()`.
+   */
+  prefer(valuesOrConfigure: PreferOption[] | ((prefer: PreferBuilder<this>) => unknown)): this;
+  prefer(
+    ...valuesOrArray: Array<
+      PreferOption | PreferOption[] | ((prefer: PreferBuilder<this>) => unknown)
+    >
+  ): PreferBuilder<this> | this {
+    const first = valuesOrArray[0];
+    if (valuesOrArray.length === 0 || typeof first === "function") {
+      const builder = (this.preferBuilder ??= new PreferBuilder<this>(this)) as PreferBuilder<this>;
+      if (typeof first !== "function") return builder;
+      first(builder);
+      return this;
     }
 
-    const values: PreferOption[] = Array.isArray(valuesOrArray[0])
-      ? valuesOrArray[0]
-      : (valuesOrArray as PreferOption[]);
+    const values: PreferOption[] = Array.isArray(first) ? first : (valuesOrArray as PreferOption[]);
     this.preferValues.push(...values);
     return this;
   }
@@ -106,9 +167,21 @@ export class DataverseRequestBuilder {
     return this;
   }
 
-  impersonate(userId: string): this {
-    this.impersonateUserId = userId;
+  /**
+   * Run the request as another user. By default `userId` is a `systemuserid`, sent as
+   * `MSCRMCallerID`. With `{ by: "aadObjectId" }` it is the user's Microsoft Entra object id, sent
+   * as `CallerObjectId`, which Microsoft recommends: it is the same in every environment. The
+   * calling identity needs the "Act on behalf of another user" privilege. A later call replaces
+   * an earlier one, so exactly one of the two headers is sent.
+   */
+  impersonate(userId: string, options?: { by?: "systemuserid" | "aadObjectId" }): this {
+    this.impersonation = { id: userId, by: options?.by ?? "systemuserid" };
     return this;
+  }
+
+  /** `impersonate(objectId, { by: "aadObjectId" })`: sends `CallerObjectId`. */
+  impersonateByObjectId(objectId: string): this {
+    return this.impersonate(objectId, { by: "aadObjectId" });
   }
 
   /**
@@ -157,10 +230,11 @@ export class DataverseRequestBuilder {
    * Bind a single-valued navigation property (lookup)
    * @param navigationProperty - The navigation property name (e.g., 'parentcustomerid_account')
    * @param entitySetName - The target entity set (e.g., 'accounts')
-   * @param id - The target record ID
+   * @param id - The target record: a GUID, or an alternate key such as `{ accountnumber: "A-1" }`
+   *   (values are escaped; see `odataKey`)
    */
-  bind(navigationProperty: string, entitySetName: string, id: string): this {
-    this.bindings[`${navigationProperty}@odata.bind`] = `/${entitySetName}(${id})`;
+  bind(navigationProperty: string, entitySetName: string, id: ODataKey): this {
+    this.bindings[`${navigationProperty}@odata.bind`] = `/${entitySetName}(${odataKey(id)})`;
     return this;
   }
 
@@ -168,24 +242,24 @@ export class DataverseRequestBuilder {
    * Associate a record with a collection-valued navigation property
    * @param navigationProperty - The navigation property name
    * @param entitySetName - The target entity set
-   * @param id - The target record ID
+   * @param id - The target record: a GUID, or an alternate key object
    */
-  async associate(navigationProperty: string, entitySetName: string, id: string): Promise<void> {
+  async associate(navigationProperty: string, entitySetName: string, id: ODataKey): Promise<void> {
     const refUrl = `${this.pathOrUrl}/${navigationProperty}/$ref`;
     // Dataverse rejects a relative @odata.id here ("the odata.context annotation is missing"),
     // so the reference is the absolute URL of the target record.
     await this.client.api(refUrl).post({
-      "@odata.id": `${this.client.getBaseUrl()}/${entitySetName}(${id})`,
+      "@odata.id": `${this.client.getBaseUrl()}/${entitySetName}(${odataKey(id)})`,
     });
   }
 
   /**
    * Disassociate a record from a collection-valued navigation property
    * @param navigationProperty - The navigation property name
-   * @param id - The related record ID to remove
+   * @param id - The related record to remove: a GUID, or an alternate key object
    */
-  async disassociate(navigationProperty: string, id: string): Promise<void> {
-    const refUrl = `${this.pathOrUrl}/${navigationProperty}(${id})/$ref`;
+  async disassociate(navigationProperty: string, id: ODataKey): Promise<void> {
+    const refUrl = `${this.pathOrUrl}/${navigationProperty}(${odataKey(id)})/$ref`;
     await this.client.api(refUrl).delete();
   }
 
@@ -263,19 +337,37 @@ export class DataverseRequestBuilder {
     return readJson<T>(await this.send("DELETE", undefined, options));
   }
 
-  /** GET the body as text, e.g. `$metadata` (XML) or a `$value` of a text column. */
+  /**
+   * GET the body as text, e.g. `$metadata` (XML) or a `$value` of a text column. Sends
+   * `Accept: *\/*` unless an `Accept` header is set, so non-JSON content isn't refused.
+   */
   async text(options?: RequestOptions): Promise<string> {
-    return (await this.send("GET", undefined, options)).text();
+    return (await this.sendRaw(options)).text();
   }
 
-  /** GET the body as a Blob, e.g. a file or image column's `$value`. */
+  /** GET the body as a Blob, e.g. a file or image column's `$value`. Sends `Accept: *\/*` by default. */
   async blob(options?: RequestOptions): Promise<Blob> {
-    return (await this.send("GET", undefined, options)).blob();
+    return (await this.sendRaw(options)).blob();
   }
 
-  /** GET the body as an ArrayBuffer. */
+  /** GET the body as an ArrayBuffer. Sends `Accept: *\/*` by default. */
   async arrayBuffer(options?: RequestOptions): Promise<ArrayBuffer> {
-    return (await this.send("GET", undefined, options)).arrayBuffer();
+    return (await this.sendRaw(options)).arrayBuffer();
+  }
+
+  /**
+   * GET for a terminal that doesn't read JSON. Without this, the default `Accept:
+   * application/json` makes Dataverse refuse `$metadata` with 415 (#210). A caller's own `Accept`
+   * (on the builder or in the options) wins.
+   */
+  private sendRaw(options: RequestOptions | undefined): Promise<Response> {
+    const hasAccept =
+      "accept" in this.headers ||
+      Object.keys(options?.headers ?? {}).some((name) => name.toLowerCase() === "accept");
+    const withAccept = hasAccept
+      ? options
+      : { ...options, headers: { accept: "*/*", ...options?.headers } };
+    return this.send("GET", undefined, withAccept);
   }
 
   /**
@@ -312,23 +404,40 @@ export class DataverseRequestBuilder {
     return this.get<PageResponse<T>>(options);
   }
 
+  /**
+   * Iterate the records of every page, following `@odata.nextLink`. Nothing is sent until the
+   * first `next()`. Later pages carry the first request's headers (`Prefer`, impersonation and
+   * custom headers), so they have the same page size, annotations and caller as page 1.
+   */
   iterate<T = unknown>(options?: { signal?: AbortSignal }): AsyncIterable<T> {
-    // `getPage` already knows how to follow nextLink via client.api(nextLink)
-    const firstPromise = this.getPage<T>(options);
-    const client = this.client;
     const signal = options?.signal;
-    async function* generator(): AsyncIterator<T> {
-      const first = await firstPromise;
-      for await (const item of new PageIterator<T>(client, first, signal)) {
-        yield item;
-      }
+    const requestOptions: RequestOptions | undefined = signal ? { signal } : undefined;
+    // Lazy: the first request goes out on the first next(), so an iterable that is never
+    // consumed sends nothing and can't leave an unhandled rejection behind.
+    const firstPage = () => this.getPage<T>(requestOptions);
+    const headers = () => this.nextPageHeaders(requestOptions);
+    const client = this.client;
+    async function* generator(): AsyncGenerator<T> {
+      const first = await firstPage();
+      yield* new PageIterator<T>(client, first, signal, headers());
     }
     return { [Symbol.asyncIterator]: generator };
   }
 
-  async getAll<T = unknown>(opts: { maxItems?: number; maxPages?: number } = {}): Promise<T[]> {
+  /**
+   * Collect the records of every page, following `@odata.nextLink`. `maxItems` and `maxPages` stop
+   * early, before the next page is requested. Later pages carry the first request's headers, as
+   * in {@link iterate}.
+   */
+  async getAll<T = unknown>(
+    opts: { maxItems?: number; maxPages?: number; signal?: AbortSignal } = {}
+  ): Promise<T[]> {
+    const requestOptions: RequestOptions | undefined = opts.signal
+      ? { signal: opts.signal }
+      : undefined;
     const out: T[] = [];
-    let page = await this.getPage<T>();
+    let page = await this.getPage<T>(requestOptions);
+    const headers = this.nextPageHeaders(requestOptions);
     let pages = 0;
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- intentional infinite loop with explicit break statements
@@ -340,10 +449,118 @@ export class DataverseRequestBuilder {
       }
       if (!page["@odata.nextLink"]) break;
       if (opts.maxPages && pages >= opts.maxPages) break;
-      page = await this.client.api(page["@odata.nextLink"]).getPage<T>();
+      page = await this.client
+        .api(page["@odata.nextLink"])
+        .getPage<T>({ headers, signal: opts.signal });
     }
 
     return out;
+  }
+
+  /**
+   * The headers of this builder's GET that later pages need too: `Prefer` (page size,
+   * annotations), `MSCRMCallerID` / `CallerObjectId` and custom headers. Conditional headers
+   * belong to the first page only, and the token is added per request.
+   */
+  private nextPageHeaders(options: RequestOptions | undefined): Record<string, string> {
+    const { headers } = this.buildRequest("GET", undefined, options);
+    return Object.fromEntries(
+      Object.entries(headers).filter(([name]) => !FIRST_PAGE_ONLY.has(name.toLowerCase()))
+    );
+  }
+
+  /**
+   * Run a FetchXML query against this entity set and return one page with its paging state:
+   * `pagingCookie`, `moreRecords`, `totalRecordCount` (with `returntotalrecordcount="true"`) and
+   * records with formatted values (the default `annotations: "*"`). The XML is sent as is: set
+   * `count` and `page` in it, or use `buildPagedFetchXml()` for the next page.
+   *
+   * A query whose GET URL would be longer than `maxUrlLength` (default 32768 characters) is sent
+   * as a `POST $batch` that carries the GET, and returns the same page.
+   *
+   * @example
+   * ```typescript
+   * let xml = `<fetch count="50"><entity name="account"><attribute name="name"/></entity></fetch>`;
+   * let page = await client.api("accounts").fetchXml<Account>(xml);
+   * while (page.moreRecords) {
+   *   const next = parsePagingCookie(page.pagingCookie);
+   *   xml = buildPagedFetchXml(xml, { page: next?.pageNumber ?? 2, pagingCookie: next?.pagingCookie });
+   *   page = await client.api("accounts").fetchXml<Account>(xml);
+   * }
+   * ```
+   */
+  async fetchXml<T = Record<string, unknown>>(
+    fetchXml: string,
+    options?: FetchXmlOptions
+  ): Promise<FetchXmlPage<T>> {
+    if (!fetchXml.trim()) throw DataverseInvalidRequestError.missingParameter("fetchXml");
+    return this.queryPage<T>("fetchXml", fetchXml, options, true);
+  }
+
+  /** Run a system view (`savedquery`) by id: `GET {entitySet}?savedQuery={id}`, as one page. */
+  async savedQuery<T = Record<string, unknown>>(
+    savedQueryId: string,
+    options?: FetchXmlOptions
+  ): Promise<FetchXmlPage<T>> {
+    if (!savedQueryId.trim()) throw DataverseInvalidRequestError.missingParameter("savedQueryId");
+    return this.queryPage<T>("savedQuery", savedQueryId, options, false);
+  }
+
+  /** Run a personal view (`userquery`) by id: `GET {entitySet}?userQuery={id}`, as one page. */
+  async userQuery<T = Record<string, unknown>>(
+    userQueryId: string,
+    options?: FetchXmlOptions
+  ): Promise<FetchXmlPage<T>> {
+    if (!userQueryId.trim()) throw DataverseInvalidRequestError.missingParameter("userQueryId");
+    return this.queryPage<T>("userQuery", userQueryId, options, false);
+  }
+
+  private async queryPage<T>(
+    parameter: "fetchXml" | "savedQuery" | "userQuery",
+    value: string,
+    options: FetchXmlOptions | undefined,
+    batchWhenLong: boolean
+  ): Promise<FetchXmlPage<T>> {
+    if (Object.keys(buildQuery(this.state)).length > 0) {
+      // Dataverse rejects $select, $filter and the rest next to fetchXml, savedQuery or userQuery.
+      throw DataverseInvalidRequestError.invalidParameter(
+        parameter,
+        "cannot be combined with $select, $filter, $expand, $orderby, $top or other query options"
+      );
+    }
+    const { annotations, maxUrlLength, ...requestOptions } = options ?? {};
+    const req = this.buildRequest("GET", undefined, requestOptions, { validate: false });
+    // A single include-annotations preference: with two, Dataverse drops the paging annotations.
+    const own = annotationsPreference(annotations);
+    req.headers.prefer = mergePrefer(splitPrefer(req.headers.prefer), own) ?? own;
+
+    const separator = req.url.includes("?") ? "&" : "?";
+    // encodeURIComponent, so spaces are %20 as in Microsoft's samples (not form-encoded "+").
+    const url = `${req.url}${separator}${parameter}=${encodeURIComponent(value)}`;
+
+    if (batchWhenLong && url.length > (maxUrlLength ?? URL_LIMITS.MAX_URL_LENGTH)) {
+      validateUrl(req.url, this.urlValidationOptions);
+      const { prefer: _prefer, ...outerHeaders } = req.headers;
+      const batch = buildSingleGetBatch(url, { accept: "application/json", ...req.headers });
+      const outer = await this.client.send({
+        ...req,
+        method: "POST",
+        url: batchUrlFor(req.url, this.client),
+        query: {},
+        headers: { ...outerHeaders, "content-type": batch.contentType },
+        body: batch.body,
+      });
+      // With one request inside, Dataverse gives the $batch the inner status (a failed query is a
+      // 400 $batch), so read the multipart body whatever the outer status is.
+      const isMultipart = /^multipart\/mixed/i.test(outer.headers.get("content-type") ?? "");
+      if (!isMultipart) throw await parseODataError(outer);
+      const inner = await readSingleBatchResponse(outer);
+      if (!inner.ok) throw await parseODataError(inner);
+      return toFetchXmlPage<T>(await readJson(inner));
+    }
+
+    validateUrl(url, this.urlValidationOptions);
+    return toFetchXmlPage<T>(await readJson(await this.sendRequest({ ...req, url, query: {} })));
   }
 
   private withBindings(body: unknown): unknown {
@@ -355,15 +572,18 @@ export class DataverseRequestBuilder {
   private buildRequest(
     method: "GET" | "POST" | "PATCH" | "PUT" | "DELETE",
     body: unknown,
-    options: RequestOptions | undefined
+    options: RequestOptions | undefined,
+    { validate = true }: { validate?: boolean } = {}
   ): RequestInformation {
     const url = this.resolveUrl();
     const query = buildQuery(this.state);
 
     // Validate URL before sending - build full URL with query string
-    const hasQuery = Object.keys(query).length > 0;
-    const fullUrl = hasQuery ? buildUrl({ url, query, method: "GET", headers: {} }) : url;
-    validateUrl(fullUrl, this.urlValidationOptions);
+    if (validate) {
+      const hasQuery = Object.keys(query).length > 0;
+      const fullUrl = hasQuery ? buildUrl({ url, query, method: "GET", headers: {} }) : url;
+      validateUrl(fullUrl, this.urlValidationOptions);
+    }
 
     const headers: Record<string, string> = {
       ...this.headers,
@@ -390,8 +610,9 @@ export class DataverseRequestBuilder {
       headers["if-none-match"] = this.ifNoneMatchValue;
     }
 
-    if (this.impersonateUserId) {
-      headers.mscrmcallerid = this.impersonateUserId;
+    if (this.impersonation) {
+      const name = this.impersonation.by === "aadObjectId" ? "callerobjectid" : "mscrmcallerid";
+      headers[name] = this.impersonation.id;
     }
 
     // Only set header if NOT default value (avoid extra header)
@@ -406,6 +627,7 @@ export class DataverseRequestBuilder {
       query,
       body,
       timeoutMs: options?.timeoutMs,
+      attemptTimeoutMs: options?.attemptTimeoutMs,
       signal: options?.signal,
       correlationId: options?.correlationId,
       middlewareOptions: options?.middlewareOptions,
@@ -420,6 +642,13 @@ export class DataverseRequestBuilder {
         ? `${headers.prefer}, ${options.prefer.join(", ")}`
         : options.prefer.join(", ");
     }
+    if (headers.mscrmcallerid && headers.callerobjectid) {
+      // Dataverse would have to pick one; refuse instead of running as the wrong user (#48).
+      throw DataverseInvalidRequestError.invalidParameter(
+        "impersonation",
+        "MSCRMCallerID and CallerObjectId can't both be set; impersonate by one id"
+      );
+    }
     return req;
   }
 
@@ -428,32 +657,27 @@ export class DataverseRequestBuilder {
     body?: unknown,
     options?: RequestOptions
   ): Promise<Response> {
-    const req = this.buildRequest(method, body, options);
+    return this.sendRequest(this.buildRequest(method, body, options));
+  }
+
+  /** Send through the client; a non-2xx status rejects with the typed error. */
+  private async sendRequest(req: RequestInformation): Promise<Response> {
     const res = await this.client.send(req);
     if (!res.ok) {
-      // Check for 412 duplicate detection
       if (res.status === 412 && !this.suppressDuplicateDetection) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const errorData = await res.json();
-
-        // Parse duplicate details from error response
-        const duplicates = [];
-        // Microsoft returns duplicate details in error.innererror
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        if (errorData.error?.innererror?.duplicaterecords) {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-          duplicates.push(...errorData.error.innererror.duplicaterecords);
+        // With detectDuplicates(), a 412 is either a duplicate (0x80040333) or something else,
+        // such as an If-Match etag mismatch (0x80060882). Only the first is a duplicate (#50).
+        const text = await res.text().catch(() => "");
+        const duplicate = duplicateDetails(text);
+        if (duplicate) {
+          throw new DataverseDuplicateError(
+            duplicate.message,
+            duplicate.duplicates,
+            duplicate.ruleId,
+            412
+          );
         }
-
-        throw new DataverseDuplicateError(
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-          errorData.error?.message ?? "Duplicate records detected",
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-          duplicates,
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-          errorData.error?.innererror?.duplicateruleid,
-          412
-        );
+        throw await parseODataError(res, text);
       }
 
       const err = await parseODataError(res);
@@ -466,4 +690,45 @@ export class DataverseRequestBuilder {
     // absolute nextLink or relative path
     return this.client.resolveUrl(this.pathOrUrl);
   }
+}
+
+/** Dataverse's error code for "a duplicate of the current record already exists". */
+const DUPLICATE_RECORD = "0x80040333";
+
+/**
+ * The duplicate-detection details in a 412 body, or undefined when the 412 is something else.
+ * Dataverse sends `{ error: { code: "0x80040333", message } }`; `innererror.duplicaterecords` and
+ * `duplicateruleid` are read when present.
+ */
+function duplicateDetails(
+  text: string
+): { message: string; duplicates: DuplicateRecord[]; ruleId?: string } | undefined {
+  let body: unknown;
+  try {
+    body = JSON.parse(text) as unknown;
+  } catch {
+    return undefined;
+  }
+  const error = (body as { error?: unknown } | null)?.error;
+  if (typeof error !== "object" || error === null) return undefined;
+  const e = error as Record<string, unknown>;
+  const inner = (
+    typeof e.innererror === "object" && e.innererror !== null ? e.innererror : {}
+  ) as Record<string, unknown>;
+  const records = Array.isArray(inner.duplicaterecords)
+    ? (inner.duplicaterecords as DuplicateRecord[])
+    : undefined;
+  const code = typeof e.code === "string" ? e.code.toLowerCase() : "";
+  if (code !== DUPLICATE_RECORD && !records) return undefined;
+  return {
+    message: typeof e.message === "string" ? e.message : "Duplicate records detected",
+    duplicates: records ?? [],
+    ruleId: typeof inner.duplicateruleid === "string" ? inner.duplicateruleid : undefined,
+  };
+}
+
+/** The `$batch` endpoint of the Web API root that `url` belongs to. */
+function batchUrlFor(url: string, client: DataverseClient): string {
+  const root = /^(https?:\/\/[^/?#]+\/api\/data\/v\d+\.\d+)(?:[/?#]|$)/i.exec(url)?.[1];
+  return root ? `${root}/$batch` : client.resolveUrl("$batch");
 }

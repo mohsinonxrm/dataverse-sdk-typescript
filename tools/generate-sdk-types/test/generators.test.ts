@@ -659,6 +659,88 @@ describe("#72: entity references", () => {
   });
 });
 
+/** #71: an operation that returns one entity is typed as the entity, not `{ value: T }`. */
+describe("#71: entity return types", () => {
+  const RETURNS_EDMX = `<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+  <edmx:DataServices>
+    <Schema Namespace="Microsoft.Dynamics.CRM" Alias="mscrm" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+      <EntityType Name="crmbaseentity" Abstract="true" />
+      <EntityType Name="asyncoperation" BaseType="mscrm.crmbaseentity">
+        <Key><PropertyRef Name="asyncoperationid" /></Key>
+        <Property Name="asyncoperationid" Type="Edm.Guid" />
+      </EntityType>
+      <Action Name="ExecuteWorkflow">
+        <Parameter Name="EntityId" Type="Edm.Guid" Nullable="false" />
+        <ReturnType Type="mscrm.asyncoperation" Nullable="false" />
+      </Action>
+      <Action Name="ListOperations">
+        <ReturnType Type="Collection(mscrm.asyncoperation)" Nullable="false" />
+      </Action>
+      <Function Name="GetPreferredSolution">
+        <ReturnType Type="mscrm.crmbaseentity" Nullable="false" />
+      </Function>
+      <EntityContainer Name="System">
+        <EntitySet Name="asyncoperations" EntityType="Microsoft.Dynamics.CRM.asyncoperation" />
+      </EntityContainer>
+    </Schema>
+  </edmx:DataServices>
+</edmx:Edmx>`;
+
+  let out: string;
+  const read = (path: string) => readFile(join(out, path), "utf8");
+
+  beforeAll(async () => {
+    vi.spyOn(console, "log").mockImplementation(() => undefined);
+    out = await mkdtemp(join(OUT_ROOT, ".gen-71-"));
+    const csdl = parseEdmx(RETURNS_EDMX);
+    for (const target of ["actions", "functions"]) {
+      await generateComplexTypes(csdl, join(out, target, "types"));
+    }
+    await generateActions(csdl, join(out, "actions"), false);
+    await generateFunctions(csdl, join(out, "functions"), false);
+  });
+
+  afterAll(async () => {
+    vi.restoreAllMocks();
+    await rm(out, { recursive: true, force: true });
+  });
+
+  it("a single entity return extends the entity; collections keep value", async () => {
+    const action = await read("actions/ExecuteWorkflowAction.ts");
+    expect(action).toContain("export interface ExecuteWorkflowResponse extends asyncoperation {");
+    expect(action).not.toContain("value: asyncoperation");
+    expect(await read("actions/ListOperationsAction.ts")).toContain("value: asyncoperation[];");
+  });
+
+  it("a crmbaseentity return is a record with the annotations", async () => {
+    const fn = await read("functions/GetPreferredSolutionFunction.ts");
+    expect(fn).toContain("[column: string]: unknown;");
+    expect(fn).not.toContain("EntityReference");
+  });
+
+  it("res.asyncoperationid type-checks and res.value doesn't", async () => {
+    const ok = await typecheck(
+      join(out, "actions"),
+      "usage-71-ok.ts",
+      `import type { ExecuteWorkflowResponse } from "./ExecuteWorkflowAction.js";
+declare const res: ExecuteWorkflowResponse;
+export const id: string | undefined = res.asyncoperationid;
+`
+    );
+    expect(ok).toEqual([]);
+    const bad = await typecheck(
+      join(out, "actions"),
+      "usage-71-bad.ts",
+      `import type { ExecuteWorkflowResponse } from "./ExecuteWorkflowAction.js";
+declare const res: ExecuteWorkflowResponse;
+export const v = res.value;
+`
+    );
+    expect(bad.join("\n")).toMatch(/usage-71-bad\.ts\(3\)/);
+  });
+});
+
 /** #70: message responses read entity and complex returns from the body, not from `value`. */
 describe("#70: message response parsing", () => {
   const RESPONSES_EDMX = `<?xml version="1.0" encoding="utf-8"?>

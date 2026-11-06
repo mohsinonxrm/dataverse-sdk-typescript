@@ -3,9 +3,12 @@ import type { asyncoperation } from "./types/index.js";
 
 /**
  * Response from TransformImport action
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
-export interface TransformImportResponse {
-  value: asyncoperation;
+export interface TransformImportResponse extends asyncoperation {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
 }
 
 /**

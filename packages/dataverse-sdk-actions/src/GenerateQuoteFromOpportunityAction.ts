@@ -4,9 +4,13 @@ import type { ColumnSet } from "./types/index.js";
 
 /**
  * Response from GenerateQuoteFromOpportunity action
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
 export interface GenerateQuoteFromOpportunityResponse {
-  value: EntityReference;
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
+  [column: string]: unknown;
 }
 
 /**

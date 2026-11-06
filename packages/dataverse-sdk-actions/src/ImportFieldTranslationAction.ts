@@ -3,9 +3,12 @@ import type { importjob } from "./types/index.js";
 
 /**
  * Response from ImportFieldTranslation action
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
-export interface ImportFieldTranslationResponse {
-  value: importjob;
+export interface ImportFieldTranslationResponse extends importjob {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
 }
 
 /**

@@ -8,7 +8,14 @@ export interface RequestInformation {
   /** Query parameters (will be URL-encoded) */
   query?: Record<string, string | number | boolean | undefined | null>;
   body?: unknown;
+  /**
+   * Time limit for the whole request, in ms: every attempt, retry wait and wait for a
+   * concurrency slot. When it passes, the request rejects with `DataverseNetworkError`
+   * (`RequestTimeout`).
+   */
   timeoutMs?: number;
+  /** Time limit for each attempt, in ms. A timed-out attempt is not retried. */
+  attemptTimeoutMs?: number;
   signal?: AbortSignal;
   /** Correlation id for this request (sent as `x-ms-correlation-id`). A new one is generated when omitted. */
   correlationId?: string;

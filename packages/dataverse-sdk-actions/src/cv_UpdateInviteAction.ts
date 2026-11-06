@@ -3,9 +3,12 @@ import type { msfp_surveyinvite } from "./types/index.js";
 
 /**
  * Response from cv_UpdateInvite action
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
-export interface cv_UpdateInviteResponse {
-  value: msfp_surveyinvite;
+export interface cv_UpdateInviteResponse extends msfp_surveyinvite {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
 }
 
 /**

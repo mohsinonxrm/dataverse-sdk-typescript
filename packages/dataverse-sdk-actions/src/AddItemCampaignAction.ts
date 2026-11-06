@@ -3,9 +3,12 @@ import type { campaign, campaignitem } from "./types/index.js";
 
 /**
  * Response from AddItemCampaign action
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
-export interface AddItemCampaignResponse {
-  value: campaignitem;
+export interface AddItemCampaignResponse extends campaignitem {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
 }
 
 /**
