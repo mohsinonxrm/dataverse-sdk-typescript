@@ -109,7 +109,7 @@ describe("#33: logged URLs keep data out by default", () => {
       .api("contacts")
       .filter("emailaddress1 eq 'jane@contoso.com'")
       .get();
-    expect(logger.lines.map(([m]) => m).join("\n")).toContain("jane%40contoso.com");
+    expect(logger.lines.map(([m]) => m).join("\n")).toContain("jane@contoso.com");
   });
 
   it("meta is a structured object", async () => {
