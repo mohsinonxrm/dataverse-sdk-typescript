@@ -553,7 +553,7 @@ function generateMessagesIndex(
   code += `export { OrganizationRequest, OrganizationResponse } from './OrganizationRequest.js';\n`;
   code += `export type { OrganizationRequestOptions } from './OrganizationRequest.js';\n`;
   code += `export type { EntityReference, EntityReferenceOptions } from './EntityReference.js';\n`;
-  code += `export { createEntityReference } from './EntityReference.js';\n`;
+  code += `export { createEntityReference, type WebApiEntityReference } from './EntityReference.js';\n`;
   code += `export type { AnyEntityPayload, EntityPayload } from './types/${ENTITY_PAYLOAD_MODULE}.js';\n`;
   code += `export type { MessageRequest, MessageResponse } from './types.js';\n\n`;
 

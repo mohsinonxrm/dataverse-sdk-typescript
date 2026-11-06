@@ -4975,6 +4975,7 @@ export { WinQuoteAction, type WinQuoteResponse } from "./WinQuoteAction.js";
 export {
   type EntityReference,
   type EntityReferenceOptions,
+  type WebApiEntityReference,
   createEntityReference,
   getEntitySetNameFromReference,
 } from "./types/EntityReference.js";

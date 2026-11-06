@@ -252,6 +252,14 @@ shape with only the primary key.
 is generated from the CSDL like the actions package's (`entityReferenceSource(csdl, "messages")`), so a
 reference sends the table's primary key, not `id`. Its third argument is still a display name.
 
+In both packages `EntityReference` carries a type-only brand (`declare const entityReferenceBrand:
+unique symbol`), so only `createEntityReference` makes one, and both payload types declare
+`logicalName?: never` and `entitySetName?: never` (#251). A hand-written
+`{ "@odata.type", logicalName, id }` would send `logicalName` and `id`, so it doesn't type-check as
+any entity parameter. `WebApiEntityReference` is the JSON shape, for a reference written by hand.
+The functions package's `EntityReference` has no brand: a function parameter reads `logicalName`,
+`id` and `entitySetName` itself, so a literal works there.
+
 ### Function parameter literals
 
 Generated functions write each parameter alias with `formatParameterAlias(value, odataType, kind)`

@@ -503,7 +503,7 @@ function generateActionsIndex(
   }
 
   // Export EntityReference type
-  code += `\nexport { type EntityReference, type EntityReferenceOptions, createEntityReference, getEntitySetNameFromReference } from './types/EntityReference.js';\n`;
+  code += `\nexport { type EntityReference, type EntityReferenceOptions, type WebApiEntityReference, createEntityReference, getEntitySetNameFromReference } from './types/EntityReference.js';\n`;
   code += `export type { AnyEntityPayload, EntityPayload } from './types/${ENTITY_PAYLOAD_MODULE}.js';\n`;
 
   return code;
