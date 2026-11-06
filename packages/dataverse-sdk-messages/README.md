@@ -402,6 +402,11 @@ the table's primary key (`{ "@odata.type": "Microsoft.Dynamics.CRM.account", acc
 activities use `activityid`). `logicalName`, `id`, `name` and `entitySetName` are kept on it but
 not sent.
 
+Only `createEntityReference` makes an `EntityReference`. A hand-written
+`{ "@odata.type", logicalName, id }` doesn't type-check, because it would send `logicalName` and
+`id`, which the Web API rejects. To write the reference by hand, use `WebApiEntityReference`, the
+JSON shape: `{ "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: id }`.
+
 ### Entity Payloads
 
 An entity-typed parameter also takes the record itself, with column values:

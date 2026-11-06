@@ -3,7 +3,7 @@ import {
   parseODataError,
   type RequestAdapter,
 } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-actions";
+import type { WebApiEntityReference } from "@mohsinonxrm/dataverse-sdk-actions";
 
 /** What a typed entity reference needs: the table's logical name and primary key column. */
 interface TableKey {
@@ -27,14 +27,12 @@ export async function fileTarget(
   baseUrl: string,
   entitySetName: string,
   recordId: string
-): Promise<EntityReference> {
+): Promise<WebApiEntityReference> {
   const table = await tableFor(adapter, baseUrl, entitySetName);
-  const target = {
+  return {
     "@odata.type": `Microsoft.Dynamics.CRM.${table.logicalName}`,
     [table.primaryIdAttribute]: recordId,
   };
-  // The actions package types Target as the (wrong) EntityReference shape; Dataverse wants this.
-  return target as unknown as EntityReference;
 }
 
 function tableFor(

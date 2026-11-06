@@ -33,6 +33,10 @@ export const ENTITY_PAYLOAD_SOURCE = `/**
 export type EntityPayload<T extends object> = Partial<T> & {
   /** The table, as \`Microsoft.Dynamics.CRM.<logical name>\`. */
   "@odata.type"?: string;
+  /** Not a column: a reference is sent as \`@odata.type\` and the primary key. */
+  logicalName?: never;
+  /** Not a column (see \`logicalName\`). */
+  entitySetName?: never;
   /** Set a lookup: \`"parentaccountid@odata.bind": "/accounts(<id>)"\`. */
   [lookup: \`\${string}@odata.bind\`]: string | null;
 };
@@ -51,6 +55,10 @@ export type EntityPayload<T extends object> = Partial<T> & {
 export interface AnyEntityPayload {
   /** The table, as \`Microsoft.Dynamics.CRM.<logical name>\`. */
   "@odata.type": string;
+  /** Not a column: a reference is sent as \`@odata.type\` and the primary key. */
+  logicalName?: never;
+  /** Not a column (see \`logicalName\`). */
+  entitySetName?: never;
   [property: string]: unknown;
 }
 `;

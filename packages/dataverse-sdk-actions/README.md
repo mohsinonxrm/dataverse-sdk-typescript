@@ -192,6 +192,21 @@ The primary keys and entity sets come from the CSDL the package was generated fr
 it doesn't know (a custom table created later), pass them:
 `createEntityReference("new_project", id, { primaryIdAttribute: "new_projectid", entitySetName: "new_projects" })`.
 
+`logicalName`, `id` and `entitySetName` are on the reference but not enumerable, so they aren't
+sent. Only `createEntityReference` makes an `EntityReference`: a hand-written
+`{ "@odata.type", logicalName, id }` doesn't type-check, because it would send `logicalName` and
+`id`, which the Web API rejects. To write the reference by hand, use the JSON shape,
+`WebApiEntityReference`:
+
+```typescript
+import type { WebApiEntityReference } from "@mohsinonxrm/dataverse-sdk-actions";
+
+const target: WebApiEntityReference = {
+  "@odata.type": "Microsoft.Dynamics.CRM.account",
+  accountid: id,
+};
+```
+
 ### Entity Payloads
 
 An entity-typed parameter also takes the record itself, with column values: in a request body the
