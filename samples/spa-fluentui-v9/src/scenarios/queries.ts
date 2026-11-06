@@ -143,3 +143,14 @@ export async function runView({ client }: Sdk, input: { viewId: string }, signal
   return page.value;
 }
 // #endregion
+
+// #region aggregate
+export async function accountsPerCity({ client }: Sdk, signal: AbortSignal) {
+  // $apply groups and aggregates on the server: here, active accounts per city.
+  const page = await client
+    .api("accounts")
+    .apply("filter(statecode eq 0)/groupby((address1_city),aggregate($count as count))")
+    .get<PageResponse<{ address1_city: string | null; count: number }>>({ signal });
+  return page.value.sort((a, b) => b.count - a.count);
+}
+// #endregion

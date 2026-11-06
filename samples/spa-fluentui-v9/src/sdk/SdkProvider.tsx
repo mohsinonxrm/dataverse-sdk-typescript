@@ -21,6 +21,7 @@ export function SdkProvider({ session, children }: { session: AuthSession; child
         environmentUrl,
         tokenProvider: session.tokenProvider,
         scopes: session.scopesFor(environmentUrl),
+        scopesFor: session.scopesFor,
         fetchProvider: session.fetchProvider,
       },
       setEnvironmentUrl,

@@ -100,6 +100,20 @@ describe("spa-fluentui-v9", () => {
       await expect(
         nav.getByRole("link", { name: route.title, exact: true }).getAttribute("aria-current")
       ).resolves.toBe("page");
+      // Every form control on the page has an accessible name.
+      const unlabelled = await page.evaluate(() =>
+        [...document.querySelectorAll("main input, main textarea, main [role=combobox]")]
+          .filter((el) => {
+            const labels = (el as HTMLInputElement).labels;
+            return (
+              !labels?.length &&
+              !el.getAttribute("aria-label") &&
+              !el.getAttribute("aria-labelledby")
+            );
+          })
+          .map((el) => el.outerHTML.slice(0, 80))
+      );
+      expect(unlabelled, route.path).toEqual([]);
     }
     expect(errors).toEqual([]);
   });
@@ -173,6 +187,28 @@ describe("spa-fluentui-v9", () => {
       () => document.documentElement.scrollWidth - window.innerWidth
     );
     expect(overflow).toBeLessThanOrEqual(0);
+    expect(errors).toEqual([]);
+  });
+
+  it("works from the keyboard: skip link, navigation and focus after navigating", async () => {
+    const { page, errors } = await open();
+    await startDemo(page);
+    // The skip link is the first stop, shown when focused; Tab goes on to the header.
+    const skip = page.getByRole("link", { name: "Skip to content" });
+    await skip.focus();
+    await expect(skip.isVisible()).resolves.toBe(true);
+    await page.keyboard.press("Tab");
+    await expect(
+      page.evaluate(() => document.activeElement?.getAttribute("aria-controls"))
+    ).resolves.toBe("app-nav");
+    await skip.focus();
+    await page.keyboard.press("Enter");
+    await expect(page.evaluate(() => document.activeElement?.id)).resolves.toBe("main");
+    await page.getByRole("navigation").getByRole("link", { name: "Queries" }).focus();
+    await page.keyboard.press("Enter");
+    await page.getByRole("heading", { level: 1, name: "Queries" }).waitFor();
+    // Focus moves to the new page, so the next Tab starts there.
+    await expect(page.evaluate(() => document.activeElement?.id)).resolves.toBe("main");
     expect(errors).toEqual([]);
   });
 
