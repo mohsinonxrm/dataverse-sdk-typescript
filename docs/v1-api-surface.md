@@ -25,6 +25,7 @@
 - `type ApiVersion` (`` `v${number}.${number}` ``)
 - `class DataverseRequestBuilder`
 - `interface RequestOptions`
+- `interface CreateAndGetIdOptions` (`RequestOptions` plus `primaryIdAttribute`, for `createAndGetId()` with `Prefer: return=representation`)
 - `class PreferBuilder`
 - `const odata` _(OData filter helpers)_
 
@@ -65,8 +66,7 @@
 - `interface DiagnosticHeaderOptions` (`DataverseClientOptions.diagnosticHeaders`)
 - `interface LoggingConfig` (`DataverseClientOptions.logging`)
 - `type BindManyExecutor`
-- Per-request middleware options: `class MiddlewareRequestOptions`, `type MiddlewareRetryOptions`, `interface MiddlewareConcurrencyOptions`, `interface TelemetryOptions`, `interface LoggingOptions`, `interface MiddlewareOptions`, `type MiddlewareOptionEntry`
-- `interface CircuitBreakerOptions`, `interface BulkheadOptions`: exported, but the client options that use them are `@deprecated` and have no effect. The middleware is [planned](#16-planned-not-exported-yet) (#100).
+- Per-request middleware options: `class MiddlewareRequestOptions`, `interface MiddlewareConcurrencyOptions`, `interface TelemetryOptions`, `interface LoggingOptions`, `interface MiddlewareOptions`, `type MiddlewareOptionEntry`
 
 ### 1.6 Prefer helpers (typed)
 
@@ -436,7 +436,7 @@ Earlier drafts of this document listed these. They don't exist in the packages t
 
 | API                                                                                  | Package     | Tracking                                                                   |
 | ------------------------------------------------------------------------------------ | ----------- | -------------------------------------------------------------------------- |
-| Circuit breaker and bulkhead middleware (the options exist and have no effect)       | core        | [#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100) |
+| Circuit breaker and bulkhead middleware, and their client options                    | core        | [#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100) |
 | `const Metadata` strict builders (`Label`, `Attribute`, `Entity`, `Relationship`, …) | metadata    | [#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100) |
 | Function-backed and CRUD messages (`WhoAmIRequest`, `RetrieveEntityRequest`, …)      | messages    | [#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100) |
 | Browser Application Insights adapter                                                 | appinsights | [#158](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/158) |

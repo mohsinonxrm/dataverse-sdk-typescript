@@ -300,9 +300,11 @@ type by the value's `@odata.type`, and writes:
 ### Function parameter literals
 
 Generated functions write each parameter alias with `formatParameterAlias(value, odataType, kind)`
-from `src/internal/odataLiteral.ts`. It behaves exactly like the one in
-`@mohsinonxrm/dataverse-sdk-entities-runtime` (#77), and the functions package tests it with the
-same cases. Strings are quoted with `'` doubled. GUIDs and DateTimeOffsets are bare (a `Date` is
+from `src/internal/odataLiteral.ts`. That file only calls `odataLiteral.parameter()` in
+`@mohsinonxrm/dataverse-sdk-core`, the one OData literal serializer, which `formatParameterAlias` in
+`@mohsinonxrm/dataverse-sdk-entities-runtime` (#77) calls too (#254). The generator writes it from
+`ODATA_LITERAL_SOURCE`, and `test/odata-literal-source.test.ts` checks that it matches the committed
+file. Strings are quoted with `'` doubled. GUIDs and DateTimeOffsets are bare (a `Date` is
 accepted). Enums are written as `Microsoft.Dynamics.CRM.<Enum>'<value>'`, and enum parameters also
 take a member name. The enums are exported as values from `types/index.ts` and from the functions
 package root.

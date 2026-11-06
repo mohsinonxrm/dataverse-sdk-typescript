@@ -395,3 +395,59 @@ expectType<Promise<string>>(metadata.createAttributeDefinition("account", intAtt
 expectType<Promise<string>>(metadata.createOneToManyRelationship(oneToManyCreate));
 expectType<Promise<string>>(metadata.createManyToManyRelationship(manyToManyCreate));
 expectType<Promise<string>>(metadata.createGlobalOptionSet(optionSetCreate));
+
+// ==================== Polymorphic lookup actions (#219) ====================
+
+import type {
+  CreateCustomerRelationshipsParams,
+  CreatePolymorphicLookupAttributeParams,
+} from "../src/types/index.js";
+
+const polyLabel: Label = { LocalizedLabels: [{ Label: "Customer", LanguageCode: 1033 }] };
+
+// Every parameter of both actions (Lookup, OneToManyRelationships, SolutionUniqueName) and the
+// documented nested properties are accepted without a cast.
+expectAssignable<CreateCustomerRelationshipsParams>({
+  Lookup: {
+    "@odata.type": "Microsoft.Dynamics.CRM.ComplexLookupAttributeMetadata",
+    SchemaName: "new_CustomerId",
+    DisplayName: polyLabel,
+    Description: polyLabel,
+    RequiredLevel: { Value: AttributeRequiredLevel.ApplicationRequired },
+  },
+  OneToManyRelationships: [
+    {
+      "@odata.type": "Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata",
+      SchemaName: "new_account_projects",
+      ReferencedEntity: "account",
+      ReferencedAttribute: "accountid",
+      ReferencingEntity: "new_project",
+      CascadeConfiguration: { Delete: "RemoveLink" },
+    },
+  ],
+  SolutionUniqueName: "MySolution",
+});
+
+expectAssignable<CreatePolymorphicLookupAttributeParams>({
+  Lookup: {
+    "@odata.type": "Microsoft.Dynamics.CRM.ComplexLookupAttributeMetadata",
+    SchemaName: "new_RegardingId",
+    DisplayName: polyLabel,
+    Targets: ["account", "contact"],
+  },
+  OneToManyRelationships: [
+    { SchemaName: "a", ReferencedEntity: "account", ReferencingEntity: "new_task" },
+    { SchemaName: "b", ReferencedEntity: "contact", ReferencingEntity: "new_task" },
+  ],
+  SolutionUniqueName: "MySolution",
+});
+
+// Required members stay required.
+expectNotAssignable<CreateCustomerRelationshipsParams>({
+  Lookup: { SchemaName: "new_CustomerId" },
+  OneToManyRelationships: [{ SchemaName: "a", ReferencedEntity: "account" }],
+});
+expectNotAssignable<CreatePolymorphicLookupAttributeParams>({
+  Lookup: { SchemaName: "new_RegardingId" },
+  OneToManyRelationships: [],
+});

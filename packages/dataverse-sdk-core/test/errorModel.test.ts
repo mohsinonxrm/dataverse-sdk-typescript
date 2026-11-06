@@ -143,13 +143,6 @@ describe("#19: HTTP errors keep the response details", () => {
     expect(err.body).toBe("<html>Bad gateway</html>");
     expect(err.message).toBe("HTTP 502");
   });
-
-  it("statusCode is still readable (deprecated alias of status)", () => {
-    const err = DataverseAuthenticationError.forbidden();
-    expect(err.status).toBe(403);
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- testing the compatibility alias
-    expect(err.statusCode).toBe(403);
-  });
 });
 
 describe("#19: network failures and aborts are typed", () => {

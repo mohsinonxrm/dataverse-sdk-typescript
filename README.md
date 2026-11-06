@@ -335,18 +335,17 @@ if (result.success) {
 
 ```typescript
 import {
-  WhoAmIRequest,
   ExecuteWorkflowRequest,
   MergeRequest,
-  WinOpportunityRequest,
+  createEntityReference,
 } from "@mohsinonxrm/dataverse-sdk-messages";
 import { OrganizationService } from "@mohsinonxrm/dataverse-sdk-xrm";
 
 const org = new OrganizationService(client);
 
-// Platform messages (1,356+ available)
-const whoAmI = await org.execute(new WhoAmIRequest());
-console.log("User ID:", whoAmI.result.UserId);
+// WhoAmI is a Web API function: use org.whoAmI(), or WhoAmIFunction from the functions package
+const whoAmI = await org.whoAmI();
+console.log("User ID:", whoAmI.UserId);
 
 // Execute workflow
 const workflowRequest = new ExecuteWorkflowRequest(
@@ -358,9 +357,9 @@ const workflowResponse = await org.execute(workflowRequest);
 
 // Merge records
 const mergeRequest = new MergeRequest(
-  { logicalName: "account", id: targetAccountId },
-  { logicalName: "account", id: subordinateAccountId },
-  { name: "Merged Account Name" },
+  createEntityReference("account", targetAccountId),
+  createEntityReference("account", subordinateAccountId),
+  { "@odata.type": "Microsoft.Dynamics.CRM.account", name: "Merged Account Name" },
   false // PerformParentingChecks
 );
 await org.execute(mergeRequest);
@@ -670,7 +669,7 @@ pnpm --filter @mohsinonxrm/dataverse-sdk-core test:watch
 
 - Audit operations
 - Async operation polling
-- Circuit breaker & bulkhead patterns
+- Circuit breaker & bulkhead middleware ([#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100))
 - FetchXML query builder
 - Relationship operations advanced patterns
 

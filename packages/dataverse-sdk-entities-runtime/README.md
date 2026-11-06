@@ -268,7 +268,11 @@ class CustomFunction extends FunctionBase<{ Count: number }> {
 
 Function parameters go in the URL as parameter aliases, so each value must be an OData literal.
 `formatParameterAlias()` builds it from the parameter's OData type (the generated functions use
-it); URL-encode the result.
+it); URL-encode the result. It calls `odataLiteral.parameter()` from
+`@mohsinonxrm/dataverse-sdk-core`, the one OData literal serializer, and `formatRecordPath()` calls
+`odataLiteral.recordPath()`. A value that can't be a literal of its type (a GUID that isn't one,
+`NaN`, a date-time without a zone, an enum member with a quote) throws
+`DataverseInvalidRequestError` instead of sending a request the Web API rejects.
 
 ```typescript
 import {

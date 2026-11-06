@@ -65,7 +65,9 @@ export interface OptionSetMetadataBase extends MetadataBase {
   },
   {
     name: "metadata-params",
-    content: `import type { Label } from "./Label.js";
+    content: `import type { ComplexLookupAttributeMetadata } from "./ComplexLookupAttributeMetadata.js";
+import type { ComplexOneToManyRelationshipMetadata } from "./ComplexOneToManyRelationshipMetadata.js";
+import type { Label } from "./Label.js";
 
 /**
  * Parameters for InsertOptionValue action
@@ -122,31 +124,43 @@ export interface InsertStatusValueParams {
 }
 
 /**
+ * Lookup column of the polymorphic-lookup actions: a \`ComplexLookupAttributeMetadata\`
+ * (\`Targets\`, \`Format\`, \`RequiredLevel\`, \`DisplayName\`, ...). The Web API reads the
+ * \`@odata.type\` annotation when present.
+ */
+export type PolymorphicLookupAttributeInput = ComplexLookupAttributeMetadata & {
+  "@odata.type"?: string;
+};
+
+/**
+ * 1:N relationship of the polymorphic-lookup actions: a \`ComplexOneToManyRelationshipMetadata\`
+ * (\`CascadeConfiguration\`, \`ReferencedAttribute\`, \`AssociatedMenuConfiguration\`, ...), one per
+ * target table. \`SchemaName\`, \`ReferencedEntity\` and \`ReferencingEntity\` are required.
+ */
+export type PolymorphicOneToManyRelationshipInput = ComplexOneToManyRelationshipMetadata & {
+  "@odata.type"?: string;
+  SchemaName: string;
+  ReferencedEntity: string;
+  ReferencingEntity: string;
+};
+
+/**
  * Parameters for CreateCustomerRelationships action
+ * (\`Lookup\`, \`OneToManyRelationships\`, \`SolutionUniqueName\`, per the org's \`$metadata\`).
  */
 export interface CreateCustomerRelationshipsParams {
-  Lookup: { SchemaName: string };
-  OneToManyRelationships: Array<{
-    ReferencedEntity: string;
-    ReferencingEntity: string;
-    SchemaName: string;
-  }>;
+  Lookup: PolymorphicLookupAttributeInput & { SchemaName: string };
+  OneToManyRelationships: PolymorphicOneToManyRelationshipInput[];
+  SolutionUniqueName?: string;
 }
 
 /**
  * Parameters for CreatePolymorphicLookupAttribute action
+ * (\`Lookup\`, \`OneToManyRelationships\`, \`SolutionUniqueName\`, per the org's \`$metadata\`).
  */
 export interface CreatePolymorphicLookupAttributeParams {
-  Lookup: {
-    SchemaName: string;
-    DisplayName: Label;
-    Description?: Label;
-  };
-  OneToManyRelationships: Array<{
-    ReferencedEntity: string;
-    ReferencingEntity: string;
-    SchemaName: string;
-  }>;
+  Lookup: PolymorphicLookupAttributeInput & { SchemaName: string; DisplayName: Label };
+  OneToManyRelationships: PolymorphicOneToManyRelationshipInput[];
   SolutionUniqueName?: string;
 }
 `,

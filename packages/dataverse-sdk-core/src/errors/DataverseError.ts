@@ -70,12 +70,4 @@ export class DataverseError extends Error {
   set body(value: unknown) {
     this.raw = value;
   }
-
-  /** @deprecated Use `status`. */
-  get statusCode(): number | undefined {
-    return this.status;
-  }
-  set statusCode(value: number | undefined) {
-    this.status = value;
-  }
 }

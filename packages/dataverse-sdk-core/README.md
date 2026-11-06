@@ -163,6 +163,12 @@ client
 // HTTP Methods
 await builder.get<T>(); // GET - returns single page
 await builder.post<T>(body); // POST - create
+await builder.createAndGetId(body); // POST - create, resolves the new id (from OData-EntityId)
+// With Prefer: return=representation the id is only in the body: name the primary key
+await builder.createAndGetId(body, {
+  prefer: [Prefer.returnRepresentation()],
+  primaryIdAttribute: "accountid",
+});
 await builder.patch<T>(body); // PATCH - update
 await builder.put<T>(body); // PUT - full replace
 await builder.delete(); // DELETE
@@ -185,7 +191,9 @@ await builder.get({
 every attempt, every retry wait (including `Retry-After`) and the wait for a concurrency slot. When it
 passes, the request rejects with `DataverseNetworkError` named `RequestTimeout`, even if retries were
 left. `attemptTimeoutMs` limits a single attempt; a timed-out attempt is not retried. A caller's
-`signal` aborting rejects with `DataverseAbortError`. Neither the SDK's timers nor its listeners stay
+`signal` aborting rejects with `DataverseAbortError`. A caller's signal that times out
+(`AbortSignal.timeout(ms)`) rejects like `timeoutMs`, with `DataverseNetworkError` named
+`RequestTimeout`, and its `TimeoutError` is the `cause`. Neither the SDK's timers nor its listeners stay
 on your `signal` after the request, so one signal can be shared by any number of requests.
 
 ### Fluent API Enhancements
@@ -413,12 +421,37 @@ client.api(`MyFunction(Name=@p1)?@p1=${encodeURIComponent(odataLiteral.string(in
 | `odataLiteral.bool(true)`                 | `true`                                                |
 | `odataLiteral.datetime(date)`             | `2024-05-01T08:30:00.000Z` (`Edm.DateTimeOffset`)     |
 | `odataLiteral.date(date)`                 | `2024-05-01` (`Edm.Date`)                             |
-| `odataLiteral.enum("NS.Type", ["A","B"])` | `NS.Type'A,B'`                                        |
+| `odataLiteral.enum("NS.Type", ["A","B"])` | `NS.Type'A,B'` (a string `"A, B"` is split on commas) |
+| `odataLiteral.duration("P1D")`            | `duration'P1D'`                                       |
+| `odataLiteral.binary("a+b/c==")`          | `binary'a-b_c'` (base64url, no padding)               |
+| `odataLiteral.json(value)`                | JSON, with record references as `@odata.id`           |
+| `odataLiteral.reference(ref)`             | `{"@odata.id":"accounts(<id>)"}`                      |
+| `odataLiteral.recordPath(ref)`            | `accounts(<id>)` (needs `ref.entitySetName`)          |
 | `odataLiteral.value(v)`                   | picks one of the above from the JavaScript type       |
+| `odataLiteral.parameter(v, "Edm.Guid")`   | picks one from the parameter's OData type (below)     |
 | `odataKey(guid \| { col: value, … })`     | `guid` or `col='…',col2=5`, percent-encoded for paths |
 
 A value that doesn't fit the helper throws `DataverseInvalidRequestError` (`InvalidParameter`)
 instead of producing a broken URL.
+
+`odataLiteral.parameter(value, odataType, kind?)` writes an operation parameter from its OData type
+(`Edm.String`, `Edm.Guid`, `Edm.Int64`, an enum with `kind: "EnumerationType"`, an entity with
+`"EntityType"`, a `"ComplexType"` or a `"Collection"`). It is the one OData literal serializer: the
+generated functions and `formatParameterAlias` in `@mohsinonxrm/dataverse-sdk-entities-runtime`
+call it.
+
+```typescript
+odataLiteral.parameter("O'Brien", "Edm.String"); // 'O''Brien'
+odataLiteral.parameter(9007199254740993n, "Edm.Int64"); // 9007199254740993
+odataLiteral.parameter("Entity, Attributes", "mscrm.EntityFilters", "EnumerationType");
+// Microsoft.Dynamics.CRM.EntityFilters'Entity,Attributes'
+odataLiteral.parameter(
+  { logicalName: "account", id, entitySetName: "accounts" },
+  "mscrm.crmbaseentity",
+  "EntityType"
+);
+// {"@odata.id":"accounts(<id>)"}
+```
 
 #### URL Validation
 
@@ -578,7 +611,7 @@ import {
   DataverseError, // Base class: every error the SDK throws is an instance
   DataverseODataError, // HTTP error response (4xx/5xx)
   DataverseThrottleError, // 429, with retryAfterMs
-  DataverseNetworkError, // fetch failed (ConnectionFailed: DNS/TLS/CORS) or timed out (RequestTimeout)
+  DataverseNetworkError, // fetch failed (ConnectionFailed: DNS/TLS/CORS) or timed out (RequestTimeout: timeoutMs or AbortSignal.timeout())
   DataverseAbortError, // cancelled through an AbortSignal (name "AbortError")
   DataverseInvalidRequestError, // refused before sending (e.g. TokenOriginRefused)
   DataverseAuthenticationError, // auth helpers (e.g. EmptyAccessToken)
@@ -608,9 +641,8 @@ try {
 ```
 
 Every `DataverseError` has `status?`, `code?`, `message`, `headers?`, `body?` (also `raw`),
-`innerError?`, `requestId?`, `correlationId?`, `cause?` and `date`. `statusCode` still works as a
-deprecated alias of `status`. Errors thrown by your own middleware or token provider are passed
-through unchanged.
+`innerError?`, `requestId?`, `correlationId?`, `cause?` and `date`. Errors thrown by your own
+middleware or token provider are passed through unchanged.
 
 **Error hierarchy:**
 
@@ -686,6 +718,24 @@ const client = new DataverseClient({
 The built-in classes (`AuthMiddleware`, `ODataHeadersMiddleware`, `ConcurrencyMiddleware`,
 `RetryMiddleware`, `TelemetryMiddleware`, `LoggingMiddleware`), `buildDefaultMiddleware`,
 `Pipeline` and `FetchRequestAdapter` are exported.
+
+`request.url` in middleware does not include the query options the builder set: they are in
+`request.query`. `buildUrl(request)` returns the exact URL `fetch` receives, encoded as described
+in [URL Construction](#url-construction), so a request inspector never has to re-encode the query:
+
+```typescript
+import { buildUrl, type Middleware } from "@mohsinonxrm/dataverse-sdk-core";
+
+const inspector: Middleware = {
+  name: "inspector",
+  execute: async (request, ctx, next) => {
+    const url = buildUrl(request); // read before next(): later middleware may change the request
+    const response = await next(request, ctx);
+    console.log(request.method, url, response.status);
+    return response;
+  },
+};
+```
 
 **Built-in Middleware (Execution Order):**
 
@@ -988,7 +1038,9 @@ User Code (typed result)
 
 #### Circuit Breaker & Bulkhead
 
-**Not currently implemented** - placeholders exist in options interface for future enhancement.
+Not implemented yet, and there are no options for them. They are planned as middleware
+([#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100)). Until then, add your
+own through the `middleware` option.
 
 ### URL Construction
 
@@ -1021,6 +1073,9 @@ Query option values are encoded with `encodeURIComponent` (a space is `%20`, not
 `'`, `(`, `)`, `,`, `/`, `:`, `@` and `=` literal as in Microsoft's examples. A query string that is
 already in the path is never re-encoded; only an option the builder sets again (for example
 `$select`) replaces the one there.
+
+`buildUrl(request)` applies these rules to a `RequestInformation` (see
+[Middleware Pipeline](#middleware-pipeline)).
 
 ## Interfaces
 

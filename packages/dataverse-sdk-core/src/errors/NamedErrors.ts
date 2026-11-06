@@ -284,11 +284,18 @@ export class DataverseNetworkError extends DataverseError {
   }
 
   /**
-   * Create error for request timeout
+   * Create error for request timeout: the client's `timeoutMs` or `attemptTimeoutMs` passed
+   * (pass it as `timeoutMs`), or the caller's signal timed out (`AbortSignal.timeout()`; pass its
+   * `TimeoutError` as `cause`).
    */
-  static timeout(timeoutMs: number): DataverseNetworkError {
-    const error = new DataverseNetworkError(`Request timed out after ${String(timeoutMs)}ms`);
+  static timeout(timeoutMs?: number, cause?: unknown): DataverseNetworkError {
+    const error = new DataverseNetworkError(
+      timeoutMs === undefined
+        ? "Request timed out"
+        : `Request timed out after ${String(timeoutMs)}ms`
+    );
     error.name = "RequestTimeout";
+    if (cause !== undefined) error.cause = cause;
     return error;
   }
 

@@ -5,6 +5,8 @@ import type { Tracer, TracerProvider } from "@opentelemetry/api";
  *
  * All options are optional. Without `tracer` or `tracerProvider` the adapter uses the global
  * tracer provider (`trace.getTracer(...)`), so spans go wherever your OpenTelemetry SDK exports.
+ * `service.name` is a resource attribute: set it on your OpenTelemetry SDK (for example
+ * `new NodeSDK({ serviceName })` or the `OTEL_SERVICE_NAME` environment variable).
  */
 export interface OpenTelemetryConfig {
   /**
@@ -17,12 +19,6 @@ export interface OpenTelemetryConfig {
    * `@mohsinonxrm/dataverse-sdk-otel`). Defaults to the global provider.
    */
   tracerProvider?: TracerProvider;
-
-  /**
-   * @deprecated Ignored. `service.name` is a resource attribute: set it on your SDK
-   * (for example `new NodeSDK({ serviceName })` or the `OTEL_SERVICE_NAME` environment variable).
-   */
-  serviceName?: string;
 
   /**
    * Turn every method into a no-op (defaults to false).

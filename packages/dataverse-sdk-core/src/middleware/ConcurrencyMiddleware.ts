@@ -1,6 +1,7 @@
 import type { Middleware, NextMiddleware } from "../abstractions/middleware.js";
 import type { MiddlewareContext, RequestInformation } from "../abstractions/http.js";
 import type { DataverseClientOptions } from "../abstractions/options.js";
+import { abortError } from "../utils/signals.js";
 
 class Semaphore {
   private queue: Array<() => void> = [];
@@ -13,9 +14,12 @@ class Semaphore {
     this.drain();
   }
 
-  /** Wait for a slot. Rejects with an `AbortError`, and leaves the queue, if `signal` aborts. */
+  /**
+   * Wait for a slot. Rejects, and leaves the queue, if `signal` aborts: with its `TimeoutError`
+   * when it timed out, otherwise with an `AbortError`.
+   */
   async acquire(signal?: AbortSignal): Promise<() => void> {
-    if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
+    if (signal?.aborted) throw abortError(signal);
     if (this.used < this.max) {
       this.used++;
       return () => {
@@ -25,7 +29,7 @@ class Semaphore {
     return new Promise((resolve, reject) => {
       const onAbort = () => {
         this.queue = this.queue.filter((w) => w !== waiter);
-        reject(new DOMException("Aborted", "AbortError"));
+        reject(abortError(signal));
       };
       const waiter = () => {
         signal?.removeEventListener("abort", onAbort);

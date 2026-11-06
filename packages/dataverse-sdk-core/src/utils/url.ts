@@ -26,13 +26,33 @@ export function resolveRequestUrl(apiRoot: string, pathOrUrl: string): string {
 }
 
 /**
- * The request URL with `req.query` added.
+ * The request URL with `req.query` added: the exact URL the SDK passes to `fetch` for this
+ * request. Use it in middleware to log or inspect the final URL instead of re-encoding
+ * `request.query` yourself (#274). It does not change `req`.
  *
  * Values are encoded with `encodeURIComponent` (a space is `%20`, not `+`), keeping the characters
  * OData writes literally (`$ ' ( ) , / : @ =`), so URLs read like Microsoft's examples:
  * `$filter=name%20eq%20'O''Brien'`. (Parsing the URL with `new URL()`, as `fetch` does, writes
  * `'` as `%27`; Dataverse reads both.) A query string already in `req.url` is kept exactly as the
  * caller encoded it; only a parameter that `req.query` sets again is replaced (#52).
+ *
+ * @param req - The request as middleware receives it (`url` must be absolute)
+ * @returns The absolute URL, query string included
+ * @throws {TypeError} If `req.url` is not an absolute URL
+ *
+ * @example
+ * ```typescript
+ * import { buildUrl, type Middleware } from "@mohsinonxrm/dataverse-sdk-core";
+ *
+ * const inspector: Middleware = {
+ *   name: "inspector",
+ *   execute: (request, ctx, next) => {
+ *     console.log(request.method, buildUrl(request));
+ *     return next(request, ctx);
+ *   },
+ * };
+ * const client = new DataverseClient({ baseUrl, tokenProvider, middleware: { append: [inspector] } });
+ * ```
  */
 export function buildUrl(req: RequestInformation): string {
   const u = new URL(req.url);
