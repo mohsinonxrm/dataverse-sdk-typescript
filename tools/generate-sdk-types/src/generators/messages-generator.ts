@@ -502,6 +502,7 @@ function generateMessagesIndex(actions: CsdlAction[]): string {
   // Export base classes and types
   code += `// Base classes and types\n`;
   code += `export { OrganizationRequest, OrganizationResponse } from './OrganizationRequest.js';\n`;
+  code += `export type { OrganizationRequestOptions } from './OrganizationRequest.js';\n`;
   code += `export type { EntityReference } from './EntityReference.js';\n`;
   code += `export { createEntityReference } from './EntityReference.js';\n`;
   code += `export type { MessageRequest, MessageResponse } from './types.js';\n\n`;
