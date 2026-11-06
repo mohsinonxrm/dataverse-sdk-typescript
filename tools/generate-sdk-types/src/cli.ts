@@ -2,7 +2,7 @@
 
 import { Command } from "commander";
 import { config as loadDotenv } from "dotenv";
-import { generateAll, generateTargets, type GenerationTarget } from "./index.js";
+import { generateTargets, type GenerationTarget } from "./index.js";
 import { loadConfig, type SdkGeneratorConfig } from "./config.js";
 import _path from "path";
 
@@ -19,7 +19,15 @@ program
   .option("-c, --config <path>", "Path to config file", "sdk-gen.config.json")
   .option("--url <url>", "Dataverse URL (overrides config/env)")
   .option("--dry-run", "Preview what would be generated without writing files", false)
-  .option("--save-csdl", "Save the CSDL/EDMX XML to dataverse-metadata.xml", false)
+  .option(
+    "--save-csdl [path]",
+    "Also save the fetched CSDL/EDMX XML (default path: dataverse-metadata.xml)"
+  )
+  .option(
+    "--from-csdl <path>",
+    "Generate from a saved CSDL/EDMX file instead of the live $metadata (no network, no credentials)"
+  )
+  .option("--csdl-only", "Only fetch and save the CSDL (with --save-csdl); generate nothing", false)
   .option("--purge", "Delete existing output files before generating", false)
   .action(async (targets: string[], options) => {
     try {
@@ -32,7 +40,7 @@ program
       } catch (_error) {
         // If config file doesn't exist, use environment variables
         const dataverseUrl = options.url ?? process.env.DATAVERSE_URL;
-        if (!dataverseUrl) {
+        if (!dataverseUrl && !options.fromCsdl) {
           throw new Error(
             "DATAVERSE_URL not configured. Either:\n" +
               "  1. Create .env file with DATAVERSE_URL\n" +
@@ -41,12 +49,14 @@ program
           );
         }
 
+        // AZURE_* first, then the DATAVERSE_* names the integration tests use
         config = {
-          dataverseUrl,
+          dataverseUrl: dataverseUrl ?? "",
           authentication: {
-            clientId: process.env.AZURE_CLIENT_ID ?? "",
-            tenantId: process.env.AZURE_TENANT_ID ?? "",
-            clientSecret: process.env.AZURE_CLIENT_SECRET ?? "",
+            clientId: process.env.AZURE_CLIENT_ID ?? process.env.DATAVERSE_CLIENT_ID ?? "",
+            tenantId: process.env.AZURE_TENANT_ID ?? process.env.DATAVERSE_TENANT_ID ?? "",
+            clientSecret:
+              process.env.AZURE_CLIENT_SECRET ?? process.env.DATAVERSE_CLIENT_SECRET ?? "",
           },
           targets: {
             metadata: {
@@ -79,11 +89,12 @@ program
         config.dataverseUrl = options.url;
       }
 
-      // Validate authentication
+      // Validate authentication (not needed to generate from a saved CSDL file)
       if (
-        !config.authentication.clientId ||
-        !config.authentication.tenantId ||
-        !config.authentication.clientSecret
+        !options.fromCsdl &&
+        (!config.authentication.clientId ||
+          !config.authentication.tenantId ||
+          !config.authentication.clientSecret)
       ) {
         throw new Error(
           "Azure AD credentials not configured. Set in .env:\n" +
@@ -94,14 +105,22 @@ program
       }
 
       // The environment URL and client id are not printed: this also runs in public CI logs (#90)
-      console.log("🔐 Dataverse environment and credentials configured\n");
+      if (options.fromCsdl) console.log("📄 Generating from a saved CSDL file (no network)\n");
+      else console.log("🔐 Dataverse environment and credentials configured\n");
 
       if (options.dryRun) {
         console.log("⚠️  DRY RUN MODE - No files will be written\n");
       }
 
-      if (options.saveCsdl) {
-        console.log("💾 Will save CSDL/EDMX to dataverse-metadata.xml\n");
+      // `--save-csdl` alone keeps the old default file name
+      const saveCsdl: string | undefined =
+        options.saveCsdl === true
+          ? "dataverse-metadata.xml"
+          : typeof options.saveCsdl === "string"
+            ? options.saveCsdl
+            : undefined;
+      if (saveCsdl) {
+        console.log(`💾 Will save CSDL/EDMX to ${saveCsdl}\n`);
       }
 
       if (options.purge) {
@@ -109,7 +128,10 @@ program
       }
 
       // Determine what to generate
-      if (targets.length > 0) {
+      if (options.csdlOnly) {
+        if (!saveCsdl) throw new Error("--csdl-only needs --save-csdl <path>");
+        await generateTargets(config, [], { saveCsdl, fromCsdl: options.fromCsdl });
+      } else if (targets.length > 0) {
         const validTargets: GenerationTarget[] = [];
         for (const target of targets) {
           if (!["metadata", "messages", "actions", "functions"].includes(target)) {
@@ -121,16 +143,20 @@ program
         }
 
         console.log(`🎯 Generating: ${validTargets.join(", ")}\n`);
-        await generateTargets(
-          config,
-          validTargets,
-          options.dryRun,
-          options.saveCsdl,
-          options.purge
-        );
+        await generateTargets(config, validTargets, {
+          dryRun: options.dryRun,
+          saveCsdl,
+          purge: options.purge,
+          fromCsdl: options.fromCsdl,
+        });
       } else {
         console.log("🎯 Generating: all targets\n");
-        await generateAll(config, options.dryRun);
+        await generateTargets(config, ["metadata", "messages", "actions", "functions"], {
+          dryRun: options.dryRun,
+          saveCsdl,
+          purge: options.purge,
+          fromCsdl: options.fromCsdl,
+        });
       }
 
       console.log("\n✅ Generation complete!");

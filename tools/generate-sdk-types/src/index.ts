@@ -1,5 +1,7 @@
 import type { SdkGeneratorConfig } from "./config.js";
 import { parseEdmx } from "./parsers/edmx-parser.js";
+import { canonicalizeCsdl } from "./parsers/canonical.js";
+import { snapshotCsdl } from "./snapshot.js";
 import { generateMetadataTypes } from "./generators/metadata-generator.js";
 import { generateMessages } from "./generators/messages-generator.js";
 import { generateActions } from "./generators/actions-generator.js";
@@ -12,6 +14,21 @@ import { ClientSecretCredential } from "@azure/identity";
 
 export type GenerationTarget = "metadata" | "messages" | "actions" | "functions";
 
+/** Options for {@link generateTargets} and {@link generateFromCsdl}. */
+export interface GenerateOptions {
+  /** Preview without writing the operation files. */
+  dryRun?: boolean;
+  /** Delete the existing output before generating, so removed operations disappear. */
+  purge?: boolean;
+  /** Also write the fetched `$metadata` to this path (#293: the committed snapshot). */
+  saveCsdl?: string;
+  /**
+   * Read the CSDL from this file instead of fetching it (#293). No network and no credentials:
+   * this is how the committed packages are regenerated from `metadata/dataverse-metadata.xml`.
+   */
+  fromCsdl?: string;
+}
+
 /**
  * Generate all SDK types.
  *
@@ -19,42 +36,61 @@ export type GenerationTarget = "metadata" | "messages" | "actions" | "functions"
  * @param dryRun - If true, preview without writing files
  */
 export async function generateAll(config: SdkGeneratorConfig, dryRun = false): Promise<void> {
-  await generateTargets(config, ["metadata", "messages", "actions", "functions"], dryRun);
+  await generateTargets(config, ["metadata", "messages", "actions", "functions"], { dryRun });
 }
 
 /**
- * Generate specific SDK types.
+ * Generate specific SDK types, from the live `$metadata` or from a saved CSDL file.
  *
- * @param config - Generator configuration
+ * @param config - Generator configuration (the URL and credentials are unused with `fromCsdl`)
  * @param targets - Which types to generate
- * @param dryRun - If true, preview without writing files
- * @param saveCsdl - If true, save the CSDL XML to a file
- * @param purge - If true, delete existing output before generating
+ * @param options - Dry run, purge, and where the CSDL comes from or goes to
  */
 export async function generateTargets(
-  config: SdkGeneratorConfig,
+  config: Pick<SdkGeneratorConfig, "targets"> & Partial<SdkGeneratorConfig>,
   targets: GenerationTarget[],
-  dryRun = false,
-  saveCsdl = false,
-  purge = false
+  options: GenerateOptions = {}
 ): Promise<void> {
-  // 1. Fetch $metadata
-  console.log("📥 Fetching $metadata from Dataverse...");
-  const metadata = await fetchMetadata(config);
-  console.log("✅ $metadata fetched successfully\n");
-
-  // 2. Save CSDL if requested
-  if (saveCsdl) {
-    const fs = await import("fs/promises");
-    const path = await import("path");
-    const csdlPath = path.join(process.cwd(), "dataverse-metadata.xml");
-    await fs.writeFile(csdlPath, metadata, "utf-8");
-    console.log(`💾 Saved CSDL to ${csdlPath}\n`);
+  const fs = await import("fs/promises");
+  const path = await import("path");
+  let metadata: string;
+  if (options.fromCsdl) {
+    metadata = snapshotCsdl(await fs.readFile(options.fromCsdl, "utf-8"));
+    console.log(`📄 Read CSDL from ${path.basename(options.fromCsdl)}\n`);
+  } else {
+    if (!config.dataverseUrl || !config.authentication) {
+      throw new Error("generateTargets: the Dataverse URL and credentials are required");
+    }
+    console.log("📥 Fetching $metadata from Dataverse...");
+    // Rewritten as it's committed (#293): sorted, one element per line, no org-specific tables
+    metadata = snapshotCsdl(await fetchMetadata(config as SdkGeneratorConfig));
+    console.log("✅ $metadata fetched successfully\n");
   }
 
+  if (options.saveCsdl) {
+    await fs.mkdir(path.dirname(path.resolve(options.saveCsdl)), { recursive: true });
+    await fs.writeFile(options.saveCsdl, metadata, "utf-8");
+    console.log(`💾 Saved CSDL to ${options.saveCsdl}\n`);
+  }
+
+  if (targets.length > 0) await generateFromCsdl(metadata, config.targets, targets, options);
+}
+
+/**
+ * Generate specific SDK types from CSDL text. The output depends only on `metadata`: the parsed
+ * schema is put in a canonical order first (#293), so two fetches that list the same types in a
+ * different order generate the same files.
+ */
+export async function generateFromCsdl(
+  metadata: string,
+  targetConfigs: SdkGeneratorConfig["targets"],
+  targets: GenerationTarget[],
+  options: Pick<GenerateOptions, "dryRun" | "purge"> = {}
+): Promise<void> {
+  const { dryRun = false, purge = false } = options;
   // 3. Parse CSDL
   console.log("🔍 Parsing CSDL...");
-  const csdl = parseEdmx(metadata);
+  const csdl = canonicalizeCsdl(parseEdmx(metadata));
   console.log(`✅ Parsed ${String(csdl.entityTypes.length)} entity types`);
   console.log(`✅ Parsed ${String(csdl.complexTypes.length)} complex types`);
   console.log(`✅ Parsed ${String(csdl.enumTypes.length)} enum types`);
@@ -65,7 +101,7 @@ export async function generateTargets(
 
   // 4. Generate each target
   for (const target of targets) {
-    const targetConfig = config.targets[target];
+    const targetConfig = targetConfigs[target];
     if (!targetConfig?.enabled) {
       console.log(`⏭️  Skipping ${target} (disabled)\n`);
       continue;
@@ -107,7 +143,7 @@ export async function generateTargets(
  * @param config - Generator configuration
  * @returns Raw $metadata XML
  */
-async function fetchMetadata(config: SdkGeneratorConfig): Promise<string> {
+export async function fetchMetadata(config: SdkGeneratorConfig): Promise<string> {
   // Normalize Dataverse URL (remove trailing slash)
   const dataverseUrl = config.dataverseUrl.replace(/\/$/, "");
 
@@ -157,6 +193,8 @@ async function fetchMetadata(config: SdkGeneratorConfig): Promise<string> {
   return text;
 }
 
+export { canonicalizeCsdl } from "./parsers/canonical.js";
+export { ORG_SPECIFIC_PREFIXES, snapshotCsdl } from "./snapshot.js";
 export {
   SUPPLEMENTAL_METADATA,
   withSupplementalMetadata,
