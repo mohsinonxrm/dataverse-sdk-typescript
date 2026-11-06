@@ -1,5 +1,7 @@
 # spa-fluentui-v9: Comprehensive SDK Feature Showcase
 
+> **Status: design record.** This is the plan the sample was built from, kept for the reasoning behind its structure. It is not a status report: the pages, routes and components below are the intended design and differ in places from what was built. For what the sample actually contains and how to run it, see the [README](../README.md).
+>
 > **Purpose**: This document provides the complete implementation plan for transforming the spa-fluentui-v9 sample from a basic CRUD demo into a comprehensive reference implementation showcasing all dataverse-sdk-typescript capabilities.
 
 ---
@@ -1423,35 +1425,35 @@ const navigationGroups = [
 
 ## Success Criteria
 
+These were the goals of the plan. Items marked done are met by the code in this directory; the
+rest are open. See the README's "Known gaps" for details.
+
 ### Functional
 
-- ✅ All 13 pages implemented and working
-- ✅ All 16 SDK packages demonstrated
-- ✅ Error handling for all error types
-- ✅ Progress tracking for long operations
-- ✅ Type safety examples compile
+- [x] 13 scenario pages plus dashboard, accounts and login
+- [ ] Every SDK package demonstrated through its own API (core, auth-msal-browser, xrm, batch and
+      discovery are used; actions, functions, messages, metadata and files are not yet imported)
+- [ ] Error handling for every error type (a single generic `ErrorDisplay`; no per-type cards)
+- [x] Progress tracking for long operations
+- [x] Strict TypeScript, no `any` (the type-safety page's examples are code samples, not compiled)
 
 ### Educational
 
-- ✅ Clear code examples for each pattern
-- ✅ Side-by-side API comparisons
-- ✅ When-to-use guidance
-- ✅ Copy-able code snippets
+- [x] Code examples for each pattern
+- [x] Side-by-side API comparisons
+- [x] When-to-use guidance
 
 ### Quality
 
-- ✅ Consistent UI/UX
-- ✅ Accessible (WCAG AA)
-- ✅ Responsive design
-- ✅ No console errors
-- ✅ Production-ready code
+- [x] Consistent UI/UX
+- [ ] Accessible (WCAG AA): not audited (see #98)
+- [ ] Responsive design: not verified
+- [ ] Observability page uses real middleware: it is simulated
 
 ### Documentation
 
-- ✅ README updated
-- ✅ Inline code comments
-- ✅ JSDoc for components
-- ✅ Architecture documented
+- [x] README matches the code
+- [x] JSDoc on the shared components
 
 ---
 
@@ -1465,4 +1467,4 @@ This implementation plan provides a comprehensive roadmap for transforming spa-f
 4. **Interactive demos**: Hands-on examples with real data
 5. **Decision guidance**: When to use which approach
 
-The result will be the definitive reference implementation for dataverse-sdk-typescript.
+The aim was a reference implementation for dataverse-sdk-typescript; the README lists where it falls short.
