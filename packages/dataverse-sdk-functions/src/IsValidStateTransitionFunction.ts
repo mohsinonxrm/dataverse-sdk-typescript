@@ -1,7 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { EntityReference } from "./types/EntityReference.js";
-import { getEntitySetNameFromReference } from "./types/EntityReference.js";
 
 /**
  * Response from IsValidStateTransition function
@@ -30,12 +29,7 @@ export class IsValidStateTransitionFunction implements Executable<IsValidStateTr
     const aliases: string[] = [];
     if (this.entity !== undefined) {
       aliases.push(`Entity=@p1`);
-      params.append(
-        "@p1",
-        JSON.stringify({
-          "@odata.id": `${getEntitySetNameFromReference(this.entity)}(${this.entity.id})`,
-        })
-      );
+      params.append("@p1", formatParameterAlias(this.entity, "mscrm.crmbaseentity", "EntityType"));
     }
     if (this.newState !== undefined) {
       aliases.push(`NewState=@p2`);

@@ -1,7 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { EntityReference } from "./types/EntityReference.js";
-import { getEntitySetNameFromReference } from "./types/EntityReference.js";
 import type { Label } from "./types/index.js";
 
 /**
@@ -33,9 +32,7 @@ export class RetrieveLocLabelsFunction implements Executable<RetrieveLocLabelsRe
       aliases.push(`EntityMoniker=@p1`);
       params.append(
         "@p1",
-        JSON.stringify({
-          "@odata.id": `${getEntitySetNameFromReference(this.entityMoniker)}(${this.entityMoniker.id})`,
-        })
+        formatParameterAlias(this.entityMoniker, "mscrm.crmbaseentity", "EntityType")
       );
     }
     if (this.attributeName !== undefined) {

@@ -19,6 +19,7 @@ import {
   purgeDirectory,
 } from "../utils/file-writer.js";
 import { polymorphicParameterType } from "../utils/polymorphism.js";
+import { entityReferenceSource } from "../utils/entity-reference.js";
 import { exportedEnumNames } from "./complex-types-generator.js";
 import { collectionBinding, ENTITY_SET_PARAM } from "../utils/binding.js";
 
@@ -309,7 +310,7 @@ export async function generateFunctions(
   }
 
   // Ensure EntityReference.ts exists in types folder
-  await ensureEntityReferenceType(absolutePath);
+  await ensureEntityReferenceType(absolutePath, csdl);
 
   // Runtime helper the generated functions use to format parameter-alias literals
   await writeTypeScriptFile(join(absolutePath, `${ODATA_LITERAL_MODULE}.ts`), ODATA_LITERAL_SOURCE);
@@ -427,7 +428,6 @@ function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction): string {
 
   if (needsEntityReference) {
     code += `import type { EntityReference } from './types/EntityReference.js';\n`;
-    code += `import { getEntitySetNameFromReference } from './types/EntityReference.js';\n`;
   }
 
   // Import complex types from types folder (excluding EntityReference)
@@ -582,9 +582,10 @@ function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction): string {
 
         code += `    if (this.${param.name} !== undefined) {\n`;
         if (kind === "entityReference") {
-          // EntityReference needs special @odata.id handling using helper function
+          // A record reference: {"@odata.id": "<entity set>(<id>)"}; throws without an entity set (#72)
+          usesAliasLiteral = true;
           code += `      aliases.push(\`${param.tsName}=${alias}\`);\n`;
-          code += `      params.append('${alias}', JSON.stringify({ '@odata.id': \`\${getEntitySetNameFromReference(this.${param.name})}(\${this.${param.name}.id})\` }));\n`;
+          code += `      params.append('${alias}', formatParameterAlias(this.${param.name}, '${paramType}', 'EntityType'));\n`;
         } else if (kind === "complex") {
           // Complex types need JSON serialization
           code += `      aliases.push(\`${param.tsName}=${alias}\`);\n`;
@@ -631,9 +632,10 @@ function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction): string {
 
         code += `    if (this.${param.name} !== undefined) {\n`;
         if (kind === "entityReference") {
-          // EntityReference needs special @odata.id handling using helper function
+          // A record reference: {"@odata.id": "<entity set>(<id>)"}; throws without an entity set (#72)
+          usesAliasLiteral = true;
           code += `      aliases.push(\`${param.tsName}=${alias}\`);\n`;
-          code += `      params.append('${alias}', JSON.stringify({ '@odata.id': \`\${getEntitySetNameFromReference(this.${param.name})}(\${this.${param.name}.id})\` }));\n`;
+          code += `      params.append('${alias}', formatParameterAlias(this.${param.name}, '${paramType}', 'EntityType'));\n`;
         } else if (kind === "complex") {
           // Complex types need JSON serialization
           code += `      aliases.push(\`${param.tsName}=${alias}\`);\n`;
@@ -743,7 +745,7 @@ function generateFunctionsIndex(functions: CsdlFunction[], enumNames: string[]):
   }
 
   // Export EntityReference type
-  code += `\nexport { type EntityReference, createEntityReference, getEntitySetNameFromReference } from './types/EntityReference.js';\n`;
+  code += `\nexport { type EntityReference, type EntityReferenceOptions, createEntityReference, getEntitySetNameFromReference } from './types/EntityReference.js';\n`;
 
   // Enum parameters take these values (EntityFilters.Entity | EntityFilters.Attributes) (#67)
   if (enumNames.length > 0) {
@@ -754,105 +756,12 @@ function generateFunctionsIndex(functions: CsdlFunction[], enumNames: string[]):
 }
 
 /**
- * Ensure EntityReference.ts exists in the types folder.
- * This type is used by many functions for entity references.
+ * Write types/EntityReference.ts: the Web API reference shape, with the primary keys and entity
+ * sets from the CSDL (#72).
  */
-async function ensureEntityReferenceType(outputPath: string): Promise<void> {
-  const { mkdir } = await import("fs/promises");
-  const typesFolder = join(outputPath, "types");
-  const entityRefPath = join(typesFolder, "EntityReference.ts");
-
-  // Create types folder if it doesn't exist
-  await mkdir(typesFolder, { recursive: true });
-
-  const entityRefContent = `/**
- * Entity reference type for Dataverse Web API.
- * Used in bound functions and entity lookups.
- */
-export interface EntityReference {
-  "@odata.type": string;
-  id: string;
-  logicalName?: string;
-  name?: string;
-}
-
-/**
- * Convert entity logical name to entity set name (pluralization).
- * Handles common Dataverse entity pluralization rules.
- */
-function getEntitySetName(entityLogicalName: string): string {
-  // Common irregular plurals in Dataverse
-  const irregularPlurals: Record<string, string> = {
-    opportunity: "opportunities",
-    territory: "territories",
-    currency: "currencies",
-    activity: "activities",
-    businessunit: "businessunits",
-    systemuser: "systemusers",
-    usersettingscollection: "usersettingscollection",
-    principalobjectaccess: "principalobjectaccessset",
-  };
-
-  const lowerName = entityLogicalName.toLowerCase();
-
-  // Check for irregular plurals
-  if (irregularPlurals[lowerName]) {
-    return irregularPlurals[lowerName];
-  }
-
-  // Handle entities ending in 'y' (e.g., opportunity -> opportunities)
-  if (lowerName.endsWith("y") && lowerName.length > 1 && !"aeiou".includes(lowerName[lowerName.length - 2])) {
-    return lowerName.slice(0, -1) + "ies";
-  }
-
-  // Handle entities ending in 's', 'x', 'z', 'ch', 'sh' (add 'es')
-  if (lowerName.endsWith("s") || lowerName.endsWith("x") || lowerName.endsWith("z") || lowerName.endsWith("ch") || lowerName.endsWith("sh")) {
-    return lowerName + "es";
-  }
-
-  // Default: add 's'
-  return lowerName + "s";
-}
-
-/**
- * Create an EntityReference object.
- *
- * @param entityType - Logical entity name (e.g., "account", "contact")
- * @param id - Entity GUID
- * @param name - Optional entity name
- * @returns EntityReference object
- *
- * @example
- * const ref = createEntityReference("account", "abc-123", "Contoso");
- */
-export function createEntityReference(
-  entityType: string,
-  id: string,
-  name?: string
-): EntityReference {
-  return {
-    "@odata.type": \`Microsoft.Dynamics.CRM.\${entityType}\`,
-    id,
-    logicalName: entityType,
-    ...(name && { name }),
-  };
-}
-
-/**
- * Get the entity set name for an EntityReference.
- * Uses smart pluralization logic.
- *
- * @param entityRef - The EntityReference object
- * @returns The entity set name (e.g., "accounts", "opportunities")
- *
- * @example
- * const ref = createEntityReference("account", "abc-123");
- * const entitySet = getEntitySetNameFromReference(ref); // "accounts"
- */
-export function getEntitySetNameFromReference(entityRef: EntityReference): string {
-  return getEntitySetName(entityRef.logicalName || "");
-}
-`;
-
-  await writeTypeScriptFile(entityRefPath, entityRefContent);
+async function ensureEntityReferenceType(outputPath: string, csdl: CsdlSchema): Promise<void> {
+  await writeTypeScriptFile(
+    join(outputPath, "types", "EntityReference.ts"),
+    entityReferenceSource(csdl, "functions")
+  );
 }

@@ -1,7 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { EntityReference } from "./types/EntityReference.js";
-import { getEntitySetNameFromReference } from "./types/EntityReference.js";
 import type { FileSasUrlResponse } from "./types/index.js";
 
 /**
@@ -31,12 +30,7 @@ export class GetFileSasUrlFunction implements Executable<GetFileSasUrlResponse> 
     const aliases: string[] = [];
     if (this.target !== undefined) {
       aliases.push(`Target=@p1`);
-      params.append(
-        "@p1",
-        JSON.stringify({
-          "@odata.id": `${getEntitySetNameFromReference(this.target)}(${this.target.id})`,
-        })
-      );
+      params.append("@p1", formatParameterAlias(this.target, "mscrm.crmbaseentity", "EntityType"));
     }
     if (this.fileAttributeName !== undefined) {
       aliases.push(`FileAttributeName=@p2`);

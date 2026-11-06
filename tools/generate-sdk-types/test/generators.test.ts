@@ -525,3 +525,136 @@ new RetrieveEntityFunction("Bogus", "account", "${GUID}", false);
     expect(bad.join("\n")).toMatch(/usage-bad\.ts\(2\)/);
   });
 });
+
+/**
+ * #72: an entity reference is the Web API shape (`@odata.type` + primary key) in a body and
+ * `{"@odata.id": "<set>(<id>)"}` in a function parameter, with keys and sets from the CSDL.
+ */
+describe("#72: entity references", () => {
+  const REFS_EDMX = `<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+  <edmx:DataServices>
+    <Schema Namespace="Microsoft.Dynamics.CRM" Alias="mscrm" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+      <EntityType Name="crmbaseentity" Abstract="true" />
+      <EntityType Name="account" BaseType="mscrm.crmbaseentity">
+        <Key><PropertyRef Name="accountid" /></Key>
+        <Property Name="accountid" Type="Edm.Guid" />
+      </EntityType>
+      <EntityType Name="opportunity" BaseType="mscrm.crmbaseentity">
+        <Key><PropertyRef Name="opportunityid" /></Key>
+        <Property Name="opportunityid" Type="Edm.Guid" />
+      </EntityType>
+      <EntityType Name="activitypointer" BaseType="mscrm.crmbaseentity" Abstract="true">
+        <Key><PropertyRef Name="activityid" /></Key>
+        <Property Name="activityid" Type="Edm.Guid" />
+      </EntityType>
+      <EntityType Name="email" BaseType="mscrm.activitypointer">
+        <Property Name="sender" Type="Edm.String" />
+      </EntityType>
+      <Action Name="Merge">
+        <Parameter Name="Target" Type="mscrm.crmbaseentity" Nullable="false" />
+        <Parameter Name="Subordinate" Type="mscrm.crmbaseentity" Nullable="false" />
+      </Action>
+      <Function Name="InitializeFrom">
+        <Parameter Name="EntityMoniker" Type="mscrm.crmbaseentity" Nullable="false" />
+        <Parameter Name="TargetEntityName" Type="Edm.String" Nullable="false" />
+        <ReturnType Type="mscrm.crmbaseentity" />
+      </Function>
+      <EntityContainer Name="System">
+        <EntitySet Name="accounts" EntityType="Microsoft.Dynamics.CRM.account" />
+        <EntitySet Name="opportunities" EntityType="Microsoft.Dynamics.CRM.opportunity" />
+        <EntitySet Name="activitypointers" EntityType="Microsoft.Dynamics.CRM.activitypointer" />
+        <EntitySet Name="emails" EntityType="Microsoft.Dynamics.CRM.email" />
+      </EntityContainer>
+    </Schema>
+  </edmx:DataServices>
+</edmx:Edmx>`;
+
+  const BASE = "https://contoso.crm.dynamics.com/api/data/v9.2";
+  let out: string;
+  interface RefModule {
+    createEntityReference(
+      logicalName: string,
+      id: string,
+      options?: { primaryIdAttribute?: string; entitySetName?: string }
+    ): Record<string, unknown>;
+    getEntitySetNameFromReference(ref: Record<string, unknown>): string;
+  }
+  type Op = new (...args: unknown[]) => {
+    toRequestInformation(baseUrl: string): { url: string; body?: unknown };
+  };
+  const load = async <T>(path: string): Promise<T> => {
+    const mod: unknown = await import(join(out, path));
+    return mod as T;
+  };
+
+  beforeAll(async () => {
+    vi.spyOn(console, "log").mockImplementation(() => undefined);
+    out = await mkdtemp(join(OUT_ROOT, ".gen-72-"));
+    const csdl = parseEdmx(REFS_EDMX);
+    await generateActions(csdl, join(out, "actions"), false);
+    await generateFunctions(csdl, join(out, "functions"), false);
+  });
+
+  afterAll(async () => {
+    vi.restoreAllMocks();
+    await rm(out, { recursive: true, force: true });
+  });
+
+  it("parses entity keys", () => {
+    const csdl = parseEdmx(REFS_EDMX);
+    expect(csdl.entityTypes.find((t) => t.name === "account")?.key).toEqual(["accountid"]);
+    expect(csdl.entityTypes.find((t) => t.name === "email")?.key).toEqual([]);
+  });
+
+  it("createEntityReference returns the Web API shape, keyed by the CSDL primary key", async () => {
+    for (const pkg of ["actions", "functions"]) {
+      const refs = await load<RefModule>(`${pkg}/types/EntityReference.ts`);
+      expect(JSON.stringify(refs.createEntityReference("account", "a1"))).toBe(
+        '{"@odata.type":"Microsoft.Dynamics.CRM.account","accountid":"a1"}'
+      );
+      // An activity inherits activitypointer's key
+      expect(JSON.stringify(refs.createEntityReference("email", "e1"))).toBe(
+        '{"@odata.type":"Microsoft.Dynamics.CRM.email","activityid":"e1"}'
+      );
+      const opp = refs.createEntityReference("opportunity", "o1");
+      expect(opp).toMatchObject({ logicalName: "opportunity", id: "o1" });
+      expect(refs.getEntitySetNameFromReference(opp)).toBe("opportunities");
+      // A table the CSDL doesn't know: <name>id key, and the set must be given
+      const custom = refs.createEntityReference("new_thing", "n1");
+      expect(JSON.stringify(custom)).toBe(
+        '{"@odata.type":"Microsoft.Dynamics.CRM.new_thing","new_thingid":"n1"}'
+      );
+      expect(() => refs.getEntitySetNameFromReference(custom)).toThrow(/entity set of 'new_thing'/);
+      const given = refs.createEntityReference("new_thing", "n1", { entitySetName: "new_things" });
+      expect(refs.getEntitySetNameFromReference(given)).toBe("new_things");
+    }
+  });
+
+  it("an action body carries the reference in the Web API shape", async () => {
+    const refs = await load<RefModule>("actions/types/EntityReference.ts");
+    const { MergeAction } = await load<{ MergeAction: Op }>("actions/MergeAction.ts");
+    const info = new MergeAction(
+      refs.createEntityReference("account", "a1"),
+      refs.createEntityReference("account", "a2")
+    ).toRequestInformation(BASE);
+    expect(JSON.parse(JSON.stringify(info.body))).toEqual({
+      Target: { "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "a1" },
+      Subordinate: { "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "a2" },
+    });
+  });
+
+  it("a function parameter is @odata.id from the CSDL entity set; an unknown set throws", async () => {
+    const refs = await load<RefModule>("functions/types/EntityReference.ts");
+    const { InitializeFromFunction } = await load<{ InitializeFromFunction: Op }>(
+      "functions/InitializeFromFunction.ts"
+    );
+    const url = new InitializeFromFunction(
+      refs.createEntityReference("opportunity", "o1"),
+      "account"
+    ).toRequestInformation(BASE).url;
+    expect(decodeURIComponent(url)).toContain('@p1={"@odata.id":"opportunities(o1)"}');
+    const unknown = new InitializeFromFunction(refs.createEntityReference("new_thing", "n1"), "x");
+    expect(() => unknown.toRequestInformation(BASE)).toThrow(/needs an entitySetName/);
+  });
+});

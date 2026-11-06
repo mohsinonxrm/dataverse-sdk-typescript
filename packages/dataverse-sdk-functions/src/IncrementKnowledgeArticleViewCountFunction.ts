@@ -1,7 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { EntityReference } from "./types/EntityReference.js";
-import { getEntitySetNameFromReference } from "./types/EntityReference.js";
 
 /**
  * Response from IncrementKnowledgeArticleViewCount function
@@ -31,12 +30,7 @@ export class IncrementKnowledgeArticleViewCountFunction implements Executable<In
     const aliases: string[] = [];
     if (this.source !== undefined) {
       aliases.push(`Source=@p1`);
-      params.append(
-        "@p1",
-        JSON.stringify({
-          "@odata.id": `${getEntitySetNameFromReference(this.source)}(${this.source.id})`,
-        })
-      );
+      params.append("@p1", formatParameterAlias(this.source, "mscrm.crmbaseentity", "EntityType"));
     }
     if (this.viewDate !== undefined) {
       aliases.push(`ViewDate=@p2`);

@@ -1,7 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { EntityReference } from "./types/EntityReference.js";
-import { getEntitySetNameFromReference } from "./types/EntityReference.js";
 
 /**
  * Response from RetrieveTimelineWallRecords function
@@ -36,12 +35,7 @@ export class RetrieveTimelineWallRecordsFunction implements Executable<RetrieveT
     }
     if (this.target !== undefined) {
       aliases.push(`Target=@p2`);
-      params.append(
-        "@p2",
-        JSON.stringify({
-          "@odata.id": `${getEntitySetNameFromReference(this.target)}(${this.target.id})`,
-        })
-      );
+      params.append("@p2", formatParameterAlias(this.target, "mscrm.crmbaseentity", "EntityType"));
     }
     if (this.rollupType !== undefined) {
       aliases.push(`RollupType=@p3`);
