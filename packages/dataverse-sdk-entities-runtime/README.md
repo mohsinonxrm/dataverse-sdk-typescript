@@ -41,6 +41,17 @@ const account: IEntity = {
 because the Web API rejects unknown properties. Send entities through `formatEntityForWrite()`
 rather than posting them as they are.
 
+Any other property is `unknown` (`[key: string]: unknown`). A generated interface that extends
+`IEntity` declares its columns' types; for a column it doesn't declare, check the value before
+using it:
+
+```typescript
+const record = await client.api(`accounts(${id})`).get<IEntity>();
+
+// record.name.toUpperCase(); // error: 'record.name' is of type 'unknown'
+if (typeof record.name === "string") console.log(record.name.toUpperCase());
+```
+
 ### `EntityReference`
 
 Represents a reference to another entity record (for lookups).

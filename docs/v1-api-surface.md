@@ -275,14 +275,14 @@ Message classes implement the `Executable<TResponse>` interface from `@mohsinonx
 
 ### 7.2 Batch results and errors
 
-- `interface BatchResponseStep`
+- `interface BatchResponseStep<TBody = unknown>` _(`body` is `unknown` unless the caller names its type)_
 - `interface BatchExecutionResult` (`responses`, `results`, `errors`, `success`, `skippedRequestIds`, `stoppedEarly`, counts)
 - `class DataverseBatchError` _(this package's own class, with `result`, `requestErrors` and `totalRequests`; distinct from core's `DataverseBatchError`)_, `interface DataverseBatchErrorInit`
 
 ### 7.3 Codec
 
 - `function encodeBatchRequest(items, boundary, options?)`, `interface EncodeBatchOptions`, `const JSON_PART_CONTENT_TYPE`
-- `function decodeBatchResponse(body, contentType)`, `interface BatchResponsePart`, `function extractBoundary(contentType)`
+- `function decodeBatchResponse(body, contentType)`, `interface BatchResponsePart<TBody = unknown>`, `function extractBoundary(contentType)`
 - `function generateBoundary()`, `function generateChangesetBoundary()`
 
 ---

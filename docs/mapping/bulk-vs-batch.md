@@ -256,7 +256,7 @@ console.log("Synced", products.length, "products");
 **Why:** Multiple GETs, different entity types, reduce HTTP requests
 
 ```typescript
-import { BatchRequestBuilder } from "@mohsinonxrm/dataverse-sdk-batch";
+import { BatchRequestBuilder, type BatchResponseStep } from "@mohsinonxrm/dataverse-sdk-batch";
 
 const batch = new BatchRequestBuilder(client);
 
@@ -267,10 +267,12 @@ batch.addRequest("opportunities", "GET", "opportunities?$filter=statecode eq 0")
 
 const result = await batch.execute();
 
-// Bodies are already parsed JSON, keyed by request id
+// Bodies are already parsed JSON, keyed by request id. They are `unknown`: name the type of the
+// one you read.
+type Page = BatchResponseStep<{ value: Array<Record<string, unknown>> }>;
 const account = result.responses.get("account")?.body;
-const contacts = result.responses.get("contacts")?.body.value;
-const opportunities = result.responses.get("opportunities")?.body.value;
+const contacts = (result.responses.get("contacts") as Page | undefined)?.body?.value;
+const opportunities = (result.responses.get("opportunities") as Page | undefined)?.body?.value;
 ```
 
 ## Performance Considerations

@@ -176,7 +176,6 @@ export function generateUUID(): string {
  * // Result: '{"name":"Account","revenue":1000000}'
  * ```
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function serializeContent(content: unknown): BodyInit {
   if (content === null || content === undefined) {
     return "";

@@ -207,7 +207,9 @@ describe("BatchRequestBuilder", () => {
         ["who", 200],
         ["top", 200],
       ]);
-      expect(result.responses.get("who")?.body.UserId).toBe("10000000-0000-0000-0000-000000000003");
+      expect(result.responses.get("who")?.body).toMatchObject({
+        UserId: "10000000-0000-0000-0000-000000000003",
+      });
       expect(result.successfulRequests).toBe(2);
       expect(result.stoppedEarly).toBe(false);
       expect(result.skippedRequestIds).toEqual([]);
@@ -257,7 +259,7 @@ describe("BatchRequestBuilder", () => {
       const error = (await builder.execute().catch((e: unknown) => e)) as DataverseBatchError;
       expect(error).toBeInstanceOf(DataverseBatchError);
       expect(error.getFailedRequestIds()).toEqual(["2"]);
-      expect(error.getErrorForRequest("2")?.body.error.code).toBe("0x80040217");
+      expect(error.getErrorForRequest("2")?.body).toMatchObject({ error: { code: "0x80040217" } });
       expect(error.successfulRequests).toBe(0);
       expect(error.failedRequests).toBe(1);
     });

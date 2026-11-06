@@ -154,7 +154,9 @@ describe("batch: wire contract", () => {
       ["acct", 204],
       ["contact", 204],
     ]);
-    expect(result.responses.get("who")?.body.UserId).toBe("10000000-0000-0000-0000-000000000003");
+    expect(result.responses.get("who")?.body).toMatchObject({
+      UserId: "10000000-0000-0000-0000-000000000003",
+    });
   });
 
   it("#54: a 404 $batch with a multipart body is decoded, not thrown as a transport error", async () => {

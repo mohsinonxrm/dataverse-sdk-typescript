@@ -60,7 +60,7 @@ pnpm lint
 ### TypeScript
 
 - **TypeScript strict mode** is required
-- **No `any`** in new public APIs (internal use with `@internal` tag allowed). A few older signatures still use it (`OrganizationService<T = any>`, `IEntity`'s index signature, `BatchRequestBuilder.addRequest(body)`); don't add more, and prefer `unknown` or a generic
+- **No `any`** in the public API. Use `unknown` for values the SDK can't know (response bodies, request bodies, extra properties), with a generic defaulting to `unknown` where the caller knows the type (`BatchResponseStep<TBody = unknown>`). Lint enforces it (`@typescript-eslint/no-explicit-any` is an error); a disable comment needs a reason and is only for internal code
 - Prefer discriminated unions over string flags
 
 ### Public APIs

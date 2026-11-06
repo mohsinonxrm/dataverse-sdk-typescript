@@ -114,12 +114,9 @@ program
       );
     } catch (error: unknown) {
       spinner.fail(chalk.red("Generation failed"));
-      // eslint-disable-next-line @typescript-eslint/restrict-plus-operands, @typescript-eslint/no-explicit-any
-      console.error(chalk.red("\n" + (error as any).message));
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if ((error as any).stack) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        console.error(chalk.dim((error as any).stack));
+      console.error(chalk.red("\n" + errorMessage(error)));
+      if (error instanceof Error && error.stack) {
+        console.error(chalk.dim(error.stack));
       }
       process.exit(1);
     }
@@ -219,10 +216,14 @@ program
       );
     } catch (error: unknown) {
       console.log(chalk.red("✗ Validation failed"));
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      console.error(chalk.red((error as any).message));
+      console.error(chalk.red(errorMessage(error)));
       process.exit(1);
     }
   });
+
+/** The message of a caught value: an Error's message, or the value as a string. */
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
 
 program.parse();

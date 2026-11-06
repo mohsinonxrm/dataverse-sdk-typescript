@@ -30,9 +30,12 @@ export interface IEntity {
    */
   logicalName?: string;
 
-  /** Allow additional properties for dynamic attributes */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any;
+  /**
+   * Any other column or annotation. Values are `unknown`: a generated interface that extends
+   * `IEntity` declares its columns' types; for a property it doesn't declare, check the value
+   * before using it.
+   */
+  [key: string]: unknown;
 }
 
 /**

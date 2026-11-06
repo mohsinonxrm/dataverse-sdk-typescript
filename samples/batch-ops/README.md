@@ -283,20 +283,24 @@ interface BatchExecutionResult {
   stoppedEarly: boolean;
 }
 
-interface BatchResponseStep {
+interface BatchResponseStep<TBody = unknown> {
   id: string;
   status: number; // 200, 201, 204, 4xx, 5xx
   headers: Record<string, string>;
-  body?: any; // parsed JSON, otherwise the text
+  body?: TBody; // parsed JSON, otherwise the text; unknown unless you name its type
 }
 ```
+
+A batch mixes responses, so a body is `unknown`: name its type where you read it.
 
 ```typescript
 const result = await batch.execute({ continueOnError: true });
 
 for (const [id, response] of result.responses) {
   if (response.status === 201) {
-    console.log(id, "created", response.body?.accountid); // with Prefer: return=representation
+    // With Prefer: return=representation, a create answers with the record
+    const created = response as BatchResponseStep<{ accountid: string }>;
+    console.log(id, "created", created.body?.accountid);
   } else if (response.status === 204) {
     console.log(id, "succeeded (no content)");
   }
