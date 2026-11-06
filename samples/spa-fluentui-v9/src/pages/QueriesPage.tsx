@@ -207,6 +207,24 @@ export default function QueriesPage() {
       </Scenario>
 
       <Scenario
+        title="Aggregate with $apply"
+        description="apply() sends $apply: the server filters, groups and counts, and returns one row per group."
+        code={snippet(source, "aggregate")}
+        run={(sdk, signal) => queries.accountsPerCity(sdk, signal)}
+        renderResult={(rows) => (
+          <RecordsGrid
+            label="Active accounts per city"
+            rows={rows}
+            getRowId={(r) => r.address1_city ?? "(none)"}
+            columns={[
+              { key: "address1_city", label: "City" },
+              { key: "count", label: "Active accounts" },
+            ]}
+          />
+        )}
+      />
+
+      <Scenario
         title="List the views of a table"
         description="System views are savedquery records. This fills the list of the next scenario."
         code={snippet(source, "list-views")}

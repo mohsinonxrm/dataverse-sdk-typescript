@@ -18,6 +18,8 @@ export interface Connection {
   environmentUrl: string;
   tokenProvider: AccessTokenProvider;
   scopes?: string[];
+  /** Token scopes for another environment (discovery's connection test). */
+  scopesFor?: (environmentUrl: string) => string[] | undefined;
   fetchProvider?: FetchProvider;
 }
 
@@ -29,6 +31,8 @@ export interface Sdk {
   client: DataverseClient;
   environmentUrl: string;
   tokenProvider: AccessTokenProvider;
+  /** Token scopes for another environment of the same user. */
+  scopesFor: (environmentUrl: string) => string[] | undefined;
   /** The `fetch` the session sends requests with (the browser's, or demo mode's). */
   fetchProvider: FetchProvider;
   /** Options for `new DiscoveryClient(tokenProvider, options)` that record its requests too. */
@@ -37,6 +41,7 @@ export interface Sdk {
   createClient(overrides?: Partial<DataverseClientOptions>): DataverseClient;
 }
 
+// #region hooks
 /** The SDK's `Logger` hook, writing to the activity log. */
 export const activityLogger: Logger = {
   debug: (message, meta) =>
@@ -78,6 +83,8 @@ export const activityTelemetry: TelemetryClient = {
   },
 };
 
+// #endregion
+
 // #region client-setup
 export function createClient(
   connection: Connection,
@@ -118,6 +125,7 @@ export function createSdk(connection: Connection, onExchange: ExchangeListener):
     client: createClient(connection, onExchange),
     environmentUrl: connection.environmentUrl,
     tokenProvider: connection.tokenProvider,
+    scopesFor: (url) => connection.scopesFor?.(url),
     fetchProvider: connection.fetchProvider ?? {
       fetch: (input, init) => globalThis.fetch(input, init),
     },

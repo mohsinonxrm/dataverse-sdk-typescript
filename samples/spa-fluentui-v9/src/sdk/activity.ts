@@ -31,6 +31,8 @@ export const activity = {
     entries = [...entries.slice(-(LIMIT - 1)), { ...entry, id: nextId++, time: new Date() }];
     emit();
   },
+  /** Every entry, oldest first. */
+  snapshot: (): readonly ActivityEntry[] => entries,
   clear(): void {
     entries = [];
     emit();

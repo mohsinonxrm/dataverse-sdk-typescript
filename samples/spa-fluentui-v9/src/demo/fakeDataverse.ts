@@ -341,6 +341,9 @@ function getCollection(state: DemoState, table: TableDef, req: FakeRequest): Fak
   if (annotations)
     applied.push(`odata.include-annotations="${prefs.get("odata.include-annotations") ?? "*"}"`);
 
+  const apply = q.get("$apply");
+  if (apply !== null) return aggregate(table, apply);
+
   const fetchXml = q.get("fetchXml");
   const savedQuery = q.get("savedQuery");
   if (fetchXml !== null || savedQuery !== null) {
@@ -396,6 +399,32 @@ function getCollection(state: DemoState, table: TableDef, req: FakeRequest): Fak
     body["@odata.nextLink"] = next.href;
   }
   return json(200, body, applied.length ? { "preference-applied": applied.join(",") } : {});
+}
+
+/** `$apply` for the demo: an optional `filter(...)/`, then `groupby((col),aggregate($count as x))`. */
+function aggregate(table: TableDef, apply: string): FakeResponse {
+  const m = /^(?:filter\((.+)\)\/)?groupby\(\((\w+)\)(?:,aggregate\(\$count as (\w+)\))?\)$/.exec(
+    apply
+  );
+  if (!m)
+    throw new QuerySyntaxError(`The $apply expression '${apply}' is not supported in demo mode.`);
+  const [, filter, column = "", alias] = m;
+  if (!knownField(table)(column))
+    throw new QuerySyntaxError(`Could not find a property named '${column}'.`);
+  const groups = new Map<string, { value: unknown; count: number }>();
+  for (const row of query(table, { filter })) {
+    const key = str(row[column]);
+    const group = groups.get(key) ?? { value: row[column] ?? null, count: 0 };
+    group.count++;
+    groups.set(key, group);
+  }
+  return json(200, {
+    "@odata.context": `${DEMO_API_URL}/$metadata#${table.entitySetName}`,
+    value: [...groups.values()].map((g) => ({
+      [column]: g.value,
+      ...(alias ? { [alias]: g.count } : {}),
+    })),
+  });
 }
 
 // ───────────────────────────── writing rows ─────────────────────────────
@@ -760,6 +789,18 @@ async function route(state: DemoState, req: FakeRequest): Promise<FakeResponse> 
   if (rest === "CommitFileBlocksUpload" && method === "POST") return commitUpload(state, req);
   if (rest.startsWith("EntityDefinitions"))
     return entityDefinitionsResponse(state.schema, req, rest);
+  if (
+    ["CanBeReferenced", "CanBeReferencing", "CanManyToMany"].includes(rest) &&
+    method === "POST"
+  ) {
+    const name = str(parseBody(req).EntityName);
+    const known = state.schema.byLogicalName(name);
+    if (!known) return badRequest(`The entity '${name}' does not exist.`);
+    return json(200, {
+      "@odata.context": `${DEMO_API_URL}/$metadata#Microsoft.Dynamics.CRM.${rest}Response`,
+      [rest]: known.logicalName !== "savedquery",
+    });
+  }
 
   const m = /^([A-Za-z_]+)(?:\(([^)]*)\))?(?:\/([A-Za-z_]+))?(?:\/(\$value|\$ref))?$/.exec(rest);
   const table = m ? state.schema.bySetName(m[1] ?? "") : undefined;

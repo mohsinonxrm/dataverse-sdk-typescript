@@ -67,6 +67,7 @@ page, where each step is a separate scenario.
   - expanding a collection with its own `select`, `orderBy` and `top`;
   - paging with `prefer().maxPageSize()`, `iterate()` (stopping early) and `getAll({ maxPages })`;
   - `client.fetchXml()` with `parsePagingCookie()` and `buildPagedFetchXml()` for page 2;
+  - `apply()` (`$apply`): filter, group by city and count on the server;
   - listing system views, and running one with `client.savedQuery()`.
 - **Create, read, update, delete** (`/data/crud`): `createAndGetId()`, `get()` with formatted
   values, `ifMatch("*").patch()` (update only, never upsert), and `delete()` behind a confirmation
@@ -86,8 +87,36 @@ page, where each step is a separate scenario.
 - **OrganizationService** (`/operations/xrm`): `create`, `update`, `associate`, `retrieve` with
   expand, `retrieveMultiple`, `setState` and `delete`; `whoAmI()` and `execute()` with a typed
   function.
+- **Actions, functions and messages** (`/operations/messages`): `RetrieveVersionFunction` and
+  `RetrieveTotalRecordCountFunction` through `client.execute()`; `InitializeFromFunction` with
+  `createEntityReference()`, whose template then creates a contact; `CanManyToManyAction` from the
+  actions package, `CanBeReferencedRequest` from the messages package through
+  `OrganizationService.execute()`, and a generic `OrganizationRequest` for any action or custom API.
+
+### Metadata
+
+- **Metadata browser** (`/metadata`): `MetadataClient.getEntityDefinitions()` with a searchable
+  list of tables; `getAttributeDefinitions()` for a table's columns; and typed casts:
+  `PicklistAttributeMetadata` with `OptionSet` options, `StringAttributeMetadata` with `MaxLength`,
+  `LookupAttributeMetadata` with `Targets`.
+
+### Files
+
+- **Files and images** (`/files`): `FileColumnClient.upload()` in blocks with a progress bar (a
+  chosen file, or a generated sample image on the account's `entityimage`, its profile picture),
+  `download()` as a `Blob` with an image preview, and `delete()` behind a confirmation dialog.
+
+### Environments
+
+- **Environments** (`/environments`): `DiscoveryClient.listOrganizations()` with a region filter
+  and `toEnvironment()`; a connection test (`WhoAmI` and `RetrieveVersion`) against the chosen
+  environment; and **Use**, which switches every scenario to it.
 
 ### Diagnostics
+
+- **Telemetry and logging** (`/diagnostics/telemetry`): the `logger`, `telemetry` and
+  `retry.onRetry` hooks every client is created with, feeding a live log you can filter by source
+  and level; a scenario that produces a retry, dependencies and a failure.
 
 - **Error handling** (`/diagnostics/errors`): one scenario per error class:
   - `DataverseODataError` for a 400 and a 404;

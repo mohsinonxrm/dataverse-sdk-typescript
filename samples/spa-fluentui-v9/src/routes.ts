@@ -6,14 +6,19 @@ import { lazy } from "react";
 import type { ComponentType, LazyExoticComponent } from "react";
 import type { FluentIcon } from "@fluentui/react-icons";
 import {
+  BookDatabase20Regular,
   BoxMultiple20Regular,
   DatabaseSearch20Regular,
+  DocumentArrowUp20Regular,
   ErrorCircle20Regular,
+  Flash20Regular,
+  Globe20Regular,
   Home20Regular,
   LockClosed20Regular,
   Options20Regular,
   Organization20Regular,
   PersonSwap20Regular,
+  Pulse20Regular,
   TableEdit20Regular,
 } from "@fluentui/react-icons";
 
@@ -104,6 +109,46 @@ export const ROUTES: AppRoute[] = [
     icon: Organization20Regular,
     summary: "The C# SDK's IOrganizationService shape from @mohsinonxrm/dataverse-sdk-xrm.",
     component: lazy(() => import("./pages/XrmPage")),
+  },
+  {
+    path: "/operations/messages",
+    title: "Actions, functions and messages",
+    group: "Operations",
+    icon: Flash20Regular,
+    summary: "RetrieveTotalRecordCount, InitializeFrom, CanManyToMany and OrganizationRequest.",
+    component: lazy(() => import("./pages/OperationsPage")),
+  },
+  {
+    path: "/metadata",
+    title: "Metadata browser",
+    group: "Metadata",
+    icon: BookDatabase20Regular,
+    summary: "Tables, then their columns, with typed attribute casts.",
+    component: lazy(() => import("./pages/MetadataPage")),
+  },
+  {
+    path: "/files",
+    title: "Files and images",
+    group: "Files",
+    icon: DocumentArrowUp20Regular,
+    summary: "Upload in blocks with progress, download and delete with FileColumnClient.",
+    component: lazy(() => import("./pages/FilesPage")),
+  },
+  {
+    path: "/environments",
+    title: "Environments",
+    group: "Environments",
+    icon: Globe20Regular,
+    summary: "DiscoveryClient: list environments by region, test one and switch to it.",
+    component: lazy(() => import("./pages/DiscoveryPage")),
+  },
+  {
+    path: "/diagnostics/telemetry",
+    title: "Telemetry and logging",
+    group: "Diagnostics",
+    icon: Pulse20Regular,
+    summary: "The logger, telemetry and retry hooks, in a live log.",
+    component: lazy(() => import("./pages/TelemetryPage")),
   },
   {
     path: "/diagnostics/errors",
