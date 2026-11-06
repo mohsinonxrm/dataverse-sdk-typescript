@@ -1,264 +1,198 @@
 # Supported Functions Reference
 
-Complete reference of all **229 typed Web API functions** available in `@mohsinonxrm/dataverse-sdk-functions`.
+> **Package**: `@mohsinonxrm/dataverse-sdk-functions`
+>
+> **Coverage**: <!-- count:functions -->281<!-- /count --> typed Web API functions, generated from a Dataverse `$metadata`. The lists below are generated from the package source by `pnpm --filter generate-sdk-types docs`, so every class, constructor and route shown exists.
 
-Functions are **read-only operations** that execute via HTTP GET and should not have side effects.
+Functions are **GET operations** without side effects. Each function is a class whose constructor
+takes the parameters **positionally, in `$metadata` order**. Run it with `client.execute(fn)`.
+Parameters go in parameter aliases (`WhoAmI()`, `RetrieveTotalRecordCount(EntityNames=@p1)?@p1=…`),
+formatted for their EDM type; an argument left `undefined` is left out.
 
-## Usage Patterns
-
-### Using Typed Functions (Recommended)
+## Usage
 
 ```typescript
-import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
-import { WhoAmIFunction, InitializeFromFunction } from "@mohsinonxrm/dataverse-sdk-functions";
+import {
+  InitializeFromFunction,
+  WhoAmIFunction,
+  createEntityReference,
+} from "@mohsinonxrm/dataverse-sdk-functions";
 
-const client = new DataverseClient({ baseUrl, tokenProvider });
+const { UserId, BusinessUnitId } = await client.execute(new WhoAmIFunction());
 
-// Execute WhoAmI
-const whoAmI = new WhoAmIFunction();
-const userInfo = await client.execute(whoAmI);
-console.log("User ID:", userInfo.UserId);
-
-// Execute InitializeFrom
-const initFunc = new InitializeFromFunction("account", accountId, "contact");
-const prepopulatedContact = await client.execute(initFunc);
+// A new contact pre-filled from an account, as the mapping on the account-contact relationship says
+const contact = await client.execute(
+  new InitializeFromFunction(
+    createEntityReference("account", accountId), // EntityMoniker
+    undefined, // SkipParentalRelationshipMapping
+    "contact", // TargetEntityName
+    "ValidForCreate" // TargetFieldType
+  )
+);
 ```
 
-### Using Raw API
+The same call through the raw API:
 
 ```typescript
-// WhoAmI via raw API
-const userInfo = await client.api("/WhoAmI").get();
+const me = await client.api("WhoAmI()").get<{ UserId: string }>();
+```
 
-// InitializeFrom via raw API. The builder has no method for parameter aliases, so they go in
-// the path's query string (the builder adds its own query options, such as $select, to it).
-const p1 = encodeURIComponent(JSON.stringify({ "@odata.id": `accounts(${accountId})` }));
-const contact = await client
-  .api(
-    "/InitializeFrom(EntityMoniker=@p1,TargetEntityName=@p2,TargetFieldType=@p3)" +
-      `?@p1=${p1}&@p2='contact'&@p3=Microsoft.Dynamics.CRM.TargetFieldType'ValidForCreate'`
-  )
+Bound functions take the record id first, and an operation declared with several bindings has one
+class per binding (`RetrievePrincipalAccess_systemuserFunction`, `RetrievePrincipalAccess_teamFunction`).
+
+## Platform functions
+
+Each line shows the constructor (`?` marks an argument you can leave out) and the request it sends.
+
+### Identity and organization
+
+<!-- operations:functions
+WhoAmI: The calling user, business unit and organization.
+RetrieveVersion: The Dataverse version.
+RetrieveCurrentOrganization: Details of the current organization.
+RetrieveOrganizationInfo: The organization's solutions and settings.
+RetrieveDeploymentLicenseType: The deployment's license type.
+-->
+
+- `new WhoAmIFunction()` (`GET /WhoAmI`): The calling user, business unit and organization.
+- `new RetrieveVersionFunction()` (`GET /RetrieveVersion`): The Dataverse version.
+- `new RetrieveCurrentOrganizationFunction(accessType)` (`GET /RetrieveCurrentOrganization`): Details of the current organization.
+- `new RetrieveOrganizationInfoFunction()` (`GET /RetrieveOrganizationInfo`): The organization's solutions and settings.
+- `new RetrieveDeploymentLicenseTypeFunction()` (`GET /RetrieveDeploymentLicenseType`): The deployment's license type.
+
+<!-- /operations -->
+
+### Records
+
+<!-- operations:functions
+InitializeFrom: A new record pre-filled from an existing one, by the relationship mapping.
+RetrieveTotalRecordCount: Approximate row counts for tables.
+CalculateRollupField: Recalculate a rollup column now.
+RetrieveDuplicates: Records that duplicate a given record.
+CalculateTotalTimeIncident: Total time spent on a case.
+-->
+
+- `new InitializeFromFunction(entityMoniker, skipParentalRelationshipMapping, targetEntityName, targetFieldType, retrieveConsumableRecord?)` (`GET /InitializeFrom`): A new record pre-filled from an existing one, by the relationship mapping.
+- `new RetrieveTotalRecordCountFunction(entityNames)` (`GET /RetrieveTotalRecordCount`): Approximate row counts for tables.
+- `new CalculateRollupFieldFunction(target, fieldName)` (`GET /CalculateRollupField`): Recalculate a rollup column now.
+- `new RetrieveDuplicatesFunction(businessEntity, matchingEntityName, pagingInfo?)` (`GET /RetrieveDuplicates`): Records that duplicate a given record.
+- `new CalculateTotalTimeIncidentFunction(incidentId)` (`GET /incidents({incidentId})/Microsoft.Dynamics.CRM.CalculateTotalTimeIncident`): Total time spent on a case.
+
+<!-- /operations -->
+
+### Security and access
+
+<!-- operations:functions
+RetrievePrincipalAccess_systemuser: The access rights a user has to a record.
+RetrievePrincipalAccess_team: The access rights a team has to a record.
+RetrieveUserPrivileges: A user's privileges.
+-->
+
+- `new RetrievePrincipalAccess_systemuserFunction(systemuserId, target)` (`GET /systemusers({systemuserId})/Microsoft.Dynamics.CRM.RetrievePrincipalAccess`): The access rights a user has to a record.
+- `new RetrievePrincipalAccess_teamFunction(teamId, target)` (`GET /teams({teamId})/Microsoft.Dynamics.CRM.RetrievePrincipalAccess`): The access rights a team has to a record.
+- `new RetrieveUserPrivilegesFunction(systemuserId)` (`GET /systemusers({systemuserId})/Microsoft.Dynamics.CRM.RetrieveUserPrivileges`): A user's privileges.
+
+<!-- /operations -->
+
+### Metadata
+
+<!-- operations:functions
+RetrieveMetadataChanges: Metadata matching a query, and what changed since a version stamp.
+RetrieveAllEntities: All table definitions.
+RetrieveEntity: One table definition.
+GetValidReferencedEntities: Tables that can be the primary table of a 1:N relationship.
+GetValidReferencingEntities: Tables that can be the related table of a 1:N relationship.
+RetrieveFilteredForms: The forms a user can see for a table.
+IsComponentCustomizable: Whether a solution component can be customized.
+-->
+
+- `new RetrieveMetadataChangesFunction(query?, deletedMetadataFilters?, clientVersionStamp?, appModuleId?, retrieveAllSettings?)` (`GET /RetrieveMetadataChanges`): Metadata matching a query, and what changed since a version stamp.
+- `new RetrieveAllEntitiesFunction(entityFilters, retrieveAsIfPublished)` (`GET /RetrieveAllEntities`): All table definitions.
+- `new RetrieveEntityFunction(entityFilters, logicalName, metadataId, retrieveAsIfPublished)` (`GET /RetrieveEntity`): One table definition.
+- `new GetValidReferencedEntitiesFunction(referencingEntityName?)` (`GET /GetValidReferencedEntities`): Tables that can be the primary table of a 1:N relationship.
+- `new GetValidReferencingEntitiesFunction(referencedEntityName?)` (`GET /GetValidReferencingEntities`): Tables that can be the related table of a 1:N relationship.
+- `new RetrieveFilteredFormsFunction(entityLogicalName, formType, user)` (`GET /systemforms/Microsoft.Dynamics.CRM.RetrieveFilteredForms`): The forms a user can see for a table.
+- `new IsComponentCustomizableFunction(componentId, componentType)` (`GET /IsComponentCustomizable`): Whether a solution component can be customized.
+
+<!-- /operations -->
+
+### Solutions
+
+<!-- operations:functions
+RetrieveDependentComponents: Components that depend on a component.
+RetrieveRequiredComponents: Components a component needs.
+RetrieveMissingDependencies: Components a solution needs that the org lacks.
+RetrieveAppComponents: The components of an app.
+RetrieveUnpublished_savedquery: The unpublished version of a view (one class per binding).
+-->
+
+- `new RetrieveDependentComponentsFunction(objectId, componentType)` (`GET /RetrieveDependentComponents`): Components that depend on a component.
+- `new RetrieveRequiredComponentsFunction(objectId, componentType)` (`GET /RetrieveRequiredComponents`): Components a component needs.
+- `new RetrieveMissingDependenciesFunction(solutionUniqueName)` (`GET /RetrieveMissingDependencies`): Components a solution needs that the org lacks.
+- `new RetrieveAppComponentsFunction(appModuleId)` (`GET /RetrieveAppComponents`): The components of an app.
+- `new RetrieveUnpublished_savedqueryFunction(savedqueryId)` (`GET /savedqueries({savedqueryId})/Microsoft.Dynamics.CRM.RetrieveUnpublished`): The unpublished version of a view (one class per binding).
+
+<!-- /operations -->
+
+### Time, languages and queries
+
+<!-- operations:functions
+LocalTimeFromUtcTime: Convert UTC to a time zone's local time.
+UtcTimeFromLocalTime: Convert a time zone's local time to UTC.
+GetTimeZoneCodeByLocalizedName: The time zone code for a localized name.
+GetAllTimeZonesWithDisplayName: All time zones with their display names.
+ExpandCalendar: The time blocks of a calendar in a range.
+RetrieveAvailableLanguages: Languages that can be provisioned.
+RetrieveProvisionedLanguages: Provisioned languages.
+FetchXmlToQueryExpression: Convert FetchXML to a `QueryExpression`.
+ValidateFetchXmlExpression: Validate a FetchXML query.
+FormatAddress: Format an address for a country.
+IsValidStateTransition: Whether a record can move to a state and status.
+-->
+
+- `new LocalTimeFromUtcTimeFunction(timeZoneCode, utcTime)` (`GET /LocalTimeFromUtcTime`): Convert UTC to a time zone's local time.
+- `new UtcTimeFromLocalTimeFunction(timeZoneCode, localTime)` (`GET /resourcegroups/Microsoft.Dynamics.CRM.UtcTimeFromLocalTime`): Convert a time zone's local time to UTC.
+- `new GetTimeZoneCodeByLocalizedNameFunction(localizedStandardName, localeId)` (`GET /GetTimeZoneCodeByLocalizedName`): The time zone code for a localized name.
+- `new GetAllTimeZonesWithDisplayNameFunction(localeId)` (`GET /timezonedefinitions/Microsoft.Dynamics.CRM.GetAllTimeZonesWithDisplayName`): All time zones with their display names.
+- `new ExpandCalendarFunction(calendarId, start, end)` (`GET /calendars({calendarId})/Microsoft.Dynamics.CRM.ExpandCalendar`): The time blocks of a calendar in a range.
+- `new RetrieveAvailableLanguagesFunction()` (`GET /RetrieveAvailableLanguages`): Languages that can be provisioned.
+- `new RetrieveProvisionedLanguagesFunction()` (`GET /RetrieveProvisionedLanguages`): Provisioned languages.
+- `new FetchXmlToQueryExpressionFunction(fetchXml)` (`GET /FetchXmlToQueryExpression`): Convert FetchXML to a `QueryExpression`.
+- `new ValidateFetchXmlExpressionFunction(fetchXml)` (`GET /ValidateFetchXmlExpression`): Validate a FetchXML query.
+- `new FormatAddressFunction(line1, city, stateOrProvince, postalCode, country)` (`GET /FormatAddress`): Format an address for a country.
+- `new IsValidStateTransitionFunction(entity, newState, newStatus)` (`GET /IsValidStateTransition`): Whether a record can move to a state and status.
+
+<!-- /operations -->
+
+### Sales and knowledge
+
+<!-- operations:functions
+GetDefaultPriceLevel: The default price list for a user.
+SearchByKeywordsKbArticle: Knowledge articles matching keywords.
+-->
+
+- `new GetDefaultPriceLevelFunction(entityName)` (`GET /pricelevels/Microsoft.Dynamics.CRM.GetDefaultPriceLevel`): The default price list for a user.
+- `new SearchByKeywordsKbArticleFunction(searchText, subject, useInflection)` (`GET /kbarticles/Microsoft.Dynamics.CRM.SearchByKeywordsKbArticle`): Knowledge articles matching keywords.
+
+<!-- /operations -->
+
+## Query functions in `$filter`
+
+The package also has classes for the query functions (`LastXDaysFunction`, `InFiscalYearFunction`,
+`UnderFunction`, `EqualUserIdFunction`, …), because `$metadata` declares them as functions. Dataverse
+only accepts them inside `$filter`, written with the column as `PropertyName`:
+
+```typescript
+const recent = await client
+  .api("accounts")
+  .filter("Microsoft.Dynamics.CRM.LastXDays(PropertyName='createdon',PropertyValue=30)")
   .get();
 ```
 
-## Platform Functions (Available in All Environments)
+See [Query functions](https://learn.microsoft.com/power-apps/developer/data-platform/webapi/reference/queryfunctions)
+for the list. Calling one of these classes with `client.execute` fails, as it does for any client.
 
-### Identity & Context
+## Related documentation
 
-| Function                              | Description                  | Response                                     |
-| ------------------------------------- | ---------------------------- | -------------------------------------------- |
-| `WhoAmIFunction`                      | Get current user information | `{ UserId, BusinessUnitId, OrganizationId }` |
-| `RetrieveCurrentOrganizationFunction` | Get organization details     | Organization entity                          |
-| `RetrieveVersionFunction`             | Get Dataverse version        | `{ Version }`                                |
-| `RetrieveOrganizationInfoFunction`    | Get org info for discovery   | Organization metadata                        |
-
-**Example:**
-
-```typescript
-import { WhoAmIFunction } from "@mohsinonxrm/dataverse-sdk-functions";
-
-const whoAmI = new WhoAmIFunction();
-const { UserId, BusinessUnitId, OrganizationId } = await client.execute(whoAmI);
-```
-
-### Entity Operations
-
-| Function                                 | Description                 | Parameters                           |
-| ---------------------------------------- | --------------------------- | ------------------------------------ |
-| `InitializeFromFunction`                 | Create record from template | sourceEntity, sourceId, targetEntity |
-| `CalculateRollupFieldFunction`           | Calculate rollup value      | entity, id, fieldName                |
-| `RetrieveRecordChangeHistoryFunction`    | Get audit history           | entity, id                           |
-| `RetrieveAttributeChangeHistoryFunction` | Get attribute audit history | entity, id, attribute                |
-
-**Example:**
-
-```typescript
-import { InitializeFromFunction } from "@mohsinonxrm/dataverse-sdk-functions";
-
-// Create contact from account template
-const init = new InitializeFromFunction("account", accountId, "contact");
-const prepopulated = await client.execute(init);
-// Use prepopulated values to create contact
-await client.api("contacts").post(prepopulated);
-```
-
-### Security & Access
-
-| Function                                       | Description               | Response             |
-| ---------------------------------------------- | ------------------------- | -------------------- |
-| `RetrievePrincipalAccessFunction`              | Get user access to record | `{ AccessRights }`   |
-| `RetrieveSharedPrincipalsAndAccessFunction`    | Get sharing details       | Array of principals  |
-| `RetrieveUserPrivilegesFunction`               | Get user privileges       | Array of privileges  |
-| `RetrieveTeamPrivilegesFunction`               | Get team privileges       | Array of privileges  |
-| `RetrieveUserQueuesFunction`                   | Get user's queues         | Array of queues      |
-| `RetrievePrincipalAttributePrivilegesFunction` | Get field-level security  | Attribute privileges |
-
-**Example:**
-
-```typescript
-import { RetrievePrincipalAccessFunction } from "@mohsinonxrm/dataverse-sdk-functions";
-
-const accessFunc = new RetrievePrincipalAccessFunction("account", accountId);
-const access = await client.execute(accessFunc);
-console.log("Access Rights:", access.AccessRights); // e.g., "ReadAccess,WriteAccess"
-```
-
-### Metadata Functions
-
-| Function                              | Description         | Use Case                 |
-| ------------------------------------- | ------------------- | ------------------------ |
-| `RetrieveMetadataChangesFunction`     | Get metadata delta  | Track schema changes     |
-| `RetrieveEntityFunction`              | Get entity metadata | Single entity details    |
-| `RetrieveAllEntitiesFunction`         | Get all entities    | Full schema discovery    |
-| `GetValidReferencedEntitiesFunction`  | Get lookup targets  | Relationship eligibility |
-| `GetValidReferencingEntitiesFunction` | Get lookup sources  | Relationship eligibility |
-| `GetValidManyToManyFunction`          | Get N:N candidates  | Relationship creation    |
-
-**Example:**
-
-```typescript
-import { RetrieveMetadataChangesFunction } from "@mohsinonxrm/dataverse-sdk-functions";
-
-const metadataFunc = new RetrieveMetadataChangesFunction({
-  Query: {
-    Criteria: {
-      FilterOperator: "And",
-      Conditions: [{ PropertyName: "LogicalName", ConditionOperator: "Equals", Value: "account" }],
-    },
-    Properties: { AllProperties: false, PropertyNames: ["DisplayName", "Attributes"] },
-  },
-  ClientVersionStamp: previousVersionStamp, // null for first call
-});
-
-const { EntityMetadata, ServerVersionStamp } = await client.execute(metadataFunc);
-// Store ServerVersionStamp for next call to get only changes
-```
-
-## Query Helper Functions
-
-### Fiscal Period Operators
-
-| Function                        | Description        | Use in $filter                                            |
-| ------------------------------- | ------------------ | --------------------------------------------------------- |
-| `InFiscalPeriodFunction`        | In fiscal period   | `createdon/InFiscalPeriod(@p1)?@p1=2`                     |
-| `InFiscalYearFunction`          | In fiscal year     | `createdon/InFiscalYear(@p1)?@p1=2024`                    |
-| `InFiscalPeriodAndYearFunction` | In period and year | `createdon/InFiscalPeriodAndYear(@p1,@p2)?@p1=2&@p2=2024` |
-| `LastFiscalPeriodFunction`      | Last fiscal period | `createdon/LastFiscalPeriod()`                            |
-| `LastFiscalYearFunction`        | Last fiscal year   | `createdon/LastFiscalYear()`                              |
-| `NextFiscalPeriodFunction`      | Next fiscal period | `createdon/NextFiscalPeriod()`                            |
-| `ThisFiscalPeriodFunction`      | This fiscal period | `createdon/ThisFiscalPeriod()`                            |
-| `ThisFiscalYearFunction`        | This fiscal year   | `createdon/ThisFiscalYear()`                              |
-
-These are primarily used in `$filter` expressions for queries, not as standalone function calls.
-
-### Date Range Operators
-
-| Function                 | Description       | Use in $filter                         |
-| ------------------------ | ----------------- | -------------------------------------- |
-| `TodayFunction`          | Today             | `createdon/Today()`                    |
-| `TomorrowFunction`       | Tomorrow          | `createdon/Tomorrow()`                 |
-| `YesterdayFunction`      | Yesterday         | `createdon/Yesterday()`                |
-| `ThisWeekFunction`       | This week         | `createdon/ThisWeek()`                 |
-| `ThisMonthFunction`      | This month        | `createdon/ThisMonth()`                |
-| `ThisYearFunction`       | This year         | `createdon/ThisYear()`                 |
-| `Last7DaysFunction`      | Last 7 days       | `createdon/Last7Days()`                |
-| `LastWeekFunction`       | Last week         | `createdon/LastWeek()`                 |
-| `LastMonthFunction`      | Last month        | `createdon/LastMonth()`                |
-| `LastXDaysFunction`      | Last X days       | `createdon/LastXDays(@p1)?@p1=30`      |
-| `LastXHoursFunction`     | Last X hours      | `createdon/LastXHours(@p1)?@p1=24`     |
-| `OlderThanXDaysFunction` | Older than X days | `createdon/OlderThanXDays(@p1)?@p1=90` |
-
-### Conditional Operators
-
-| Function                  | Description                  | Use in $filter                                  |
-| ------------------------- | ---------------------------- | ----------------------------------------------- |
-| `BetweenFunction`         | Between two values           | `revenue/Between(@p1,@p2)?@p1=1000&@p2=5000`    |
-| `NotBetweenFunction`      | Not between values           | `revenue/NotBetween(@p1,@p2)?@p1=1000&@p2=5000` |
-| `ContainsFunction`        | Contains value               | `name/Contains(@p1)?@p1='Contoso'`              |
-| `UnderFunction`           | In hierarchy under           | `accountid/Under(@p1)?@p1=<guid>`               |
-| `UnderOrEqualFunction`    | In or under hierarchy        | `accountid/UnderOrEqual(@p1)?@p1=<guid>`        |
-| `AboveFunction`           | In hierarchy above           | `accountid/Above(@p1)?@p1=<guid>`               |
-| `EqualUserIdFunction`     | Equals current user          | `ownerid/EqualUserId()`                         |
-| `EqualBusinessIdFunction` | Equals current business unit | `owningbusinessunit/EqualBusinessId()`          |
-
-## Service-Specific Functions
-
-### Customer Service (CCaaS)
-
-| Function                                       | Description          | Use Case              |
-| ---------------------------------------------- | -------------------- | --------------------- |
-| `CCaaS_GetAgentsFunction`                      | Get available agents | Agent routing         |
-| `CCaaS_GetPresenceFunction`                    | Get agent presence   | Availability checking |
-| `CCaaS_GetAgentsForConsultAndTransferFunction` | Get consult targets  | Transfer operations   |
-
-**Requires:** Omnichannel for Customer Service
-
-### Sales & Marketing
-
-| Function                                   | Description                    |
-| ------------------------------------------ | ------------------------------ |
-| `msdyn_GetSwarmParticipantDetailsFunction` | Get swarm participants         |
-| `msdyn_SelectNotToExceedFunction`          | Calculate select not-to-exceed |
-
-**Requires:** Dynamics 365 Sales
-
-### Utility Functions
-
-| Function                                 | Description                 | Response                 |
-| ---------------------------------------- | --------------------------- | ------------------------ |
-| `ExpandCalendarFunction`                 | Expand calendar to dates    | Array of date/time slots |
-| `QueryScheduleFunction`                  | Query schedule availability | Available time slots     |
-| `LocalTimeFromUtcTimeFunction`           | Convert UTC to local        | Local date/time          |
-| `UtcTimeFromLocalTimeFunction`           | Convert local to UTC        | UTC date/time            |
-| `FormatAddressFunction`                  | Format address string       | Formatted address        |
-| `GetAllTimeZonesWithDisplayNameFunction` | Get time zones              | Time zone list           |
-
-## Search Functions
-
-| Function                                 | Description            | Use Case       |
-| ---------------------------------------- | ---------------------- | -------------- |
-| `SearchFunction`                         | Search across entities | Global search  |
-| `SearchByKeywordsKbArticleFunction`      | Search KB by keywords  | Knowledge base |
-| `SearchByTitleKbArticleFunction`         | Search KB by title     | Knowledge base |
-| `FullTextSearchKnowledgeArticleFunction` | Full-text KB search    | Knowledge base |
-
-## Advanced Platform Functions
-
-### Deployment & Licensing
-
-| Function                                 | Description                  |
-| ---------------------------------------- | ---------------------------- |
-| `RetrieveLicenseInfoFunction`            | Get license information      |
-| `RetrieveDeploymentLicenseTypeFunction`  | Get deployment license       |
-| `RetrieveAvailableLanguagesFunction`     | Get available languages      |
-| `RetrieveInstalledLanguagePacksFunction` | Get installed language packs |
-
-### Solution & Component Management
-
-| Function                                | Description                    |
-| --------------------------------------- | ------------------------------ |
-| `RetrieveDependenciesForDeleteFunction` | Get delete dependencies        |
-| `RetrieveDependentComponentsFunction`   | Get dependent components       |
-| `RetrieveRequiredComponentsFunction`    | Get required components        |
-| `RetrieveMissingComponentsFunction`     | Get missing components         |
-| `RetrieveUnpublishedFunction`           | Get unpublished customizations |
-
-## Complete Function List
-
-For a searchable list of all 229 functions, use the TypeScript exports:
-
-```typescript
-import * as Functions from "@mohsinonxrm/dataverse-sdk-functions";
-
-// List all available functions
-Object.keys(Functions)
-  .filter((key) => key.endsWith("Function"))
-  .forEach((func) => console.log(func));
-```
-
-## Related Documentation
-
-- [Supported Actions](./supported-actions.md) - POST operations with side effects
-- [Supported Messages](./supported-messages.md) - Organization Service message pattern
-- [Supported Operations](./supported-operations.md) - Complete SDK reference
-- [ADR 0003: Actions & Functions](../adr/0003-actions-functions.md)
+- [Use Web API functions](https://learn.microsoft.com/power-apps/developer/data-platform/webapi/use-web-api-functions)
+- [supported-actions.md](./supported-actions.md), [supported-messages.md](./supported-messages.md)

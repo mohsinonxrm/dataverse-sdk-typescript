@@ -200,6 +200,11 @@ node dist/cli.js --help
   `types/` properties, so a full regeneration is a large, partly breaking diff. Generator fixes
   have instead been applied to the committed files with a script, checked to be byte-identical to
   the new generator's output on the same `$metadata`.
+- **Docs**: after regenerating the actions, functions or messages packages, run
+  `pnpm --filter generate-sdk-types build && pnpm --filter generate-sdk-types docs`. It rewrites the
+  operation lists (`<!-- operations:… -->` blocks) and counts in the packages' READMEs and
+  `docs/mapping/*` from the package source; `test/operation-docs.test.ts` fails while one is stale
+  or a doc names a class no package exports.
 - **CI**: `.github/workflows/generate-metadata-types.yml` (manual) regenerates the metadata types
   and opens a PR for review.
 
