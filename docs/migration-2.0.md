@@ -29,6 +29,7 @@ Every package moves from 1.0.x to 2.0.0 together. Most of 2.0 fixes code that di
   - `statusCode` is a deprecated alias of `status`.
   - With `.detectDuplicates()`, only error `0x80040333` is a `DataverseDuplicateError`. Any other 412, such as a stale `If-Match`, is a plain `DataverseODataError`.
   - `DataverseServiceError.fromResponse(response, body?)` takes `body` as `unknown`. It reads `code` and `message` only from an OData error body whose fields are strings, and a response body that isn't JSON is kept as the text (in 1.0 it threw).
+- `DataverseBatchError<TResult, TStep>` from core defaults both type parameters to `unknown` (was `any`). Import it from the batch package, or pass the types, to get typed `result` and `requestErrors`.
 - **Auth.**
   - A token is fetched for every attempt, and a 401 triggers one token refresh and one retry.
   - The token is only attached to requests for the client's own origin.
