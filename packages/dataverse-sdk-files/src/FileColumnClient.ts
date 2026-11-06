@@ -1,4 +1,9 @@
-import type { RequestAdapter, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  DataverseInvalidRequestError,
+  type DataverseClient,
+  type RequestAdapter,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import {
   InitializeFileBlocksUploadAction,
   UploadBlockAction,
@@ -20,6 +25,19 @@ function normalizeGuid(guid: string): string {
   return guid.replace(/[{}]/g, "").toLowerCase();
 }
 
+/** `getBaseUrl()` of a `DataverseClient`, or of any adapter that has one. */
+function baseUrlOf(adapter: RequestAdapter): string | undefined {
+  const candidate = adapter as Partial<Pick<DataverseClient, "getBaseUrl">>;
+  return typeof candidate.getBaseUrl === "function" ? candidate.getBaseUrl() : undefined;
+}
+
+/** Remove trailing `/` characters in linear time. */
+function trimTrailingSlashes(value: string): string {
+  let end = value.length;
+  while (end > 0 && value.charCodeAt(end - 1) === 47) end--;
+  return value.slice(0, end);
+}
+
 /**
  * Client for file and image column operations using Dataverse Web API actions.
  *
@@ -32,7 +50,8 @@ function normalizeGuid(guid: string): string {
  * ```typescript
  * import { FileColumnClient } from "@mohsinonxrm/dataverse-sdk-files";
  *
- * const fileClient = new FileColumnClient(client.requestAdapter);
+ * // Requests go through client.send(): auth, retry, logging and telemetry apply.
+ * const fileClient = new FileColumnClient(client);
  *
  * // Upload file with progress tracking
  * await fileClient.upload(
@@ -40,6 +59,7 @@ function normalizeGuid(guid: string): string {
  *   accountId,
  *   "new_logo",
  *   logoFile,
+ *   "logo.png",
  *   {
  *     chunkSize: 4 * 1024 * 1024,
  *     onProgress: (progress) => {
@@ -53,10 +73,38 @@ function normalizeGuid(guid: string): string {
  * ```
  */
 export class FileColumnClient {
-  constructor(
-    private readonly adapter: RequestAdapter,
-    private readonly baseUrl = ""
-  ) {}
+  private readonly adapter: RequestAdapter;
+  private readonly baseUrl: string;
+
+  /**
+   * Use a `DataverseClient`. Every request goes through `client.send()`, so the client's auth,
+   * retry, logging and telemetry apply, and URLs are built on `client.getBaseUrl()`.
+   *
+   * @param client - The client to send requests with.
+   */
+  constructor(client: DataverseClient);
+  /**
+   * Use any request adapter: a `DataverseClient`, or your own object with `send(request)`.
+   *
+   * @param adapter - Sends each request.
+   * @param baseUrl - The Web API root, e.g. `https://contoso.crm.dynamics.com/api/data/v9.2`
+   *   (`client.getBaseUrl()`). Optional when the adapter has a `getBaseUrl()` method.
+   * @throws DataverseInvalidRequestError (name `MissingParameter`) when there is no base URL.
+   */
+  constructor(adapter: RequestAdapter, baseUrl?: string);
+  constructor(adapter: RequestAdapter, baseUrl?: string) {
+    const root = baseUrl ?? baseUrlOf(adapter);
+    if (!root) {
+      const error = new DataverseInvalidRequestError(
+        "FileColumnClient needs the Web API root: pass a DataverseClient, or an adapter and a " +
+          "base URL such as client.getBaseUrl()"
+      );
+      error.name = "MissingParameter";
+      throw error;
+    }
+    this.adapter = adapter;
+    this.baseUrl = trimTrailingSlashes(root);
+  }
 
   /**
    * Upload a file to a file or image column.
