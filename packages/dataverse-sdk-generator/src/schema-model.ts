@@ -487,6 +487,7 @@ export class SchemaModel {
         Name: name,
         IsBound: isBound,
         BindingType: bindingType,
+        ...this.bindingInfo(bindingType),
         Parameters: isBound ? parameters.slice(1) : parameters,
         ReturnType: returnType,
       });
@@ -518,11 +519,29 @@ export class SchemaModel {
         Name: name,
         IsBound: isBound,
         BindingType: bindingType,
+        ...this.bindingInfo(bindingType),
         Parameters: isBound ? parameters.slice(1) : parameters,
         ReturnType: returnType,
         IsComposable: isComposable,
       });
     }
+  }
+
+  /**
+   * What a bound operation is bound to: one record of an entity type, or its collection.
+   */
+  private bindingInfo(bindingType: string | undefined): {
+    BindingEntity?: string;
+    IsCollectionBound?: boolean;
+    BindingEntitySetName?: string;
+  } {
+    if (!bindingType) return {};
+    const entity = this.extractEntityName(bindingType);
+    return {
+      BindingEntity: entity,
+      IsCollectionBound: bindingType.startsWith("Collection("),
+      BindingEntitySetName: this.hasEntitySet(entity) ? this.findEntitySetName(entity) : undefined,
+    };
   }
 
   /**
@@ -726,9 +745,12 @@ export class SchemaModel {
       return "Collection";
     }
 
-    // Check if it's an entity type
+    // Check if it's an entity type (generated or not, abstract ones included)
     const entityName = this.extractEntityName(type);
-    if (this.EntityTypes.some((e) => e.Name === entityName || e.LogicalName === entityName)) {
+    if (
+      this.AllEntityTypeNames.has(entityName) ||
+      this.EntityTypes.some((e) => e.Name === entityName || e.LogicalName === entityName)
+    ) {
       return "EntityType";
     }
 

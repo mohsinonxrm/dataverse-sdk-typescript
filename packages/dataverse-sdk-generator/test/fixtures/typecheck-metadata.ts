@@ -133,6 +133,36 @@ export const TYPECHECK_EDMX = `<?xml version="1.0" encoding="utf-8"?>
         <Parameter Name="Rights" Type="mscrm.AccessRights" Nullable="false" />
         <ReturnType Type="Edm.Int32" Nullable="false" />
       </Function>
+      <Function Name="contoso_Search" IsBound="true">
+        <Parameter Name="entityset" Type="Collection(mscrm.account)" Nullable="false" />
+        <Parameter Name="Term" Type="Edm.String" Nullable="false" Unicode="false" />
+        <Parameter Name="OwnerId" Type="Edm.Guid" Nullable="false" />
+        <Parameter Name="Since" Type="Edm.DateTimeOffset" />
+        <Parameter Name="Day" Type="Edm.Date" />
+        <ReturnType Type="Collection(mscrm.account)" Nullable="false" />
+      </Function>
+      <Function Name="RetrieveUnpublished" IsBound="true">
+        <Parameter Name="entity" Type="mscrm.account" Nullable="false" />
+        <ReturnType Type="mscrm.account" Nullable="false" />
+      </Function>
+      <Function Name="RetrieveUnpublished" IsBound="true">
+        <Parameter Name="entity" Type="mscrm.contact" Nullable="false" />
+        <ReturnType Type="mscrm.contact" Nullable="false" />
+      </Function>
+      <Function Name="contoso_Touch" IsBound="true">
+        <Parameter Name="entity" Type="mscrm.crmbaseentity" Nullable="false" />
+        <Parameter Name="Paging" Type="mscrm.QueryBase" />
+        <ReturnType Type="Edm.Boolean" Nullable="false" />
+      </Function>
+      <Function Name="RetrieveCurrentOrganization">
+        <Parameter Name="AccessType" Type="mscrm.AccessRights" Nullable="false" />
+        <Parameter Name="Names" Type="Collection(Edm.String)" />
+        <ReturnType Type="mscrm.WhoAmIResponse" Nullable="false" />
+      </Function>
+      <Action Name="contoso_Flag" IsBound="true">
+        <Parameter Name="entityset" Type="Collection(mscrm.contact)" Nullable="false" />
+        <Parameter Name="Reason" Type="Edm.String" />
+      </Action>
       <EntityContainer Name="System">
         <EntitySet Name="accounts" EntityType="Microsoft.Dynamics.CRM.account" />
         <EntitySet Name="contacts" EntityType="Microsoft.Dynamics.CRM.contact" />

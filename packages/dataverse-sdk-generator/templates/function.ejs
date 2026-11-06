@@ -5,8 +5,11 @@
  */
 export class <%- className %> extends FunctionBase<<%- responseType %>> {
   constructor(
-<%_ func.Parameters.forEach(function(param){ _%>
-    public <%- identifier(param.Name) %>: <%- formatType(param.TypeScriptType) %><%- param.Nullable ? ' | null' : '' %>,
+<%_ if (bindingDeclaration) { _%>
+    <%- bindingDeclaration %>
+<%_ } _%>
+<%_ func.Parameters.forEach(function(param, index){ _%>
+    public <%- identifier(param.Name) %><%- isOptional(index) ? '?' : '' %>: <%- parameterType(param) %><%- param.Nullable ? ' | null' : '' %>,
 <%_ }) _%>
   ) {
     super();
@@ -26,19 +29,23 @@ export class <%- className %> extends FunctionBase<<%- responseType %>> {
   };
 
   toRequestInformation(baseUrl: string): RequestInformation {
-    // Build parameter aliases for GET request
-    const query: Record<string, string> = {};
-<%_ func.Parameters.forEach(function(param){ _%>
-    query[<%- literal('@' + param.Name) %>] = String(this.<%- identifier(param.Name) %>);
+    // Parameters travel as aliases: Name(Param=@p1)?@p1=<OData literal>
+    const aliases: string[] = [];
+    const values = new URLSearchParams();
+<%_ func.Parameters.forEach(function(param, index){ _%>
+    if (this.<%- identifier(param.Name) %> !== undefined) {
+      aliases.push(<%- literal(param.Name + '=@p' + (index + 1)) %>);
+      values.append(<%- literal('@p' + (index + 1)) %>, formatParameterAlias(this.<%- identifier(param.Name) %>, <%- literal(param.Type) %>, <%- literal(parameterKind(param)) %>));
+    }
 <%_ }) _%>
+    const query = values.toString();
 
     return {
       method: "GET",
-      url: `${baseUrl}/<%- func.Name %><%- func.Parameters.length > 0 ? '(' + func.Parameters.map(function(p){ return p.Name + '=@' + p.Name; }).join(',') + ')' : '' %>`,
+      url: `${baseUrl}<%- operationPath %>(${aliases.join(",")})${query ? `?${query}` : ""}`,
       headers: {
         accept: "application/json",
       },
-      query,
     };
   }
 

@@ -234,6 +234,8 @@ export function isEntity(value: unknown): value is IEntity {
   );
 }
 
+export { formatParameterAlias, formatRecordPath, type ParameterKind } from "./parameters.js";
+
 /**
  * Helper to get the OData type annotation for an entity.
  */

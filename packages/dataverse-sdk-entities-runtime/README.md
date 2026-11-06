@@ -226,13 +226,22 @@ const { Result } = await client.execute(new CustomAction());
 Abstract base class for generated function classes.
 
 ```typescript
-import { FunctionBase, type RequestInformation } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import {
+  FunctionBase,
+  formatParameterAlias,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 
 class CustomFunction extends FunctionBase<{ Count: number }> {
+  constructor(private name: string) {
+    super();
+  }
+
   toRequestInformation(baseUrl: string): RequestInformation {
+    const value = encodeURIComponent(formatParameterAlias(this.name, "Edm.String"));
     return {
       method: "GET",
-      url: `${baseUrl}/contoso_CustomFunction(Name=@p1)?@p1=${encodeURIComponent("'value'")}`,
+      url: `${baseUrl}/contoso_CustomFunction(Name=@p1)?@p1=${value}`,
       headers: { accept: "application/json" },
     };
   }
@@ -242,6 +251,33 @@ class CustomFunction extends FunctionBase<{ Count: number }> {
     return { Count: data.Count };
   }
 }
+```
+
+### Function parameters: `formatParameterAlias(value, odataType, kind?)`
+
+Function parameters go in the URL as parameter aliases, so each value must be an OData literal.
+`formatParameterAlias()` builds it from the parameter's OData type (the generated functions use
+it); URL-encode the result.
+
+```typescript
+import {
+  formatParameterAlias,
+  formatRecordPath,
+} from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+
+formatParameterAlias("O'Brien", "Edm.String"); // 'O''Brien'
+formatParameterAlias("{6f6a…}", "Edm.Guid"); // 6f6a… (bare, braces dropped)
+formatParameterAlias(new Date(), "Edm.DateTimeOffset"); // 2024-05-01T10:00:00.000Z
+formatParameterAlias(1, "mscrm.EntityFilters", "EnumerationType"); // Microsoft.Dynamics.CRM.EntityFilters'1'
+formatParameterAlias(["account"], "Collection(Edm.String)"); // ["account"]
+formatParameterAlias({ PageNumber: 1 }, "mscrm.PagingInfo", "ComplexType"); // {"PageNumber":1}
+formatParameterAlias(
+  { logicalName: "account", id, entitySetName: "accounts" },
+  "mscrm.crmbaseentity",
+  "EntityType"
+); // {"@odata.id":"accounts(<id>)"}
+
+formatRecordPath({ logicalName: "account", id, entitySetName: "accounts" }); // accounts(<id>)
 ```
 
 ---
