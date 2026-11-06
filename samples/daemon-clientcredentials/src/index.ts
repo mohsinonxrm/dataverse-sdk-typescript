@@ -86,8 +86,9 @@ function generateAccountData(count: number): Array<Record<string, unknown>> {
       address1_city: i % 2 === 0 ? "Seattle" : "Redmond",
       address1_stateorprovince: "WA",
       address1_country: "USA",
-      numberofemployees: Math.floor(Math.random() * 1000) + 10,
-      revenue: Math.floor(Math.random() * 10000000) + 100000,
+      // Varied but deterministic sample values
+      numberofemployees: ((i * 37) % 1000) + 10,
+      revenue: ((i * 7919) % 10000) * 1000 + 100000,
     });
   }
 
