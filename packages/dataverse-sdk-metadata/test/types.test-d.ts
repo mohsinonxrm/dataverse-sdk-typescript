@@ -3,7 +3,14 @@
  * These tests verify compile-time type safety for metadata operations
  */
 
-import { expectType, expectError, expectAssignable } from "tsd";
+import { expectType, expectError, expectAssignable, expectNotAssignable } from "tsd";
+import {
+  AttributeRequiredLevel,
+  DeletedMetadataFilters,
+  LogicalOperator,
+  OwnershipTypes,
+} from "../src/types/index.js";
+import type { MetadataClient } from "../src/MetadataClient.js";
 import type {
   EntityMetadata,
   EntityMetadataCreate,
@@ -21,7 +28,7 @@ import type {
 
 // ==================== Entity Metadata Type Tests ====================
 
-// EntityMetadataCreate should require @odata.type
+// EntityMetadataCreate takes a typed @odata.type and string enum members
 const entityCreate: EntityMetadataCreate = {
   "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
   SchemaName: "new_custom",
@@ -53,7 +60,7 @@ expectError<EntityMetadataCreate>({
   OwnershipType: "UserOwned",
   HasActivities: false,
   HasNotes: false,
-  // @ts-expect-error - MetadataId is read-only
+  // MetadataId is set by Dataverse: excess property
   MetadataId: "00000000-0000-0000-0000-000000000001",
 });
 
@@ -143,7 +150,7 @@ expectAssignable<AttributeMetadataCreateTypes>(lookupAttrCreate);
 
 // Attribute create should reject wrong @odata.type
 expectError<StringAttributeMetadataCreate>({
-  // @ts-expect-error - Wrong @odata.type
+  // Wrong @odata.type
   "@odata.type": "Microsoft.Dynamics.CRM.IntegerAttributeMetadata",
   SchemaName: "new_field",
   DisplayName: {
@@ -255,14 +262,14 @@ expectType<LocalizedLabel>(localizedLabel);
 // LocalizedLabel should reject missing required fields
 expectError<LocalizedLabel>({
   "@odata.type": "Microsoft.Dynamics.CRM.LocalizedLabel",
-  // @ts-expect-error - Missing Label
+  // Label is missing
   LanguageCode: 1033,
 });
 
 expectError<LocalizedLabel>({
   "@odata.type": "Microsoft.Dynamics.CRM.LocalizedLabel",
   Label: "Test",
-  // @ts-expect-error - Missing LanguageCode
+  // LanguageCode is missing
 });
 
 // ==================== Discriminated Union Tests ====================
@@ -309,3 +316,82 @@ expectType<string | undefined>(entityRead.MetadataId);
 
 // LogicalName should be present in read type
 expectType<string | undefined>(entityRead.LogicalName);
+
+// ==================== Enums are member names (#66) ====================
+
+// The Web API reads and writes enum members by name; numbers are rejected.
+expectType<"UserOwned">(OwnershipTypes.UserOwned);
+expectType<"ApplicationRequired">(AttributeRequiredLevel.ApplicationRequired);
+expectType<"And">(LogicalOperator.And);
+expectType<"All">(DeletedMetadataFilters.All);
+expectAssignable<OwnershipTypes>("UserOwned");
+expectAssignable<OwnershipTypes>(OwnershipTypes.OrganizationOwned);
+expectNotAssignable<OwnershipTypes>(1);
+expectNotAssignable<AttributeRequiredLevel>(2);
+expectNotAssignable<OwnershipTypes>("userowned");
+
+// Read types use the same names, so comparing a response value with a member type-checks.
+declare const readEntity: EntityMetadata;
+expectType<OwnershipTypes | undefined>(readEntity.OwnershipType);
+
+expectError<EntityMetadataCreate>({
+  "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
+  SchemaName: "new_custom",
+  OwnershipType: 1,
+});
+
+expectError<StringAttributeMetadataCreate>({
+  "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
+  SchemaName: "new_field",
+  RequiredLevel: { Value: 2 },
+});
+
+// ==================== Create payloads (#171) ====================
+
+// Column, relationship and choice creates need @odata.type (their collections hold several
+// types); a table create needs SchemaName, and @odata.type is optional.
+expectAssignable<EntityMetadataCreate>({ SchemaName: "new_custom" });
+expectError<EntityMetadataCreate>({ DisplayName: { LocalizedLabels: [] } });
+expectError<EntityMetadataCreate>({
+  "@odata.type": "Microsoft.Dynamics.CRM.AttributeMetadata",
+  SchemaName: "new_custom",
+});
+expectError<OptionSetMetadataCreate>({ Name: "new_colors" });
+expectError<StringAttributeMetadataCreate>({
+  "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
+});
+
+// The abstract AttributeMetadata can't be created ("Attribute of type AttributeMetadata cannot be
+// created through the SDK"), so it is not a member of the create union.
+expectNotAssignable<AttributeMetadataCreateTypes>({
+  "@odata.type": "Microsoft.Dynamics.CRM.AttributeMetadata",
+  SchemaName: "new_field",
+});
+
+// A table create can carry its primary name column as a column create payload.
+expectAssignable<EntityMetadataCreate>({
+  "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
+  SchemaName: "new_project",
+  OwnershipType: OwnershipTypes.UserOwned,
+  HasActivities: false,
+  Attributes: [stringAttrCreate],
+});
+
+// A retrieved definition can be sent back as an update.
+expectAssignable<EntityMetadataUpdate>(readEntity);
+
+// A 1:N create needs both tables and the lookup.
+expectError<OneToManyRelationshipMetadataCreate>({
+  "@odata.type": "Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata",
+  SchemaName: "new_parent_child",
+  ReferencedEntity: "new_parent",
+});
+
+// ==================== MetadataClient signatures ====================
+
+declare const metadata: MetadataClient;
+expectType<Promise<string>>(metadata.createEntityDefinition(entityCreate));
+expectType<Promise<string>>(metadata.createAttributeDefinition("account", intAttrCreate));
+expectType<Promise<string>>(metadata.createOneToManyRelationship(oneToManyCreate));
+expectType<Promise<string>>(metadata.createManyToManyRelationship(manyToManyCreate));
+expectType<Promise<string>>(metadata.createGlobalOptionSet(optionSetCreate));

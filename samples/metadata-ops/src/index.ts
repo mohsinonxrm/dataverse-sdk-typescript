@@ -343,10 +343,10 @@ async function demo3A_QueryMetadataHttpFirst(
   console.log(
     chalk.gray(`  Display Name: ${entity.DisplayName?.LocalizedLabels?.[0]?.Label ?? ""}`)
   );
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
   console.log(
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
-    chalk.gray(`  Ownership: ${entity.OwnershipType === 1 ? "User-Owned" : "Organization-Owned"}`)
+    chalk.gray(
+      `  Ownership: ${entity.OwnershipType === OwnershipTypes.UserOwned ? "User-Owned" : "Organization-Owned"}`
+    )
   );
   console.log(chalk.gray(`  Attributes: ${String(entity.Attributes?.length ?? 0)}`));
   console.log(chalk.cyan("  ℹ️  Approach: GET with $select and $expand query options"));
@@ -372,10 +372,10 @@ async function demo3B_QueryMetadataWithClient(
   console.log(
     chalk.gray(`  Display Name: ${entity.DisplayName?.LocalizedLabels?.[0]?.Label ?? ""}`)
   );
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
   console.log(
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
-    chalk.gray(`  Ownership: ${entity.OwnershipType === 1 ? "User-Owned" : "Organization-Owned"}`)
+    chalk.gray(
+      `  Ownership: ${entity.OwnershipType === OwnershipTypes.UserOwned ? "User-Owned" : "Organization-Owned"}`
+    )
   );
   console.log(chalk.gray(`  Attributes: ${String(entity.Attributes?.length ?? 0)}`));
   console.log(chalk.cyan("  ℹ️  Approach: MetadataClient.getEntityDefinition()"));
@@ -394,9 +394,7 @@ async function demo3B_QueryMetadataWithClient(
       // Show first 5
       const displayName = attr.DisplayName?.LocalizedLabels?.[0]?.Label ?? attr.LogicalName ?? "";
       console.log(
-        chalk.gray(
-          `    • ${attr.LogicalName ?? ""} (${String(attr.AttributeType ?? "")}) - ${displayName}`
-        )
+        chalk.gray(`    • ${attr.LogicalName ?? ""} (${attr.AttributeType ?? ""}) - ${displayName}`)
       );
     }
   }

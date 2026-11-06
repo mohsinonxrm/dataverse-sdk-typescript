@@ -27,7 +27,7 @@ const metadataId = await metadataClient.createEntityDefinition({
   DisplayCollectionName: {
     LocalizedLabels: [{ Label: "Projects", LanguageCode: 1033 }],
   },
-  OwnershipType: 1, // UserOwned
+  OwnershipType: "UserOwned", // or OwnershipTypes.UserOwned
   HasActivities: true,
   Attributes: [
     {
