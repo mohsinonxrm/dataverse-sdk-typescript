@@ -8,7 +8,7 @@ Batch operations support for the Dataverse SDK, enabling multiple requests to be
 - **Transactional Changesets**: Group related modifications that must succeed or fail together
 - **Content-ID References**: Inside a changeset, a request's id is its Content-ID, so a later request refers to the entity it creates as `$<id>`
 - **Request Order Kept**: Requests and changesets are sent, and their results returned, in the order you add them
-- **Created Record Ids**: `entityIdFromBatchResponse()` reads the id a create returned, from an `execute()` result or a decoded part
+- **Created Record Ids**: `entityIdFromBatchResponse()` reads the id a create returned, from its headers or, for `Prefer: return=representation`, from its body
 - **Reusable Codec**: `encodeBatchRequest()` and `decodeBatchResponse()` are exported for tools that build or display `$batch` bodies themselves
 - **Error Handling**: Comprehensive error handling with per-request error tracking
 - **Continue on Error**: Optional continue-on-error semantics for partial success scenarios
@@ -248,14 +248,34 @@ An id of `"1"` gives the classic `$1` form.
 
 ### Ids of Created Records
 
-`entityIdFromBatchResponse()` reads a create's record id from its response's `OData-EntityId` header (or `Location`), like `entityIdFromResponse()` in core does for a `Response`. It takes a `BatchResponseStep` from `execute()` or a `BatchResponsePart` from `decodeBatchResponse()`, and throws `DataverseInvalidRequestError` when neither header holds an id (for example, the request was not a create):
+`entityIdFromBatchResponse(part, options?)` returns the id of the record a create in the batch made. It takes a `BatchResponseStep` from `execute()` or a `BatchResponsePart` from `decodeBatchResponse()`:
+
+- **A plain create** (`204 No Content`) carries the record URL in its `OData-EntityId` header (or `Location`), and the id is read from there, as `entityIdFromResponse()` in core does for a `Response`.
+- **A create with `Prefer: return=representation`** (`201 Created`) has neither header: Dataverse returns the record in the body instead, inside a changeset or not. Pass the table's primary key as `primaryIdAttribute` (e.g. `"contactid"`) to read the id from the body. The headers win when both are present.
+
+It throws `DataverseInvalidRequestError` when no header holds an id and the body has no GUID in `primaryIdAttribute` (or none was given), for example when the request was not a create. The message says which is missing.
 
 ```typescript
 import { BatchRequestBuilder, entityIdFromBatchResponse } from "@mohsinonxrm/dataverse-sdk-batch";
 
+batch.beginChangeset();
+batch.addRequest("account", "POST", "accounts", undefined, { name: "Contoso" });
+batch.addRequest(
+  "contact",
+  "POST",
+  "contacts",
+  { prefer: "return=representation" },
+  {
+    lastname: "Doe",
+  }
+);
+batch.endChangeset();
+
 const result = await batch.execute();
 const accountId = entityIdFromBatchResponse(result.responses.get("account")!);
-const contactId = entityIdFromBatchResponse(result.responses.get("contact")!);
+const contactId = entityIdFromBatchResponse(result.responses.get("contact")!, {
+  primaryIdAttribute: "contactid",
+});
 ```
 
 ### Error Handling

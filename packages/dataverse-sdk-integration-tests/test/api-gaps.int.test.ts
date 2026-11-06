@@ -1,17 +1,18 @@
 /**
  * #274 live: `buildUrl` in middleware matches what Dataverse was sent, `DiscoveryClient`'s
  * `middleware` option sees discovery requests, and `entityIdFromBatchResponse` reads the ids a
- * `$batch` create returns. Creates one account and one contact, and deletes them afterwards.
+ * `$batch` create returns, both a plain create (id in `OData-EntityId`) and a
+ * `Prefer: return=representation` create (no id header: the id is in the body). Creates two
+ * accounts and two contacts, and deletes exactly those, by the ids Dataverse returned.
  *
  * Assertions compare values as booleans or against values the test made, so a failure never
  * prints the org URL, a hostname or an id.
  */
 import { afterAll, describe, expect, it } from "vitest";
-import { buildUrl } from "@mohsinonxrm/dataverse-sdk-core";
+import { DataverseClient, buildUrl } from "@mohsinonxrm/dataverse-sdk-core";
 import type { Logger, Middleware } from "@mohsinonxrm/dataverse-sdk-core";
 import { BatchRequestBuilder, entityIdFromBatchResponse } from "@mohsinonxrm/dataverse-sdk-batch";
 import { DiscoveryClient } from "@mohsinonxrm/dataverse-sdk-discovery";
-import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
 import { idFromEntityId, live, liveClient, orgUrl, runId } from "./env.js";
 
 const noop = (): void => undefined;
@@ -34,12 +35,15 @@ function recorder(seen: Array<{ url: string; status: number }>): Middleware {
 afterAll(async () => {
   if (!live) return;
   const { client } = liveClient();
+  // Delete exactly the records this file created, by the ids Dataverse returned.
+  let failed = 0;
   for (const [set, id] of created) {
     await client
       .api(`${set}(${id})`)
       .delete()
-      .catch(() => undefined);
+      .catch(() => failed++);
   }
+  expect(failed).toBe(0);
 });
 
 describe.skipIf(!live)("live: small API gaps (#274)", () => {
@@ -87,37 +91,53 @@ describe.skipIf(!live)("live: small API gaps (#274)", () => {
     expect(first.searchParams.get("$select")).toBe("Url,ApiUrl");
   });
 
-  it("entityIdFromBatchResponse reads the ids $batch creates return", async () => {
+  it("entityIdFromBatchResponse: a plain create's id from its headers", async () => {
     const { client } = liveClient();
     const batch = new BatchRequestBuilder(client);
-    batch.addRequest("acct", "POST", "accounts", undefined, { name: `${runId} api-gaps` });
+    batch.addRequest("top", "POST", "accounts", undefined, { name: `${runId} api-gaps top` });
     batch.beginChangeset();
-    batch.addRequest(
-      "contact",
-      "POST",
-      "contacts",
-      { prefer: "return=representation" },
-      { lastname: `${runId} api-gaps` }
-    );
+    batch.addRequest("cs", "POST", "accounts", undefined, { name: `${runId} api-gaps cs` });
     batch.endChangeset();
 
     const result = await batch.execute();
-    const acct = result.responses.get("acct");
-    const contact = result.responses.get("contact");
-    if (acct) created.unshift(["accounts", idFromEntityId(acct.headers["odata-entityid"] ?? null)]);
-    if (contact) {
-      created.unshift(["contacts", idFromEntityId(contact.headers["odata-entityid"] ?? null)]);
-    }
+    // Record each id from the header itself first, so cleanup never depends on the code under test.
+    const headerIds = result.results.map((step) =>
+      idFromEntityId(step.headers["odata-entityid"] ?? null)
+    );
+    for (const id of headerIds) created.push(["accounts", id]);
 
     expect(result.success).toBe(true);
-    expect(acct?.status).toBe(204);
-    expect(contact?.status).toBe(201);
-    const ids = result.results.map(entityIdFromBatchResponse);
-    expect(ids).toEqual([
-      idFromEntityId(acct?.headers["odata-entityid"] ?? null),
-      idFromEntityId(contact?.headers["odata-entityid"] ?? null),
-    ]);
-    // With return=representation the body carries the same id.
-    expect(ids[1] === (contact?.body as { contactid?: string } | undefined)?.contactid).toBe(true);
+    expect(result.results.map((r) => r.status)).toEqual([204, 204]);
+    const ids = result.results.map((r) => entityIdFromBatchResponse(r));
+    expect(ids.length === 2 && ids.every((id, i) => id === headerIds[i])).toBe(true);
+  });
+
+  it("entityIdFromBatchResponse: a return=representation create's id from its body", async () => {
+    const { client } = liveClient();
+    const batch = new BatchRequestBuilder(client);
+    const prefer = { prefer: "return=representation" };
+    batch.addRequest("top", "POST", "contacts", prefer, { lastname: `${runId} api-gaps top` });
+    batch.beginChangeset();
+    batch.addRequest("cs", "POST", "contacts", prefer, { lastname: `${runId} api-gaps cs` });
+    batch.endChangeset();
+
+    const result = await batch.execute();
+    const bodyIds = result.results.map(
+      (r) => (r.body as { contactid?: string } | undefined)?.contactid
+    );
+    for (const id of bodyIds) if (id) created.push(["contacts", id]);
+
+    expect(result.success).toBe(true);
+    expect(result.results.map((r) => r.status)).toEqual([201, 201]);
+    // Dataverse sends no OData-EntityId or Location for these, inside a change set or not.
+    for (const r of result.results) {
+      expect(r.headers["odata-entityid"] === undefined).toBe(true);
+      expect(r.headers.location === undefined).toBe(true);
+      expect(() => entityIdFromBatchResponse(r)).toThrow(/primaryIdAttribute/);
+    }
+    const ids = result.results.map((r) =>
+      entityIdFromBatchResponse(r, { primaryIdAttribute: "contactid" })
+    );
+    expect(ids.length === 2 && ids.every((id, i) => id === bodyIds[i])).toBe(true);
   });
 });
