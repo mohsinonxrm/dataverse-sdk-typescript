@@ -2,5 +2,5 @@
  * SummarizeRecordResponse complex type
  */
 export interface SummarizeRecordResponse {
-  SummarizedText: string;
+  SummarizedText?: string;
 }

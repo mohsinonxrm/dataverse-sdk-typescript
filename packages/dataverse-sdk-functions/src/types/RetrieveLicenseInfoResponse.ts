@@ -2,6 +2,6 @@
  * RetrieveLicenseInfoResponse complex type
  */
 export interface RetrieveLicenseInfoResponse {
-  AvailableCount: number;
-  GrantedLicenseCount: number;
+  AvailableCount?: number;
+  GrantedLicenseCount?: number;
 }

@@ -2,6 +2,6 @@
  * GenerateAutomatedPluginResponse complex type
  */
 export interface GenerateAutomatedPluginResponse {
-  FxExpressionId: string;
-  pluginid: string;
+  FxExpressionId?: string;
+  pluginid?: string;
 }

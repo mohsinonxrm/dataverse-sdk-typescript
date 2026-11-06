@@ -4,6 +4,6 @@ import type { EntityRecordCountCollection } from "./EntityRecordCountCollection.
  * PurgeRetainedContentResponse complex type
  */
 export interface PurgeRetainedContentResponse {
-  HasMoreRecords: boolean;
-  EntityCountCollection: EntityRecordCountCollection;
+  HasMoreRecords?: boolean;
+  EntityCountCollection?: EntityRecordCountCollection;
 }

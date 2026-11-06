@@ -9,11 +9,11 @@ import type { ValidateSolutionStatus } from "./ValidateSolutionStatus.js";
  * ValidateSolutionPrerequisitesResult complex type
  */
 export interface ValidateSolutionPrerequisitesResult {
-  SolutionComponentsDetails: SolutionComponentDetails[];
-  SolutionDetails: SolutionDetails;
-  MissingDependencies: MissingDependency[];
-  ValidationStatus: ValidateSolutionStatus;
-  SolutionValidationResults: SolutionValidationResult[];
-  OrgSolutionComponentsDetails: SolutionComponentDetails[];
-  ComponentPrivileges: Collection_String_String[];
+  SolutionComponentsDetails?: SolutionComponentDetails[];
+  SolutionDetails?: SolutionDetails;
+  MissingDependencies?: MissingDependency[];
+  ValidationStatus?: ValidateSolutionStatus;
+  SolutionValidationResults?: SolutionValidationResult[];
+  OrgSolutionComponentsDetails?: SolutionComponentDetails[];
+  ComponentPrivileges?: Collection_String_String[];
 }

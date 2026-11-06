@@ -2,7 +2,7 @@
  * UpstreamIncrementalEntityVersionInfo complex type
  */
 export interface UpstreamIncrementalEntityVersionInfo {
-  StartingVersion: number;
-  EndingVersion: number;
-  IsFullRefresh: boolean;
+  StartingVersion?: number;
+  EndingVersion?: number;
+  IsFullRefresh?: boolean;
 }

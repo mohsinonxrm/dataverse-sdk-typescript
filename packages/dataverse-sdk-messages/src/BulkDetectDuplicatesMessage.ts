@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { QueryBase, activityparty } from "./types/index.js";
+import type { TypedQueryBase, activityparty } from "./types/index.js";
 
 /**
  * BulkDetectDuplicates request message
@@ -12,7 +12,7 @@ export class BulkDetectDuplicatesRequest
   implements Executable<BulkDetectDuplicatesResponse>
 {
   constructor(
-    public query: QueryBase,
+    public query: TypedQueryBase,
     public jobName: string,
     public sendEmailNotification: boolean,
     public templateId: string,

@@ -2,5 +2,5 @@
  * PullChangesFromGitParameters complex type
  */
 export interface PullChangesFromGitParameters {
-  DeleteDeletedComponents: boolean;
+  DeleteDeletedComponents?: boolean;
 }

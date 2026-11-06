@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { QueryBase } from "./types/index.js";
+import type { TypedQueryBase } from "./types/index.js";
 
 /**
  * Response from BackgroundSendEmail action
@@ -14,7 +14,7 @@ export interface BackgroundSendEmailResponse {
  * Unbound action
  */
 export class BackgroundSendEmailAction implements Executable<BackgroundSendEmailResponse> {
-  constructor(public readonly query: QueryBase) {}
+  constructor(public readonly query: TypedQueryBase) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/BackgroundSendEmail`;

@@ -4,8 +4,8 @@ import type { EntityRecordCountCollection } from "./EntityRecordCountCollection.
  * BulkRetainResponse complex type
  */
 export interface BulkRetainResponse {
-  PagingCookie: string;
-  HasMoreRecords: boolean;
-  FailedRecords: number;
-  EntityCountCollection: EntityRecordCountCollection;
+  PagingCookie?: string;
+  HasMoreRecords?: boolean;
+  FailedRecords?: number;
+  EntityCountCollection?: EntityRecordCountCollection;
 }

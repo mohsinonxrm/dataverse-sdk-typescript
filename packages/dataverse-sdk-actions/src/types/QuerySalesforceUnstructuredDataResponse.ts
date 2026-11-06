@@ -2,5 +2,5 @@
  * QuerySalesforceUnstructuredDataResponse complex type
  */
 export interface QuerySalesforceUnstructuredDataResponse {
-  KnowledgePluginResponse: string;
+  KnowledgePluginResponse?: string;
 }

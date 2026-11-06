@@ -1,6 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
-import type { PropagationOwnershipOptions, QueryBase } from "./types/index.js";
+import type { PropagationOwnershipOptions, TypedQueryBase } from "./types/index.js";
 
 /**
  * Response from PropagateByExpression action
@@ -16,7 +16,7 @@ export interface PropagateByExpressionResponse {
  */
 export class PropagateByExpressionAction implements Executable<PropagateByExpressionResponse> {
   constructor(
-    public readonly queryExpression: QueryBase,
+    public readonly queryExpression: TypedQueryBase,
     public readonly friendlyName: string,
     public readonly executeImmediately: boolean,
     public readonly activity: EntityReference,

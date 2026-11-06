@@ -2,5 +2,5 @@
  * msdyn_editSalesSequenceExperimentStatusResponse complex type
  */
 export interface msdyn_editSalesSequenceExperimentStatusResponse {
-  msdyn_editExperimentStatusResponse: string;
+  msdyn_editExperimentStatusResponse?: string;
 }

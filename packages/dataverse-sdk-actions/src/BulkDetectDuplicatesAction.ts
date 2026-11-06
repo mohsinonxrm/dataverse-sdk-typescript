@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { QueryBase, activityparty } from "./types/index.js";
+import type { TypedQueryBase, activityparty } from "./types/index.js";
 
 /**
  * Response from BulkDetectDuplicates action
@@ -15,7 +15,7 @@ export interface BulkDetectDuplicatesResponse {
  */
 export class BulkDetectDuplicatesAction implements Executable<BulkDetectDuplicatesResponse> {
   constructor(
-    public readonly query: QueryBase,
+    public readonly query: TypedQueryBase,
     public readonly jobName: string,
     public readonly sendEmailNotification: boolean,
     public readonly templateId: string,

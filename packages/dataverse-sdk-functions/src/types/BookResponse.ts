@@ -5,6 +5,6 @@ import type { ValidationResult } from "./ValidationResult.js";
  * BookResponse complex type
  */
 export interface BookResponse {
-  Notifications: BusinessNotification[];
-  ValidationResult: ValidationResult;
+  Notifications?: BusinessNotification[];
+  ValidationResult?: ValidationResult;
 }

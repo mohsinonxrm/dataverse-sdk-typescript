@@ -22,6 +22,8 @@ export interface CsdlEntityType {
   name: string;
   namespace: string;
   baseType?: string;
+  /** `Abstract="true"`: the type has no instances of its own, only derived types do. */
+  abstract?: boolean;
   properties: CsdlProperty[];
   navigationProperties: CsdlNavigationProperty[];
 }
@@ -30,12 +32,18 @@ export interface CsdlComplexType {
   name: string;
   namespace: string;
   baseType?: string;
+  /** `Abstract="true"`: the type has no instances of its own, only derived types do. */
+  abstract?: boolean;
   properties: CsdlProperty[];
 }
 
 export interface CsdlProperty {
   name: string;
   type: string;
+  /**
+   * The CSDL `Nullable` facet as written; `undefined` when absent. CSDL's default is nullable, so
+   * only `false` makes a property required.
+   */
   nullable?: boolean;
   maxLength?: number;
   precision?: number;

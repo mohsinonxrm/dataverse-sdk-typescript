@@ -5,6 +5,6 @@ import type { ImportDecision } from "./ImportDecision.js";
  * SolutionComponentOption complex type
  */
 export interface SolutionComponentOption {
-  ImportDecision: ImportDecision;
-  ComponentPrincipalAccessItems: ComponentPrincipalAccess[];
+  ImportDecision?: ImportDecision;
+  ComponentPrincipalAccessItems?: ComponentPrincipalAccess[];
 }

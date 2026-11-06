@@ -2,6 +2,6 @@
  * RemoveDependencyResult complex type
  */
 export interface RemoveDependencyResult {
-  ResultDescription: string;
-  Status: number;
+  ResultDescription?: string;
+  Status?: number;
 }

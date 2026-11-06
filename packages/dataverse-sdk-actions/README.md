@@ -328,6 +328,28 @@ const account = {
 };
 ```
 
+### Parameters Declared with a Base Type
+
+Some parameters are declared with a base type, for example `QueryExpressionToFetchXml(Query: QueryBase)`.
+The value must be one of the derived types, and `@odata.type` says which one: without it Dataverse
+answers 400. These parameters are typed as a `Typed<Base>` union (here `TypedQueryBase`), so the
+compiler requires the `@odata.type`:
+
+```typescript
+import { QueryExpressionToFetchXmlAction } from "@mohsinonxrm/dataverse-sdk-actions";
+
+const { FetchXml } = await client.execute(
+  new QueryExpressionToFetchXmlAction({
+    "@odata.type": "Microsoft.Dynamics.CRM.QueryExpression",
+    EntityName: "account",
+    ColumnSet: { Columns: ["name"] },
+  })
+);
+```
+
+Complex-type properties are optional unless the CSDL marks them `Nullable="false"`, so you only set
+the ones you need.
+
 ## File Operations
 
 Actions for chunked file/image column upload. See `@mohsinonxrm/dataverse-sdk-files` for higher-level FileColumnClient.

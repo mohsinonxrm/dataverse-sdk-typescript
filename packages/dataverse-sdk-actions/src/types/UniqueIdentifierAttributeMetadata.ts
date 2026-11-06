@@ -1,6 +1,8 @@
+import type { AttributeMetadata } from "./AttributeMetadata.js";
+
 /**
  * UniqueIdentifierAttributeMetadata entity type
  */
-export interface UniqueIdentifierAttributeMetadata {
+export interface UniqueIdentifierAttributeMetadata extends AttributeMetadata {
   // No properties defined
 }

@@ -128,6 +128,7 @@ function parseEntityTypes(entityTypeElements: any[], namespace: string): CsdlEnt
       name: et["@_Name"],
       namespace,
       baseType: et["@_BaseType"],
+      abstract: et["@_Abstract"] === true || et["@_Abstract"] === "true",
       properties,
       navigationProperties,
     };
@@ -150,6 +151,7 @@ function parseComplexTypes(complexTypeElements: any[], namespace: string): CsdlC
       name: ct["@_Name"],
       namespace,
       baseType: ct["@_BaseType"],
+      abstract: ct["@_Abstract"] === true || ct["@_Abstract"] === "true",
       properties,
     };
   });

@@ -4,5 +4,5 @@ import type { ChannelAccessProfileWithPrivileges } from "./ChannelAccessProfileW
  * RetrieveChannelAccessProfilePrivilegesResponse complex type
  */
 export interface RetrieveChannelAccessProfilePrivilegesResponse {
-  ChannelAccessProfile: ChannelAccessProfileWithPrivileges;
+  ChannelAccessProfile?: ChannelAccessProfileWithPrivileges;
 }

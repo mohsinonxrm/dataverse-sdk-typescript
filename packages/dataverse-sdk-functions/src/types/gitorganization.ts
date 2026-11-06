@@ -2,6 +2,6 @@
  * gitorganization entity type
  */
 export interface gitorganization {
-  gitorganizationid: string;
-  organizationname: string;
+  gitorganizationid?: string;
+  organizationname?: string;
 }

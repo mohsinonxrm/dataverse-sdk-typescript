@@ -2,5 +2,5 @@
  * msdyn_ExpandOperatingHoursForEntityCollectionResponse complex type
  */
 export interface msdyn_ExpandOperatingHoursForEntityCollectionResponse {
-  msdyn_Result: string;
+  msdyn_Result?: string;
 }

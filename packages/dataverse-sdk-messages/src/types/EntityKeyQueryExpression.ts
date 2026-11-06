@@ -5,6 +5,6 @@ import type { MetadataPropertiesExpression } from "./MetadataPropertiesExpressio
  * EntityKeyQueryExpression complex type
  */
 export interface EntityKeyQueryExpression {
-  Criteria: MetadataFilterExpression;
-  Properties: MetadataPropertiesExpression;
+  Criteria?: MetadataFilterExpression;
+  Properties?: MetadataPropertiesExpression;
 }

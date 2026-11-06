@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { activitypointer } from "./types/index.js";
+import type { TypedActivitypointer } from "./types/index.js";
 
 /**
  * Validate request message
@@ -8,7 +8,7 @@ import type { activitypointer } from "./types/index.js";
  * Web API Action: Validate
  */
 export class ValidateRequest extends OrganizationRequest implements Executable<ValidateResponse> {
-  constructor(public activities: activitypointer[]) {
+  constructor(public activities: TypedActivitypointer[]) {
     super("Validate");
   }
 

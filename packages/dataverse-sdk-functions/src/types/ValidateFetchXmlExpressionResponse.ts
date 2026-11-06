@@ -4,5 +4,5 @@ import type { ValidateFetchXmlExpressionResult } from "./ValidateFetchXmlExpress
  * ValidateFetchXmlExpressionResponse complex type
  */
 export interface ValidateFetchXmlExpressionResponse {
-  ValidationResults: ValidateFetchXmlExpressionResult;
+  ValidationResults?: ValidateFetchXmlExpressionResult;
 }

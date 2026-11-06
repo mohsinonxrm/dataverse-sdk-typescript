@@ -2,6 +2,6 @@
  * DirectDeviceSyncRecordInfo complex type
  */
 export interface DirectDeviceSyncRecordInfo {
-  Id: string;
-  Version: number;
+  Id?: string;
+  Version?: number;
 }

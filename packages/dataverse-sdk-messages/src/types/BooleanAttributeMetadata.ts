@@ -1,8 +1,10 @@
+import type { AttributeMetadata } from "./AttributeMetadata.js";
+
 /**
  * BooleanAttributeMetadata entity type
  */
-export interface BooleanAttributeMetadata {
-  DefaultValue: boolean;
-  FormulaDefinition: string;
-  SourceTypeMask: number;
+export interface BooleanAttributeMetadata extends AttributeMetadata {
+  DefaultValue?: boolean;
+  FormulaDefinition?: string;
+  SourceTypeMask?: number;
 }

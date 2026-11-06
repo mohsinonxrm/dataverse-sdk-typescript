@@ -2,6 +2,6 @@
  * CCaaS_SendAHTEventsResponse complex type
  */
 export interface CCaaS_SendAHTEventsResponse {
-  Status: string;
-  Message: string;
+  Status?: string;
+  Message?: string;
 }

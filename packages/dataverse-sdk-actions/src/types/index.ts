@@ -25,7 +25,7 @@ export type { activityfileattachment } from "./activityfileattachment.js";
 export type { activitymimeattachment } from "./activitymimeattachment.js";
 export type { activitymonitor } from "./activitymonitor.js";
 export type { activityparty } from "./activityparty.js";
-export type { activitypointer } from "./activitypointer.js";
+export type { activitypointer, TypedActivitypointer } from "./activitypointer.js";
 export type { AddComponentsToSolutionAsyncResponse } from "./AddComponentsToSolutionAsyncResponse.js";
 export type { AddComponentToSolutionAsyncResponse } from "./AddComponentToSolutionAsyncResponse.js";
 export type { AddComponentToSolutionParameters } from "./AddComponentToSolutionParameters.js";
@@ -137,7 +137,7 @@ export type { AttributeDescriptionMinimal } from "./AttributeDescriptionMinimal.
 export type { attributeimageconfig } from "./attributeimageconfig.js";
 export type { AttributeMapping } from "./AttributeMapping.js";
 export type { attributemaskingrule } from "./attributemaskingrule.js";
-export type { AttributeMetadata } from "./AttributeMetadata.js";
+export type { AttributeMetadata, TypedAttributeMetadata } from "./AttributeMetadata.js";
 export type { attributepicklistvalue } from "./attributepicklistvalue.js";
 export type { AttributePrivilege } from "./AttributePrivilege.js";
 export type { AttributeQueryExpression } from "./AttributeQueryExpression.js";
@@ -146,7 +146,7 @@ export type { AttributeRequiredLevelManagedProperty } from "./AttributeRequiredL
 export type { AttributeTypeCode } from "./AttributeTypeCode.js";
 export type { AttributeTypeDisplayName } from "./AttributeTypeDisplayName.js";
 export type { audit } from "./audit.js";
-export type { AuditDetail } from "./AuditDetail.js";
+export type { AuditDetail, TypedAuditDetail } from "./AuditDetail.js";
 export type { AuditDetailCollection } from "./AuditDetailCollection.js";
 export type { AuditPartitionDetail } from "./AuditPartitionDetail.js";
 export type { AuditStorageDetails } from "./AuditStorageDetails.js";
@@ -279,7 +279,10 @@ export type { competitor } from "./competitor.js";
 export type { competitoraddress } from "./competitoraddress.js";
 export type { competitorproduct } from "./competitorproduct.js";
 export type { competitorsalesliterature } from "./competitorsalesliterature.js";
-export type { ComplexAttributeMetadata } from "./ComplexAttributeMetadata.js";
+export type {
+  ComplexAttributeMetadata,
+  TypedComplexAttributeMetadata,
+} from "./ComplexAttributeMetadata.js";
 export type { ComplexBigIntAttributeMetadata } from "./ComplexBigIntAttributeMetadata.js";
 export type { ComplexBooleanAttributeMetadata } from "./ComplexBooleanAttributeMetadata.js";
 export type { ComplexBooleanOptionSetMetadata } from "./ComplexBooleanOptionSetMetadata.js";
@@ -463,7 +466,7 @@ export type { entityrecordfilter } from "./entityrecordfilter.js";
 export type { entityrelationship } from "./entityrelationship.js";
 export type { EntityRelationsWithDependantEntityMetadata } from "./EntityRelationsWithDependantEntityMetadata.js";
 export type { EntitySetting } from "./EntitySetting.js";
-export type { EnumAttributeMetadata } from "./EnumAttributeMetadata.js";
+export type { EnumAttributeMetadata, TypedEnumAttributeMetadata } from "./EnumAttributeMetadata.js";
 export type { environmentvariabledefinition } from "./environmentvariabledefinition.js";
 export type { environmentvariablevalue } from "./environmentvariablevalue.js";
 export type { equipment } from "./equipment.js";
@@ -675,7 +678,7 @@ export type { mcptool } from "./mcptool.js";
 export type { McpUpdateTableResponse } from "./McpUpdateTableResponse.js";
 export type { MemoAttributeMetadata } from "./MemoAttributeMetadata.js";
 export type { MemoFormatName } from "./MemoFormatName.js";
-export type { MetadataBase } from "./MetadataBase.js";
+export type { MetadataBase, TypedMetadataBase } from "./MetadataBase.js";
 export type { MetadataConditionExpression } from "./MetadataConditionExpression.js";
 export type { MetadataConditionOperator } from "./MetadataConditionOperator.js";
 export type { MetadataControlOptions } from "./MetadataControlOptions.js";
@@ -2565,10 +2568,10 @@ export type { opportunityclose } from "./opportunityclose.js";
 export type { opportunitycompetitors } from "./opportunitycompetitors.js";
 export type { opportunityproduct } from "./opportunityproduct.js";
 export type { opportunitysalesprocess } from "./opportunitysalesprocess.js";
-export type { OptionMetadata } from "./OptionMetadata.js";
+export type { OptionMetadata, TypedOptionMetadata } from "./OptionMetadata.js";
 export type { optionset } from "./optionset.js";
 export type { OptionSetMetadata } from "./OptionSetMetadata.js";
-export type { OptionSetMetadataBase } from "./OptionSetMetadataBase.js";
+export type { OptionSetMetadataBase, TypedOptionSetMetadataBase } from "./OptionSetMetadataBase.js";
 export type { OptionSetType } from "./OptionSetType.js";
 export type { orderclose } from "./orderclose.js";
 export type { OrderExpression } from "./OrderExpression.js";
@@ -2689,7 +2692,7 @@ export type { PvaGetMaxDatabaseVersionResponse } from "./PvaGetMaxDatabaseVersio
 export type { PvaGetUserBotsResponse } from "./PvaGetUserBotsResponse.js";
 export type { PvaPublishResponse } from "./PvaPublishResponse.js";
 export type { quarterlyfiscalcalendar } from "./quarterlyfiscalcalendar.js";
-export type { QueryBase } from "./QueryBase.js";
+export type { QueryBase, TypedQueryBase } from "./QueryBase.js";
 export type { QueryByAttribute } from "./QueryByAttribute.js";
 export type { QueryDvUnstructuredDataResponse } from "./QueryDvUnstructuredDataResponse.js";
 export type { QueryExpression } from "./QueryExpression.js";
@@ -2726,7 +2729,10 @@ export type { RegisterFlowMachineResponse } from "./RegisterFlowMachineResponse.
 export type { relationship } from "./relationship.js";
 export type { RelationshipAttribute } from "./RelationshipAttribute.js";
 export type { RelationshipAuditDetail } from "./RelationshipAuditDetail.js";
-export type { RelationshipMetadataBase } from "./RelationshipMetadataBase.js";
+export type {
+  RelationshipMetadataBase,
+  TypedRelationshipMetadataBase,
+} from "./RelationshipMetadataBase.js";
 export type { RelationshipQueryExpression } from "./RelationshipQueryExpression.js";
 export type { RelationshipType } from "./RelationshipType.js";
 export type { RemoveActiveCustomizationResponse } from "./RemoveActiveCustomizationResponse.js";

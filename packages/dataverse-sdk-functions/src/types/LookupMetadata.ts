@@ -5,6 +5,6 @@ import type { LookupView } from "./LookupView.js";
  * LookupMetadata complex type
  */
 export interface LookupMetadata {
-  Entity: LookupEntityMetadata;
-  View: LookupView;
+  Entity?: LookupEntityMetadata;
+  View?: LookupView;
 }

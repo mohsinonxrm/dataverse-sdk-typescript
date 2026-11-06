@@ -1,6 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
-import type { QueryBase } from "./types/index.js";
+import type { TypedQueryBase } from "./types/index.js";
 
 /**
  * Response from FullTextSearchKnowledgeArticle action
@@ -20,7 +20,7 @@ export class FullTextSearchKnowledgeArticleAction implements Executable<FullText
     public readonly useInflection: boolean,
     public readonly removeDuplicates: boolean,
     public readonly stateCode: number,
-    public readonly queryExpression: QueryBase
+    public readonly queryExpression: TypedQueryBase
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

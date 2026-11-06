@@ -2,5 +2,5 @@
  * GetValidReferencedEntitiesResponse complex type
  */
 export interface GetValidReferencedEntitiesResponse {
-  EntityNames: string[];
+  EntityNames?: string[];
 }

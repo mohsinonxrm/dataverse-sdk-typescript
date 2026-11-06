@@ -4,5 +4,5 @@ import type { MetadataEntityOptionsExcludeItem } from "./MetadataEntityOptionsEx
  * MetadataEntityOptions complex type
  */
 export interface MetadataEntityOptions {
-  Exclude: MetadataEntityOptionsExcludeItem[];
+  Exclude?: MetadataEntityOptionsExcludeItem[];
 }

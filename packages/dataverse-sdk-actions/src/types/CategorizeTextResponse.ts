@@ -2,5 +2,5 @@
  * CategorizeTextResponse complex type
  */
 export interface CategorizeTextResponse {
-  originalText: string;
+  originalText?: string;
 }

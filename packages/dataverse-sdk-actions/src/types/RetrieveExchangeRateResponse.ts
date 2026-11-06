@@ -2,5 +2,5 @@
  * RetrieveExchangeRateResponse complex type
  */
 export interface RetrieveExchangeRateResponse {
-  ExchangeRate: number;
+  ExchangeRate?: number;
 }

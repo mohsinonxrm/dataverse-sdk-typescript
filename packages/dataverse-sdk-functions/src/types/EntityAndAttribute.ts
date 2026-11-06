@@ -2,6 +2,6 @@
  * EntityAndAttribute complex type
  */
 export interface EntityAndAttribute {
-  EntityName: string;
-  AttributeName: string;
+  EntityName?: string;
+  AttributeName?: string;
 }

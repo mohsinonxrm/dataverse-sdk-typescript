@@ -2,7 +2,7 @@
  * WhoAmIResponse complex type
  */
 export interface WhoAmIResponse {
-  BusinessUnitId: string;
-  UserId: string;
-  OrganizationId: string;
+  BusinessUnitId?: string;
+  UserId?: string;
+  OrganizationId?: string;
 }

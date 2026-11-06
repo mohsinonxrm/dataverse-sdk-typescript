@@ -2,8 +2,8 @@
  * teammembership entity type
  */
 export interface teammembership {
-  systemuserid: string;
-  versionnumber: number;
-  teammembershipid: string;
-  teamid: string;
+  systemuserid?: string;
+  versionnumber?: number;
+  teammembershipid?: string;
+  teamid?: string;
 }

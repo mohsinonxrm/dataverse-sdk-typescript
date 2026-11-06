@@ -2,5 +2,5 @@
  * QueryExpressionToFetchXmlResponse complex type
  */
 export interface QueryExpressionToFetchXmlResponse {
-  FetchXml: string;
+  FetchXml?: string;
 }

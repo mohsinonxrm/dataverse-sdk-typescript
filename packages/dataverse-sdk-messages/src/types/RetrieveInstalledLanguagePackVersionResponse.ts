@@ -2,5 +2,5 @@
  * RetrieveInstalledLanguagePackVersionResponse complex type
  */
 export interface RetrieveInstalledLanguagePackVersionResponse {
-  Version: string;
+  Version?: string;
 }

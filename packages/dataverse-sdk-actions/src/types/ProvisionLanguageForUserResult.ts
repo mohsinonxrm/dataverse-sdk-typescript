@@ -4,7 +4,7 @@ import type { ProvisionLanguageForUserStatusType } from "./ProvisionLanguageForU
  * ProvisionLanguageForUserResult complex type
  */
 export interface ProvisionLanguageForUserResult {
-  AsyncOperationId: string;
-  Lcid: number;
-  StatusType: ProvisionLanguageForUserStatusType;
+  AsyncOperationId?: string;
+  Lcid?: number;
+  StatusType?: ProvisionLanguageForUserStatusType;
 }

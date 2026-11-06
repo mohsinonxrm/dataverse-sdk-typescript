@@ -1,7 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
-import type { QueryBase } from "./types/index.js";
+import type { TypedQueryBase } from "./types/index.js";
 
 /**
  * FullTextSearchKnowledgeArticle request message
@@ -17,7 +17,7 @@ export class FullTextSearchKnowledgeArticleRequest
     public useInflection: boolean,
     public removeDuplicates: boolean,
     public stateCode: number,
-    public queryExpression: QueryBase
+    public queryExpression: TypedQueryBase
   ) {
     super("FullTextSearchKnowledgeArticle");
   }

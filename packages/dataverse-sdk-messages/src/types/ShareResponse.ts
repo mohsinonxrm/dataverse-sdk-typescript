@@ -2,5 +2,5 @@
  * ShareResponse complex type
  */
 export interface ShareResponse {
-  sharingresponse: string;
+  sharingresponse?: string;
 }

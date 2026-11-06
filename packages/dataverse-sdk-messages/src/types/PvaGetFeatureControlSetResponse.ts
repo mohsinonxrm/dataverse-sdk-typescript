@@ -2,5 +2,5 @@
  * PvaGetFeatureControlSetResponse complex type
  */
 export interface PvaGetFeatureControlSetResponse {
-  FeatureControlSet: string;
+  FeatureControlSet?: string;
 }

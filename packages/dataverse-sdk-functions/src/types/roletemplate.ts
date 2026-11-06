@@ -2,6 +2,6 @@
  * roletemplate entity type
  */
 export interface roletemplate {
-  name: string;
-  roletemplateid: string;
+  name?: string;
+  roletemplateid?: string;
 }

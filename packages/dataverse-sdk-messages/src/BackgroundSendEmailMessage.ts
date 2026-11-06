@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { QueryBase } from "./types/index.js";
+import type { TypedQueryBase } from "./types/index.js";
 
 /**
  * BackgroundSendEmail request message
@@ -11,7 +11,7 @@ export class BackgroundSendEmailRequest
   extends OrganizationRequest
   implements Executable<BackgroundSendEmailResponse>
 {
-  constructor(public query: QueryBase) {
+  constructor(public query: TypedQueryBase) {
     super("BackgroundSendEmail");
   }
 

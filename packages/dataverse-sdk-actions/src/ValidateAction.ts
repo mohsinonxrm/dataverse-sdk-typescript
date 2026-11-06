@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { ValidationResult, activitypointer } from "./types/index.js";
+import type { TypedActivitypointer, ValidationResult } from "./types/index.js";
 
 /**
  * Response from Validate action
@@ -14,7 +14,7 @@ export interface ValidateResponse {
  * Unbound action
  */
 export class ValidateAction implements Executable<ValidateResponse> {
-  constructor(public readonly activities: activitypointer[]) {}
+  constructor(public readonly activities: TypedActivitypointer[]) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/Validate`;

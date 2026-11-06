@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@azure/msal-node": "^2.16.3",
+    "@mohsinonxrm/dataverse-sdk-actions": "workspace:*",
     "@mohsinonxrm/dataverse-sdk-auth-msal-node": "workspace:*",
     "@mohsinonxrm/dataverse-sdk-batch": "workspace:*",
     "@mohsinonxrm/dataverse-sdk-core": "workspace:*",
