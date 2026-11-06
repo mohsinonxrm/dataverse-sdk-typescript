@@ -390,7 +390,7 @@ await client
 - Validates full URL including query string before sending request
 - Throws `DataverseUrlError` if limit exceeded
 - `.skipUrlValidation()` disables check for edge cases
-- Recommendation: Use `$batch` or FetchXML for complex queries exceeding limits
+- Recommendation: Use `$batch` or [`fetchXml()`](#fetchxml) for complex queries exceeding limits
 
 ### Paging
 
@@ -441,6 +441,60 @@ console.log(`Retrieved ${allAccounts.length} accounts`);
 - `.getAll()`: Collects all items into array with optional limits
 - `PageIterator` class internally manages `@odata.nextLink` traversal
 - Server-side paging limit: typically 5000 records per page (configurable in Dataverse)
+
+### FetchXML
+
+`fetchXml()` runs a FetchXML query and returns **one page** with its paging state. It doesn't loop,
+so an app that keeps its own paging state (a query editor, a grid) can use it as is.
+
+```typescript
+import { buildPagedFetchXml, parsePagingCookie } from "@mohsinonxrm/dataverse-sdk-core";
+
+let xml = `<fetch count="50" returntotalrecordcount="true">
+  <entity name="account"><attribute name="name"/><attribute name="statecode"/><order attribute="name"/></entity>
+</fetch>`;
+
+let page = await client.fetchXml<Account>("accounts", xml); // or client.api("accounts").fetchXml(xml)
+console.log(page.totalRecordCount); // 1234 (-1 without returntotalrecordcount="true")
+console.log(page.value[0]["statecode@OData.Community.Display.V1.FormattedValue"]); // "Active"
+
+while (page.moreRecords) {
+  const next = parsePagingCookie(page.pagingCookie); // { pageNumber: 2, pagingCookie: "<cookie page=\"1\">…" }
+  xml = buildPagedFetchXml(xml, {
+    page: next?.pageNumber ?? 2,
+    pagingCookie: next?.pagingCookie, // without a cookie, Dataverse pages by number
+  });
+  page = await client.fetchXml<Account>("accounts", xml);
+}
+```
+
+`FetchXmlPage<T>` has:
+
+| Field                           | From                                                                              |
+| ------------------------------- | --------------------------------------------------------------------------------- |
+| `value`                         | the records, with their annotations (formatted values, lookup logical names)      |
+| `pagingCookie`                  | `@Microsoft.Dynamics.CRM.fetchxmlpagingcookie`, as sent; absent on the last page  |
+| `moreRecords`                   | `@Microsoft.Dynamics.CRM.morerecords`; `false` when absent (the last page)        |
+| `totalRecordCount`              | `@Microsoft.Dynamics.CRM.totalrecordcount`; `-1` without `returntotalrecordcount` |
+| `totalRecordCountLimitExceeded` | `@Microsoft.Dynamics.CRM.totalrecordcountlimitexceeded` (more than 5000 rows)     |
+| `nextLink`                      | `@odata.nextLink`, which saved and user queries can return                        |
+
+- **Annotations.** `fetchXml()` sends `Prefer: odata.include-annotations="*"` by default, replacing
+  any `include-annotations` preference on the builder or in `defaultPrefer` (Dataverse drops the
+  paging annotations when it gets two). Pass `annotations: ["OData.Community.Display.V1.FormattedValue"]`
+  to ask for less; `Microsoft.Dynamics.CRM.*` is added, because `moreRecords` and
+  `totalRecordCount` come from it.
+- **Encoding.** The query is encoded with `encodeURIComponent` (`%20` for spaces), as in Microsoft's samples.
+- **Long queries.** A query whose GET URL would be longer than `maxUrlLength` (default 32,768
+  characters, the Web API limit) is sent as a `POST $batch` that carries the GET, and returns the
+  same page. Inside `$batch` the URL can be up to about 65,000 characters (beyond that Dataverse
+  answers "Invalid URI: The Uri string is too long"), which is roughly 40–45 KB of FetchXML.
+  Dataverse also allows at most 500 conditions in a query.
+- **Views.** `client.savedQuery("accounts", id)` and `client.userQuery("accounts", id)` run a system
+  or personal view and return the same page shape.
+- `fetchXml()` can't be combined with `.select()`, `.filter()` and the other query options; they
+  throw `DataverseInvalidRequestError` (`InvalidParameter`). Headers, `.impersonate()` and request
+  options apply as usual.
 
 ### Error Handling
 
@@ -1231,7 +1285,7 @@ See [LICENSE](../../LICENSE) file in repository root.
 **URL too long (DataverseUrlError):**
 
 - Use `$batch` for complex queries
-- Use FetchXML for extremely complex filters
+- Use FetchXML through `fetchXml()`, which sends long queries as `$batch` itself (see [FetchXML](#fetchxml))
 - Call `.skipUrlValidation()` if you know what you're doing (not recommended)
 
 **TypeScript errors:**

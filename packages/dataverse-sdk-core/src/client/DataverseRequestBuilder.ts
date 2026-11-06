@@ -8,7 +8,16 @@ import { buildUrl } from "../utils/url.js";
 import { entityIdFromResponse, readJson } from "../utils/response.js";
 import { parseODataError } from "../errors/parseODataError.js";
 import { DataverseDuplicateError } from "../errors/DataverseDuplicateError.js";
-import { validateUrl, type UrlValidationOptions } from "../utils/validateUrl.js";
+import { URL_LIMITS, validateUrl, type UrlValidationOptions } from "../utils/validateUrl.js";
+import { DataverseInvalidRequestError } from "../errors/NamedErrors.js";
+import { mergePrefer, splitPrefer } from "../middleware/ODataHeadersMiddleware.js";
+import {
+  annotationsPreference,
+  toFetchXmlPage,
+  type FetchXmlOptions,
+  type FetchXmlPage,
+} from "../fetchxml/page.js";
+import { buildSingleGetBatch, readSingleBatchResponse } from "../fetchxml/singleGetBatch.js";
 import { PreferBuilder } from "./PreferBuilder.js";
 import type { DataverseClient } from "./DataverseClient.js";
 
@@ -346,6 +355,100 @@ export class DataverseRequestBuilder {
     return out;
   }
 
+  /**
+   * Run a FetchXML query against this entity set and return one page with its paging state:
+   * `pagingCookie`, `moreRecords`, `totalRecordCount` (with `returntotalrecordcount="true"`) and
+   * records with formatted values (the default `annotations: "*"`). The XML is sent as is: set
+   * `count` and `page` in it, or use `buildPagedFetchXml()` for the next page.
+   *
+   * A query whose GET URL would be longer than `maxUrlLength` (default 32768 characters) is sent
+   * as a `POST $batch` that carries the GET, and returns the same page.
+   *
+   * @example
+   * ```typescript
+   * let xml = `<fetch count="50"><entity name="account"><attribute name="name"/></entity></fetch>`;
+   * let page = await client.api("accounts").fetchXml<Account>(xml);
+   * while (page.moreRecords) {
+   *   const next = parsePagingCookie(page.pagingCookie);
+   *   xml = buildPagedFetchXml(xml, { page: next?.pageNumber ?? 2, pagingCookie: next?.pagingCookie });
+   *   page = await client.api("accounts").fetchXml<Account>(xml);
+   * }
+   * ```
+   */
+  async fetchXml<T = Record<string, unknown>>(
+    fetchXml: string,
+    options?: FetchXmlOptions
+  ): Promise<FetchXmlPage<T>> {
+    if (!fetchXml.trim()) throw DataverseInvalidRequestError.missingParameter("fetchXml");
+    return this.queryPage<T>("fetchXml", fetchXml, options, true);
+  }
+
+  /** Run a system view (`savedquery`) by id: `GET {entitySet}?savedQuery={id}`, as one page. */
+  async savedQuery<T = Record<string, unknown>>(
+    savedQueryId: string,
+    options?: FetchXmlOptions
+  ): Promise<FetchXmlPage<T>> {
+    if (!savedQueryId.trim()) throw DataverseInvalidRequestError.missingParameter("savedQueryId");
+    return this.queryPage<T>("savedQuery", savedQueryId, options, false);
+  }
+
+  /** Run a personal view (`userquery`) by id: `GET {entitySet}?userQuery={id}`, as one page. */
+  async userQuery<T = Record<string, unknown>>(
+    userQueryId: string,
+    options?: FetchXmlOptions
+  ): Promise<FetchXmlPage<T>> {
+    if (!userQueryId.trim()) throw DataverseInvalidRequestError.missingParameter("userQueryId");
+    return this.queryPage<T>("userQuery", userQueryId, options, false);
+  }
+
+  private async queryPage<T>(
+    parameter: "fetchXml" | "savedQuery" | "userQuery",
+    value: string,
+    options: FetchXmlOptions | undefined,
+    batchWhenLong: boolean
+  ): Promise<FetchXmlPage<T>> {
+    if (Object.keys(buildQuery(this.state)).length > 0) {
+      // Dataverse rejects $select, $filter and the rest next to fetchXml, savedQuery or userQuery.
+      throw DataverseInvalidRequestError.invalidParameter(
+        parameter,
+        "cannot be combined with $select, $filter, $expand, $orderby, $top or other query options"
+      );
+    }
+    const { annotations, maxUrlLength, ...requestOptions } = options ?? {};
+    const req = this.buildRequest("GET", undefined, requestOptions, { validate: false });
+    // A single include-annotations preference: with two, Dataverse drops the paging annotations.
+    const own = annotationsPreference(annotations);
+    req.headers.prefer = mergePrefer(splitPrefer(req.headers.prefer), own) ?? own;
+
+    const separator = req.url.includes("?") ? "&" : "?";
+    // encodeURIComponent, so spaces are %20 as in Microsoft's samples (not form-encoded "+").
+    const url = `${req.url}${separator}${parameter}=${encodeURIComponent(value)}`;
+
+    if (batchWhenLong && url.length > (maxUrlLength ?? URL_LIMITS.MAX_URL_LENGTH)) {
+      validateUrl(req.url, this.urlValidationOptions);
+      const { prefer: _prefer, ...outerHeaders } = req.headers;
+      const batch = buildSingleGetBatch(url, { accept: "application/json", ...req.headers });
+      const outer = await this.client.send({
+        ...req,
+        method: "POST",
+        url: batchUrlFor(req.url, this.client),
+        query: {},
+        headers: { ...outerHeaders, "content-type": batch.contentType },
+        body: batch.body,
+      });
+      // With one request inside, Dataverse gives the $batch the inner status (a failed query is a
+      // 400 $batch), so read the multipart body whatever the outer status is.
+      const isMultipart = /^multipart\/mixed/i.test(outer.headers.get("content-type") ?? "");
+      if (!isMultipart) throw await parseODataError(outer);
+      const inner = await readSingleBatchResponse(outer);
+      if (!inner.ok) throw await parseODataError(inner);
+      return toFetchXmlPage<T>(await readJson(inner));
+    }
+
+    validateUrl(url, this.urlValidationOptions);
+    return toFetchXmlPage<T>(await readJson(await this.sendRequest({ ...req, url, query: {} })));
+  }
+
   private withBindings(body: unknown): unknown {
     return Object.keys(this.bindings).length > 0 && body && typeof body === "object"
       ? { ...(body as Record<string, unknown>), ...this.bindings }
@@ -355,15 +458,18 @@ export class DataverseRequestBuilder {
   private buildRequest(
     method: "GET" | "POST" | "PATCH" | "PUT" | "DELETE",
     body: unknown,
-    options: RequestOptions | undefined
+    options: RequestOptions | undefined,
+    { validate = true }: { validate?: boolean } = {}
   ): RequestInformation {
     const url = this.resolveUrl();
     const query = buildQuery(this.state);
 
     // Validate URL before sending - build full URL with query string
-    const hasQuery = Object.keys(query).length > 0;
-    const fullUrl = hasQuery ? buildUrl({ url, query, method: "GET", headers: {} }) : url;
-    validateUrl(fullUrl, this.urlValidationOptions);
+    if (validate) {
+      const hasQuery = Object.keys(query).length > 0;
+      const fullUrl = hasQuery ? buildUrl({ url, query, method: "GET", headers: {} }) : url;
+      validateUrl(fullUrl, this.urlValidationOptions);
+    }
 
     const headers: Record<string, string> = {
       ...this.headers,
@@ -428,7 +534,11 @@ export class DataverseRequestBuilder {
     body?: unknown,
     options?: RequestOptions
   ): Promise<Response> {
-    const req = this.buildRequest(method, body, options);
+    return this.sendRequest(this.buildRequest(method, body, options));
+  }
+
+  /** Send through the client; a non-2xx status rejects with the typed error. */
+  private async sendRequest(req: RequestInformation): Promise<Response> {
     const res = await this.client.send(req);
     if (!res.ok) {
       // Check for 412 duplicate detection
@@ -466,4 +576,10 @@ export class DataverseRequestBuilder {
     // absolute nextLink or relative path
     return this.client.resolveUrl(this.pathOrUrl);
   }
+}
+
+/** The `$batch` endpoint of the Web API root that `url` belongs to. */
+function batchUrlFor(url: string, client: DataverseClient): string {
+  const root = /^(https?:\/\/[^/?#]+\/api\/data\/v\d+\.\d+)(?:[/?#]|$)/i.exec(url)?.[1];
+  return root ? `${root}/$batch` : client.resolveUrl("$batch");
 }

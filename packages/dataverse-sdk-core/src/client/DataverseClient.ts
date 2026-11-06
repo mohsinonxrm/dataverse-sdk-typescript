@@ -18,6 +18,7 @@ import { DataverseAbortError } from "../errors/NamedErrors.js";
 import { generateUUID, normalizeHeaders } from "../utils/HeaderUtils.js";
 import { FeatureUsageTracker } from "../telemetry/FeatureUsageTracker.js";
 import { DataverseInvalidRequestError } from "../errors/NamedErrors.js";
+import type { FetchXmlOptions, FetchXmlPage } from "../fetchxml/page.js";
 
 export class DataverseClient {
   private readonly baseUrl: string;
@@ -79,6 +80,36 @@ export class DataverseClient {
 
   api(pathOrAbsoluteUrl: string): DataverseRequestBuilder {
     return new DataverseRequestBuilder(this, pathOrAbsoluteUrl);
+  }
+
+  /**
+   * Run a FetchXML query and return one page: `client.api(entitySetName).fetchXml(fetchXml)`.
+   * See `DataverseRequestBuilder.fetchXml()`.
+   */
+  fetchXml<T = Record<string, unknown>>(
+    entitySetName: string,
+    fetchXml: string,
+    options?: FetchXmlOptions
+  ): Promise<FetchXmlPage<T>> {
+    return this.api(entitySetName).fetchXml<T>(fetchXml, options);
+  }
+
+  /** Run a system view by id, as one page: `GET {entitySetName}?savedQuery={id}`. */
+  savedQuery<T = Record<string, unknown>>(
+    entitySetName: string,
+    savedQueryId: string,
+    options?: FetchXmlOptions
+  ): Promise<FetchXmlPage<T>> {
+    return this.api(entitySetName).savedQuery<T>(savedQueryId, options);
+  }
+
+  /** Run a personal view by id, as one page: `GET {entitySetName}?userQuery={id}`. */
+  userQuery<T = Record<string, unknown>>(
+    entitySetName: string,
+    userQueryId: string,
+    options?: FetchXmlOptions
+  ): Promise<FetchXmlPage<T>> {
+    return this.api(entitySetName).userQuery<T>(userQueryId, options);
   }
 
   /**
