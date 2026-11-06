@@ -50,6 +50,7 @@
     "@mohsinonxrm/dataverse-sdk-messages": "workspace:*"
   },
   "devDependencies": {
+    "@mohsinonxrm/dataverse-sdk-functions": "workspace:*",
     "@mohsinonxrm/dataverse-sdk-testing": "workspace:*",
     "eslint": "^9.39.5",
     "tsup": "^8.5.1",

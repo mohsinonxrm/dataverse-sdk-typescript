@@ -282,14 +282,18 @@ const accountTyped = await service.retrieve<Account>("accounts", accountId, {
 console.log(accountTyped.name); // ✅ Type-safe
 console.log(accountTyped.invalidProp); // ❌ Compile error
 
-// With returnRepresentation, create() resolves the record (string | T, so narrow it). The
-// entity argument is not checked against T.
-const created = (await service.create<Account>(
+// With returnRepresentation: true, create() resolves the record as T. The entity argument is
+// not checked against T.
+const created = await service.create<Account>(
   "accounts",
   { name: "Typed Account", revenue: 1000000 },
   { returnRepresentation: true, select: ["accountid", "name"] }
-)) as Account;
+);
 console.log(created.accountid);
+
+// Without a type argument, records are EntityRecords: every column is `unknown` until narrowed
+const late = await service.retrieve("accounts", accountId, { select: ["name"] });
+const name = typeof late.name === "string" ? late.name : "(no name)";
 ```
 
 ---
@@ -387,10 +391,7 @@ console.log(`Async operation ID: ${executeResponse.asyncoperationid}`);
 import { OrganizationService } from "@mohsinonxrm/dataverse-sdk-xrm";
 import { WhoAmIFunction } from "@mohsinonxrm/dataverse-sdk-functions";
 import { WinOpportunityAction } from "@mohsinonxrm/dataverse-sdk-actions";
-import {
-  ExecuteWorkflowRequest,
-  type ExecuteWorkflowResponse,
-} from "@mohsinonxrm/dataverse-sdk-messages";
+import { ExecuteWorkflowRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 
 const service = new OrganizationService(client);
 
@@ -404,7 +405,7 @@ await service.execute(winAction);
 
 // ========== Execute Message ==========
 const workflowRequest = new ExecuteWorkflowRequest(workflowId, recordId, {});
-const workflowResponse = await service.execute<ExecuteWorkflowResponse>(workflowRequest);
+const workflowResponse = await service.execute(workflowRequest);
 console.log(`Async operation: ${workflowResponse.result.asyncoperationid}`);
 
 // NOTE: service.execute() works with ANY Executable<T> class:
@@ -470,17 +471,14 @@ The `@mohsinonxrm/dataverse-sdk-messages` package contains 1,356+ generated requ
 
 ```typescript
 // ========== Import message classes directly ==========
-import {
-  ExecuteWorkflowRequest,
-  type ExecuteWorkflowResponse,
-} from "@mohsinonxrm/dataverse-sdk-messages";
+import { ExecuteWorkflowRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 
 // ========== Execute via OrganizationService ==========
 const service = new OrganizationService(client);
 
 // ExecuteWorkflow message
 const workflowRequest = new ExecuteWorkflowRequest(workflowId, recordId, {});
-const workflowResponse = await service.execute<ExecuteWorkflowResponse>(workflowRequest);
+const workflowResponse = await service.execute(workflowRequest);
 console.log(`Async operation: ${workflowResponse.result.asyncoperationid}`);
 
 // Assign and SetState aren't Web API messages: they are record updates, so use the helpers
@@ -540,10 +538,11 @@ Each message class encapsulates:
 
 ```typescript
 // FROM: packages/dataverse-sdk-xrm/src/OrganizationService.ts (OrganizationService.execute)
-async execute<TResponse>(request: unknown): Promise<TResponse> {
-  // Check if request implements Executable<T> interface
-  if (this.isExecutable(request)) {
-    return await this.client.execute(request);
+// T comes from the request, so `await service.execute(new WhoAmIFunction())` is a WhoAmIResponse
+async execute<T>(request: Executable<T>, options?: OperationOptions): Promise<T> {
+  // The type rules out anything else, but JavaScript callers can still pass one
+  if (this.isExecutable<T>(request)) {
+    return await this.client.execute(request, signalOptions(options));
   }
 
   throw new Error(
