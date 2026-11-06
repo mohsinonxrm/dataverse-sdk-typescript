@@ -37,6 +37,8 @@ import { TOASTER_ID } from "./toaster";
 
 const useStyles = makeStyles({
   card: { padding: tokens.spacingHorizontalL, gap: tokens.spacingVerticalL },
+  // Keep the badge on one line: in the CardHeader action slot it would otherwise wrap.
+  badge: { flexShrink: 0, whiteSpace: "nowrap" },
   form: { display: "flex", flexDirection: "column", gap: tokens.spacingVerticalM },
   fields: {
     display: "grid",
@@ -165,7 +167,7 @@ export function Scenario<T>(props: ScenarioProps<T>) {
         description={<Body1>{description}</Body1>}
         action={
           failsOnPurpose ? (
-            <Badge appearance="tint" color="warning" shape="rounded">
+            <Badge appearance="tint" color="warning" shape="rounded" className={styles.badge}>
               Fails on purpose
             </Badge>
           ) : undefined
