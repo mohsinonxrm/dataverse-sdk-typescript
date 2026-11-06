@@ -1,7 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetRequirementDemandDisplayResponse as msdyn_GetRequirementDemandDisplayResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetRequirementDemandDisplay message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetRequirementDemandDisplayRequestParameters {
+  RequirementIds: string;
+  Timescale: number;
+  TimeZoneCode: number;
+  IgnoreTimeZone?: boolean;
+}
 
 /**
  * msdyn_GetRequirementDemandDisplay request message
@@ -12,24 +24,21 @@ export class msdyn_GetRequirementDemandDisplayRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetRequirementDemandDisplayResponse>
 {
-  constructor(
-    public requirementIds: string,
-    public timescale: number,
-    public timeZoneCode: number,
-    public ignoreTimeZone?: boolean
-  ) {
-    super("msdyn_GetRequirementDemandDisplay");
+  declare readonly Parameters: Readonly<msdyn_GetRequirementDemandDisplayRequestParameters>;
+
+  constructor(parameters: msdyn_GetRequirementDemandDisplayRequestParameters) {
+    super("msdyn_GetRequirementDemandDisplay", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetRequirementDemandDisplay`;
 
-    const body: Record<string, unknown> = {
-      RequirementIds: this.requirementIds,
-      Timescale: this.timescale,
-      TimeZoneCode: this.timeZoneCode,
-      IgnoreTimeZone: this.ignoreTimeZone,
-    };
+    const body = requestBody({
+      RequirementIds: this.Parameters.RequirementIds,
+      Timescale: this.Parameters.Timescale,
+      TimeZoneCode: this.Parameters.TimeZoneCode,
+      IgnoreTimeZone: this.Parameters.IgnoreTimeZone,
+    });
 
     return {
       method: "POST",
@@ -42,8 +51,9 @@ export class msdyn_GetRequirementDemandDisplayRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetRequirementDemandDisplayResponse> {
-    const data = await response.json();
-    return msdyn_GetRequirementDemandDisplayResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_GetRequirementDemandDisplayResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

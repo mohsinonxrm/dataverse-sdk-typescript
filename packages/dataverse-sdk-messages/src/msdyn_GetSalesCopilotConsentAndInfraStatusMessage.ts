@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetSalesCopilotConsentAndInfraStatusResponse as msdyn_GetSalesCopilotConsentAndInfraStatusResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetSalesCopilotConsentAndInfraStatus message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetSalesCopilotConsentAndInfraStatusRequestParameters {
+  msdyn_payload: string;
+}
 
 /**
  * msdyn_GetSalesCopilotConsentAndInfraStatus request message
@@ -12,16 +21,18 @@ export class msdyn_GetSalesCopilotConsentAndInfraStatusRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetSalesCopilotConsentAndInfraStatusResponse>
 {
-  constructor(public msdyn_payload: string) {
-    super("msdyn_GetSalesCopilotConsentAndInfraStatus");
+  declare readonly Parameters: Readonly<msdyn_GetSalesCopilotConsentAndInfraStatusRequestParameters>;
+
+  constructor(parameters: msdyn_GetSalesCopilotConsentAndInfraStatusRequestParameters) {
+    super("msdyn_GetSalesCopilotConsentAndInfraStatus", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetSalesCopilotConsentAndInfraStatus`;
 
-    const body: Record<string, unknown> = {
-      msdyn_payload: this.msdyn_payload,
-    };
+    const body = requestBody({
+      msdyn_payload: this.Parameters.msdyn_payload,
+    });
 
     return {
       method: "POST",
@@ -36,8 +47,11 @@ export class msdyn_GetSalesCopilotConsentAndInfraStatusRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_GetSalesCopilotConsentAndInfraStatusResponse> {
-    const data = await response.json();
-    return msdyn_GetSalesCopilotConsentAndInfraStatusResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_GetSalesCopilotConsentAndInfraStatusResponse.fromResponse(
+      text ? JSON.parse(text) : {}
+    );
   }
 }
 

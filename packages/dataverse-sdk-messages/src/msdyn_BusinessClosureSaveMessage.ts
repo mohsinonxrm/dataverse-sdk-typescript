@@ -1,5 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_BusinessClosureSave message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_BusinessClosureSaveRequestParameters {
+  Id?: string;
+  Name: string;
+  Start: string;
+  End: string;
+}
 
 /**
  * msdyn_BusinessClosureSave request message
@@ -10,24 +22,21 @@ export class msdyn_BusinessClosureSaveRequest
   extends OrganizationRequest
   implements Executable<msdyn_BusinessClosureSaveResponse>
 {
-  constructor(
-    public id: string | undefined,
-    public name: string,
-    public start: string,
-    public end: string
-  ) {
-    super("msdyn_BusinessClosureSave");
+  declare readonly Parameters: Readonly<msdyn_BusinessClosureSaveRequestParameters>;
+
+  constructor(parameters: msdyn_BusinessClosureSaveRequestParameters) {
+    super("msdyn_BusinessClosureSave", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_BusinessClosureSave`;
 
-    const body: Record<string, unknown> = {
-      Id: this.id,
-      Name: this.name,
-      Start: this.start,
-      End: this.end,
-    };
+    const body = requestBody({
+      Id: this.Parameters.Id,
+      Name: this.Parameters.Name,
+      Start: this.Parameters.Start,
+      End: this.Parameters.End,
+    });
 
     return {
       method: "POST",

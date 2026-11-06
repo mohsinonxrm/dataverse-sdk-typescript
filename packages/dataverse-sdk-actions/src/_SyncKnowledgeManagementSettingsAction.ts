@@ -26,7 +26,8 @@ export class _SyncKnowledgeManagementSettingsAction implements Executable<_SyncK
   }
 
   async parseResponse(response: Response): Promise<_SyncKnowledgeManagementSettingsResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as _SyncKnowledgeManagementSettingsResponse;
   }
 }

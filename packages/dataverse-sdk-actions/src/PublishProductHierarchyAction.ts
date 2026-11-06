@@ -12,6 +12,8 @@ export interface PublishProductHierarchyResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.product)
+ *
+ * The first argument is the id of the product record to call it on.
  */
 export class PublishProductHierarchyAction implements Executable<PublishProductHierarchyResponse> {
   constructor(public readonly productId: string) {}
@@ -30,7 +32,8 @@ export class PublishProductHierarchyAction implements Executable<PublishProductH
   }
 
   async parseResponse(response: Response): Promise<PublishProductHierarchyResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as PublishProductHierarchyResponse;
   }
 }

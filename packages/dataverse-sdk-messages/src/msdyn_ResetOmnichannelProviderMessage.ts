@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_ResetOmnichannelProvider message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ResetOmnichannelProviderRequestParameters {
+  OrgBaseUrl: string;
+}
 
 /**
  * msdyn_ResetOmnichannelProvider request message
@@ -10,16 +19,18 @@ export class msdyn_ResetOmnichannelProviderRequest
   extends OrganizationRequest
   implements Executable<msdyn_ResetOmnichannelProviderResponse>
 {
-  constructor(public orgBaseUrl: string) {
-    super("msdyn_ResetOmnichannelProvider");
+  declare readonly Parameters: Readonly<msdyn_ResetOmnichannelProviderRequestParameters>;
+
+  constructor(parameters: msdyn_ResetOmnichannelProviderRequestParameters) {
+    super("msdyn_ResetOmnichannelProvider", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ResetOmnichannelProvider`;
 
-    const body: Record<string, unknown> = {
-      OrgBaseUrl: this.orgBaseUrl,
-    };
+    const body = requestBody({
+      OrgBaseUrl: this.Parameters.OrgBaseUrl,
+    });
 
     return {
       method: "POST",

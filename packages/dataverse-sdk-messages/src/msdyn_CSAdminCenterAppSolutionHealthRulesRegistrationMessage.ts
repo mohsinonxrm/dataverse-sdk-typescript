@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationResponse as msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_CSAdminCenterAppSolutionHealthRulesRegistration message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationRequestParameters {
+  SolutionNames?: string;
+}
 
 /**
  * msdyn_CSAdminCenterAppSolutionHealthRulesRegistration request message
@@ -12,16 +21,20 @@ export class msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationRequest
   extends OrganizationRequest
   implements Executable<msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationResponse>
 {
-  constructor(public solutionNames?: string) {
-    super("msdyn_CSAdminCenterAppSolutionHealthRulesRegistration");
+  declare readonly Parameters: Readonly<msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationRequestParameters>;
+
+  constructor(
+    parameters: msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationRequestParameters = {}
+  ) {
+    super("msdyn_CSAdminCenterAppSolutionHealthRulesRegistration", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CSAdminCenterAppSolutionHealthRulesRegistration`;
 
-    const body: Record<string, unknown> = {
-      SolutionNames: this.solutionNames,
-    };
+    const body = requestBody({
+      SolutionNames: this.Parameters.SolutionNames,
+    });
 
     return {
       method: "POST",
@@ -36,8 +49,11 @@ export class msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationResponse> {
-    const data = await response.json();
-    return msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationResponse.fromResponse(
+      text ? JSON.parse(text) : {}
+    );
   }
 }
 

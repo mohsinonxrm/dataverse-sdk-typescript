@@ -2,8 +2,17 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { InitializeAttachmentBlocksDownloadResponse as InitializeAttachmentBlocksDownloadResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the InitializeAttachmentBlocksDownload message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface InitializeAttachmentBlocksDownloadRequestParameters {
+  Target: EntityReference | AnyEntityPayload;
+}
 
 /**
  * InitializeAttachmentBlocksDownload request message
@@ -14,16 +23,18 @@ export class InitializeAttachmentBlocksDownloadRequest
   extends OrganizationRequest
   implements Executable<InitializeAttachmentBlocksDownloadResponse>
 {
-  constructor(public target: EntityReference | AnyEntityPayload) {
-    super("InitializeAttachmentBlocksDownload");
+  declare readonly Parameters: Readonly<InitializeAttachmentBlocksDownloadRequestParameters>;
+
+  constructor(parameters: InitializeAttachmentBlocksDownloadRequestParameters) {
+    super("InitializeAttachmentBlocksDownload", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/InitializeAttachmentBlocksDownload`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-    };
+    const body = requestBody({
+      Target: this.Parameters.Target,
+    });
 
     return {
       method: "POST",
@@ -36,8 +47,9 @@ export class InitializeAttachmentBlocksDownloadRequest
   }
 
   async parseResponse(response: Response): Promise<InitializeAttachmentBlocksDownloadResponse> {
-    const data = await response.json();
-    return InitializeAttachmentBlocksDownloadResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return InitializeAttachmentBlocksDownloadResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

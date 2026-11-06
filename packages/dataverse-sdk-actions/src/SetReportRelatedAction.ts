@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from SetReportRelated action
@@ -8,27 +9,33 @@ export interface SetReportRelatedResponse {
 }
 
 /**
+ * Parameters of the SetReportRelated action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SetReportRelatedActionParameters {
+  ReportId: string;
+  Entities: number[];
+  Categories: number[];
+  Visibility: number[];
+}
+
+/**
  * SetReportRelated action
  *
  * Unbound action
  */
 export class SetReportRelatedAction implements Executable<SetReportRelatedResponse> {
-  constructor(
-    public readonly reportId: string,
-    public readonly entities: number[],
-    public readonly categories: number[],
-    public readonly visibility: number[]
-  ) {}
+  constructor(public readonly parameters: SetReportRelatedActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/SetReportRelated`;
 
-    const body: Record<string, unknown> = {
-      ReportId: this.reportId,
-      Entities: this.entities,
-      Categories: this.categories,
-      Visibility: this.visibility,
-    };
+    const body = requestBody({
+      ReportId: this.parameters.ReportId,
+      Entities: this.parameters.Entities,
+      Categories: this.parameters.Categories,
+      Visibility: this.parameters.Visibility,
+    });
 
     return {
       method: "POST",
@@ -41,7 +48,8 @@ export class SetReportRelatedAction implements Executable<SetReportRelatedRespon
   }
 
   async parseResponse(response: Response): Promise<SetReportRelatedResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as SetReportRelatedResponse;
   }
 }

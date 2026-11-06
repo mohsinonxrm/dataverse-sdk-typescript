@@ -10,12 +10,20 @@ export interface RetrieveMailboxTrackingFoldersResponse {
 }
 
 /**
+ * Parameters of the RetrieveMailboxTrackingFolders function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveMailboxTrackingFoldersFunctionParameters {
+  MailboxId: string;
+}
+
+/**
  * RetrieveMailboxTrackingFolders function
  *
  * Unbound function
  */
 export class RetrieveMailboxTrackingFoldersFunction implements Executable<RetrieveMailboxTrackingFoldersResponse> {
-  constructor(public readonly mailboxId: string) {}
+  constructor(public readonly parameters: RetrieveMailboxTrackingFoldersFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveMailboxTrackingFolders`;
@@ -23,9 +31,9 @@ export class RetrieveMailboxTrackingFoldersFunction implements Executable<Retrie
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.mailboxId !== undefined) {
+    if (this.parameters.MailboxId !== undefined) {
       aliases.push(`MailboxId=@p1`);
-      params.append("@p1", formatParameterAlias(this.mailboxId, "Edm.String"));
+      params.append("@p1", formatParameterAlias(this.parameters.MailboxId, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -41,7 +49,8 @@ export class RetrieveMailboxTrackingFoldersFunction implements Executable<Retrie
   }
 
   async parseResponse(response: Response): Promise<RetrieveMailboxTrackingFoldersResponse> {
-    const data = await response.json();
-    return data as RetrieveMailboxTrackingFoldersResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RetrieveMailboxTrackingFoldersResponse;
   }
 }

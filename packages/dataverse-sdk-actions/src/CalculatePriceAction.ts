@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,23 +11,29 @@ export interface CalculatePriceResponse {
 }
 
 /**
+ * Parameters of the CalculatePrice action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CalculatePriceActionParameters {
+  Target: EntityReference | AnyEntityPayload;
+  ParentId?: string;
+}
+
+/**
  * CalculatePrice action
  *
  * Unbound action
  */
 export class CalculatePriceAction implements Executable<CalculatePriceResponse> {
-  constructor(
-    public readonly target: EntityReference | AnyEntityPayload,
-    public readonly parentId?: string
-  ) {}
+  constructor(public readonly parameters: CalculatePriceActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CalculatePrice`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-      ParentId: this.parentId,
-    };
+    const body = requestBody({
+      Target: this.parameters.Target,
+      ParentId: this.parameters.ParentId,
+    });
 
     return {
       method: "POST",
@@ -39,7 +46,8 @@ export class CalculatePriceAction implements Executable<CalculatePriceResponse> 
   }
 
   async parseResponse(response: Response): Promise<CalculatePriceResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as CalculatePriceResponse;
   }
 }

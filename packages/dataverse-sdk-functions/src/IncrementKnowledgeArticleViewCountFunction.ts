@@ -14,17 +14,23 @@ export interface IncrementKnowledgeArticleViewCountResponse {
 }
 
 /**
+ * Parameters of the IncrementKnowledgeArticleViewCount function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface IncrementKnowledgeArticleViewCountFunctionParameters {
+  Source: EntityReference;
+  ViewDate: string | Date;
+  Location: number;
+  Count: number;
+}
+
+/**
  * IncrementKnowledgeArticleViewCount function
  *
  * Unbound function
  */
 export class IncrementKnowledgeArticleViewCountFunction implements Executable<IncrementKnowledgeArticleViewCountResponse> {
-  constructor(
-    public readonly source: EntityReference,
-    public readonly viewDate: string | Date,
-    public readonly location: number,
-    public readonly count: number
-  ) {}
+  constructor(public readonly parameters: IncrementKnowledgeArticleViewCountFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/IncrementKnowledgeArticleViewCount`;
@@ -32,21 +38,24 @@ export class IncrementKnowledgeArticleViewCountFunction implements Executable<In
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.source !== undefined) {
+    if (this.parameters.Source !== undefined) {
       aliases.push(`Source=@p1`);
-      params.append("@p1", formatParameterAlias(this.source, "mscrm.crmbaseentity", "EntityType"));
+      params.append(
+        "@p1",
+        formatParameterAlias(this.parameters.Source, "mscrm.crmbaseentity", "EntityType")
+      );
     }
-    if (this.viewDate !== undefined) {
+    if (this.parameters.ViewDate !== undefined) {
       aliases.push(`ViewDate=@p2`);
-      params.append("@p2", formatParameterAlias(this.viewDate, "Edm.DateTimeOffset"));
+      params.append("@p2", formatParameterAlias(this.parameters.ViewDate, "Edm.DateTimeOffset"));
     }
-    if (this.location !== undefined) {
+    if (this.parameters.Location !== undefined) {
       aliases.push(`Location=@p3`);
-      params.append("@p3", formatParameterAlias(this.location, "Edm.Int32"));
+      params.append("@p3", formatParameterAlias(this.parameters.Location, "Edm.Int32"));
     }
-    if (this.count !== undefined) {
+    if (this.parameters.Count !== undefined) {
       aliases.push(`Count=@p4`);
-      params.append("@p4", formatParameterAlias(this.count, "Edm.Int32"));
+      params.append("@p4", formatParameterAlias(this.parameters.Count, "Edm.Int32"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -62,7 +71,8 @@ export class IncrementKnowledgeArticleViewCountFunction implements Executable<In
   }
 
   async parseResponse(response: Response): Promise<IncrementKnowledgeArticleViewCountResponse> {
-    const data = await response.json();
-    return data as IncrementKnowledgeArticleViewCountResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as IncrementKnowledgeArticleViewCountResponse;
   }
 }

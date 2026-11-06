@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_SendEmailToTechnicians action
@@ -8,19 +9,27 @@ export interface msdyn_SendEmailToTechniciansResponse {
 }
 
 /**
+ * Parameters of the msdyn_SendEmailToTechnicians action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SendEmailToTechniciansActionParameters {
+  input: string;
+}
+
+/**
  * msdyn_SendEmailToTechnicians action
  *
  * Unbound action
  */
 export class msdyn_SendEmailToTechniciansAction implements Executable<msdyn_SendEmailToTechniciansResponse> {
-  constructor(public readonly input: string) {}
+  constructor(public readonly parameters: msdyn_SendEmailToTechniciansActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SendEmailToTechnicians`;
 
-    const body: Record<string, unknown> = {
-      input: this.input,
-    };
+    const body = requestBody({
+      input: this.parameters.input,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class msdyn_SendEmailToTechniciansAction implements Executable<msdyn_Send
   }
 
   async parseResponse(response: Response): Promise<msdyn_SendEmailToTechniciansResponse> {
-    const data = await response.json();
-    return data as msdyn_SendEmailToTechniciansResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_SendEmailToTechniciansResponse;
   }
 }

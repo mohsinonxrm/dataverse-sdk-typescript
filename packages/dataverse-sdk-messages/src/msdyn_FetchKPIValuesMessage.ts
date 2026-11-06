@@ -2,8 +2,19 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_FetchKPIValuesResponse as msdyn_FetchKPIValuesResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_FetchKPIValues message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_FetchKPIValuesRequestParameters {
+  CrmRecord: EntityReference | AnyEntityPayload;
+  KPINames: string;
+  KPIType?: string;
+}
 
 /**
  * msdyn_FetchKPIValues request message
@@ -14,22 +25,20 @@ export class msdyn_FetchKPIValuesRequest
   extends OrganizationRequest
   implements Executable<msdyn_FetchKPIValuesResponse>
 {
-  constructor(
-    public crmRecord: EntityReference | AnyEntityPayload,
-    public kPINames: string,
-    public kPIType?: string
-  ) {
-    super("msdyn_FetchKPIValues");
+  declare readonly Parameters: Readonly<msdyn_FetchKPIValuesRequestParameters>;
+
+  constructor(parameters: msdyn_FetchKPIValuesRequestParameters) {
+    super("msdyn_FetchKPIValues", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_FetchKPIValues`;
 
-    const body: Record<string, unknown> = {
-      CrmRecord: this.crmRecord,
-      KPINames: this.kPINames,
-      KPIType: this.kPIType,
-    };
+    const body = requestBody({
+      CrmRecord: this.Parameters.CrmRecord,
+      KPINames: this.Parameters.KPINames,
+      KPIType: this.Parameters.KPIType,
+    });
 
     return {
       method: "POST",
@@ -42,8 +51,9 @@ export class msdyn_FetchKPIValuesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_FetchKPIValuesResponse> {
-    const data = await response.json();
-    return msdyn_FetchKPIValuesResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_FetchKPIValuesResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

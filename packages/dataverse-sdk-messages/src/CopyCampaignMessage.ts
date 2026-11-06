@@ -1,31 +1,44 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { campaign } from "./types/index.js";
+
+/**
+ * Parameters of the CopyCampaign message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CopyCampaignRequestParameters {
+  SaveAsTemplate: boolean;
+}
 
 /**
  * CopyCampaign request message
  *
  * Web API Action: CopyCampaign
+ *
+ * The first argument is the id of the campaign record to call it on.
  */
 export class CopyCampaignRequest
   extends OrganizationRequest
   implements Executable<CopyCampaignResponse>
 {
+  declare readonly Parameters: Readonly<CopyCampaignRequestParameters>;
+
   constructor(
     public campaignId: string,
-    public saveAsTemplate: boolean
+    parameters: CopyCampaignRequestParameters
   ) {
-    super("CopyCampaign");
+    super("CopyCampaign", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/campaigns(${this.campaignId})/Microsoft.Dynamics.CRM.CopyCampaign`;
 
-    const body: Record<string, unknown> = {
-      SaveAsTemplate: this.saveAsTemplate,
-    };
+    const body = requestBody({
+      SaveAsTemplate: this.Parameters.SaveAsTemplate,
+    });
 
     return {
       method: "POST",
@@ -38,8 +51,9 @@ export class CopyCampaignRequest
   }
 
   async parseResponse(response: Response): Promise<CopyCampaignResponse> {
-    const data = await response.json();
-    return CopyCampaignResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return CopyCampaignResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

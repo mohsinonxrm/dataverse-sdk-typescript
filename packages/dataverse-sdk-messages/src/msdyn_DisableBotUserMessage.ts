@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_DisableBotUser message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_DisableBotUserRequestParameters {
+  BotApplicationId: string;
+}
 
 /**
  * msdyn_DisableBotUser request message
@@ -10,16 +19,18 @@ export class msdyn_DisableBotUserRequest
   extends OrganizationRequest
   implements Executable<msdyn_DisableBotUserResponse>
 {
-  constructor(public botApplicationId: string) {
-    super("msdyn_DisableBotUser");
+  declare readonly Parameters: Readonly<msdyn_DisableBotUserRequestParameters>;
+
+  constructor(parameters: msdyn_DisableBotUserRequestParameters) {
+    super("msdyn_DisableBotUser", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_DisableBotUser`;
 
-    const body: Record<string, unknown> = {
-      BotApplicationId: this.botApplicationId,
-    };
+    const body = requestBody({
+      BotApplicationId: this.Parameters.BotApplicationId,
+    });
 
     return {
       method: "POST",

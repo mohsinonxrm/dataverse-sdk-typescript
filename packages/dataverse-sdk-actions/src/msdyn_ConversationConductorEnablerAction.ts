@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_ConversationConductorEnabler action
@@ -9,33 +10,39 @@ export interface msdyn_ConversationConductorEnablerResponse {
 }
 
 /**
+ * Parameters of the msdyn_ConversationConductorEnabler action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ConversationConductorEnablerActionParameters {
+  BotApplicationId: string;
+  ApplicationId?: string;
+  FirstName: string;
+  LastName: string;
+  BotHandle?: string;
+  OwningEnvironmentId?: string;
+  Properties?: string;
+}
+
+/**
  * msdyn_ConversationConductorEnabler action
  *
  * Unbound action
  */
 export class msdyn_ConversationConductorEnablerAction implements Executable<msdyn_ConversationConductorEnablerResponse> {
-  constructor(
-    public readonly botApplicationId: string,
-    public readonly applicationId: string | undefined,
-    public readonly firstName: string,
-    public readonly lastName: string,
-    public readonly botHandle?: string,
-    public readonly owningEnvironmentId?: string,
-    public readonly properties?: string
-  ) {}
+  constructor(public readonly parameters: msdyn_ConversationConductorEnablerActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ConversationConductorEnabler`;
 
-    const body: Record<string, unknown> = {
-      BotApplicationId: this.botApplicationId,
-      ApplicationId: this.applicationId,
-      FirstName: this.firstName,
-      LastName: this.lastName,
-      BotHandle: this.botHandle,
-      OwningEnvironmentId: this.owningEnvironmentId,
-      Properties: this.properties,
-    };
+    const body = requestBody({
+      BotApplicationId: this.parameters.BotApplicationId,
+      ApplicationId: this.parameters.ApplicationId,
+      FirstName: this.parameters.FirstName,
+      LastName: this.parameters.LastName,
+      BotHandle: this.parameters.BotHandle,
+      OwningEnvironmentId: this.parameters.OwningEnvironmentId,
+      Properties: this.parameters.Properties,
+    });
 
     return {
       method: "POST",
@@ -48,7 +55,8 @@ export class msdyn_ConversationConductorEnablerAction implements Executable<msdy
   }
 
   async parseResponse(response: Response): Promise<msdyn_ConversationConductorEnablerResponse> {
-    const data = await response.json();
-    return data as msdyn_ConversationConductorEnablerResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_ConversationConductorEnablerResponse;
   }
 }

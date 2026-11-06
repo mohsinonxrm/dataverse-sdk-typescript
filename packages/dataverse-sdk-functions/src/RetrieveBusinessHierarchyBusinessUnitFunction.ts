@@ -13,6 +13,8 @@ export interface RetrieveBusinessHierarchyBusinessUnitResponse {
  *
  * Bound function
  * Binding parameter: entity (mscrm.businessunit)
+ *
+ * The first argument is the id of the businessunit record to call it on.
  */
 export class RetrieveBusinessHierarchyBusinessUnitFunction implements Executable<RetrieveBusinessHierarchyBusinessUnitResponse> {
   constructor(public readonly businessunitId: string) {}
@@ -31,7 +33,8 @@ export class RetrieveBusinessHierarchyBusinessUnitFunction implements Executable
   }
 
   async parseResponse(response: Response): Promise<RetrieveBusinessHierarchyBusinessUnitResponse> {
-    const data = await response.json();
-    return data as RetrieveBusinessHierarchyBusinessUnitResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RetrieveBusinessHierarchyBusinessUnitResponse;
   }
 }

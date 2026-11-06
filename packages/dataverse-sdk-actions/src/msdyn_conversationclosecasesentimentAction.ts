@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_conversationclosecasesentiment action
@@ -8,19 +9,27 @@ export interface msdyn_conversationclosecasesentimentResponse {
 }
 
 /**
+ * Parameters of the msdyn_conversationclosecasesentiment action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_conversationclosecasesentimentActionParameters {
+  LiveWorkItemGuid: string;
+}
+
+/**
  * msdyn_conversationclosecasesentiment action
  *
  * Unbound action
  */
 export class msdyn_conversationclosecasesentimentAction implements Executable<msdyn_conversationclosecasesentimentResponse> {
-  constructor(public readonly liveWorkItemGuid: string) {}
+  constructor(public readonly parameters: msdyn_conversationclosecasesentimentActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_conversationclosecasesentiment`;
 
-    const body: Record<string, unknown> = {
-      LiveWorkItemGuid: this.liveWorkItemGuid,
-    };
+    const body = requestBody({
+      LiveWorkItemGuid: this.parameters.LiveWorkItemGuid,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class msdyn_conversationclosecasesentimentAction implements Executable<ms
   }
 
   async parseResponse(response: Response): Promise<msdyn_conversationclosecasesentimentResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_conversationclosecasesentimentResponse;
   }
 }

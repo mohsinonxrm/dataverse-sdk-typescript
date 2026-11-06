@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_AutonomousSQA_ProcessBANTAndPIExtraction action
@@ -8,25 +9,33 @@ export interface msdyn_AutonomousSQA_ProcessBANTAndPIExtractionResponse {
 }
 
 /**
+ * Parameters of the msdyn_AutonomousSQA_ProcessBANTAndPIExtraction action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_AutonomousSQA_ProcessBANTAndPIExtractionActionParameters {
+  msdyn_Thread: string;
+  msdyn_SalesAgentRun: string;
+  msdyn_TrackingId: string;
+}
+
+/**
  * msdyn_AutonomousSQA_ProcessBANTAndPIExtraction action
  *
  * Unbound action
  */
 export class msdyn_AutonomousSQA_ProcessBANTAndPIExtractionAction implements Executable<msdyn_AutonomousSQA_ProcessBANTAndPIExtractionResponse> {
   constructor(
-    public readonly msdyn_Thread: string,
-    public readonly msdyn_SalesAgentRun: string,
-    public readonly msdyn_TrackingId: string
+    public readonly parameters: msdyn_AutonomousSQA_ProcessBANTAndPIExtractionActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_AutonomousSQA_ProcessBANTAndPIExtraction`;
 
-    const body: Record<string, unknown> = {
-      msdyn_Thread: this.msdyn_Thread,
-      msdyn_SalesAgentRun: this.msdyn_SalesAgentRun,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-    };
+    const body = requestBody({
+      msdyn_Thread: this.parameters.msdyn_Thread,
+      msdyn_SalesAgentRun: this.parameters.msdyn_SalesAgentRun,
+      msdyn_TrackingId: this.parameters.msdyn_TrackingId,
+    });
 
     return {
       method: "POST",
@@ -41,7 +50,8 @@ export class msdyn_AutonomousSQA_ProcessBANTAndPIExtractionAction implements Exe
   async parseResponse(
     response: Response
   ): Promise<msdyn_AutonomousSQA_ProcessBANTAndPIExtractionResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_AutonomousSQA_ProcessBANTAndPIExtractionResponse;
   }
 }

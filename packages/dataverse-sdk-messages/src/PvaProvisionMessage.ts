@@ -5,6 +5,8 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * PvaProvision request message
  *
  * Web API Action: PvaProvision
+ *
+ * The first argument is the id of the bot record to call it on.
  */
 export class PvaProvisionRequest
   extends OrganizationRequest

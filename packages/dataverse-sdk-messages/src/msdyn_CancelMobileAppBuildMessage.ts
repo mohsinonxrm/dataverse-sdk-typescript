@@ -2,11 +2,21 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type {
   msdyn_CancelMobileAppBuildResponse as msdyn_CancelMobileAppBuildResponseData,
   msdyn_mobileapp,
 } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_CancelMobileAppBuild message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CancelMobileAppBuildRequestParameters {
+  OperationId: string;
+  msdyn_MobileApp: EntityReference | EntityPayload<msdyn_mobileapp>;
+}
 
 /**
  * msdyn_CancelMobileAppBuild request message
@@ -17,20 +27,19 @@ export class msdyn_CancelMobileAppBuildRequest
   extends OrganizationRequest
   implements Executable<msdyn_CancelMobileAppBuildResponse>
 {
-  constructor(
-    public operationId: string,
-    public msdyn_MobileApp: EntityReference | EntityPayload<msdyn_mobileapp>
-  ) {
-    super("msdyn_CancelMobileAppBuild");
+  declare readonly Parameters: Readonly<msdyn_CancelMobileAppBuildRequestParameters>;
+
+  constructor(parameters: msdyn_CancelMobileAppBuildRequestParameters) {
+    super("msdyn_CancelMobileAppBuild", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CancelMobileAppBuild`;
 
-    const body: Record<string, unknown> = {
-      OperationId: this.operationId,
-      msdyn_MobileApp: this.msdyn_MobileApp,
-    };
+    const body = requestBody({
+      OperationId: this.Parameters.OperationId,
+      msdyn_MobileApp: this.Parameters.msdyn_MobileApp,
+    });
 
     return {
       method: "POST",
@@ -43,8 +52,9 @@ export class msdyn_CancelMobileAppBuildRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CancelMobileAppBuildResponse> {
-    const data = await response.json();
-    return msdyn_CancelMobileAppBuildResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_CancelMobileAppBuildResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

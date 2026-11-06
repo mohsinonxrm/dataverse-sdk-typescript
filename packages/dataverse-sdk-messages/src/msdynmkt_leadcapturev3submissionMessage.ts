@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the msdynmkt_leadcapturev3submission message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdynmkt_leadcapturev3submissionRequestParameters {
+  msdynmkt_formsubmissionid: EntityReference | AnyEntityPayload;
+  msdynmkt_consentversion?: string;
+  msdynmkt_marketingformid: EntityReference | AnyEntityPayload;
+}
 
 /**
  * msdynmkt_leadcapturev3submission request message
@@ -12,22 +23,20 @@ export class msdynmkt_leadcapturev3submissionRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_leadcapturev3submissionResponse>
 {
-  constructor(
-    public msdynmkt_formsubmissionid: EntityReference | AnyEntityPayload,
-    public msdynmkt_consentversion: string | undefined,
-    public msdynmkt_marketingformid: EntityReference | AnyEntityPayload
-  ) {
-    super("msdynmkt_leadcapturev3submission");
+  declare readonly Parameters: Readonly<msdynmkt_leadcapturev3submissionRequestParameters>;
+
+  constructor(parameters: msdynmkt_leadcapturev3submissionRequestParameters) {
+    super("msdynmkt_leadcapturev3submission", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_leadcapturev3submission`;
 
-    const body: Record<string, unknown> = {
-      msdynmkt_formsubmissionid: this.msdynmkt_formsubmissionid,
-      msdynmkt_consentversion: this.msdynmkt_consentversion,
-      msdynmkt_marketingformid: this.msdynmkt_marketingformid,
-    };
+    const body = requestBody({
+      msdynmkt_formsubmissionid: this.Parameters.msdynmkt_formsubmissionid,
+      msdynmkt_consentversion: this.Parameters.msdynmkt_consentversion,
+      msdynmkt_marketingformid: this.Parameters.msdynmkt_marketingformid,
+    });
 
     return {
       method: "POST",

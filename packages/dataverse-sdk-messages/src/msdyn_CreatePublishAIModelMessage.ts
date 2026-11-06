@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type {
   msdyn_CreatePublishAIModelResponse as msdyn_CreatePublishAIModelResponseData,
@@ -9,28 +10,40 @@ import type {
 } from "./types/index.js";
 
 /**
+ * Parameters of the msdyn_CreatePublishAIModel message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CreatePublishAIModelRequestParameters {
+  ocsimltraining: EntityReference | EntityPayload<msdyn_ocsimltraining>;
+}
+
+/**
  * msdyn_CreatePublishAIModel request message
  *
  * Web API Action: msdyn_CreatePublishAIModel
+ *
+ * The first argument is the id of the msdyn_ocskillidentmlmodel record to call it on.
  */
 export class msdyn_CreatePublishAIModelRequest
   extends OrganizationRequest
   implements Executable<msdyn_CreatePublishAIModelResponse>
 {
+  declare readonly Parameters: Readonly<msdyn_CreatePublishAIModelRequestParameters>;
+
   constructor(
     public msdyn_ocskillidentmlmodelId: string,
-    public ocsimltraining: EntityReference | EntityPayload<msdyn_ocsimltraining>
+    parameters: msdyn_CreatePublishAIModelRequestParameters
   ) {
-    super("msdyn_CreatePublishAIModel");
+    super("msdyn_CreatePublishAIModel", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_ocskillidentmlmodels(${this.msdyn_ocskillidentmlmodelId})/Microsoft.Dynamics.CRM.msdyn_CreatePublishAIModel`;
 
-    const body: Record<string, unknown> = {
-      ocsimltraining: this.ocsimltraining,
-    };
+    const body = requestBody({
+      ocsimltraining: this.Parameters.ocsimltraining,
+    });
 
     return {
       method: "POST",
@@ -43,8 +56,9 @@ export class msdyn_CreatePublishAIModelRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreatePublishAIModelResponse> {
-    const data = await response.json();
-    return msdyn_CreatePublishAIModelResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_CreatePublishAIModelResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

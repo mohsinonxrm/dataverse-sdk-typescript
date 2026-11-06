@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_GetSankeyData action
@@ -8,25 +9,31 @@ export interface msdyn_GetSankeyDataResponse {
 }
 
 /**
+ * Parameters of the msdyn_GetSankeyData action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetSankeyDataActionParameters {
+  msdyn_sequenceid: string;
+  msdyn_dateto: string;
+  msdyn_datefrom: string;
+}
+
+/**
  * msdyn_GetSankeyData action
  *
  * Unbound action
  */
 export class msdyn_GetSankeyDataAction implements Executable<msdyn_GetSankeyDataResponse> {
-  constructor(
-    public readonly msdyn_sequenceid: string,
-    public readonly msdyn_dateto: string,
-    public readonly msdyn_datefrom: string
-  ) {}
+  constructor(public readonly parameters: msdyn_GetSankeyDataActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetSankeyData`;
 
-    const body: Record<string, unknown> = {
-      msdyn_sequenceid: this.msdyn_sequenceid,
-      msdyn_dateto: this.msdyn_dateto,
-      msdyn_datefrom: this.msdyn_datefrom,
-    };
+    const body = requestBody({
+      msdyn_sequenceid: this.parameters.msdyn_sequenceid,
+      msdyn_dateto: this.parameters.msdyn_dateto,
+      msdyn_datefrom: this.parameters.msdyn_datefrom,
+    });
 
     return {
       method: "POST",
@@ -39,7 +46,8 @@ export class msdyn_GetSankeyDataAction implements Executable<msdyn_GetSankeyData
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSankeyDataResponse> {
-    const data = await response.json();
-    return data as msdyn_GetSankeyDataResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_GetSankeyDataResponse;
   }
 }

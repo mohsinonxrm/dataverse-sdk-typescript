@@ -7,6 +7,8 @@ import type { ClearWorkQueueResponse as ClearWorkQueueResponseData } from "./typ
  * ClearWorkQueue request message
  *
  * Web API Action: ClearWorkQueue
+ *
+ * The first argument is the id of the workqueue record to call it on.
  */
 export class ClearWorkQueueRequest
   extends OrganizationRequest
@@ -30,8 +32,9 @@ export class ClearWorkQueueRequest
   }
 
   async parseResponse(response: Response): Promise<ClearWorkQueueResponse> {
-    const data = await response.json();
-    return ClearWorkQueueResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return ClearWorkQueueResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

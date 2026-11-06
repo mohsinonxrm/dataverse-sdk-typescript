@@ -1,6 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseValue } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_GetCustomActionList message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetCustomActionListRequestParameters {
+  workflowId: string;
+  entityName: string;
+  correlationId: string;
+}
 
 /**
  * msdyn_GetCustomActionList request message
@@ -11,22 +22,20 @@ export class msdyn_GetCustomActionListRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetCustomActionListResponse>
 {
-  constructor(
-    public workflowId: string,
-    public entityName: string,
-    public correlationId: string
-  ) {
-    super("msdyn_GetCustomActionList");
+  declare readonly Parameters: Readonly<msdyn_GetCustomActionListRequestParameters>;
+
+  constructor(parameters: msdyn_GetCustomActionListRequestParameters) {
+    super("msdyn_GetCustomActionList", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetCustomActionList`;
 
-    const body: Record<string, unknown> = {
-      workflowId: this.workflowId,
-      entityName: this.entityName,
-      correlationId: this.correlationId,
-    };
+    const body = requestBody({
+      workflowId: this.Parameters.workflowId,
+      entityName: this.Parameters.entityName,
+      correlationId: this.Parameters.correlationId,
+    });
 
     return {
       method: "POST",
@@ -39,8 +48,9 @@ export class msdyn_GetCustomActionListRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetCustomActionListResponse> {
-    const data = await response.json();
-    return msdyn_GetCustomActionListResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_GetCustomActionListResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

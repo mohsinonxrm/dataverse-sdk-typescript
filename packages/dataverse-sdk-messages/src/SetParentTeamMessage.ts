@@ -1,34 +1,47 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { businessunit } from "./types/index.js";
+
+/**
+ * Parameters of the SetParentTeam message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SetParentTeamRequestParameters {
+  BusinessUnit: EntityReference | EntityPayload<businessunit>;
+  DoNotMoveAllRecords?: boolean;
+}
 
 /**
  * SetParentTeam request message
  *
  * Web API Action: SetParentTeam
+ *
+ * The first argument is the id of the team record to call it on.
  */
 export class SetParentTeamRequest
   extends OrganizationRequest
   implements Executable<SetParentTeamResponse>
 {
+  declare readonly Parameters: Readonly<SetParentTeamRequestParameters>;
+
   constructor(
     public teamId: string,
-    public businessUnit: EntityReference | EntityPayload<businessunit>,
-    public doNotMoveAllRecords?: boolean
+    parameters: SetParentTeamRequestParameters
   ) {
-    super("SetParentTeam");
+    super("SetParentTeam", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/teams(${this.teamId})/Microsoft.Dynamics.CRM.SetParentTeam`;
 
-    const body: Record<string, unknown> = {
-      BusinessUnit: this.businessUnit,
-      DoNotMoveAllRecords: this.doNotMoveAllRecords,
-    };
+    const body = requestBody({
+      BusinessUnit: this.Parameters.BusinessUnit,
+      DoNotMoveAllRecords: this.Parameters.DoNotMoveAllRecords,
+    });
 
     return {
       method: "POST",

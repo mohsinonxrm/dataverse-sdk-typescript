@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { systemuser } from "./types/index.js";
 
@@ -11,26 +12,36 @@ export interface SetParentSystemUserResponse {
 }
 
 /**
+ * Parameters of the SetParentSystemUser action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SetParentSystemUserActionParameters {
+  Parent: EntityReference | EntityPayload<systemuser>;
+  KeepChildUsers: boolean;
+}
+
+/**
  * SetParentSystemUser action
  *
  * Bound action
  * Binding parameter: entity (mscrm.systemuser)
+ *
+ * The first argument is the id of the systemuser record to call it on.
  */
 export class SetParentSystemUserAction implements Executable<SetParentSystemUserResponse> {
   constructor(
     public readonly systemuserId: string,
-    public readonly parent: EntityReference | EntityPayload<systemuser>,
-    public readonly keepChildUsers: boolean
+    public readonly parameters: SetParentSystemUserActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/systemusers(${this.systemuserId})/Microsoft.Dynamics.CRM.SetParentSystemUser`;
 
-    const body: Record<string, unknown> = {
-      Parent: this.parent,
-      KeepChildUsers: this.keepChildUsers,
-    };
+    const body = requestBody({
+      Parent: this.parameters.Parent,
+      KeepChildUsers: this.parameters.KeepChildUsers,
+    });
 
     return {
       method: "POST",
@@ -43,7 +54,8 @@ export class SetParentSystemUserAction implements Executable<SetParentSystemUser
   }
 
   async parseResponse(response: Response): Promise<SetParentSystemUserResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as SetParentSystemUserResponse;
   }
 }

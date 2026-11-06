@@ -2,7 +2,17 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the CreateKnowledgeArticleVersion message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CreateKnowledgeArticleVersionRequestParameters {
+  Source: EntityReference | AnyEntityPayload;
+  IsMajor: boolean;
+}
 
 /**
  * CreateKnowledgeArticleVersion request message
@@ -13,20 +23,19 @@ export class CreateKnowledgeArticleVersionRequest
   extends OrganizationRequest
   implements Executable<CreateKnowledgeArticleVersionResponse>
 {
-  constructor(
-    public source: EntityReference | AnyEntityPayload,
-    public isMajor: boolean
-  ) {
-    super("CreateKnowledgeArticleVersion");
+  declare readonly Parameters: Readonly<CreateKnowledgeArticleVersionRequestParameters>;
+
+  constructor(parameters: CreateKnowledgeArticleVersionRequestParameters) {
+    super("CreateKnowledgeArticleVersion", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CreateKnowledgeArticleVersion`;
 
-    const body: Record<string, unknown> = {
-      Source: this.source,
-      IsMajor: this.isMajor,
-    };
+    const body = requestBody({
+      Source: this.Parameters.Source,
+      IsMajor: this.Parameters.IsMajor,
+    });
 
     return {
       method: "POST",
@@ -39,8 +48,9 @@ export class CreateKnowledgeArticleVersionRequest
   }
 
   async parseResponse(response: Response): Promise<CreateKnowledgeArticleVersionResponse> {
-    const data = await response.json();
-    return CreateKnowledgeArticleVersionResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return CreateKnowledgeArticleVersionResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

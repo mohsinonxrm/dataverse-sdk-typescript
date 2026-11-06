@@ -28,7 +28,8 @@ export class msdyn_CheckAlertFieldsAction implements Executable<msdyn_CheckAlert
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckAlertFieldsResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckAlertFieldsResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_CheckAlertFieldsResponse;
   }
 }

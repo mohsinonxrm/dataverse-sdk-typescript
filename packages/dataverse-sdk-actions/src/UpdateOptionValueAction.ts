@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 import type { Label } from "./types/index.js";
 
 /**
@@ -9,43 +10,49 @@ export interface UpdateOptionValueResponse {
 }
 
 /**
+ * Parameters of the UpdateOptionValue action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface UpdateOptionValueActionParameters {
+  Color?: string;
+  OptionSetName?: string;
+  AttributeLogicalName?: string;
+  ExternalValue?: string;
+  EntityLogicalName?: string;
+  IsHidden?: boolean;
+  Value: number;
+  Label?: Label;
+  Description?: Label;
+  MergeLabels: boolean;
+  ParentValues?: number[];
+  SolutionUniqueName?: string;
+}
+
+/**
  * UpdateOptionValue action
  *
  * Unbound action
  */
 export class UpdateOptionValueAction implements Executable<UpdateOptionValueResponse> {
-  constructor(
-    public readonly color: string | undefined,
-    public readonly optionSetName: string | undefined,
-    public readonly attributeLogicalName: string | undefined,
-    public readonly externalValue: string | undefined,
-    public readonly entityLogicalName: string | undefined,
-    public readonly isHidden: boolean | undefined,
-    public readonly value: number,
-    public readonly label: Label | undefined,
-    public readonly description: Label | undefined,
-    public readonly mergeLabels: boolean,
-    public readonly parentValues?: number[],
-    public readonly solutionUniqueName?: string
-  ) {}
+  constructor(public readonly parameters: UpdateOptionValueActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/UpdateOptionValue`;
 
-    const body: Record<string, unknown> = {
-      Color: this.color,
-      OptionSetName: this.optionSetName,
-      AttributeLogicalName: this.attributeLogicalName,
-      ExternalValue: this.externalValue,
-      EntityLogicalName: this.entityLogicalName,
-      IsHidden: this.isHidden,
-      Value: this.value,
-      Label: this.label,
-      Description: this.description,
-      MergeLabels: this.mergeLabels,
-      ParentValues: this.parentValues,
-      SolutionUniqueName: this.solutionUniqueName,
-    };
+    const body = requestBody({
+      Color: this.parameters.Color,
+      OptionSetName: this.parameters.OptionSetName,
+      AttributeLogicalName: this.parameters.AttributeLogicalName,
+      ExternalValue: this.parameters.ExternalValue,
+      EntityLogicalName: this.parameters.EntityLogicalName,
+      IsHidden: this.parameters.IsHidden,
+      Value: this.parameters.Value,
+      Label: this.parameters.Label,
+      Description: this.parameters.Description,
+      MergeLabels: this.parameters.MergeLabels,
+      ParentValues: this.parameters.ParentValues,
+      SolutionUniqueName: this.parameters.SolutionUniqueName,
+    });
 
     return {
       method: "POST",
@@ -58,7 +65,8 @@ export class UpdateOptionValueAction implements Executable<UpdateOptionValueResp
   }
 
   async parseResponse(response: Response): Promise<UpdateOptionValueResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as UpdateOptionValueResponse;
   }
 }

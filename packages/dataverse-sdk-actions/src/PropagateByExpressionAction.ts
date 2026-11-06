@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { PropagationOwnershipOptions, TypedQueryBase } from "./types/index.js";
@@ -12,39 +13,45 @@ export interface PropagateByExpressionResponse {
 }
 
 /**
+ * Parameters of the PropagateByExpression action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface PropagateByExpressionActionParameters {
+  QueryExpression?: TypedQueryBase;
+  FriendlyName: string;
+  ExecuteImmediately: boolean;
+  Activity: EntityReference | AnyEntityPayload;
+  TemplateId: string;
+  OwnershipOptions: PropagationOwnershipOptions;
+  PostWorkflowEvent: boolean;
+  Owner: EntityReference | AnyEntityPayload;
+  SendEmail: boolean;
+  QueueId?: string;
+}
+
+/**
  * PropagateByExpression action
  *
  * Unbound action
  */
 export class PropagateByExpressionAction implements Executable<PropagateByExpressionResponse> {
-  constructor(
-    public readonly queryExpression: TypedQueryBase | undefined,
-    public readonly friendlyName: string,
-    public readonly executeImmediately: boolean,
-    public readonly activity: EntityReference | AnyEntityPayload,
-    public readonly templateId: string,
-    public readonly ownershipOptions: PropagationOwnershipOptions,
-    public readonly postWorkflowEvent: boolean,
-    public readonly owner: EntityReference | AnyEntityPayload,
-    public readonly sendEmail: boolean,
-    public readonly queueId?: string
-  ) {}
+  constructor(public readonly parameters: PropagateByExpressionActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/PropagateByExpression`;
 
-    const body: Record<string, unknown> = {
-      QueryExpression: enumBody(this.queryExpression, "QueryBase"),
-      FriendlyName: this.friendlyName,
-      ExecuteImmediately: this.executeImmediately,
-      Activity: this.activity,
-      TemplateId: this.templateId,
-      OwnershipOptions: enumBody(this.ownershipOptions, "PropagationOwnershipOptions"),
-      PostWorkflowEvent: this.postWorkflowEvent,
-      Owner: this.owner,
-      SendEmail: this.sendEmail,
-      QueueId: this.queueId,
-    };
+    const body = requestBody({
+      QueryExpression: enumBody(this.parameters.QueryExpression, "QueryBase"),
+      FriendlyName: this.parameters.FriendlyName,
+      ExecuteImmediately: this.parameters.ExecuteImmediately,
+      Activity: this.parameters.Activity,
+      TemplateId: this.parameters.TemplateId,
+      OwnershipOptions: enumBody(this.parameters.OwnershipOptions, "PropagationOwnershipOptions"),
+      PostWorkflowEvent: this.parameters.PostWorkflowEvent,
+      Owner: this.parameters.Owner,
+      SendEmail: this.parameters.SendEmail,
+      QueueId: this.parameters.QueueId,
+    });
 
     return {
       method: "POST",
@@ -57,7 +64,8 @@ export class PropagateByExpressionAction implements Executable<PropagateByExpres
   }
 
   async parseResponse(response: Response): Promise<PropagateByExpressionResponse> {
-    const data = await response.json();
-    return data as PropagateByExpressionResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as PropagateByExpressionResponse;
   }
 }

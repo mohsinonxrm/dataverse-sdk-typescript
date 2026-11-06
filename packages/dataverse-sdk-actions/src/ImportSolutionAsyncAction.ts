@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { LayerDesiredOrder, SolutionParameters } from "./types/index.js";
 
@@ -11,53 +12,59 @@ export interface ImportSolutionAsyncResponse {
 }
 
 /**
+ * Parameters of the ImportSolutionAsync action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ImportSolutionAsyncActionParameters {
+  OverwriteUnmanagedCustomizations: boolean;
+  PublishWorkflows: boolean;
+  CustomizationFile?: string;
+  ImportJobId?: string;
+  ConvertToManaged?: boolean;
+  SkipProductUpdateDependencies?: boolean;
+  HoldingSolution?: boolean;
+  SkipQueueRibbonJob?: boolean;
+  LayerDesiredOrder?: LayerDesiredOrder;
+  AsyncRibbonProcessing?: boolean;
+  ComponentParameters?: Record<string, unknown>[];
+  SolutionParameters?: SolutionParameters;
+  IsTemplateMode?: boolean;
+  TemplateSuffix?: string;
+  TemplateDisplayNamePrefix?: string;
+  StageAndUpgrade?: boolean;
+  SchemaUpdatesOnly?: boolean;
+}
+
+/**
  * ImportSolutionAsync action
  *
  * Unbound action
  */
 export class ImportSolutionAsyncAction implements Executable<ImportSolutionAsyncResponse> {
-  constructor(
-    public readonly overwriteUnmanagedCustomizations: boolean,
-    public readonly publishWorkflows: boolean,
-    public readonly customizationFile?: string,
-    public readonly importJobId?: string,
-    public readonly convertToManaged?: boolean,
-    public readonly skipProductUpdateDependencies?: boolean,
-    public readonly holdingSolution?: boolean,
-    public readonly skipQueueRibbonJob?: boolean,
-    public readonly layerDesiredOrder?: LayerDesiredOrder,
-    public readonly asyncRibbonProcessing?: boolean,
-    public readonly componentParameters?: Record<string, unknown>[],
-    public readonly solutionParameters?: SolutionParameters,
-    public readonly isTemplateMode?: boolean,
-    public readonly templateSuffix?: string,
-    public readonly templateDisplayNamePrefix?: string,
-    public readonly stageAndUpgrade?: boolean,
-    public readonly schemaUpdatesOnly?: boolean
-  ) {}
+  constructor(public readonly parameters: ImportSolutionAsyncActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ImportSolutionAsync`;
 
-    const body: Record<string, unknown> = {
-      OverwriteUnmanagedCustomizations: this.overwriteUnmanagedCustomizations,
-      PublishWorkflows: this.publishWorkflows,
-      CustomizationFile: this.customizationFile,
-      ImportJobId: this.importJobId,
-      ConvertToManaged: this.convertToManaged,
-      SkipProductUpdateDependencies: this.skipProductUpdateDependencies,
-      HoldingSolution: this.holdingSolution,
-      SkipQueueRibbonJob: this.skipQueueRibbonJob,
-      LayerDesiredOrder: enumBody(this.layerDesiredOrder, "LayerDesiredOrder"),
-      AsyncRibbonProcessing: this.asyncRibbonProcessing,
-      ComponentParameters: this.componentParameters,
-      SolutionParameters: enumBody(this.solutionParameters, "SolutionParameters"),
-      IsTemplateMode: this.isTemplateMode,
-      TemplateSuffix: this.templateSuffix,
-      TemplateDisplayNamePrefix: this.templateDisplayNamePrefix,
-      StageAndUpgrade: this.stageAndUpgrade,
-      SchemaUpdatesOnly: this.schemaUpdatesOnly,
-    };
+    const body = requestBody({
+      OverwriteUnmanagedCustomizations: this.parameters.OverwriteUnmanagedCustomizations,
+      PublishWorkflows: this.parameters.PublishWorkflows,
+      CustomizationFile: this.parameters.CustomizationFile,
+      ImportJobId: this.parameters.ImportJobId,
+      ConvertToManaged: this.parameters.ConvertToManaged,
+      SkipProductUpdateDependencies: this.parameters.SkipProductUpdateDependencies,
+      HoldingSolution: this.parameters.HoldingSolution,
+      SkipQueueRibbonJob: this.parameters.SkipQueueRibbonJob,
+      LayerDesiredOrder: enumBody(this.parameters.LayerDesiredOrder, "LayerDesiredOrder"),
+      AsyncRibbonProcessing: this.parameters.AsyncRibbonProcessing,
+      ComponentParameters: this.parameters.ComponentParameters,
+      SolutionParameters: enumBody(this.parameters.SolutionParameters, "SolutionParameters"),
+      IsTemplateMode: this.parameters.IsTemplateMode,
+      TemplateSuffix: this.parameters.TemplateSuffix,
+      TemplateDisplayNamePrefix: this.parameters.TemplateDisplayNamePrefix,
+      StageAndUpgrade: this.parameters.StageAndUpgrade,
+      SchemaUpdatesOnly: this.parameters.SchemaUpdatesOnly,
+    });
 
     return {
       method: "POST",
@@ -70,7 +77,8 @@ export class ImportSolutionAsyncAction implements Executable<ImportSolutionAsync
   }
 
   async parseResponse(response: Response): Promise<ImportSolutionAsyncResponse> {
-    const data = await response.json();
-    return data as ImportSolutionAsyncResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as ImportSolutionAsyncResponse;
   }
 }

@@ -1,31 +1,44 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { ScheduleTrainingResponse as ScheduleTrainingResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the ScheduleTraining message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ScheduleTrainingRequestParameters {
+  version: string;
+}
 
 /**
  * ScheduleTraining request message
  *
  * Web API Action: ScheduleTraining
+ *
+ * The first argument is the id of the msdyn_aiconfiguration record to call it on.
  */
 export class ScheduleTrainingRequest
   extends OrganizationRequest
   implements Executable<ScheduleTrainingResponse>
 {
+  declare readonly Parameters: Readonly<ScheduleTrainingRequestParameters>;
+
   constructor(
     public msdyn_aiconfigurationId: string,
-    public version: string
+    parameters: ScheduleTrainingRequestParameters
   ) {
-    super("ScheduleTraining");
+    super("ScheduleTraining", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_aiconfigurations(${this.msdyn_aiconfigurationId})/Microsoft.Dynamics.CRM.ScheduleTraining`;
 
-    const body: Record<string, unknown> = {
-      version: this.version,
-    };
+    const body = requestBody({
+      version: this.Parameters.version,
+    });
 
     return {
       method: "POST",
@@ -38,8 +51,9 @@ export class ScheduleTrainingRequest
   }
 
   async parseResponse(response: Response): Promise<ScheduleTrainingResponse> {
-    const data = await response.json();
-    return ScheduleTrainingResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return ScheduleTrainingResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

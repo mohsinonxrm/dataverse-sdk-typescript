@@ -16,6 +16,8 @@ export interface CloneProductResponse extends product {
  *
  * Bound action
  * Binding parameter: entity (mscrm.product)
+ *
+ * The first argument is the id of the product record to call it on.
  */
 export class CloneProductAction implements Executable<CloneProductResponse> {
   constructor(public readonly productId: string) {}
@@ -34,7 +36,8 @@ export class CloneProductAction implements Executable<CloneProductResponse> {
   }
 
   async parseResponse(response: Response): Promise<CloneProductResponse> {
-    const data = await response.json();
-    return data as CloneProductResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as CloneProductResponse;
   }
 }

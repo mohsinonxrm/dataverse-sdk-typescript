@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_PullDataForIoTDevice message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_PullDataForIoTDeviceRequestParameters {
+  IsScheduledDataPull?: boolean;
+  IoTDeviceIds?: string;
+}
 
 /**
  * msdyn_PullDataForIoTDevice request message
@@ -10,20 +20,19 @@ export class msdyn_PullDataForIoTDeviceRequest
   extends OrganizationRequest
   implements Executable<msdyn_PullDataForIoTDeviceResponse>
 {
-  constructor(
-    public isScheduledDataPull?: boolean,
-    public ioTDeviceIds?: string
-  ) {
-    super("msdyn_PullDataForIoTDevice");
+  declare readonly Parameters: Readonly<msdyn_PullDataForIoTDeviceRequestParameters>;
+
+  constructor(parameters: msdyn_PullDataForIoTDeviceRequestParameters = {}) {
+    super("msdyn_PullDataForIoTDevice", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_PullDataForIoTDevice`;
 
-    const body: Record<string, unknown> = {
-      IsScheduledDataPull: this.isScheduledDataPull,
-      IoTDeviceIds: this.ioTDeviceIds,
-    };
+    const body = requestBody({
+      IsScheduledDataPull: this.Parameters.IsScheduledDataPull,
+      IoTDeviceIds: this.Parameters.IoTDeviceIds,
+    });
 
     return {
       method: "POST",

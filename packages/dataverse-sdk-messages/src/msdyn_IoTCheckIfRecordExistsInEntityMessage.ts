@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_IoTCheckIfRecordExistsInEntityResponse as msdyn_IoTCheckIfRecordExistsInEntityResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_IoTCheckIfRecordExistsInEntity message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_IoTCheckIfRecordExistsInEntityRequestParameters {
+  EntitiesLogicalNames?: string;
+}
 
 /**
  * msdyn_IoTCheckIfRecordExistsInEntity request message
@@ -12,16 +21,18 @@ export class msdyn_IoTCheckIfRecordExistsInEntityRequest
   extends OrganizationRequest
   implements Executable<msdyn_IoTCheckIfRecordExistsInEntityResponse>
 {
-  constructor(public entitiesLogicalNames?: string) {
-    super("msdyn_IoTCheckIfRecordExistsInEntity");
+  declare readonly Parameters: Readonly<msdyn_IoTCheckIfRecordExistsInEntityRequestParameters>;
+
+  constructor(parameters: msdyn_IoTCheckIfRecordExistsInEntityRequestParameters = {}) {
+    super("msdyn_IoTCheckIfRecordExistsInEntity", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_IoTCheckIfRecordExistsInEntity`;
 
-    const body: Record<string, unknown> = {
-      EntitiesLogicalNames: this.entitiesLogicalNames,
-    };
+    const body = requestBody({
+      EntitiesLogicalNames: this.Parameters.EntitiesLogicalNames,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_IoTCheckIfRecordExistsInEntityRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_IoTCheckIfRecordExistsInEntityResponse> {
-    const data = await response.json();
-    return msdyn_IoTCheckIfRecordExistsInEntityResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_IoTCheckIfRecordExistsInEntityResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

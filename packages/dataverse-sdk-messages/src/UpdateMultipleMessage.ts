@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the UpdateMultiple message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface UpdateMultipleRequestParameters {
+  Targets: Record<string, unknown>[];
+}
 
 /**
  * UpdateMultiple request message
@@ -12,20 +21,22 @@ export class UpdateMultipleRequest
   extends OrganizationRequest
   implements Executable<UpdateMultipleResponse>
 {
+  declare readonly Parameters: Readonly<UpdateMultipleRequestParameters>;
+
   constructor(
     public entitySetName: string,
-    public targets: Record<string, unknown>[]
+    parameters: UpdateMultipleRequestParameters
   ) {
-    super("UpdateMultiple");
+    super("UpdateMultiple", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action (entity collection)
     const url = `${baseUrl}/${this.entitySetName}/Microsoft.Dynamics.CRM.UpdateMultiple`;
 
-    const body: Record<string, unknown> = {
-      Targets: this.targets,
-    };
+    const body = requestBody({
+      Targets: this.Parameters.Targets,
+    });
 
     return {
       method: "POST",

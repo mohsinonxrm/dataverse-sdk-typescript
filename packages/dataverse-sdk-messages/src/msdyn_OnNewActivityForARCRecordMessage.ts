@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the msdyn_OnNewActivityForARCRecord message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_OnNewActivityForARCRecordRequestParameters {
+  msdyn_primaryEntityReference: EntityReference | AnyEntityPayload;
+  msdyn_sourceEntityReference: EntityReference | AnyEntityPayload;
+}
 
 /**
  * msdyn_OnNewActivityForARCRecord request message
@@ -12,20 +22,19 @@ export class msdyn_OnNewActivityForARCRecordRequest
   extends OrganizationRequest
   implements Executable<msdyn_OnNewActivityForARCRecordResponse>
 {
-  constructor(
-    public msdyn_primaryEntityReference: EntityReference | AnyEntityPayload,
-    public msdyn_sourceEntityReference: EntityReference | AnyEntityPayload
-  ) {
-    super("msdyn_OnNewActivityForARCRecord");
+  declare readonly Parameters: Readonly<msdyn_OnNewActivityForARCRecordRequestParameters>;
+
+  constructor(parameters: msdyn_OnNewActivityForARCRecordRequestParameters) {
+    super("msdyn_OnNewActivityForARCRecord", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_OnNewActivityForARCRecord`;
 
-    const body: Record<string, unknown> = {
-      msdyn_primaryEntityReference: this.msdyn_primaryEntityReference,
-      msdyn_sourceEntityReference: this.msdyn_sourceEntityReference,
-    };
+    const body = requestBody({
+      msdyn_primaryEntityReference: this.Parameters.msdyn_primaryEntityReference,
+      msdyn_sourceEntityReference: this.Parameters.msdyn_sourceEntityReference,
+    });
 
     return {
       method: "POST",

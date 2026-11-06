@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_CheckCharacteristicHasMatchingResourceResponse as msdyn_CheckCharacteristicHasMatchingResourceResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_CheckCharacteristicHasMatchingResource message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CheckCharacteristicHasMatchingResourceRequestParameters {
+  SolutionId: string;
+}
 
 /**
  * msdyn_CheckCharacteristicHasMatchingResource request message
@@ -12,16 +21,18 @@ export class msdyn_CheckCharacteristicHasMatchingResourceRequest
   extends OrganizationRequest
   implements Executable<msdyn_CheckCharacteristicHasMatchingResourceResponse>
 {
-  constructor(public solutionId: string) {
-    super("msdyn_CheckCharacteristicHasMatchingResource");
+  declare readonly Parameters: Readonly<msdyn_CheckCharacteristicHasMatchingResourceRequestParameters>;
+
+  constructor(parameters: msdyn_CheckCharacteristicHasMatchingResourceRequestParameters) {
+    super("msdyn_CheckCharacteristicHasMatchingResource", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckCharacteristicHasMatchingResource`;
 
-    const body: Record<string, unknown> = {
-      SolutionId: this.solutionId,
-    };
+    const body = requestBody({
+      SolutionId: this.Parameters.SolutionId,
+    });
 
     return {
       method: "POST",
@@ -36,8 +47,11 @@ export class msdyn_CheckCharacteristicHasMatchingResourceRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckCharacteristicHasMatchingResourceResponse> {
-    const data = await response.json();
-    return msdyn_CheckCharacteristicHasMatchingResourceResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_CheckCharacteristicHasMatchingResourceResponse.fromResponse(
+      text ? JSON.parse(text) : {}
+    );
   }
 }
 

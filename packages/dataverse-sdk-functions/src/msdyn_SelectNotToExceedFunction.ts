@@ -13,15 +13,21 @@ export interface msdyn_SelectNotToExceedResponse extends msdyn_nottoexceed {
 }
 
 /**
+ * Parameters of the msdyn_SelectNotToExceed function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SelectNotToExceedFunctionParameters {
+  msdyn_NTEType: number;
+  msdyn_SelectNotToExceedFilters: string;
+}
+
+/**
  * msdyn_SelectNotToExceed function
  *
  * Unbound function
  */
 export class msdyn_SelectNotToExceedFunction implements Executable<msdyn_SelectNotToExceedResponse> {
-  constructor(
-    public readonly msdyn_NTEType: number,
-    public readonly msdyn_SelectNotToExceedFilters: string
-  ) {}
+  constructor(public readonly parameters: msdyn_SelectNotToExceedFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/msdyn_SelectNotToExceed`;
@@ -29,13 +35,16 @@ export class msdyn_SelectNotToExceedFunction implements Executable<msdyn_SelectN
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.msdyn_NTEType !== undefined) {
+    if (this.parameters.msdyn_NTEType !== undefined) {
       aliases.push(`msdyn_NTEType=@p1`);
-      params.append("@p1", formatParameterAlias(this.msdyn_NTEType, "Edm.Int32"));
+      params.append("@p1", formatParameterAlias(this.parameters.msdyn_NTEType, "Edm.Int32"));
     }
-    if (this.msdyn_SelectNotToExceedFilters !== undefined) {
+    if (this.parameters.msdyn_SelectNotToExceedFilters !== undefined) {
       aliases.push(`msdyn_SelectNotToExceedFilters=@p2`);
-      params.append("@p2", formatParameterAlias(this.msdyn_SelectNotToExceedFilters, "Edm.String"));
+      params.append(
+        "@p2",
+        formatParameterAlias(this.parameters.msdyn_SelectNotToExceedFilters, "Edm.String")
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -51,7 +60,8 @@ export class msdyn_SelectNotToExceedFunction implements Executable<msdyn_SelectN
   }
 
   async parseResponse(response: Response): Promise<msdyn_SelectNotToExceedResponse> {
-    const data = await response.json();
-    return data as msdyn_SelectNotToExceedResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_SelectNotToExceedResponse;
   }
 }

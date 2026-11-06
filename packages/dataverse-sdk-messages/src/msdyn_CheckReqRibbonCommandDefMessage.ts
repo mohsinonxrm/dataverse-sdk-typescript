@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_CheckReqRibbonCommandDefResponse as msdyn_CheckReqRibbonCommandDefResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_CheckReqRibbonCommandDef message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CheckReqRibbonCommandDefRequestParameters {
+  CommandAndEntityList?: string;
+}
 
 /**
  * msdyn_CheckReqRibbonCommandDef request message
@@ -12,16 +21,18 @@ export class msdyn_CheckReqRibbonCommandDefRequest
   extends OrganizationRequest
   implements Executable<msdyn_CheckReqRibbonCommandDefResponse>
 {
-  constructor(public commandAndEntityList?: string) {
-    super("msdyn_CheckReqRibbonCommandDef");
+  declare readonly Parameters: Readonly<msdyn_CheckReqRibbonCommandDefRequestParameters>;
+
+  constructor(parameters: msdyn_CheckReqRibbonCommandDefRequestParameters = {}) {
+    super("msdyn_CheckReqRibbonCommandDef", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckReqRibbonCommandDef`;
 
-    const body: Record<string, unknown> = {
-      CommandAndEntityList: this.commandAndEntityList,
-    };
+    const body = requestBody({
+      CommandAndEntityList: this.Parameters.CommandAndEntityList,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_CheckReqRibbonCommandDefRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckReqRibbonCommandDefResponse> {
-    const data = await response.json();
-    return msdyn_CheckReqRibbonCommandDefResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_CheckReqRibbonCommandDefResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

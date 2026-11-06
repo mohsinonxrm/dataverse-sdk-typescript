@@ -1,7 +1,24 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the msdynmkt_purposecreationandassociation message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdynmkt_purposecreationandassociationRequestParameters {
+  msdynmkt_customenforcementmodel: number;
+  msdynmkt_purposeid?: string;
+  msdynmkt_enforcementmodel: number;
+  msdynmkt_name: string;
+  msdynmkt_compliancesettings4: EntityReference | AnyEntityPayload;
+  msdynmkt_purpose_id: string;
+  msdynmkt_smsenforcementmodel: number;
+  msdynmkt_voiceenforcementmodel: number;
+  msdynmkt_type: number;
+}
 
 /**
  * msdynmkt_purposecreationandassociation request message
@@ -12,34 +29,26 @@ export class msdynmkt_purposecreationandassociationRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_purposecreationandassociationResponse>
 {
-  constructor(
-    public msdynmkt_customenforcementmodel: number,
-    public msdynmkt_purposeid: string | undefined,
-    public msdynmkt_enforcementmodel: number,
-    public msdynmkt_name: string,
-    public msdynmkt_compliancesettings4: EntityReference | AnyEntityPayload,
-    public msdynmkt_purpose_id: string,
-    public msdynmkt_smsenforcementmodel: number,
-    public msdynmkt_voiceenforcementmodel: number,
-    public msdynmkt_type: number
-  ) {
-    super("msdynmkt_purposecreationandassociation");
+  declare readonly Parameters: Readonly<msdynmkt_purposecreationandassociationRequestParameters>;
+
+  constructor(parameters: msdynmkt_purposecreationandassociationRequestParameters) {
+    super("msdynmkt_purposecreationandassociation", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_purposecreationandassociation`;
 
-    const body: Record<string, unknown> = {
-      msdynmkt_customenforcementmodel: this.msdynmkt_customenforcementmodel,
-      msdynmkt_purposeid: this.msdynmkt_purposeid,
-      msdynmkt_enforcementmodel: this.msdynmkt_enforcementmodel,
-      msdynmkt_name: this.msdynmkt_name,
-      msdynmkt_compliancesettings4: this.msdynmkt_compliancesettings4,
-      msdynmkt_purpose_id: this.msdynmkt_purpose_id,
-      msdynmkt_smsenforcementmodel: this.msdynmkt_smsenforcementmodel,
-      msdynmkt_voiceenforcementmodel: this.msdynmkt_voiceenforcementmodel,
-      msdynmkt_type: this.msdynmkt_type,
-    };
+    const body = requestBody({
+      msdynmkt_customenforcementmodel: this.Parameters.msdynmkt_customenforcementmodel,
+      msdynmkt_purposeid: this.Parameters.msdynmkt_purposeid,
+      msdynmkt_enforcementmodel: this.Parameters.msdynmkt_enforcementmodel,
+      msdynmkt_name: this.Parameters.msdynmkt_name,
+      msdynmkt_compliancesettings4: this.Parameters.msdynmkt_compliancesettings4,
+      msdynmkt_purpose_id: this.Parameters.msdynmkt_purpose_id,
+      msdynmkt_smsenforcementmodel: this.Parameters.msdynmkt_smsenforcementmodel,
+      msdynmkt_voiceenforcementmodel: this.Parameters.msdynmkt_voiceenforcementmodel,
+      msdynmkt_type: this.Parameters.msdynmkt_type,
+    });
 
     return {
       method: "POST",

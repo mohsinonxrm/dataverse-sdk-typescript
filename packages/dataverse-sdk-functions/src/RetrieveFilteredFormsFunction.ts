@@ -10,17 +10,23 @@ export interface RetrieveFilteredFormsResponse {
 }
 
 /**
+ * Parameters of the RetrieveFilteredForms function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveFilteredFormsFunctionParameters {
+  EntityLogicalName: string;
+  FormType: number;
+  User: systemuser;
+}
+
+/**
  * RetrieveFilteredForms function
  *
  * Bound function
  * Binding parameter: entityset (Collection(mscrm.systemform))
  */
 export class RetrieveFilteredFormsFunction implements Executable<RetrieveFilteredFormsResponse> {
-  constructor(
-    public readonly entityLogicalName: string,
-    public readonly formType: number,
-    public readonly user: systemuser
-  ) {}
+  constructor(public readonly parameters: RetrieveFilteredFormsFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function (entity collection)
@@ -29,17 +35,17 @@ export class RetrieveFilteredFormsFunction implements Executable<RetrieveFiltere
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.entityLogicalName !== undefined) {
+    if (this.parameters.EntityLogicalName !== undefined) {
       aliases.push(`EntityLogicalName=@p1`);
-      params.append("@p1", formatParameterAlias(this.entityLogicalName, "Edm.String"));
+      params.append("@p1", formatParameterAlias(this.parameters.EntityLogicalName, "Edm.String"));
     }
-    if (this.formType !== undefined) {
+    if (this.parameters.FormType !== undefined) {
       aliases.push(`FormType=@p2`);
-      params.append("@p2", formatParameterAlias(this.formType, "Edm.Int32"));
+      params.append("@p2", formatParameterAlias(this.parameters.FormType, "Edm.Int32"));
     }
-    if (this.user !== undefined) {
+    if (this.parameters.User !== undefined) {
       aliases.push(`User=@p3`);
-      params.append("@p3", JSON.stringify(this.user));
+      params.append("@p3", JSON.stringify(this.parameters.User));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -55,7 +61,8 @@ export class RetrieveFilteredFormsFunction implements Executable<RetrieveFiltere
   }
 
   async parseResponse(response: Response): Promise<RetrieveFilteredFormsResponse> {
-    const data = await response.json();
-    return data as RetrieveFilteredFormsResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RetrieveFilteredFormsResponse;
   }
 }

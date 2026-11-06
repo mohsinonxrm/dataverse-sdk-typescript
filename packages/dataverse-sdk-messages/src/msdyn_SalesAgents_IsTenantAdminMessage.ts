@@ -29,8 +29,9 @@ export class msdyn_SalesAgents_IsTenantAdminRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAgents_IsTenantAdminResponse> {
-    const data = await response.json();
-    return msdyn_SalesAgents_IsTenantAdminResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_SalesAgents_IsTenantAdminResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

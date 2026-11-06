@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetLeadPreferredOutreachCtaResponse as msdyn_GetLeadPreferredOutreachCtaResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetLeadPreferredOutreachCta message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetLeadPreferredOutreachCtaRequestParameters {
+  msdyn_leadid: string;
+}
 
 /**
  * msdyn_GetLeadPreferredOutreachCta request message
@@ -12,16 +21,18 @@ export class msdyn_GetLeadPreferredOutreachCtaRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetLeadPreferredOutreachCtaResponse>
 {
-  constructor(public msdyn_leadid: string) {
-    super("msdyn_GetLeadPreferredOutreachCta");
+  declare readonly Parameters: Readonly<msdyn_GetLeadPreferredOutreachCtaRequestParameters>;
+
+  constructor(parameters: msdyn_GetLeadPreferredOutreachCtaRequestParameters) {
+    super("msdyn_GetLeadPreferredOutreachCta", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetLeadPreferredOutreachCta`;
 
-    const body: Record<string, unknown> = {
-      msdyn_leadid: this.msdyn_leadid,
-    };
+    const body = requestBody({
+      msdyn_leadid: this.Parameters.msdyn_leadid,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_GetLeadPreferredOutreachCtaRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetLeadPreferredOutreachCtaResponse> {
-    const data = await response.json();
-    return msdyn_GetLeadPreferredOutreachCtaResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_GetLeadPreferredOutreachCtaResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

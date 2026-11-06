@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { SubstituteForAttributeResponse as SubstituteForAttributeResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the SubstituteForAttribute message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SubstituteForAttributeRequestParameters {
+  AttributeName: string;
+  AttributeContent: string;
+  SubStore: string;
+}
 
 /**
  * SubstituteForAttribute request message
@@ -12,22 +23,20 @@ export class SubstituteForAttributeRequest
   extends OrganizationRequest
   implements Executable<SubstituteForAttributeResponse>
 {
-  constructor(
-    public attributeName: string,
-    public attributeContent: string,
-    public subStore: string
-  ) {
-    super("SubstituteForAttribute");
+  declare readonly Parameters: Readonly<SubstituteForAttributeRequestParameters>;
+
+  constructor(parameters: SubstituteForAttributeRequestParameters) {
+    super("SubstituteForAttribute", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/SubstituteForAttribute`;
 
-    const body: Record<string, unknown> = {
-      AttributeName: this.attributeName,
-      AttributeContent: this.attributeContent,
-      SubStore: this.subStore,
-    };
+    const body = requestBody({
+      AttributeName: this.Parameters.AttributeName,
+      AttributeContent: this.Parameters.AttributeContent,
+      SubStore: this.Parameters.SubStore,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class SubstituteForAttributeRequest
   }
 
   async parseResponse(response: Response): Promise<SubstituteForAttributeResponse> {
-    const data = await response.json();
-    return SubstituteForAttributeResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return SubstituteForAttributeResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

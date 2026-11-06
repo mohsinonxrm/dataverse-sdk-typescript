@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,19 +11,27 @@ export interface msdyn_PerformChecksForEnrichRecordResponse {
 }
 
 /**
+ * Parameters of the msdyn_PerformChecksForEnrichRecord action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_PerformChecksForEnrichRecordActionParameters {
+  msdyn_Target: EntityReference | AnyEntityPayload;
+}
+
+/**
  * msdyn_PerformChecksForEnrichRecord action
  *
  * Unbound action
  */
 export class msdyn_PerformChecksForEnrichRecordAction implements Executable<msdyn_PerformChecksForEnrichRecordResponse> {
-  constructor(public readonly msdyn_Target: EntityReference | AnyEntityPayload) {}
+  constructor(public readonly parameters: msdyn_PerformChecksForEnrichRecordActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_PerformChecksForEnrichRecord`;
 
-    const body: Record<string, unknown> = {
-      msdyn_Target: this.msdyn_Target,
-    };
+    const body = requestBody({
+      msdyn_Target: this.parameters.msdyn_Target,
+    });
 
     return {
       method: "POST",
@@ -35,7 +44,8 @@ export class msdyn_PerformChecksForEnrichRecordAction implements Executable<msdy
   }
 
   async parseResponse(response: Response): Promise<msdyn_PerformChecksForEnrichRecordResponse> {
-    const data = await response.json();
-    return data as msdyn_PerformChecksForEnrichRecordResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_PerformChecksForEnrichRecordResponse;
   }
 }

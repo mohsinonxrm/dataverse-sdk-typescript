@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetChatResponseResponse as msdyn_GetChatResponseResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetChatResponse message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetChatResponseRequestParameters {
+  msdyn_input: string;
+}
 
 /**
  * msdyn_GetChatResponse request message
@@ -12,16 +21,18 @@ export class msdyn_GetChatResponseRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetChatResponseResponse>
 {
-  constructor(public msdyn_input: string) {
-    super("msdyn_GetChatResponse");
+  declare readonly Parameters: Readonly<msdyn_GetChatResponseRequestParameters>;
+
+  constructor(parameters: msdyn_GetChatResponseRequestParameters) {
+    super("msdyn_GetChatResponse", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetChatResponse`;
 
-    const body: Record<string, unknown> = {
-      msdyn_input: this.msdyn_input,
-    };
+    const body = requestBody({
+      msdyn_input: this.Parameters.msdyn_input,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_GetChatResponseRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetChatResponseResponse> {
-    const data = await response.json();
-    return msdyn_GetChatResponseResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_GetChatResponseResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

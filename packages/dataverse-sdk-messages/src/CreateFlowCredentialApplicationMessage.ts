@@ -1,39 +1,52 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { CreateFlowCredentialApplicationResponse as CreateFlowCredentialApplicationResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the CreateFlowCredentialApplication message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CreateFlowCredentialApplicationRequestParameters {
+  sharingtype?: string;
+  password?: string;
+  description?: string;
+  certificate: string;
+  applicationId: string;
+}
 
 /**
  * CreateFlowCredentialApplication request message
  *
  * Web API Action: CreateFlowCredentialApplication
+ *
+ * The first argument is the id of the flowmachinegroup record to call it on.
  */
 export class CreateFlowCredentialApplicationRequest
   extends OrganizationRequest
   implements Executable<CreateFlowCredentialApplicationResponse>
 {
+  declare readonly Parameters: Readonly<CreateFlowCredentialApplicationRequestParameters>;
+
   constructor(
     public flowmachinegroupId: string,
-    public sharingtype: string | undefined,
-    public password: string | undefined,
-    public description: string | undefined,
-    public certificate: string,
-    public applicationId: string
+    parameters: CreateFlowCredentialApplicationRequestParameters
   ) {
-    super("CreateFlowCredentialApplication");
+    super("CreateFlowCredentialApplication", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/flowmachinegroups(${this.flowmachinegroupId})/Microsoft.Dynamics.CRM.CreateFlowCredentialApplication`;
 
-    const body: Record<string, unknown> = {
-      sharingtype: this.sharingtype,
-      password: this.password,
-      description: this.description,
-      certificate: this.certificate,
-      applicationId: this.applicationId,
-    };
+    const body = requestBody({
+      sharingtype: this.Parameters.sharingtype,
+      password: this.Parameters.password,
+      description: this.Parameters.description,
+      certificate: this.Parameters.certificate,
+      applicationId: this.Parameters.applicationId,
+    });
 
     return {
       method: "POST",
@@ -46,8 +59,9 @@ export class CreateFlowCredentialApplicationRequest
   }
 
   async parseResponse(response: Response): Promise<CreateFlowCredentialApplicationResponse> {
-    const data = await response.json();
-    return CreateFlowCredentialApplicationResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return CreateFlowCredentialApplicationResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

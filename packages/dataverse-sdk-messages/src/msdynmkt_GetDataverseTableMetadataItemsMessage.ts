@@ -1,6 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseValue } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdynmkt_GetDataverseTableMetadataItems message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdynmkt_GetDataverseTableMetadataItemsRequestParameters {
+  msdynmkt_GetDataverseTableMetadataItems_request_LanguageCode?: number;
+  msdynmkt_GetDataverseTableMetadataItems_request_SourceLogicalNames: string[];
+  msdynmkt_GetDataverseTableMetadataItems_request_UseLazyLoading?: boolean;
+}
 
 /**
  * msdynmkt_GetDataverseTableMetadataItems request message
@@ -11,25 +22,23 @@ export class msdynmkt_GetDataverseTableMetadataItemsRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_GetDataverseTableMetadataItemsResponse>
 {
-  constructor(
-    public msdynmkt_GetDataverseTableMetadataItems_request_LanguageCode: number | undefined,
-    public msdynmkt_GetDataverseTableMetadataItems_request_SourceLogicalNames: string[],
-    public msdynmkt_GetDataverseTableMetadataItems_request_UseLazyLoading?: boolean
-  ) {
-    super("msdynmkt_GetDataverseTableMetadataItems");
+  declare readonly Parameters: Readonly<msdynmkt_GetDataverseTableMetadataItemsRequestParameters>;
+
+  constructor(parameters: msdynmkt_GetDataverseTableMetadataItemsRequestParameters) {
+    super("msdynmkt_GetDataverseTableMetadataItems", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_GetDataverseTableMetadataItems`;
 
-    const body: Record<string, unknown> = {
+    const body = requestBody({
       msdynmkt_GetDataverseTableMetadataItems_request_LanguageCode:
-        this.msdynmkt_GetDataverseTableMetadataItems_request_LanguageCode,
+        this.Parameters.msdynmkt_GetDataverseTableMetadataItems_request_LanguageCode,
       msdynmkt_GetDataverseTableMetadataItems_request_SourceLogicalNames:
-        this.msdynmkt_GetDataverseTableMetadataItems_request_SourceLogicalNames,
+        this.Parameters.msdynmkt_GetDataverseTableMetadataItems_request_SourceLogicalNames,
       msdynmkt_GetDataverseTableMetadataItems_request_UseLazyLoading:
-        this.msdynmkt_GetDataverseTableMetadataItems_request_UseLazyLoading,
-    };
+        this.Parameters.msdynmkt_GetDataverseTableMetadataItems_request_UseLazyLoading,
+    });
 
     return {
       method: "POST",
@@ -44,8 +53,11 @@ export class msdynmkt_GetDataverseTableMetadataItemsRequest
   async parseResponse(
     response: Response
   ): Promise<msdynmkt_GetDataverseTableMetadataItemsResponse> {
-    const data = await response.json();
-    return msdynmkt_GetDataverseTableMetadataItemsResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdynmkt_GetDataverseTableMetadataItemsResponse.fromResponse(
+      text ? JSON.parse(text) : {}
+    );
   }
 }
 

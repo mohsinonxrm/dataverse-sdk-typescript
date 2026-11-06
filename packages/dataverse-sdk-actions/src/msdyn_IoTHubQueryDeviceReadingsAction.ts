@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_IoTHubQueryDeviceReadings action
@@ -8,27 +9,33 @@ export interface msdyn_IoTHubQueryDeviceReadingsResponse {
 }
 
 /**
+ * Parameters of the msdyn_IoTHubQueryDeviceReadings action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_IoTHubQueryDeviceReadingsActionParameters {
+  From: string;
+  To: string;
+  Interval: string;
+  IotDeviceId: string;
+}
+
+/**
  * msdyn_IoTHubQueryDeviceReadings action
  *
  * Unbound action
  */
 export class msdyn_IoTHubQueryDeviceReadingsAction implements Executable<msdyn_IoTHubQueryDeviceReadingsResponse> {
-  constructor(
-    public readonly from: string,
-    public readonly to: string,
-    public readonly interval: string,
-    public readonly iotDeviceId: string
-  ) {}
+  constructor(public readonly parameters: msdyn_IoTHubQueryDeviceReadingsActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_IoTHubQueryDeviceReadings`;
 
-    const body: Record<string, unknown> = {
-      From: this.from,
-      To: this.to,
-      Interval: this.interval,
-      IotDeviceId: this.iotDeviceId,
-    };
+    const body = requestBody({
+      From: this.parameters.From,
+      To: this.parameters.To,
+      Interval: this.parameters.Interval,
+      IotDeviceId: this.parameters.IotDeviceId,
+    });
 
     return {
       method: "POST",
@@ -41,7 +48,8 @@ export class msdyn_IoTHubQueryDeviceReadingsAction implements Executable<msdyn_I
   }
 
   async parseResponse(response: Response): Promise<msdyn_IoTHubQueryDeviceReadingsResponse> {
-    const data = await response.json();
-    return data as msdyn_IoTHubQueryDeviceReadingsResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_IoTHubQueryDeviceReadingsResponse;
   }
 }

@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from InstantiateTemplateGeneric action
@@ -9,27 +10,33 @@ export interface InstantiateTemplateGenericResponse {
 }
 
 /**
+ * Parameters of the InstantiateTemplateGeneric action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface InstantiateTemplateGenericActionParameters {
+  TemplateId: string;
+  ObjectType: string;
+  ObjectId: string;
+  EntityLogicalName?: string;
+}
+
+/**
  * InstantiateTemplateGeneric action
  *
  * Unbound action
  */
 export class InstantiateTemplateGenericAction implements Executable<InstantiateTemplateGenericResponse> {
-  constructor(
-    public readonly templateId: string,
-    public readonly objectType: string,
-    public readonly objectId: string,
-    public readonly entityLogicalName?: string
-  ) {}
+  constructor(public readonly parameters: InstantiateTemplateGenericActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/InstantiateTemplateGeneric`;
 
-    const body: Record<string, unknown> = {
-      TemplateId: this.templateId,
-      ObjectType: this.objectType,
-      ObjectId: this.objectId,
-      EntityLogicalName: this.entityLogicalName,
-    };
+    const body = requestBody({
+      TemplateId: this.parameters.TemplateId,
+      ObjectType: this.parameters.ObjectType,
+      ObjectId: this.parameters.ObjectId,
+      EntityLogicalName: this.parameters.EntityLogicalName,
+    });
 
     return {
       method: "POST",
@@ -42,7 +49,8 @@ export class InstantiateTemplateGenericAction implements Executable<InstantiateT
   }
 
   async parseResponse(response: Response): Promise<InstantiateTemplateGenericResponse> {
-    const data = await response.json();
-    return data as InstantiateTemplateGenericResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as InstantiateTemplateGenericResponse;
   }
 }

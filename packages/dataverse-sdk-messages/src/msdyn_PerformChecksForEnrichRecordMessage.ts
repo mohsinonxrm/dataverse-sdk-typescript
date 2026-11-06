@@ -2,8 +2,17 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_PerformChecksForEnrichRecordResponse as msdyn_PerformChecksForEnrichRecordResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_PerformChecksForEnrichRecord message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_PerformChecksForEnrichRecordRequestParameters {
+  msdyn_Target: EntityReference | AnyEntityPayload;
+}
 
 /**
  * msdyn_PerformChecksForEnrichRecord request message
@@ -14,16 +23,18 @@ export class msdyn_PerformChecksForEnrichRecordRequest
   extends OrganizationRequest
   implements Executable<msdyn_PerformChecksForEnrichRecordResponse>
 {
-  constructor(public msdyn_Target: EntityReference | AnyEntityPayload) {
-    super("msdyn_PerformChecksForEnrichRecord");
+  declare readonly Parameters: Readonly<msdyn_PerformChecksForEnrichRecordRequestParameters>;
+
+  constructor(parameters: msdyn_PerformChecksForEnrichRecordRequestParameters) {
+    super("msdyn_PerformChecksForEnrichRecord", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_PerformChecksForEnrichRecord`;
 
-    const body: Record<string, unknown> = {
-      msdyn_Target: this.msdyn_Target,
-    };
+    const body = requestBody({
+      msdyn_Target: this.Parameters.msdyn_Target,
+    });
 
     return {
       method: "POST",
@@ -36,8 +47,9 @@ export class msdyn_PerformChecksForEnrichRecordRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_PerformChecksForEnrichRecordResponse> {
-    const data = await response.json();
-    return msdyn_PerformChecksForEnrichRecordResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_PerformChecksForEnrichRecordResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,35 +11,41 @@ export interface CreateAndSendNewEmailResponse {
 }
 
 /**
+ * Parameters of the CreateAndSendNewEmail action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CreateAndSendNewEmailActionParameters {
+  Subject?: string;
+  Body?: string;
+  From?: string;
+  To?: string;
+  Cc?: string;
+  Bcc?: string;
+  Regarding?: EntityReference | AnyEntityPayload;
+  Importance?: number;
+}
+
+/**
  * CreateAndSendNewEmail action
  *
  * Unbound action
  */
 export class CreateAndSendNewEmailAction implements Executable<CreateAndSendNewEmailResponse> {
-  constructor(
-    public readonly subject?: string,
-    public readonly body?: string,
-    public readonly from?: string,
-    public readonly to?: string,
-    public readonly cc?: string,
-    public readonly bcc?: string,
-    public readonly regarding?: EntityReference | AnyEntityPayload,
-    public readonly importance?: number
-  ) {}
+  constructor(public readonly parameters: CreateAndSendNewEmailActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CreateAndSendNewEmail`;
 
-    const body: Record<string, unknown> = {
-      Subject: this.subject,
-      Body: this.body,
-      From: this.from,
-      To: this.to,
-      Cc: this.cc,
-      Bcc: this.bcc,
-      Regarding: this.regarding,
-      Importance: this.importance,
-    };
+    const body = requestBody({
+      Subject: this.parameters.Subject,
+      Body: this.parameters.Body,
+      From: this.parameters.From,
+      To: this.parameters.To,
+      Cc: this.parameters.Cc,
+      Bcc: this.parameters.Bcc,
+      Regarding: this.parameters.Regarding,
+      Importance: this.parameters.Importance,
+    });
 
     return {
       method: "POST",
@@ -51,7 +58,8 @@ export class CreateAndSendNewEmailAction implements Executable<CreateAndSendNewE
   }
 
   async parseResponse(response: Response): Promise<CreateAndSendNewEmailResponse> {
-    const data = await response.json();
-    return data as CreateAndSendNewEmailResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as CreateAndSendNewEmailResponse;
   }
 }

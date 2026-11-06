@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the msdyn_MergeDuplicatesAction message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_MergeDuplicatesActionRequestParameters {
+  Target?: EntityReference | AnyEntityPayload;
+  Duplicates?: Record<string, unknown>[];
+  PerformParentingChecks?: boolean;
+}
 
 /**
  * msdyn_MergeDuplicatesAction request message
@@ -12,22 +23,20 @@ export class msdyn_MergeDuplicatesActionRequest
   extends OrganizationRequest
   implements Executable<msdyn_MergeDuplicatesActionResponse>
 {
-  constructor(
-    public target?: EntityReference | AnyEntityPayload,
-    public duplicates?: Record<string, unknown>[],
-    public performParentingChecks?: boolean
-  ) {
-    super("msdyn_MergeDuplicatesAction");
+  declare readonly Parameters: Readonly<msdyn_MergeDuplicatesActionRequestParameters>;
+
+  constructor(parameters: msdyn_MergeDuplicatesActionRequestParameters = {}) {
+    super("msdyn_MergeDuplicatesAction", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_MergeDuplicatesAction`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-      Duplicates: this.duplicates,
-      PerformParentingChecks: this.performParentingChecks,
-    };
+    const body = requestBody({
+      Target: this.Parameters.Target,
+      Duplicates: this.Parameters.Duplicates,
+      PerformParentingChecks: this.Parameters.PerformParentingChecks,
+    });
 
     return {
       method: "POST",

@@ -16,6 +16,8 @@ export interface RetrieveUnpublished_aipluginoperationResponse extends aiplugino
  *
  * Bound function
  * Binding parameter: entity (mscrm.aipluginoperation)
+ *
+ * The first argument is the id of the aipluginoperation record to call it on.
  */
 export class RetrieveUnpublished_aipluginoperationFunction implements Executable<RetrieveUnpublished_aipluginoperationResponse> {
   constructor(public readonly aipluginoperationId: string) {}
@@ -34,7 +36,8 @@ export class RetrieveUnpublished_aipluginoperationFunction implements Executable
   }
 
   async parseResponse(response: Response): Promise<RetrieveUnpublished_aipluginoperationResponse> {
-    const data = await response.json();
-    return data as RetrieveUnpublished_aipluginoperationResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RetrieveUnpublished_aipluginoperationResponse;
   }
 }

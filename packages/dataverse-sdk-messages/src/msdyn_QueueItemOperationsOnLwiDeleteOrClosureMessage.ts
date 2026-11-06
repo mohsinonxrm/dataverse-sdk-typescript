@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_QueueItemOperationsOnLwiDeleteOrClosure message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_QueueItemOperationsOnLwiDeleteOrClosureRequestParameters {
+  OperationType: string;
+  QueueItemId: string;
+}
 
 /**
  * msdyn_QueueItemOperationsOnLwiDeleteOrClosure request message
@@ -10,20 +20,19 @@ export class msdyn_QueueItemOperationsOnLwiDeleteOrClosureRequest
   extends OrganizationRequest
   implements Executable<msdyn_QueueItemOperationsOnLwiDeleteOrClosureResponse>
 {
-  constructor(
-    public operationType: string,
-    public queueItemId: string
-  ) {
-    super("msdyn_QueueItemOperationsOnLwiDeleteOrClosure");
+  declare readonly Parameters: Readonly<msdyn_QueueItemOperationsOnLwiDeleteOrClosureRequestParameters>;
+
+  constructor(parameters: msdyn_QueueItemOperationsOnLwiDeleteOrClosureRequestParameters) {
+    super("msdyn_QueueItemOperationsOnLwiDeleteOrClosure", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_QueueItemOperationsOnLwiDeleteOrClosure`;
 
-    const body: Record<string, unknown> = {
-      OperationType: this.operationType,
-      QueueItemId: this.queueItemId,
-    };
+    const body = requestBody({
+      OperationType: this.Parameters.OperationType,
+      QueueItemId: this.Parameters.QueueItemId,
+    });
 
     return {
       method: "POST",

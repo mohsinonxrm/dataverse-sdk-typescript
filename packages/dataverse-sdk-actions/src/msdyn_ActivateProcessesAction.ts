@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -11,19 +12,27 @@ export interface msdyn_ActivateProcessesResponse {
 }
 
 /**
+ * Parameters of the msdyn_ActivateProcesses action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ActivateProcessesActionParameters {
+  AnalysisResult?: EntityReference | AnyEntityPayload;
+}
+
+/**
  * msdyn_ActivateProcesses action
  *
  * Unbound action
  */
 export class msdyn_ActivateProcessesAction implements Executable<msdyn_ActivateProcessesResponse> {
-  constructor(public readonly analysisResult?: EntityReference | AnyEntityPayload) {}
+  constructor(public readonly parameters: msdyn_ActivateProcessesActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ActivateProcesses`;
 
-    const body: Record<string, unknown> = {
-      AnalysisResult: this.analysisResult,
-    };
+    const body = requestBody({
+      AnalysisResult: this.parameters.AnalysisResult,
+    });
 
     return {
       method: "POST",
@@ -36,7 +45,8 @@ export class msdyn_ActivateProcessesAction implements Executable<msdyn_ActivateP
   }
 
   async parseResponse(response: Response): Promise<msdyn_ActivateProcessesResponse> {
-    const data = await response.json();
-    return data as msdyn_ActivateProcessesResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_ActivateProcessesResponse;
   }
 }

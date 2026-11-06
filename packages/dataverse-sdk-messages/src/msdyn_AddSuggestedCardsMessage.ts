@@ -1,5 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_AddSuggestedCards message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_AddSuggestedCardsRequestParameters {
+  scope: string;
+  BusinessProcessFlowId?: string;
+  BusinessProcessFlowInstanceId?: string;
+  ActionStepId?: string;
+}
 
 /**
  * msdyn_AddSuggestedCards request message
@@ -10,24 +22,21 @@ export class msdyn_AddSuggestedCardsRequest
   extends OrganizationRequest
   implements Executable<msdyn_AddSuggestedCardsResponse>
 {
-  constructor(
-    public scope: string,
-    public businessProcessFlowId?: string,
-    public businessProcessFlowInstanceId?: string,
-    public actionStepId?: string
-  ) {
-    super("msdyn_AddSuggestedCards");
+  declare readonly Parameters: Readonly<msdyn_AddSuggestedCardsRequestParameters>;
+
+  constructor(parameters: msdyn_AddSuggestedCardsRequestParameters) {
+    super("msdyn_AddSuggestedCards", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_AddSuggestedCards`;
 
-    const body: Record<string, unknown> = {
-      scope: this.scope,
-      BusinessProcessFlowId: this.businessProcessFlowId,
-      BusinessProcessFlowInstanceId: this.businessProcessFlowInstanceId,
-      ActionStepId: this.actionStepId,
-    };
+    const body = requestBody({
+      scope: this.Parameters.scope,
+      BusinessProcessFlowId: this.Parameters.BusinessProcessFlowId,
+      BusinessProcessFlowInstanceId: this.Parameters.BusinessProcessFlowInstanceId,
+      ActionStepId: this.Parameters.ActionStepId,
+    });
 
     return {
       method: "POST",

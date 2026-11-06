@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from CCaaS_NotifyAgent action
@@ -8,27 +9,33 @@ export interface CCaaS_NotifyAgentResponse {
 }
 
 /**
+ * Parameters of the CCaaS_NotifyAgent action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_NotifyAgentActionParameters {
+  ApiVersion: string;
+  Title: string;
+  Message: string;
+  AgentIds: string[];
+}
+
+/**
  * CCaaS_NotifyAgent action
  *
  * Unbound action
  */
 export class CCaaS_NotifyAgentAction implements Executable<CCaaS_NotifyAgentResponse> {
-  constructor(
-    public readonly apiVersion: string,
-    public readonly title: string,
-    public readonly message: string,
-    public readonly agentIds: string[]
-  ) {}
+  constructor(public readonly parameters: CCaaS_NotifyAgentActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CCaaS_NotifyAgent`;
 
-    const body: Record<string, unknown> = {
-      ApiVersion: this.apiVersion,
-      Title: this.title,
-      Message: this.message,
-      AgentIds: this.agentIds,
-    };
+    const body = requestBody({
+      ApiVersion: this.parameters.ApiVersion,
+      Title: this.parameters.Title,
+      Message: this.parameters.Message,
+      AgentIds: this.parameters.AgentIds,
+    });
 
     return {
       method: "POST",
@@ -41,7 +48,8 @@ export class CCaaS_NotifyAgentAction implements Executable<CCaaS_NotifyAgentResp
   }
 
   async parseResponse(response: Response): Promise<CCaaS_NotifyAgentResponse> {
-    const data = await response.json();
-    return data as CCaaS_NotifyAgentResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as CCaaS_NotifyAgentResponse;
   }
 }

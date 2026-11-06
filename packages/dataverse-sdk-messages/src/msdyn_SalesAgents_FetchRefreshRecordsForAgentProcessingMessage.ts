@@ -1,6 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseValue } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_SalesAgents_FetchRefreshRecordsForAgentProcessing message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAgents_FetchRefreshRecordsForAgentProcessingRequestParameters {
+  msdyn_Top?: number;
+  msdyn_SalesAgentType: number;
+  msdyn_TrackingId?: string;
+}
 
 /**
  * msdyn_SalesAgents_FetchRefreshRecordsForAgentProcessing request message
@@ -11,22 +22,22 @@ export class msdyn_SalesAgents_FetchRefreshRecordsForAgentProcessingRequest
   extends OrganizationRequest
   implements Executable<msdyn_SalesAgents_FetchRefreshRecordsForAgentProcessingResponse>
 {
+  declare readonly Parameters: Readonly<msdyn_SalesAgents_FetchRefreshRecordsForAgentProcessingRequestParameters>;
+
   constructor(
-    public msdyn_Top: number | undefined,
-    public msdyn_SalesAgentType: number,
-    public msdyn_TrackingId?: string
+    parameters: msdyn_SalesAgents_FetchRefreshRecordsForAgentProcessingRequestParameters
   ) {
-    super("msdyn_SalesAgents_FetchRefreshRecordsForAgentProcessing");
+    super("msdyn_SalesAgents_FetchRefreshRecordsForAgentProcessing", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAgents_FetchRefreshRecordsForAgentProcessing`;
 
-    const body: Record<string, unknown> = {
-      msdyn_Top: this.msdyn_Top,
-      msdyn_SalesAgentType: this.msdyn_SalesAgentType,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-    };
+    const body = requestBody({
+      msdyn_Top: this.Parameters.msdyn_Top,
+      msdyn_SalesAgentType: this.Parameters.msdyn_SalesAgentType,
+      msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
+    });
 
     return {
       method: "POST",
@@ -41,8 +52,11 @@ export class msdyn_SalesAgents_FetchRefreshRecordsForAgentProcessingRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_FetchRefreshRecordsForAgentProcessingResponse> {
-    const data = await response.json();
-    return msdyn_SalesAgents_FetchRefreshRecordsForAgentProcessingResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_SalesAgents_FetchRefreshRecordsForAgentProcessingResponse.fromResponse(
+      text ? JSON.parse(text) : {}
+    );
   }
 }
 

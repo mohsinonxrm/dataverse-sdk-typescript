@@ -12,6 +12,8 @@ export interface ProcessInboundEmailResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.email)
+ *
+ * The first argument is the id of the email record to call it on.
  */
 export class ProcessInboundEmailAction implements Executable<ProcessInboundEmailResponse> {
   constructor(public readonly emailId: string) {}
@@ -30,7 +32,8 @@ export class ProcessInboundEmailAction implements Executable<ProcessInboundEmail
   }
 
   async parseResponse(response: Response): Promise<ProcessInboundEmailResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as ProcessInboundEmailResponse;
   }
 }

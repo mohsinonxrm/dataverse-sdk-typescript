@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_CustomApiCustomerServiceCaseSummaryResponse as msdyn_CustomApiCustomerServiceCaseSummaryResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_CustomApiCustomerServiceCaseSummary message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CustomApiCustomerServiceCaseSummaryRequestParameters {
+  msdyn_CaseNumber: string;
+}
 
 /**
  * msdyn_CustomApiCustomerServiceCaseSummary request message
@@ -12,16 +21,18 @@ export class msdyn_CustomApiCustomerServiceCaseSummaryRequest
   extends OrganizationRequest
   implements Executable<msdyn_CustomApiCustomerServiceCaseSummaryResponse>
 {
-  constructor(public msdyn_CaseNumber: string) {
-    super("msdyn_CustomApiCustomerServiceCaseSummary");
+  declare readonly Parameters: Readonly<msdyn_CustomApiCustomerServiceCaseSummaryRequestParameters>;
+
+  constructor(parameters: msdyn_CustomApiCustomerServiceCaseSummaryRequestParameters) {
+    super("msdyn_CustomApiCustomerServiceCaseSummary", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CustomApiCustomerServiceCaseSummary`;
 
-    const body: Record<string, unknown> = {
-      msdyn_CaseNumber: this.msdyn_CaseNumber,
-    };
+    const body = requestBody({
+      msdyn_CaseNumber: this.Parameters.msdyn_CaseNumber,
+    });
 
     return {
       method: "POST",
@@ -36,8 +47,11 @@ export class msdyn_CustomApiCustomerServiceCaseSummaryRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CustomApiCustomerServiceCaseSummaryResponse> {
-    const data = await response.json();
-    return msdyn_CustomApiCustomerServiceCaseSummaryResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_CustomApiCustomerServiceCaseSummaryResponse.fromResponse(
+      text ? JSON.parse(text) : {}
+    );
   }
 }
 

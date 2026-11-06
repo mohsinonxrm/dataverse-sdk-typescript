@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetAdditionalPropertiesMetadataResponse as msdyn_GetAdditionalPropertiesMetadataResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetAdditionalPropertiesMetadata message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetAdditionalPropertiesMetadataRequestParameters {
+  Type: number;
+}
 
 /**
  * msdyn_GetAdditionalPropertiesMetadata request message
@@ -12,16 +21,18 @@ export class msdyn_GetAdditionalPropertiesMetadataRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetAdditionalPropertiesMetadataResponse>
 {
-  constructor(public type: number) {
-    super("msdyn_GetAdditionalPropertiesMetadata");
+  declare readonly Parameters: Readonly<msdyn_GetAdditionalPropertiesMetadataRequestParameters>;
+
+  constructor(parameters: msdyn_GetAdditionalPropertiesMetadataRequestParameters) {
+    super("msdyn_GetAdditionalPropertiesMetadata", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetAdditionalPropertiesMetadata`;
 
-    const body: Record<string, unknown> = {
-      Type: this.type,
-    };
+    const body = requestBody({
+      Type: this.Parameters.Type,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_GetAdditionalPropertiesMetadataRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAdditionalPropertiesMetadataResponse> {
-    const data = await response.json();
-    return msdyn_GetAdditionalPropertiesMetadataResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_GetAdditionalPropertiesMetadataResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

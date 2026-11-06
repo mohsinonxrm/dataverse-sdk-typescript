@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from CCaaS_CancelConsult action
@@ -8,26 +9,36 @@ export interface CCaaS_CancelConsultResponse {
 }
 
 /**
+ * Parameters of the CCaaS_CancelConsult action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_CancelConsultActionParameters {
+  ApiVersion: string;
+  SessionId: string;
+}
+
+/**
  * CCaaS_CancelConsult action
  *
  * Bound action
  * Binding parameter: entity (mscrm.msdyn_ocliveworkitem)
+ *
+ * The first argument is the id of the msdyn_ocliveworkitem record to call it on.
  */
 export class CCaaS_CancelConsultAction implements Executable<CCaaS_CancelConsultResponse> {
   constructor(
     public readonly msdyn_ocliveworkitemId: string,
-    public readonly apiVersion: string,
-    public readonly sessionId: string
+    public readonly parameters: CCaaS_CancelConsultActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_CancelConsult`;
 
-    const body: Record<string, unknown> = {
-      ApiVersion: this.apiVersion,
-      SessionId: this.sessionId,
-    };
+    const body = requestBody({
+      ApiVersion: this.parameters.ApiVersion,
+      SessionId: this.parameters.SessionId,
+    });
 
     return {
       method: "POST",
@@ -40,7 +51,8 @@ export class CCaaS_CancelConsultAction implements Executable<CCaaS_CancelConsult
   }
 
   async parseResponse(response: Response): Promise<CCaaS_CancelConsultResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as CCaaS_CancelConsultResponse;
   }
 }

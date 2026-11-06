@@ -1,7 +1,21 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdynmkt_checkconsentResponse as msdynmkt_checkconsentResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdynmkt_checkconsent message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdynmkt_checkconsentRequestParameters {
+  msdynmkt_contactpoint: string;
+  msdynmkt_owningbusinessunitid: string;
+  msdynmkt_purposeid: string;
+  msdynmkt_compliancesettingsid: string;
+  msdynmkt_topicid: string;
+  msdynmkt_channeltype: string;
+}
 
 /**
  * msdynmkt_checkconsent request message
@@ -12,28 +26,23 @@ export class msdynmkt_checkconsentRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_checkconsentResponse>
 {
-  constructor(
-    public msdynmkt_contactpoint: string,
-    public msdynmkt_owningbusinessunitid: string,
-    public msdynmkt_purposeid: string,
-    public msdynmkt_compliancesettingsid: string,
-    public msdynmkt_topicid: string,
-    public msdynmkt_channeltype: string
-  ) {
-    super("msdynmkt_checkconsent");
+  declare readonly Parameters: Readonly<msdynmkt_checkconsentRequestParameters>;
+
+  constructor(parameters: msdynmkt_checkconsentRequestParameters) {
+    super("msdynmkt_checkconsent", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_checkconsent`;
 
-    const body: Record<string, unknown> = {
-      msdynmkt_contactpoint: this.msdynmkt_contactpoint,
-      msdynmkt_owningbusinessunitid: this.msdynmkt_owningbusinessunitid,
-      msdynmkt_purposeid: this.msdynmkt_purposeid,
-      msdynmkt_compliancesettingsid: this.msdynmkt_compliancesettingsid,
-      msdynmkt_topicid: this.msdynmkt_topicid,
-      msdynmkt_channeltype: this.msdynmkt_channeltype,
-    };
+    const body = requestBody({
+      msdynmkt_contactpoint: this.Parameters.msdynmkt_contactpoint,
+      msdynmkt_owningbusinessunitid: this.Parameters.msdynmkt_owningbusinessunitid,
+      msdynmkt_purposeid: this.Parameters.msdynmkt_purposeid,
+      msdynmkt_compliancesettingsid: this.Parameters.msdynmkt_compliancesettingsid,
+      msdynmkt_topicid: this.Parameters.msdynmkt_topicid,
+      msdynmkt_channeltype: this.Parameters.msdynmkt_channeltype,
+    });
 
     return {
       method: "POST",
@@ -46,8 +55,9 @@ export class msdynmkt_checkconsentRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_checkconsentResponse> {
-    const data = await response.json();
-    return msdynmkt_checkconsentResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdynmkt_checkconsentResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

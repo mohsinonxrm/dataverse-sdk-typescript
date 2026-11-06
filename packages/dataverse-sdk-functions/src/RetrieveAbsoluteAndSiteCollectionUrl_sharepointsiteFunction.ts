@@ -13,6 +13,8 @@ export interface RetrieveAbsoluteAndSiteCollectionUrl_sharepointsiteResponse {
  *
  * Bound function
  * Binding parameter: entity (mscrm.sharepointsite)
+ *
+ * The first argument is the id of the sharepointsite record to call it on.
  */
 export class RetrieveAbsoluteAndSiteCollectionUrl_sharepointsiteFunction implements Executable<RetrieveAbsoluteAndSiteCollectionUrl_sharepointsiteResponse> {
   constructor(public readonly sharepointsiteId: string) {}
@@ -33,7 +35,10 @@ export class RetrieveAbsoluteAndSiteCollectionUrl_sharepointsiteFunction impleme
   async parseResponse(
     response: Response
   ): Promise<RetrieveAbsoluteAndSiteCollectionUrl_sharepointsiteResponse> {
-    const data = await response.json();
-    return data as RetrieveAbsoluteAndSiteCollectionUrl_sharepointsiteResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (
+      text ? JSON.parse(text) : {}
+    ) as RetrieveAbsoluteAndSiteCollectionUrl_sharepointsiteResponse;
   }
 }

@@ -16,6 +16,8 @@ export interface RetrieveUnpublished_savedqueryvisualizationResponse extends sav
  *
  * Bound function
  * Binding parameter: entity (mscrm.savedqueryvisualization)
+ *
+ * The first argument is the id of the savedqueryvisualization record to call it on.
  */
 export class RetrieveUnpublished_savedqueryvisualizationFunction implements Executable<RetrieveUnpublished_savedqueryvisualizationResponse> {
   constructor(public readonly savedqueryvisualizationId: string) {}
@@ -36,7 +38,8 @@ export class RetrieveUnpublished_savedqueryvisualizationFunction implements Exec
   async parseResponse(
     response: Response
   ): Promise<RetrieveUnpublished_savedqueryvisualizationResponse> {
-    const data = await response.json();
-    return data as RetrieveUnpublished_savedqueryvisualizationResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RetrieveUnpublished_savedqueryvisualizationResponse;
   }
 }

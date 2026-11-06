@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetMLPredictionResponse as msdyn_GetMLPredictionResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetMLPrediction message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetMLPredictionRequestParameters {
+  msdyn_predictiontype: number;
+  msdyn_input: string;
+}
 
 /**
  * msdyn_GetMLPrediction request message
@@ -12,20 +22,19 @@ export class msdyn_GetMLPredictionRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetMLPredictionResponse>
 {
-  constructor(
-    public msdyn_predictiontype: number,
-    public msdyn_input: string
-  ) {
-    super("msdyn_GetMLPrediction");
+  declare readonly Parameters: Readonly<msdyn_GetMLPredictionRequestParameters>;
+
+  constructor(parameters: msdyn_GetMLPredictionRequestParameters) {
+    super("msdyn_GetMLPrediction", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetMLPrediction`;
 
-    const body: Record<string, unknown> = {
-      msdyn_predictiontype: this.msdyn_predictiontype,
-      msdyn_input: this.msdyn_input,
-    };
+    const body = requestBody({
+      msdyn_predictiontype: this.Parameters.msdyn_predictiontype,
+      msdyn_input: this.Parameters.msdyn_input,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class msdyn_GetMLPredictionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetMLPredictionResponse> {
-    const data = await response.json();
-    return msdyn_GetMLPredictionResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_GetMLPredictionResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

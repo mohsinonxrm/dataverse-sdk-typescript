@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { QueryDvUnstructuredDataResponse as QueryDvUnstructuredDataResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the QueryDvUnstructuredData message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface QueryDvUnstructuredDataRequestParameters {
+  userQueryText?: string;
+}
 
 /**
  * QueryDvUnstructuredData request message
@@ -12,16 +21,18 @@ export class QueryDvUnstructuredDataRequest
   extends OrganizationRequest
   implements Executable<QueryDvUnstructuredDataResponse>
 {
-  constructor(public userQueryText?: string) {
-    super("QueryDvUnstructuredData");
+  declare readonly Parameters: Readonly<QueryDvUnstructuredDataRequestParameters>;
+
+  constructor(parameters: QueryDvUnstructuredDataRequestParameters = {}) {
+    super("QueryDvUnstructuredData", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/QueryDvUnstructuredData`;
 
-    const body: Record<string, unknown> = {
-      userQueryText: this.userQueryText,
-    };
+    const body = requestBody({
+      userQueryText: this.Parameters.userQueryText,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class QueryDvUnstructuredDataRequest
   }
 
   async parseResponse(response: Response): Promise<QueryDvUnstructuredDataResponse> {
-    const data = await response.json();
-    return QueryDvUnstructuredDataResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return QueryDvUnstructuredDataResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

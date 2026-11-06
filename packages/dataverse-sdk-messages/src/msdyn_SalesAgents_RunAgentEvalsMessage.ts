@@ -1,7 +1,21 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_SalesAgents_RunAgentEvalsResponse as msdyn_SalesAgents_RunAgentEvalsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_SalesAgents_RunAgentEvals message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAgents_RunAgentEvalsRequestParameters {
+  msdyn_MicroAgent: string;
+  msdyn_AgentOutput: string;
+  msdyn_AgentInput: string;
+  msdyn_SalesAgent: string;
+  msdyn_OrchestrationId: string;
+  msdyn_RecordId: string;
+}
 
 /**
  * msdyn_SalesAgents_RunAgentEvals request message
@@ -12,28 +26,23 @@ export class msdyn_SalesAgents_RunAgentEvalsRequest
   extends OrganizationRequest
   implements Executable<msdyn_SalesAgents_RunAgentEvalsResponse>
 {
-  constructor(
-    public msdyn_MicroAgent: string,
-    public msdyn_AgentOutput: string,
-    public msdyn_AgentInput: string,
-    public msdyn_SalesAgent: string,
-    public msdyn_OrchestrationId: string,
-    public msdyn_RecordId: string
-  ) {
-    super("msdyn_SalesAgents_RunAgentEvals");
+  declare readonly Parameters: Readonly<msdyn_SalesAgents_RunAgentEvalsRequestParameters>;
+
+  constructor(parameters: msdyn_SalesAgents_RunAgentEvalsRequestParameters) {
+    super("msdyn_SalesAgents_RunAgentEvals", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAgents_RunAgentEvals`;
 
-    const body: Record<string, unknown> = {
-      msdyn_MicroAgent: this.msdyn_MicroAgent,
-      msdyn_AgentOutput: this.msdyn_AgentOutput,
-      msdyn_AgentInput: this.msdyn_AgentInput,
-      msdyn_SalesAgent: this.msdyn_SalesAgent,
-      msdyn_OrchestrationId: this.msdyn_OrchestrationId,
-      msdyn_RecordId: this.msdyn_RecordId,
-    };
+    const body = requestBody({
+      msdyn_MicroAgent: this.Parameters.msdyn_MicroAgent,
+      msdyn_AgentOutput: this.Parameters.msdyn_AgentOutput,
+      msdyn_AgentInput: this.Parameters.msdyn_AgentInput,
+      msdyn_SalesAgent: this.Parameters.msdyn_SalesAgent,
+      msdyn_OrchestrationId: this.Parameters.msdyn_OrchestrationId,
+      msdyn_RecordId: this.Parameters.msdyn_RecordId,
+    });
 
     return {
       method: "POST",
@@ -46,8 +55,9 @@ export class msdyn_SalesAgents_RunAgentEvalsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAgents_RunAgentEvalsResponse> {
-    const data = await response.json();
-    return msdyn_SalesAgents_RunAgentEvalsResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_SalesAgents_RunAgentEvalsResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

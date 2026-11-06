@@ -2,8 +2,20 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_RetrieveCadenceSuggestionsResponse as msdyn_RetrieveCadenceSuggestionsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_RetrieveCadenceSuggestions message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_RetrieveCadenceSuggestionsRequestParameters {
+  EntityReference: EntityReference | AnyEntityPayload;
+  ActivityType: number;
+  LinkedActivityId?: string;
+  StepType: number;
+}
 
 /**
  * msdyn_RetrieveCadenceSuggestions request message
@@ -14,24 +26,21 @@ export class msdyn_RetrieveCadenceSuggestionsRequest
   extends OrganizationRequest
   implements Executable<msdyn_RetrieveCadenceSuggestionsResponse>
 {
-  constructor(
-    public entityReference: EntityReference | AnyEntityPayload,
-    public activityType: number,
-    public linkedActivityId: string | undefined,
-    public stepType: number
-  ) {
-    super("msdyn_RetrieveCadenceSuggestions");
+  declare readonly Parameters: Readonly<msdyn_RetrieveCadenceSuggestionsRequestParameters>;
+
+  constructor(parameters: msdyn_RetrieveCadenceSuggestionsRequestParameters) {
+    super("msdyn_RetrieveCadenceSuggestions", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_RetrieveCadenceSuggestions`;
 
-    const body: Record<string, unknown> = {
-      EntityReference: this.entityReference,
-      ActivityType: this.activityType,
-      LinkedActivityId: this.linkedActivityId,
-      StepType: this.stepType,
-    };
+    const body = requestBody({
+      EntityReference: this.Parameters.EntityReference,
+      ActivityType: this.Parameters.ActivityType,
+      LinkedActivityId: this.Parameters.LinkedActivityId,
+      StepType: this.Parameters.StepType,
+    });
 
     return {
       method: "POST",
@@ -44,8 +53,9 @@ export class msdyn_RetrieveCadenceSuggestionsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrieveCadenceSuggestionsResponse> {
-    const data = await response.json();
-    return msdyn_RetrieveCadenceSuggestionsResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_RetrieveCadenceSuggestionsResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

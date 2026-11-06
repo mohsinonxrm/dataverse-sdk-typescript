@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_GetRequirementChartData action
@@ -8,19 +9,27 @@ export interface msdyn_GetRequirementChartDataResponse {
 }
 
 /**
+ * Parameters of the msdyn_GetRequirementChartData action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetRequirementChartDataActionParameters {
+  RequirementId: string;
+}
+
+/**
  * msdyn_GetRequirementChartData action
  *
  * Unbound action
  */
 export class msdyn_GetRequirementChartDataAction implements Executable<msdyn_GetRequirementChartDataResponse> {
-  constructor(public readonly requirementId: string) {}
+  constructor(public readonly parameters: msdyn_GetRequirementChartDataActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetRequirementChartData`;
 
-    const body: Record<string, unknown> = {
-      RequirementId: this.requirementId,
-    };
+    const body = requestBody({
+      RequirementId: this.parameters.RequirementId,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class msdyn_GetRequirementChartDataAction implements Executable<msdyn_Get
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetRequirementChartDataResponse> {
-    const data = await response.json();
-    return data as msdyn_GetRequirementChartDataResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_GetRequirementChartDataResponse;
   }
 }

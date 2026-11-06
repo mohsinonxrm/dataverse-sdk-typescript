@@ -13,6 +13,8 @@ export interface RetrieveProductProperties_opportunityproductResponse {
  *
  * Bound function
  * Binding parameter: entity (mscrm.opportunityproduct)
+ *
+ * The first argument is the id of the opportunityproduct record to call it on.
  */
 export class RetrieveProductProperties_opportunityproductFunction implements Executable<RetrieveProductProperties_opportunityproductResponse> {
   constructor(public readonly opportunityproductId: string) {}
@@ -33,7 +35,8 @@ export class RetrieveProductProperties_opportunityproductFunction implements Exe
   async parseResponse(
     response: Response
   ): Promise<RetrieveProductProperties_opportunityproductResponse> {
-    const data = await response.json();
-    return data as RetrieveProductProperties_opportunityproductResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RetrieveProductProperties_opportunityproductResponse;
   }
 }

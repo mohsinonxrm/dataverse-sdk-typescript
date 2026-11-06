@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_ActionCardActionLogger action
@@ -8,37 +9,43 @@ export interface msdyn_ActionCardActionLoggerResponse {
 }
 
 /**
+ * Parameters of the msdyn_ActionCardActionLogger action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ActionCardActionLoggerActionParameters {
+  cardType?: number;
+  userId: string;
+  cardTypeId: string;
+  actionType: string;
+  totalActions: number;
+  actionCardId?: string;
+  regardingObjectId?: string;
+  regardingObjectLogicalName?: string;
+  regardingObjectTypeCode?: number;
+}
+
+/**
  * msdyn_ActionCardActionLogger action
  *
  * Unbound action
  */
 export class msdyn_ActionCardActionLoggerAction implements Executable<msdyn_ActionCardActionLoggerResponse> {
-  constructor(
-    public readonly cardType: number | undefined,
-    public readonly userId: string,
-    public readonly cardTypeId: string,
-    public readonly actionType: string,
-    public readonly totalActions: number,
-    public readonly actionCardId?: string,
-    public readonly regardingObjectId?: string,
-    public readonly regardingObjectLogicalName?: string,
-    public readonly regardingObjectTypeCode?: number
-  ) {}
+  constructor(public readonly parameters: msdyn_ActionCardActionLoggerActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ActionCardActionLogger`;
 
-    const body: Record<string, unknown> = {
-      cardType: this.cardType,
-      userId: this.userId,
-      cardTypeId: this.cardTypeId,
-      actionType: this.actionType,
-      totalActions: this.totalActions,
-      actionCardId: this.actionCardId,
-      regardingObjectId: this.regardingObjectId,
-      regardingObjectLogicalName: this.regardingObjectLogicalName,
-      regardingObjectTypeCode: this.regardingObjectTypeCode,
-    };
+    const body = requestBody({
+      cardType: this.parameters.cardType,
+      userId: this.parameters.userId,
+      cardTypeId: this.parameters.cardTypeId,
+      actionType: this.parameters.actionType,
+      totalActions: this.parameters.totalActions,
+      actionCardId: this.parameters.actionCardId,
+      regardingObjectId: this.parameters.regardingObjectId,
+      regardingObjectLogicalName: this.parameters.regardingObjectLogicalName,
+      regardingObjectTypeCode: this.parameters.regardingObjectTypeCode,
+    });
 
     return {
       method: "POST",
@@ -51,7 +58,8 @@ export class msdyn_ActionCardActionLoggerAction implements Executable<msdyn_Acti
   }
 
   async parseResponse(response: Response): Promise<msdyn_ActionCardActionLoggerResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_ActionCardActionLoggerResponse;
   }
 }

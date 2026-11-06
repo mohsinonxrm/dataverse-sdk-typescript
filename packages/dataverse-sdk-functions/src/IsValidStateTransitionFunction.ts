@@ -10,16 +10,22 @@ export interface IsValidStateTransitionResponse {
 }
 
 /**
+ * Parameters of the IsValidStateTransition function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface IsValidStateTransitionFunctionParameters {
+  Entity: EntityReference;
+  NewState: string;
+  NewStatus: number;
+}
+
+/**
  * IsValidStateTransition function
  *
  * Unbound function
  */
 export class IsValidStateTransitionFunction implements Executable<IsValidStateTransitionResponse> {
-  constructor(
-    public readonly entity: EntityReference,
-    public readonly newState: string,
-    public readonly newStatus: number
-  ) {}
+  constructor(public readonly parameters: IsValidStateTransitionFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/IsValidStateTransition`;
@@ -27,17 +33,20 @@ export class IsValidStateTransitionFunction implements Executable<IsValidStateTr
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.entity !== undefined) {
+    if (this.parameters.Entity !== undefined) {
       aliases.push(`Entity=@p1`);
-      params.append("@p1", formatParameterAlias(this.entity, "mscrm.crmbaseentity", "EntityType"));
+      params.append(
+        "@p1",
+        formatParameterAlias(this.parameters.Entity, "mscrm.crmbaseentity", "EntityType")
+      );
     }
-    if (this.newState !== undefined) {
+    if (this.parameters.NewState !== undefined) {
       aliases.push(`NewState=@p2`);
-      params.append("@p2", formatParameterAlias(this.newState, "Edm.String"));
+      params.append("@p2", formatParameterAlias(this.parameters.NewState, "Edm.String"));
     }
-    if (this.newStatus !== undefined) {
+    if (this.parameters.NewStatus !== undefined) {
       aliases.push(`NewStatus=@p3`);
-      params.append("@p3", formatParameterAlias(this.newStatus, "Edm.Int32"));
+      params.append("@p3", formatParameterAlias(this.parameters.NewStatus, "Edm.Int32"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -53,7 +62,8 @@ export class IsValidStateTransitionFunction implements Executable<IsValidStateTr
   }
 
   async parseResponse(response: Response): Promise<IsValidStateTransitionResponse> {
-    const data = await response.json();
-    return data as IsValidStateTransitionResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as IsValidStateTransitionResponse;
   }
 }

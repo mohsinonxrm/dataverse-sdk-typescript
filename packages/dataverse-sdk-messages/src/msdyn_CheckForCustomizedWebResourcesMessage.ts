@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_CheckForCustomizedWebResourcesResponse as msdyn_CheckForCustomizedWebResourcesResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_CheckForCustomizedWebResources message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CheckForCustomizedWebResourcesRequestParameters {
+  EntityIds?: string;
+  SolutionId?: string;
+  ExcludeSolutionIds?: string;
+}
 
 /**
  * msdyn_CheckForCustomizedWebResources request message
@@ -12,22 +23,20 @@ export class msdyn_CheckForCustomizedWebResourcesRequest
   extends OrganizationRequest
   implements Executable<msdyn_CheckForCustomizedWebResourcesResponse>
 {
-  constructor(
-    public entityIds?: string,
-    public solutionId?: string,
-    public excludeSolutionIds?: string
-  ) {
-    super("msdyn_CheckForCustomizedWebResources");
+  declare readonly Parameters: Readonly<msdyn_CheckForCustomizedWebResourcesRequestParameters>;
+
+  constructor(parameters: msdyn_CheckForCustomizedWebResourcesRequestParameters = {}) {
+    super("msdyn_CheckForCustomizedWebResources", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckForCustomizedWebResources`;
 
-    const body: Record<string, unknown> = {
-      EntityIds: this.entityIds,
-      SolutionId: this.solutionId,
-      ExcludeSolutionIds: this.excludeSolutionIds,
-    };
+    const body = requestBody({
+      EntityIds: this.Parameters.EntityIds,
+      SolutionId: this.Parameters.SolutionId,
+      ExcludeSolutionIds: this.Parameters.ExcludeSolutionIds,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class msdyn_CheckForCustomizedWebResourcesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckForCustomizedWebResourcesResponse> {
-    const data = await response.json();
-    return msdyn_CheckForCustomizedWebResourcesResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_CheckForCustomizedWebResourcesResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

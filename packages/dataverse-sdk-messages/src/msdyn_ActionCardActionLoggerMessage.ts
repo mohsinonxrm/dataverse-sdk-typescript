@@ -1,5 +1,22 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_ActionCardActionLogger message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ActionCardActionLoggerRequestParameters {
+  cardType?: number;
+  userId: string;
+  cardTypeId: string;
+  actionType: string;
+  totalActions: number;
+  actionCardId?: string;
+  regardingObjectId?: string;
+  regardingObjectLogicalName?: string;
+  regardingObjectTypeCode?: number;
+}
 
 /**
  * msdyn_ActionCardActionLogger request message
@@ -10,34 +27,26 @@ export class msdyn_ActionCardActionLoggerRequest
   extends OrganizationRequest
   implements Executable<msdyn_ActionCardActionLoggerResponse>
 {
-  constructor(
-    public cardType: number | undefined,
-    public userId: string,
-    public cardTypeId: string,
-    public actionType: string,
-    public totalActions: number,
-    public actionCardId?: string,
-    public regardingObjectId?: string,
-    public regardingObjectLogicalName?: string,
-    public regardingObjectTypeCode?: number
-  ) {
-    super("msdyn_ActionCardActionLogger");
+  declare readonly Parameters: Readonly<msdyn_ActionCardActionLoggerRequestParameters>;
+
+  constructor(parameters: msdyn_ActionCardActionLoggerRequestParameters) {
+    super("msdyn_ActionCardActionLogger", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ActionCardActionLogger`;
 
-    const body: Record<string, unknown> = {
-      cardType: this.cardType,
-      userId: this.userId,
-      cardTypeId: this.cardTypeId,
-      actionType: this.actionType,
-      totalActions: this.totalActions,
-      actionCardId: this.actionCardId,
-      regardingObjectId: this.regardingObjectId,
-      regardingObjectLogicalName: this.regardingObjectLogicalName,
-      regardingObjectTypeCode: this.regardingObjectTypeCode,
-    };
+    const body = requestBody({
+      cardType: this.Parameters.cardType,
+      userId: this.Parameters.userId,
+      cardTypeId: this.Parameters.cardTypeId,
+      actionType: this.Parameters.actionType,
+      totalActions: this.Parameters.totalActions,
+      actionCardId: this.Parameters.actionCardId,
+      regardingObjectId: this.Parameters.regardingObjectId,
+      regardingObjectLogicalName: this.Parameters.regardingObjectLogicalName,
+      regardingObjectTypeCode: this.Parameters.regardingObjectTypeCode,
+    });
 
     return {
       method: "POST",

@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_CheckForCustomizedOptionSetResponse as msdyn_CheckForCustomizedOptionSetResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_CheckForCustomizedOptionSet message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CheckForCustomizedOptionSetRequestParameters {
+  EntityIds?: string;
+  SolutionId?: string;
+  ExcludeSolutionIds?: string;
+}
 
 /**
  * msdyn_CheckForCustomizedOptionSet request message
@@ -12,22 +23,20 @@ export class msdyn_CheckForCustomizedOptionSetRequest
   extends OrganizationRequest
   implements Executable<msdyn_CheckForCustomizedOptionSetResponse>
 {
-  constructor(
-    public entityIds?: string,
-    public solutionId?: string,
-    public excludeSolutionIds?: string
-  ) {
-    super("msdyn_CheckForCustomizedOptionSet");
+  declare readonly Parameters: Readonly<msdyn_CheckForCustomizedOptionSetRequestParameters>;
+
+  constructor(parameters: msdyn_CheckForCustomizedOptionSetRequestParameters = {}) {
+    super("msdyn_CheckForCustomizedOptionSet", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckForCustomizedOptionSet`;
 
-    const body: Record<string, unknown> = {
-      EntityIds: this.entityIds,
-      SolutionId: this.solutionId,
-      ExcludeSolutionIds: this.excludeSolutionIds,
-    };
+    const body = requestBody({
+      EntityIds: this.Parameters.EntityIds,
+      SolutionId: this.Parameters.SolutionId,
+      ExcludeSolutionIds: this.Parameters.ExcludeSolutionIds,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class msdyn_CheckForCustomizedOptionSetRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckForCustomizedOptionSetResponse> {
-    const data = await response.json();
-    return msdyn_CheckForCustomizedOptionSetResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_CheckForCustomizedOptionSetResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

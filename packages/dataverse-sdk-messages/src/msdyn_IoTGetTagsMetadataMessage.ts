@@ -2,11 +2,20 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type {
   msdyn_IoTGetTagsMetadataResponse as msdyn_IoTGetTagsMetadataResponseData,
   msdyn_iotdevicecategory,
 } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_IoTGetTagsMetadata message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_IoTGetTagsMetadataRequestParameters {
+  DeviceCategory: EntityReference | EntityPayload<msdyn_iotdevicecategory>;
+}
 
 /**
  * msdyn_IoTGetTagsMetadata request message
@@ -17,16 +26,18 @@ export class msdyn_IoTGetTagsMetadataRequest
   extends OrganizationRequest
   implements Executable<msdyn_IoTGetTagsMetadataResponse>
 {
-  constructor(public deviceCategory: EntityReference | EntityPayload<msdyn_iotdevicecategory>) {
-    super("msdyn_IoTGetTagsMetadata");
+  declare readonly Parameters: Readonly<msdyn_IoTGetTagsMetadataRequestParameters>;
+
+  constructor(parameters: msdyn_IoTGetTagsMetadataRequestParameters) {
+    super("msdyn_IoTGetTagsMetadata", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_IoTGetTagsMetadata`;
 
-    const body: Record<string, unknown> = {
-      DeviceCategory: this.deviceCategory,
-    };
+    const body = requestBody({
+      DeviceCategory: this.Parameters.DeviceCategory,
+    });
 
     return {
       method: "POST",
@@ -39,8 +50,9 @@ export class msdyn_IoTGetTagsMetadataRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_IoTGetTagsMetadataResponse> {
-    const data = await response.json();
-    return msdyn_IoTGetTagsMetadataResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_IoTGetTagsMetadataResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

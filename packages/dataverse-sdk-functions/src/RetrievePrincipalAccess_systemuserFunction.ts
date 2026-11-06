@@ -11,15 +11,25 @@ export interface RetrievePrincipalAccess_systemuserResponse {
 }
 
 /**
+ * Parameters of the RetrievePrincipalAccess function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrievePrincipalAccess_systemuserFunctionParameters {
+  Target: EntityReference;
+}
+
+/**
  * RetrievePrincipalAccess function
  *
  * Bound function
  * Binding parameter: entity (mscrm.systemuser)
+ *
+ * The first argument is the id of the systemuser record to call it on.
  */
 export class RetrievePrincipalAccess_systemuserFunction implements Executable<RetrievePrincipalAccess_systemuserResponse> {
   constructor(
     public readonly systemuserId: string,
-    public readonly target: EntityReference
+    public readonly parameters: RetrievePrincipalAccess_systemuserFunctionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -29,9 +39,12 @@ export class RetrievePrincipalAccess_systemuserFunction implements Executable<Re
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.target !== undefined) {
+    if (this.parameters.Target !== undefined) {
       aliases.push(`Target=@p1`);
-      params.append("@p1", formatParameterAlias(this.target, "mscrm.crmbaseentity", "EntityType"));
+      params.append(
+        "@p1",
+        formatParameterAlias(this.parameters.Target, "mscrm.crmbaseentity", "EntityType")
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -47,7 +60,8 @@ export class RetrievePrincipalAccess_systemuserFunction implements Executable<Re
   }
 
   async parseResponse(response: Response): Promise<RetrievePrincipalAccess_systemuserResponse> {
-    const data = await response.json();
-    return data as RetrievePrincipalAccess_systemuserResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RetrievePrincipalAccess_systemuserResponse;
   }
 }

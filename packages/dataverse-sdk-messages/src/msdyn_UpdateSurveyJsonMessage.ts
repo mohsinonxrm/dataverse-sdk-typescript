@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_UpdateSurveyJson message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_UpdateSurveyJsonRequestParameters {
+  inspectionDefinitionId: string;
+  newInspectionJson: string;
+}
 
 /**
  * msdyn_UpdateSurveyJson request message
@@ -10,20 +20,19 @@ export class msdyn_UpdateSurveyJsonRequest
   extends OrganizationRequest
   implements Executable<msdyn_UpdateSurveyJsonResponse>
 {
-  constructor(
-    public inspectionDefinitionId: string,
-    public newInspectionJson: string
-  ) {
-    super("msdyn_UpdateSurveyJson");
+  declare readonly Parameters: Readonly<msdyn_UpdateSurveyJsonRequestParameters>;
+
+  constructor(parameters: msdyn_UpdateSurveyJsonRequestParameters) {
+    super("msdyn_UpdateSurveyJson", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_UpdateSurveyJson`;
 
-    const body: Record<string, unknown> = {
-      inspectionDefinitionId: this.inspectionDefinitionId,
-      newInspectionJson: this.newInspectionJson,
-    };
+    const body = requestBody({
+      inspectionDefinitionId: this.Parameters.inspectionDefinitionId,
+      newInspectionJson: this.Parameters.newInspectionJson,
+    });
 
     return {
       method: "POST",

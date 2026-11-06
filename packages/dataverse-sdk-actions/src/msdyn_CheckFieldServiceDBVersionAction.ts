@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_CheckFieldServiceDBVersion action
@@ -11,19 +12,27 @@ export interface msdyn_CheckFieldServiceDBVersionResponse {
 }
 
 /**
+ * Parameters of the msdyn_CheckFieldServiceDBVersion action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CheckFieldServiceDBVersionActionParameters {
+  ExpectedDBVersion: string;
+}
+
+/**
  * msdyn_CheckFieldServiceDBVersion action
  *
  * Unbound action
  */
 export class msdyn_CheckFieldServiceDBVersionAction implements Executable<msdyn_CheckFieldServiceDBVersionResponse> {
-  constructor(public readonly expectedDBVersion: string) {}
+  constructor(public readonly parameters: msdyn_CheckFieldServiceDBVersionActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckFieldServiceDBVersion`;
 
-    const body: Record<string, unknown> = {
-      ExpectedDBVersion: this.expectedDBVersion,
-    };
+    const body = requestBody({
+      ExpectedDBVersion: this.parameters.ExpectedDBVersion,
+    });
 
     return {
       method: "POST",
@@ -36,7 +45,8 @@ export class msdyn_CheckFieldServiceDBVersionAction implements Executable<msdyn_
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckFieldServiceDBVersionResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckFieldServiceDBVersionResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_CheckFieldServiceDBVersionResponse;
   }
 }

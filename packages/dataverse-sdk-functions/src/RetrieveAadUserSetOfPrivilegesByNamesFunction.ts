@@ -10,14 +10,22 @@ export interface RetrieveAadUserSetOfPrivilegesByNamesResponse {
 }
 
 /**
+ * Parameters of the RetrieveAadUserSetOfPrivilegesByNames function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveAadUserSetOfPrivilegesByNamesFunctionParameters {
+  DirectoryObjectId: string;
+  PrivilegeNames: string[];
+}
+
+/**
  * RetrieveAadUserSetOfPrivilegesByNames function
  *
  * Unbound function
  */
 export class RetrieveAadUserSetOfPrivilegesByNamesFunction implements Executable<RetrieveAadUserSetOfPrivilegesByNamesResponse> {
   constructor(
-    public readonly directoryObjectId: string,
-    public readonly privilegeNames: string[]
+    public readonly parameters: RetrieveAadUserSetOfPrivilegesByNamesFunctionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -26,13 +34,13 @@ export class RetrieveAadUserSetOfPrivilegesByNamesFunction implements Executable
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.directoryObjectId !== undefined) {
+    if (this.parameters.DirectoryObjectId !== undefined) {
       aliases.push(`DirectoryObjectId=@p1`);
-      params.append("@p1", formatParameterAlias(this.directoryObjectId, "Edm.Guid"));
+      params.append("@p1", formatParameterAlias(this.parameters.DirectoryObjectId, "Edm.Guid"));
     }
-    if (this.privilegeNames !== undefined) {
+    if (this.parameters.PrivilegeNames !== undefined) {
       aliases.push(`PrivilegeNames=@p2`);
-      params.append("@p2", JSON.stringify(this.privilegeNames));
+      params.append("@p2", JSON.stringify(this.parameters.PrivilegeNames));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -48,7 +56,8 @@ export class RetrieveAadUserSetOfPrivilegesByNamesFunction implements Executable
   }
 
   async parseResponse(response: Response): Promise<RetrieveAadUserSetOfPrivilegesByNamesResponse> {
-    const data = await response.json();
-    return data as RetrieveAadUserSetOfPrivilegesByNamesResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RetrieveAadUserSetOfPrivilegesByNamesResponse;
   }
 }

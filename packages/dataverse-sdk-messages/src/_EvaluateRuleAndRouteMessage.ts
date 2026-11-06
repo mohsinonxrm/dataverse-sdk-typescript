@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the _EvaluateRuleAndRoute message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface _EvaluateRuleAndRouteRequestParameters {
+  Target: EntityReference | AnyEntityPayload;
+  RoutingRuleSetId: string;
+}
 
 /**
  * _EvaluateRuleAndRoute request message
@@ -12,20 +22,19 @@ export class _EvaluateRuleAndRouteRequest
   extends OrganizationRequest
   implements Executable<_EvaluateRuleAndRouteResponse>
 {
-  constructor(
-    public target: EntityReference | AnyEntityPayload,
-    public routingRuleSetId: string
-  ) {
-    super("_EvaluateRuleAndRoute");
+  declare readonly Parameters: Readonly<_EvaluateRuleAndRouteRequestParameters>;
+
+  constructor(parameters: _EvaluateRuleAndRouteRequestParameters) {
+    super("_EvaluateRuleAndRoute", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/_EvaluateRuleAndRoute`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-      RoutingRuleSetId: this.routingRuleSetId,
-    };
+    const body = requestBody({
+      Target: this.Parameters.Target,
+      RoutingRuleSetId: this.Parameters.RoutingRuleSetId,
+    });
 
     return {
       method: "POST",

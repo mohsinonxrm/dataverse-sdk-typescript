@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { importjob } from "./types/index.js";
+
+/**
+ * Parameters of the ImportFieldTranslation message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ImportFieldTranslationRequestParameters {
+  TranslationFile: string;
+}
 
 /**
  * ImportFieldTranslation request message
@@ -12,16 +21,18 @@ export class ImportFieldTranslationRequest
   extends OrganizationRequest
   implements Executable<ImportFieldTranslationResponse>
 {
-  constructor(public translationFile: string) {
-    super("ImportFieldTranslation");
+  declare readonly Parameters: Readonly<ImportFieldTranslationRequestParameters>;
+
+  constructor(parameters: ImportFieldTranslationRequestParameters) {
+    super("ImportFieldTranslation", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ImportFieldTranslation`;
 
-    const body: Record<string, unknown> = {
-      TranslationFile: this.translationFile,
-    };
+    const body = requestBody({
+      TranslationFile: this.Parameters.TranslationFile,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class ImportFieldTranslationRequest
   }
 
   async parseResponse(response: Response): Promise<ImportFieldTranslationResponse> {
-    const data = await response.json();
-    return ImportFieldTranslationResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return ImportFieldTranslationResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdynmkt_PersonalizationDynamicTextAiResponse as msdynmkt_PersonalizationDynamicTextAiResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdynmkt_PersonalizationDynamicTextAi message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdynmkt_PersonalizationDynamicTextAiRequestParameters {
+  msdynmkt_PersonalizationDynamicTextAiRequest: string;
+}
 
 /**
  * msdynmkt_PersonalizationDynamicTextAi request message
@@ -12,17 +21,19 @@ export class msdynmkt_PersonalizationDynamicTextAiRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_PersonalizationDynamicTextAiResponse>
 {
-  constructor(public msdynmkt_PersonalizationDynamicTextAiRequest: string) {
-    super("msdynmkt_PersonalizationDynamicTextAi");
+  declare readonly Parameters: Readonly<msdynmkt_PersonalizationDynamicTextAiRequestParameters>;
+
+  constructor(parameters: msdynmkt_PersonalizationDynamicTextAiRequestParameters) {
+    super("msdynmkt_PersonalizationDynamicTextAi", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_PersonalizationDynamicTextAi`;
 
-    const body: Record<string, unknown> = {
+    const body = requestBody({
       msdynmkt_PersonalizationDynamicTextAiRequest:
-        this.msdynmkt_PersonalizationDynamicTextAiRequest,
-    };
+        this.Parameters.msdynmkt_PersonalizationDynamicTextAiRequest,
+    });
 
     return {
       method: "POST",
@@ -35,8 +46,9 @@ export class msdynmkt_PersonalizationDynamicTextAiRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_PersonalizationDynamicTextAiResponse> {
-    const data = await response.json();
-    return msdynmkt_PersonalizationDynamicTextAiResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdynmkt_PersonalizationDynamicTextAiResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

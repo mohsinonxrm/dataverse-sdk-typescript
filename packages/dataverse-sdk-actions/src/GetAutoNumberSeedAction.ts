@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from GetAutoNumberSeed action
@@ -8,23 +9,29 @@ export interface GetAutoNumberSeedResponse {
 }
 
 /**
+ * Parameters of the GetAutoNumberSeed action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GetAutoNumberSeedActionParameters {
+  EntityName: string;
+  AttributeName: string;
+}
+
+/**
  * GetAutoNumberSeed action
  *
  * Unbound action
  */
 export class GetAutoNumberSeedAction implements Executable<GetAutoNumberSeedResponse> {
-  constructor(
-    public readonly entityName: string,
-    public readonly attributeName: string
-  ) {}
+  constructor(public readonly parameters: GetAutoNumberSeedActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/GetAutoNumberSeed`;
 
-    const body: Record<string, unknown> = {
-      EntityName: this.entityName,
-      AttributeName: this.attributeName,
-    };
+    const body = requestBody({
+      EntityName: this.parameters.EntityName,
+      AttributeName: this.parameters.AttributeName,
+    });
 
     return {
       method: "POST",
@@ -37,7 +44,8 @@ export class GetAutoNumberSeedAction implements Executable<GetAutoNumberSeedResp
   }
 
   async parseResponse(response: Response): Promise<GetAutoNumberSeedResponse> {
-    const data = await response.json();
-    return data as GetAutoNumberSeedResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as GetAutoNumberSeedResponse;
   }
 }

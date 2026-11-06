@@ -10,15 +10,21 @@ export interface RetrieveAadUserSetOfPrivilegesByIdsResponse {
 }
 
 /**
+ * Parameters of the RetrieveAadUserSetOfPrivilegesByIds function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveAadUserSetOfPrivilegesByIdsFunctionParameters {
+  DirectoryObjectId: string;
+  PrivilegeIds: string[];
+}
+
+/**
  * RetrieveAadUserSetOfPrivilegesByIds function
  *
  * Unbound function
  */
 export class RetrieveAadUserSetOfPrivilegesByIdsFunction implements Executable<RetrieveAadUserSetOfPrivilegesByIdsResponse> {
-  constructor(
-    public readonly directoryObjectId: string,
-    public readonly privilegeIds: string[]
-  ) {}
+  constructor(public readonly parameters: RetrieveAadUserSetOfPrivilegesByIdsFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveAadUserSetOfPrivilegesByIds`;
@@ -26,13 +32,13 @@ export class RetrieveAadUserSetOfPrivilegesByIdsFunction implements Executable<R
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.directoryObjectId !== undefined) {
+    if (this.parameters.DirectoryObjectId !== undefined) {
       aliases.push(`DirectoryObjectId=@p1`);
-      params.append("@p1", formatParameterAlias(this.directoryObjectId, "Edm.Guid"));
+      params.append("@p1", formatParameterAlias(this.parameters.DirectoryObjectId, "Edm.Guid"));
     }
-    if (this.privilegeIds !== undefined) {
+    if (this.parameters.PrivilegeIds !== undefined) {
       aliases.push(`PrivilegeIds=@p2`);
-      params.append("@p2", JSON.stringify(this.privilegeIds));
+      params.append("@p2", JSON.stringify(this.parameters.PrivilegeIds));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -48,7 +54,8 @@ export class RetrieveAadUserSetOfPrivilegesByIdsFunction implements Executable<R
   }
 
   async parseResponse(response: Response): Promise<RetrieveAadUserSetOfPrivilegesByIdsResponse> {
-    const data = await response.json();
-    return data as RetrieveAadUserSetOfPrivilegesByIdsResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RetrieveAadUserSetOfPrivilegesByIdsResponse;
   }
 }

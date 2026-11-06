@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_CheckGeolocationEnabledResponse as msdyn_CheckGeolocationEnabledResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_CheckGeolocationEnabled message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CheckGeolocationEnabledRequestParameters {
+  Version?: string;
+  NoCache?: boolean;
+}
 
 /**
  * msdyn_CheckGeolocationEnabled request message
@@ -12,20 +22,19 @@ export class msdyn_CheckGeolocationEnabledRequest
   extends OrganizationRequest
   implements Executable<msdyn_CheckGeolocationEnabledResponse>
 {
-  constructor(
-    public version?: string,
-    public noCache?: boolean
-  ) {
-    super("msdyn_CheckGeolocationEnabled");
+  declare readonly Parameters: Readonly<msdyn_CheckGeolocationEnabledRequestParameters>;
+
+  constructor(parameters: msdyn_CheckGeolocationEnabledRequestParameters = {}) {
+    super("msdyn_CheckGeolocationEnabled", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckGeolocationEnabled`;
 
-    const body: Record<string, unknown> = {
-      Version: this.version,
-      NoCache: this.noCache,
-    };
+    const body = requestBody({
+      Version: this.Parameters.Version,
+      NoCache: this.Parameters.NoCache,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class msdyn_CheckGeolocationEnabledRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckGeolocationEnabledResponse> {
-    const data = await response.json();
-    return msdyn_CheckGeolocationEnabledResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_CheckGeolocationEnabledResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

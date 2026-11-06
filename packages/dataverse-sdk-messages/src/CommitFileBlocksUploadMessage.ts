@@ -1,7 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { CommitFileBlocksUploadResponse as CommitFileBlocksUploadResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the CommitFileBlocksUpload message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CommitFileBlocksUploadRequestParameters {
+  FileName: string;
+  MimeType: string;
+  BlockList: string[];
+  FileContinuationToken: string;
+}
 
 /**
  * CommitFileBlocksUpload request message
@@ -12,24 +24,21 @@ export class CommitFileBlocksUploadRequest
   extends OrganizationRequest
   implements Executable<CommitFileBlocksUploadResponse>
 {
-  constructor(
-    public fileName: string,
-    public mimeType: string,
-    public blockList: string[],
-    public fileContinuationToken: string
-  ) {
-    super("CommitFileBlocksUpload");
+  declare readonly Parameters: Readonly<CommitFileBlocksUploadRequestParameters>;
+
+  constructor(parameters: CommitFileBlocksUploadRequestParameters) {
+    super("CommitFileBlocksUpload", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CommitFileBlocksUpload`;
 
-    const body: Record<string, unknown> = {
-      FileName: this.fileName,
-      MimeType: this.mimeType,
-      BlockList: this.blockList,
-      FileContinuationToken: this.fileContinuationToken,
-    };
+    const body = requestBody({
+      FileName: this.Parameters.FileName,
+      MimeType: this.Parameters.MimeType,
+      BlockList: this.Parameters.BlockList,
+      FileContinuationToken: this.Parameters.FileContinuationToken,
+    });
 
     return {
       method: "POST",
@@ -42,8 +51,9 @@ export class CommitFileBlocksUploadRequest
   }
 
   async parseResponse(response: Response): Promise<CommitFileBlocksUploadResponse> {
-    const data = await response.json();
-    return CommitFileBlocksUploadResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return CommitFileBlocksUploadResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

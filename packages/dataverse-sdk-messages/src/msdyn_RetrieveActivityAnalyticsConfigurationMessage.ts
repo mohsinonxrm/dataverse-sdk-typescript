@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_RetrieveActivityAnalyticsConfigurationResponse as msdyn_RetrieveActivityAnalyticsConfigurationResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_RetrieveActivityAnalyticsConfiguration message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_RetrieveActivityAnalyticsConfigurationRequestParameters {
+  SIParameters?: string;
+}
 
 /**
  * msdyn_RetrieveActivityAnalyticsConfiguration request message
@@ -12,16 +21,18 @@ export class msdyn_RetrieveActivityAnalyticsConfigurationRequest
   extends OrganizationRequest
   implements Executable<msdyn_RetrieveActivityAnalyticsConfigurationResponse>
 {
-  constructor(public sIParameters?: string) {
-    super("msdyn_RetrieveActivityAnalyticsConfiguration");
+  declare readonly Parameters: Readonly<msdyn_RetrieveActivityAnalyticsConfigurationRequestParameters>;
+
+  constructor(parameters: msdyn_RetrieveActivityAnalyticsConfigurationRequestParameters = {}) {
+    super("msdyn_RetrieveActivityAnalyticsConfiguration", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_RetrieveActivityAnalyticsConfiguration`;
 
-    const body: Record<string, unknown> = {
-      SIParameters: this.sIParameters,
-    };
+    const body = requestBody({
+      SIParameters: this.Parameters.SIParameters,
+    });
 
     return {
       method: "POST",
@@ -36,8 +47,11 @@ export class msdyn_RetrieveActivityAnalyticsConfigurationRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_RetrieveActivityAnalyticsConfigurationResponse> {
-    const data = await response.json();
-    return msdyn_RetrieveActivityAnalyticsConfigurationResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_RetrieveActivityAnalyticsConfigurationResponse.fromResponse(
+      text ? JSON.parse(text) : {}
+    );
   }
 }
 

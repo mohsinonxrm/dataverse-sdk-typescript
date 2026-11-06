@@ -31,8 +31,11 @@ export class msdyn_SalesAgents_ProvideConsentAndM365SetupAPIRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_ProvideConsentAndM365SetupAPIResponse> {
-    const data = await response.json();
-    return msdyn_SalesAgents_ProvideConsentAndM365SetupAPIResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_SalesAgents_ProvideConsentAndM365SetupAPIResponse.fromResponse(
+      text ? JSON.parse(text) : {}
+    );
   }
 }
 

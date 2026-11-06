@@ -2,7 +2,16 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_CreateBSMRecordResponse as msdyn_CreateBSMRecordResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_CreateBSMRecord message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CreateBSMRecordRequestParameters {
+  AnalysisResult: EntityReference;
+}
 
 /**
  * msdyn_CreateBSMRecord request message
@@ -13,16 +22,18 @@ export class msdyn_CreateBSMRecordRequest
   extends OrganizationRequest
   implements Executable<msdyn_CreateBSMRecordResponse>
 {
-  constructor(public analysisResult: EntityReference) {
-    super("msdyn_CreateBSMRecord");
+  declare readonly Parameters: Readonly<msdyn_CreateBSMRecordRequestParameters>;
+
+  constructor(parameters: msdyn_CreateBSMRecordRequestParameters) {
+    super("msdyn_CreateBSMRecord", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CreateBSMRecord`;
 
-    const body: Record<string, unknown> = {
-      AnalysisResult: this.analysisResult,
-    };
+    const body = requestBody({
+      AnalysisResult: this.Parameters.AnalysisResult,
+    });
 
     return {
       method: "POST",
@@ -35,8 +46,9 @@ export class msdyn_CreateBSMRecordRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateBSMRecordResponse> {
-    const data = await response.json();
-    return msdyn_CreateBSMRecordResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_CreateBSMRecordResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

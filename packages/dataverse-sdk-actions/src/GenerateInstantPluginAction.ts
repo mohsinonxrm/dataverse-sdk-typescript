@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from GenerateInstantPlugin action
@@ -10,33 +11,39 @@ export interface GenerateInstantPluginResponse {
 }
 
 /**
+ * Parameters of the GenerateInstantPlugin action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GenerateInstantPluginActionParameters {
+  SolutionUniqueName?: string;
+  Expression: string;
+  Context?: string;
+  Description: string;
+  EntityLogicalName?: string;
+  Parameters?: string;
+  Name: string;
+}
+
+/**
  * GenerateInstantPlugin action
  *
  * Unbound action
  */
 export class GenerateInstantPluginAction implements Executable<GenerateInstantPluginResponse> {
-  constructor(
-    public readonly solutionUniqueName: string | undefined,
-    public readonly expression: string,
-    public readonly context: string | undefined,
-    public readonly description: string,
-    public readonly entityLogicalName: string | undefined,
-    public readonly parameters: string | undefined,
-    public readonly name: string
-  ) {}
+  constructor(public readonly parameters: GenerateInstantPluginActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/GenerateInstantPlugin`;
 
-    const body: Record<string, unknown> = {
-      SolutionUniqueName: this.solutionUniqueName,
-      Expression: this.expression,
-      Context: this.context,
-      Description: this.description,
-      EntityLogicalName: this.entityLogicalName,
-      Parameters: this.parameters,
-      Name: this.name,
-    };
+    const body = requestBody({
+      SolutionUniqueName: this.parameters.SolutionUniqueName,
+      Expression: this.parameters.Expression,
+      Context: this.parameters.Context,
+      Description: this.parameters.Description,
+      EntityLogicalName: this.parameters.EntityLogicalName,
+      Parameters: this.parameters.Parameters,
+      Name: this.parameters.Name,
+    });
 
     return {
       method: "POST",
@@ -49,7 +56,8 @@ export class GenerateInstantPluginAction implements Executable<GenerateInstantPl
   }
 
   async parseResponse(response: Response): Promise<GenerateInstantPluginResponse> {
-    const data = await response.json();
-    return data as GenerateInstantPluginResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as GenerateInstantPluginResponse;
   }
 }

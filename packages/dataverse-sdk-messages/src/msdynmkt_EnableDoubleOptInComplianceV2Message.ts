@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdynmkt_EnableDoubleOptInComplianceV2 message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdynmkt_EnableDoubleOptInComplianceV2RequestParameters {
+  msdynmkt_complianceid: string;
+}
 
 /**
  * msdynmkt_EnableDoubleOptInComplianceV2 request message
@@ -10,16 +19,18 @@ export class msdynmkt_EnableDoubleOptInComplianceV2Request
   extends OrganizationRequest
   implements Executable<msdynmkt_EnableDoubleOptInComplianceV2Response>
 {
-  constructor(public msdynmkt_complianceid: string) {
-    super("msdynmkt_EnableDoubleOptInComplianceV2");
+  declare readonly Parameters: Readonly<msdynmkt_EnableDoubleOptInComplianceV2RequestParameters>;
+
+  constructor(parameters: msdynmkt_EnableDoubleOptInComplianceV2RequestParameters) {
+    super("msdynmkt_EnableDoubleOptInComplianceV2", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_EnableDoubleOptInComplianceV2`;
 
-    const body: Record<string, unknown> = {
-      msdynmkt_complianceid: this.msdynmkt_complianceid,
-    };
+    const body = requestBody({
+      msdynmkt_complianceid: this.Parameters.msdynmkt_complianceid,
+    });
 
     return {
       method: "POST",

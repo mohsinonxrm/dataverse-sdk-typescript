@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_FieldServiceSystemActionResponse as msdyn_FieldServiceSystemActionResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_FieldServiceSystemAction message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_FieldServiceSystemActionRequestParameters {
+  Type: number;
+  InputParameter: string;
+}
 
 /**
  * msdyn_FieldServiceSystemAction request message
@@ -12,20 +22,19 @@ export class msdyn_FieldServiceSystemActionRequest
   extends OrganizationRequest
   implements Executable<msdyn_FieldServiceSystemActionResponse>
 {
-  constructor(
-    public type: number,
-    public inputParameter: string
-  ) {
-    super("msdyn_FieldServiceSystemAction");
+  declare readonly Parameters: Readonly<msdyn_FieldServiceSystemActionRequestParameters>;
+
+  constructor(parameters: msdyn_FieldServiceSystemActionRequestParameters) {
+    super("msdyn_FieldServiceSystemAction", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_FieldServiceSystemAction`;
 
-    const body: Record<string, unknown> = {
-      Type: this.type,
-      InputParameter: this.inputParameter,
-    };
+    const body = requestBody({
+      Type: this.Parameters.Type,
+      InputParameter: this.Parameters.InputParameter,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class msdyn_FieldServiceSystemActionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_FieldServiceSystemActionResponse> {
-    const data = await response.json();
-    return msdyn_FieldServiceSystemActionResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_FieldServiceSystemActionResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

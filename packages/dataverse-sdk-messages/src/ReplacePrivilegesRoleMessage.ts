@@ -1,31 +1,44 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { RolePrivilege } from "./types/index.js";
+
+/**
+ * Parameters of the ReplacePrivilegesRole message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ReplacePrivilegesRoleRequestParameters {
+  Privileges?: RolePrivilege[];
+}
 
 /**
  * ReplacePrivilegesRole request message
  *
  * Web API Action: ReplacePrivilegesRole
+ *
+ * The first argument is the id of the role record to call it on.
  */
 export class ReplacePrivilegesRoleRequest
   extends OrganizationRequest
   implements Executable<ReplacePrivilegesRoleResponse>
 {
+  declare readonly Parameters: Readonly<ReplacePrivilegesRoleRequestParameters>;
+
   constructor(
     public roleId: string,
-    public privileges?: RolePrivilege[]
+    parameters: ReplacePrivilegesRoleRequestParameters = {}
   ) {
-    super("ReplacePrivilegesRole");
+    super("ReplacePrivilegesRole", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/roles(${this.roleId})/Microsoft.Dynamics.CRM.ReplacePrivilegesRole`;
 
-    const body: Record<string, unknown> = {
-      Privileges: enumBody(this.privileges, "RolePrivilege"),
-    };
+    const body = requestBody({
+      Privileges: enumBody(this.Parameters.Privileges, "RolePrivilege"),
+    });
 
     return {
       method: "POST",

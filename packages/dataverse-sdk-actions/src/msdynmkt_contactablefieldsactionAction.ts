@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdynmkt_contactablefieldsaction action
@@ -8,23 +9,29 @@ export interface msdynmkt_contactablefieldsactionResponse {
 }
 
 /**
+ * Parameters of the msdynmkt_contactablefieldsaction action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdynmkt_contactablefieldsactionActionParameters {
+  msdynmkt_contactpointtypes: string;
+  msdynmkt_entitytypes: string;
+}
+
+/**
  * msdynmkt_contactablefieldsaction action
  *
  * Unbound action
  */
 export class msdynmkt_contactablefieldsactionAction implements Executable<msdynmkt_contactablefieldsactionResponse> {
-  constructor(
-    public readonly msdynmkt_contactpointtypes: string,
-    public readonly msdynmkt_entitytypes: string
-  ) {}
+  constructor(public readonly parameters: msdynmkt_contactablefieldsactionActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_contactablefieldsaction`;
 
-    const body: Record<string, unknown> = {
-      msdynmkt_contactpointtypes: this.msdynmkt_contactpointtypes,
-      msdynmkt_entitytypes: this.msdynmkt_entitytypes,
-    };
+    const body = requestBody({
+      msdynmkt_contactpointtypes: this.parameters.msdynmkt_contactpointtypes,
+      msdynmkt_entitytypes: this.parameters.msdynmkt_entitytypes,
+    });
 
     return {
       method: "POST",
@@ -37,7 +44,8 @@ export class msdynmkt_contactablefieldsactionAction implements Executable<msdynm
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_contactablefieldsactionResponse> {
-    const data = await response.json();
-    return data as msdynmkt_contactablefieldsactionResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdynmkt_contactablefieldsactionResponse;
   }
 }

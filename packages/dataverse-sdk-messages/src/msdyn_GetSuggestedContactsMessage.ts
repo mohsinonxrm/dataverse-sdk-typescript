@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetSuggestedContactsResponse as msdyn_GetSuggestedContactsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetSuggestedContacts message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetSuggestedContactsRequestParameters {
+  EntityLogicalName: string;
+  RecordId: string;
+}
 
 /**
  * msdyn_GetSuggestedContacts request message
@@ -12,20 +22,19 @@ export class msdyn_GetSuggestedContactsRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetSuggestedContactsResponse>
 {
-  constructor(
-    public entityLogicalName: string,
-    public recordId: string
-  ) {
-    super("msdyn_GetSuggestedContacts");
+  declare readonly Parameters: Readonly<msdyn_GetSuggestedContactsRequestParameters>;
+
+  constructor(parameters: msdyn_GetSuggestedContactsRequestParameters) {
+    super("msdyn_GetSuggestedContacts", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetSuggestedContacts`;
 
-    const body: Record<string, unknown> = {
-      EntityLogicalName: this.entityLogicalName,
-      RecordId: this.recordId,
-    };
+    const body = requestBody({
+      EntityLogicalName: this.Parameters.EntityLogicalName,
+      RecordId: this.Parameters.RecordId,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class msdyn_GetSuggestedContactsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSuggestedContactsResponse> {
-    const data = await response.json();
-    return msdyn_GetSuggestedContactsResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_GetSuggestedContactsResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_SalesCopilotM365SkillInfraSetupResponse as msdyn_SalesCopilotM365SkillInfraSetupResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_SalesCopilotM365SkillInfraSetup message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesCopilotM365SkillInfraSetupRequestParameters {
+  msdyn_payload: string;
+}
 
 /**
  * msdyn_SalesCopilotM365SkillInfraSetup request message
@@ -12,16 +21,18 @@ export class msdyn_SalesCopilotM365SkillInfraSetupRequest
   extends OrganizationRequest
   implements Executable<msdyn_SalesCopilotM365SkillInfraSetupResponse>
 {
-  constructor(public msdyn_payload: string) {
-    super("msdyn_SalesCopilotM365SkillInfraSetup");
+  declare readonly Parameters: Readonly<msdyn_SalesCopilotM365SkillInfraSetupRequestParameters>;
+
+  constructor(parameters: msdyn_SalesCopilotM365SkillInfraSetupRequestParameters) {
+    super("msdyn_SalesCopilotM365SkillInfraSetup", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesCopilotM365SkillInfraSetup`;
 
-    const body: Record<string, unknown> = {
-      msdyn_payload: this.msdyn_payload,
-    };
+    const body = requestBody({
+      msdyn_payload: this.Parameters.msdyn_payload,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_SalesCopilotM365SkillInfraSetupRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesCopilotM365SkillInfraSetupResponse> {
-    const data = await response.json();
-    return msdyn_SalesCopilotM365SkillInfraSetupResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_SalesCopilotM365SkillInfraSetupResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

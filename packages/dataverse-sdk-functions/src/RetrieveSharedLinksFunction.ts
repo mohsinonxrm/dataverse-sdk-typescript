@@ -11,12 +11,20 @@ export interface RetrieveSharedLinksResponse {
 }
 
 /**
+ * Parameters of the RetrieveSharedLinks function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveSharedLinksFunctionParameters {
+  Target: EntityReference;
+}
+
+/**
  * RetrieveSharedLinks function
  *
  * Unbound function
  */
 export class RetrieveSharedLinksFunction implements Executable<RetrieveSharedLinksResponse> {
-  constructor(public readonly target: EntityReference) {}
+  constructor(public readonly parameters: RetrieveSharedLinksFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveSharedLinks`;
@@ -24,9 +32,12 @@ export class RetrieveSharedLinksFunction implements Executable<RetrieveSharedLin
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.target !== undefined) {
+    if (this.parameters.Target !== undefined) {
       aliases.push(`Target=@p1`);
-      params.append("@p1", formatParameterAlias(this.target, "mscrm.crmbaseentity", "EntityType"));
+      params.append(
+        "@p1",
+        formatParameterAlias(this.parameters.Target, "mscrm.crmbaseentity", "EntityType")
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -42,7 +53,8 @@ export class RetrieveSharedLinksFunction implements Executable<RetrieveSharedLin
   }
 
   async parseResponse(response: Response): Promise<RetrieveSharedLinksResponse> {
-    const data = await response.json();
-    return data as RetrieveSharedLinksResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RetrieveSharedLinksResponse;
   }
 }

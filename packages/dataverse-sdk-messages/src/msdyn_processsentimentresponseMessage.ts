@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_processsentimentresponseResponse as msdyn_processsentimentresponseResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_processsentimentresponse message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_processsentimentresponseRequestParameters {
+  emailId: string;
+  copilotResponse: string[];
+  conversationId: string;
+}
 
 /**
  * msdyn_processsentimentresponse request message
@@ -12,22 +23,20 @@ export class msdyn_processsentimentresponseRequest
   extends OrganizationRequest
   implements Executable<msdyn_processsentimentresponseResponse>
 {
-  constructor(
-    public emailId: string,
-    public copilotResponse: string[],
-    public conversationId: string
-  ) {
-    super("msdyn_processsentimentresponse");
+  declare readonly Parameters: Readonly<msdyn_processsentimentresponseRequestParameters>;
+
+  constructor(parameters: msdyn_processsentimentresponseRequestParameters) {
+    super("msdyn_processsentimentresponse", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_processsentimentresponse`;
 
-    const body: Record<string, unknown> = {
-      emailId: this.emailId,
-      copilotResponse: this.copilotResponse,
-      conversationId: this.conversationId,
-    };
+    const body = requestBody({
+      emailId: this.Parameters.emailId,
+      copilotResponse: this.Parameters.copilotResponse,
+      conversationId: this.Parameters.conversationId,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class msdyn_processsentimentresponseRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_processsentimentresponseResponse> {
-    const data = await response.json();
-    return msdyn_processsentimentresponseResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_processsentimentresponseResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

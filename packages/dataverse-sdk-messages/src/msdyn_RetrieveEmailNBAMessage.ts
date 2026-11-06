@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_RetrieveEmailNBAResponse as msdyn_RetrieveEmailNBAResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_RetrieveEmailNBA message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_RetrieveEmailNBARequestParameters {
+  msdyn_RegardingEntityIds: string;
+  msdyn_RegardingLogicalName: string;
+}
 
 /**
  * msdyn_RetrieveEmailNBA request message
@@ -12,20 +22,19 @@ export class msdyn_RetrieveEmailNBARequest
   extends OrganizationRequest
   implements Executable<msdyn_RetrieveEmailNBAResponse>
 {
-  constructor(
-    public msdyn_RegardingEntityIds: string,
-    public msdyn_RegardingLogicalName: string
-  ) {
-    super("msdyn_RetrieveEmailNBA");
+  declare readonly Parameters: Readonly<msdyn_RetrieveEmailNBARequestParameters>;
+
+  constructor(parameters: msdyn_RetrieveEmailNBARequestParameters) {
+    super("msdyn_RetrieveEmailNBA", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_RetrieveEmailNBA`;
 
-    const body: Record<string, unknown> = {
-      msdyn_RegardingEntityIds: this.msdyn_RegardingEntityIds,
-      msdyn_RegardingLogicalName: this.msdyn_RegardingLogicalName,
-    };
+    const body = requestBody({
+      msdyn_RegardingEntityIds: this.Parameters.msdyn_RegardingEntityIds,
+      msdyn_RegardingLogicalName: this.Parameters.msdyn_RegardingLogicalName,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class msdyn_RetrieveEmailNBARequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrieveEmailNBAResponse> {
-    const data = await response.json();
-    return msdyn_RetrieveEmailNBAResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_RetrieveEmailNBAResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

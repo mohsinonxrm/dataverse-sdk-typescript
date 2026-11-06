@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_SalesInsightsTpsPackage message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesInsightsTpsPackageRequestParameters {
+  skipInstall: string;
+}
 
 /**
  * msdyn_SalesInsightsTpsPackage request message
@@ -10,16 +19,18 @@ export class msdyn_SalesInsightsTpsPackageRequest
   extends OrganizationRequest
   implements Executable<msdyn_SalesInsightsTpsPackageResponse>
 {
-  constructor(public skipInstall: string) {
-    super("msdyn_SalesInsightsTpsPackage");
+  declare readonly Parameters: Readonly<msdyn_SalesInsightsTpsPackageRequestParameters>;
+
+  constructor(parameters: msdyn_SalesInsightsTpsPackageRequestParameters) {
+    super("msdyn_SalesInsightsTpsPackage", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesInsightsTpsPackage`;
 
-    const body: Record<string, unknown> = {
-      skipInstall: this.skipInstall,
-    };
+    const body = requestBody({
+      skipInstall: this.Parameters.skipInstall,
+    });
 
     return {
       method: "POST",

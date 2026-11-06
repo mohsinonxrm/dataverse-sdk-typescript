@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -11,27 +12,33 @@ export interface msdyn_InvokeIntelligenceActionResponse {
 }
 
 /**
+ * Parameters of the msdyn_InvokeIntelligenceAction action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_InvokeIntelligenceActionActionParameters {
+  Context?: string;
+  entityReference?: EntityReference | AnyEntityPayload;
+  ScenarioType: string;
+  RequestPayload: string;
+}
+
+/**
  * msdyn_InvokeIntelligenceAction action
  *
  * Unbound action
  */
 export class msdyn_InvokeIntelligenceActionAction implements Executable<msdyn_InvokeIntelligenceActionResponse> {
-  constructor(
-    public readonly context: string | undefined,
-    public readonly entityReference: EntityReference | AnyEntityPayload | undefined,
-    public readonly scenarioType: string,
-    public readonly requestPayload: string
-  ) {}
+  constructor(public readonly parameters: msdyn_InvokeIntelligenceActionActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_InvokeIntelligenceAction`;
 
-    const body: Record<string, unknown> = {
-      Context: this.context,
-      entityReference: this.entityReference,
-      ScenarioType: this.scenarioType,
-      RequestPayload: this.requestPayload,
-    };
+    const body = requestBody({
+      Context: this.parameters.Context,
+      entityReference: this.parameters.entityReference,
+      ScenarioType: this.parameters.ScenarioType,
+      RequestPayload: this.parameters.RequestPayload,
+    });
 
     return {
       method: "POST",
@@ -44,7 +51,8 @@ export class msdyn_InvokeIntelligenceActionAction implements Executable<msdyn_In
   }
 
   async parseResponse(response: Response): Promise<msdyn_InvokeIntelligenceActionResponse> {
-    const data = await response.json();
-    return data as msdyn_InvokeIntelligenceActionResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_InvokeIntelligenceActionResponse;
   }
 }

@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,23 +11,29 @@ export interface msdyn_FastPassBotEventUpdateResponse {
 }
 
 /**
+ * Parameters of the msdyn_FastPassBotEventUpdate action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_FastPassBotEventUpdateActionParameters {
+  msdyn_PreImageRecord: EntityReference | AnyEntityPayload;
+  msdyn_PostImageRecord: EntityReference | AnyEntityPayload;
+}
+
+/**
  * msdyn_FastPassBotEventUpdate action
  *
  * Unbound action
  */
 export class msdyn_FastPassBotEventUpdateAction implements Executable<msdyn_FastPassBotEventUpdateResponse> {
-  constructor(
-    public readonly msdyn_PreImageRecord: EntityReference | AnyEntityPayload,
-    public readonly msdyn_PostImageRecord: EntityReference | AnyEntityPayload
-  ) {}
+  constructor(public readonly parameters: msdyn_FastPassBotEventUpdateActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_FastPassBotEventUpdate`;
 
-    const body: Record<string, unknown> = {
-      msdyn_PreImageRecord: this.msdyn_PreImageRecord,
-      msdyn_PostImageRecord: this.msdyn_PostImageRecord,
-    };
+    const body = requestBody({
+      msdyn_PreImageRecord: this.parameters.msdyn_PreImageRecord,
+      msdyn_PostImageRecord: this.parameters.msdyn_PostImageRecord,
+    });
 
     return {
       method: "POST",
@@ -39,7 +46,8 @@ export class msdyn_FastPassBotEventUpdateAction implements Executable<msdyn_Fast
   }
 
   async parseResponse(response: Response): Promise<msdyn_FastPassBotEventUpdateResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_FastPassBotEventUpdateResponse;
   }
 }

@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_ValidateCustomMessagingApplicationResponse as msdyn_ValidateCustomMessagingApplicationResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_ValidateCustomMessagingApplication message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ValidateCustomMessagingApplicationRequestParameters {
+  CustomMessagingBCRMSAppId: string;
+  CustomMessagingBCRRecordId?: string;
+  CustomMessagingBCRMSAppSecret: string;
+}
 
 /**
  * msdyn_ValidateCustomMessagingApplication request message
@@ -12,22 +23,20 @@ export class msdyn_ValidateCustomMessagingApplicationRequest
   extends OrganizationRequest
   implements Executable<msdyn_ValidateCustomMessagingApplicationResponse>
 {
-  constructor(
-    public customMessagingBCRMSAppId: string,
-    public customMessagingBCRRecordId: string | undefined,
-    public customMessagingBCRMSAppSecret: string
-  ) {
-    super("msdyn_ValidateCustomMessagingApplication");
+  declare readonly Parameters: Readonly<msdyn_ValidateCustomMessagingApplicationRequestParameters>;
+
+  constructor(parameters: msdyn_ValidateCustomMessagingApplicationRequestParameters) {
+    super("msdyn_ValidateCustomMessagingApplication", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ValidateCustomMessagingApplication`;
 
-    const body: Record<string, unknown> = {
-      CustomMessagingBCRMSAppId: this.customMessagingBCRMSAppId,
-      CustomMessagingBCRRecordId: this.customMessagingBCRRecordId,
-      CustomMessagingBCRMSAppSecret: this.customMessagingBCRMSAppSecret,
-    };
+    const body = requestBody({
+      CustomMessagingBCRMSAppId: this.Parameters.CustomMessagingBCRMSAppId,
+      CustomMessagingBCRRecordId: this.Parameters.CustomMessagingBCRRecordId,
+      CustomMessagingBCRMSAppSecret: this.Parameters.CustomMessagingBCRMSAppSecret,
+    });
 
     return {
       method: "POST",
@@ -42,8 +51,11 @@ export class msdyn_ValidateCustomMessagingApplicationRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_ValidateCustomMessagingApplicationResponse> {
-    const data = await response.json();
-    return msdyn_ValidateCustomMessagingApplicationResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_ValidateCustomMessagingApplicationResponse.fromResponse(
+      text ? JSON.parse(text) : {}
+    );
   }
 }
 

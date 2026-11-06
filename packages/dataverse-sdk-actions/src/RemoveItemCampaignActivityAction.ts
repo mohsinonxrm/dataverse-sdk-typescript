@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { campaignactivityitem } from "./types/index.js";
 
@@ -11,24 +12,34 @@ export interface RemoveItemCampaignActivityResponse {
 }
 
 /**
+ * Parameters of the RemoveItemCampaignActivity action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RemoveItemCampaignActivityActionParameters {
+  CampaignActivityItem: EntityReference | EntityPayload<campaignactivityitem>;
+}
+
+/**
  * RemoveItemCampaignActivity action
  *
  * Bound action
  * Binding parameter: entity (mscrm.campaignactivity)
+ *
+ * The first argument is the id of the campaignactivity record to call it on.
  */
 export class RemoveItemCampaignActivityAction implements Executable<RemoveItemCampaignActivityResponse> {
   constructor(
     public readonly campaignactivityId: string,
-    public readonly campaignActivityItem: EntityReference | EntityPayload<campaignactivityitem>
+    public readonly parameters: RemoveItemCampaignActivityActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/campaignactivities(${this.campaignactivityId})/Microsoft.Dynamics.CRM.RemoveItemCampaignActivity`;
 
-    const body: Record<string, unknown> = {
-      CampaignActivityItem: this.campaignActivityItem,
-    };
+    const body = requestBody({
+      CampaignActivityItem: this.parameters.CampaignActivityItem,
+    });
 
     return {
       method: "POST",
@@ -41,7 +52,8 @@ export class RemoveItemCampaignActivityAction implements Executable<RemoveItemCa
   }
 
   async parseResponse(response: Response): Promise<RemoveItemCampaignActivityResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RemoveItemCampaignActivityResponse;
   }
 }

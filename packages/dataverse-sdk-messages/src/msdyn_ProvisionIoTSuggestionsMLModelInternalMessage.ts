@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_ProvisionIoTSuggestionsMLModelInternal message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ProvisionIoTSuggestionsMLModelInternalRequestParameters {
+  TenantId: string;
+}
 
 /**
  * msdyn_ProvisionIoTSuggestionsMLModelInternal request message
@@ -10,16 +19,18 @@ export class msdyn_ProvisionIoTSuggestionsMLModelInternalRequest
   extends OrganizationRequest
   implements Executable<msdyn_ProvisionIoTSuggestionsMLModelInternalResponse>
 {
-  constructor(public tenantId: string) {
-    super("msdyn_ProvisionIoTSuggestionsMLModelInternal");
+  declare readonly Parameters: Readonly<msdyn_ProvisionIoTSuggestionsMLModelInternalRequestParameters>;
+
+  constructor(parameters: msdyn_ProvisionIoTSuggestionsMLModelInternalRequestParameters) {
+    super("msdyn_ProvisionIoTSuggestionsMLModelInternal", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ProvisionIoTSuggestionsMLModelInternal`;
 
-    const body: Record<string, unknown> = {
-      TenantId: this.tenantId,
-    };
+    const body = requestBody({
+      TenantId: this.Parameters.TenantId,
+    });
 
     return {
       method: "POST",

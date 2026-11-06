@@ -9,12 +9,20 @@ export interface Next7DaysResponse {
 }
 
 /**
+ * Parameters of the Next7Days function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface Next7DaysFunctionParameters {
+  PropertyName: string;
+}
+
+/**
  * Next7Days function
  *
  * Unbound function
  */
 export class Next7DaysFunction implements Executable<Next7DaysResponse> {
-  constructor(public readonly propertyName: string) {}
+  constructor(public readonly parameters: Next7DaysFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/Next7Days`;
@@ -22,9 +30,9 @@ export class Next7DaysFunction implements Executable<Next7DaysResponse> {
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.propertyName !== undefined) {
+    if (this.parameters.PropertyName !== undefined) {
       aliases.push(`PropertyName=@p1`);
-      params.append("@p1", formatParameterAlias(this.propertyName, "Edm.String"));
+      params.append("@p1", formatParameterAlias(this.parameters.PropertyName, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -40,7 +48,8 @@ export class Next7DaysFunction implements Executable<Next7DaysResponse> {
   }
 
   async parseResponse(response: Response): Promise<Next7DaysResponse> {
-    const data = await response.json();
-    return data as Next7DaysResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as Next7DaysResponse;
   }
 }

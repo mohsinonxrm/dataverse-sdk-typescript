@@ -31,8 +31,11 @@ export class msdyn_CheckOrgSettingOOBPriceCalculationEnabledRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckOrgSettingOOBPriceCalculationEnabledResponse> {
-    const data = await response.json();
-    return msdyn_CheckOrgSettingOOBPriceCalculationEnabledResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_CheckOrgSettingOOBPriceCalculationEnabledResponse.fromResponse(
+      text ? JSON.parse(text) : {}
+    );
   }
 }
 

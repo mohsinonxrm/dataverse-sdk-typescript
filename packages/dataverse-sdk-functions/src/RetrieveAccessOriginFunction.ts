@@ -9,16 +9,22 @@ export interface RetrieveAccessOriginResponse {
 }
 
 /**
+ * Parameters of the RetrieveAccessOrigin function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveAccessOriginFunctionParameters {
+  ObjectId: string;
+  LogicalName: string;
+  PrincipalId: string;
+}
+
+/**
  * RetrieveAccessOrigin function
  *
  * Unbound function
  */
 export class RetrieveAccessOriginFunction implements Executable<RetrieveAccessOriginResponse> {
-  constructor(
-    public readonly objectId: string,
-    public readonly logicalName: string,
-    public readonly principalId: string
-  ) {}
+  constructor(public readonly parameters: RetrieveAccessOriginFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveAccessOrigin`;
@@ -26,17 +32,17 @@ export class RetrieveAccessOriginFunction implements Executable<RetrieveAccessOr
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.objectId !== undefined) {
+    if (this.parameters.ObjectId !== undefined) {
       aliases.push(`ObjectId=@p1`);
-      params.append("@p1", formatParameterAlias(this.objectId, "Edm.Guid"));
+      params.append("@p1", formatParameterAlias(this.parameters.ObjectId, "Edm.Guid"));
     }
-    if (this.logicalName !== undefined) {
+    if (this.parameters.LogicalName !== undefined) {
       aliases.push(`LogicalName=@p2`);
-      params.append("@p2", formatParameterAlias(this.logicalName, "Edm.String"));
+      params.append("@p2", formatParameterAlias(this.parameters.LogicalName, "Edm.String"));
     }
-    if (this.principalId !== undefined) {
+    if (this.parameters.PrincipalId !== undefined) {
       aliases.push(`PrincipalId=@p3`);
-      params.append("@p3", formatParameterAlias(this.principalId, "Edm.Guid"));
+      params.append("@p3", formatParameterAlias(this.parameters.PrincipalId, "Edm.Guid"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -52,7 +58,8 @@ export class RetrieveAccessOriginFunction implements Executable<RetrieveAccessOr
   }
 
   async parseResponse(response: Response): Promise<RetrieveAccessOriginResponse> {
-    const data = await response.json();
-    return data as RetrieveAccessOriginResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RetrieveAccessOriginResponse;
   }
 }

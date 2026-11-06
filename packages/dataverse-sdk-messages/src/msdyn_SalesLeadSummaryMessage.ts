@@ -1,7 +1,26 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_SalesLeadSummaryResponse as msdyn_SalesLeadSummaryResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_SalesLeadSummary message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesLeadSummaryRequestParameters {
+  msdyn_additionalParams?: string;
+  msdyn_activityId?: string;
+  msdyn_doSuggestUpdates?: boolean;
+  msdyn_parentContactId?: string;
+  msdyn_id: string;
+  msdyn_lastComputationTime?: string;
+  msdyn_isMergedCatchupAndSummary?: boolean;
+  msdyn_skipHeader?: string;
+  msdyn_sessionId?: string;
+  msdyn_parentAccountId?: string;
+  msdyn_responseFormat?: string;
+}
 
 /**
  * msdyn_SalesLeadSummary request message
@@ -12,38 +31,28 @@ export class msdyn_SalesLeadSummaryRequest
   extends OrganizationRequest
   implements Executable<msdyn_SalesLeadSummaryResponse>
 {
-  constructor(
-    public msdyn_additionalParams: string | undefined,
-    public msdyn_activityId: string | undefined,
-    public msdyn_doSuggestUpdates: boolean | undefined,
-    public msdyn_parentContactId: string | undefined,
-    public msdyn_id: string,
-    public msdyn_lastComputationTime?: string,
-    public msdyn_isMergedCatchupAndSummary?: boolean,
-    public msdyn_skipHeader?: string,
-    public msdyn_sessionId?: string,
-    public msdyn_parentAccountId?: string,
-    public msdyn_responseFormat?: string
-  ) {
-    super("msdyn_SalesLeadSummary");
+  declare readonly Parameters: Readonly<msdyn_SalesLeadSummaryRequestParameters>;
+
+  constructor(parameters: msdyn_SalesLeadSummaryRequestParameters) {
+    super("msdyn_SalesLeadSummary", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesLeadSummary`;
 
-    const body: Record<string, unknown> = {
-      msdyn_additionalParams: this.msdyn_additionalParams,
-      msdyn_activityId: this.msdyn_activityId,
-      msdyn_doSuggestUpdates: this.msdyn_doSuggestUpdates,
-      msdyn_parentContactId: this.msdyn_parentContactId,
-      msdyn_id: this.msdyn_id,
-      msdyn_lastComputationTime: this.msdyn_lastComputationTime,
-      msdyn_isMergedCatchupAndSummary: this.msdyn_isMergedCatchupAndSummary,
-      msdyn_skipHeader: this.msdyn_skipHeader,
-      msdyn_sessionId: this.msdyn_sessionId,
-      msdyn_parentAccountId: this.msdyn_parentAccountId,
-      msdyn_responseFormat: this.msdyn_responseFormat,
-    };
+    const body = requestBody({
+      msdyn_additionalParams: this.Parameters.msdyn_additionalParams,
+      msdyn_activityId: this.Parameters.msdyn_activityId,
+      msdyn_doSuggestUpdates: this.Parameters.msdyn_doSuggestUpdates,
+      msdyn_parentContactId: this.Parameters.msdyn_parentContactId,
+      msdyn_id: this.Parameters.msdyn_id,
+      msdyn_lastComputationTime: this.Parameters.msdyn_lastComputationTime,
+      msdyn_isMergedCatchupAndSummary: this.Parameters.msdyn_isMergedCatchupAndSummary,
+      msdyn_skipHeader: this.Parameters.msdyn_skipHeader,
+      msdyn_sessionId: this.Parameters.msdyn_sessionId,
+      msdyn_parentAccountId: this.Parameters.msdyn_parentAccountId,
+      msdyn_responseFormat: this.Parameters.msdyn_responseFormat,
+    });
 
     return {
       method: "POST",
@@ -56,8 +65,9 @@ export class msdyn_SalesLeadSummaryRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesLeadSummaryResponse> {
-    const data = await response.json();
-    return msdyn_SalesLeadSummaryResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_SalesLeadSummaryResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

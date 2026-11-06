@@ -9,16 +9,26 @@ export interface GetQuantityDecimal_salesorderResponse {
 }
 
 /**
+ * Parameters of the GetQuantityDecimal function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GetQuantityDecimal_salesorderFunctionParameters {
+  Product: product;
+  UoM: uom;
+}
+
+/**
  * GetQuantityDecimal function
  *
  * Bound function
  * Binding parameter: entity (mscrm.salesorder)
+ *
+ * The first argument is the id of the salesorder record to call it on.
  */
 export class GetQuantityDecimal_salesorderFunction implements Executable<GetQuantityDecimal_salesorderResponse> {
   constructor(
     public readonly salesorderId: string,
-    public readonly product: product,
-    public readonly uoM: uom
+    public readonly parameters: GetQuantityDecimal_salesorderFunctionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -28,13 +38,13 @@ export class GetQuantityDecimal_salesorderFunction implements Executable<GetQuan
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.product !== undefined) {
+    if (this.parameters.Product !== undefined) {
       aliases.push(`Product=@p1`);
-      params.append("@p1", JSON.stringify(this.product));
+      params.append("@p1", JSON.stringify(this.parameters.Product));
     }
-    if (this.uoM !== undefined) {
+    if (this.parameters.UoM !== undefined) {
       aliases.push(`UoM=@p2`);
-      params.append("@p2", JSON.stringify(this.uoM));
+      params.append("@p2", JSON.stringify(this.parameters.UoM));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -50,7 +60,8 @@ export class GetQuantityDecimal_salesorderFunction implements Executable<GetQuan
   }
 
   async parseResponse(response: Response): Promise<GetQuantityDecimal_salesorderResponse> {
-    const data = await response.json();
-    return data as GetQuantityDecimal_salesorderResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as GetQuantityDecimal_salesorderResponse;
   }
 }

@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from SearchWeb action
@@ -12,29 +13,35 @@ export interface SearchWebResponse {
 }
 
 /**
+ * Parameters of the SearchWeb action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SearchWebActionParameters {
+  query: string;
+  urls: string[];
+  partnerSource: string;
+  summarize: boolean;
+  maxResults: number;
+}
+
+/**
  * SearchWeb action
  *
  * Unbound action
  */
 export class SearchWebAction implements Executable<SearchWebResponse> {
-  constructor(
-    public readonly query: string,
-    public readonly urls: string[],
-    public readonly partnerSource: string,
-    public readonly summarize: boolean,
-    public readonly maxResults: number
-  ) {}
+  constructor(public readonly parameters: SearchWebActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/SearchWeb`;
 
-    const body: Record<string, unknown> = {
-      query: this.query,
-      urls: this.urls,
-      partnerSource: this.partnerSource,
-      summarize: this.summarize,
-      maxResults: this.maxResults,
-    };
+    const body = requestBody({
+      query: this.parameters.query,
+      urls: this.parameters.urls,
+      partnerSource: this.parameters.partnerSource,
+      summarize: this.parameters.summarize,
+      maxResults: this.parameters.maxResults,
+    });
 
     return {
       method: "POST",
@@ -47,7 +54,8 @@ export class SearchWebAction implements Executable<SearchWebResponse> {
   }
 
   async parseResponse(response: Response): Promise<SearchWebResponse> {
-    const data = await response.json();
-    return data as SearchWebResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as SearchWebResponse;
   }
 }

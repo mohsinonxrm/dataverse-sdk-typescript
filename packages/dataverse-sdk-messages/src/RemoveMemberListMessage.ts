@@ -1,32 +1,45 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { listmember } from "./types/index.js";
+
+/**
+ * Parameters of the RemoveMemberList message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RemoveMemberListRequestParameters {
+  ListMember: EntityReference | EntityPayload<listmember>;
+}
 
 /**
  * RemoveMemberList request message
  *
  * Web API Action: RemoveMemberList
+ *
+ * The first argument is the id of the list record to call it on.
  */
 export class RemoveMemberListRequest
   extends OrganizationRequest
   implements Executable<RemoveMemberListResponse>
 {
+  declare readonly Parameters: Readonly<RemoveMemberListRequestParameters>;
+
   constructor(
     public listId: string,
-    public listMember: EntityReference | EntityPayload<listmember>
+    parameters: RemoveMemberListRequestParameters
   ) {
-    super("RemoveMemberList");
+    super("RemoveMemberList", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/lists(${this.listId})/Microsoft.Dynamics.CRM.RemoveMemberList`;
 
-    const body: Record<string, unknown> = {
-      ListMember: this.listMember,
-    };
+    const body = requestBody({
+      ListMember: this.Parameters.ListMember,
+    });
 
     return {
       method: "POST",

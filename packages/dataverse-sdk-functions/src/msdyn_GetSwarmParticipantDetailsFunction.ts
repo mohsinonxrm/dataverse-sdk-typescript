@@ -9,12 +9,20 @@ export interface msdyn_GetSwarmParticipantDetailsResponse {
 }
 
 /**
+ * Parameters of the msdyn_GetSwarmParticipantDetails function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetSwarmParticipantDetailsFunctionParameters {
+  msdyn_SwarmParticipantId: string;
+}
+
+/**
  * msdyn_GetSwarmParticipantDetails function
  *
  * Unbound function
  */
 export class msdyn_GetSwarmParticipantDetailsFunction implements Executable<msdyn_GetSwarmParticipantDetailsResponse> {
-  constructor(public readonly msdyn_SwarmParticipantId: string) {}
+  constructor(public readonly parameters: msdyn_GetSwarmParticipantDetailsFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/msdyn_GetSwarmParticipantDetails`;
@@ -22,9 +30,12 @@ export class msdyn_GetSwarmParticipantDetailsFunction implements Executable<msdy
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.msdyn_SwarmParticipantId !== undefined) {
+    if (this.parameters.msdyn_SwarmParticipantId !== undefined) {
       aliases.push(`msdyn_SwarmParticipantId=@p1`);
-      params.append("@p1", formatParameterAlias(this.msdyn_SwarmParticipantId, "Edm.String"));
+      params.append(
+        "@p1",
+        formatParameterAlias(this.parameters.msdyn_SwarmParticipantId, "Edm.String")
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -40,7 +51,8 @@ export class msdyn_GetSwarmParticipantDetailsFunction implements Executable<msdy
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSwarmParticipantDetailsResponse> {
-    const data = await response.json();
-    return data as msdyn_GetSwarmParticipantDetailsResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_GetSwarmParticipantDetailsResponse;
   }
 }

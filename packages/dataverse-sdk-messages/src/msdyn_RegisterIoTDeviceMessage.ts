@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_RegisterIoTDevice message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_RegisterIoTDeviceRequestParameters {
+  IoTDeviceIds: string;
+}
 
 /**
  * msdyn_RegisterIoTDevice request message
@@ -10,16 +19,18 @@ export class msdyn_RegisterIoTDeviceRequest
   extends OrganizationRequest
   implements Executable<msdyn_RegisterIoTDeviceResponse>
 {
-  constructor(public ioTDeviceIds: string) {
-    super("msdyn_RegisterIoTDevice");
+  declare readonly Parameters: Readonly<msdyn_RegisterIoTDeviceRequestParameters>;
+
+  constructor(parameters: msdyn_RegisterIoTDeviceRequestParameters) {
+    super("msdyn_RegisterIoTDevice", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_RegisterIoTDevice`;
 
-    const body: Record<string, unknown> = {
-      IoTDeviceIds: this.ioTDeviceIds,
-    };
+    const body = requestBody({
+      IoTDeviceIds: this.Parameters.IoTDeviceIds,
+    });
 
     return {
       method: "POST",

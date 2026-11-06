@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { GetPBIReportRefreshStatusResponse as GetPBIReportRefreshStatusResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the GetPBIReportRefreshStatus message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GetPBIReportRefreshStatusRequestParameters {
+  ReportId: string;
+}
 
 /**
  * GetPBIReportRefreshStatus request message
@@ -12,16 +21,18 @@ export class GetPBIReportRefreshStatusRequest
   extends OrganizationRequest
   implements Executable<GetPBIReportRefreshStatusResponse>
 {
-  constructor(public reportId: string) {
-    super("GetPBIReportRefreshStatus");
+  declare readonly Parameters: Readonly<GetPBIReportRefreshStatusRequestParameters>;
+
+  constructor(parameters: GetPBIReportRefreshStatusRequestParameters) {
+    super("GetPBIReportRefreshStatus", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/GetPBIReportRefreshStatus`;
 
-    const body: Record<string, unknown> = {
-      ReportId: this.reportId,
-    };
+    const body = requestBody({
+      ReportId: this.Parameters.ReportId,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class GetPBIReportRefreshStatusRequest
   }
 
   async parseResponse(response: Response): Promise<GetPBIReportRefreshStatusResponse> {
-    const data = await response.json();
-    return GetPBIReportRefreshStatusResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return GetPBIReportRefreshStatusResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdynmkt_optoutofallvoicecommunication message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdynmkt_optoutofallvoicecommunicationRequestParameters {
+  msdynmkt_contactpointvalue: string;
+  msdynmkt_correlationid?: string;
+}
 
 /**
  * msdynmkt_optoutofallvoicecommunication request message
@@ -10,20 +20,19 @@ export class msdynmkt_optoutofallvoicecommunicationRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_optoutofallvoicecommunicationResponse>
 {
-  constructor(
-    public msdynmkt_contactpointvalue: string,
-    public msdynmkt_correlationid?: string
-  ) {
-    super("msdynmkt_optoutofallvoicecommunication");
+  declare readonly Parameters: Readonly<msdynmkt_optoutofallvoicecommunicationRequestParameters>;
+
+  constructor(parameters: msdynmkt_optoutofallvoicecommunicationRequestParameters) {
+    super("msdynmkt_optoutofallvoicecommunication", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_optoutofallvoicecommunication`;
 
-    const body: Record<string, unknown> = {
-      msdynmkt_contactpointvalue: this.msdynmkt_contactpointvalue,
-      msdynmkt_correlationid: this.msdynmkt_correlationid,
-    };
+    const body = requestBody({
+      msdynmkt_contactpointvalue: this.Parameters.msdynmkt_contactpointvalue,
+      msdynmkt_correlationid: this.Parameters.msdynmkt_correlationid,
+    });
 
     return {
       method: "POST",

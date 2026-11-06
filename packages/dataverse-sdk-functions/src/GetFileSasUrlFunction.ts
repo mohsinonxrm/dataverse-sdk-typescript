@@ -11,16 +11,22 @@ export interface GetFileSasUrlResponse {
 }
 
 /**
+ * Parameters of the GetFileSasUrl function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GetFileSasUrlFunctionParameters {
+  Target: EntityReference;
+  FileAttributeName: string;
+  DataSource?: string;
+}
+
+/**
  * GetFileSasUrl function
  *
  * Unbound function
  */
 export class GetFileSasUrlFunction implements Executable<GetFileSasUrlResponse> {
-  constructor(
-    public readonly target: EntityReference,
-    public readonly fileAttributeName: string,
-    public readonly dataSource?: string
-  ) {}
+  constructor(public readonly parameters: GetFileSasUrlFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/GetFileSasUrl`;
@@ -28,17 +34,20 @@ export class GetFileSasUrlFunction implements Executable<GetFileSasUrlResponse> 
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.target !== undefined) {
+    if (this.parameters.Target !== undefined) {
       aliases.push(`Target=@p1`);
-      params.append("@p1", formatParameterAlias(this.target, "mscrm.crmbaseentity", "EntityType"));
+      params.append(
+        "@p1",
+        formatParameterAlias(this.parameters.Target, "mscrm.crmbaseentity", "EntityType")
+      );
     }
-    if (this.fileAttributeName !== undefined) {
+    if (this.parameters.FileAttributeName !== undefined) {
       aliases.push(`FileAttributeName=@p2`);
-      params.append("@p2", formatParameterAlias(this.fileAttributeName, "Edm.String"));
+      params.append("@p2", formatParameterAlias(this.parameters.FileAttributeName, "Edm.String"));
     }
-    if (this.dataSource !== undefined) {
+    if (this.parameters.DataSource !== undefined) {
       aliases.push(`DataSource=@p3`);
-      params.append("@p3", formatParameterAlias(this.dataSource, "Edm.String"));
+      params.append("@p3", formatParameterAlias(this.parameters.DataSource, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -54,7 +63,8 @@ export class GetFileSasUrlFunction implements Executable<GetFileSasUrlResponse> 
   }
 
   async parseResponse(response: Response): Promise<GetFileSasUrlResponse> {
-    const data = await response.json();
-    return data as GetFileSasUrlResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as GetFileSasUrlResponse;
   }
 }

@@ -1,7 +1,20 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_SalesAgents_ProcessEngageAgentResponseResponse as msdyn_SalesAgents_ProcessEngageAgentResponseResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_SalesAgents_ProcessEngageAgentResponse message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAgents_ProcessEngageAgentResponseRequestParameters {
+  msdyn_Thread?: string;
+  msdyn_TrackingId?: string;
+  msdyn_SalesMacroAgentType: number;
+  msdyn_SalesAgentRun?: string;
+  msdyn_EngageAgentActivities: string;
+}
 
 /**
  * msdyn_SalesAgents_ProcessEngageAgentResponse request message
@@ -12,26 +25,22 @@ export class msdyn_SalesAgents_ProcessEngageAgentResponseRequest
   extends OrganizationRequest
   implements Executable<msdyn_SalesAgents_ProcessEngageAgentResponseResponse>
 {
-  constructor(
-    public msdyn_Thread: string | undefined,
-    public msdyn_TrackingId: string | undefined,
-    public msdyn_SalesMacroAgentType: number,
-    public msdyn_SalesAgentRun: string | undefined,
-    public msdyn_EngageAgentActivities: string
-  ) {
-    super("msdyn_SalesAgents_ProcessEngageAgentResponse");
+  declare readonly Parameters: Readonly<msdyn_SalesAgents_ProcessEngageAgentResponseRequestParameters>;
+
+  constructor(parameters: msdyn_SalesAgents_ProcessEngageAgentResponseRequestParameters) {
+    super("msdyn_SalesAgents_ProcessEngageAgentResponse", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAgents_ProcessEngageAgentResponse`;
 
-    const body: Record<string, unknown> = {
-      msdyn_Thread: this.msdyn_Thread,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-      msdyn_SalesMacroAgentType: this.msdyn_SalesMacroAgentType,
-      msdyn_SalesAgentRun: this.msdyn_SalesAgentRun,
-      msdyn_EngageAgentActivities: this.msdyn_EngageAgentActivities,
-    };
+    const body = requestBody({
+      msdyn_Thread: this.Parameters.msdyn_Thread,
+      msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
+      msdyn_SalesMacroAgentType: this.Parameters.msdyn_SalesMacroAgentType,
+      msdyn_SalesAgentRun: this.Parameters.msdyn_SalesAgentRun,
+      msdyn_EngageAgentActivities: this.Parameters.msdyn_EngageAgentActivities,
+    });
 
     return {
       method: "POST",
@@ -46,8 +55,11 @@ export class msdyn_SalesAgents_ProcessEngageAgentResponseRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_ProcessEngageAgentResponseResponse> {
-    const data = await response.json();
-    return msdyn_SalesAgents_ProcessEngageAgentResponseResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_SalesAgents_ProcessEngageAgentResponseResponse.fromResponse(
+      text ? JSON.parse(text) : {}
+    );
   }
 }
 

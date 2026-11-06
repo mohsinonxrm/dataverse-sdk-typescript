@@ -11,16 +11,22 @@ export interface RollupResponse {
 }
 
 /**
+ * Parameters of the Rollup function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RollupFunctionParameters {
+  Target: EntityReference;
+  Query?: TypedQueryBase;
+  RollupType: RollupType | keyof typeof RollupType;
+}
+
+/**
  * Rollup function
  *
  * Unbound function
  */
 export class RollupFunction implements Executable<RollupResponse> {
-  constructor(
-    public readonly target: EntityReference,
-    public readonly query: TypedQueryBase | undefined,
-    public readonly rollupType: RollupType | keyof typeof RollupType
-  ) {}
+  constructor(public readonly parameters: RollupFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/Rollup`;
@@ -28,19 +34,22 @@ export class RollupFunction implements Executable<RollupResponse> {
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.target !== undefined) {
+    if (this.parameters.Target !== undefined) {
       aliases.push(`Target=@p1`);
-      params.append("@p1", formatParameterAlias(this.target, "mscrm.crmbaseentity", "EntityType"));
+      params.append(
+        "@p1",
+        formatParameterAlias(this.parameters.Target, "mscrm.crmbaseentity", "EntityType")
+      );
     }
-    if (this.query !== undefined) {
+    if (this.parameters.Query !== undefined) {
       aliases.push(`Query=@p2`);
-      params.append("@p2", JSON.stringify(this.query));
+      params.append("@p2", JSON.stringify(this.parameters.Query));
     }
-    if (this.rollupType !== undefined) {
+    if (this.parameters.RollupType !== undefined) {
       aliases.push(`RollupType=@p3`);
       params.append(
         "@p3",
-        formatParameterAlias(this.rollupType, "mscrm.RollupType", "EnumerationType")
+        formatParameterAlias(this.parameters.RollupType, "mscrm.RollupType", "EnumerationType")
       );
     }
     if (aliases.length > 0) {
@@ -57,7 +66,8 @@ export class RollupFunction implements Executable<RollupResponse> {
   }
 
   async parseResponse(response: Response): Promise<RollupResponse> {
-    const data = await response.json();
-    return data as RollupResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RollupResponse;
   }
 }

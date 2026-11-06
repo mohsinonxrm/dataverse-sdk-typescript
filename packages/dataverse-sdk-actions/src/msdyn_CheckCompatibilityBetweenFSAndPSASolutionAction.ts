@@ -31,7 +31,10 @@ export class msdyn_CheckCompatibilityBetweenFSAndPSASolutionAction implements Ex
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckCompatibilityBetweenFSAndPSASolutionResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckCompatibilityBetweenFSAndPSASolutionResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (
+      text ? JSON.parse(text) : {}
+    ) as msdyn_CheckCompatibilityBetweenFSAndPSASolutionResponse;
   }
 }

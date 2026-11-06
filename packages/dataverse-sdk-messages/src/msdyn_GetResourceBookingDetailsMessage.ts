@@ -1,39 +1,52 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetResourceBookingDetailsResponse as msdyn_GetResourceBookingDetailsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetResourceBookingDetails message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetResourceBookingDetailsRequestParameters {
+  StartDate: string;
+  EndDate: string;
+  Timescale: number;
+  SchedulerSettings?: string;
+  ConsiderAppointments?: boolean;
+}
 
 /**
  * msdyn_GetResourceBookingDetails request message
  *
  * Web API Action: msdyn_GetResourceBookingDetails
+ *
+ * The first argument is the id of the bookableresource record to call it on.
  */
 export class msdyn_GetResourceBookingDetailsRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetResourceBookingDetailsResponse>
 {
+  declare readonly Parameters: Readonly<msdyn_GetResourceBookingDetailsRequestParameters>;
+
   constructor(
     public bookableresourceId: string,
-    public startDate: string,
-    public endDate: string,
-    public timescale: number,
-    public schedulerSettings?: string,
-    public considerAppointments?: boolean
+    parameters: msdyn_GetResourceBookingDetailsRequestParameters
   ) {
-    super("msdyn_GetResourceBookingDetails");
+    super("msdyn_GetResourceBookingDetails", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/bookableresources(${this.bookableresourceId})/Microsoft.Dynamics.CRM.msdyn_GetResourceBookingDetails`;
 
-    const body: Record<string, unknown> = {
-      StartDate: this.startDate,
-      EndDate: this.endDate,
-      Timescale: this.timescale,
-      SchedulerSettings: this.schedulerSettings,
-      ConsiderAppointments: this.considerAppointments,
-    };
+    const body = requestBody({
+      StartDate: this.Parameters.StartDate,
+      EndDate: this.Parameters.EndDate,
+      Timescale: this.Parameters.Timescale,
+      SchedulerSettings: this.Parameters.SchedulerSettings,
+      ConsiderAppointments: this.Parameters.ConsiderAppointments,
+    });
 
     return {
       method: "POST",
@@ -46,8 +59,9 @@ export class msdyn_GetResourceBookingDetailsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetResourceBookingDetailsResponse> {
-    const data = await response.json();
-    return msdyn_GetResourceBookingDetailsResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_GetResourceBookingDetailsResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

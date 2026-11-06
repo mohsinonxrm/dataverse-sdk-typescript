@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { StageSolutionResponse as StageSolutionResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the StageSolution message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface StageSolutionRequestParameters {
+  CustomizationFile: string;
+  StageSolutionUploadId?: string;
+}
 
 /**
  * StageSolution request message
@@ -12,20 +22,19 @@ export class StageSolutionRequest
   extends OrganizationRequest
   implements Executable<StageSolutionResponse>
 {
-  constructor(
-    public customizationFile: string,
-    public stageSolutionUploadId?: string
-  ) {
-    super("StageSolution");
+  declare readonly Parameters: Readonly<StageSolutionRequestParameters>;
+
+  constructor(parameters: StageSolutionRequestParameters) {
+    super("StageSolution", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/StageSolution`;
 
-    const body: Record<string, unknown> = {
-      CustomizationFile: this.customizationFile,
-      StageSolutionUploadId: this.stageSolutionUploadId,
-    };
+    const body = requestBody({
+      CustomizationFile: this.Parameters.CustomizationFile,
+      StageSolutionUploadId: this.Parameters.StageSolutionUploadId,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class StageSolutionRequest
   }
 
   async parseResponse(response: Response): Promise<StageSolutionResponse> {
-    const data = await response.json();
-    return StageSolutionResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return StageSolutionResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

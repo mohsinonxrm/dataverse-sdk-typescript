@@ -1,10 +1,19 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from DeleteMultiple action
  */
 export interface DeleteMultipleResponse {
   // No content returned
+}
+
+/**
+ * Parameters of the DeleteMultiple action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface DeleteMultipleActionParameters {
+  Targets: Record<string, unknown>[];
 }
 
 /**
@@ -18,16 +27,16 @@ export interface DeleteMultipleResponse {
 export class DeleteMultipleAction implements Executable<DeleteMultipleResponse> {
   constructor(
     public readonly entitySetName: string,
-    public readonly targets: Record<string, unknown>[]
+    public readonly parameters: DeleteMultipleActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action (entity collection)
     const url = `${baseUrl}/${this.entitySetName}/Microsoft.Dynamics.CRM.DeleteMultiple`;
 
-    const body: Record<string, unknown> = {
-      Targets: this.targets,
-    };
+    const body = requestBody({
+      Targets: this.parameters.Targets,
+    });
 
     return {
       method: "POST",
@@ -40,7 +49,8 @@ export class DeleteMultipleAction implements Executable<DeleteMultipleResponse> 
   }
 
   async parseResponse(response: Response): Promise<DeleteMultipleResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as DeleteMultipleResponse;
   }
 }

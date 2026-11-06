@@ -26,7 +26,8 @@ export class PvaGetFeatureControlSetAction implements Executable<PvaGetFeatureCo
   }
 
   async parseResponse(response: Response): Promise<PvaGetFeatureControlSetResponse> {
-    const data = await response.json();
-    return data as PvaGetFeatureControlSetResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as PvaGetFeatureControlSetResponse;
   }
 }

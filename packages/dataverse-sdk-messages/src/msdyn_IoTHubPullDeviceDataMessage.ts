@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_IoTHubPullDeviceData message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_IoTHubPullDeviceDataRequestParameters {
+  EntityCollection?: Record<string, unknown>[];
+}
 
 /**
  * msdyn_IoTHubPullDeviceData request message
@@ -10,16 +19,18 @@ export class msdyn_IoTHubPullDeviceDataRequest
   extends OrganizationRequest
   implements Executable<msdyn_IoTHubPullDeviceDataResponse>
 {
-  constructor(public entityCollection?: Record<string, unknown>[]) {
-    super("msdyn_IoTHubPullDeviceData");
+  declare readonly Parameters: Readonly<msdyn_IoTHubPullDeviceDataRequestParameters>;
+
+  constructor(parameters: msdyn_IoTHubPullDeviceDataRequestParameters = {}) {
+    super("msdyn_IoTHubPullDeviceData", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_IoTHubPullDeviceData`;
 
-    const body: Record<string, unknown> = {
-      EntityCollection: this.entityCollection,
-    };
+    const body = requestBody({
+      EntityCollection: this.Parameters.EntityCollection,
+    });
 
     return {
       method: "POST",

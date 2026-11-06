@@ -16,6 +16,8 @@ export interface RetrieveUnpublished_systemformResponse extends systemform {
  *
  * Bound function
  * Binding parameter: entity (mscrm.systemform)
+ *
+ * The first argument is the id of the systemform record to call it on.
  */
 export class RetrieveUnpublished_systemformFunction implements Executable<RetrieveUnpublished_systemformResponse> {
   constructor(public readonly systemformId: string) {}
@@ -34,7 +36,8 @@ export class RetrieveUnpublished_systemformFunction implements Executable<Retrie
   }
 
   async parseResponse(response: Response): Promise<RetrieveUnpublished_systemformResponse> {
-    const data = await response.json();
-    return data as RetrieveUnpublished_systemformResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RetrieveUnpublished_systemformResponse;
   }
 }

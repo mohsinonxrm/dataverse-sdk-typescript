@@ -1,33 +1,46 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the CCaaS_InitiateAgentTransfer message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_InitiateAgentTransferRequestParameters {
+  AgentId: string;
+  ApiVersion: string;
+  QueueId?: string;
+}
 
 /**
  * CCaaS_InitiateAgentTransfer request message
  *
  * Web API Action: CCaaS_InitiateAgentTransfer
+ *
+ * The first argument is the id of the msdyn_ocliveworkitem record to call it on.
  */
 export class CCaaS_InitiateAgentTransferRequest
   extends OrganizationRequest
   implements Executable<CCaaS_InitiateAgentTransferResponse>
 {
+  declare readonly Parameters: Readonly<CCaaS_InitiateAgentTransferRequestParameters>;
+
   constructor(
     public msdyn_ocliveworkitemId: string,
-    public agentId: string,
-    public apiVersion: string,
-    public queueId?: string
+    parameters: CCaaS_InitiateAgentTransferRequestParameters
   ) {
-    super("CCaaS_InitiateAgentTransfer");
+    super("CCaaS_InitiateAgentTransfer", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_InitiateAgentTransfer`;
 
-    const body: Record<string, unknown> = {
-      AgentId: this.agentId,
-      ApiVersion: this.apiVersion,
-      QueueId: this.queueId,
-    };
+    const body = requestBody({
+      AgentId: this.Parameters.AgentId,
+      ApiVersion: this.Parameters.ApiVersion,
+      QueueId: this.Parameters.QueueId,
+    });
 
     return {
       method: "POST",

@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from CCaaS_EndSession action
@@ -8,26 +9,36 @@ export interface CCaaS_EndSessionResponse {
 }
 
 /**
+ * Parameters of the CCaaS_EndSession action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_EndSessionActionParameters {
+  ApiVersion: string;
+  SessionId?: string;
+}
+
+/**
  * CCaaS_EndSession action
  *
  * Bound action
  * Binding parameter: entity (mscrm.msdyn_ocliveworkitem)
+ *
+ * The first argument is the id of the msdyn_ocliveworkitem record to call it on.
  */
 export class CCaaS_EndSessionAction implements Executable<CCaaS_EndSessionResponse> {
   constructor(
     public readonly msdyn_ocliveworkitemId: string,
-    public readonly apiVersion: string,
-    public readonly sessionId?: string
+    public readonly parameters: CCaaS_EndSessionActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_EndSession`;
 
-    const body: Record<string, unknown> = {
-      ApiVersion: this.apiVersion,
-      SessionId: this.sessionId,
-    };
+    const body = requestBody({
+      ApiVersion: this.parameters.ApiVersion,
+      SessionId: this.parameters.SessionId,
+    });
 
     return {
       method: "POST",
@@ -40,7 +51,8 @@ export class CCaaS_EndSessionAction implements Executable<CCaaS_EndSessionRespon
   }
 
   async parseResponse(response: Response): Promise<CCaaS_EndSessionResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as CCaaS_EndSessionResponse;
   }
 }

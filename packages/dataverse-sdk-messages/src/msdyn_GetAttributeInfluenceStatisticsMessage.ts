@@ -1,7 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetAttributeInfluenceStatisticsResponse as msdyn_GetAttributeInfluenceStatisticsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetAttributeInfluenceStatistics message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetAttributeInfluenceStatisticsRequestParameters {
+  AttributeName: string;
+  EntityName: string;
+  PredictionName: string;
+  PredictionType: string;
+}
 
 /**
  * msdyn_GetAttributeInfluenceStatistics request message
@@ -12,24 +24,21 @@ export class msdyn_GetAttributeInfluenceStatisticsRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetAttributeInfluenceStatisticsResponse>
 {
-  constructor(
-    public attributeName: string,
-    public entityName: string,
-    public predictionName: string,
-    public predictionType: string
-  ) {
-    super("msdyn_GetAttributeInfluenceStatistics");
+  declare readonly Parameters: Readonly<msdyn_GetAttributeInfluenceStatisticsRequestParameters>;
+
+  constructor(parameters: msdyn_GetAttributeInfluenceStatisticsRequestParameters) {
+    super("msdyn_GetAttributeInfluenceStatistics", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetAttributeInfluenceStatistics`;
 
-    const body: Record<string, unknown> = {
-      AttributeName: this.attributeName,
-      EntityName: this.entityName,
-      PredictionName: this.predictionName,
-      PredictionType: this.predictionType,
-    };
+    const body = requestBody({
+      AttributeName: this.Parameters.AttributeName,
+      EntityName: this.Parameters.EntityName,
+      PredictionName: this.Parameters.PredictionName,
+      PredictionType: this.Parameters.PredictionType,
+    });
 
     return {
       method: "POST",
@@ -42,8 +51,9 @@ export class msdyn_GetAttributeInfluenceStatisticsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAttributeInfluenceStatisticsResponse> {
-    const data = await response.json();
-    return msdyn_GetAttributeInfluenceStatisticsResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_GetAttributeInfluenceStatisticsResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

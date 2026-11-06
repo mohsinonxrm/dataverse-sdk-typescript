@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_UpdateModelGradesResponse as msdyn_UpdateModelGradesResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_UpdateModelGrades message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_UpdateModelGradesRequestParameters {
+  PredictionGrade?: string;
+}
 
 /**
  * msdyn_UpdateModelGrades request message
@@ -12,16 +21,18 @@ export class msdyn_UpdateModelGradesRequest
   extends OrganizationRequest
   implements Executable<msdyn_UpdateModelGradesResponse>
 {
-  constructor(public predictionGrade?: string) {
-    super("msdyn_UpdateModelGrades");
+  declare readonly Parameters: Readonly<msdyn_UpdateModelGradesRequestParameters>;
+
+  constructor(parameters: msdyn_UpdateModelGradesRequestParameters = {}) {
+    super("msdyn_UpdateModelGrades", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_UpdateModelGrades`;
 
-    const body: Record<string, unknown> = {
-      PredictionGrade: this.predictionGrade,
-    };
+    const body = requestBody({
+      PredictionGrade: this.Parameters.PredictionGrade,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_UpdateModelGradesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_UpdateModelGradesResponse> {
-    const data = await response.json();
-    return msdyn_UpdateModelGradesResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_UpdateModelGradesResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_ResolveTimezoneResponse as msdyn_ResolveTimezoneResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_ResolveTimezone message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ResolveTimezoneRequestParameters {
+  RequirementIds: string;
+  UserId: string;
+}
 
 /**
  * msdyn_ResolveTimezone request message
@@ -12,20 +22,19 @@ export class msdyn_ResolveTimezoneRequest
   extends OrganizationRequest
   implements Executable<msdyn_ResolveTimezoneResponse>
 {
-  constructor(
-    public requirementIds: string,
-    public userId: string
-  ) {
-    super("msdyn_ResolveTimezone");
+  declare readonly Parameters: Readonly<msdyn_ResolveTimezoneRequestParameters>;
+
+  constructor(parameters: msdyn_ResolveTimezoneRequestParameters) {
+    super("msdyn_ResolveTimezone", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ResolveTimezone`;
 
-    const body: Record<string, unknown> = {
-      RequirementIds: this.requirementIds,
-      UserId: this.userId,
-    };
+    const body = requestBody({
+      RequirementIds: this.Parameters.RequirementIds,
+      UserId: this.Parameters.UserId,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class msdyn_ResolveTimezoneRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ResolveTimezoneResponse> {
-    const data = await response.json();
-    return msdyn_ResolveTimezoneResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_ResolveTimezoneResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

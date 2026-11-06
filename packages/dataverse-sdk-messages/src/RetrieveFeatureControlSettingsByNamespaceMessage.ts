@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { RetrieveFeatureControlSettingsByNamespaceResponse as RetrieveFeatureControlSettingsByNamespaceResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the RetrieveFeatureControlSettingsByNamespace message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveFeatureControlSettingsByNamespaceRequestParameters {
+  NamespaceName: string;
+}
 
 /**
  * RetrieveFeatureControlSettingsByNamespace request message
@@ -12,16 +21,18 @@ export class RetrieveFeatureControlSettingsByNamespaceRequest
   extends OrganizationRequest
   implements Executable<RetrieveFeatureControlSettingsByNamespaceResponse>
 {
-  constructor(public namespaceName: string) {
-    super("RetrieveFeatureControlSettingsByNamespace");
+  declare readonly Parameters: Readonly<RetrieveFeatureControlSettingsByNamespaceRequestParameters>;
+
+  constructor(parameters: RetrieveFeatureControlSettingsByNamespaceRequestParameters) {
+    super("RetrieveFeatureControlSettingsByNamespace", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/RetrieveFeatureControlSettingsByNamespace`;
 
-    const body: Record<string, unknown> = {
-      NamespaceName: this.namespaceName,
-    };
+    const body = requestBody({
+      NamespaceName: this.Parameters.NamespaceName,
+    });
 
     return {
       method: "POST",
@@ -36,8 +47,11 @@ export class RetrieveFeatureControlSettingsByNamespaceRequest
   async parseResponse(
     response: Response
   ): Promise<RetrieveFeatureControlSettingsByNamespaceResponse> {
-    const data = await response.json();
-    return RetrieveFeatureControlSettingsByNamespaceResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return RetrieveFeatureControlSettingsByNamespaceResponse.fromResponse(
+      text ? JSON.parse(text) : {}
+    );
   }
 }
 

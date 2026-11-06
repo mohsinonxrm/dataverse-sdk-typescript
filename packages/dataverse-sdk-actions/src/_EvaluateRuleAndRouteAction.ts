@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,23 +11,29 @@ export interface _EvaluateRuleAndRouteResponse {
 }
 
 /**
+ * Parameters of the _EvaluateRuleAndRoute action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface _EvaluateRuleAndRouteActionParameters {
+  Target: EntityReference | AnyEntityPayload;
+  RoutingRuleSetId: string;
+}
+
+/**
  * _EvaluateRuleAndRoute action
  *
  * Unbound action
  */
 export class _EvaluateRuleAndRouteAction implements Executable<_EvaluateRuleAndRouteResponse> {
-  constructor(
-    public readonly target: EntityReference | AnyEntityPayload,
-    public readonly routingRuleSetId: string
-  ) {}
+  constructor(public readonly parameters: _EvaluateRuleAndRouteActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/_EvaluateRuleAndRoute`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-      RoutingRuleSetId: this.routingRuleSetId,
-    };
+    const body = requestBody({
+      Target: this.parameters.Target,
+      RoutingRuleSetId: this.parameters.RoutingRuleSetId,
+    });
 
     return {
       method: "POST",
@@ -39,7 +46,8 @@ export class _EvaluateRuleAndRouteAction implements Executable<_EvaluateRuleAndR
   }
 
   async parseResponse(response: Response): Promise<_EvaluateRuleAndRouteResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as _EvaluateRuleAndRouteResponse;
   }
 }

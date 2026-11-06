@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetHierarchyDataResponse as msdyn_GetHierarchyDataResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetHierarchyData message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetHierarchyDataRequestParameters {
+  input: string;
+}
 
 /**
  * msdyn_GetHierarchyData request message
@@ -12,16 +21,18 @@ export class msdyn_GetHierarchyDataRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetHierarchyDataResponse>
 {
-  constructor(public input: string) {
-    super("msdyn_GetHierarchyData");
+  declare readonly Parameters: Readonly<msdyn_GetHierarchyDataRequestParameters>;
+
+  constructor(parameters: msdyn_GetHierarchyDataRequestParameters) {
+    super("msdyn_GetHierarchyData", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetHierarchyData`;
 
-    const body: Record<string, unknown> = {
-      input: this.input,
-    };
+    const body = requestBody({
+      input: this.Parameters.input,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_GetHierarchyDataRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetHierarchyDataResponse> {
-    const data = await response.json();
-    return msdyn_GetHierarchyDataResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_GetHierarchyDataResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

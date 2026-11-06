@@ -10,12 +10,20 @@ export interface ValidateFetchXmlExpressionResponse {
 }
 
 /**
+ * Parameters of the ValidateFetchXmlExpression function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ValidateFetchXmlExpressionFunctionParameters {
+  FetchXml: string;
+}
+
+/**
  * ValidateFetchXmlExpression function
  *
  * Unbound function
  */
 export class ValidateFetchXmlExpressionFunction implements Executable<ValidateFetchXmlExpressionResponse> {
-  constructor(public readonly fetchXml: string) {}
+  constructor(public readonly parameters: ValidateFetchXmlExpressionFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/ValidateFetchXmlExpression`;
@@ -23,9 +31,9 @@ export class ValidateFetchXmlExpressionFunction implements Executable<ValidateFe
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.fetchXml !== undefined) {
+    if (this.parameters.FetchXml !== undefined) {
       aliases.push(`FetchXml=@p1`);
-      params.append("@p1", formatParameterAlias(this.fetchXml, "Edm.String"));
+      params.append("@p1", formatParameterAlias(this.parameters.FetchXml, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -41,7 +49,8 @@ export class ValidateFetchXmlExpressionFunction implements Executable<ValidateFe
   }
 
   async parseResponse(response: Response): Promise<ValidateFetchXmlExpressionResponse> {
-    const data = await response.json();
-    return data as ValidateFetchXmlExpressionResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as ValidateFetchXmlExpressionResponse;
   }
 }

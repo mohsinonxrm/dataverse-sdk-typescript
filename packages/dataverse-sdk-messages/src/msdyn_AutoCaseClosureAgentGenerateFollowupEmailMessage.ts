@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_AutoCaseClosureAgentGenerateFollowupEmail message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_AutoCaseClosureAgentGenerateFollowupEmailRequestParameters {
+  Payload: string;
+}
 
 /**
  * msdyn_AutoCaseClosureAgentGenerateFollowupEmail request message
@@ -10,16 +19,18 @@ export class msdyn_AutoCaseClosureAgentGenerateFollowupEmailRequest
   extends OrganizationRequest
   implements Executable<msdyn_AutoCaseClosureAgentGenerateFollowupEmailResponse>
 {
-  constructor(public payload: string) {
-    super("msdyn_AutoCaseClosureAgentGenerateFollowupEmail");
+  declare readonly Parameters: Readonly<msdyn_AutoCaseClosureAgentGenerateFollowupEmailRequestParameters>;
+
+  constructor(parameters: msdyn_AutoCaseClosureAgentGenerateFollowupEmailRequestParameters) {
+    super("msdyn_AutoCaseClosureAgentGenerateFollowupEmail", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_AutoCaseClosureAgentGenerateFollowupEmail`;
 
-    const body: Record<string, unknown> = {
-      Payload: this.payload,
-    };
+    const body = requestBody({
+      Payload: this.Parameters.Payload,
+    });
 
     return {
       method: "POST",

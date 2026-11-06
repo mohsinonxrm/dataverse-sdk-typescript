@@ -1,7 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AISummarizeRecordResponse as AISummarizeRecordResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the AISummarizeRecord message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AISummarizeRecordRequestParameters {
+  Id: string;
+  EntityLogicalName: string;
+  RecordContext?: string;
+  IsMergedCatchupAndSummary?: boolean;
+}
 
 /**
  * AISummarizeRecord request message
@@ -12,24 +24,21 @@ export class AISummarizeRecordRequest
   extends OrganizationRequest
   implements Executable<AISummarizeRecordResponse>
 {
-  constructor(
-    public id: string,
-    public entityLogicalName: string,
-    public recordContext?: string,
-    public isMergedCatchupAndSummary?: boolean
-  ) {
-    super("AISummarizeRecord");
+  declare readonly Parameters: Readonly<AISummarizeRecordRequestParameters>;
+
+  constructor(parameters: AISummarizeRecordRequestParameters) {
+    super("AISummarizeRecord", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/AISummarizeRecord`;
 
-    const body: Record<string, unknown> = {
-      Id: this.id,
-      EntityLogicalName: this.entityLogicalName,
-      RecordContext: this.recordContext,
-      IsMergedCatchupAndSummary: this.isMergedCatchupAndSummary,
-    };
+    const body = requestBody({
+      Id: this.Parameters.Id,
+      EntityLogicalName: this.Parameters.EntityLogicalName,
+      RecordContext: this.Parameters.RecordContext,
+      IsMergedCatchupAndSummary: this.Parameters.IsMergedCatchupAndSummary,
+    });
 
     return {
       method: "POST",
@@ -42,8 +51,9 @@ export class AISummarizeRecordRequest
   }
 
   async parseResponse(response: Response): Promise<AISummarizeRecordResponse> {
-    const data = await response.json();
-    return AISummarizeRecordResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return AISummarizeRecordResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

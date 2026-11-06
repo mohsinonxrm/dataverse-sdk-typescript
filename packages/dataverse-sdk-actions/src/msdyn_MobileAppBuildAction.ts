@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_mobileapp } from "./types/index.js";
 
@@ -11,23 +12,29 @@ export interface msdyn_MobileAppBuildResponse {
 }
 
 /**
+ * Parameters of the msdyn_MobileAppBuild action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_MobileAppBuildActionParameters {
+  msdyn_MobileApp: EntityReference | EntityPayload<msdyn_mobileapp>;
+  AppCenterApiToken?: string;
+}
+
+/**
  * msdyn_MobileAppBuild action
  *
  * Unbound action
  */
 export class msdyn_MobileAppBuildAction implements Executable<msdyn_MobileAppBuildResponse> {
-  constructor(
-    public readonly msdyn_MobileApp: EntityReference | EntityPayload<msdyn_mobileapp>,
-    public readonly appCenterApiToken?: string
-  ) {}
+  constructor(public readonly parameters: msdyn_MobileAppBuildActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_MobileAppBuild`;
 
-    const body: Record<string, unknown> = {
-      msdyn_MobileApp: this.msdyn_MobileApp,
-      AppCenterApiToken: this.appCenterApiToken,
-    };
+    const body = requestBody({
+      msdyn_MobileApp: this.parameters.msdyn_MobileApp,
+      AppCenterApiToken: this.parameters.AppCenterApiToken,
+    });
 
     return {
       method: "POST",
@@ -40,7 +47,8 @@ export class msdyn_MobileAppBuildAction implements Executable<msdyn_MobileAppBui
   }
 
   async parseResponse(response: Response): Promise<msdyn_MobileAppBuildResponse> {
-    const data = await response.json();
-    return data as msdyn_MobileAppBuildResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_MobileAppBuildResponse;
   }
 }

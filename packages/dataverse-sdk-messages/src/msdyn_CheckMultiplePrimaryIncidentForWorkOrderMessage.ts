@@ -31,8 +31,11 @@ export class msdyn_CheckMultiplePrimaryIncidentForWorkOrderRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckMultiplePrimaryIncidentForWorkOrderResponse> {
-    const data = await response.json();
-    return msdyn_CheckMultiplePrimaryIncidentForWorkOrderResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_CheckMultiplePrimaryIncidentForWorkOrderResponse.fromResponse(
+      text ? JSON.parse(text) : {}
+    );
   }
 }
 

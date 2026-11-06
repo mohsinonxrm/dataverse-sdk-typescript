@@ -5,6 +5,8 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * msdyn_TrainModel request message
  *
  * Web API Action: msdyn_TrainModel
+ *
+ * The first argument is the id of the msdyn_ocsimltraining record to call it on.
  */
 export class msdyn_TrainModelRequest
   extends OrganizationRequest

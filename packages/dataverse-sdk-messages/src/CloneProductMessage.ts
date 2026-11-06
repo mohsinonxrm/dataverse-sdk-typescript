@@ -7,6 +7,8 @@ import type { product } from "./types/index.js";
  * CloneProduct request message
  *
  * Web API Action: CloneProduct
+ *
+ * The first argument is the id of the product record to call it on.
  */
 export class CloneProductRequest
   extends OrganizationRequest
@@ -30,8 +32,9 @@ export class CloneProductRequest
   }
 
   async parseResponse(response: Response): Promise<CloneProductResponse> {
-    const data = await response.json();
-    return CloneProductResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return CloneProductResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

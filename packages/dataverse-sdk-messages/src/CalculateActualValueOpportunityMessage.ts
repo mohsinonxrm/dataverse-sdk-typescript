@@ -7,6 +7,8 @@ import type { CalculateActualValueOpportunityResponse as CalculateActualValueOpp
  * CalculateActualValueOpportunity request message
  *
  * Web API Action: CalculateActualValueOpportunity
+ *
+ * The first argument is the id of the opportunity record to call it on.
  */
 export class CalculateActualValueOpportunityRequest
   extends OrganizationRequest
@@ -30,8 +32,9 @@ export class CalculateActualValueOpportunityRequest
   }
 
   async parseResponse(response: Response): Promise<CalculateActualValueOpportunityResponse> {
-    const data = await response.json();
-    return CalculateActualValueOpportunityResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return CalculateActualValueOpportunityResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

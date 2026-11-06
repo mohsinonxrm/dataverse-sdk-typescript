@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_TelephonyACSSyncPhoneNumbersActionResponse as msdyn_TelephonyACSSyncPhoneNumbersActionResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_TelephonyACSSyncPhoneNumbersAction message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_TelephonyACSSyncPhoneNumbersActionRequestParameters {
+  ActionRequest: string;
+}
 
 /**
  * msdyn_TelephonyACSSyncPhoneNumbersAction request message
@@ -12,16 +21,18 @@ export class msdyn_TelephonyACSSyncPhoneNumbersActionRequest
   extends OrganizationRequest
   implements Executable<msdyn_TelephonyACSSyncPhoneNumbersActionResponse>
 {
-  constructor(public actionRequest: string) {
-    super("msdyn_TelephonyACSSyncPhoneNumbersAction");
+  declare readonly Parameters: Readonly<msdyn_TelephonyACSSyncPhoneNumbersActionRequestParameters>;
+
+  constructor(parameters: msdyn_TelephonyACSSyncPhoneNumbersActionRequestParameters) {
+    super("msdyn_TelephonyACSSyncPhoneNumbersAction", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_TelephonyACSSyncPhoneNumbersAction`;
 
-    const body: Record<string, unknown> = {
-      ActionRequest: this.actionRequest,
-    };
+    const body = requestBody({
+      ActionRequest: this.Parameters.ActionRequest,
+    });
 
     return {
       method: "POST",
@@ -36,8 +47,11 @@ export class msdyn_TelephonyACSSyncPhoneNumbersActionRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_TelephonyACSSyncPhoneNumbersActionResponse> {
-    const data = await response.json();
-    return msdyn_TelephonyACSSyncPhoneNumbersActionResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_TelephonyACSSyncPhoneNumbersActionResponse.fromResponse(
+      text ? JSON.parse(text) : {}
+    );
   }
 }
 

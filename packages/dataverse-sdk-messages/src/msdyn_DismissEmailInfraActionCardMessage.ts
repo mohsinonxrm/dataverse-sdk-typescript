@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_DismissEmailInfraActionCardResponse as msdyn_DismissEmailInfraActionCardResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_DismissEmailInfraActionCard message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_DismissEmailInfraActionCardRequestParameters {
+  ActionCardId: string;
+  MessageId: string;
+  CardType: number;
+}
 
 /**
  * msdyn_DismissEmailInfraActionCard request message
@@ -12,22 +23,20 @@ export class msdyn_DismissEmailInfraActionCardRequest
   extends OrganizationRequest
   implements Executable<msdyn_DismissEmailInfraActionCardResponse>
 {
-  constructor(
-    public actionCardId: string,
-    public messageId: string,
-    public cardType: number
-  ) {
-    super("msdyn_DismissEmailInfraActionCard");
+  declare readonly Parameters: Readonly<msdyn_DismissEmailInfraActionCardRequestParameters>;
+
+  constructor(parameters: msdyn_DismissEmailInfraActionCardRequestParameters) {
+    super("msdyn_DismissEmailInfraActionCard", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_DismissEmailInfraActionCard`;
 
-    const body: Record<string, unknown> = {
-      ActionCardId: this.actionCardId,
-      MessageId: this.messageId,
-      CardType: this.cardType,
-    };
+    const body = requestBody({
+      ActionCardId: this.Parameters.ActionCardId,
+      MessageId: this.Parameters.MessageId,
+      CardType: this.Parameters.CardType,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class msdyn_DismissEmailInfraActionCardRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_DismissEmailInfraActionCardResponse> {
-    const data = await response.json();
-    return msdyn_DismissEmailInfraActionCardResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_DismissEmailInfraActionCardResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from CCaaS_InitiateAgentGroupTransfer action
@@ -8,32 +9,42 @@ export interface CCaaS_InitiateAgentGroupTransferResponse {
 }
 
 /**
+ * Parameters of the CCaaS_InitiateAgentGroupTransfer action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_InitiateAgentGroupTransferActionParameters {
+  AgentGroupId: string;
+  ApiVersion: string;
+  IntentId?: string;
+  IntentGroupId?: string;
+  IntentFamilyId?: string;
+}
+
+/**
  * CCaaS_InitiateAgentGroupTransfer action
  *
  * Bound action
  * Binding parameter: entity (mscrm.msdyn_ocliveworkitem)
+ *
+ * The first argument is the id of the msdyn_ocliveworkitem record to call it on.
  */
 export class CCaaS_InitiateAgentGroupTransferAction implements Executable<CCaaS_InitiateAgentGroupTransferResponse> {
   constructor(
     public readonly msdyn_ocliveworkitemId: string,
-    public readonly agentGroupId: string,
-    public readonly apiVersion: string,
-    public readonly intentId?: string,
-    public readonly intentGroupId?: string,
-    public readonly intentFamilyId?: string
+    public readonly parameters: CCaaS_InitiateAgentGroupTransferActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_InitiateAgentGroupTransfer`;
 
-    const body: Record<string, unknown> = {
-      AgentGroupId: this.agentGroupId,
-      ApiVersion: this.apiVersion,
-      IntentId: this.intentId,
-      IntentGroupId: this.intentGroupId,
-      IntentFamilyId: this.intentFamilyId,
-    };
+    const body = requestBody({
+      AgentGroupId: this.parameters.AgentGroupId,
+      ApiVersion: this.parameters.ApiVersion,
+      IntentId: this.parameters.IntentId,
+      IntentGroupId: this.parameters.IntentGroupId,
+      IntentFamilyId: this.parameters.IntentFamilyId,
+    });
 
     return {
       method: "POST",
@@ -46,7 +57,8 @@ export class CCaaS_InitiateAgentGroupTransferAction implements Executable<CCaaS_
   }
 
   async parseResponse(response: Response): Promise<CCaaS_InitiateAgentGroupTransferResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as CCaaS_InitiateAgentGroupTransferResponse;
   }
 }

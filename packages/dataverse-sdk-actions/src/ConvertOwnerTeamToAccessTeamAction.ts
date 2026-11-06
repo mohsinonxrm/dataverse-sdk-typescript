@@ -12,6 +12,8 @@ export interface ConvertOwnerTeamToAccessTeamResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.team)
+ *
+ * The first argument is the id of the team record to call it on.
  */
 export class ConvertOwnerTeamToAccessTeamAction implements Executable<ConvertOwnerTeamToAccessTeamResponse> {
   constructor(public readonly teamId: string) {}
@@ -30,7 +32,8 @@ export class ConvertOwnerTeamToAccessTeamAction implements Executable<ConvertOwn
   }
 
   async parseResponse(response: Response): Promise<ConvertOwnerTeamToAccessTeamResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as ConvertOwnerTeamToAccessTeamResponse;
   }
 }

@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_AIEvaluationMetricsWrapperResponse as msdyn_AIEvaluationMetricsWrapperResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_AIEvaluationMetricsWrapper message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_AIEvaluationMetricsWrapperRequestParameters {
+  request: string;
+}
 
 /**
  * msdyn_AIEvaluationMetricsWrapper request message
@@ -12,16 +21,18 @@ export class msdyn_AIEvaluationMetricsWrapperRequest
   extends OrganizationRequest
   implements Executable<msdyn_AIEvaluationMetricsWrapperResponse>
 {
-  constructor(public request: string) {
-    super("msdyn_AIEvaluationMetricsWrapper");
+  declare readonly Parameters: Readonly<msdyn_AIEvaluationMetricsWrapperRequestParameters>;
+
+  constructor(parameters: msdyn_AIEvaluationMetricsWrapperRequestParameters) {
+    super("msdyn_AIEvaluationMetricsWrapper", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_AIEvaluationMetricsWrapper`;
 
-    const body: Record<string, unknown> = {
-      request: this.request,
-    };
+    const body = requestBody({
+      request: this.Parameters.request,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_AIEvaluationMetricsWrapperRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_AIEvaluationMetricsWrapperResponse> {
-    const data = await response.json();
-    return msdyn_AIEvaluationMetricsWrapperResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_AIEvaluationMetricsWrapperResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

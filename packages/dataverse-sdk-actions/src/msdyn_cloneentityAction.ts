@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -14,27 +15,33 @@ export interface msdyn_cloneentityResponse {
 }
 
 /**
+ * Parameters of the msdyn_cloneentity action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_cloneentityActionParameters {
+  SourceEntity: EntityReference | AnyEntityPayload;
+  QueryReference?: EntityReference | AnyEntityPayload;
+  TransformAction?: string;
+  TransformParams?: EntityReference | AnyEntityPayload;
+}
+
+/**
  * msdyn_cloneentity action
  *
  * Unbound action
  */
 export class msdyn_cloneentityAction implements Executable<msdyn_cloneentityResponse> {
-  constructor(
-    public readonly sourceEntity: EntityReference | AnyEntityPayload,
-    public readonly queryReference?: EntityReference | AnyEntityPayload,
-    public readonly transformAction?: string,
-    public readonly transformParams?: EntityReference | AnyEntityPayload
-  ) {}
+  constructor(public readonly parameters: msdyn_cloneentityActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_cloneentity`;
 
-    const body: Record<string, unknown> = {
-      SourceEntity: this.sourceEntity,
-      QueryReference: this.queryReference,
-      TransformAction: this.transformAction,
-      TransformParams: this.transformParams,
-    };
+    const body = requestBody({
+      SourceEntity: this.parameters.SourceEntity,
+      QueryReference: this.parameters.QueryReference,
+      TransformAction: this.parameters.TransformAction,
+      TransformParams: this.parameters.TransformParams,
+    });
 
     return {
       method: "POST",
@@ -47,7 +54,8 @@ export class msdyn_cloneentityAction implements Executable<msdyn_cloneentityResp
   }
 
   async parseResponse(response: Response): Promise<msdyn_cloneentityResponse> {
-    const data = await response.json();
-    return data as msdyn_cloneentityResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_cloneentityResponse;
   }
 }

@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_TableOperationResponse as msdyn_TableOperationResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_TableOperation message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_TableOperationRequestParameters {
+  EntityNames?: string;
+  Scenario: string;
+}
 
 /**
  * msdyn_TableOperation request message
@@ -12,20 +22,19 @@ export class msdyn_TableOperationRequest
   extends OrganizationRequest
   implements Executable<msdyn_TableOperationResponse>
 {
-  constructor(
-    public entityNames: string | undefined,
-    public scenario: string
-  ) {
-    super("msdyn_TableOperation");
+  declare readonly Parameters: Readonly<msdyn_TableOperationRequestParameters>;
+
+  constructor(parameters: msdyn_TableOperationRequestParameters) {
+    super("msdyn_TableOperation", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_TableOperation`;
 
-    const body: Record<string, unknown> = {
-      EntityNames: this.entityNames,
-      Scenario: this.scenario,
-    };
+    const body = requestBody({
+      EntityNames: this.Parameters.EntityNames,
+      Scenario: this.Parameters.Scenario,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class msdyn_TableOperationRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_TableOperationResponse> {
-    const data = await response.json();
-    return msdyn_TableOperationResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_TableOperationResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

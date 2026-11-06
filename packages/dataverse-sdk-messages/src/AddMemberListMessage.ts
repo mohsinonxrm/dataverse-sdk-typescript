@@ -1,31 +1,44 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AddMemberListResponse as AddMemberListResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the AddMemberList message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AddMemberListRequestParameters {
+  EntityId: string;
+}
 
 /**
  * AddMemberList request message
  *
  * Web API Action: AddMemberList
+ *
+ * The first argument is the id of the list record to call it on.
  */
 export class AddMemberListRequest
   extends OrganizationRequest
   implements Executable<AddMemberListResponse>
 {
+  declare readonly Parameters: Readonly<AddMemberListRequestParameters>;
+
   constructor(
     public listId: string,
-    public entityId: string
+    parameters: AddMemberListRequestParameters
   ) {
-    super("AddMemberList");
+    super("AddMemberList", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/lists(${this.listId})/Microsoft.Dynamics.CRM.AddMemberList`;
 
-    const body: Record<string, unknown> = {
-      EntityId: this.entityId,
-    };
+    const body = requestBody({
+      EntityId: this.Parameters.EntityId,
+    });
 
     return {
       method: "POST",
@@ -38,8 +51,9 @@ export class AddMemberListRequest
   }
 
   async parseResponse(response: Response): Promise<AddMemberListResponse> {
-    const data = await response.json();
-    return AddMemberListResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return AddMemberListResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

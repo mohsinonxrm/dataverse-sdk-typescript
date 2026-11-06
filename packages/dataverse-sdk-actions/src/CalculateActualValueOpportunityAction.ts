@@ -12,6 +12,8 @@ export interface CalculateActualValueOpportunityResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.opportunity)
+ *
+ * The first argument is the id of the opportunity record to call it on.
  */
 export class CalculateActualValueOpportunityAction implements Executable<CalculateActualValueOpportunityResponse> {
   constructor(public readonly opportunityId: string) {}
@@ -30,7 +32,8 @@ export class CalculateActualValueOpportunityAction implements Executable<Calcula
   }
 
   async parseResponse(response: Response): Promise<CalculateActualValueOpportunityResponse> {
-    const data = await response.json();
-    return data as CalculateActualValueOpportunityResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as CalculateActualValueOpportunityResponse;
   }
 }

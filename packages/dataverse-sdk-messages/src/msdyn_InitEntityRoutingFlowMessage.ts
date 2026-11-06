@@ -1,5 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_InitEntityRoutingFlow message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_InitEntityRoutingFlowRequestParameters {
+  LiveWorkStreamId: string;
+  QueueId?: string;
+  EntityRecordId: string;
+  EntityLogicalName: string;
+  LiveWorkItemTitle?: string;
+}
 
 /**
  * msdyn_InitEntityRoutingFlow request message
@@ -10,26 +23,22 @@ export class msdyn_InitEntityRoutingFlowRequest
   extends OrganizationRequest
   implements Executable<msdyn_InitEntityRoutingFlowResponse>
 {
-  constructor(
-    public liveWorkStreamId: string,
-    public queueId: string | undefined,
-    public entityRecordId: string,
-    public entityLogicalName: string,
-    public liveWorkItemTitle?: string
-  ) {
-    super("msdyn_InitEntityRoutingFlow");
+  declare readonly Parameters: Readonly<msdyn_InitEntityRoutingFlowRequestParameters>;
+
+  constructor(parameters: msdyn_InitEntityRoutingFlowRequestParameters) {
+    super("msdyn_InitEntityRoutingFlow", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_InitEntityRoutingFlow`;
 
-    const body: Record<string, unknown> = {
-      LiveWorkStreamId: this.liveWorkStreamId,
-      QueueId: this.queueId,
-      EntityRecordId: this.entityRecordId,
-      EntityLogicalName: this.entityLogicalName,
-      LiveWorkItemTitle: this.liveWorkItemTitle,
-    };
+    const body = requestBody({
+      LiveWorkStreamId: this.Parameters.LiveWorkStreamId,
+      QueueId: this.Parameters.QueueId,
+      EntityRecordId: this.Parameters.EntityRecordId,
+      EntityLogicalName: this.Parameters.EntityLogicalName,
+      LiveWorkItemTitle: this.Parameters.LiveWorkItemTitle,
+    });
 
     return {
       method: "POST",

@@ -11,15 +11,21 @@ export interface msdyn_getinboundurlResponse {
 }
 
 /**
+ * Parameters of the msdyn_getinboundurl function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_getinboundurlFunctionParameters {
+  contactpoint: string;
+  channeldefinitionid: string;
+}
+
+/**
  * msdyn_getinboundurl function
  *
  * Unbound function
  */
 export class msdyn_getinboundurlFunction implements Executable<msdyn_getinboundurlResponse> {
-  constructor(
-    public readonly contactpoint: string,
-    public readonly channeldefinitionid: string
-  ) {}
+  constructor(public readonly parameters: msdyn_getinboundurlFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/msdyn_getinboundurl`;
@@ -27,13 +33,13 @@ export class msdyn_getinboundurlFunction implements Executable<msdyn_getinboundu
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.contactpoint !== undefined) {
+    if (this.parameters.contactpoint !== undefined) {
       aliases.push(`contactpoint=@p1`);
-      params.append("@p1", formatParameterAlias(this.contactpoint, "Edm.String"));
+      params.append("@p1", formatParameterAlias(this.parameters.contactpoint, "Edm.String"));
     }
-    if (this.channeldefinitionid !== undefined) {
+    if (this.parameters.channeldefinitionid !== undefined) {
       aliases.push(`channeldefinitionid=@p2`);
-      params.append("@p2", formatParameterAlias(this.channeldefinitionid, "Edm.Guid"));
+      params.append("@p2", formatParameterAlias(this.parameters.channeldefinitionid, "Edm.Guid"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -49,7 +55,8 @@ export class msdyn_getinboundurlFunction implements Executable<msdyn_getinboundu
   }
 
   async parseResponse(response: Response): Promise<msdyn_getinboundurlResponse> {
-    const data = await response.json();
-    return data as msdyn_getinboundurlResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_getinboundurlResponse;
   }
 }

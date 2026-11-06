@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,19 +11,27 @@ export interface DeleteRecordChangeHistoryResponse {
 }
 
 /**
+ * Parameters of the DeleteRecordChangeHistory action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface DeleteRecordChangeHistoryActionParameters {
+  Target: EntityReference | AnyEntityPayload;
+}
+
+/**
  * DeleteRecordChangeHistory action
  *
  * Unbound action
  */
 export class DeleteRecordChangeHistoryAction implements Executable<DeleteRecordChangeHistoryResponse> {
-  constructor(public readonly target: EntityReference | AnyEntityPayload) {}
+  constructor(public readonly parameters: DeleteRecordChangeHistoryActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/DeleteRecordChangeHistory`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-    };
+    const body = requestBody({
+      Target: this.parameters.Target,
+    });
 
     return {
       method: "POST",
@@ -35,7 +44,8 @@ export class DeleteRecordChangeHistoryAction implements Executable<DeleteRecordC
   }
 
   async parseResponse(response: Response): Promise<DeleteRecordChangeHistoryResponse> {
-    const data = await response.json();
-    return data as DeleteRecordChangeHistoryResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as DeleteRecordChangeHistoryResponse;
   }
 }

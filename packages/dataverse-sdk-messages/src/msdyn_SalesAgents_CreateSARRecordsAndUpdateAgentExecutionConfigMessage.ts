@@ -1,5 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentExecutionConfig message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentExecutionConfigRequestParameters {
+  msdyn_SalesAgentType: number;
+  msdyn_AgentExecutionConfigToUpdate: string;
+  msdyn_SARRecordsToCreate: string;
+  msdyn_TrackingId?: string;
+}
 
 /**
  * msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentExecutionConfig request message
@@ -10,24 +22,23 @@ export class msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentExecutionConfigRequ
   extends OrganizationRequest
   implements Executable<msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentExecutionConfigResponse>
 {
+  declare readonly Parameters: Readonly<msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentExecutionConfigRequestParameters>;
+
   constructor(
-    public msdyn_SalesAgentType: number,
-    public msdyn_AgentExecutionConfigToUpdate: string,
-    public msdyn_SARRecordsToCreate: string,
-    public msdyn_TrackingId?: string
+    parameters: msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentExecutionConfigRequestParameters
   ) {
-    super("msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentExecutionConfig");
+    super("msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentExecutionConfig", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentExecutionConfig`;
 
-    const body: Record<string, unknown> = {
-      msdyn_SalesAgentType: this.msdyn_SalesAgentType,
-      msdyn_AgentExecutionConfigToUpdate: this.msdyn_AgentExecutionConfigToUpdate,
-      msdyn_SARRecordsToCreate: this.msdyn_SARRecordsToCreate,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-    };
+    const body = requestBody({
+      msdyn_SalesAgentType: this.Parameters.msdyn_SalesAgentType,
+      msdyn_AgentExecutionConfigToUpdate: this.Parameters.msdyn_AgentExecutionConfigToUpdate,
+      msdyn_SARRecordsToCreate: this.Parameters.msdyn_SARRecordsToCreate,
+      msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
+    });
 
     return {
       method: "POST",

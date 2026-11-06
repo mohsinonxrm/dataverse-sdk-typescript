@@ -1,33 +1,46 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_FieldServiceAgreementSystemStatusActionResponse as msdyn_FieldServiceAgreementSystemStatusActionResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_FieldServiceAgreementSystemStatusAction message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_FieldServiceAgreementSystemStatusActionRequestParameters {
+  Type: number;
+  InputParameter: string;
+}
 
 /**
  * msdyn_FieldServiceAgreementSystemStatusAction request message
  *
  * Web API Action: msdyn_FieldServiceAgreementSystemStatusAction
+ *
+ * The first argument is the id of the msdyn_agreement record to call it on.
  */
 export class msdyn_FieldServiceAgreementSystemStatusActionRequest
   extends OrganizationRequest
   implements Executable<msdyn_FieldServiceAgreementSystemStatusActionResponse>
 {
+  declare readonly Parameters: Readonly<msdyn_FieldServiceAgreementSystemStatusActionRequestParameters>;
+
   constructor(
     public msdyn_agreementId: string,
-    public type: number,
-    public inputParameter: string
+    parameters: msdyn_FieldServiceAgreementSystemStatusActionRequestParameters
   ) {
-    super("msdyn_FieldServiceAgreementSystemStatusAction");
+    super("msdyn_FieldServiceAgreementSystemStatusAction", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_agreements(${this.msdyn_agreementId})/Microsoft.Dynamics.CRM.msdyn_FieldServiceAgreementSystemStatusAction`;
 
-    const body: Record<string, unknown> = {
-      Type: this.type,
-      InputParameter: this.inputParameter,
-    };
+    const body = requestBody({
+      Type: this.Parameters.Type,
+      InputParameter: this.Parameters.InputParameter,
+    });
 
     return {
       method: "POST",
@@ -42,8 +55,11 @@ export class msdyn_FieldServiceAgreementSystemStatusActionRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_FieldServiceAgreementSystemStatusActionResponse> {
-    const data = await response.json();
-    return msdyn_FieldServiceAgreementSystemStatusActionResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_FieldServiceAgreementSystemStatusActionResponse.fromResponse(
+      text ? JSON.parse(text) : {}
+    );
   }
 }
 

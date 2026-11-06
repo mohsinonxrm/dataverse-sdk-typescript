@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { ColumnSet, quote } from "./types/index.js";
 
@@ -13,23 +14,29 @@ export interface ReviseQuoteResponse extends quote {
 }
 
 /**
+ * Parameters of the ReviseQuote action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ReviseQuoteActionParameters {
+  QuoteId: string;
+  ColumnSet?: ColumnSet;
+}
+
+/**
  * ReviseQuote action
  *
  * Unbound action
  */
 export class ReviseQuoteAction implements Executable<ReviseQuoteResponse> {
-  constructor(
-    public readonly quoteId: string,
-    public readonly columnSet?: ColumnSet
-  ) {}
+  constructor(public readonly parameters: ReviseQuoteActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ReviseQuote`;
 
-    const body: Record<string, unknown> = {
-      QuoteId: this.quoteId,
-      ColumnSet: enumBody(this.columnSet, "ColumnSet"),
-    };
+    const body = requestBody({
+      QuoteId: this.parameters.QuoteId,
+      ColumnSet: enumBody(this.parameters.ColumnSet, "ColumnSet"),
+    });
 
     return {
       method: "POST",
@@ -42,7 +49,8 @@ export class ReviseQuoteAction implements Executable<ReviseQuoteResponse> {
   }
 
   async parseResponse(response: Response): Promise<ReviseQuoteResponse> {
-    const data = await response.json();
-    return data as ReviseQuoteResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as ReviseQuoteResponse;
   }
 }

@@ -1,7 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_knowledgeHarvestCreateArticleResponse as msdyn_knowledgeHarvestCreateArticleResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_knowledgeHarvestCreateArticle message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_knowledgeHarvestCreateArticleRequestParameters {
+  msdyn_knowledgeHarvestJobId: string;
+  msdyn_entityName: string;
+  msdyn_entityId: string;
+  msdyn_payload: string;
+}
 
 /**
  * msdyn_knowledgeHarvestCreateArticle request message
@@ -12,24 +24,21 @@ export class msdyn_knowledgeHarvestCreateArticleRequest
   extends OrganizationRequest
   implements Executable<msdyn_knowledgeHarvestCreateArticleResponse>
 {
-  constructor(
-    public msdyn_knowledgeHarvestJobId: string,
-    public msdyn_entityName: string,
-    public msdyn_entityId: string,
-    public msdyn_payload: string
-  ) {
-    super("msdyn_knowledgeHarvestCreateArticle");
+  declare readonly Parameters: Readonly<msdyn_knowledgeHarvestCreateArticleRequestParameters>;
+
+  constructor(parameters: msdyn_knowledgeHarvestCreateArticleRequestParameters) {
+    super("msdyn_knowledgeHarvestCreateArticle", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_knowledgeHarvestCreateArticle`;
 
-    const body: Record<string, unknown> = {
-      msdyn_knowledgeHarvestJobId: this.msdyn_knowledgeHarvestJobId,
-      msdyn_entityName: this.msdyn_entityName,
-      msdyn_entityId: this.msdyn_entityId,
-      msdyn_payload: this.msdyn_payload,
-    };
+    const body = requestBody({
+      msdyn_knowledgeHarvestJobId: this.Parameters.msdyn_knowledgeHarvestJobId,
+      msdyn_entityName: this.Parameters.msdyn_entityName,
+      msdyn_entityId: this.Parameters.msdyn_entityId,
+      msdyn_payload: this.Parameters.msdyn_payload,
+    });
 
     return {
       method: "POST",
@@ -42,8 +51,9 @@ export class msdyn_knowledgeHarvestCreateArticleRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_knowledgeHarvestCreateArticleResponse> {
-    const data = await response.json();
-    return msdyn_knowledgeHarvestCreateArticleResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_knowledgeHarvestCreateArticleResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

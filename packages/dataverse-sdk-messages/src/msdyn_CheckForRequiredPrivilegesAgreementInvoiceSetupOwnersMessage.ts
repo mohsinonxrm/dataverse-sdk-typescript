@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_CheckForRequiredPrivilegesAgreementInvoiceSetupOwnersResponse as msdyn_CheckForRequiredPrivilegesAgreementInvoiceSetupOwnersResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_CheckForRequiredPrivilegesAgreementInvoiceSetupOwners message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CheckForRequiredPrivilegesAgreementInvoiceSetupOwnersRequestParameters {
+  SolutionId: string;
+}
 
 /**
  * msdyn_CheckForRequiredPrivilegesAgreementInvoiceSetupOwners request message
@@ -12,16 +21,20 @@ export class msdyn_CheckForRequiredPrivilegesAgreementInvoiceSetupOwnersRequest
   extends OrganizationRequest
   implements Executable<msdyn_CheckForRequiredPrivilegesAgreementInvoiceSetupOwnersResponse>
 {
-  constructor(public solutionId: string) {
-    super("msdyn_CheckForRequiredPrivilegesAgreementInvoiceSetupOwners");
+  declare readonly Parameters: Readonly<msdyn_CheckForRequiredPrivilegesAgreementInvoiceSetupOwnersRequestParameters>;
+
+  constructor(
+    parameters: msdyn_CheckForRequiredPrivilegesAgreementInvoiceSetupOwnersRequestParameters
+  ) {
+    super("msdyn_CheckForRequiredPrivilegesAgreementInvoiceSetupOwners", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckForRequiredPrivilegesAgreementInvoiceSetupOwners`;
 
-    const body: Record<string, unknown> = {
-      SolutionId: this.solutionId,
-    };
+    const body = requestBody({
+      SolutionId: this.Parameters.SolutionId,
+    });
 
     return {
       method: "POST",
@@ -36,8 +49,11 @@ export class msdyn_CheckForRequiredPrivilegesAgreementInvoiceSetupOwnersRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckForRequiredPrivilegesAgreementInvoiceSetupOwnersResponse> {
-    const data = await response.json();
-    return msdyn_CheckForRequiredPrivilegesAgreementInvoiceSetupOwnersResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_CheckForRequiredPrivilegesAgreementInvoiceSetupOwnersResponse.fromResponse(
+      text ? JSON.parse(text) : {}
+    );
   }
 }
 

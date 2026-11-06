@@ -10,17 +10,23 @@ export interface QueryMultipleSchedulesResponse {
 }
 
 /**
+ * Parameters of the QueryMultipleSchedules function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface QueryMultipleSchedulesFunctionParameters {
+  Resource: resource[];
+  Start: string | Date;
+  End: string | Date;
+  TimeCodes: TimeCode[];
+}
+
+/**
  * QueryMultipleSchedules function
  *
  * Unbound function
  */
 export class QueryMultipleSchedulesFunction implements Executable<QueryMultipleSchedulesResponse> {
-  constructor(
-    public readonly resource: resource[],
-    public readonly start: string | Date,
-    public readonly end: string | Date,
-    public readonly timeCodes: TimeCode[]
-  ) {}
+  constructor(public readonly parameters: QueryMultipleSchedulesFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/QueryMultipleSchedules`;
@@ -28,21 +34,21 @@ export class QueryMultipleSchedulesFunction implements Executable<QueryMultipleS
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.resource !== undefined) {
+    if (this.parameters.Resource !== undefined) {
       aliases.push(`Resource=@p1`);
-      params.append("@p1", JSON.stringify(this.resource));
+      params.append("@p1", JSON.stringify(this.parameters.Resource));
     }
-    if (this.start !== undefined) {
+    if (this.parameters.Start !== undefined) {
       aliases.push(`Start=@p2`);
-      params.append("@p2", formatParameterAlias(this.start, "Edm.DateTimeOffset"));
+      params.append("@p2", formatParameterAlias(this.parameters.Start, "Edm.DateTimeOffset"));
     }
-    if (this.end !== undefined) {
+    if (this.parameters.End !== undefined) {
       aliases.push(`End=@p3`);
-      params.append("@p3", formatParameterAlias(this.end, "Edm.DateTimeOffset"));
+      params.append("@p3", formatParameterAlias(this.parameters.End, "Edm.DateTimeOffset"));
     }
-    if (this.timeCodes !== undefined) {
+    if (this.parameters.TimeCodes !== undefined) {
       aliases.push(`TimeCodes=@p4`);
-      params.append("@p4", JSON.stringify(this.timeCodes));
+      params.append("@p4", JSON.stringify(this.parameters.TimeCodes));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -58,7 +64,8 @@ export class QueryMultipleSchedulesFunction implements Executable<QueryMultipleS
   }
 
   async parseResponse(response: Response): Promise<QueryMultipleSchedulesResponse> {
-    const data = await response.json();
-    return data as QueryMultipleSchedulesResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as QueryMultipleSchedulesResponse;
   }
 }

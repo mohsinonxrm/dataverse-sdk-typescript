@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_CheckForWaitingWorkflowWithMessagesRelatedToAgreement action
@@ -10,19 +11,29 @@ export interface msdyn_CheckForWaitingWorkflowWithMessagesRelatedToAgreementResp
 }
 
 /**
+ * Parameters of the msdyn_CheckForWaitingWorkflowWithMessagesRelatedToAgreement action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CheckForWaitingWorkflowWithMessagesRelatedToAgreementActionParameters {
+  SolutionId: string;
+}
+
+/**
  * msdyn_CheckForWaitingWorkflowWithMessagesRelatedToAgreement action
  *
  * Unbound action
  */
 export class msdyn_CheckForWaitingWorkflowWithMessagesRelatedToAgreementAction implements Executable<msdyn_CheckForWaitingWorkflowWithMessagesRelatedToAgreementResponse> {
-  constructor(public readonly solutionId: string) {}
+  constructor(
+    public readonly parameters: msdyn_CheckForWaitingWorkflowWithMessagesRelatedToAgreementActionParameters
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckForWaitingWorkflowWithMessagesRelatedToAgreement`;
 
-    const body: Record<string, unknown> = {
-      SolutionId: this.solutionId,
-    };
+    const body = requestBody({
+      SolutionId: this.parameters.SolutionId,
+    });
 
     return {
       method: "POST",
@@ -37,7 +48,10 @@ export class msdyn_CheckForWaitingWorkflowWithMessagesRelatedToAgreementAction i
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckForWaitingWorkflowWithMessagesRelatedToAgreementResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckForWaitingWorkflowWithMessagesRelatedToAgreementResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (
+      text ? JSON.parse(text) : {}
+    ) as msdyn_CheckForWaitingWorkflowWithMessagesRelatedToAgreementResponse;
   }
 }

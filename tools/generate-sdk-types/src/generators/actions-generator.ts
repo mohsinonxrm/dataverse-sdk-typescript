@@ -8,12 +8,20 @@ import {
   csdlTypeToTs,
   csdlTypeToTsWithExpansion,
   toPascalCase as _toPascalCase,
-  toCamelCase,
   getEntitySetName,
   isCollectionType,
   extractEntityTypeName,
-  constructorParameterList,
 } from "../utils/typescript-writer.js";
+import {
+  bindingDoc,
+  parametersArgument,
+  parametersInterface,
+  parametersInterfaceName,
+  parseResponseBody,
+  REQUEST_BODY_MODULE,
+  REQUEST_BODY_SOURCE,
+  requestBodyExpression,
+} from "../utils/operation-parameters.js";
 import {
   writeTypeScriptFile,
   generateIndexFile as _generateIndexFile,
@@ -120,6 +128,8 @@ export async function generateActions(
     join(absolutePath, "internal", `${ENUM_BODY_MODULE}.ts`),
     enumBodySource(csdl)
   );
+  // Bodies leave out undefined parameters (#96)
+  await writeTypeScriptFile(join(absolutePath, `${REQUEST_BODY_MODULE}.ts`), REQUEST_BODY_SOURCE);
 
   const generatedFiles: string[] = [];
 
@@ -250,6 +260,9 @@ function generateActionClass(csdl: CsdlSchema, action: CsdlAction, stem = action
   if (needsEntityReference) {
     code += `import type { EntityReference } from './types/EntityReference.js';\n`;
   }
+  if (action.parameters.some((p) => p.name)) {
+    code += `import { requestBody } from './${REQUEST_BODY_MODULE}.js';\n`;
+  }
   if (action.parameters.some((p) => bodyEnumType(csdl, p.type))) {
     code += `import { enumBody } from './internal/${ENUM_BODY_MODULE}.js';\n`;
   }
@@ -271,29 +284,14 @@ function generateActionClass(csdl: CsdlSchema, action: CsdlAction, stem = action
   code += generateResponseInterface(csdl, action, responseInterfaceName);
   code += `\n`;
 
-  // Generate action class
-  code += `/**\n`;
-  code += ` * ${action.name} action\n`;
-  code += ` *\n`;
-  code += ` * ${action.isBound ? "Bound" : "Unbound"} action\n`;
-  if (action.bindingParameter) {
-    code += ` * Binding parameter: ${action.bindingParameter.name || "unnamed"} (${action.bindingParameter.type})\n`;
-  }
   // Collection-bound: called on an entity set (#69)
   const collection =
     action.isBound && action.bindingParameter && isCollectionType(action.bindingParameter.type)
       ? collectionBinding(csdl, action.bindingParameter.type)
       : undefined;
-  if (collection?.needsEntitySetName) {
-    code += ` *\n`;
-    code += ` * The first argument is the entity set to call it on, for example "accounts".\n`;
-  }
-  code += ` */\n`;
-  code += `export class ${className} implements Executable<${responseInterfaceName}> {\n`;
 
-  // Generate constructor parameters
-  // For bound actions, the binding parameter becomes entityId: string (just the GUID)
-  // All other parameters stay as-is
+  // Constructor arguments: the record or entity set a bound action runs on (in the URL), then
+  // one object with the CSDL parameters (#96)
   const constructorParams: Array<{
     name: string;
     type: string;
@@ -341,7 +339,7 @@ function generateActionClass(csdl: CsdlSchema, action: CsdlAction, stem = action
     }
 
     constructorParams.push({
-      name: toCamelCase(param.name),
+      name: param.name,
       type:
         polymorphicParameterType(csdl, param.type)?.tsType ??
         entityParameterType(csdl, param.type)?.tsType ??
@@ -354,9 +352,37 @@ function generateActionClass(csdl: CsdlSchema, action: CsdlAction, stem = action
     });
   }
 
-  if (constructorParams.length > 0) {
+  const bindingParams = constructorParams.filter((p) => p.isBinding);
+  const bodyParams = constructorParams
+    .filter((p) => !p.isBinding)
+    .map((p) => ({ name: p.tsName, type: p.type, optional: p.optional === true }));
+  const parametersName = parametersInterfaceName(className);
+  if (bodyParams.length > 0) {
+    code += parametersInterface(parametersName, `${action.name} action`, bodyParams);
+    code += `\n`;
+  }
+
+  // Generate action class
+  code += `/**\n`;
+  code += ` * ${action.name} action\n`;
+  code += ` *\n`;
+  code += ` * ${action.isBound ? "Bound" : "Unbound"} action\n`;
+  if (action.bindingParameter) {
+    code += ` * Binding parameter: ${action.bindingParameter.name || "unnamed"} (${action.bindingParameter.type})\n`;
+  }
+  code += bindingDoc(bindingParams[0]?.name, action.bindingParameter?.type);
+  code += ` */\n`;
+  code += `export class ${className} implements Executable<${responseInterfaceName}> {\n`;
+
+  const ctorArgs = [
+    ...bindingParams.map((p) => `public readonly ${p.name}: ${p.type}`),
+    ...(bodyParams.length > 0
+      ? [parametersArgument("public readonly", parametersName, bodyParams)]
+      : []),
+  ];
+  if (ctorArgs.length > 0) {
     code += `  constructor(\n`;
-    code += constructorParameterList(constructorParams, "public readonly");
+    for (const arg of ctorArgs) code += `    ${arg},\n`;
     code += `  ) {}\n\n`;
   }
 
@@ -394,17 +420,10 @@ function generateActionClass(csdl: CsdlSchema, action: CsdlAction, stem = action
     code += `    const url = \`\${baseUrl}/${action.name}\`;\n\n`;
   }
 
-  // Build request body
-  const bodyParams = constructorParams.filter((p) => !p.isBinding);
+  // Build request body: the parameters by their CSDL names, without the undefined ones (#96)
   if (bodyParams.length > 0) {
-    code += `    const body: Record<string, unknown> = {\n`;
-    for (const param of bodyParams) {
-      const value = param.enumType
-        ? `enumBody(this.${param.name}, ${JSON.stringify(param.enumType)})`
-        : `this.${param.name}`;
-      code += `      ${param.tsName}: ${value},\n`;
-    }
-    code += `    };\n\n`;
+    const enumTypeOf = (name: string) => constructorParams.find((p) => p.tsName === name)?.enumType;
+    code += `    const body = ${requestBodyExpression("this.parameters", bodyParams, enumTypeOf)};\n\n`;
   }
 
   code += `    return {\n`;
@@ -423,13 +442,7 @@ function generateActionClass(csdl: CsdlSchema, action: CsdlAction, stem = action
 
   // Generate parseResponse method
   code += `  async parseResponse(response: Response): Promise<${responseInterfaceName}> {\n`;
-  if (action.returnType) {
-    code += `    const data = await response.json();\n`;
-    code += `    return data as ${responseInterfaceName};\n`;
-  } else {
-    code += `    // No return value (204 No Content)\n`;
-    code += `    return {};\n`;
-  }
+  code += parseResponseBody(responseInterfaceName);
   code += `  }\n`;
 
   code += `}\n`;
@@ -506,10 +519,12 @@ function generateActionsIndex(
   // One export per class: overloads have their own (#75), and a name with no unbound overload
   // has no plain-name export (#286)
   const entries = operations
-    .map((op) => stems.get(op) ?? op.name)
-    .sort((a, b) => a.localeCompare(b));
-  for (const stem of entries) {
-    code += `export { ${stem}Action, type ${stem}Response } from './${stem}Action.js';\n`;
+    .map((op) => ({ stem: stems.get(op) ?? op.name, hasParameters: op.parameters.some((p) => p.name) }))
+    .sort((a, b) => a.stem.localeCompare(b.stem));
+  for (const { stem, hasParameters } of entries) {
+    // The parameters interface of the constructor (#96)
+    const parameters = hasParameters ? `, type ${parametersInterfaceName(`${stem}Action`)}` : "";
+    code += `export { ${stem}Action${parameters}, type ${stem}Response } from './${stem}Action.js';\n`;
   }
 
   // Export EntityReference type

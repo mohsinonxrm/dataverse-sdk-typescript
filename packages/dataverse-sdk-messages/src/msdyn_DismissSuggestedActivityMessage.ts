@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_DismissSuggestedActivity message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_DismissSuggestedActivityRequestParameters {
+  SuggestedActivityId: string;
+  DismissActivity: boolean;
+}
 
 /**
  * msdyn_DismissSuggestedActivity request message
@@ -10,20 +20,19 @@ export class msdyn_DismissSuggestedActivityRequest
   extends OrganizationRequest
   implements Executable<msdyn_DismissSuggestedActivityResponse>
 {
-  constructor(
-    public suggestedActivityId: string,
-    public dismissActivity: boolean
-  ) {
-    super("msdyn_DismissSuggestedActivity");
+  declare readonly Parameters: Readonly<msdyn_DismissSuggestedActivityRequestParameters>;
+
+  constructor(parameters: msdyn_DismissSuggestedActivityRequestParameters) {
+    super("msdyn_DismissSuggestedActivity", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_DismissSuggestedActivity`;
 
-    const body: Record<string, unknown> = {
-      SuggestedActivityId: this.suggestedActivityId,
-      DismissActivity: this.dismissActivity,
-    };
+    const body = requestBody({
+      SuggestedActivityId: this.Parameters.SuggestedActivityId,
+      DismissActivity: this.Parameters.DismissActivity,
+    });
 
     return {
       method: "POST",

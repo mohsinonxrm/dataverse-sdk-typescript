@@ -32,7 +32,8 @@ export class RetrieveFinanceAndOperationsIntegrationDetailsFunction implements E
   async parseResponse(
     response: Response
   ): Promise<RetrieveFinanceAndOperationsIntegrationDetailsResponse> {
-    const data = await response.json();
-    return data as RetrieveFinanceAndOperationsIntegrationDetailsResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RetrieveFinanceAndOperationsIntegrationDetailsResponse;
   }
 }

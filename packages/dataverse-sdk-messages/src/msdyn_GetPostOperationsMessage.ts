@@ -1,6 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseValue } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_GetPostOperations message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetPostOperationsRequestParameters {
+  workflowId: string;
+  correlationId: string;
+}
 
 /**
  * msdyn_GetPostOperations request message
@@ -11,20 +21,19 @@ export class msdyn_GetPostOperationsRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetPostOperationsResponse>
 {
-  constructor(
-    public workflowId: string,
-    public correlationId: string
-  ) {
-    super("msdyn_GetPostOperations");
+  declare readonly Parameters: Readonly<msdyn_GetPostOperationsRequestParameters>;
+
+  constructor(parameters: msdyn_GetPostOperationsRequestParameters) {
+    super("msdyn_GetPostOperations", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetPostOperations`;
 
-    const body: Record<string, unknown> = {
-      workflowId: this.workflowId,
-      correlationId: this.correlationId,
-    };
+    const body = requestBody({
+      workflowId: this.Parameters.workflowId,
+      correlationId: this.Parameters.correlationId,
+    });
 
     return {
       method: "POST",
@@ -37,8 +46,9 @@ export class msdyn_GetPostOperationsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetPostOperationsResponse> {
-    const data = await response.json();
-    return msdyn_GetPostOperationsResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_GetPostOperationsResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

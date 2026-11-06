@@ -12,6 +12,8 @@ export interface RecalculateResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.goal)
+ *
+ * The first argument is the id of the goal record to call it on.
  */
 export class RecalculateAction implements Executable<RecalculateResponse> {
   constructor(public readonly goalId: string) {}
@@ -30,7 +32,8 @@ export class RecalculateAction implements Executable<RecalculateResponse> {
   }
 
   async parseResponse(response: Response): Promise<RecalculateResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RecalculateResponse;
   }
 }

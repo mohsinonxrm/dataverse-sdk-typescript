@@ -12,6 +12,8 @@ export interface RemoveFromQueueResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.queueitem)
+ *
+ * The first argument is the id of the queueitem record to call it on.
  */
 export class RemoveFromQueueAction implements Executable<RemoveFromQueueResponse> {
   constructor(public readonly queueitemId: string) {}
@@ -30,7 +32,8 @@ export class RemoveFromQueueAction implements Executable<RemoveFromQueueResponse
   }
 
   async parseResponse(response: Response): Promise<RemoveFromQueueResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RemoveFromQueueResponse;
   }
 }

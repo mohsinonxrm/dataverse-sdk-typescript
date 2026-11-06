@@ -1,5 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_ImportAnalyticsReport message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ImportAnalyticsReportRequestParameters {
+  msdyn_OverwriteDraft?: boolean;
+  msdyn_AnalyticsReportContent: string;
+  msdyn_AnalyticsFeatureId: string;
+}
 
 /**
  * msdyn_ImportAnalyticsReport request message
@@ -10,22 +21,20 @@ export class msdyn_ImportAnalyticsReportRequest
   extends OrganizationRequest
   implements Executable<msdyn_ImportAnalyticsReportResponse>
 {
-  constructor(
-    public msdyn_OverwriteDraft: boolean | undefined,
-    public msdyn_AnalyticsReportContent: string,
-    public msdyn_AnalyticsFeatureId: string
-  ) {
-    super("msdyn_ImportAnalyticsReport");
+  declare readonly Parameters: Readonly<msdyn_ImportAnalyticsReportRequestParameters>;
+
+  constructor(parameters: msdyn_ImportAnalyticsReportRequestParameters) {
+    super("msdyn_ImportAnalyticsReport", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ImportAnalyticsReport`;
 
-    const body: Record<string, unknown> = {
-      msdyn_OverwriteDraft: this.msdyn_OverwriteDraft,
-      msdyn_AnalyticsReportContent: this.msdyn_AnalyticsReportContent,
-      msdyn_AnalyticsFeatureId: this.msdyn_AnalyticsFeatureId,
-    };
+    const body = requestBody({
+      msdyn_OverwriteDraft: this.Parameters.msdyn_OverwriteDraft,
+      msdyn_AnalyticsReportContent: this.Parameters.msdyn_AnalyticsReportContent,
+      msdyn_AnalyticsFeatureId: this.Parameters.msdyn_AnalyticsFeatureId,
+    });
 
     return {
       method: "POST",

@@ -10,17 +10,23 @@ export interface QueryScheduleResponse {
 }
 
 /**
+ * Parameters of the QuerySchedule function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface QueryScheduleFunctionParameters {
+  ResourceId: string;
+  Start: string | Date;
+  End: string | Date;
+  TimeCodes: TimeCode[];
+}
+
+/**
  * QuerySchedule function
  *
  * Unbound function
  */
 export class QueryScheduleFunction implements Executable<QueryScheduleResponse> {
-  constructor(
-    public readonly resourceId: string,
-    public readonly start: string | Date,
-    public readonly end: string | Date,
-    public readonly timeCodes: TimeCode[]
-  ) {}
+  constructor(public readonly parameters: QueryScheduleFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/QuerySchedule`;
@@ -28,21 +34,21 @@ export class QueryScheduleFunction implements Executable<QueryScheduleResponse> 
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.resourceId !== undefined) {
+    if (this.parameters.ResourceId !== undefined) {
       aliases.push(`ResourceId=@p1`);
-      params.append("@p1", formatParameterAlias(this.resourceId, "Edm.Guid"));
+      params.append("@p1", formatParameterAlias(this.parameters.ResourceId, "Edm.Guid"));
     }
-    if (this.start !== undefined) {
+    if (this.parameters.Start !== undefined) {
       aliases.push(`Start=@p2`);
-      params.append("@p2", formatParameterAlias(this.start, "Edm.DateTimeOffset"));
+      params.append("@p2", formatParameterAlias(this.parameters.Start, "Edm.DateTimeOffset"));
     }
-    if (this.end !== undefined) {
+    if (this.parameters.End !== undefined) {
       aliases.push(`End=@p3`);
-      params.append("@p3", formatParameterAlias(this.end, "Edm.DateTimeOffset"));
+      params.append("@p3", formatParameterAlias(this.parameters.End, "Edm.DateTimeOffset"));
     }
-    if (this.timeCodes !== undefined) {
+    if (this.parameters.TimeCodes !== undefined) {
       aliases.push(`TimeCodes=@p4`);
-      params.append("@p4", JSON.stringify(this.timeCodes));
+      params.append("@p4", JSON.stringify(this.parameters.TimeCodes));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -58,7 +64,8 @@ export class QueryScheduleFunction implements Executable<QueryScheduleResponse> 
   }
 
   async parseResponse(response: Response): Promise<QueryScheduleResponse> {
-    const data = await response.json();
-    return data as QueryScheduleResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as QueryScheduleResponse;
   }
 }

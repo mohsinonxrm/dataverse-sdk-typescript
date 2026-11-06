@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_cesinvoke action
@@ -9,25 +10,31 @@ export interface msdyn_cesinvokeResponse {
 }
 
 /**
+ * Parameters of the msdyn_cesinvoke action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_cesinvokeActionParameters {
+  CallType?: string;
+  EventName?: string;
+  SurveyName?: string;
+}
+
+/**
  * msdyn_cesinvoke action
  *
  * Unbound action
  */
 export class msdyn_cesinvokeAction implements Executable<msdyn_cesinvokeResponse> {
-  constructor(
-    public readonly callType?: string,
-    public readonly eventName?: string,
-    public readonly surveyName?: string
-  ) {}
+  constructor(public readonly parameters: msdyn_cesinvokeActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_cesinvoke`;
 
-    const body: Record<string, unknown> = {
-      CallType: this.callType,
-      EventName: this.eventName,
-      SurveyName: this.surveyName,
-    };
+    const body = requestBody({
+      CallType: this.parameters.CallType,
+      EventName: this.parameters.EventName,
+      SurveyName: this.parameters.SurveyName,
+    });
 
     return {
       method: "POST",
@@ -40,7 +47,8 @@ export class msdyn_cesinvokeAction implements Executable<msdyn_cesinvokeResponse
   }
 
   async parseResponse(response: Response): Promise<msdyn_cesinvokeResponse> {
-    const data = await response.json();
-    return data as msdyn_cesinvokeResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_cesinvokeResponse;
   }
 }

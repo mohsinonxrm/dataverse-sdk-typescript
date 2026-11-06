@@ -16,6 +16,8 @@ export interface CopyCampaignResponseResponse extends campaignresponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.campaignresponse)
+ *
+ * The first argument is the id of the campaignresponse record to call it on.
  */
 export class CopyCampaignResponseAction implements Executable<CopyCampaignResponseResponse> {
   constructor(public readonly campaignresponseId: string) {}
@@ -34,7 +36,8 @@ export class CopyCampaignResponseAction implements Executable<CopyCampaignRespon
   }
 
   async parseResponse(response: Response): Promise<CopyCampaignResponseResponse> {
-    const data = await response.json();
-    return data as CopyCampaignResponseResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as CopyCampaignResponseResponse;
   }
 }

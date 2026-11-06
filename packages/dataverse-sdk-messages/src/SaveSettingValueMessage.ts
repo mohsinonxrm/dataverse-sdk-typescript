@@ -1,5 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the SaveSettingValue message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SaveSettingValueRequestParameters {
+  AppUniqueName?: string;
+  SettingName: string;
+  Value: string;
+  SolutionUniqueName?: string;
+}
 
 /**
  * SaveSettingValue request message
@@ -10,24 +22,21 @@ export class SaveSettingValueRequest
   extends OrganizationRequest
   implements Executable<SaveSettingValueResponse>
 {
-  constructor(
-    public appUniqueName: string | undefined,
-    public settingName: string,
-    public value: string,
-    public solutionUniqueName?: string
-  ) {
-    super("SaveSettingValue");
+  declare readonly Parameters: Readonly<SaveSettingValueRequestParameters>;
+
+  constructor(parameters: SaveSettingValueRequestParameters) {
+    super("SaveSettingValue", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/SaveSettingValue`;
 
-    const body: Record<string, unknown> = {
-      AppUniqueName: this.appUniqueName,
-      SettingName: this.settingName,
-      Value: this.value,
-      SolutionUniqueName: this.solutionUniqueName,
-    };
+    const body = requestBody({
+      AppUniqueName: this.Parameters.AppUniqueName,
+      SettingName: this.Parameters.SettingName,
+      Value: this.Parameters.Value,
+      SolutionUniqueName: this.Parameters.SolutionUniqueName,
+    });
 
     return {
       method: "POST",

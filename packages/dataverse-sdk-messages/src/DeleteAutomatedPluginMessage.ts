@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the DeleteAutomatedPlugin message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface DeleteAutomatedPluginRequestParameters {
+  pluginid: string;
+}
 
 /**
  * DeleteAutomatedPlugin request message
@@ -10,16 +19,18 @@ export class DeleteAutomatedPluginRequest
   extends OrganizationRequest
   implements Executable<DeleteAutomatedPluginResponse>
 {
-  constructor(public pluginid: string) {
-    super("DeleteAutomatedPlugin");
+  declare readonly Parameters: Readonly<DeleteAutomatedPluginRequestParameters>;
+
+  constructor(parameters: DeleteAutomatedPluginRequestParameters) {
+    super("DeleteAutomatedPlugin", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/DeleteAutomatedPlugin`;
 
-    const body: Record<string, unknown> = {
-      pluginid: this.pluginid,
-    };
+    const body = requestBody({
+      pluginid: this.Parameters.pluginid,
+    });
 
     return {
       method: "POST",

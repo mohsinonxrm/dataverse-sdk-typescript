@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_TelephonyPhoneNumberPlanUpgradeAction action
@@ -8,24 +9,34 @@ export interface msdyn_TelephonyPhoneNumberPlanUpgradeActionResponse {
 }
 
 /**
+ * Parameters of the msdyn_TelephonyPhoneNumberPlanUpgradeAction action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_TelephonyPhoneNumberPlanUpgradeActionActionParameters {
+  ActionRequest: string;
+}
+
+/**
  * msdyn_TelephonyPhoneNumberPlanUpgradeAction action
  *
  * Bound action
  * Binding parameter: entity (mscrm.msdyn_ocphonenumber)
+ *
+ * The first argument is the id of the msdyn_ocphonenumber record to call it on.
  */
 export class msdyn_TelephonyPhoneNumberPlanUpgradeActionAction implements Executable<msdyn_TelephonyPhoneNumberPlanUpgradeActionResponse> {
   constructor(
     public readonly msdyn_ocphonenumberId: string,
-    public readonly actionRequest: string
+    public readonly parameters: msdyn_TelephonyPhoneNumberPlanUpgradeActionActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_ocphonenumbers(${this.msdyn_ocphonenumberId})/Microsoft.Dynamics.CRM.msdyn_TelephonyPhoneNumberPlanUpgradeAction`;
 
-    const body: Record<string, unknown> = {
-      ActionRequest: this.actionRequest,
-    };
+    const body = requestBody({
+      ActionRequest: this.parameters.ActionRequest,
+    });
 
     return {
       method: "POST",
@@ -40,7 +51,8 @@ export class msdyn_TelephonyPhoneNumberPlanUpgradeActionAction implements Execut
   async parseResponse(
     response: Response
   ): Promise<msdyn_TelephonyPhoneNumberPlanUpgradeActionResponse> {
-    const data = await response.json();
-    return data as msdyn_TelephonyPhoneNumberPlanUpgradeActionResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_TelephonyPhoneNumberPlanUpgradeActionResponse;
   }
 }

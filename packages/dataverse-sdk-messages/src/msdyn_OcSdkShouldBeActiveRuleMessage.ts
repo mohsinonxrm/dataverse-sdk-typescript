@@ -29,8 +29,9 @@ export class msdyn_OcSdkShouldBeActiveRuleRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_OcSdkShouldBeActiveRuleResponse> {
-    const data = await response.json();
-    return msdyn_OcSdkShouldBeActiveRuleResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_OcSdkShouldBeActiveRuleResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

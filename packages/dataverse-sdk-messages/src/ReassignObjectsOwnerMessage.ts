@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the ReassignObjectsOwner message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ReassignObjectsOwnerRequestParameters {
+  FromPrincipal: EntityReference | AnyEntityPayload;
+  ToPrincipal: EntityReference | AnyEntityPayload;
+  objectType?: number;
+}
 
 /**
  * ReassignObjectsOwner request message
@@ -12,22 +23,20 @@ export class ReassignObjectsOwnerRequest
   extends OrganizationRequest
   implements Executable<ReassignObjectsOwnerResponse>
 {
-  constructor(
-    public fromPrincipal: EntityReference | AnyEntityPayload,
-    public toPrincipal: EntityReference | AnyEntityPayload,
-    public objectType?: number
-  ) {
-    super("ReassignObjectsOwner");
+  declare readonly Parameters: Readonly<ReassignObjectsOwnerRequestParameters>;
+
+  constructor(parameters: ReassignObjectsOwnerRequestParameters) {
+    super("ReassignObjectsOwner", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ReassignObjectsOwner`;
 
-    const body: Record<string, unknown> = {
-      FromPrincipal: this.fromPrincipal,
-      ToPrincipal: this.toPrincipal,
-      objectType: this.objectType,
-    };
+    const body = requestBody({
+      FromPrincipal: this.Parameters.FromPrincipal,
+      ToPrincipal: this.Parameters.ToPrincipal,
+      objectType: this.Parameters.objectType,
+    });
 
     return {
       method: "POST",

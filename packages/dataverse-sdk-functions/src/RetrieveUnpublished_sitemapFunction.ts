@@ -16,6 +16,8 @@ export interface RetrieveUnpublished_sitemapResponse extends sitemap {
  *
  * Bound function
  * Binding parameter: entity (mscrm.sitemap)
+ *
+ * The first argument is the id of the sitemap record to call it on.
  */
 export class RetrieveUnpublished_sitemapFunction implements Executable<RetrieveUnpublished_sitemapResponse> {
   constructor(public readonly sitemapId: string) {}
@@ -34,7 +36,8 @@ export class RetrieveUnpublished_sitemapFunction implements Executable<RetrieveU
   }
 
   async parseResponse(response: Response): Promise<RetrieveUnpublished_sitemapResponse> {
-    const data = await response.json();
-    return data as RetrieveUnpublished_sitemapResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RetrieveUnpublished_sitemapResponse;
   }
 }

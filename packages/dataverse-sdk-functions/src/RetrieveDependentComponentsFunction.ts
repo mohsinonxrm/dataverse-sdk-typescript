@@ -10,15 +10,21 @@ export interface RetrieveDependentComponentsResponse {
 }
 
 /**
+ * Parameters of the RetrieveDependentComponents function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveDependentComponentsFunctionParameters {
+  ObjectId: string;
+  ComponentType: number;
+}
+
+/**
  * RetrieveDependentComponents function
  *
  * Unbound function
  */
 export class RetrieveDependentComponentsFunction implements Executable<RetrieveDependentComponentsResponse> {
-  constructor(
-    public readonly objectId: string,
-    public readonly componentType: number
-  ) {}
+  constructor(public readonly parameters: RetrieveDependentComponentsFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveDependentComponents`;
@@ -26,13 +32,13 @@ export class RetrieveDependentComponentsFunction implements Executable<RetrieveD
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.objectId !== undefined) {
+    if (this.parameters.ObjectId !== undefined) {
       aliases.push(`ObjectId=@p1`);
-      params.append("@p1", formatParameterAlias(this.objectId, "Edm.Guid"));
+      params.append("@p1", formatParameterAlias(this.parameters.ObjectId, "Edm.Guid"));
     }
-    if (this.componentType !== undefined) {
+    if (this.parameters.ComponentType !== undefined) {
       aliases.push(`ComponentType=@p2`);
-      params.append("@p2", formatParameterAlias(this.componentType, "Edm.Int32"));
+      params.append("@p2", formatParameterAlias(this.parameters.ComponentType, "Edm.Int32"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -48,7 +54,8 @@ export class RetrieveDependentComponentsFunction implements Executable<RetrieveD
   }
 
   async parseResponse(response: Response): Promise<RetrieveDependentComponentsResponse> {
-    const data = await response.json();
-    return data as RetrieveDependentComponentsResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RetrieveDependentComponentsResponse;
   }
 }

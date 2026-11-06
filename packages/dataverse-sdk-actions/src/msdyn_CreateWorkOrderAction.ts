@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_CreateWorkOrder action
@@ -8,19 +9,27 @@ export interface msdyn_CreateWorkOrderResponse {
 }
 
 /**
+ * Parameters of the msdyn_CreateWorkOrder action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CreateWorkOrderActionParameters {
+  input: string;
+}
+
+/**
  * msdyn_CreateWorkOrder action
  *
  * Unbound action
  */
 export class msdyn_CreateWorkOrderAction implements Executable<msdyn_CreateWorkOrderResponse> {
-  constructor(public readonly input: string) {}
+  constructor(public readonly parameters: msdyn_CreateWorkOrderActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CreateWorkOrder`;
 
-    const body: Record<string, unknown> = {
-      input: this.input,
-    };
+    const body = requestBody({
+      input: this.parameters.input,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class msdyn_CreateWorkOrderAction implements Executable<msdyn_CreateWorkO
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateWorkOrderResponse> {
-    const data = await response.json();
-    return data as msdyn_CreateWorkOrderResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_CreateWorkOrderResponse;
   }
 }

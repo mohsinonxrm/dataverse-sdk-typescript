@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_PostCreateAutonomousEmail message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_PostCreateAutonomousEmailRequestParameters {
+  EmailGuid: string;
+}
 
 /**
  * msdyn_PostCreateAutonomousEmail request message
@@ -10,16 +19,18 @@ export class msdyn_PostCreateAutonomousEmailRequest
   extends OrganizationRequest
   implements Executable<msdyn_PostCreateAutonomousEmailResponse>
 {
-  constructor(public emailGuid: string) {
-    super("msdyn_PostCreateAutonomousEmail");
+  declare readonly Parameters: Readonly<msdyn_PostCreateAutonomousEmailRequestParameters>;
+
+  constructor(parameters: msdyn_PostCreateAutonomousEmailRequestParameters) {
+    super("msdyn_PostCreateAutonomousEmail", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_PostCreateAutonomousEmail`;
 
-    const body: Record<string, unknown> = {
-      EmailGuid: this.emailGuid,
-    };
+    const body = requestBody({
+      EmailGuid: this.Parameters.EmailGuid,
+    });
 
     return {
       method: "POST",

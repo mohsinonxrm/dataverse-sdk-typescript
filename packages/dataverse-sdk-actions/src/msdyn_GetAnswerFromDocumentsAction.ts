@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_GetAnswerFromDocuments action
@@ -10,25 +11,31 @@ export interface msdyn_GetAnswerFromDocumentsResponse {
 }
 
 /**
+ * Parameters of the msdyn_GetAnswerFromDocuments action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetAnswerFromDocumentsActionParameters {
+  msdyn_activityId?: string;
+  msdyn_updatedUserQuery?: string;
+  msdyn_documentUrl: string;
+}
+
+/**
  * msdyn_GetAnswerFromDocuments action
  *
  * Unbound action
  */
 export class msdyn_GetAnswerFromDocumentsAction implements Executable<msdyn_GetAnswerFromDocumentsResponse> {
-  constructor(
-    public readonly msdyn_activityId: string | undefined,
-    public readonly msdyn_updatedUserQuery: string | undefined,
-    public readonly msdyn_documentUrl: string
-  ) {}
+  constructor(public readonly parameters: msdyn_GetAnswerFromDocumentsActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetAnswerFromDocuments`;
 
-    const body: Record<string, unknown> = {
-      msdyn_activityId: this.msdyn_activityId,
-      msdyn_updatedUserQuery: this.msdyn_updatedUserQuery,
-      msdyn_documentUrl: this.msdyn_documentUrl,
-    };
+    const body = requestBody({
+      msdyn_activityId: this.parameters.msdyn_activityId,
+      msdyn_updatedUserQuery: this.parameters.msdyn_updatedUserQuery,
+      msdyn_documentUrl: this.parameters.msdyn_documentUrl,
+    });
 
     return {
       method: "POST",
@@ -41,7 +48,8 @@ export class msdyn_GetAnswerFromDocumentsAction implements Executable<msdyn_GetA
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAnswerFromDocumentsResponse> {
-    const data = await response.json();
-    return data as msdyn_GetAnswerFromDocumentsResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_GetAnswerFromDocumentsResponse;
   }
 }

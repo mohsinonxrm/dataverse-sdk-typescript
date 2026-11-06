@@ -12,6 +12,8 @@ export interface DownloadReportDefinitionResponse {
  *
  * Bound function
  * Binding parameter: entity (mscrm.report)
+ *
+ * The first argument is the id of the report record to call it on.
  */
 export class DownloadReportDefinitionFunction implements Executable<DownloadReportDefinitionResponse> {
   constructor(public readonly reportId: string) {}
@@ -30,7 +32,8 @@ export class DownloadReportDefinitionFunction implements Executable<DownloadRepo
   }
 
   async parseResponse(response: Response): Promise<DownloadReportDefinitionResponse> {
-    const data = await response.json();
-    return data as DownloadReportDefinitionResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as DownloadReportDefinitionResponse;
   }
 }

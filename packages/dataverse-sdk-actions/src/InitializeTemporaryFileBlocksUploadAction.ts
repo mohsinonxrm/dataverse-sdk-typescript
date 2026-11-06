@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from InitializeTemporaryFileBlocksUpload action
@@ -9,23 +10,29 @@ export interface InitializeTemporaryFileBlocksUploadResponse {
 }
 
 /**
+ * Parameters of the InitializeTemporaryFileBlocksUpload action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface InitializeTemporaryFileBlocksUploadActionParameters {
+  FileName: string;
+  FileSize: number;
+}
+
+/**
  * InitializeTemporaryFileBlocksUpload action
  *
  * Unbound action
  */
 export class InitializeTemporaryFileBlocksUploadAction implements Executable<InitializeTemporaryFileBlocksUploadResponse> {
-  constructor(
-    public readonly fileName: string,
-    public readonly fileSize: number
-  ) {}
+  constructor(public readonly parameters: InitializeTemporaryFileBlocksUploadActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/InitializeTemporaryFileBlocksUpload`;
 
-    const body: Record<string, unknown> = {
-      FileName: this.fileName,
-      FileSize: this.fileSize,
-    };
+    const body = requestBody({
+      FileName: this.parameters.FileName,
+      FileSize: this.parameters.FileSize,
+    });
 
     return {
       method: "POST",
@@ -38,7 +45,8 @@ export class InitializeTemporaryFileBlocksUploadAction implements Executable<Ini
   }
 
   async parseResponse(response: Response): Promise<InitializeTemporaryFileBlocksUploadResponse> {
-    const data = await response.json();
-    return data as InitializeTemporaryFileBlocksUploadResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as InitializeTemporaryFileBlocksUploadResponse;
   }
 }

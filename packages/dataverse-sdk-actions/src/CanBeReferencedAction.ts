@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from CanBeReferenced action
@@ -8,19 +9,27 @@ export interface CanBeReferencedResponse {
 }
 
 /**
+ * Parameters of the CanBeReferenced action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CanBeReferencedActionParameters {
+  EntityName: string;
+}
+
+/**
  * CanBeReferenced action
  *
  * Unbound action
  */
 export class CanBeReferencedAction implements Executable<CanBeReferencedResponse> {
-  constructor(public readonly entityName: string) {}
+  constructor(public readonly parameters: CanBeReferencedActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CanBeReferenced`;
 
-    const body: Record<string, unknown> = {
-      EntityName: this.entityName,
-    };
+    const body = requestBody({
+      EntityName: this.parameters.EntityName,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class CanBeReferencedAction implements Executable<CanBeReferencedResponse
   }
 
   async parseResponse(response: Response): Promise<CanBeReferencedResponse> {
-    const data = await response.json();
-    return data as CanBeReferencedResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as CanBeReferencedResponse;
   }
 }

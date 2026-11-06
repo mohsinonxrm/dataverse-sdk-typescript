@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { GetNextAutoNumberValueResponse as GetNextAutoNumberValueResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the GetNextAutoNumberValue message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GetNextAutoNumberValueRequestParameters {
+  EntityName: string;
+  AttributeName: string;
+}
 
 /**
  * GetNextAutoNumberValue request message
@@ -12,20 +22,19 @@ export class GetNextAutoNumberValueRequest
   extends OrganizationRequest
   implements Executable<GetNextAutoNumberValueResponse>
 {
-  constructor(
-    public entityName: string,
-    public attributeName: string
-  ) {
-    super("GetNextAutoNumberValue");
+  declare readonly Parameters: Readonly<GetNextAutoNumberValueRequestParameters>;
+
+  constructor(parameters: GetNextAutoNumberValueRequestParameters) {
+    super("GetNextAutoNumberValue", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/GetNextAutoNumberValue`;
 
-    const body: Record<string, unknown> = {
-      EntityName: this.entityName,
-      AttributeName: this.attributeName,
-    };
+    const body = requestBody({
+      EntityName: this.Parameters.EntityName,
+      AttributeName: this.Parameters.AttributeName,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class GetNextAutoNumberValueRequest
   }
 
   async parseResponse(response: Response): Promise<GetNextAutoNumberValueResponse> {
-    const data = await response.json();
-    return GetNextAutoNumberValueResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return GetNextAutoNumberValueResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

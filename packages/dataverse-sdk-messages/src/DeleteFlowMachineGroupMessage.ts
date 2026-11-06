@@ -5,6 +5,8 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * DeleteFlowMachineGroup request message
  *
  * Web API Action: DeleteFlowMachineGroup
+ *
+ * The first argument is the id of the flowmachinegroup record to call it on.
  */
 export class DeleteFlowMachineGroupRequest
   extends OrganizationRequest

@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_OSConvertToLocalizedFeaturesResponse as msdyn_OSConvertToLocalizedFeaturesResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_OSConvertToLocalizedFeatures message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_OSConvertToLocalizedFeaturesRequestParameters {
+  PredictionFeatures?: string;
+}
 
 /**
  * msdyn_OSConvertToLocalizedFeatures request message
@@ -12,16 +21,18 @@ export class msdyn_OSConvertToLocalizedFeaturesRequest
   extends OrganizationRequest
   implements Executable<msdyn_OSConvertToLocalizedFeaturesResponse>
 {
-  constructor(public predictionFeatures?: string) {
-    super("msdyn_OSConvertToLocalizedFeatures");
+  declare readonly Parameters: Readonly<msdyn_OSConvertToLocalizedFeaturesRequestParameters>;
+
+  constructor(parameters: msdyn_OSConvertToLocalizedFeaturesRequestParameters = {}) {
+    super("msdyn_OSConvertToLocalizedFeatures", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_OSConvertToLocalizedFeatures`;
 
-    const body: Record<string, unknown> = {
-      PredictionFeatures: this.predictionFeatures,
-    };
+    const body = requestBody({
+      PredictionFeatures: this.Parameters.PredictionFeatures,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_OSConvertToLocalizedFeaturesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_OSConvertToLocalizedFeaturesResponse> {
-    const data = await response.json();
-    return msdyn_OSConvertToLocalizedFeaturesResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_OSConvertToLocalizedFeaturesResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

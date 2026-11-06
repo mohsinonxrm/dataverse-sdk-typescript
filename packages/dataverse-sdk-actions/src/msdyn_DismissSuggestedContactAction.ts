@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_DismissSuggestedContact action
@@ -8,23 +9,29 @@ export interface msdyn_DismissSuggestedContactResponse {
 }
 
 /**
+ * Parameters of the msdyn_DismissSuggestedContact action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_DismissSuggestedContactActionParameters {
+  SuggestedContactId: string;
+  DismissContact: boolean;
+}
+
+/**
  * msdyn_DismissSuggestedContact action
  *
  * Unbound action
  */
 export class msdyn_DismissSuggestedContactAction implements Executable<msdyn_DismissSuggestedContactResponse> {
-  constructor(
-    public readonly suggestedContactId: string,
-    public readonly dismissContact: boolean
-  ) {}
+  constructor(public readonly parameters: msdyn_DismissSuggestedContactActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_DismissSuggestedContact`;
 
-    const body: Record<string, unknown> = {
-      SuggestedContactId: this.suggestedContactId,
-      DismissContact: this.dismissContact,
-    };
+    const body = requestBody({
+      SuggestedContactId: this.parameters.SuggestedContactId,
+      DismissContact: this.parameters.DismissContact,
+    });
 
     return {
       method: "POST",
@@ -37,7 +44,8 @@ export class msdyn_DismissSuggestedContactAction implements Executable<msdyn_Dis
   }
 
   async parseResponse(response: Response): Promise<msdyn_DismissSuggestedContactResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_DismissSuggestedContactResponse;
   }
 }

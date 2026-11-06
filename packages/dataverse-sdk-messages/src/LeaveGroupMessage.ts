@@ -5,6 +5,8 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * LeaveGroup request message
  *
  * Web API Action: LeaveGroup
+ *
+ * The first argument is the id of the flowmachine record to call it on.
  */
 export class LeaveGroupRequest
   extends OrganizationRequest

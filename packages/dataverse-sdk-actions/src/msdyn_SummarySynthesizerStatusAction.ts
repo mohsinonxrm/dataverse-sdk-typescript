@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_SummarySynthesizerStatus action
@@ -10,19 +11,27 @@ export interface msdyn_SummarySynthesizerStatusResponse {
 }
 
 /**
+ * Parameters of the msdyn_SummarySynthesizerStatus action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SummarySynthesizerStatusActionParameters {
+  LeadId: string;
+}
+
+/**
  * msdyn_SummarySynthesizerStatus action
  *
  * Unbound action
  */
 export class msdyn_SummarySynthesizerStatusAction implements Executable<msdyn_SummarySynthesizerStatusResponse> {
-  constructor(public readonly leadId: string) {}
+  constructor(public readonly parameters: msdyn_SummarySynthesizerStatusActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SummarySynthesizerStatus`;
 
-    const body: Record<string, unknown> = {
-      LeadId: this.leadId,
-    };
+    const body = requestBody({
+      LeadId: this.parameters.LeadId,
+    });
 
     return {
       method: "POST",
@@ -35,7 +44,8 @@ export class msdyn_SummarySynthesizerStatusAction implements Executable<msdyn_Su
   }
 
   async parseResponse(response: Response): Promise<msdyn_SummarySynthesizerStatusResponse> {
-    const data = await response.json();
-    return data as msdyn_SummarySynthesizerStatusResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_SummarySynthesizerStatusResponse;
   }
 }

@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from ProvisionLanguageAsync action
@@ -8,19 +9,27 @@ export interface ProvisionLanguageAsyncResponse {
 }
 
 /**
+ * Parameters of the ProvisionLanguageAsync action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ProvisionLanguageAsyncActionParameters {
+  Language: number;
+}
+
+/**
  * ProvisionLanguageAsync action
  *
  * Unbound action
  */
 export class ProvisionLanguageAsyncAction implements Executable<ProvisionLanguageAsyncResponse> {
-  constructor(public readonly language: number) {}
+  constructor(public readonly parameters: ProvisionLanguageAsyncActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ProvisionLanguageAsync`;
 
-    const body: Record<string, unknown> = {
-      Language: this.language,
-    };
+    const body = requestBody({
+      Language: this.parameters.Language,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class ProvisionLanguageAsyncAction implements Executable<ProvisionLanguag
   }
 
   async parseResponse(response: Response): Promise<ProvisionLanguageAsyncResponse> {
-    const data = await response.json();
-    return data as ProvisionLanguageAsyncResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as ProvisionLanguageAsyncResponse;
   }
 }

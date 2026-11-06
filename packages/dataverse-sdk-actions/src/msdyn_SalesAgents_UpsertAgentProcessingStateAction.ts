@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_SalesAgents_UpsertAgentProcessingState action
@@ -8,27 +9,35 @@ export interface msdyn_SalesAgents_UpsertAgentProcessingStateResponse {
 }
 
 /**
+ * Parameters of the msdyn_SalesAgents_UpsertAgentProcessingState action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAgents_UpsertAgentProcessingStateActionParameters {
+  msdyn_Records: Record<string, unknown>[];
+  msdyn_SalesAgentType: number;
+  msdyn_TrackingId?: string;
+  msdyn_SkipVersionNumberUpdate?: boolean;
+}
+
+/**
  * msdyn_SalesAgents_UpsertAgentProcessingState action
  *
  * Unbound action
  */
 export class msdyn_SalesAgents_UpsertAgentProcessingStateAction implements Executable<msdyn_SalesAgents_UpsertAgentProcessingStateResponse> {
   constructor(
-    public readonly msdyn_Records: Record<string, unknown>[],
-    public readonly msdyn_SalesAgentType: number,
-    public readonly msdyn_TrackingId?: string,
-    public readonly msdyn_SkipVersionNumberUpdate?: boolean
+    public readonly parameters: msdyn_SalesAgents_UpsertAgentProcessingStateActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAgents_UpsertAgentProcessingState`;
 
-    const body: Record<string, unknown> = {
-      msdyn_Records: this.msdyn_Records,
-      msdyn_SalesAgentType: this.msdyn_SalesAgentType,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-      msdyn_SkipVersionNumberUpdate: this.msdyn_SkipVersionNumberUpdate,
-    };
+    const body = requestBody({
+      msdyn_Records: this.parameters.msdyn_Records,
+      msdyn_SalesAgentType: this.parameters.msdyn_SalesAgentType,
+      msdyn_TrackingId: this.parameters.msdyn_TrackingId,
+      msdyn_SkipVersionNumberUpdate: this.parameters.msdyn_SkipVersionNumberUpdate,
+    });
 
     return {
       method: "POST",
@@ -43,7 +52,8 @@ export class msdyn_SalesAgents_UpsertAgentProcessingStateAction implements Execu
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_UpsertAgentProcessingStateResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_SalesAgents_UpsertAgentProcessingStateResponse;
   }
 }

@@ -5,6 +5,8 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * msdyn_UpdateSurveyBotTopics request message
  *
  * Web API Action: msdyn_UpdateSurveyBotTopics
+ *
+ * The first argument is the id of the bot record to call it on.
  */
 export class msdyn_UpdateSurveyBotTopicsRequest
   extends OrganizationRequest

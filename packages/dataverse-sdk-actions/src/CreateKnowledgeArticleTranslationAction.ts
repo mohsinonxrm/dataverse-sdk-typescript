@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -14,25 +15,31 @@ export interface CreateKnowledgeArticleTranslationResponse {
 }
 
 /**
+ * Parameters of the CreateKnowledgeArticleTranslation action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CreateKnowledgeArticleTranslationActionParameters {
+  Source: EntityReference | AnyEntityPayload;
+  Language: EntityReference | AnyEntityPayload;
+  IsMajor?: boolean;
+}
+
+/**
  * CreateKnowledgeArticleTranslation action
  *
  * Unbound action
  */
 export class CreateKnowledgeArticleTranslationAction implements Executable<CreateKnowledgeArticleTranslationResponse> {
-  constructor(
-    public readonly source: EntityReference | AnyEntityPayload,
-    public readonly language: EntityReference | AnyEntityPayload,
-    public readonly isMajor?: boolean
-  ) {}
+  constructor(public readonly parameters: CreateKnowledgeArticleTranslationActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CreateKnowledgeArticleTranslation`;
 
-    const body: Record<string, unknown> = {
-      Source: this.source,
-      Language: this.language,
-      IsMajor: this.isMajor,
-    };
+    const body = requestBody({
+      Source: this.parameters.Source,
+      Language: this.parameters.Language,
+      IsMajor: this.parameters.IsMajor,
+    });
 
     return {
       method: "POST",
@@ -45,7 +52,8 @@ export class CreateKnowledgeArticleTranslationAction implements Executable<Creat
   }
 
   async parseResponse(response: Response): Promise<CreateKnowledgeArticleTranslationResponse> {
-    const data = await response.json();
-    return data as CreateKnowledgeArticleTranslationResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as CreateKnowledgeArticleTranslationResponse;
   }
 }

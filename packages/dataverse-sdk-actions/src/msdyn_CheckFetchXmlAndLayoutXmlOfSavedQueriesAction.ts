@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueries action
@@ -12,19 +13,29 @@ export interface msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesResponse {
 }
 
 /**
+ * Parameters of the msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueries action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesActionParameters {
+  IdFetchAndLayoutXmlList: string;
+}
+
+/**
  * msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueries action
  *
  * Unbound action
  */
 export class msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesAction implements Executable<msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesResponse> {
-  constructor(public readonly idFetchAndLayoutXmlList: string) {}
+  constructor(
+    public readonly parameters: msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesActionParameters
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueries`;
 
-    const body: Record<string, unknown> = {
-      IdFetchAndLayoutXmlList: this.idFetchAndLayoutXmlList,
-    };
+    const body = requestBody({
+      IdFetchAndLayoutXmlList: this.parameters.IdFetchAndLayoutXmlList,
+    });
 
     return {
       method: "POST",
@@ -39,7 +50,8 @@ export class msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesAction implements Exec
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesResponse;
   }
 }

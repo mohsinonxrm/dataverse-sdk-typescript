@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,25 +11,31 @@ export interface _CloneRoutingRuleSetResponse {
 }
 
 /**
+ * Parameters of the _CloneRoutingRuleSet action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface _CloneRoutingRuleSetActionParameters {
+  RoutingRuleSetIdToClone: EntityReference | AnyEntityPayload;
+  RoutingRuleSetIdToOverwrite?: EntityReference | AnyEntityPayload;
+  Options: string;
+}
+
+/**
  * _CloneRoutingRuleSet action
  *
  * Unbound action
  */
 export class _CloneRoutingRuleSetAction implements Executable<_CloneRoutingRuleSetResponse> {
-  constructor(
-    public readonly routingRuleSetIdToClone: EntityReference | AnyEntityPayload,
-    public readonly routingRuleSetIdToOverwrite: EntityReference | AnyEntityPayload | undefined,
-    public readonly options: string
-  ) {}
+  constructor(public readonly parameters: _CloneRoutingRuleSetActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/_CloneRoutingRuleSet`;
 
-    const body: Record<string, unknown> = {
-      RoutingRuleSetIdToClone: this.routingRuleSetIdToClone,
-      RoutingRuleSetIdToOverwrite: this.routingRuleSetIdToOverwrite,
-      Options: this.options,
-    };
+    const body = requestBody({
+      RoutingRuleSetIdToClone: this.parameters.RoutingRuleSetIdToClone,
+      RoutingRuleSetIdToOverwrite: this.parameters.RoutingRuleSetIdToOverwrite,
+      Options: this.parameters.Options,
+    });
 
     return {
       method: "POST",
@@ -41,7 +48,8 @@ export class _CloneRoutingRuleSetAction implements Executable<_CloneRoutingRuleS
   }
 
   async parseResponse(response: Response): Promise<_CloneRoutingRuleSetResponse> {
-    const data = await response.json();
-    return data as _CloneRoutingRuleSetResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as _CloneRoutingRuleSetResponse;
   }
 }

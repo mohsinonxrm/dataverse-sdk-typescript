@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { AccessRights } from "./types/index.js";
@@ -12,23 +13,29 @@ export interface RevokeSharedLinkResponse {
 }
 
 /**
+ * Parameters of the RevokeSharedLink action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RevokeSharedLinkActionParameters {
+  Target: EntityReference | AnyEntityPayload;
+  SharedRights: AccessRights;
+}
+
+/**
  * RevokeSharedLink action
  *
  * Unbound action
  */
 export class RevokeSharedLinkAction implements Executable<RevokeSharedLinkResponse> {
-  constructor(
-    public readonly target: EntityReference | AnyEntityPayload,
-    public readonly sharedRights: AccessRights
-  ) {}
+  constructor(public readonly parameters: RevokeSharedLinkActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/RevokeSharedLink`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-      SharedRights: enumBody(this.sharedRights, "AccessRights"),
-    };
+    const body = requestBody({
+      Target: this.parameters.Target,
+      SharedRights: enumBody(this.parameters.SharedRights, "AccessRights"),
+    });
 
     return {
       method: "POST",
@@ -41,7 +48,8 @@ export class RevokeSharedLinkAction implements Executable<RevokeSharedLinkRespon
   }
 
   async parseResponse(response: Response): Promise<RevokeSharedLinkResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RevokeSharedLinkResponse;
   }
 }

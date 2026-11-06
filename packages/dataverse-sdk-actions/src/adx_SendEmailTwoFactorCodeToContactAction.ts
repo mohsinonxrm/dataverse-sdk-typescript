@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from adx_SendEmailTwoFactorCodeToContact action
@@ -8,30 +9,40 @@ export interface adx_SendEmailTwoFactorCodeToContactResponse {
 }
 
 /**
+ * Parameters of the adx_SendEmailTwoFactorCodeToContact action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface adx_SendEmailTwoFactorCodeToContactActionParameters {
+  Code: string;
+  BusinessProcessFlowId?: string;
+  BusinessProcessFlowInstanceId?: string;
+  ActionStepId?: string;
+}
+
+/**
  * adx_SendEmailTwoFactorCodeToContact action
  *
  * Bound action
  * Binding parameter: entity (mscrm.contact)
+ *
+ * The first argument is the id of the contact record to call it on.
  */
 export class adx_SendEmailTwoFactorCodeToContactAction implements Executable<adx_SendEmailTwoFactorCodeToContactResponse> {
   constructor(
     public readonly contactId: string,
-    public readonly code: string,
-    public readonly businessProcessFlowId?: string,
-    public readonly businessProcessFlowInstanceId?: string,
-    public readonly actionStepId?: string
+    public readonly parameters: adx_SendEmailTwoFactorCodeToContactActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/contacts(${this.contactId})/Microsoft.Dynamics.CRM.adx_SendEmailTwoFactorCodeToContact`;
 
-    const body: Record<string, unknown> = {
-      Code: this.code,
-      BusinessProcessFlowId: this.businessProcessFlowId,
-      BusinessProcessFlowInstanceId: this.businessProcessFlowInstanceId,
-      ActionStepId: this.actionStepId,
-    };
+    const body = requestBody({
+      Code: this.parameters.Code,
+      BusinessProcessFlowId: this.parameters.BusinessProcessFlowId,
+      BusinessProcessFlowInstanceId: this.parameters.BusinessProcessFlowInstanceId,
+      ActionStepId: this.parameters.ActionStepId,
+    });
 
     return {
       method: "POST",
@@ -44,7 +55,8 @@ export class adx_SendEmailTwoFactorCodeToContactAction implements Executable<adx
   }
 
   async parseResponse(response: Response): Promise<adx_SendEmailTwoFactorCodeToContactResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as adx_SendEmailTwoFactorCodeToContactResponse;
   }
 }

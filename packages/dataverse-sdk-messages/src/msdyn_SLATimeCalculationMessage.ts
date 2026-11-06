@@ -1,7 +1,21 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_SLATimeCalculationResponse as msdyn_SLATimeCalculationResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_SLATimeCalculation message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SLATimeCalculationRequestParameters {
+  calendarId: string;
+  startTime: string;
+  requestType: string;
+  minutes?: number;
+  logsLevel?: number;
+  endTime?: string;
+}
 
 /**
  * msdyn_SLATimeCalculation request message
@@ -12,28 +26,23 @@ export class msdyn_SLATimeCalculationRequest
   extends OrganizationRequest
   implements Executable<msdyn_SLATimeCalculationResponse>
 {
-  constructor(
-    public calendarId: string,
-    public startTime: string,
-    public requestType: string,
-    public minutes?: number,
-    public logsLevel?: number,
-    public endTime?: string
-  ) {
-    super("msdyn_SLATimeCalculation");
+  declare readonly Parameters: Readonly<msdyn_SLATimeCalculationRequestParameters>;
+
+  constructor(parameters: msdyn_SLATimeCalculationRequestParameters) {
+    super("msdyn_SLATimeCalculation", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SLATimeCalculation`;
 
-    const body: Record<string, unknown> = {
-      calendarId: this.calendarId,
-      startTime: this.startTime,
-      requestType: this.requestType,
-      minutes: this.minutes,
-      logsLevel: this.logsLevel,
-      endTime: this.endTime,
-    };
+    const body = requestBody({
+      calendarId: this.Parameters.calendarId,
+      startTime: this.Parameters.startTime,
+      requestType: this.Parameters.requestType,
+      minutes: this.Parameters.minutes,
+      logsLevel: this.Parameters.logsLevel,
+      endTime: this.Parameters.endTime,
+    });
 
     return {
       method: "POST",
@@ -46,8 +55,9 @@ export class msdyn_SLATimeCalculationRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SLATimeCalculationResponse> {
-    const data = await response.json();
-    return msdyn_SLATimeCalculationResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_SLATimeCalculationResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

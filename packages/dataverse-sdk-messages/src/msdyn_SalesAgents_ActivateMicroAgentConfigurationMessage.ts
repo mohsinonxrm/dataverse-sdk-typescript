@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_SalesAgents_ActivateMicroAgentConfigurationResponse as msdyn_SalesAgents_ActivateMicroAgentConfigurationResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_SalesAgents_ActivateMicroAgentConfiguration message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAgents_ActivateMicroAgentConfigurationRequestParameters {
+  RequestJson: string;
+}
 
 /**
  * msdyn_SalesAgents_ActivateMicroAgentConfiguration request message
@@ -12,16 +21,18 @@ export class msdyn_SalesAgents_ActivateMicroAgentConfigurationRequest
   extends OrganizationRequest
   implements Executable<msdyn_SalesAgents_ActivateMicroAgentConfigurationResponse>
 {
-  constructor(public requestJson: string) {
-    super("msdyn_SalesAgents_ActivateMicroAgentConfiguration");
+  declare readonly Parameters: Readonly<msdyn_SalesAgents_ActivateMicroAgentConfigurationRequestParameters>;
+
+  constructor(parameters: msdyn_SalesAgents_ActivateMicroAgentConfigurationRequestParameters) {
+    super("msdyn_SalesAgents_ActivateMicroAgentConfiguration", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAgents_ActivateMicroAgentConfiguration`;
 
-    const body: Record<string, unknown> = {
-      RequestJson: this.requestJson,
-    };
+    const body = requestBody({
+      RequestJson: this.Parameters.RequestJson,
+    });
 
     return {
       method: "POST",
@@ -36,8 +47,11 @@ export class msdyn_SalesAgents_ActivateMicroAgentConfigurationRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_ActivateMicroAgentConfigurationResponse> {
-    const data = await response.json();
-    return msdyn_SalesAgents_ActivateMicroAgentConfigurationResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_SalesAgents_ActivateMicroAgentConfigurationResponse.fromResponse(
+      text ? JSON.parse(text) : {}
+    );
   }
 }
 

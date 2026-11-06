@@ -1,32 +1,45 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { opportunity } from "./types/index.js";
+
+/**
+ * Parameters of the GetInvoiceProductsFromOpportunity message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GetInvoiceProductsFromOpportunityRequestParameters {
+  Opportunity: EntityReference | EntityPayload<opportunity>;
+}
 
 /**
  * GetInvoiceProductsFromOpportunity request message
  *
  * Web API Action: GetInvoiceProductsFromOpportunity
+ *
+ * The first argument is the id of the invoice record to call it on.
  */
 export class GetInvoiceProductsFromOpportunityRequest
   extends OrganizationRequest
   implements Executable<GetInvoiceProductsFromOpportunityResponse>
 {
+  declare readonly Parameters: Readonly<GetInvoiceProductsFromOpportunityRequestParameters>;
+
   constructor(
     public invoiceId: string,
-    public opportunity: EntityReference | EntityPayload<opportunity>
+    parameters: GetInvoiceProductsFromOpportunityRequestParameters
   ) {
-    super("GetInvoiceProductsFromOpportunity");
+    super("GetInvoiceProductsFromOpportunity", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/invoices(${this.invoiceId})/Microsoft.Dynamics.CRM.GetInvoiceProductsFromOpportunity`;
 
-    const body: Record<string, unknown> = {
-      Opportunity: this.opportunity,
-    };
+    const body = requestBody({
+      Opportunity: this.Parameters.Opportunity,
+    });
 
     return {
       method: "POST",

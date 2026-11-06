@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_DeprecateODOS message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_DeprecateODOSRequestParameters {
+  InputData: string;
+}
 
 /**
  * msdyn_DeprecateODOS request message
@@ -10,16 +19,18 @@ export class msdyn_DeprecateODOSRequest
   extends OrganizationRequest
   implements Executable<msdyn_DeprecateODOSResponse>
 {
-  constructor(public inputData: string) {
-    super("msdyn_DeprecateODOS");
+  declare readonly Parameters: Readonly<msdyn_DeprecateODOSRequestParameters>;
+
+  constructor(parameters: msdyn_DeprecateODOSRequestParameters) {
+    super("msdyn_DeprecateODOS", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_DeprecateODOS`;
 
-    const body: Record<string, unknown> = {
-      InputData: this.inputData,
-    };
+    const body = requestBody({
+      InputData: this.Parameters.InputData,
+    });
 
     return {
       method: "POST",

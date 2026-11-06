@@ -2,7 +2,20 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the ExecuteFxExpression message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ExecuteFxExpressionRequestParameters {
+  expression: string;
+  inputparameters?: EntityReference | AnyEntityPayload;
+  context?: string;
+  entitylogicalname?: string;
+  outputparameters?: EntityReference | AnyEntityPayload;
+}
 
 /**
  * ExecuteFxExpression request message
@@ -13,26 +26,22 @@ export class ExecuteFxExpressionRequest
   extends OrganizationRequest
   implements Executable<ExecuteFxExpressionResponse>
 {
-  constructor(
-    public expression: string,
-    public inputparameters?: EntityReference | AnyEntityPayload,
-    public context?: string,
-    public entitylogicalname?: string,
-    public outputparameters?: EntityReference | AnyEntityPayload
-  ) {
-    super("ExecuteFxExpression");
+  declare readonly Parameters: Readonly<ExecuteFxExpressionRequestParameters>;
+
+  constructor(parameters: ExecuteFxExpressionRequestParameters) {
+    super("ExecuteFxExpression", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ExecuteFxExpression`;
 
-    const body: Record<string, unknown> = {
-      expression: this.expression,
-      inputparameters: this.inputparameters,
-      context: this.context,
-      entitylogicalname: this.entitylogicalname,
-      outputparameters: this.outputparameters,
-    };
+    const body = requestBody({
+      expression: this.Parameters.expression,
+      inputparameters: this.Parameters.inputparameters,
+      context: this.Parameters.context,
+      entitylogicalname: this.Parameters.entitylogicalname,
+      outputparameters: this.Parameters.outputparameters,
+    });
 
     return {
       method: "POST",
@@ -45,8 +54,9 @@ export class ExecuteFxExpressionRequest
   }
 
   async parseResponse(response: Response): Promise<ExecuteFxExpressionResponse> {
-    const data = await response.json();
-    return ExecuteFxExpressionResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return ExecuteFxExpressionResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

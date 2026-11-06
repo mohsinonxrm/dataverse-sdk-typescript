@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_SalesExternalServiceInvokeResponse as msdyn_SalesExternalServiceInvokeResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_SalesExternalServiceInvoke message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesExternalServiceInvokeRequestParameters {
+  msdyn_entityName: string;
+  msdyn_activityId?: string;
+  msdyn_id: string;
+}
 
 /**
  * msdyn_SalesExternalServiceInvoke request message
@@ -12,22 +23,20 @@ export class msdyn_SalesExternalServiceInvokeRequest
   extends OrganizationRequest
   implements Executable<msdyn_SalesExternalServiceInvokeResponse>
 {
-  constructor(
-    public msdyn_entityName: string,
-    public msdyn_activityId: string | undefined,
-    public msdyn_id: string
-  ) {
-    super("msdyn_SalesExternalServiceInvoke");
+  declare readonly Parameters: Readonly<msdyn_SalesExternalServiceInvokeRequestParameters>;
+
+  constructor(parameters: msdyn_SalesExternalServiceInvokeRequestParameters) {
+    super("msdyn_SalesExternalServiceInvoke", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesExternalServiceInvoke`;
 
-    const body: Record<string, unknown> = {
-      msdyn_entityName: this.msdyn_entityName,
-      msdyn_activityId: this.msdyn_activityId,
-      msdyn_id: this.msdyn_id,
-    };
+    const body = requestBody({
+      msdyn_entityName: this.Parameters.msdyn_entityName,
+      msdyn_activityId: this.Parameters.msdyn_activityId,
+      msdyn_id: this.Parameters.msdyn_id,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class msdyn_SalesExternalServiceInvokeRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesExternalServiceInvokeResponse> {
-    const data = await response.json();
-    return msdyn_SalesExternalServiceInvokeResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_SalesExternalServiceInvokeResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

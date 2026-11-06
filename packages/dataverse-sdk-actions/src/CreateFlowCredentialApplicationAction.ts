@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from CreateFlowCredentialApplication action
@@ -8,32 +9,42 @@ export interface CreateFlowCredentialApplicationResponse {
 }
 
 /**
+ * Parameters of the CreateFlowCredentialApplication action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CreateFlowCredentialApplicationActionParameters {
+  sharingtype?: string;
+  password?: string;
+  description?: string;
+  certificate: string;
+  applicationId: string;
+}
+
+/**
  * CreateFlowCredentialApplication action
  *
  * Bound action
  * Binding parameter: entity (mscrm.flowmachinegroup)
+ *
+ * The first argument is the id of the flowmachinegroup record to call it on.
  */
 export class CreateFlowCredentialApplicationAction implements Executable<CreateFlowCredentialApplicationResponse> {
   constructor(
     public readonly flowmachinegroupId: string,
-    public readonly sharingtype: string | undefined,
-    public readonly password: string | undefined,
-    public readonly description: string | undefined,
-    public readonly certificate: string,
-    public readonly applicationId: string
+    public readonly parameters: CreateFlowCredentialApplicationActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/flowmachinegroups(${this.flowmachinegroupId})/Microsoft.Dynamics.CRM.CreateFlowCredentialApplication`;
 
-    const body: Record<string, unknown> = {
-      sharingtype: this.sharingtype,
-      password: this.password,
-      description: this.description,
-      certificate: this.certificate,
-      applicationId: this.applicationId,
-    };
+    const body = requestBody({
+      sharingtype: this.parameters.sharingtype,
+      password: this.parameters.password,
+      description: this.parameters.description,
+      certificate: this.parameters.certificate,
+      applicationId: this.parameters.applicationId,
+    });
 
     return {
       method: "POST",
@@ -46,7 +57,8 @@ export class CreateFlowCredentialApplicationAction implements Executable<CreateF
   }
 
   async parseResponse(response: Response): Promise<CreateFlowCredentialApplicationResponse> {
-    const data = await response.json();
-    return data as CreateFlowCredentialApplicationResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as CreateFlowCredentialApplicationResponse;
   }
 }

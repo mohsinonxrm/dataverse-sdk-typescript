@@ -7,6 +7,8 @@ import type { asyncoperation } from "./types/index.js";
  * ParseImport request message
  *
  * Web API Action: ParseImport
+ *
+ * The first argument is the id of the import record to call it on.
  */
 export class ParseImportRequest
   extends OrganizationRequest
@@ -30,8 +32,9 @@ export class ParseImportRequest
   }
 
   async parseResponse(response: Response): Promise<ParseImportResponse> {
-    const data = await response.json();
-    return ParseImportResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return ParseImportResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

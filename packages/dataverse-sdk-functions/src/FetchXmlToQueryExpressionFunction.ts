@@ -10,12 +10,20 @@ export interface FetchXmlToQueryExpressionResponse {
 }
 
 /**
+ * Parameters of the FetchXmlToQueryExpression function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface FetchXmlToQueryExpressionFunctionParameters {
+  FetchXml: string;
+}
+
+/**
  * FetchXmlToQueryExpression function
  *
  * Unbound function
  */
 export class FetchXmlToQueryExpressionFunction implements Executable<FetchXmlToQueryExpressionResponse> {
-  constructor(public readonly fetchXml: string) {}
+  constructor(public readonly parameters: FetchXmlToQueryExpressionFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/FetchXmlToQueryExpression`;
@@ -23,9 +31,9 @@ export class FetchXmlToQueryExpressionFunction implements Executable<FetchXmlToQ
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.fetchXml !== undefined) {
+    if (this.parameters.FetchXml !== undefined) {
       aliases.push(`FetchXml=@p1`);
-      params.append("@p1", formatParameterAlias(this.fetchXml, "Edm.String"));
+      params.append("@p1", formatParameterAlias(this.parameters.FetchXml, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -41,7 +49,8 @@ export class FetchXmlToQueryExpressionFunction implements Executable<FetchXmlToQ
   }
 
   async parseResponse(response: Response): Promise<FetchXmlToQueryExpressionResponse> {
-    const data = await response.json();
-    return data as FetchXmlToQueryExpressionResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as FetchXmlToQueryExpressionResponse;
   }
 }

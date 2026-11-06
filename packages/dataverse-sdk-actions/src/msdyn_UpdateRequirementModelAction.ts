@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_UpdateRequirementModel action
@@ -8,27 +9,33 @@ export interface msdyn_UpdateRequirementModelResponse {
 }
 
 /**
+ * Parameters of the msdyn_UpdateRequirementModel action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_UpdateRequirementModelActionParameters {
+  From?: string;
+  To?: string;
+  RequirementGroupId?: string;
+  Attributes: string;
+}
+
+/**
  * msdyn_UpdateRequirementModel action
  *
  * Unbound action
  */
 export class msdyn_UpdateRequirementModelAction implements Executable<msdyn_UpdateRequirementModelResponse> {
-  constructor(
-    public readonly from: string | undefined,
-    public readonly to: string | undefined,
-    public readonly requirementGroupId: string | undefined,
-    public readonly attributes: string
-  ) {}
+  constructor(public readonly parameters: msdyn_UpdateRequirementModelActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_UpdateRequirementModel`;
 
-    const body: Record<string, unknown> = {
-      From: this.from,
-      To: this.to,
-      RequirementGroupId: this.requirementGroupId,
-      Attributes: this.attributes,
-    };
+    const body = requestBody({
+      From: this.parameters.From,
+      To: this.parameters.To,
+      RequirementGroupId: this.parameters.RequirementGroupId,
+      Attributes: this.parameters.Attributes,
+    });
 
     return {
       method: "POST",
@@ -41,7 +48,8 @@ export class msdyn_UpdateRequirementModelAction implements Executable<msdyn_Upda
   }
 
   async parseResponse(response: Response): Promise<msdyn_UpdateRequirementModelResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_UpdateRequirementModelResponse;
   }
 }

@@ -2,8 +2,21 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_CreateRequirementGroupBookingsResponse as msdyn_CreateRequirementGroupBookingsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_CreateRequirementGroupBookings message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CreateRequirementGroupBookingsRequestParameters {
+  Version?: string;
+  Start: string;
+  Duration: number;
+  ResourceAssignments: Record<string, unknown>[];
+  RequirementGroup: EntityReference | AnyEntityPayload;
+}
 
 /**
  * msdyn_CreateRequirementGroupBookings request message
@@ -14,26 +27,22 @@ export class msdyn_CreateRequirementGroupBookingsRequest
   extends OrganizationRequest
   implements Executable<msdyn_CreateRequirementGroupBookingsResponse>
 {
-  constructor(
-    public version: string | undefined,
-    public start: string,
-    public duration: number,
-    public resourceAssignments: Record<string, unknown>[],
-    public requirementGroup: EntityReference | AnyEntityPayload
-  ) {
-    super("msdyn_CreateRequirementGroupBookings");
+  declare readonly Parameters: Readonly<msdyn_CreateRequirementGroupBookingsRequestParameters>;
+
+  constructor(parameters: msdyn_CreateRequirementGroupBookingsRequestParameters) {
+    super("msdyn_CreateRequirementGroupBookings", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CreateRequirementGroupBookings`;
 
-    const body: Record<string, unknown> = {
-      Version: this.version,
-      Start: this.start,
-      Duration: this.duration,
-      ResourceAssignments: this.resourceAssignments,
-      RequirementGroup: this.requirementGroup,
-    };
+    const body = requestBody({
+      Version: this.Parameters.Version,
+      Start: this.Parameters.Start,
+      Duration: this.Parameters.Duration,
+      ResourceAssignments: this.Parameters.ResourceAssignments,
+      RequirementGroup: this.Parameters.RequirementGroup,
+    });
 
     return {
       method: "POST",
@@ -46,8 +55,9 @@ export class msdyn_CreateRequirementGroupBookingsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateRequirementGroupBookingsResponse> {
-    const data = await response.json();
-    return msdyn_CreateRequirementGroupBookingsResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_CreateRequirementGroupBookingsResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

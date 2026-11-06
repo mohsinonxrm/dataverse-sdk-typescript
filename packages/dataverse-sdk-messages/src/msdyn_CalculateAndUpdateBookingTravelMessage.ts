@@ -1,6 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseValue } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_CalculateAndUpdateBookingTravel message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CalculateAndUpdateBookingTravelRequestParameters {
+  Bookings: Record<string, unknown>[];
+}
 
 /**
  * msdyn_CalculateAndUpdateBookingTravel request message
@@ -11,16 +20,18 @@ export class msdyn_CalculateAndUpdateBookingTravelRequest
   extends OrganizationRequest
   implements Executable<msdyn_CalculateAndUpdateBookingTravelResponse>
 {
-  constructor(public bookings: Record<string, unknown>[]) {
-    super("msdyn_CalculateAndUpdateBookingTravel");
+  declare readonly Parameters: Readonly<msdyn_CalculateAndUpdateBookingTravelRequestParameters>;
+
+  constructor(parameters: msdyn_CalculateAndUpdateBookingTravelRequestParameters) {
+    super("msdyn_CalculateAndUpdateBookingTravel", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CalculateAndUpdateBookingTravel`;
 
-    const body: Record<string, unknown> = {
-      Bookings: this.bookings,
-    };
+    const body = requestBody({
+      Bookings: this.Parameters.Bookings,
+    });
 
     return {
       method: "POST",
@@ -33,8 +44,9 @@ export class msdyn_CalculateAndUpdateBookingTravelRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CalculateAndUpdateBookingTravelResponse> {
-    const data = await response.json();
-    return msdyn_CalculateAndUpdateBookingTravelResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_CalculateAndUpdateBookingTravelResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

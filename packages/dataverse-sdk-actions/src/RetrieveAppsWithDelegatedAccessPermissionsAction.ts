@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from RetrieveAppsWithDelegatedAccessPermissions action
@@ -9,19 +10,29 @@ export interface RetrieveAppsWithDelegatedAccessPermissionsResponse {
 }
 
 /**
+ * Parameters of the RetrieveAppsWithDelegatedAccessPermissions action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveAppsWithDelegatedAccessPermissionsActionParameters {
+  cloud: number;
+}
+
+/**
  * RetrieveAppsWithDelegatedAccessPermissions action
  *
  * Unbound action
  */
 export class RetrieveAppsWithDelegatedAccessPermissionsAction implements Executable<RetrieveAppsWithDelegatedAccessPermissionsResponse> {
-  constructor(public readonly cloud: number) {}
+  constructor(
+    public readonly parameters: RetrieveAppsWithDelegatedAccessPermissionsActionParameters
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/RetrieveAppsWithDelegatedAccessPermissions`;
 
-    const body: Record<string, unknown> = {
-      cloud: this.cloud,
-    };
+    const body = requestBody({
+      cloud: this.parameters.cloud,
+    });
 
     return {
       method: "POST",
@@ -36,7 +47,8 @@ export class RetrieveAppsWithDelegatedAccessPermissionsAction implements Executa
   async parseResponse(
     response: Response
   ): Promise<RetrieveAppsWithDelegatedAccessPermissionsResponse> {
-    const data = await response.json();
-    return data as RetrieveAppsWithDelegatedAccessPermissionsResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RetrieveAppsWithDelegatedAccessPermissionsResponse;
   }
 }

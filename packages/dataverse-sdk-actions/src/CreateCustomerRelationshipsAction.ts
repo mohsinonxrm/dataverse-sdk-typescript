@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type {
   ComplexLookupAttributeMetadata,
@@ -14,28 +15,34 @@ export interface CreateCustomerRelationshipsResponse {
 }
 
 /**
+ * Parameters of the CreateCustomerRelationships action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CreateCustomerRelationshipsActionParameters {
+  Lookup?: ComplexLookupAttributeMetadata;
+  OneToManyRelationships?: ComplexOneToManyRelationshipMetadata[];
+  SolutionUniqueName?: string;
+}
+
+/**
  * CreateCustomerRelationships action
  *
  * Unbound action
  */
 export class CreateCustomerRelationshipsAction implements Executable<CreateCustomerRelationshipsResponse> {
-  constructor(
-    public readonly lookup?: ComplexLookupAttributeMetadata,
-    public readonly oneToManyRelationships?: ComplexOneToManyRelationshipMetadata[],
-    public readonly solutionUniqueName?: string
-  ) {}
+  constructor(public readonly parameters: CreateCustomerRelationshipsActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CreateCustomerRelationships`;
 
-    const body: Record<string, unknown> = {
-      Lookup: enumBody(this.lookup, "ComplexLookupAttributeMetadata"),
+    const body = requestBody({
+      Lookup: enumBody(this.parameters.Lookup, "ComplexLookupAttributeMetadata"),
       OneToManyRelationships: enumBody(
-        this.oneToManyRelationships,
+        this.parameters.OneToManyRelationships,
         "ComplexOneToManyRelationshipMetadata"
       ),
-      SolutionUniqueName: this.solutionUniqueName,
-    };
+      SolutionUniqueName: this.parameters.SolutionUniqueName,
+    });
 
     return {
       method: "POST",
@@ -48,7 +55,8 @@ export class CreateCustomerRelationshipsAction implements Executable<CreateCusto
   }
 
   async parseResponse(response: Response): Promise<CreateCustomerRelationshipsResponse> {
-    const data = await response.json();
-    return data as CreateCustomerRelationshipsResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as CreateCustomerRelationshipsResponse;
   }
 }

@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { DiscoverFabricAISkillsResponse as DiscoverFabricAISkillsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the DiscoverFabricAISkills message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface DiscoverFabricAISkillsRequestParameters {
+  workspaceId: string;
+  fabricEnvironment?: string;
+}
 
 /**
  * DiscoverFabricAISkills request message
@@ -12,20 +22,19 @@ export class DiscoverFabricAISkillsRequest
   extends OrganizationRequest
   implements Executable<DiscoverFabricAISkillsResponse>
 {
-  constructor(
-    public workspaceId: string,
-    public fabricEnvironment?: string
-  ) {
-    super("DiscoverFabricAISkills");
+  declare readonly Parameters: Readonly<DiscoverFabricAISkillsRequestParameters>;
+
+  constructor(parameters: DiscoverFabricAISkillsRequestParameters) {
+    super("DiscoverFabricAISkills", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/DiscoverFabricAISkills`;
 
-    const body: Record<string, unknown> = {
-      workspaceId: this.workspaceId,
-      fabricEnvironment: this.fabricEnvironment,
-    };
+    const body = requestBody({
+      workspaceId: this.Parameters.workspaceId,
+      fabricEnvironment: this.Parameters.fabricEnvironment,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class DiscoverFabricAISkillsRequest
   }
 
   async parseResponse(response: Response): Promise<DiscoverFabricAISkillsResponse> {
-    const data = await response.json();
-    return DiscoverFabricAISkillsResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return DiscoverFabricAISkillsResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

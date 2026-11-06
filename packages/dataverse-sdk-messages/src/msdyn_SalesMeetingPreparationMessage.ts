@@ -1,7 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_SalesMeetingPreparationResponse as msdyn_SalesMeetingPreparationResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_SalesMeetingPreparation message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesMeetingPreparationRequestParameters {
+  msdyn_sessionId?: string;
+  msdyn_activityId?: string;
+  msdyn_id: string;
+  msdyn_responseFormat?: string;
+}
 
 /**
  * msdyn_SalesMeetingPreparation request message
@@ -12,24 +24,21 @@ export class msdyn_SalesMeetingPreparationRequest
   extends OrganizationRequest
   implements Executable<msdyn_SalesMeetingPreparationResponse>
 {
-  constructor(
-    public msdyn_sessionId: string | undefined,
-    public msdyn_activityId: string | undefined,
-    public msdyn_id: string,
-    public msdyn_responseFormat?: string
-  ) {
-    super("msdyn_SalesMeetingPreparation");
+  declare readonly Parameters: Readonly<msdyn_SalesMeetingPreparationRequestParameters>;
+
+  constructor(parameters: msdyn_SalesMeetingPreparationRequestParameters) {
+    super("msdyn_SalesMeetingPreparation", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesMeetingPreparation`;
 
-    const body: Record<string, unknown> = {
-      msdyn_sessionId: this.msdyn_sessionId,
-      msdyn_activityId: this.msdyn_activityId,
-      msdyn_id: this.msdyn_id,
-      msdyn_responseFormat: this.msdyn_responseFormat,
-    };
+    const body = requestBody({
+      msdyn_sessionId: this.Parameters.msdyn_sessionId,
+      msdyn_activityId: this.Parameters.msdyn_activityId,
+      msdyn_id: this.Parameters.msdyn_id,
+      msdyn_responseFormat: this.Parameters.msdyn_responseFormat,
+    });
 
     return {
       method: "POST",
@@ -42,8 +51,9 @@ export class msdyn_SalesMeetingPreparationRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesMeetingPreparationResponse> {
-    const data = await response.json();
-    return msdyn_SalesMeetingPreparationResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_SalesMeetingPreparationResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

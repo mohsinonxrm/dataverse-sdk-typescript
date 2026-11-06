@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the CCaaS_SetPresence message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_SetPresenceRequestParameters {
+  ApiVersion: string;
+  PresenceId: string;
+}
 
 /**
  * CCaaS_SetPresence request message
@@ -10,20 +20,19 @@ export class CCaaS_SetPresenceRequest
   extends OrganizationRequest
   implements Executable<CCaaS_SetPresenceResponse>
 {
-  constructor(
-    public apiVersion: string,
-    public presenceId: string
-  ) {
-    super("CCaaS_SetPresence");
+  declare readonly Parameters: Readonly<CCaaS_SetPresenceRequestParameters>;
+
+  constructor(parameters: CCaaS_SetPresenceRequestParameters) {
+    super("CCaaS_SetPresence", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CCaaS_SetPresence`;
 
-    const body: Record<string, unknown> = {
-      ApiVersion: this.apiVersion,
-      PresenceId: this.presenceId,
-    };
+    const body = requestBody({
+      ApiVersion: this.Parameters.ApiVersion,
+      PresenceId: this.Parameters.PresenceId,
+    });
 
     return {
       method: "POST",

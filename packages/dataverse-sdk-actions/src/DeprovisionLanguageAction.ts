@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from DeprovisionLanguage action
@@ -8,23 +9,29 @@ export interface DeprovisionLanguageResponse {
 }
 
 /**
+ * Parameters of the DeprovisionLanguage action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface DeprovisionLanguageActionParameters {
+  Language: number;
+  CleanupLanguageRows?: boolean;
+}
+
+/**
  * DeprovisionLanguage action
  *
  * Unbound action
  */
 export class DeprovisionLanguageAction implements Executable<DeprovisionLanguageResponse> {
-  constructor(
-    public readonly language: number,
-    public readonly cleanupLanguageRows?: boolean
-  ) {}
+  constructor(public readonly parameters: DeprovisionLanguageActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/DeprovisionLanguage`;
 
-    const body: Record<string, unknown> = {
-      Language: this.language,
-      CleanupLanguageRows: this.cleanupLanguageRows,
-    };
+    const body = requestBody({
+      Language: this.parameters.Language,
+      CleanupLanguageRows: this.parameters.CleanupLanguageRows,
+    });
 
     return {
       method: "POST",
@@ -37,7 +44,8 @@ export class DeprovisionLanguageAction implements Executable<DeprovisionLanguage
   }
 
   async parseResponse(response: Response): Promise<DeprovisionLanguageResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as DeprovisionLanguageResponse;
   }
 }

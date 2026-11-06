@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the JoinLinkedChat message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface JoinLinkedChatRequestParameters {
+  TeamsChatId: string;
+  UserId: string;
+  RegardingEntity: EntityReference | AnyEntityPayload;
+}
 
 /**
  * JoinLinkedChat request message
@@ -12,22 +23,20 @@ export class JoinLinkedChatRequest
   extends OrganizationRequest
   implements Executable<JoinLinkedChatResponse>
 {
-  constructor(
-    public teamsChatId: string,
-    public userId: string,
-    public regardingEntity: EntityReference | AnyEntityPayload
-  ) {
-    super("JoinLinkedChat");
+  declare readonly Parameters: Readonly<JoinLinkedChatRequestParameters>;
+
+  constructor(parameters: JoinLinkedChatRequestParameters) {
+    super("JoinLinkedChat", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/JoinLinkedChat`;
 
-    const body: Record<string, unknown> = {
-      TeamsChatId: this.teamsChatId,
-      UserId: this.userId,
-      RegardingEntity: this.regardingEntity,
-    };
+    const body = requestBody({
+      TeamsChatId: this.Parameters.TeamsChatId,
+      UserId: this.Parameters.UserId,
+      RegardingEntity: this.Parameters.RegardingEntity,
+    });
 
     return {
       method: "POST",

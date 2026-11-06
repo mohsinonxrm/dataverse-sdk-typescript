@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the NotifyEnvironmentVariableSecretChange message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface NotifyEnvironmentVariableSecretChangeRequestParameters {
+  KeyVaultUrl: string;
+  SecretName: string;
+}
 
 /**
  * NotifyEnvironmentVariableSecretChange request message
@@ -10,20 +20,19 @@ export class NotifyEnvironmentVariableSecretChangeRequest
   extends OrganizationRequest
   implements Executable<NotifyEnvironmentVariableSecretChangeResponse>
 {
-  constructor(
-    public keyVaultUrl: string,
-    public secretName: string
-  ) {
-    super("NotifyEnvironmentVariableSecretChange");
+  declare readonly Parameters: Readonly<NotifyEnvironmentVariableSecretChangeRequestParameters>;
+
+  constructor(parameters: NotifyEnvironmentVariableSecretChangeRequestParameters) {
+    super("NotifyEnvironmentVariableSecretChange", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/NotifyEnvironmentVariableSecretChange`;
 
-    const body: Record<string, unknown> = {
-      KeyVaultUrl: this.keyVaultUrl,
-      SecretName: this.secretName,
-    };
+    const body = requestBody({
+      KeyVaultUrl: this.Parameters.KeyVaultUrl,
+      SecretName: this.Parameters.SecretName,
+    });
 
     return {
       method: "POST",

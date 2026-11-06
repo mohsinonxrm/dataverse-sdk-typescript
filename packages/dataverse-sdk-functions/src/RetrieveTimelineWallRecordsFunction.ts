@@ -10,17 +10,23 @@ export interface RetrieveTimelineWallRecordsResponse {
 }
 
 /**
+ * Parameters of the RetrieveTimelineWallRecords function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveTimelineWallRecordsFunctionParameters {
+  FetchXml: string;
+  Target?: EntityReference;
+  RollupType?: number;
+}
+
+/**
  * RetrieveTimelineWallRecords function
  *
  * Bound function
  * Binding parameter: entityset (Collection(mscrm.activitypointer))
  */
 export class RetrieveTimelineWallRecordsFunction implements Executable<RetrieveTimelineWallRecordsResponse> {
-  constructor(
-    public readonly fetchXml: string,
-    public readonly target?: EntityReference,
-    public readonly rollupType?: number
-  ) {}
+  constructor(public readonly parameters: RetrieveTimelineWallRecordsFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function (entity collection)
@@ -29,17 +35,20 @@ export class RetrieveTimelineWallRecordsFunction implements Executable<RetrieveT
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.fetchXml !== undefined) {
+    if (this.parameters.FetchXml !== undefined) {
       aliases.push(`FetchXml=@p1`);
-      params.append("@p1", formatParameterAlias(this.fetchXml, "Edm.String"));
+      params.append("@p1", formatParameterAlias(this.parameters.FetchXml, "Edm.String"));
     }
-    if (this.target !== undefined) {
+    if (this.parameters.Target !== undefined) {
       aliases.push(`Target=@p2`);
-      params.append("@p2", formatParameterAlias(this.target, "mscrm.crmbaseentity", "EntityType"));
+      params.append(
+        "@p2",
+        formatParameterAlias(this.parameters.Target, "mscrm.crmbaseentity", "EntityType")
+      );
     }
-    if (this.rollupType !== undefined) {
+    if (this.parameters.RollupType !== undefined) {
       aliases.push(`RollupType=@p3`);
-      params.append("@p3", formatParameterAlias(this.rollupType, "Edm.Int32"));
+      params.append("@p3", formatParameterAlias(this.parameters.RollupType, "Edm.Int32"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -55,7 +64,8 @@ export class RetrieveTimelineWallRecordsFunction implements Executable<RetrieveT
   }
 
   async parseResponse(response: Response): Promise<RetrieveTimelineWallRecordsResponse> {
-    const data = await response.json();
-    return data as RetrieveTimelineWallRecordsResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RetrieveTimelineWallRecordsResponse;
   }
 }

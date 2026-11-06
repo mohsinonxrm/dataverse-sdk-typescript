@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from CCaaS_GetRepresentativeAvailabilityForConversation action
@@ -16,25 +17,33 @@ export interface CCaaS_GetRepresentativeAvailabilityForConversationResponse {
 }
 
 /**
+ * Parameters of the CCaaS_GetRepresentativeAvailabilityForConversation action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_GetRepresentativeAvailabilityForConversationActionParameters {
+  ConversationId?: string;
+  ApiVersion: string;
+  CustomContextItems?: string;
+}
+
+/**
  * CCaaS_GetRepresentativeAvailabilityForConversation action
  *
  * Unbound action
  */
 export class CCaaS_GetRepresentativeAvailabilityForConversationAction implements Executable<CCaaS_GetRepresentativeAvailabilityForConversationResponse> {
   constructor(
-    public readonly conversationId: string | undefined,
-    public readonly apiVersion: string,
-    public readonly customContextItems?: string
+    public readonly parameters: CCaaS_GetRepresentativeAvailabilityForConversationActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CCaaS_GetRepresentativeAvailabilityForConversation`;
 
-    const body: Record<string, unknown> = {
-      ConversationId: this.conversationId,
-      ApiVersion: this.apiVersion,
-      CustomContextItems: this.customContextItems,
-    };
+    const body = requestBody({
+      ConversationId: this.parameters.ConversationId,
+      ApiVersion: this.parameters.ApiVersion,
+      CustomContextItems: this.parameters.CustomContextItems,
+    });
 
     return {
       method: "POST",
@@ -49,7 +58,10 @@ export class CCaaS_GetRepresentativeAvailabilityForConversationAction implements
   async parseResponse(
     response: Response
   ): Promise<CCaaS_GetRepresentativeAvailabilityForConversationResponse> {
-    const data = await response.json();
-    return data as CCaaS_GetRepresentativeAvailabilityForConversationResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (
+      text ? JSON.parse(text) : {}
+    ) as CCaaS_GetRepresentativeAvailabilityForConversationResponse;
   }
 }

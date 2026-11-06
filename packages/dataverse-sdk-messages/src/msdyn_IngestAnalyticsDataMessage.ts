@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_IngestAnalyticsData message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_IngestAnalyticsDataRequestParameters {
+  IngestionRequest: string;
+}
 
 /**
  * msdyn_IngestAnalyticsData request message
@@ -10,16 +19,18 @@ export class msdyn_IngestAnalyticsDataRequest
   extends OrganizationRequest
   implements Executable<msdyn_IngestAnalyticsDataResponse>
 {
-  constructor(public ingestionRequest: string) {
-    super("msdyn_IngestAnalyticsData");
+  declare readonly Parameters: Readonly<msdyn_IngestAnalyticsDataRequestParameters>;
+
+  constructor(parameters: msdyn_IngestAnalyticsDataRequestParameters) {
+    super("msdyn_IngestAnalyticsData", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_IngestAnalyticsData`;
 
-    const body: Record<string, unknown> = {
-      IngestionRequest: this.ingestionRequest,
-    };
+    const body = requestBody({
+      IngestionRequest: this.Parameters.IngestionRequest,
+    });
 
     return {
       method: "POST",

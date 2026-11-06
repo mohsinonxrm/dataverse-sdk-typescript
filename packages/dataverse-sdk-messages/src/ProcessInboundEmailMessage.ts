@@ -5,6 +5,8 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * ProcessInboundEmail request message
  *
  * Web API Action: ProcessInboundEmail
+ *
+ * The first argument is the id of the email record to call it on.
  */
 export class ProcessInboundEmailRequest
   extends OrganizationRequest

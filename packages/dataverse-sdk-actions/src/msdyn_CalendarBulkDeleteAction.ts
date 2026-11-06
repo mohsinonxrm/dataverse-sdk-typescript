@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_CalendarBulkDelete action
@@ -8,19 +9,27 @@ export interface msdyn_CalendarBulkDeleteResponse {
 }
 
 /**
+ * Parameters of the msdyn_CalendarBulkDelete action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CalendarBulkDeleteActionParameters {
+  CalendarIds: string;
+}
+
+/**
  * msdyn_CalendarBulkDelete action
  *
  * Unbound action
  */
 export class msdyn_CalendarBulkDeleteAction implements Executable<msdyn_CalendarBulkDeleteResponse> {
-  constructor(public readonly calendarIds: string) {}
+  constructor(public readonly parameters: msdyn_CalendarBulkDeleteActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CalendarBulkDelete`;
 
-    const body: Record<string, unknown> = {
-      CalendarIds: this.calendarIds,
-    };
+    const body = requestBody({
+      CalendarIds: this.parameters.CalendarIds,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class msdyn_CalendarBulkDeleteAction implements Executable<msdyn_Calendar
   }
 
   async parseResponse(response: Response): Promise<msdyn_CalendarBulkDeleteResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_CalendarBulkDeleteResponse;
   }
 }

@@ -16,6 +16,8 @@ export interface ParseImportResponse extends asyncoperation {
  *
  * Bound action
  * Binding parameter: entity (mscrm.import)
+ *
+ * The first argument is the id of the import record to call it on.
  */
 export class ParseImportAction implements Executable<ParseImportResponse> {
   constructor(public readonly importId: string) {}
@@ -34,7 +36,8 @@ export class ParseImportAction implements Executable<ParseImportResponse> {
   }
 
   async parseResponse(response: Response): Promise<ParseImportResponse> {
-    const data = await response.json();
-    return data as ParseImportResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as ParseImportResponse;
   }
 }

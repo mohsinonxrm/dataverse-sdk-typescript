@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { ChannelAccessProfilePrivilege } from "./types/index.js";
+
+/**
+ * Parameters of the AddChannelAccessProfilePrivileges message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AddChannelAccessProfilePrivilegesRequestParameters {
+  ChannelAccessProfileId: string;
+  Privileges?: ChannelAccessProfilePrivilege[];
+}
 
 /**
  * AddChannelAccessProfilePrivileges request message
@@ -12,20 +22,19 @@ export class AddChannelAccessProfilePrivilegesRequest
   extends OrganizationRequest
   implements Executable<AddChannelAccessProfilePrivilegesResponse>
 {
-  constructor(
-    public channelAccessProfileId: string,
-    public privileges?: ChannelAccessProfilePrivilege[]
-  ) {
-    super("AddChannelAccessProfilePrivileges");
+  declare readonly Parameters: Readonly<AddChannelAccessProfilePrivilegesRequestParameters>;
+
+  constructor(parameters: AddChannelAccessProfilePrivilegesRequestParameters) {
+    super("AddChannelAccessProfilePrivileges", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/AddChannelAccessProfilePrivileges`;
 
-    const body: Record<string, unknown> = {
-      ChannelAccessProfileId: this.channelAccessProfileId,
-      Privileges: enumBody(this.privileges, "ChannelAccessProfilePrivilege"),
-    };
+    const body = requestBody({
+      ChannelAccessProfileId: this.Parameters.ChannelAccessProfileId,
+      Privileges: enumBody(this.Parameters.Privileges, "ChannelAccessProfilePrivilege"),
+    });
 
     return {
       method: "POST",

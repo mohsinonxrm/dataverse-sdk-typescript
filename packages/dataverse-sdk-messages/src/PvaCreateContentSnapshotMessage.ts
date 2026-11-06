@@ -7,6 +7,8 @@ import type { PvaCreateContentSnapshotResponse as PvaCreateContentSnapshotRespon
  * PvaCreateContentSnapshot request message
  *
  * Web API Action: PvaCreateContentSnapshot
+ *
+ * The first argument is the id of the bot record to call it on.
  */
 export class PvaCreateContentSnapshotRequest
   extends OrganizationRequest
@@ -30,8 +32,9 @@ export class PvaCreateContentSnapshotRequest
   }
 
   async parseResponse(response: Response): Promise<PvaCreateContentSnapshotResponse> {
-    const data = await response.json();
-    return PvaCreateContentSnapshotResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return PvaCreateContentSnapshotResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

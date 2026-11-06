@@ -31,7 +31,10 @@ export class RetrieveUnpublishedMultiple_desktopflowbinary_collectionFunction im
   async parseResponse(
     response: Response
   ): Promise<RetrieveUnpublishedMultiple_desktopflowbinary_collectionResponse> {
-    const data = await response.json();
-    return data as RetrieveUnpublishedMultiple_desktopflowbinary_collectionResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (
+      text ? JSON.parse(text) : {}
+    ) as RetrieveUnpublishedMultiple_desktopflowbinary_collectionResponse;
   }
 }

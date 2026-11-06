@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from AISummarizeRecord action
@@ -8,27 +9,33 @@ export interface AISummarizeRecordResponse {
 }
 
 /**
+ * Parameters of the AISummarizeRecord action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AISummarizeRecordActionParameters {
+  Id: string;
+  EntityLogicalName: string;
+  RecordContext?: string;
+  IsMergedCatchupAndSummary?: boolean;
+}
+
+/**
  * AISummarizeRecord action
  *
  * Unbound action
  */
 export class AISummarizeRecordAction implements Executable<AISummarizeRecordResponse> {
-  constructor(
-    public readonly id: string,
-    public readonly entityLogicalName: string,
-    public readonly recordContext?: string,
-    public readonly isMergedCatchupAndSummary?: boolean
-  ) {}
+  constructor(public readonly parameters: AISummarizeRecordActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/AISummarizeRecord`;
 
-    const body: Record<string, unknown> = {
-      Id: this.id,
-      EntityLogicalName: this.entityLogicalName,
-      RecordContext: this.recordContext,
-      IsMergedCatchupAndSummary: this.isMergedCatchupAndSummary,
-    };
+    const body = requestBody({
+      Id: this.parameters.Id,
+      EntityLogicalName: this.parameters.EntityLogicalName,
+      RecordContext: this.parameters.RecordContext,
+      IsMergedCatchupAndSummary: this.parameters.IsMergedCatchupAndSummary,
+    });
 
     return {
       method: "POST",
@@ -41,7 +48,8 @@ export class AISummarizeRecordAction implements Executable<AISummarizeRecordResp
   }
 
   async parseResponse(response: Response): Promise<AISummarizeRecordResponse> {
-    const data = await response.json();
-    return data as AISummarizeRecordResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as AISummarizeRecordResponse;
   }
 }

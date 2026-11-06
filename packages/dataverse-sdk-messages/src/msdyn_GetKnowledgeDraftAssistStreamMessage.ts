@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_GetKnowledgeDraftAssistStream message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetKnowledgeDraftAssistStreamRequestParameters {
+  RequestPayload: string;
+  Context?: string;
+}
 
 /**
  * msdyn_GetKnowledgeDraftAssistStream request message
@@ -10,20 +20,19 @@ export class msdyn_GetKnowledgeDraftAssistStreamRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetKnowledgeDraftAssistStreamResponse>
 {
-  constructor(
-    public requestPayload: string,
-    public context?: string
-  ) {
-    super("msdyn_GetKnowledgeDraftAssistStream");
+  declare readonly Parameters: Readonly<msdyn_GetKnowledgeDraftAssistStreamRequestParameters>;
+
+  constructor(parameters: msdyn_GetKnowledgeDraftAssistStreamRequestParameters) {
+    super("msdyn_GetKnowledgeDraftAssistStream", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetKnowledgeDraftAssistStream`;
 
-    const body: Record<string, unknown> = {
-      RequestPayload: this.requestPayload,
-      Context: this.context,
-    };
+    const body = requestBody({
+      RequestPayload: this.Parameters.RequestPayload,
+      Context: this.Parameters.Context,
+    });
 
     return {
       method: "POST",

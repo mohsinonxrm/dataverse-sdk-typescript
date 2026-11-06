@@ -5,6 +5,8 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * RestartHostedMachine request message
  *
  * Web API Action: RestartHostedMachine
+ *
+ * The first argument is the id of the flowmachine record to call it on.
  */
 export class RestartHostedMachineRequest
   extends OrganizationRequest

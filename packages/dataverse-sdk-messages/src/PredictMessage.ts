@@ -2,35 +2,48 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { PredictResponse as PredictResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the Predict message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface PredictRequestParameters {
+  version: string;
+  request?: string;
+  requestv2?: EntityReference | AnyEntityPayload;
+  source?: string;
+}
 
 /**
  * Predict request message
  *
  * Web API Action: Predict
+ *
+ * The first argument is the id of the msdyn_aimodel record to call it on.
  */
 export class PredictRequest extends OrganizationRequest implements Executable<PredictResponse> {
+  declare readonly Parameters: Readonly<PredictRequestParameters>;
+
   constructor(
     public msdyn_aimodelId: string,
-    public version: string,
-    public request?: string,
-    public requestv2?: EntityReference | AnyEntityPayload,
-    public source?: string
+    parameters: PredictRequestParameters
   ) {
-    super("Predict");
+    super("Predict", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_aimodels(${this.msdyn_aimodelId})/Microsoft.Dynamics.CRM.Predict`;
 
-    const body: Record<string, unknown> = {
-      version: this.version,
-      request: this.request,
-      requestv2: this.requestv2,
-      source: this.source,
-    };
+    const body = requestBody({
+      version: this.Parameters.version,
+      request: this.Parameters.request,
+      requestv2: this.Parameters.requestv2,
+      source: this.Parameters.source,
+    });
 
     return {
       method: "POST",
@@ -43,8 +56,9 @@ export class PredictRequest extends OrganizationRequest implements Executable<Pr
   }
 
   async parseResponse(response: Response): Promise<PredictResponse> {
-    const data = await response.json();
-    return PredictResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return PredictResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

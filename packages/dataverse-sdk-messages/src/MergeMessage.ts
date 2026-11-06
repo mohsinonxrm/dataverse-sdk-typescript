@@ -1,7 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the Merge message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface MergeRequestParameters {
+  Target: EntityReference | AnyEntityPayload;
+  Subordinate: EntityReference | AnyEntityPayload;
+  UpdateContent?: EntityReference | AnyEntityPayload;
+  PerformParentingChecks: boolean;
+}
 
 /**
  * Merge request message
@@ -9,24 +21,21 @@ import type { AnyEntityPayload } from "./types/EntityPayload.js";
  * Web API Action: Merge
  */
 export class MergeRequest extends OrganizationRequest implements Executable<MergeResponse> {
-  constructor(
-    public target: EntityReference | AnyEntityPayload,
-    public subordinate: EntityReference | AnyEntityPayload,
-    public updateContent: EntityReference | AnyEntityPayload | undefined,
-    public performParentingChecks: boolean
-  ) {
-    super("Merge");
+  declare readonly Parameters: Readonly<MergeRequestParameters>;
+
+  constructor(parameters: MergeRequestParameters) {
+    super("Merge", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/Merge`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-      Subordinate: this.subordinate,
-      UpdateContent: this.updateContent,
-      PerformParentingChecks: this.performParentingChecks,
-    };
+    const body = requestBody({
+      Target: this.Parameters.Target,
+      Subordinate: this.Parameters.Subordinate,
+      UpdateContent: this.Parameters.UpdateContent,
+      PerformParentingChecks: this.Parameters.PerformParentingChecks,
+    });
 
     return {
       method: "POST",

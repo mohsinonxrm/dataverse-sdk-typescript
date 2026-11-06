@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 import type { asyncoperation } from "./types/index.js";
 
 /**
@@ -12,19 +13,27 @@ export interface TransformImportResponse extends asyncoperation {
 }
 
 /**
+ * Parameters of the TransformImport action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface TransformImportActionParameters {
+  ImportId: string;
+}
+
+/**
  * TransformImport action
  *
  * Unbound action
  */
 export class TransformImportAction implements Executable<TransformImportResponse> {
-  constructor(public readonly importId: string) {}
+  constructor(public readonly parameters: TransformImportActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/TransformImport`;
 
-    const body: Record<string, unknown> = {
-      ImportId: this.importId,
-    };
+    const body = requestBody({
+      ImportId: this.parameters.ImportId,
+    });
 
     return {
       method: "POST",
@@ -37,7 +46,8 @@ export class TransformImportAction implements Executable<TransformImportResponse
   }
 
   async parseResponse(response: Response): Promise<TransformImportResponse> {
-    const data = await response.json();
-    return data as TransformImportResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as TransformImportResponse;
   }
 }

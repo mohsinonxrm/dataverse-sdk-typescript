@@ -13,6 +13,8 @@ export interface RetrieveAbsoluteAndSiteCollectionUrl_sharepointdocumentlocation
  *
  * Bound function
  * Binding parameter: entity (mscrm.sharepointdocumentlocation)
+ *
+ * The first argument is the id of the sharepointdocumentlocation record to call it on.
  */
 export class RetrieveAbsoluteAndSiteCollectionUrl_sharepointdocumentlocationFunction implements Executable<RetrieveAbsoluteAndSiteCollectionUrl_sharepointdocumentlocationResponse> {
   constructor(public readonly sharepointdocumentlocationId: string) {}
@@ -33,7 +35,10 @@ export class RetrieveAbsoluteAndSiteCollectionUrl_sharepointdocumentlocationFunc
   async parseResponse(
     response: Response
   ): Promise<RetrieveAbsoluteAndSiteCollectionUrl_sharepointdocumentlocationResponse> {
-    const data = await response.json();
-    return data as RetrieveAbsoluteAndSiteCollectionUrl_sharepointdocumentlocationResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (
+      text ? JSON.parse(text) : {}
+    ) as RetrieveAbsoluteAndSiteCollectionUrl_sharepointdocumentlocationResponse;
   }
 }

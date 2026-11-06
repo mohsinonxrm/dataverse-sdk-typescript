@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyncrm_UpsertFileResponse as msdyncrm_UpsertFileResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyncrm_UpsertFile message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyncrm_UpsertFileRequestParameters {
+  InputFile: string;
+  InputKeywords?: string;
+}
 
 /**
  * msdyncrm_UpsertFile request message
@@ -12,20 +22,19 @@ export class msdyncrm_UpsertFileRequest
   extends OrganizationRequest
   implements Executable<msdyncrm_UpsertFileResponse>
 {
-  constructor(
-    public inputFile: string,
-    public inputKeywords?: string
-  ) {
-    super("msdyncrm_UpsertFile");
+  declare readonly Parameters: Readonly<msdyncrm_UpsertFileRequestParameters>;
+
+  constructor(parameters: msdyncrm_UpsertFileRequestParameters) {
+    super("msdyncrm_UpsertFile", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyncrm_UpsertFile`;
 
-    const body: Record<string, unknown> = {
-      InputFile: this.inputFile,
-      InputKeywords: this.inputKeywords,
-    };
+    const body = requestBody({
+      InputFile: this.Parameters.InputFile,
+      InputKeywords: this.Parameters.InputKeywords,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class msdyncrm_UpsertFileRequest
   }
 
   async parseResponse(response: Response): Promise<msdyncrm_UpsertFileResponse> {
-    const data = await response.json();
-    return msdyncrm_UpsertFileResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyncrm_UpsertFileResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

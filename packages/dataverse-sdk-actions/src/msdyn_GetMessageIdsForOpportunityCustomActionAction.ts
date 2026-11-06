@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_GetMessageIdsForOpportunityCustomAction action
@@ -11,19 +12,29 @@ export interface msdyn_GetMessageIdsForOpportunityCustomActionResponse {
 }
 
 /**
+ * Parameters of the msdyn_GetMessageIdsForOpportunityCustomAction action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetMessageIdsForOpportunityCustomActionActionParameters {
+  OpportunityId?: string;
+}
+
+/**
  * msdyn_GetMessageIdsForOpportunityCustomAction action
  *
  * Unbound action
  */
 export class msdyn_GetMessageIdsForOpportunityCustomActionAction implements Executable<msdyn_GetMessageIdsForOpportunityCustomActionResponse> {
-  constructor(public readonly opportunityId?: string) {}
+  constructor(
+    public readonly parameters: msdyn_GetMessageIdsForOpportunityCustomActionActionParameters = {}
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetMessageIdsForOpportunityCustomAction`;
 
-    const body: Record<string, unknown> = {
-      OpportunityId: this.opportunityId,
-    };
+    const body = requestBody({
+      OpportunityId: this.parameters.OpportunityId,
+    });
 
     return {
       method: "POST",
@@ -38,7 +49,8 @@ export class msdyn_GetMessageIdsForOpportunityCustomActionAction implements Exec
   async parseResponse(
     response: Response
   ): Promise<msdyn_GetMessageIdsForOpportunityCustomActionResponse> {
-    const data = await response.json();
-    return data as msdyn_GetMessageIdsForOpportunityCustomActionResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_GetMessageIdsForOpportunityCustomActionResponse;
   }
 }

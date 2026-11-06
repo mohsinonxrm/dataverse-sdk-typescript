@@ -1,5 +1,22 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_AutonomousSQA_UpdateSalesAgentRun message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_AutonomousSQA_UpdateSalesAgentRunRequestParameters {
+  msdyn_IsNonRetryableError?: boolean;
+  msdyn_IsSalesAgentRunComplete?: boolean;
+  msdyn_SalesAgentRun?: string;
+  msdyn_TrackingId?: string;
+  msdyn_HasAgentRunFailed?: boolean;
+  msdyn_IsAgentThrottled?: boolean;
+  msdyn_RetryAfterDate?: string;
+  msdyn_HasAgentRunStarted?: boolean;
+  msdyn_SalesMacroAgentType?: number;
+}
 
 /**
  * msdyn_AutonomousSQA_UpdateSalesAgentRun request message
@@ -10,34 +27,26 @@ export class msdyn_AutonomousSQA_UpdateSalesAgentRunRequest
   extends OrganizationRequest
   implements Executable<msdyn_AutonomousSQA_UpdateSalesAgentRunResponse>
 {
-  constructor(
-    public msdyn_IsNonRetryableError?: boolean,
-    public msdyn_IsSalesAgentRunComplete?: boolean,
-    public msdyn_SalesAgentRun?: string,
-    public msdyn_TrackingId?: string,
-    public msdyn_HasAgentRunFailed?: boolean,
-    public msdyn_IsAgentThrottled?: boolean,
-    public msdyn_RetryAfterDate?: string,
-    public msdyn_HasAgentRunStarted?: boolean,
-    public msdyn_SalesMacroAgentType?: number
-  ) {
-    super("msdyn_AutonomousSQA_UpdateSalesAgentRun");
+  declare readonly Parameters: Readonly<msdyn_AutonomousSQA_UpdateSalesAgentRunRequestParameters>;
+
+  constructor(parameters: msdyn_AutonomousSQA_UpdateSalesAgentRunRequestParameters = {}) {
+    super("msdyn_AutonomousSQA_UpdateSalesAgentRun", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_AutonomousSQA_UpdateSalesAgentRun`;
 
-    const body: Record<string, unknown> = {
-      msdyn_IsNonRetryableError: this.msdyn_IsNonRetryableError,
-      msdyn_IsSalesAgentRunComplete: this.msdyn_IsSalesAgentRunComplete,
-      msdyn_SalesAgentRun: this.msdyn_SalesAgentRun,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-      msdyn_HasAgentRunFailed: this.msdyn_HasAgentRunFailed,
-      msdyn_IsAgentThrottled: this.msdyn_IsAgentThrottled,
-      msdyn_RetryAfterDate: this.msdyn_RetryAfterDate,
-      msdyn_HasAgentRunStarted: this.msdyn_HasAgentRunStarted,
-      msdyn_SalesMacroAgentType: this.msdyn_SalesMacroAgentType,
-    };
+    const body = requestBody({
+      msdyn_IsNonRetryableError: this.Parameters.msdyn_IsNonRetryableError,
+      msdyn_IsSalesAgentRunComplete: this.Parameters.msdyn_IsSalesAgentRunComplete,
+      msdyn_SalesAgentRun: this.Parameters.msdyn_SalesAgentRun,
+      msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
+      msdyn_HasAgentRunFailed: this.Parameters.msdyn_HasAgentRunFailed,
+      msdyn_IsAgentThrottled: this.Parameters.msdyn_IsAgentThrottled,
+      msdyn_RetryAfterDate: this.Parameters.msdyn_RetryAfterDate,
+      msdyn_HasAgentRunStarted: this.Parameters.msdyn_HasAgentRunStarted,
+      msdyn_SalesMacroAgentType: this.Parameters.msdyn_SalesMacroAgentType,
+    });
 
     return {
       method: "POST",

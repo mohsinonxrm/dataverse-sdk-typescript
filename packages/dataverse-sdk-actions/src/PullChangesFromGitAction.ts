@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 import type { PullChangesFromGitParameters } from "./types/index.js";
 
 /**
@@ -9,23 +10,29 @@ export interface PullChangesFromGitResponse {
 }
 
 /**
+ * Parameters of the PullChangesFromGit action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface PullChangesFromGitActionParameters {
+  SolutionUniqueName: string;
+  AdditionalParameters?: PullChangesFromGitParameters;
+}
+
+/**
  * PullChangesFromGit action
  *
  * Unbound action
  */
 export class PullChangesFromGitAction implements Executable<PullChangesFromGitResponse> {
-  constructor(
-    public readonly solutionUniqueName: string,
-    public readonly additionalParameters?: PullChangesFromGitParameters
-  ) {}
+  constructor(public readonly parameters: PullChangesFromGitActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/PullChangesFromGit`;
 
-    const body: Record<string, unknown> = {
-      SolutionUniqueName: this.solutionUniqueName,
-      AdditionalParameters: this.additionalParameters,
-    };
+    const body = requestBody({
+      SolutionUniqueName: this.parameters.SolutionUniqueName,
+      AdditionalParameters: this.parameters.AdditionalParameters,
+    });
 
     return {
       method: "POST",
@@ -38,7 +45,8 @@ export class PullChangesFromGitAction implements Executable<PullChangesFromGitRe
   }
 
   async parseResponse(response: Response): Promise<PullChangesFromGitResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as PullChangesFromGitResponse;
   }
 }

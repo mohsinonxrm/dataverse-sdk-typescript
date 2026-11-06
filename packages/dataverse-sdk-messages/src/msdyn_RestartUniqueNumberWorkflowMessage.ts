@@ -2,7 +2,16 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_RestartUniqueNumberWorkflowResponse as msdyn_RestartUniqueNumberWorkflowResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_RestartUniqueNumberWorkflow message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_RestartUniqueNumberWorkflowRequestParameters {
+  AnalysisResult: EntityReference;
+}
 
 /**
  * msdyn_RestartUniqueNumberWorkflow request message
@@ -13,16 +22,18 @@ export class msdyn_RestartUniqueNumberWorkflowRequest
   extends OrganizationRequest
   implements Executable<msdyn_RestartUniqueNumberWorkflowResponse>
 {
-  constructor(public analysisResult: EntityReference) {
-    super("msdyn_RestartUniqueNumberWorkflow");
+  declare readonly Parameters: Readonly<msdyn_RestartUniqueNumberWorkflowRequestParameters>;
+
+  constructor(parameters: msdyn_RestartUniqueNumberWorkflowRequestParameters) {
+    super("msdyn_RestartUniqueNumberWorkflow", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_RestartUniqueNumberWorkflow`;
 
-    const body: Record<string, unknown> = {
-      AnalysisResult: this.analysisResult,
-    };
+    const body = requestBody({
+      AnalysisResult: this.Parameters.AnalysisResult,
+    });
 
     return {
       method: "POST",
@@ -35,8 +46,9 @@ export class msdyn_RestartUniqueNumberWorkflowRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RestartUniqueNumberWorkflowResponse> {
-    const data = await response.json();
-    return msdyn_RestartUniqueNumberWorkflowResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_RestartUniqueNumberWorkflowResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the ApplyRecordCreationAndUpdateRule message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ApplyRecordCreationAndUpdateRuleRequestParameters {
+  Target: EntityReference | AnyEntityPayload;
+}
 
 /**
  * ApplyRecordCreationAndUpdateRule request message
@@ -12,16 +21,18 @@ export class ApplyRecordCreationAndUpdateRuleRequest
   extends OrganizationRequest
   implements Executable<ApplyRecordCreationAndUpdateRuleResponse>
 {
-  constructor(public target: EntityReference | AnyEntityPayload) {
-    super("ApplyRecordCreationAndUpdateRule");
+  declare readonly Parameters: Readonly<ApplyRecordCreationAndUpdateRuleRequestParameters>;
+
+  constructor(parameters: ApplyRecordCreationAndUpdateRuleRequestParameters) {
+    super("ApplyRecordCreationAndUpdateRule", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ApplyRecordCreationAndUpdateRule`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-    };
+    const body = requestBody({
+      Target: this.Parameters.Target,
+    });
 
     return {
       method: "POST",

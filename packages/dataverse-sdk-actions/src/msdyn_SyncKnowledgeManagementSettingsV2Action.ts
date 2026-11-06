@@ -28,7 +28,8 @@ export class msdyn_SyncKnowledgeManagementSettingsV2Action implements Executable
   async parseResponse(
     response: Response
   ): Promise<msdyn_SyncKnowledgeManagementSettingsV2Response> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_SyncKnowledgeManagementSettingsV2Response;
   }
 }

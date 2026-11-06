@@ -12,6 +12,8 @@ export interface PvaCreateContentSnapshotResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.bot)
+ *
+ * The first argument is the id of the bot record to call it on.
  */
 export class PvaCreateContentSnapshotAction implements Executable<PvaCreateContentSnapshotResponse> {
   constructor(public readonly botId: string) {}
@@ -30,7 +32,8 @@ export class PvaCreateContentSnapshotAction implements Executable<PvaCreateConte
   }
 
   async parseResponse(response: Response): Promise<PvaCreateContentSnapshotResponse> {
-    const data = await response.json();
-    return data as PvaCreateContentSnapshotResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as PvaCreateContentSnapshotResponse;
   }
 }

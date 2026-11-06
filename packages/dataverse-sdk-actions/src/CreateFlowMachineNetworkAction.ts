@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from CreateFlowMachineNetwork action
@@ -8,33 +9,39 @@ export interface CreateFlowMachineNetworkResponse {
 }
 
 /**
+ * Parameters of the CreateFlowMachineNetwork action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CreateFlowMachineNetworkActionParameters {
+  subnet: string;
+  type: string;
+  extendedproperties?: string;
+  supportedscenario: string;
+  name: string;
+  description?: string;
+}
+
+/**
  * CreateFlowMachineNetwork action
  *
  * Bound action
  * Binding parameter: entityset (Collection(mscrm.flowmachinenetwork))
  */
 export class CreateFlowMachineNetworkAction implements Executable<CreateFlowMachineNetworkResponse> {
-  constructor(
-    public readonly subnet: string,
-    public readonly type: string,
-    public readonly extendedproperties: string | undefined,
-    public readonly supportedscenario: string,
-    public readonly name: string,
-    public readonly description?: string
-  ) {}
+  constructor(public readonly parameters: CreateFlowMachineNetworkActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action (entity collection)
     const url = `${baseUrl}/flowmachinenetworks/Microsoft.Dynamics.CRM.CreateFlowMachineNetwork`;
 
-    const body: Record<string, unknown> = {
-      subnet: this.subnet,
-      type: this.type,
-      extendedproperties: this.extendedproperties,
-      supportedscenario: this.supportedscenario,
-      name: this.name,
-      description: this.description,
-    };
+    const body = requestBody({
+      subnet: this.parameters.subnet,
+      type: this.parameters.type,
+      extendedproperties: this.parameters.extendedproperties,
+      supportedscenario: this.parameters.supportedscenario,
+      name: this.parameters.name,
+      description: this.parameters.description,
+    });
 
     return {
       method: "POST",
@@ -47,7 +54,8 @@ export class CreateFlowMachineNetworkAction implements Executable<CreateFlowMach
   }
 
   async parseResponse(response: Response): Promise<CreateFlowMachineNetworkResponse> {
-    const data = await response.json();
-    return data as CreateFlowMachineNetworkResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as CreateFlowMachineNetworkResponse;
   }
 }

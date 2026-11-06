@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_ExecuteSandboxRequest action
@@ -8,23 +9,29 @@ export interface msdyn_ExecuteSandboxRequestResponse {
 }
 
 /**
+ * Parameters of the msdyn_ExecuteSandboxRequest action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ExecuteSandboxRequestActionParameters {
+  MethodName: string;
+  MethodParams?: string;
+}
+
+/**
  * msdyn_ExecuteSandboxRequest action
  *
  * Unbound action
  */
 export class msdyn_ExecuteSandboxRequestAction implements Executable<msdyn_ExecuteSandboxRequestResponse> {
-  constructor(
-    public readonly methodName: string,
-    public readonly methodParams?: string
-  ) {}
+  constructor(public readonly parameters: msdyn_ExecuteSandboxRequestActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ExecuteSandboxRequest`;
 
-    const body: Record<string, unknown> = {
-      MethodName: this.methodName,
-      MethodParams: this.methodParams,
-    };
+    const body = requestBody({
+      MethodName: this.parameters.MethodName,
+      MethodParams: this.parameters.MethodParams,
+    });
 
     return {
       method: "POST",
@@ -37,7 +44,8 @@ export class msdyn_ExecuteSandboxRequestAction implements Executable<msdyn_Execu
   }
 
   async parseResponse(response: Response): Promise<msdyn_ExecuteSandboxRequestResponse> {
-    const data = await response.json();
-    return data as msdyn_ExecuteSandboxRequestResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_ExecuteSandboxRequestResponse;
   }
 }

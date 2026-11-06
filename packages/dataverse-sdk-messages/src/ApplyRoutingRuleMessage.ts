@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the ApplyRoutingRule message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ApplyRoutingRuleRequestParameters {
+  Target: EntityReference | AnyEntityPayload;
+}
 
 /**
  * ApplyRoutingRule request message
@@ -12,16 +21,18 @@ export class ApplyRoutingRuleRequest
   extends OrganizationRequest
   implements Executable<ApplyRoutingRuleResponse>
 {
-  constructor(public target: EntityReference | AnyEntityPayload) {
-    super("ApplyRoutingRule");
+  declare readonly Parameters: Readonly<ApplyRoutingRuleRequestParameters>;
+
+  constructor(parameters: ApplyRoutingRuleRequestParameters) {
+    super("ApplyRoutingRule", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ApplyRoutingRule`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-    };
+    const body = requestBody({
+      Target: this.Parameters.Target,
+    });
 
     return {
       method: "POST",

@@ -1,6 +1,30 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseValue } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the _EvaluateSearchRequest message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface _EvaluateSearchRequestRequestParameters {
+  ServiceAppointmentId?: string;
+  ServiceId: string;
+  DateOptionSet?: number;
+  TimeOptionSet?: number;
+  DayList?: string;
+  RequiredResources?: Record<string, unknown>[];
+  SearchWindowStart?: string;
+  SearchWindowEnd?: string;
+  SearchRecurrenceStart?: number;
+  TimeRangeEnd?: number;
+  Duration: number;
+  Direction?: number;
+  Sites?: Record<string, unknown>[];
+  NumberOfResults?: number;
+  _SearchWindowStart?: string;
+  _SearchWindowEnd?: string;
+}
 
 /**
  * _EvaluateSearchRequest request message
@@ -11,48 +35,33 @@ export class _EvaluateSearchRequestRequest
   extends OrganizationRequest
   implements Executable<_EvaluateSearchRequestResponse>
 {
-  constructor(
-    public serviceAppointmentId: string | undefined,
-    public serviceId: string,
-    public dateOptionSet: number | undefined,
-    public timeOptionSet: number | undefined,
-    public dayList: string | undefined,
-    public requiredResources: Record<string, unknown>[] | undefined,
-    public searchWindowStart: string | undefined,
-    public searchWindowEnd: string | undefined,
-    public searchRecurrenceStart: number | undefined,
-    public timeRangeEnd: number | undefined,
-    public duration: number,
-    public direction?: number,
-    public sites?: Record<string, unknown>[],
-    public numberOfResults?: number,
-    public _SearchWindowStart?: string,
-    public _SearchWindowEnd?: string
-  ) {
-    super("_EvaluateSearchRequest");
+  declare readonly Parameters: Readonly<_EvaluateSearchRequestRequestParameters>;
+
+  constructor(parameters: _EvaluateSearchRequestRequestParameters) {
+    super("_EvaluateSearchRequest", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/_EvaluateSearchRequest`;
 
-    const body: Record<string, unknown> = {
-      ServiceAppointmentId: this.serviceAppointmentId,
-      ServiceId: this.serviceId,
-      DateOptionSet: this.dateOptionSet,
-      TimeOptionSet: this.timeOptionSet,
-      DayList: this.dayList,
-      RequiredResources: this.requiredResources,
-      SearchWindowStart: this.searchWindowStart,
-      SearchWindowEnd: this.searchWindowEnd,
-      SearchRecurrenceStart: this.searchRecurrenceStart,
-      TimeRangeEnd: this.timeRangeEnd,
-      Duration: this.duration,
-      Direction: this.direction,
-      Sites: this.sites,
-      NumberOfResults: this.numberOfResults,
-      _SearchWindowStart: this._SearchWindowStart,
-      _SearchWindowEnd: this._SearchWindowEnd,
-    };
+    const body = requestBody({
+      ServiceAppointmentId: this.Parameters.ServiceAppointmentId,
+      ServiceId: this.Parameters.ServiceId,
+      DateOptionSet: this.Parameters.DateOptionSet,
+      TimeOptionSet: this.Parameters.TimeOptionSet,
+      DayList: this.Parameters.DayList,
+      RequiredResources: this.Parameters.RequiredResources,
+      SearchWindowStart: this.Parameters.SearchWindowStart,
+      SearchWindowEnd: this.Parameters.SearchWindowEnd,
+      SearchRecurrenceStart: this.Parameters.SearchRecurrenceStart,
+      TimeRangeEnd: this.Parameters.TimeRangeEnd,
+      Duration: this.Parameters.Duration,
+      Direction: this.Parameters.Direction,
+      Sites: this.Parameters.Sites,
+      NumberOfResults: this.Parameters.NumberOfResults,
+      _SearchWindowStart: this.Parameters._SearchWindowStart,
+      _SearchWindowEnd: this.Parameters._SearchWindowEnd,
+    });
 
     return {
       method: "POST",
@@ -65,8 +74,9 @@ export class _EvaluateSearchRequestRequest
   }
 
   async parseResponse(response: Response): Promise<_EvaluateSearchRequestResponse> {
-    const data = await response.json();
-    return _EvaluateSearchRequestResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return _EvaluateSearchRequestResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

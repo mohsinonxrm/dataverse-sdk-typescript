@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,27 +11,33 @@ export interface msdyn_RetrieveCadenceSuggestionsResponse {
 }
 
 /**
+ * Parameters of the msdyn_RetrieveCadenceSuggestions action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_RetrieveCadenceSuggestionsActionParameters {
+  EntityReference: EntityReference | AnyEntityPayload;
+  ActivityType: number;
+  LinkedActivityId?: string;
+  StepType: number;
+}
+
+/**
  * msdyn_RetrieveCadenceSuggestions action
  *
  * Unbound action
  */
 export class msdyn_RetrieveCadenceSuggestionsAction implements Executable<msdyn_RetrieveCadenceSuggestionsResponse> {
-  constructor(
-    public readonly entityReference: EntityReference | AnyEntityPayload,
-    public readonly activityType: number,
-    public readonly linkedActivityId: string | undefined,
-    public readonly stepType: number
-  ) {}
+  constructor(public readonly parameters: msdyn_RetrieveCadenceSuggestionsActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_RetrieveCadenceSuggestions`;
 
-    const body: Record<string, unknown> = {
-      EntityReference: this.entityReference,
-      ActivityType: this.activityType,
-      LinkedActivityId: this.linkedActivityId,
-      StepType: this.stepType,
-    };
+    const body = requestBody({
+      EntityReference: this.parameters.EntityReference,
+      ActivityType: this.parameters.ActivityType,
+      LinkedActivityId: this.parameters.LinkedActivityId,
+      StepType: this.parameters.StepType,
+    });
 
     return {
       method: "POST",
@@ -43,7 +50,8 @@ export class msdyn_RetrieveCadenceSuggestionsAction implements Executable<msdyn_
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrieveCadenceSuggestionsResponse> {
-    const data = await response.json();
-    return data as msdyn_RetrieveCadenceSuggestionsResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_RetrieveCadenceSuggestionsResponse;
   }
 }

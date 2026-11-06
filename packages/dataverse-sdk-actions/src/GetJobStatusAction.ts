@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from GetJobStatus action
@@ -8,25 +9,31 @@ export interface GetJobStatusResponse {
 }
 
 /**
+ * Parameters of the GetJobStatus action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GetJobStatusActionParameters {
+  istrain: boolean;
+  correlationid?: string;
+  aimodelid?: string;
+}
+
+/**
  * GetJobStatus action
  *
  * Unbound action
  */
 export class GetJobStatusAction implements Executable<GetJobStatusResponse> {
-  constructor(
-    public readonly istrain: boolean,
-    public readonly correlationid?: string,
-    public readonly aimodelid?: string
-  ) {}
+  constructor(public readonly parameters: GetJobStatusActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/GetJobStatus`;
 
-    const body: Record<string, unknown> = {
-      istrain: this.istrain,
-      correlationid: this.correlationid,
-      aimodelid: this.aimodelid,
-    };
+    const body = requestBody({
+      istrain: this.parameters.istrain,
+      correlationid: this.parameters.correlationid,
+      aimodelid: this.parameters.aimodelid,
+    });
 
     return {
       method: "POST",
@@ -39,7 +46,8 @@ export class GetJobStatusAction implements Executable<GetJobStatusResponse> {
   }
 
   async parseResponse(response: Response): Promise<GetJobStatusResponse> {
-    const data = await response.json();
-    return data as GetJobStatusResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as GetJobStatusResponse;
   }
 }

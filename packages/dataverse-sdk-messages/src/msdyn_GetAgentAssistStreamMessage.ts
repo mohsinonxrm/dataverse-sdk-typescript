@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetAgentAssistStreamResponse as msdyn_GetAgentAssistStreamResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetAgentAssistStream message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetAgentAssistStreamRequestParameters {
+  Context?: string;
+  RequestPayload: string;
+}
 
 /**
  * msdyn_GetAgentAssistStream request message
@@ -12,20 +22,19 @@ export class msdyn_GetAgentAssistStreamRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetAgentAssistStreamResponse>
 {
-  constructor(
-    public context: string | undefined,
-    public requestPayload: string
-  ) {
-    super("msdyn_GetAgentAssistStream");
+  declare readonly Parameters: Readonly<msdyn_GetAgentAssistStreamRequestParameters>;
+
+  constructor(parameters: msdyn_GetAgentAssistStreamRequestParameters) {
+    super("msdyn_GetAgentAssistStream", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetAgentAssistStream`;
 
-    const body: Record<string, unknown> = {
-      Context: this.context,
-      RequestPayload: this.requestPayload,
-    };
+    const body = requestBody({
+      Context: this.Parameters.Context,
+      RequestPayload: this.Parameters.RequestPayload,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class msdyn_GetAgentAssistStreamRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAgentAssistStreamResponse> {
-    const data = await response.json();
-    return msdyn_GetAgentAssistStreamResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_GetAgentAssistStreamResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

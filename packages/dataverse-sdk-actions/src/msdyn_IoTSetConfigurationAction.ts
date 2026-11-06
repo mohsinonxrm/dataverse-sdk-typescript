@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_IoTSetConfiguration action
@@ -8,23 +9,29 @@ export interface msdyn_IoTSetConfigurationResponse {
 }
 
 /**
+ * Parameters of the msdyn_IoTSetConfiguration action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_IoTSetConfigurationActionParameters {
+  Key: string;
+  Value: string;
+}
+
+/**
  * msdyn_IoTSetConfiguration action
  *
  * Unbound action
  */
 export class msdyn_IoTSetConfigurationAction implements Executable<msdyn_IoTSetConfigurationResponse> {
-  constructor(
-    public readonly key: string,
-    public readonly value: string
-  ) {}
+  constructor(public readonly parameters: msdyn_IoTSetConfigurationActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_IoTSetConfiguration`;
 
-    const body: Record<string, unknown> = {
-      Key: this.key,
-      Value: this.value,
-    };
+    const body = requestBody({
+      Key: this.parameters.Key,
+      Value: this.parameters.Value,
+    });
 
     return {
       method: "POST",
@@ -37,7 +44,8 @@ export class msdyn_IoTSetConfigurationAction implements Executable<msdyn_IoTSetC
   }
 
   async parseResponse(response: Response): Promise<msdyn_IoTSetConfigurationResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_IoTSetConfigurationResponse;
   }
 }

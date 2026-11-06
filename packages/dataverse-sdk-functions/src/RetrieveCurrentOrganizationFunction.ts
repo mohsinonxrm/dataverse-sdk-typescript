@@ -10,12 +10,20 @@ export interface RetrieveCurrentOrganizationResponse {
 }
 
 /**
+ * Parameters of the RetrieveCurrentOrganization function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveCurrentOrganizationFunctionParameters {
+  AccessType: EndpointAccessType | keyof typeof EndpointAccessType;
+}
+
+/**
  * RetrieveCurrentOrganization function
  *
  * Unbound function
  */
 export class RetrieveCurrentOrganizationFunction implements Executable<RetrieveCurrentOrganizationResponse> {
-  constructor(public readonly accessType: EndpointAccessType | keyof typeof EndpointAccessType) {}
+  constructor(public readonly parameters: RetrieveCurrentOrganizationFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveCurrentOrganization`;
@@ -23,11 +31,15 @@ export class RetrieveCurrentOrganizationFunction implements Executable<RetrieveC
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.accessType !== undefined) {
+    if (this.parameters.AccessType !== undefined) {
       aliases.push(`AccessType=@p1`);
       params.append(
         "@p1",
-        formatParameterAlias(this.accessType, "mscrm.EndpointAccessType", "EnumerationType")
+        formatParameterAlias(
+          this.parameters.AccessType,
+          "mscrm.EndpointAccessType",
+          "EnumerationType"
+        )
       );
     }
     if (aliases.length > 0) {
@@ -44,7 +56,8 @@ export class RetrieveCurrentOrganizationFunction implements Executable<RetrieveC
   }
 
   async parseResponse(response: Response): Promise<RetrieveCurrentOrganizationResponse> {
-    const data = await response.json();
-    return data as RetrieveCurrentOrganizationResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RetrieveCurrentOrganizationResponse;
   }
 }

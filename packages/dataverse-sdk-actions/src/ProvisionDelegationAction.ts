@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { delegatedauthorization, team } from "./types/index.js";
 
@@ -14,21 +15,27 @@ export interface ProvisionDelegationResponse extends team {
 }
 
 /**
+ * Parameters of the ProvisionDelegation action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ProvisionDelegationActionParameters {
+  delegatedauthorization: EntityReference | EntityPayload<delegatedauthorization>;
+}
+
+/**
  * ProvisionDelegation action
  *
  * Unbound action
  */
 export class ProvisionDelegationAction implements Executable<ProvisionDelegationResponse> {
-  constructor(
-    public readonly delegatedauthorization: EntityReference | EntityPayload<delegatedauthorization>
-  ) {}
+  constructor(public readonly parameters: ProvisionDelegationActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ProvisionDelegation`;
 
-    const body: Record<string, unknown> = {
-      delegatedauthorization: this.delegatedauthorization,
-    };
+    const body = requestBody({
+      delegatedauthorization: this.parameters.delegatedauthorization,
+    });
 
     return {
       method: "POST",
@@ -41,7 +48,8 @@ export class ProvisionDelegationAction implements Executable<ProvisionDelegation
   }
 
   async parseResponse(response: Response): Promise<ProvisionDelegationResponse> {
-    const data = await response.json();
-    return data as ProvisionDelegationResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as ProvisionDelegationResponse;
   }
 }

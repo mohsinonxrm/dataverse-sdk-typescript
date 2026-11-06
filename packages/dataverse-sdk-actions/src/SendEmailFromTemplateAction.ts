@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { email } from "./types/index.js";
 
@@ -14,25 +15,31 @@ export interface SendEmailFromTemplateResponse extends email {
 }
 
 /**
+ * Parameters of the SendEmailFromTemplate action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SendEmailFromTemplateActionParameters {
+  TemplateId: string;
+  Regarding: EntityReference | AnyEntityPayload;
+  Target: EntityReference | AnyEntityPayload;
+}
+
+/**
  * SendEmailFromTemplate action
  *
  * Unbound action
  */
 export class SendEmailFromTemplateAction implements Executable<SendEmailFromTemplateResponse> {
-  constructor(
-    public readonly templateId: string,
-    public readonly regarding: EntityReference | AnyEntityPayload,
-    public readonly target: EntityReference | AnyEntityPayload
-  ) {}
+  constructor(public readonly parameters: SendEmailFromTemplateActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/SendEmailFromTemplate`;
 
-    const body: Record<string, unknown> = {
-      TemplateId: this.templateId,
-      Regarding: this.regarding,
-      Target: this.target,
-    };
+    const body = requestBody({
+      TemplateId: this.parameters.TemplateId,
+      Regarding: this.parameters.Regarding,
+      Target: this.parameters.Target,
+    });
 
     return {
       method: "POST",
@@ -45,7 +52,8 @@ export class SendEmailFromTemplateAction implements Executable<SendEmailFromTemp
   }
 
   async parseResponse(response: Response): Promise<SendEmailFromTemplateResponse> {
-    const data = await response.json();
-    return data as SendEmailFromTemplateResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as SendEmailFromTemplateResponse;
   }
 }

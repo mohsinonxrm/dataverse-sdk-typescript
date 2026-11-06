@@ -31,7 +31,10 @@ export class RetrieveUnpublishedMultiple_appmodule_collectionFunction implements
   async parseResponse(
     response: Response
   ): Promise<RetrieveUnpublishedMultiple_appmodule_collectionResponse> {
-    const data = await response.json();
-    return data as RetrieveUnpublishedMultiple_appmodule_collectionResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (
+      text ? JSON.parse(text) : {}
+    ) as RetrieveUnpublishedMultiple_appmodule_collectionResponse;
   }
 }

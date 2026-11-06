@@ -7,6 +7,8 @@ import type { ListConnectionReferencesResponse as ListConnectionReferencesRespon
  * ListConnectionReferences request message
  *
  * Web API Action: ListConnectionReferences
+ *
+ * The first argument is the id of the workflow record to call it on.
  */
 export class ListConnectionReferencesRequest
   extends OrganizationRequest
@@ -30,8 +32,9 @@ export class ListConnectionReferencesRequest
   }
 
   async parseResponse(response: Response): Promise<ListConnectionReferencesResponse> {
-    const data = await response.json();
-    return ListConnectionReferencesResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return ListConnectionReferencesResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

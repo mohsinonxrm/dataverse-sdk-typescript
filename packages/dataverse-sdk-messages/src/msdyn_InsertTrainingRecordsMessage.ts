@@ -1,35 +1,48 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_InsertTrainingRecordsResponse as msdyn_InsertTrainingRecordsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_InsertTrainingRecords message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_InsertTrainingRecordsRequestParameters {
+  AttributesCount: number;
+  Input: string;
+  Config: string;
+}
 
 /**
  * msdyn_InsertTrainingRecords request message
  *
  * Web API Action: msdyn_InsertTrainingRecords
+ *
+ * The first argument is the id of the msdyn_ocsitdimportconfig record to call it on.
  */
 export class msdyn_InsertTrainingRecordsRequest
   extends OrganizationRequest
   implements Executable<msdyn_InsertTrainingRecordsResponse>
 {
+  declare readonly Parameters: Readonly<msdyn_InsertTrainingRecordsRequestParameters>;
+
   constructor(
     public msdyn_ocsitdimportconfigId: string,
-    public attributesCount: number,
-    public input: string,
-    public config: string
+    parameters: msdyn_InsertTrainingRecordsRequestParameters
   ) {
-    super("msdyn_InsertTrainingRecords");
+    super("msdyn_InsertTrainingRecords", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_ocsitdimportconfigs(${this.msdyn_ocsitdimportconfigId})/Microsoft.Dynamics.CRM.msdyn_InsertTrainingRecords`;
 
-    const body: Record<string, unknown> = {
-      AttributesCount: this.attributesCount,
-      Input: this.input,
-      Config: this.config,
-    };
+    const body = requestBody({
+      AttributesCount: this.Parameters.AttributesCount,
+      Input: this.Parameters.Input,
+      Config: this.Parameters.Config,
+    });
 
     return {
       method: "POST",
@@ -42,8 +55,9 @@ export class msdyn_InsertTrainingRecordsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_InsertTrainingRecordsResponse> {
-    const data = await response.json();
-    return msdyn_InsertTrainingRecordsResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_InsertTrainingRecordsResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

@@ -5,6 +5,8 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * PvaDeleteBotComponentCollection request message
  *
  * Web API Action: PvaDeleteBotComponentCollection
+ *
+ * The first argument is the id of the botcomponentcollection record to call it on.
  */
 export class PvaDeleteBotComponentCollectionRequest
   extends OrganizationRequest

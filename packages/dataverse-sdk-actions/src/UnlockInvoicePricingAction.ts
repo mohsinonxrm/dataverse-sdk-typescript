@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from UnlockInvoicePricing action
@@ -8,19 +9,27 @@ export interface UnlockInvoicePricingResponse {
 }
 
 /**
+ * Parameters of the UnlockInvoicePricing action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface UnlockInvoicePricingActionParameters {
+  InvoiceId: string;
+}
+
+/**
  * UnlockInvoicePricing action
  *
  * Unbound action
  */
 export class UnlockInvoicePricingAction implements Executable<UnlockInvoicePricingResponse> {
-  constructor(public readonly invoiceId: string) {}
+  constructor(public readonly parameters: UnlockInvoicePricingActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/UnlockInvoicePricing`;
 
-    const body: Record<string, unknown> = {
-      InvoiceId: this.invoiceId,
-    };
+    const body = requestBody({
+      InvoiceId: this.parameters.InvoiceId,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class UnlockInvoicePricingAction implements Executable<UnlockInvoicePrici
   }
 
   async parseResponse(response: Response): Promise<UnlockInvoicePricingResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as UnlockInvoicePricingResponse;
   }
 }

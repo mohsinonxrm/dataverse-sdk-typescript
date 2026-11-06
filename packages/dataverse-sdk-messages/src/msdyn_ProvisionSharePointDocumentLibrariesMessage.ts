@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_ProvisionSharePointDocumentLibrariesResponse as msdyn_ProvisionSharePointDocumentLibrariesResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_ProvisionSharePointDocumentLibraries message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ProvisionSharePointDocumentLibrariesRequestParameters {
+  SharePointSiteURL?: string;
+  FolderStructureEntityValue?: number;
+}
 
 /**
  * msdyn_ProvisionSharePointDocumentLibraries request message
@@ -12,20 +22,19 @@ export class msdyn_ProvisionSharePointDocumentLibrariesRequest
   extends OrganizationRequest
   implements Executable<msdyn_ProvisionSharePointDocumentLibrariesResponse>
 {
-  constructor(
-    public sharePointSiteURL?: string,
-    public folderStructureEntityValue?: number
-  ) {
-    super("msdyn_ProvisionSharePointDocumentLibraries");
+  declare readonly Parameters: Readonly<msdyn_ProvisionSharePointDocumentLibrariesRequestParameters>;
+
+  constructor(parameters: msdyn_ProvisionSharePointDocumentLibrariesRequestParameters = {}) {
+    super("msdyn_ProvisionSharePointDocumentLibraries", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ProvisionSharePointDocumentLibraries`;
 
-    const body: Record<string, unknown> = {
-      SharePointSiteURL: this.sharePointSiteURL,
-      FolderStructureEntityValue: this.folderStructureEntityValue,
-    };
+    const body = requestBody({
+      SharePointSiteURL: this.Parameters.SharePointSiteURL,
+      FolderStructureEntityValue: this.Parameters.FolderStructureEntityValue,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,11 @@ export class msdyn_ProvisionSharePointDocumentLibrariesRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_ProvisionSharePointDocumentLibrariesResponse> {
-    const data = await response.json();
-    return msdyn_ProvisionSharePointDocumentLibrariesResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_ProvisionSharePointDocumentLibrariesResponse.fromResponse(
+      text ? JSON.parse(text) : {}
+    );
   }
 }
 

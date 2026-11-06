@@ -12,6 +12,8 @@ export interface ComputeSlaWorkQueueItemResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.workqueue)
+ *
+ * The first argument is the id of the workqueue record to call it on.
  */
 export class ComputeSlaWorkQueueItemAction implements Executable<ComputeSlaWorkQueueItemResponse> {
   constructor(public readonly workqueueId: string) {}
@@ -30,7 +32,8 @@ export class ComputeSlaWorkQueueItemAction implements Executable<ComputeSlaWorkQ
   }
 
   async parseResponse(response: Response): Promise<ComputeSlaWorkQueueItemResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as ComputeSlaWorkQueueItemResponse;
   }
 }

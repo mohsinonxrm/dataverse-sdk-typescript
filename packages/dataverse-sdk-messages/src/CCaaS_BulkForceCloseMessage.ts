@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { CCaaS_BulkForceCloseResponse as CCaaS_BulkForceCloseResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the CCaaS_BulkForceClose message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_BulkForceCloseRequestParameters {
+  ConversationIds: string[];
+  ApiVersion: string;
+}
 
 /**
  * CCaaS_BulkForceClose request message
@@ -12,20 +22,19 @@ export class CCaaS_BulkForceCloseRequest
   extends OrganizationRequest
   implements Executable<CCaaS_BulkForceCloseResponse>
 {
-  constructor(
-    public conversationIds: string[],
-    public apiVersion: string
-  ) {
-    super("CCaaS_BulkForceClose");
+  declare readonly Parameters: Readonly<CCaaS_BulkForceCloseRequestParameters>;
+
+  constructor(parameters: CCaaS_BulkForceCloseRequestParameters) {
+    super("CCaaS_BulkForceClose", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CCaaS_BulkForceClose`;
 
-    const body: Record<string, unknown> = {
-      ConversationIds: this.conversationIds,
-      ApiVersion: this.apiVersion,
-    };
+    const body = requestBody({
+      ConversationIds: this.Parameters.ConversationIds,
+      ApiVersion: this.Parameters.ApiVersion,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class CCaaS_BulkForceCloseRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_BulkForceCloseResponse> {
-    const data = await response.json();
-    return CCaaS_BulkForceCloseResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return CCaaS_BulkForceCloseResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

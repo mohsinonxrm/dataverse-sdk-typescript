@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResponse as msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluation message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationRequestParameters {
+  msdyn_SalesAgentRun: string;
+  msdyn_QueueAgentRunRequestTimestamp: string;
+  msdyn_TrackingId: string;
+}
 
 /**
  * msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluation request message
@@ -12,22 +23,22 @@ export class msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationRequest
   extends OrganizationRequest
   implements Executable<msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResponse>
 {
+  declare readonly Parameters: Readonly<msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationRequestParameters>;
+
   constructor(
-    public msdyn_SalesAgentRun: string,
-    public msdyn_QueueAgentRunRequestTimestamp: string,
-    public msdyn_TrackingId: string
+    parameters: msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationRequestParameters
   ) {
-    super("msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluation");
+    super("msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluation", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluation`;
 
-    const body: Record<string, unknown> = {
-      msdyn_SalesAgentRun: this.msdyn_SalesAgentRun,
-      msdyn_QueueAgentRunRequestTimestamp: this.msdyn_QueueAgentRunRequestTimestamp,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-    };
+    const body = requestBody({
+      msdyn_SalesAgentRun: this.Parameters.msdyn_SalesAgentRun,
+      msdyn_QueueAgentRunRequestTimestamp: this.Parameters.msdyn_QueueAgentRunRequestTimestamp,
+      msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
+    });
 
     return {
       method: "POST",
@@ -42,8 +53,11 @@ export class msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResponse> {
-    const data = await response.json();
-    return msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResponse.fromResponse(
+      text ? JSON.parse(text) : {}
+    );
   }
 }
 

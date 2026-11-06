@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,29 +11,35 @@ export interface SendTemplateResponse {
 }
 
 /**
+ * Parameters of the SendTemplate action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SendTemplateActionParameters {
+  TemplateId: string;
+  Sender: EntityReference | AnyEntityPayload;
+  Recipients: Record<string, unknown>[];
+  Regarding: EntityReference | AnyEntityPayload;
+  DeliveryPriorityCode?: number;
+}
+
+/**
  * SendTemplate action
  *
  * Unbound action
  */
 export class SendTemplateAction implements Executable<SendTemplateResponse> {
-  constructor(
-    public readonly templateId: string,
-    public readonly sender: EntityReference | AnyEntityPayload,
-    public readonly recipients: Record<string, unknown>[],
-    public readonly regarding: EntityReference | AnyEntityPayload,
-    public readonly deliveryPriorityCode?: number
-  ) {}
+  constructor(public readonly parameters: SendTemplateActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/SendTemplate`;
 
-    const body: Record<string, unknown> = {
-      TemplateId: this.templateId,
-      Sender: this.sender,
-      Recipients: this.recipients,
-      Regarding: this.regarding,
-      DeliveryPriorityCode: this.deliveryPriorityCode,
-    };
+    const body = requestBody({
+      TemplateId: this.parameters.TemplateId,
+      Sender: this.parameters.Sender,
+      Recipients: this.parameters.Recipients,
+      Regarding: this.parameters.Regarding,
+      DeliveryPriorityCode: this.parameters.DeliveryPriorityCode,
+    });
 
     return {
       method: "POST",
@@ -45,7 +52,8 @@ export class SendTemplateAction implements Executable<SendTemplateResponse> {
   }
 
   async parseResponse(response: Response): Promise<SendTemplateResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as SendTemplateResponse;
   }
 }

@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { EntityRecordCountCollection } from "./types/index.js";
 
@@ -11,23 +12,29 @@ export interface RetainResponse {
 }
 
 /**
+ * Parameters of the Retain action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetainActionParameters {
+  Target: EntityReference | AnyEntityPayload;
+  OperationId?: string;
+}
+
+/**
  * Retain action
  *
  * Unbound action
  */
 export class RetainAction implements Executable<RetainResponse> {
-  constructor(
-    public readonly target: EntityReference | AnyEntityPayload,
-    public readonly operationId?: string
-  ) {}
+  constructor(public readonly parameters: RetainActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/Retain`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-      OperationId: this.operationId,
-    };
+    const body = requestBody({
+      Target: this.parameters.Target,
+      OperationId: this.parameters.OperationId,
+    });
 
     return {
       method: "POST",
@@ -40,7 +47,8 @@ export class RetainAction implements Executable<RetainResponse> {
   }
 
   async parseResponse(response: Response): Promise<RetainResponse> {
-    const data = await response.json();
-    return data as RetainResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RetainResponse;
   }
 }

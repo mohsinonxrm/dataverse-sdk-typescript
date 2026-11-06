@@ -12,6 +12,8 @@ export interface msdyn_TrainAIModelResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.msdyn_ocskillidentmlmodel)
+ *
+ * The first argument is the id of the msdyn_ocskillidentmlmodel record to call it on.
  */
 export class msdyn_TrainAIModelAction implements Executable<msdyn_TrainAIModelResponse> {
   constructor(public readonly msdyn_ocskillidentmlmodelId: string) {}
@@ -30,7 +32,8 @@ export class msdyn_TrainAIModelAction implements Executable<msdyn_TrainAIModelRe
   }
 
   async parseResponse(response: Response): Promise<msdyn_TrainAIModelResponse> {
-    const data = await response.json();
-    return data as msdyn_TrainAIModelResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_TrainAIModelResponse;
   }
 }

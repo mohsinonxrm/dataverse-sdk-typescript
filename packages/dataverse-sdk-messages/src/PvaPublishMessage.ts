@@ -7,6 +7,8 @@ import type { PvaPublishResponse as PvaPublishResponseData } from "./types/index
  * PvaPublish request message
  *
  * Web API Action: PvaPublish
+ *
+ * The first argument is the id of the bot record to call it on.
  */
 export class PvaPublishRequest
   extends OrganizationRequest
@@ -30,8 +32,9 @@ export class PvaPublishRequest
   }
 
   async parseResponse(response: Response): Promise<PvaPublishResponse> {
-    const data = await response.json();
-    return PvaPublishResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return PvaPublishResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

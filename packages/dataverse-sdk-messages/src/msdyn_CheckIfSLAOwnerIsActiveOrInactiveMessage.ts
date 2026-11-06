@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_CheckIfSLAOwnerIsActiveOrInactiveResponse as msdyn_CheckIfSLAOwnerIsActiveOrInactiveResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_CheckIfSLAOwnerIsActiveOrInactive message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CheckIfSLAOwnerIsActiveOrInactiveRequestParameters {
+  EntityIds?: string;
+  SolutionId?: string;
+  ExcludeSolutionIds?: string;
+}
 
 /**
  * msdyn_CheckIfSLAOwnerIsActiveOrInactive request message
@@ -12,22 +23,20 @@ export class msdyn_CheckIfSLAOwnerIsActiveOrInactiveRequest
   extends OrganizationRequest
   implements Executable<msdyn_CheckIfSLAOwnerIsActiveOrInactiveResponse>
 {
-  constructor(
-    public entityIds?: string,
-    public solutionId?: string,
-    public excludeSolutionIds?: string
-  ) {
-    super("msdyn_CheckIfSLAOwnerIsActiveOrInactive");
+  declare readonly Parameters: Readonly<msdyn_CheckIfSLAOwnerIsActiveOrInactiveRequestParameters>;
+
+  constructor(parameters: msdyn_CheckIfSLAOwnerIsActiveOrInactiveRequestParameters = {}) {
+    super("msdyn_CheckIfSLAOwnerIsActiveOrInactive", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckIfSLAOwnerIsActiveOrInactive`;
 
-    const body: Record<string, unknown> = {
-      EntityIds: this.entityIds,
-      SolutionId: this.solutionId,
-      ExcludeSolutionIds: this.excludeSolutionIds,
-    };
+    const body = requestBody({
+      EntityIds: this.Parameters.EntityIds,
+      SolutionId: this.Parameters.SolutionId,
+      ExcludeSolutionIds: this.Parameters.ExcludeSolutionIds,
+    });
 
     return {
       method: "POST",
@@ -42,8 +51,11 @@ export class msdyn_CheckIfSLAOwnerIsActiveOrInactiveRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckIfSLAOwnerIsActiveOrInactiveResponse> {
-    const data = await response.json();
-    return msdyn_CheckIfSLAOwnerIsActiveOrInactiveResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_CheckIfSLAOwnerIsActiveOrInactiveResponse.fromResponse(
+      text ? JSON.parse(text) : {}
+    );
   }
 }
 

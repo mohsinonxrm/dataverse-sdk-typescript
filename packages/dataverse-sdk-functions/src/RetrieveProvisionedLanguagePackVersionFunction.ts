@@ -9,12 +9,22 @@ export interface RetrieveProvisionedLanguagePackVersionResponse {
 }
 
 /**
+ * Parameters of the RetrieveProvisionedLanguagePackVersion function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveProvisionedLanguagePackVersionFunctionParameters {
+  Language: number;
+}
+
+/**
  * RetrieveProvisionedLanguagePackVersion function
  *
  * Unbound function
  */
 export class RetrieveProvisionedLanguagePackVersionFunction implements Executable<RetrieveProvisionedLanguagePackVersionResponse> {
-  constructor(public readonly language: number) {}
+  constructor(
+    public readonly parameters: RetrieveProvisionedLanguagePackVersionFunctionParameters
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveProvisionedLanguagePackVersion`;
@@ -22,9 +32,9 @@ export class RetrieveProvisionedLanguagePackVersionFunction implements Executabl
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.language !== undefined) {
+    if (this.parameters.Language !== undefined) {
       aliases.push(`Language=@p1`);
-      params.append("@p1", formatParameterAlias(this.language, "Edm.Int32"));
+      params.append("@p1", formatParameterAlias(this.parameters.Language, "Edm.Int32"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -40,7 +50,8 @@ export class RetrieveProvisionedLanguagePackVersionFunction implements Executabl
   }
 
   async parseResponse(response: Response): Promise<RetrieveProvisionedLanguagePackVersionResponse> {
-    const data = await response.json();
-    return data as RetrieveProvisionedLanguagePackVersionResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RetrieveProvisionedLanguagePackVersionResponse;
   }
 }

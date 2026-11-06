@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_CheckForActiveLayersOnProcessesResponse as msdyn_CheckForActiveLayersOnProcessesResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_CheckForActiveLayersOnProcesses message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CheckForActiveLayersOnProcessesRequestParameters {
+  SolutionId: string;
+  ExcludeFormIds: string;
+}
 
 /**
  * msdyn_CheckForActiveLayersOnProcesses request message
@@ -12,20 +22,19 @@ export class msdyn_CheckForActiveLayersOnProcessesRequest
   extends OrganizationRequest
   implements Executable<msdyn_CheckForActiveLayersOnProcessesResponse>
 {
-  constructor(
-    public solutionId: string,
-    public excludeFormIds: string
-  ) {
-    super("msdyn_CheckForActiveLayersOnProcesses");
+  declare readonly Parameters: Readonly<msdyn_CheckForActiveLayersOnProcessesRequestParameters>;
+
+  constructor(parameters: msdyn_CheckForActiveLayersOnProcessesRequestParameters) {
+    super("msdyn_CheckForActiveLayersOnProcesses", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckForActiveLayersOnProcesses`;
 
-    const body: Record<string, unknown> = {
-      SolutionId: this.solutionId,
-      ExcludeFormIds: this.excludeFormIds,
-    };
+    const body = requestBody({
+      SolutionId: this.Parameters.SolutionId,
+      ExcludeFormIds: this.Parameters.ExcludeFormIds,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class msdyn_CheckForActiveLayersOnProcessesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckForActiveLayersOnProcessesResponse> {
-    const data = await response.json();
-    return msdyn_CheckForActiveLayersOnProcessesResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_CheckForActiveLayersOnProcessesResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

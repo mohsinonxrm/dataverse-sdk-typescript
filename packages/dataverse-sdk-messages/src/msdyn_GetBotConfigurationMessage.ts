@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetBotConfigurationResponse as msdyn_GetBotConfigurationResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetBotConfiguration message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetBotConfigurationRequestParameters {
+  BotApplicationId: string;
+}
 
 /**
  * msdyn_GetBotConfiguration request message
@@ -12,16 +21,18 @@ export class msdyn_GetBotConfigurationRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetBotConfigurationResponse>
 {
-  constructor(public botApplicationId: string) {
-    super("msdyn_GetBotConfiguration");
+  declare readonly Parameters: Readonly<msdyn_GetBotConfigurationRequestParameters>;
+
+  constructor(parameters: msdyn_GetBotConfigurationRequestParameters) {
+    super("msdyn_GetBotConfiguration", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetBotConfiguration`;
 
-    const body: Record<string, unknown> = {
-      BotApplicationId: this.botApplicationId,
-    };
+    const body = requestBody({
+      BotApplicationId: this.Parameters.BotApplicationId,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_GetBotConfigurationRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetBotConfigurationResponse> {
-    const data = await response.json();
-    return msdyn_GetBotConfigurationResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_GetBotConfigurationResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

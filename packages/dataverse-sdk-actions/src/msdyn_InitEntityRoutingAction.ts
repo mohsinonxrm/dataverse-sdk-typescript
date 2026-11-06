@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_InitEntityRouting action
@@ -8,37 +9,43 @@ export interface msdyn_InitEntityRoutingResponse {
 }
 
 /**
+ * Parameters of the msdyn_InitEntityRouting action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_InitEntityRoutingActionParameters {
+  IntentFamilyId?: string;
+  AppInsightsEnvInformation?: string;
+  IntentId?: string;
+  LiveWorkStreamId: string;
+  AppInsightsAdditionalInformation?: string;
+  EntityLogicalName: string;
+  IntentString?: string;
+  IntentGroupId?: string;
+  EntityRecordId: string;
+}
+
+/**
  * msdyn_InitEntityRouting action
  *
  * Unbound action
  */
 export class msdyn_InitEntityRoutingAction implements Executable<msdyn_InitEntityRoutingResponse> {
-  constructor(
-    public readonly intentFamilyId: string | undefined,
-    public readonly appInsightsEnvInformation: string | undefined,
-    public readonly intentId: string | undefined,
-    public readonly liveWorkStreamId: string,
-    public readonly appInsightsAdditionalInformation: string | undefined,
-    public readonly entityLogicalName: string,
-    public readonly intentString: string | undefined,
-    public readonly intentGroupId: string | undefined,
-    public readonly entityRecordId: string
-  ) {}
+  constructor(public readonly parameters: msdyn_InitEntityRoutingActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_InitEntityRouting`;
 
-    const body: Record<string, unknown> = {
-      IntentFamilyId: this.intentFamilyId,
-      AppInsightsEnvInformation: this.appInsightsEnvInformation,
-      IntentId: this.intentId,
-      LiveWorkStreamId: this.liveWorkStreamId,
-      AppInsightsAdditionalInformation: this.appInsightsAdditionalInformation,
-      EntityLogicalName: this.entityLogicalName,
-      IntentString: this.intentString,
-      IntentGroupId: this.intentGroupId,
-      EntityRecordId: this.entityRecordId,
-    };
+    const body = requestBody({
+      IntentFamilyId: this.parameters.IntentFamilyId,
+      AppInsightsEnvInformation: this.parameters.AppInsightsEnvInformation,
+      IntentId: this.parameters.IntentId,
+      LiveWorkStreamId: this.parameters.LiveWorkStreamId,
+      AppInsightsAdditionalInformation: this.parameters.AppInsightsAdditionalInformation,
+      EntityLogicalName: this.parameters.EntityLogicalName,
+      IntentString: this.parameters.IntentString,
+      IntentGroupId: this.parameters.IntentGroupId,
+      EntityRecordId: this.parameters.EntityRecordId,
+    });
 
     return {
       method: "POST",
@@ -51,7 +58,8 @@ export class msdyn_InitEntityRoutingAction implements Executable<msdyn_InitEntit
   }
 
   async parseResponse(response: Response): Promise<msdyn_InitEntityRoutingResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_InitEntityRoutingResponse;
   }
 }

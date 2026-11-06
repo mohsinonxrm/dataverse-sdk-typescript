@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_DismissSuggestedContact message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_DismissSuggestedContactRequestParameters {
+  SuggestedContactId: string;
+  DismissContact: boolean;
+}
 
 /**
  * msdyn_DismissSuggestedContact request message
@@ -10,20 +20,19 @@ export class msdyn_DismissSuggestedContactRequest
   extends OrganizationRequest
   implements Executable<msdyn_DismissSuggestedContactResponse>
 {
-  constructor(
-    public suggestedContactId: string,
-    public dismissContact: boolean
-  ) {
-    super("msdyn_DismissSuggestedContact");
+  declare readonly Parameters: Readonly<msdyn_DismissSuggestedContactRequestParameters>;
+
+  constructor(parameters: msdyn_DismissSuggestedContactRequestParameters) {
+    super("msdyn_DismissSuggestedContact", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_DismissSuggestedContact`;
 
-    const body: Record<string, unknown> = {
-      SuggestedContactId: this.suggestedContactId,
-      DismissContact: this.dismissContact,
-    };
+    const body = requestBody({
+      SuggestedContactId: this.Parameters.SuggestedContactId,
+      DismissContact: this.Parameters.DismissContact,
+    });
 
     return {
       method: "POST",

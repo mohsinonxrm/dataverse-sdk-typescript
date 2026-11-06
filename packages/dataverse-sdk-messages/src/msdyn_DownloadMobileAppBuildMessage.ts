@@ -2,11 +2,21 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type {
   msdyn_DownloadMobileAppBuildResponse as msdyn_DownloadMobileAppBuildResponseData,
   msdyn_mobileapp,
 } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_DownloadMobileAppBuild message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_DownloadMobileAppBuildRequestParameters {
+  BuildId?: string;
+  msdyn_MobileApp: EntityReference | EntityPayload<msdyn_mobileapp>;
+}
 
 /**
  * msdyn_DownloadMobileAppBuild request message
@@ -17,20 +27,19 @@ export class msdyn_DownloadMobileAppBuildRequest
   extends OrganizationRequest
   implements Executable<msdyn_DownloadMobileAppBuildResponse>
 {
-  constructor(
-    public buildId: string | undefined,
-    public msdyn_MobileApp: EntityReference | EntityPayload<msdyn_mobileapp>
-  ) {
-    super("msdyn_DownloadMobileAppBuild");
+  declare readonly Parameters: Readonly<msdyn_DownloadMobileAppBuildRequestParameters>;
+
+  constructor(parameters: msdyn_DownloadMobileAppBuildRequestParameters) {
+    super("msdyn_DownloadMobileAppBuild", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_DownloadMobileAppBuild`;
 
-    const body: Record<string, unknown> = {
-      BuildId: this.buildId,
-      msdyn_MobileApp: this.msdyn_MobileApp,
-    };
+    const body = requestBody({
+      BuildId: this.Parameters.BuildId,
+      msdyn_MobileApp: this.Parameters.msdyn_MobileApp,
+    });
 
     return {
       method: "POST",
@@ -43,8 +52,9 @@ export class msdyn_DownloadMobileAppBuildRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_DownloadMobileAppBuildResponse> {
-    const data = await response.json();
-    return msdyn_DownloadMobileAppBuildResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_DownloadMobileAppBuildResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

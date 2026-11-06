@@ -2,8 +2,18 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_GetKnowledgeSuggestionsResponse as msdyn_GetKnowledgeSuggestionsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetKnowledgeSuggestions message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetKnowledgeSuggestionsRequestParameters {
+  Count?: number;
+  Target: EntityReference | AnyEntityPayload;
+}
 
 /**
  * msdyn_GetKnowledgeSuggestions request message
@@ -14,20 +24,19 @@ export class msdyn_GetKnowledgeSuggestionsRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetKnowledgeSuggestionsResponse>
 {
-  constructor(
-    public count: number | undefined,
-    public target: EntityReference | AnyEntityPayload
-  ) {
-    super("msdyn_GetKnowledgeSuggestions");
+  declare readonly Parameters: Readonly<msdyn_GetKnowledgeSuggestionsRequestParameters>;
+
+  constructor(parameters: msdyn_GetKnowledgeSuggestionsRequestParameters) {
+    super("msdyn_GetKnowledgeSuggestions", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetKnowledgeSuggestions`;
 
-    const body: Record<string, unknown> = {
-      Count: this.count,
-      Target: this.target,
-    };
+    const body = requestBody({
+      Count: this.Parameters.Count,
+      Target: this.Parameters.Target,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class msdyn_GetKnowledgeSuggestionsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetKnowledgeSuggestionsResponse> {
-    const data = await response.json();
-    return msdyn_GetKnowledgeSuggestionsResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_GetKnowledgeSuggestionsResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

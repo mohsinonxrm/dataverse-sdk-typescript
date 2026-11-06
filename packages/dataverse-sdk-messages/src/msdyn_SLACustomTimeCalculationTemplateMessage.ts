@@ -1,7 +1,25 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_SLACustomTimeCalculationTemplateResponse as msdyn_SLACustomTimeCalculationTemplateResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_SLACustomTimeCalculationTemplate message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SLACustomTimeCalculationTemplateRequestParameters {
+  calendarId: string;
+  regardingId: string;
+  slaItemId: string;
+  entityName: string;
+  requestType: string;
+  previousInstanceId: string;
+  firstInputDuration: number;
+  secondInputDuration: number;
+  firstInputDate: string;
+  secondInputDate: string;
+}
 
 /**
  * msdyn_SLACustomTimeCalculationTemplate request message
@@ -12,36 +30,27 @@ export class msdyn_SLACustomTimeCalculationTemplateRequest
   extends OrganizationRequest
   implements Executable<msdyn_SLACustomTimeCalculationTemplateResponse>
 {
-  constructor(
-    public calendarId: string,
-    public regardingId: string,
-    public slaItemId: string,
-    public entityName: string,
-    public requestType: string,
-    public previousInstanceId: string,
-    public firstInputDuration: number,
-    public secondInputDuration: number,
-    public firstInputDate: string,
-    public secondInputDate: string
-  ) {
-    super("msdyn_SLACustomTimeCalculationTemplate");
+  declare readonly Parameters: Readonly<msdyn_SLACustomTimeCalculationTemplateRequestParameters>;
+
+  constructor(parameters: msdyn_SLACustomTimeCalculationTemplateRequestParameters) {
+    super("msdyn_SLACustomTimeCalculationTemplate", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SLACustomTimeCalculationTemplate`;
 
-    const body: Record<string, unknown> = {
-      calendarId: this.calendarId,
-      regardingId: this.regardingId,
-      slaItemId: this.slaItemId,
-      entityName: this.entityName,
-      requestType: this.requestType,
-      previousInstanceId: this.previousInstanceId,
-      firstInputDuration: this.firstInputDuration,
-      secondInputDuration: this.secondInputDuration,
-      firstInputDate: this.firstInputDate,
-      secondInputDate: this.secondInputDate,
-    };
+    const body = requestBody({
+      calendarId: this.Parameters.calendarId,
+      regardingId: this.Parameters.regardingId,
+      slaItemId: this.Parameters.slaItemId,
+      entityName: this.Parameters.entityName,
+      requestType: this.Parameters.requestType,
+      previousInstanceId: this.Parameters.previousInstanceId,
+      firstInputDuration: this.Parameters.firstInputDuration,
+      secondInputDuration: this.Parameters.secondInputDuration,
+      firstInputDate: this.Parameters.firstInputDate,
+      secondInputDate: this.Parameters.secondInputDate,
+    });
 
     return {
       method: "POST",
@@ -54,8 +63,11 @@ export class msdyn_SLACustomTimeCalculationTemplateRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SLACustomTimeCalculationTemplateResponse> {
-    const data = await response.json();
-    return msdyn_SLACustomTimeCalculationTemplateResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_SLACustomTimeCalculationTemplateResponse.fromResponse(
+      text ? JSON.parse(text) : {}
+    );
   }
 }
 

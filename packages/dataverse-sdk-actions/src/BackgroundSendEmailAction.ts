@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { TypedQueryBase } from "./types/index.js";
 
@@ -10,19 +11,27 @@ export interface BackgroundSendEmailResponse {
 }
 
 /**
+ * Parameters of the BackgroundSendEmail action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface BackgroundSendEmailActionParameters {
+  Query?: TypedQueryBase;
+}
+
+/**
  * BackgroundSendEmail action
  *
  * Unbound action
  */
 export class BackgroundSendEmailAction implements Executable<BackgroundSendEmailResponse> {
-  constructor(public readonly query?: TypedQueryBase) {}
+  constructor(public readonly parameters: BackgroundSendEmailActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/BackgroundSendEmail`;
 
-    const body: Record<string, unknown> = {
-      Query: enumBody(this.query, "QueryBase"),
-    };
+    const body = requestBody({
+      Query: enumBody(this.parameters.Query, "QueryBase"),
+    });
 
     return {
       method: "POST",
@@ -35,7 +44,8 @@ export class BackgroundSendEmailAction implements Executable<BackgroundSendEmail
   }
 
   async parseResponse(response: Response): Promise<BackgroundSendEmailResponse> {
-    const data = await response.json();
-    return data as BackgroundSendEmailResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as BackgroundSendEmailResponse;
   }
 }

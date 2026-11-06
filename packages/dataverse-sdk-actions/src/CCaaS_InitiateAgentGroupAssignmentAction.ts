@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from CCaaS_InitiateAgentGroupAssignment action
@@ -8,26 +9,36 @@ export interface CCaaS_InitiateAgentGroupAssignmentResponse {
 }
 
 /**
+ * Parameters of the CCaaS_InitiateAgentGroupAssignment action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_InitiateAgentGroupAssignmentActionParameters {
+  AgentGroupId: string;
+  ApiVersion: string;
+}
+
+/**
  * CCaaS_InitiateAgentGroupAssignment action
  *
  * Bound action
  * Binding parameter: entity (mscrm.msdyn_ocliveworkitem)
+ *
+ * The first argument is the id of the msdyn_ocliveworkitem record to call it on.
  */
 export class CCaaS_InitiateAgentGroupAssignmentAction implements Executable<CCaaS_InitiateAgentGroupAssignmentResponse> {
   constructor(
     public readonly msdyn_ocliveworkitemId: string,
-    public readonly agentGroupId: string,
-    public readonly apiVersion: string
+    public readonly parameters: CCaaS_InitiateAgentGroupAssignmentActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_InitiateAgentGroupAssignment`;
 
-    const body: Record<string, unknown> = {
-      AgentGroupId: this.agentGroupId,
-      ApiVersion: this.apiVersion,
-    };
+    const body = requestBody({
+      AgentGroupId: this.parameters.AgentGroupId,
+      ApiVersion: this.parameters.ApiVersion,
+    });
 
     return {
       method: "POST",
@@ -40,7 +51,8 @@ export class CCaaS_InitiateAgentGroupAssignmentAction implements Executable<CCaa
   }
 
   async parseResponse(response: Response): Promise<CCaaS_InitiateAgentGroupAssignmentResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as CCaaS_InitiateAgentGroupAssignmentResponse;
   }
 }

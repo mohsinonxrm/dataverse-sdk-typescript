@@ -1,5 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_UpdateRequirementModel message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_UpdateRequirementModelRequestParameters {
+  From?: string;
+  To?: string;
+  RequirementGroupId?: string;
+  Attributes: string;
+}
 
 /**
  * msdyn_UpdateRequirementModel request message
@@ -10,24 +22,21 @@ export class msdyn_UpdateRequirementModelRequest
   extends OrganizationRequest
   implements Executable<msdyn_UpdateRequirementModelResponse>
 {
-  constructor(
-    public from: string | undefined,
-    public to: string | undefined,
-    public requirementGroupId: string | undefined,
-    public attributes: string
-  ) {
-    super("msdyn_UpdateRequirementModel");
+  declare readonly Parameters: Readonly<msdyn_UpdateRequirementModelRequestParameters>;
+
+  constructor(parameters: msdyn_UpdateRequirementModelRequestParameters) {
+    super("msdyn_UpdateRequirementModel", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_UpdateRequirementModel`;
 
-    const body: Record<string, unknown> = {
-      From: this.from,
-      To: this.to,
-      RequirementGroupId: this.requirementGroupId,
-      Attributes: this.attributes,
-    };
+    const body = requestBody({
+      From: this.Parameters.From,
+      To: this.Parameters.To,
+      RequirementGroupId: this.Parameters.RequirementGroupId,
+      Attributes: this.Parameters.Attributes,
+    });
 
     return {
       method: "POST",

@@ -2,8 +2,25 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { SendAppNotificationResponse as SendAppNotificationResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the SendAppNotification message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SendAppNotificationRequestParameters {
+  Recipient: EntityReference | AnyEntityPayload;
+  Expiry?: number;
+  Priority?: number;
+  OverrideContent?: EntityReference | AnyEntityPayload;
+  Title: string;
+  IconType?: number;
+  Body?: string;
+  Actions?: EntityReference | AnyEntityPayload;
+  ToastType?: number;
+}
 
 /**
  * SendAppNotification request message
@@ -14,34 +31,26 @@ export class SendAppNotificationRequest
   extends OrganizationRequest
   implements Executable<SendAppNotificationResponse>
 {
-  constructor(
-    public recipient: EntityReference | AnyEntityPayload,
-    public expiry: number | undefined,
-    public priority: number | undefined,
-    public overrideContent: EntityReference | AnyEntityPayload | undefined,
-    public title: string,
-    public iconType?: number,
-    public body?: string,
-    public actions?: EntityReference | AnyEntityPayload,
-    public toastType?: number
-  ) {
-    super("SendAppNotification");
+  declare readonly Parameters: Readonly<SendAppNotificationRequestParameters>;
+
+  constructor(parameters: SendAppNotificationRequestParameters) {
+    super("SendAppNotification", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/SendAppNotification`;
 
-    const body: Record<string, unknown> = {
-      Recipient: this.recipient,
-      Expiry: this.expiry,
-      Priority: this.priority,
-      OverrideContent: this.overrideContent,
-      Title: this.title,
-      IconType: this.iconType,
-      Body: this.body,
-      Actions: this.actions,
-      ToastType: this.toastType,
-    };
+    const body = requestBody({
+      Recipient: this.Parameters.Recipient,
+      Expiry: this.Parameters.Expiry,
+      Priority: this.Parameters.Priority,
+      OverrideContent: this.Parameters.OverrideContent,
+      Title: this.Parameters.Title,
+      IconType: this.Parameters.IconType,
+      Body: this.Parameters.Body,
+      Actions: this.Parameters.Actions,
+      ToastType: this.Parameters.ToastType,
+    });
 
     return {
       method: "POST",
@@ -54,8 +63,9 @@ export class SendAppNotificationRequest
   }
 
   async parseResponse(response: Response): Promise<SendAppNotificationResponse> {
-    const data = await response.json();
-    return SendAppNotificationResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return SendAppNotificationResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

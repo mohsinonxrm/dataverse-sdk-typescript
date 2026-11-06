@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,19 +11,27 @@ export interface OnExternalDeletedResponse {
 }
 
 /**
+ * Parameters of the OnExternalDeleted action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface OnExternalDeletedActionParameters {
+  Target: EntityReference | AnyEntityPayload;
+}
+
+/**
  * OnExternalDeleted action
  *
  * Unbound action
  */
 export class OnExternalDeletedAction implements Executable<OnExternalDeletedResponse> {
-  constructor(public readonly target: EntityReference | AnyEntityPayload) {}
+  constructor(public readonly parameters: OnExternalDeletedActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/OnExternalDeleted`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-    };
+    const body = requestBody({
+      Target: this.parameters.Target,
+    });
 
     return {
       method: "POST",
@@ -35,7 +44,8 @@ export class OnExternalDeletedAction implements Executable<OnExternalDeletedResp
   }
 
   async parseResponse(response: Response): Promise<OnExternalDeletedResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as OnExternalDeletedResponse;
   }
 }

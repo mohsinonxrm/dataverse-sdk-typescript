@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimeline action
@@ -8,25 +9,33 @@ export interface msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimel
 }
 
 /**
+ * Parameters of the msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimeline action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineActionParameters {
+  EntityLogicalName: string;
+  RecordId: string;
+  CustomActionInputs?: string;
+}
+
+/**
  * msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimeline action
  *
  * Unbound action
  */
 export class msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineAction implements Executable<msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineResponse> {
   constructor(
-    public readonly entityLogicalName: string,
-    public readonly recordId: string,
-    public readonly customActionInputs?: string
+    public readonly parameters: msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimeline`;
 
-    const body: Record<string, unknown> = {
-      EntityLogicalName: this.entityLogicalName,
-      RecordId: this.recordId,
-      CustomActionInputs: this.customActionInputs,
-    };
+    const body = requestBody({
+      EntityLogicalName: this.parameters.EntityLogicalName,
+      RecordId: this.parameters.RecordId,
+      CustomActionInputs: this.parameters.CustomActionInputs,
+    });
 
     return {
       method: "POST",
@@ -41,7 +50,10 @@ export class msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineA
   async parseResponse(
     response: Response
   ): Promise<msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineResponse> {
-    const data = await response.json();
-    return data as msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (
+      text ? JSON.parse(text) : {}
+    ) as msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineResponse;
   }
 }

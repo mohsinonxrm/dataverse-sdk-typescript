@@ -26,7 +26,8 @@ export class GetValidManyToManyFunction implements Executable<GetValidManyToMany
   }
 
   async parseResponse(response: Response): Promise<GetValidManyToManyResponse> {
-    const data = await response.json();
-    return data as GetValidManyToManyResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as GetValidManyToManyResponse;
   }
 }

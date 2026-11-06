@@ -1,43 +1,56 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the adx_SendPasswordResetToContact message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface adx_SendPasswordResetToContactRequestParameters {
+  CallbackUrl: string;
+  Code: string;
+  UrlCode: string;
+  Email: string;
+  UserId: string;
+  BusinessProcessFlowId?: string;
+  BusinessProcessFlowInstanceId?: string;
+  ActionStepId?: string;
+}
 
 /**
  * adx_SendPasswordResetToContact request message
  *
  * Web API Action: adx_SendPasswordResetToContact
+ *
+ * The first argument is the id of the contact record to call it on.
  */
 export class adx_SendPasswordResetToContactRequest
   extends OrganizationRequest
   implements Executable<adx_SendPasswordResetToContactResponse>
 {
+  declare readonly Parameters: Readonly<adx_SendPasswordResetToContactRequestParameters>;
+
   constructor(
     public contactId: string,
-    public callbackUrl: string,
-    public code: string,
-    public urlCode: string,
-    public email: string,
-    public userId: string,
-    public businessProcessFlowId?: string,
-    public businessProcessFlowInstanceId?: string,
-    public actionStepId?: string
+    parameters: adx_SendPasswordResetToContactRequestParameters
   ) {
-    super("adx_SendPasswordResetToContact");
+    super("adx_SendPasswordResetToContact", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/contacts(${this.contactId})/Microsoft.Dynamics.CRM.adx_SendPasswordResetToContact`;
 
-    const body: Record<string, unknown> = {
-      CallbackUrl: this.callbackUrl,
-      Code: this.code,
-      UrlCode: this.urlCode,
-      Email: this.email,
-      UserId: this.userId,
-      BusinessProcessFlowId: this.businessProcessFlowId,
-      BusinessProcessFlowInstanceId: this.businessProcessFlowInstanceId,
-      ActionStepId: this.actionStepId,
-    };
+    const body = requestBody({
+      CallbackUrl: this.Parameters.CallbackUrl,
+      Code: this.Parameters.Code,
+      UrlCode: this.Parameters.UrlCode,
+      Email: this.Parameters.Email,
+      UserId: this.Parameters.UserId,
+      BusinessProcessFlowId: this.Parameters.BusinessProcessFlowId,
+      BusinessProcessFlowInstanceId: this.Parameters.BusinessProcessFlowInstanceId,
+      ActionStepId: this.Parameters.ActionStepId,
+    });
 
     return {
       method: "POST",

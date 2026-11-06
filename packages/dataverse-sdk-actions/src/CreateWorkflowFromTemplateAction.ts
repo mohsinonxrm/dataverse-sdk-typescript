@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 import type { workflow } from "./types/index.js";
 
 /**
@@ -12,24 +13,34 @@ export interface CreateWorkflowFromTemplateResponse extends workflow {
 }
 
 /**
+ * Parameters of the CreateWorkflowFromTemplate action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CreateWorkflowFromTemplateActionParameters {
+  WorkflowName: string;
+}
+
+/**
  * CreateWorkflowFromTemplate action
  *
  * Bound action
  * Binding parameter: entity (mscrm.workflow)
+ *
+ * The first argument is the id of the workflow record to call it on.
  */
 export class CreateWorkflowFromTemplateAction implements Executable<CreateWorkflowFromTemplateResponse> {
   constructor(
     public readonly workflowId: string,
-    public readonly workflowName: string
+    public readonly parameters: CreateWorkflowFromTemplateActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/workflows(${this.workflowId})/Microsoft.Dynamics.CRM.CreateWorkflowFromTemplate`;
 
-    const body: Record<string, unknown> = {
-      WorkflowName: this.workflowName,
-    };
+    const body = requestBody({
+      WorkflowName: this.parameters.WorkflowName,
+    });
 
     return {
       method: "POST",
@@ -42,7 +53,8 @@ export class CreateWorkflowFromTemplateAction implements Executable<CreateWorkfl
   }
 
   async parseResponse(response: Response): Promise<CreateWorkflowFromTemplateResponse> {
-    const data = await response.json();
-    return data as CreateWorkflowFromTemplateResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as CreateWorkflowFromTemplateResponse;
   }
 }

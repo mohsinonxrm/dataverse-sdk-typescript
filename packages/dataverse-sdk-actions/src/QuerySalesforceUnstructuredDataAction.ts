@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from QuerySalesforceUnstructuredData action
@@ -8,27 +9,33 @@ export interface QuerySalesforceUnstructuredDataResponse {
 }
 
 /**
+ * Parameters of the QuerySalesforceUnstructuredData action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface QuerySalesforceUnstructuredDataActionParameters {
+  filterCriteria: string;
+  connectionId: string;
+  searchResultCount: number;
+  userQueryText: string;
+}
+
+/**
  * QuerySalesforceUnstructuredData action
  *
  * Unbound action
  */
 export class QuerySalesforceUnstructuredDataAction implements Executable<QuerySalesforceUnstructuredDataResponse> {
-  constructor(
-    public readonly filterCriteria: string,
-    public readonly connectionId: string,
-    public readonly searchResultCount: number,
-    public readonly userQueryText: string
-  ) {}
+  constructor(public readonly parameters: QuerySalesforceUnstructuredDataActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/QuerySalesforceUnstructuredData`;
 
-    const body: Record<string, unknown> = {
-      filterCriteria: this.filterCriteria,
-      connectionId: this.connectionId,
-      searchResultCount: this.searchResultCount,
-      userQueryText: this.userQueryText,
-    };
+    const body = requestBody({
+      filterCriteria: this.parameters.filterCriteria,
+      connectionId: this.parameters.connectionId,
+      searchResultCount: this.parameters.searchResultCount,
+      userQueryText: this.parameters.userQueryText,
+    });
 
     return {
       method: "POST",
@@ -41,7 +48,8 @@ export class QuerySalesforceUnstructuredDataAction implements Executable<QuerySa
   }
 
   async parseResponse(response: Response): Promise<QuerySalesforceUnstructuredDataResponse> {
-    const data = await response.json();
-    return data as QuerySalesforceUnstructuredDataResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as QuerySalesforceUnstructuredDataResponse;
   }
 }

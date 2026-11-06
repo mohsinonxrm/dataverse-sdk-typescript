@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_ExecuteAggregateAndUpdateIntentMetrics action
@@ -9,33 +10,41 @@ export interface msdyn_ExecuteAggregateAndUpdateIntentMetricsResponse {
 }
 
 /**
+ * Parameters of the msdyn_ExecuteAggregateAndUpdateIntentMetrics action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ExecuteAggregateAndUpdateIntentMetricsActionParameters {
+  msdyn_trackingdate: string;
+  msdyn_shouldupdateintents?: boolean;
+  msdyn_pagenumber: number;
+  msdyn_batchsize?: number;
+  msdyn_parallelexecutions?: number;
+  msdyn_pagingcookie?: string;
+  msdyn_trackingid: string;
+}
+
+/**
  * msdyn_ExecuteAggregateAndUpdateIntentMetrics action
  *
  * Unbound action
  */
 export class msdyn_ExecuteAggregateAndUpdateIntentMetricsAction implements Executable<msdyn_ExecuteAggregateAndUpdateIntentMetricsResponse> {
   constructor(
-    public readonly msdyn_trackingdate: string,
-    public readonly msdyn_shouldupdateintents: boolean | undefined,
-    public readonly msdyn_pagenumber: number,
-    public readonly msdyn_batchsize: number | undefined,
-    public readonly msdyn_parallelexecutions: number | undefined,
-    public readonly msdyn_pagingcookie: string | undefined,
-    public readonly msdyn_trackingid: string
+    public readonly parameters: msdyn_ExecuteAggregateAndUpdateIntentMetricsActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ExecuteAggregateAndUpdateIntentMetrics`;
 
-    const body: Record<string, unknown> = {
-      msdyn_trackingdate: this.msdyn_trackingdate,
-      msdyn_shouldupdateintents: this.msdyn_shouldupdateintents,
-      msdyn_pagenumber: this.msdyn_pagenumber,
-      msdyn_batchsize: this.msdyn_batchsize,
-      msdyn_parallelexecutions: this.msdyn_parallelexecutions,
-      msdyn_pagingcookie: this.msdyn_pagingcookie,
-      msdyn_trackingid: this.msdyn_trackingid,
-    };
+    const body = requestBody({
+      msdyn_trackingdate: this.parameters.msdyn_trackingdate,
+      msdyn_shouldupdateintents: this.parameters.msdyn_shouldupdateintents,
+      msdyn_pagenumber: this.parameters.msdyn_pagenumber,
+      msdyn_batchsize: this.parameters.msdyn_batchsize,
+      msdyn_parallelexecutions: this.parameters.msdyn_parallelexecutions,
+      msdyn_pagingcookie: this.parameters.msdyn_pagingcookie,
+      msdyn_trackingid: this.parameters.msdyn_trackingid,
+    });
 
     return {
       method: "POST",
@@ -50,7 +59,8 @@ export class msdyn_ExecuteAggregateAndUpdateIntentMetricsAction implements Execu
   async parseResponse(
     response: Response
   ): Promise<msdyn_ExecuteAggregateAndUpdateIntentMetricsResponse> {
-    const data = await response.json();
-    return data as msdyn_ExecuteAggregateAndUpdateIntentMetricsResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_ExecuteAggregateAndUpdateIntentMetricsResponse;
   }
 }

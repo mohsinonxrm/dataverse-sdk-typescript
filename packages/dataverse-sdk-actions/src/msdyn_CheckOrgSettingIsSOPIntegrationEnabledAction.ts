@@ -32,7 +32,8 @@ export class msdyn_CheckOrgSettingIsSOPIntegrationEnabledAction implements Execu
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckOrgSettingIsSOPIntegrationEnabledResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckOrgSettingIsSOPIntegrationEnabledResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_CheckOrgSettingIsSOPIntegrationEnabledResponse;
   }
 }

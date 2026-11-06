@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { CCaaS_UserLogoutResponse as CCaaS_UserLogoutResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the CCaaS_UserLogout message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_UserLogoutRequestParameters {
+  ApiVersion: string;
+  LogoutSource: number;
+}
 
 /**
  * CCaaS_UserLogout request message
@@ -12,20 +22,19 @@ export class CCaaS_UserLogoutRequest
   extends OrganizationRequest
   implements Executable<CCaaS_UserLogoutResponse>
 {
-  constructor(
-    public apiVersion: string,
-    public logoutSource: number
-  ) {
-    super("CCaaS_UserLogout");
+  declare readonly Parameters: Readonly<CCaaS_UserLogoutRequestParameters>;
+
+  constructor(parameters: CCaaS_UserLogoutRequestParameters) {
+    super("CCaaS_UserLogout", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CCaaS_UserLogout`;
 
-    const body: Record<string, unknown> = {
-      ApiVersion: this.apiVersion,
-      LogoutSource: this.logoutSource,
-    };
+    const body = requestBody({
+      ApiVersion: this.Parameters.ApiVersion,
+      LogoutSource: this.Parameters.LogoutSource,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class CCaaS_UserLogoutRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_UserLogoutResponse> {
-    const data = await response.json();
-    return CCaaS_UserLogoutResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return CCaaS_UserLogoutResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

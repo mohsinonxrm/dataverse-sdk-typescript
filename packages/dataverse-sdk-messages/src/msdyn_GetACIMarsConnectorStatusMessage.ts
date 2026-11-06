@@ -29,8 +29,9 @@ export class msdyn_GetACIMarsConnectorStatusRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetACIMarsConnectorStatusResponse> {
-    const data = await response.json();
-    return msdyn_GetACIMarsConnectorStatusResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_GetACIMarsConnectorStatusResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

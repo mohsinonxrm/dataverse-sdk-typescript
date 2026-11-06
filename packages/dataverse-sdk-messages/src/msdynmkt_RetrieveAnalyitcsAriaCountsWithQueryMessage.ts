@@ -1,7 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryResponse as msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdynmkt_RetrieveAnalyitcsAriaCountsWithQuery message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryRequestParameters {
+  msdynmkt_primaryrecordid: string;
+  msdynmkt_primaryrecordentityname: string;
+  msdynmkt_ariacountsrequest: string;
+  msdynmkt_appname: string;
+}
 
 /**
  * msdynmkt_RetrieveAnalyitcsAriaCountsWithQuery request message
@@ -12,24 +24,21 @@ export class msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryResponse>
 {
-  constructor(
-    public msdynmkt_primaryrecordid: string,
-    public msdynmkt_primaryrecordentityname: string,
-    public msdynmkt_ariacountsrequest: string,
-    public msdynmkt_appname: string
-  ) {
-    super("msdynmkt_RetrieveAnalyitcsAriaCountsWithQuery");
+  declare readonly Parameters: Readonly<msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryRequestParameters>;
+
+  constructor(parameters: msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryRequestParameters) {
+    super("msdynmkt_RetrieveAnalyitcsAriaCountsWithQuery", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_RetrieveAnalyitcsAriaCountsWithQuery`;
 
-    const body: Record<string, unknown> = {
-      msdynmkt_primaryrecordid: this.msdynmkt_primaryrecordid,
-      msdynmkt_primaryrecordentityname: this.msdynmkt_primaryrecordentityname,
-      msdynmkt_ariacountsrequest: this.msdynmkt_ariacountsrequest,
-      msdynmkt_appname: this.msdynmkt_appname,
-    };
+    const body = requestBody({
+      msdynmkt_primaryrecordid: this.Parameters.msdynmkt_primaryrecordid,
+      msdynmkt_primaryrecordentityname: this.Parameters.msdynmkt_primaryrecordentityname,
+      msdynmkt_ariacountsrequest: this.Parameters.msdynmkt_ariacountsrequest,
+      msdynmkt_appname: this.Parameters.msdynmkt_appname,
+    });
 
     return {
       method: "POST",
@@ -44,8 +53,11 @@ export class msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryRequest
   async parseResponse(
     response: Response
   ): Promise<msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryResponse> {
-    const data = await response.json();
-    return msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryResponse.fromResponse(
+      text ? JSON.parse(text) : {}
+    );
   }
 }
 

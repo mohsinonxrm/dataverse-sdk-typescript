@@ -1,5 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_UpdateNewEntityAdditionOptedStatus message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_UpdateNewEntityAdditionOptedStatusRequestParameters {
+  PredictionName: string;
+  PredictionType: string;
+  IsNewEntityAdditionOpted: boolean;
+}
 
 /**
  * msdyn_UpdateNewEntityAdditionOptedStatus request message
@@ -10,22 +21,20 @@ export class msdyn_UpdateNewEntityAdditionOptedStatusRequest
   extends OrganizationRequest
   implements Executable<msdyn_UpdateNewEntityAdditionOptedStatusResponse>
 {
-  constructor(
-    public predictionName: string,
-    public predictionType: string,
-    public isNewEntityAdditionOpted: boolean
-  ) {
-    super("msdyn_UpdateNewEntityAdditionOptedStatus");
+  declare readonly Parameters: Readonly<msdyn_UpdateNewEntityAdditionOptedStatusRequestParameters>;
+
+  constructor(parameters: msdyn_UpdateNewEntityAdditionOptedStatusRequestParameters) {
+    super("msdyn_UpdateNewEntityAdditionOptedStatus", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_UpdateNewEntityAdditionOptedStatus`;
 
-    const body: Record<string, unknown> = {
-      PredictionName: this.predictionName,
-      PredictionType: this.predictionType,
-      IsNewEntityAdditionOpted: this.isNewEntityAdditionOpted,
-    };
+    const body = requestBody({
+      PredictionName: this.Parameters.PredictionName,
+      PredictionType: this.Parameters.PredictionType,
+      IsNewEntityAdditionOpted: this.Parameters.IsNewEntityAdditionOpted,
+    });
 
     return {
       method: "POST",

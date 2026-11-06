@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from DeleteAndPromoteAsync action
@@ -8,19 +9,27 @@ export interface DeleteAndPromoteAsyncResponse {
 }
 
 /**
+ * Parameters of the DeleteAndPromoteAsync action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface DeleteAndPromoteAsyncActionParameters {
+  UniqueName: string;
+}
+
+/**
  * DeleteAndPromoteAsync action
  *
  * Unbound action
  */
 export class DeleteAndPromoteAsyncAction implements Executable<DeleteAndPromoteAsyncResponse> {
-  constructor(public readonly uniqueName: string) {}
+  constructor(public readonly parameters: DeleteAndPromoteAsyncActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/DeleteAndPromoteAsync`;
 
-    const body: Record<string, unknown> = {
-      UniqueName: this.uniqueName,
-    };
+    const body = requestBody({
+      UniqueName: this.parameters.UniqueName,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class DeleteAndPromoteAsyncAction implements Executable<DeleteAndPromoteA
   }
 
   async parseResponse(response: Response): Promise<DeleteAndPromoteAsyncResponse> {
-    const data = await response.json();
-    return data as DeleteAndPromoteAsyncResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as DeleteAndPromoteAsyncResponse;
   }
 }

@@ -9,15 +9,21 @@ export interface OnOrAfterResponse {
 }
 
 /**
+ * Parameters of the OnOrAfter function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface OnOrAfterFunctionParameters {
+  PropertyName: string;
+  PropertyValue: string;
+}
+
+/**
  * OnOrAfter function
  *
  * Unbound function
  */
 export class OnOrAfterFunction implements Executable<OnOrAfterResponse> {
-  constructor(
-    public readonly propertyName: string,
-    public readonly propertyValue: string
-  ) {}
+  constructor(public readonly parameters: OnOrAfterFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/OnOrAfter`;
@@ -25,13 +31,13 @@ export class OnOrAfterFunction implements Executable<OnOrAfterResponse> {
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.propertyName !== undefined) {
+    if (this.parameters.PropertyName !== undefined) {
       aliases.push(`PropertyName=@p1`);
-      params.append("@p1", formatParameterAlias(this.propertyName, "Edm.String"));
+      params.append("@p1", formatParameterAlias(this.parameters.PropertyName, "Edm.String"));
     }
-    if (this.propertyValue !== undefined) {
+    if (this.parameters.PropertyValue !== undefined) {
       aliases.push(`PropertyValue=@p2`);
-      params.append("@p2", formatParameterAlias(this.propertyValue, "Edm.String"));
+      params.append("@p2", formatParameterAlias(this.parameters.PropertyValue, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -47,7 +53,8 @@ export class OnOrAfterFunction implements Executable<OnOrAfterResponse> {
   }
 
   async parseResponse(response: Response): Promise<OnOrAfterResponse> {
-    const data = await response.json();
-    return data as OnOrAfterResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as OnOrAfterResponse;
   }
 }

@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_SetupRelationshipForEnablingEntityRouting message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SetupRelationshipForEnablingEntityRoutingRequestParameters {
+  EntityLogicalName: string;
+}
 
 /**
  * msdyn_SetupRelationshipForEnablingEntityRouting request message
@@ -10,16 +19,18 @@ export class msdyn_SetupRelationshipForEnablingEntityRoutingRequest
   extends OrganizationRequest
   implements Executable<msdyn_SetupRelationshipForEnablingEntityRoutingResponse>
 {
-  constructor(public entityLogicalName: string) {
-    super("msdyn_SetupRelationshipForEnablingEntityRouting");
+  declare readonly Parameters: Readonly<msdyn_SetupRelationshipForEnablingEntityRoutingRequestParameters>;
+
+  constructor(parameters: msdyn_SetupRelationshipForEnablingEntityRoutingRequestParameters) {
+    super("msdyn_SetupRelationshipForEnablingEntityRouting", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SetupRelationshipForEnablingEntityRouting`;
 
-    const body: Record<string, unknown> = {
-      EntityLogicalName: this.entityLogicalName,
-    };
+    const body = requestBody({
+      EntityLogicalName: this.Parameters.EntityLogicalName,
+    });
 
     return {
       method: "POST",

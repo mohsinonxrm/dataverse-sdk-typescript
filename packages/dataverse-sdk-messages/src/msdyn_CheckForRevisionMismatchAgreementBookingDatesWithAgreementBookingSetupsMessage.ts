@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_CheckForRevisionMismatchAgreementBookingDatesWithAgreementBookingSetupsResponse as msdyn_CheckForRevisionMismatchAgreementBookingDatesWithAgreementBookingSetupsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_CheckForRevisionMismatchAgreementBookingDatesWithAgreementBookingSetups message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CheckForRevisionMismatchAgreementBookingDatesWithAgreementBookingSetupsRequestParameters {
+  TimeInterval: string;
+}
 
 /**
  * msdyn_CheckForRevisionMismatchAgreementBookingDatesWithAgreementBookingSetups request message
@@ -13,16 +22,22 @@ export class msdyn_CheckForRevisionMismatchAgreementBookingDatesWithAgreementBoo
   implements
     Executable<msdyn_CheckForRevisionMismatchAgreementBookingDatesWithAgreementBookingSetupsResponse>
 {
-  constructor(public timeInterval: string) {
-    super("msdyn_CheckForRevisionMismatchAgreementBookingDatesWithAgreementBookingSetups");
+  declare readonly Parameters: Readonly<msdyn_CheckForRevisionMismatchAgreementBookingDatesWithAgreementBookingSetupsRequestParameters>;
+
+  constructor(
+    parameters: msdyn_CheckForRevisionMismatchAgreementBookingDatesWithAgreementBookingSetupsRequestParameters
+  ) {
+    super("msdyn_CheckForRevisionMismatchAgreementBookingDatesWithAgreementBookingSetups", {
+      ...parameters,
+    });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckForRevisionMismatchAgreementBookingDatesWithAgreementBookingSetups`;
 
-    const body: Record<string, unknown> = {
-      TimeInterval: this.timeInterval,
-    };
+    const body = requestBody({
+      TimeInterval: this.Parameters.TimeInterval,
+    });
 
     return {
       method: "POST",
@@ -37,9 +52,10 @@ export class msdyn_CheckForRevisionMismatchAgreementBookingDatesWithAgreementBoo
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckForRevisionMismatchAgreementBookingDatesWithAgreementBookingSetupsResponse> {
-    const data = await response.json();
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
     return msdyn_CheckForRevisionMismatchAgreementBookingDatesWithAgreementBookingSetupsResponse.fromResponse(
-      data
+      text ? JSON.parse(text) : {}
     );
   }
 }

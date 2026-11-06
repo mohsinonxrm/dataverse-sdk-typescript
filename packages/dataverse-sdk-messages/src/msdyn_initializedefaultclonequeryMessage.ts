@@ -2,8 +2,18 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_bookingsetupmetadata, msdyn_configuration } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_initializedefaultclonequery message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_initializedefaultclonequeryRequestParameters {
+  WorkType: EntityReference | EntityPayload<msdyn_bookingsetupmetadata>;
+  Configuration?: EntityReference | EntityPayload<msdyn_configuration>;
+}
 
 /**
  * msdyn_initializedefaultclonequery request message
@@ -14,20 +24,19 @@ export class msdyn_initializedefaultclonequeryRequest
   extends OrganizationRequest
   implements Executable<msdyn_initializedefaultclonequeryResponse>
 {
-  constructor(
-    public workType: EntityReference | EntityPayload<msdyn_bookingsetupmetadata>,
-    public configuration?: EntityReference | EntityPayload<msdyn_configuration>
-  ) {
-    super("msdyn_initializedefaultclonequery");
+  declare readonly Parameters: Readonly<msdyn_initializedefaultclonequeryRequestParameters>;
+
+  constructor(parameters: msdyn_initializedefaultclonequeryRequestParameters) {
+    super("msdyn_initializedefaultclonequery", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_initializedefaultclonequery`;
 
-    const body: Record<string, unknown> = {
-      WorkType: this.workType,
-      Configuration: this.configuration,
-    };
+    const body = requestBody({
+      WorkType: this.Parameters.WorkType,
+      Configuration: this.Parameters.Configuration,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class msdyn_initializedefaultclonequeryRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_initializedefaultclonequeryResponse> {
-    const data = await response.json();
-    return msdyn_initializedefaultclonequeryResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_initializedefaultclonequeryResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

@@ -10,15 +10,21 @@ export interface RetrieveProcessInstancesResponse {
 }
 
 /**
+ * Parameters of the RetrieveProcessInstances function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveProcessInstancesFunctionParameters {
+  EntityId: string;
+  EntityLogicalName: string;
+}
+
+/**
  * RetrieveProcessInstances function
  *
  * Unbound function
  */
 export class RetrieveProcessInstancesFunction implements Executable<RetrieveProcessInstancesResponse> {
-  constructor(
-    public readonly entityId: string,
-    public readonly entityLogicalName: string
-  ) {}
+  constructor(public readonly parameters: RetrieveProcessInstancesFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveProcessInstances`;
@@ -26,13 +32,13 @@ export class RetrieveProcessInstancesFunction implements Executable<RetrieveProc
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.entityId !== undefined) {
+    if (this.parameters.EntityId !== undefined) {
       aliases.push(`EntityId=@p1`);
-      params.append("@p1", formatParameterAlias(this.entityId, "Edm.Guid"));
+      params.append("@p1", formatParameterAlias(this.parameters.EntityId, "Edm.Guid"));
     }
-    if (this.entityLogicalName !== undefined) {
+    if (this.parameters.EntityLogicalName !== undefined) {
       aliases.push(`EntityLogicalName=@p2`);
-      params.append("@p2", formatParameterAlias(this.entityLogicalName, "Edm.String"));
+      params.append("@p2", formatParameterAlias(this.parameters.EntityLogicalName, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -48,7 +54,8 @@ export class RetrieveProcessInstancesFunction implements Executable<RetrieveProc
   }
 
   async parseResponse(response: Response): Promise<RetrieveProcessInstancesResponse> {
-    const data = await response.json();
-    return data as RetrieveProcessInstancesResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RetrieveProcessInstancesResponse;
   }
 }

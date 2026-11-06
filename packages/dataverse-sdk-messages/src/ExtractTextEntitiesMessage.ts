@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { ExtractTextEntitiesResponse as ExtractTextEntitiesResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the ExtractTextEntities message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ExtractTextEntitiesRequestParameters {
+  text: string;
+  modelId?: string;
+  language?: string;
+}
 
 /**
  * ExtractTextEntities request message
@@ -12,22 +23,20 @@ export class ExtractTextEntitiesRequest
   extends OrganizationRequest
   implements Executable<ExtractTextEntitiesResponse>
 {
-  constructor(
-    public text: string,
-    public modelId?: string,
-    public language?: string
-  ) {
-    super("ExtractTextEntities");
+  declare readonly Parameters: Readonly<ExtractTextEntitiesRequestParameters>;
+
+  constructor(parameters: ExtractTextEntitiesRequestParameters) {
+    super("ExtractTextEntities", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ExtractTextEntities`;
 
-    const body: Record<string, unknown> = {
-      text: this.text,
-      modelId: this.modelId,
-      language: this.language,
-    };
+    const body = requestBody({
+      text: this.Parameters.text,
+      modelId: this.Parameters.modelId,
+      language: this.Parameters.language,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class ExtractTextEntitiesRequest
   }
 
   async parseResponse(response: Response): Promise<ExtractTextEntitiesResponse> {
-    const data = await response.json();
-    return ExtractTextEntitiesResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return ExtractTextEntitiesResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

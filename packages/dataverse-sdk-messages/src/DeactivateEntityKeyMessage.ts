@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the DeactivateEntityKey message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface DeactivateEntityKeyRequestParameters {
+  EntityKeyLogicalName: string;
+  EntityLogicalName: string;
+}
 
 /**
  * DeactivateEntityKey request message
@@ -10,20 +20,19 @@ export class DeactivateEntityKeyRequest
   extends OrganizationRequest
   implements Executable<DeactivateEntityKeyResponse>
 {
-  constructor(
-    public entityKeyLogicalName: string,
-    public entityLogicalName: string
-  ) {
-    super("DeactivateEntityKey");
+  declare readonly Parameters: Readonly<DeactivateEntityKeyRequestParameters>;
+
+  constructor(parameters: DeactivateEntityKeyRequestParameters) {
+    super("DeactivateEntityKey", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/DeactivateEntityKey`;
 
-    const body: Record<string, unknown> = {
-      EntityKeyLogicalName: this.entityKeyLogicalName,
-      EntityLogicalName: this.entityLogicalName,
-    };
+    const body = requestBody({
+      EntityKeyLogicalName: this.Parameters.EntityKeyLogicalName,
+      EntityLogicalName: this.Parameters.EntityLogicalName,
+    });
 
     return {
       method: "POST",

@@ -5,6 +5,8 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * SyncGroupMembersToTeam request message
  *
  * Web API Action: SyncGroupMembersToTeam
+ *
+ * The first argument is the id of the team record to call it on.
  */
 export class SyncGroupMembersToTeamRequest
   extends OrganizationRequest

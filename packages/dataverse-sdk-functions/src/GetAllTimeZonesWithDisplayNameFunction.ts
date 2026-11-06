@@ -10,13 +10,21 @@ export interface GetAllTimeZonesWithDisplayNameResponse {
 }
 
 /**
+ * Parameters of the GetAllTimeZonesWithDisplayName function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GetAllTimeZonesWithDisplayNameFunctionParameters {
+  LocaleId: number;
+}
+
+/**
  * GetAllTimeZonesWithDisplayName function
  *
  * Bound function
  * Binding parameter: entityset (Collection(mscrm.timezonedefinition))
  */
 export class GetAllTimeZonesWithDisplayNameFunction implements Executable<GetAllTimeZonesWithDisplayNameResponse> {
-  constructor(public readonly localeId: number) {}
+  constructor(public readonly parameters: GetAllTimeZonesWithDisplayNameFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function (entity collection)
@@ -25,9 +33,9 @@ export class GetAllTimeZonesWithDisplayNameFunction implements Executable<GetAll
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.localeId !== undefined) {
+    if (this.parameters.LocaleId !== undefined) {
       aliases.push(`LocaleId=@p1`);
-      params.append("@p1", formatParameterAlias(this.localeId, "Edm.Int32"));
+      params.append("@p1", formatParameterAlias(this.parameters.LocaleId, "Edm.Int32"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -43,7 +51,8 @@ export class GetAllTimeZonesWithDisplayNameFunction implements Executable<GetAll
   }
 
   async parseResponse(response: Response): Promise<GetAllTimeZonesWithDisplayNameResponse> {
-    const data = await response.json();
-    return data as GetAllTimeZonesWithDisplayNameResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as GetAllTimeZonesWithDisplayNameResponse;
   }
 }

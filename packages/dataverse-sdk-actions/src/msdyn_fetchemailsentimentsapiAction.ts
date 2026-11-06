@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_fetchemailsentimentsapi action
@@ -8,23 +9,29 @@ export interface msdyn_fetchemailsentimentsapiResponse {
 }
 
 /**
+ * Parameters of the msdyn_fetchemailsentimentsapi action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_fetchemailsentimentsapiActionParameters {
+  entityid?: string;
+  entitylogicalname?: string;
+}
+
+/**
  * msdyn_fetchemailsentimentsapi action
  *
  * Unbound action
  */
 export class msdyn_fetchemailsentimentsapiAction implements Executable<msdyn_fetchemailsentimentsapiResponse> {
-  constructor(
-    public readonly entityid?: string,
-    public readonly entitylogicalname?: string
-  ) {}
+  constructor(public readonly parameters: msdyn_fetchemailsentimentsapiActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_fetchemailsentimentsapi`;
 
-    const body: Record<string, unknown> = {
-      entityid: this.entityid,
-      entitylogicalname: this.entitylogicalname,
-    };
+    const body = requestBody({
+      entityid: this.parameters.entityid,
+      entitylogicalname: this.parameters.entitylogicalname,
+    });
 
     return {
       method: "POST",
@@ -37,7 +44,8 @@ export class msdyn_fetchemailsentimentsapiAction implements Executable<msdyn_fet
   }
 
   async parseResponse(response: Response): Promise<msdyn_fetchemailsentimentsapiResponse> {
-    const data = await response.json();
-    return data as msdyn_fetchemailsentimentsapiResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_fetchemailsentimentsapiResponse;
   }
 }

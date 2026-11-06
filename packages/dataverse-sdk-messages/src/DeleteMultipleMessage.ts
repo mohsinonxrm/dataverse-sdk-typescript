@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the DeleteMultiple message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface DeleteMultipleRequestParameters {
+  Targets: Record<string, unknown>[];
+}
 
 /**
  * DeleteMultiple request message
@@ -12,20 +21,22 @@ export class DeleteMultipleRequest
   extends OrganizationRequest
   implements Executable<DeleteMultipleResponse>
 {
+  declare readonly Parameters: Readonly<DeleteMultipleRequestParameters>;
+
   constructor(
     public entitySetName: string,
-    public targets: Record<string, unknown>[]
+    parameters: DeleteMultipleRequestParameters
   ) {
-    super("DeleteMultiple");
+    super("DeleteMultiple", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action (entity collection)
     const url = `${baseUrl}/${this.entitySetName}/Microsoft.Dynamics.CRM.DeleteMultiple`;
 
-    const body: Record<string, unknown> = {
-      Targets: this.targets,
-    };
+    const body = requestBody({
+      Targets: this.Parameters.Targets,
+    });
 
     return {
       method: "POST",

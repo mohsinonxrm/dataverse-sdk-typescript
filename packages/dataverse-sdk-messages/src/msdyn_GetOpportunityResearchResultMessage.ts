@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetOpportunityResearchResultResponse as msdyn_GetOpportunityResearchResultResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetOpportunityResearchResult message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetOpportunityResearchResultRequestParameters {
+  OpportunityId: string;
+}
 
 /**
  * msdyn_GetOpportunityResearchResult request message
@@ -12,16 +21,18 @@ export class msdyn_GetOpportunityResearchResultRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetOpportunityResearchResultResponse>
 {
-  constructor(public opportunityId: string) {
-    super("msdyn_GetOpportunityResearchResult");
+  declare readonly Parameters: Readonly<msdyn_GetOpportunityResearchResultRequestParameters>;
+
+  constructor(parameters: msdyn_GetOpportunityResearchResultRequestParameters) {
+    super("msdyn_GetOpportunityResearchResult", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetOpportunityResearchResult`;
 
-    const body: Record<string, unknown> = {
-      OpportunityId: this.opportunityId,
-    };
+    const body = requestBody({
+      OpportunityId: this.Parameters.OpportunityId,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_GetOpportunityResearchResultRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetOpportunityResearchResultResponse> {
-    const data = await response.json();
-    return msdyn_GetOpportunityResearchResultResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_GetOpportunityResearchResultResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_RetrievePersonalizationFiltersResponse as msdyn_RetrievePersonalizationFiltersResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_RetrievePersonalizationFilters message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_RetrievePersonalizationFiltersRequestParameters {
+  AttributesToFilter: string;
+}
 
 /**
  * msdyn_RetrievePersonalizationFilters request message
@@ -12,16 +21,18 @@ export class msdyn_RetrievePersonalizationFiltersRequest
   extends OrganizationRequest
   implements Executable<msdyn_RetrievePersonalizationFiltersResponse>
 {
-  constructor(public attributesToFilter: string) {
-    super("msdyn_RetrievePersonalizationFilters");
+  declare readonly Parameters: Readonly<msdyn_RetrievePersonalizationFiltersRequestParameters>;
+
+  constructor(parameters: msdyn_RetrievePersonalizationFiltersRequestParameters) {
+    super("msdyn_RetrievePersonalizationFilters", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_RetrievePersonalizationFilters`;
 
-    const body: Record<string, unknown> = {
-      AttributesToFilter: this.attributesToFilter,
-    };
+    const body = requestBody({
+      AttributesToFilter: this.Parameters.AttributesToFilter,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_RetrievePersonalizationFiltersRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrievePersonalizationFiltersResponse> {
-    const data = await response.json();
-    return msdyn_RetrievePersonalizationFiltersResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_RetrievePersonalizationFiltersResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

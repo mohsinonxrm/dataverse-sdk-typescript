@@ -26,7 +26,8 @@ export class msdyn_updatelivechatconfigsAction implements Executable<msdyn_updat
   }
 
   async parseResponse(response: Response): Promise<msdyn_updatelivechatconfigsResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_updatelivechatconfigsResponse;
   }
 }

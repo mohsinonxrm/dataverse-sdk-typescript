@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from CCaaS_ResetAgentPresence action
@@ -15,19 +16,27 @@ export interface CCaaS_ResetAgentPresenceResponse {
 }
 
 /**
+ * Parameters of the CCaaS_ResetAgentPresence action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_ResetAgentPresenceActionParameters {
+  ApiVersion: string;
+}
+
+/**
  * CCaaS_ResetAgentPresence action
  *
  * Unbound action
  */
 export class CCaaS_ResetAgentPresenceAction implements Executable<CCaaS_ResetAgentPresenceResponse> {
-  constructor(public readonly apiVersion: string) {}
+  constructor(public readonly parameters: CCaaS_ResetAgentPresenceActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CCaaS_ResetAgentPresence`;
 
-    const body: Record<string, unknown> = {
-      ApiVersion: this.apiVersion,
-    };
+    const body = requestBody({
+      ApiVersion: this.parameters.ApiVersion,
+    });
 
     return {
       method: "POST",
@@ -40,7 +49,8 @@ export class CCaaS_ResetAgentPresenceAction implements Executable<CCaaS_ResetAge
   }
 
   async parseResponse(response: Response): Promise<CCaaS_ResetAgentPresenceResponse> {
-    const data = await response.json();
-    return data as CCaaS_ResetAgentPresenceResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as CCaaS_ResetAgentPresenceResponse;
   }
 }

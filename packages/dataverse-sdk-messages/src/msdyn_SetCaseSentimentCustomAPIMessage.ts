@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_SetCaseSentimentCustomAPI message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SetCaseSentimentCustomAPIRequestParameters {
+  emailId: string;
+}
 
 /**
  * msdyn_SetCaseSentimentCustomAPI request message
@@ -10,16 +19,18 @@ export class msdyn_SetCaseSentimentCustomAPIRequest
   extends OrganizationRequest
   implements Executable<msdyn_SetCaseSentimentCustomAPIResponse>
 {
-  constructor(public emailId: string) {
-    super("msdyn_SetCaseSentimentCustomAPI");
+  declare readonly Parameters: Readonly<msdyn_SetCaseSentimentCustomAPIRequestParameters>;
+
+  constructor(parameters: msdyn_SetCaseSentimentCustomAPIRequestParameters) {
+    super("msdyn_SetCaseSentimentCustomAPI", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SetCaseSentimentCustomAPI`;
 
-    const body: Record<string, unknown> = {
-      emailId: this.emailId,
-    };
+    const body = requestBody({
+      emailId: this.Parameters.emailId,
+    });
 
     return {
       method: "POST",

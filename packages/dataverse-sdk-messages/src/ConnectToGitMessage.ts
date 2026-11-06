@@ -1,5 +1,23 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the ConnectToGit message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ConnectToGitRequestParameters {
+  ConnectionType?: number;
+  SolutionUniqueName?: string;
+  GitProvider?: number;
+  Branch: string;
+  RootFolder?: string;
+  Organization?: string;
+  GitFolder: string;
+  Project?: string;
+  Repository?: string;
+  UpstreamBranch?: string;
+}
 
 /**
  * ConnectToGit request message
@@ -10,36 +28,27 @@ export class ConnectToGitRequest
   extends OrganizationRequest
   implements Executable<ConnectToGitResponse>
 {
-  constructor(
-    public connectionType: number | undefined,
-    public solutionUniqueName: string | undefined,
-    public gitProvider: number | undefined,
-    public branch: string,
-    public rootFolder: string | undefined,
-    public organization: string | undefined,
-    public gitFolder: string,
-    public project?: string,
-    public repository?: string,
-    public upstreamBranch?: string
-  ) {
-    super("ConnectToGit");
+  declare readonly Parameters: Readonly<ConnectToGitRequestParameters>;
+
+  constructor(parameters: ConnectToGitRequestParameters) {
+    super("ConnectToGit", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ConnectToGit`;
 
-    const body: Record<string, unknown> = {
-      ConnectionType: this.connectionType,
-      SolutionUniqueName: this.solutionUniqueName,
-      GitProvider: this.gitProvider,
-      Branch: this.branch,
-      RootFolder: this.rootFolder,
-      Organization: this.organization,
-      GitFolder: this.gitFolder,
-      Project: this.project,
-      Repository: this.repository,
-      UpstreamBranch: this.upstreamBranch,
-    };
+    const body = requestBody({
+      ConnectionType: this.Parameters.ConnectionType,
+      SolutionUniqueName: this.Parameters.SolutionUniqueName,
+      GitProvider: this.Parameters.GitProvider,
+      Branch: this.Parameters.Branch,
+      RootFolder: this.Parameters.RootFolder,
+      Organization: this.Parameters.Organization,
+      GitFolder: this.Parameters.GitFolder,
+      Project: this.Parameters.Project,
+      Repository: this.Parameters.Repository,
+      UpstreamBranch: this.Parameters.UpstreamBranch,
+    });
 
     return {
       method: "POST",

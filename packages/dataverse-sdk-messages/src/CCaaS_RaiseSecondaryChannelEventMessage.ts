@@ -1,35 +1,48 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the CCaaS_RaiseSecondaryChannelEvent message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_RaiseSecondaryChannelEventRequestParameters {
+  SecondaryChannelEventType: string;
+  SecondaryChannelSessionId: string;
+  ApiVersion: string;
+  SecondaryChannelType: string;
+}
 
 /**
  * CCaaS_RaiseSecondaryChannelEvent request message
  *
  * Web API Action: CCaaS_RaiseSecondaryChannelEvent
+ *
+ * The first argument is the id of the msdyn_ocliveworkitem record to call it on.
  */
 export class CCaaS_RaiseSecondaryChannelEventRequest
   extends OrganizationRequest
   implements Executable<CCaaS_RaiseSecondaryChannelEventResponse>
 {
+  declare readonly Parameters: Readonly<CCaaS_RaiseSecondaryChannelEventRequestParameters>;
+
   constructor(
     public msdyn_ocliveworkitemId: string,
-    public secondaryChannelEventType: string,
-    public secondaryChannelSessionId: string,
-    public apiVersion: string,
-    public secondaryChannelType: string
+    parameters: CCaaS_RaiseSecondaryChannelEventRequestParameters
   ) {
-    super("CCaaS_RaiseSecondaryChannelEvent");
+    super("CCaaS_RaiseSecondaryChannelEvent", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_RaiseSecondaryChannelEvent`;
 
-    const body: Record<string, unknown> = {
-      SecondaryChannelEventType: this.secondaryChannelEventType,
-      SecondaryChannelSessionId: this.secondaryChannelSessionId,
-      ApiVersion: this.apiVersion,
-      SecondaryChannelType: this.secondaryChannelType,
-    };
+    const body = requestBody({
+      SecondaryChannelEventType: this.Parameters.SecondaryChannelEventType,
+      SecondaryChannelSessionId: this.Parameters.SecondaryChannelSessionId,
+      ApiVersion: this.Parameters.ApiVersion,
+      SecondaryChannelType: this.Parameters.SecondaryChannelType,
+    });
 
     return {
       method: "POST",

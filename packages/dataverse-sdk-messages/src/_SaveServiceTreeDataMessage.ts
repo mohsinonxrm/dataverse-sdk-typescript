@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { _SaveServiceTreeDataResponse as _SaveServiceTreeDataResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the _SaveServiceTreeData message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface _SaveServiceTreeDataRequestParameters {
+  RootNodeId: string;
+  ResourceRuleList?: string;
+}
 
 /**
  * _SaveServiceTreeData request message
@@ -12,20 +22,19 @@ export class _SaveServiceTreeDataRequest
   extends OrganizationRequest
   implements Executable<_SaveServiceTreeDataResponse>
 {
-  constructor(
-    public rootNodeId: string,
-    public resourceRuleList?: string
-  ) {
-    super("_SaveServiceTreeData");
+  declare readonly Parameters: Readonly<_SaveServiceTreeDataRequestParameters>;
+
+  constructor(parameters: _SaveServiceTreeDataRequestParameters) {
+    super("_SaveServiceTreeData", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/_SaveServiceTreeData`;
 
-    const body: Record<string, unknown> = {
-      RootNodeId: this.rootNodeId,
-      ResourceRuleList: this.resourceRuleList,
-    };
+    const body = requestBody({
+      RootNodeId: this.Parameters.RootNodeId,
+      ResourceRuleList: this.Parameters.ResourceRuleList,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class _SaveServiceTreeDataRequest
   }
 
   async parseResponse(response: Response): Promise<_SaveServiceTreeDataResponse> {
-    const data = await response.json();
-    return _SaveServiceTreeDataResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return _SaveServiceTreeDataResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

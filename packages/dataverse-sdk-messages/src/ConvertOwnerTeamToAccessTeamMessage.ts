@@ -5,6 +5,8 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * ConvertOwnerTeamToAccessTeam request message
  *
  * Web API Action: ConvertOwnerTeamToAccessTeam
+ *
+ * The first argument is the id of the team record to call it on.
  */
 export class ConvertOwnerTeamToAccessTeamRequest
   extends OrganizationRequest

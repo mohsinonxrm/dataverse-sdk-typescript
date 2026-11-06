@@ -1,7 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { McpUpdateTableResponse as McpUpdateTableResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the McpUpdateTable message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface McpUpdateTableRequestParameters {
+  newDisplayName?: string;
+  tablename: string;
+  item: string;
+  description?: string;
+}
 
 /**
  * McpUpdateTable request message
@@ -12,24 +24,21 @@ export class McpUpdateTableRequest
   extends OrganizationRequest
   implements Executable<McpUpdateTableResponse>
 {
-  constructor(
-    public newDisplayName: string | undefined,
-    public tablename: string,
-    public item: string,
-    public description?: string
-  ) {
-    super("McpUpdateTable");
+  declare readonly Parameters: Readonly<McpUpdateTableRequestParameters>;
+
+  constructor(parameters: McpUpdateTableRequestParameters) {
+    super("McpUpdateTable", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/McpUpdateTable`;
 
-    const body: Record<string, unknown> = {
-      newDisplayName: this.newDisplayName,
-      tablename: this.tablename,
-      item: this.item,
-      description: this.description,
-    };
+    const body = requestBody({
+      newDisplayName: this.Parameters.newDisplayName,
+      tablename: this.Parameters.tablename,
+      item: this.Parameters.item,
+      description: this.Parameters.description,
+    });
 
     return {
       method: "POST",
@@ -42,8 +51,9 @@ export class McpUpdateTableRequest
   }
 
   async parseResponse(response: Response): Promise<McpUpdateTableResponse> {
-    const data = await response.json();
-    return McpUpdateTableResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return McpUpdateTableResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

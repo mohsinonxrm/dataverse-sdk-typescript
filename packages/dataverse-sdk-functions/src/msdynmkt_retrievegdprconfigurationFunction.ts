@@ -26,7 +26,8 @@ export class msdynmkt_retrievegdprconfigurationFunction implements Executable<ms
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_retrievegdprconfigurationResponse> {
-    const data = await response.json();
-    return data as msdynmkt_retrievegdprconfigurationResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdynmkt_retrievegdprconfigurationResponse;
   }
 }

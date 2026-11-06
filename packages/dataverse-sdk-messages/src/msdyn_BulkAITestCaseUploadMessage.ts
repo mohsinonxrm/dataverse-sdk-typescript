@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_BulkAITestCaseUploadResponse as msdyn_BulkAITestCaseUploadResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_BulkAITestCaseUpload message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_BulkAITestCaseUploadRequestParameters {
+  request: string;
+}
 
 /**
  * msdyn_BulkAITestCaseUpload request message
@@ -12,16 +21,18 @@ export class msdyn_BulkAITestCaseUploadRequest
   extends OrganizationRequest
   implements Executable<msdyn_BulkAITestCaseUploadResponse>
 {
-  constructor(public request: string) {
-    super("msdyn_BulkAITestCaseUpload");
+  declare readonly Parameters: Readonly<msdyn_BulkAITestCaseUploadRequestParameters>;
+
+  constructor(parameters: msdyn_BulkAITestCaseUploadRequestParameters) {
+    super("msdyn_BulkAITestCaseUpload", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_BulkAITestCaseUpload`;
 
-    const body: Record<string, unknown> = {
-      request: this.request,
-    };
+    const body = requestBody({
+      request: this.Parameters.request,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_BulkAITestCaseUploadRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_BulkAITestCaseUploadResponse> {
-    const data = await response.json();
-    return msdyn_BulkAITestCaseUploadResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_BulkAITestCaseUploadResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

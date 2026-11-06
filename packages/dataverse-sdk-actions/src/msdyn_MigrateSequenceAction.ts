@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_MigrateSequence action
@@ -8,19 +9,27 @@ export interface msdyn_MigrateSequenceResponse {
 }
 
 /**
+ * Parameters of the msdyn_MigrateSequence action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_MigrateSequenceActionParameters {
+  MigrationId: string;
+}
+
+/**
  * msdyn_MigrateSequence action
  *
  * Unbound action
  */
 export class msdyn_MigrateSequenceAction implements Executable<msdyn_MigrateSequenceResponse> {
-  constructor(public readonly migrationId: string) {}
+  constructor(public readonly parameters: msdyn_MigrateSequenceActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_MigrateSequence`;
 
-    const body: Record<string, unknown> = {
-      MigrationId: this.migrationId,
-    };
+    const body = requestBody({
+      MigrationId: this.parameters.MigrationId,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class msdyn_MigrateSequenceAction implements Executable<msdyn_MigrateSequ
   }
 
   async parseResponse(response: Response): Promise<msdyn_MigrateSequenceResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_MigrateSequenceResponse;
   }
 }

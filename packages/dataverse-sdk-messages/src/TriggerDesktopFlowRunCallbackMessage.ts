@@ -7,6 +7,8 @@ import type { TriggerDesktopFlowRunCallbackResponse as TriggerDesktopFlowRunCall
  * TriggerDesktopFlowRunCallback request message
  *
  * Web API Action: TriggerDesktopFlowRunCallback
+ *
+ * The first argument is the id of the flowsession record to call it on.
  */
 export class TriggerDesktopFlowRunCallbackRequest
   extends OrganizationRequest
@@ -30,8 +32,9 @@ export class TriggerDesktopFlowRunCallbackRequest
   }
 
   async parseResponse(response: Response): Promise<TriggerDesktopFlowRunCallbackResponse> {
-    const data = await response.json();
-    return TriggerDesktopFlowRunCallbackResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return TriggerDesktopFlowRunCallbackResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

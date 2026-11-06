@@ -1,7 +1,24 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { copilotquerytextcontextResponse as copilotquerytextcontextResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the copilotquerytextcontext message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface copilotquerytextcontextRequestParameters {
+  totalResultCount?: boolean;
+  orderBy?: string;
+  searchMode?: string;
+  entityParameters?: string;
+  skip?: number;
+  top?: number;
+  options?: string;
+  searchType?: string;
+  searchText: string;
+}
 
 /**
  * copilotquerytextcontext request message
@@ -12,34 +29,26 @@ export class copilotquerytextcontextRequest
   extends OrganizationRequest
   implements Executable<copilotquerytextcontextResponse>
 {
-  constructor(
-    public totalResultCount: boolean | undefined,
-    public orderBy: string | undefined,
-    public searchMode: string | undefined,
-    public entityParameters: string | undefined,
-    public skip: number | undefined,
-    public top: number | undefined,
-    public options: string | undefined,
-    public searchType: string | undefined,
-    public searchText: string
-  ) {
-    super("copilotquerytextcontext");
+  declare readonly Parameters: Readonly<copilotquerytextcontextRequestParameters>;
+
+  constructor(parameters: copilotquerytextcontextRequestParameters) {
+    super("copilotquerytextcontext", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/copilotquerytextcontext`;
 
-    const body: Record<string, unknown> = {
-      totalResultCount: this.totalResultCount,
-      orderBy: this.orderBy,
-      searchMode: this.searchMode,
-      entityParameters: this.entityParameters,
-      skip: this.skip,
-      top: this.top,
-      options: this.options,
-      searchType: this.searchType,
-      searchText: this.searchText,
-    };
+    const body = requestBody({
+      totalResultCount: this.Parameters.totalResultCount,
+      orderBy: this.Parameters.orderBy,
+      searchMode: this.Parameters.searchMode,
+      entityParameters: this.Parameters.entityParameters,
+      skip: this.Parameters.skip,
+      top: this.Parameters.top,
+      options: this.Parameters.options,
+      searchType: this.Parameters.searchType,
+      searchText: this.Parameters.searchText,
+    });
 
     return {
       method: "POST",
@@ -52,8 +61,9 @@ export class copilotquerytextcontextRequest
   }
 
   async parseResponse(response: Response): Promise<copilotquerytextcontextResponse> {
-    const data = await response.json();
-    return copilotquerytextcontextResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return copilotquerytextcontextResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

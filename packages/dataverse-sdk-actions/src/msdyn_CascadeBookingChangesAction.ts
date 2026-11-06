@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -8,37 +9,43 @@ import type { AnyEntityPayload } from "./types/EntityPayload.js";
 export interface msdyn_CascadeBookingChangesResponse {}
 
 /**
+ * Parameters of the msdyn_CascadeBookingChanges action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CascadeBookingChangesActionParameters {
+  MessageName: string;
+  Stage: number;
+  SourceBooking: EntityReference | AnyEntityPayload;
+  SourcePreImageBooking?: EntityReference | AnyEntityPayload;
+  SourceRelatedBookingsCreate?: Record<string, unknown>[];
+  SourceRelatedBookingsUpdate?: Record<string, unknown>[];
+  SourceRelatedBookingsDelete?: Record<string, unknown>[];
+  SourcePreImageRelatedBookingsUpdate?: Record<string, unknown>[];
+  SourcePreImageRelatedBookingsDelete?: Record<string, unknown>[];
+}
+
+/**
  * msdyn_CascadeBookingChanges action
  *
  * Unbound action
  */
 export class msdyn_CascadeBookingChangesAction implements Executable<msdyn_CascadeBookingChangesResponse> {
-  constructor(
-    public readonly messageName: string,
-    public readonly stage: number,
-    public readonly sourceBooking: EntityReference | AnyEntityPayload,
-    public readonly sourcePreImageBooking?: EntityReference | AnyEntityPayload,
-    public readonly sourceRelatedBookingsCreate?: Record<string, unknown>[],
-    public readonly sourceRelatedBookingsUpdate?: Record<string, unknown>[],
-    public readonly sourceRelatedBookingsDelete?: Record<string, unknown>[],
-    public readonly sourcePreImageRelatedBookingsUpdate?: Record<string, unknown>[],
-    public readonly sourcePreImageRelatedBookingsDelete?: Record<string, unknown>[]
-  ) {}
+  constructor(public readonly parameters: msdyn_CascadeBookingChangesActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CascadeBookingChanges`;
 
-    const body: Record<string, unknown> = {
-      MessageName: this.messageName,
-      Stage: this.stage,
-      SourceBooking: this.sourceBooking,
-      SourcePreImageBooking: this.sourcePreImageBooking,
-      SourceRelatedBookingsCreate: this.sourceRelatedBookingsCreate,
-      SourceRelatedBookingsUpdate: this.sourceRelatedBookingsUpdate,
-      SourceRelatedBookingsDelete: this.sourceRelatedBookingsDelete,
-      SourcePreImageRelatedBookingsUpdate: this.sourcePreImageRelatedBookingsUpdate,
-      SourcePreImageRelatedBookingsDelete: this.sourcePreImageRelatedBookingsDelete,
-    };
+    const body = requestBody({
+      MessageName: this.parameters.MessageName,
+      Stage: this.parameters.Stage,
+      SourceBooking: this.parameters.SourceBooking,
+      SourcePreImageBooking: this.parameters.SourcePreImageBooking,
+      SourceRelatedBookingsCreate: this.parameters.SourceRelatedBookingsCreate,
+      SourceRelatedBookingsUpdate: this.parameters.SourceRelatedBookingsUpdate,
+      SourceRelatedBookingsDelete: this.parameters.SourceRelatedBookingsDelete,
+      SourcePreImageRelatedBookingsUpdate: this.parameters.SourcePreImageRelatedBookingsUpdate,
+      SourcePreImageRelatedBookingsDelete: this.parameters.SourcePreImageRelatedBookingsDelete,
+    });
 
     return {
       method: "POST",
@@ -51,7 +58,8 @@ export class msdyn_CascadeBookingChangesAction implements Executable<msdyn_Casca
   }
 
   async parseResponse(response: Response): Promise<msdyn_CascadeBookingChangesResponse> {
-    const data = await response.json();
-    return data as msdyn_CascadeBookingChangesResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_CascadeBookingChangesResponse;
   }
 }

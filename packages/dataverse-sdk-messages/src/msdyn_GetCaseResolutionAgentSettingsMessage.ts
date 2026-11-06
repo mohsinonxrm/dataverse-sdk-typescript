@@ -2,8 +2,17 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_GetCaseResolutionAgentSettingsResponse as msdyn_GetCaseResolutionAgentSettingsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetCaseResolutionAgentSettings message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetCaseResolutionAgentSettingsRequestParameters {
+  Entity?: EntityReference | AnyEntityPayload;
+}
 
 /**
  * msdyn_GetCaseResolutionAgentSettings request message
@@ -14,16 +23,18 @@ export class msdyn_GetCaseResolutionAgentSettingsRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetCaseResolutionAgentSettingsResponse>
 {
-  constructor(public entity?: EntityReference | AnyEntityPayload) {
-    super("msdyn_GetCaseResolutionAgentSettings");
+  declare readonly Parameters: Readonly<msdyn_GetCaseResolutionAgentSettingsRequestParameters>;
+
+  constructor(parameters: msdyn_GetCaseResolutionAgentSettingsRequestParameters = {}) {
+    super("msdyn_GetCaseResolutionAgentSettings", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetCaseResolutionAgentSettings`;
 
-    const body: Record<string, unknown> = {
-      Entity: this.entity,
-    };
+    const body = requestBody({
+      Entity: this.Parameters.Entity,
+    });
 
     return {
       method: "POST",
@@ -36,8 +47,9 @@ export class msdyn_GetCaseResolutionAgentSettingsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetCaseResolutionAgentSettingsResponse> {
-    const data = await response.json();
-    return msdyn_GetCaseResolutionAgentSettingsResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_GetCaseResolutionAgentSettingsResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

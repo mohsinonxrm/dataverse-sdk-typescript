@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_SalesAgents_IsOwnerAssignedResponse as msdyn_SalesAgents_IsOwnerAssignedResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_SalesAgents_IsOwnerAssigned message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAgents_IsOwnerAssignedRequestParameters {
+  msdyn_HandoverContext?: string;
+  msdyn_SalesAgentRun: string;
+  msdyn_TrackingId?: string;
+}
 
 /**
  * msdyn_SalesAgents_IsOwnerAssigned request message
@@ -12,22 +23,20 @@ export class msdyn_SalesAgents_IsOwnerAssignedRequest
   extends OrganizationRequest
   implements Executable<msdyn_SalesAgents_IsOwnerAssignedResponse>
 {
-  constructor(
-    public msdyn_HandoverContext: string | undefined,
-    public msdyn_SalesAgentRun: string,
-    public msdyn_TrackingId?: string
-  ) {
-    super("msdyn_SalesAgents_IsOwnerAssigned");
+  declare readonly Parameters: Readonly<msdyn_SalesAgents_IsOwnerAssignedRequestParameters>;
+
+  constructor(parameters: msdyn_SalesAgents_IsOwnerAssignedRequestParameters) {
+    super("msdyn_SalesAgents_IsOwnerAssigned", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAgents_IsOwnerAssigned`;
 
-    const body: Record<string, unknown> = {
-      msdyn_HandoverContext: this.msdyn_HandoverContext,
-      msdyn_SalesAgentRun: this.msdyn_SalesAgentRun,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-    };
+    const body = requestBody({
+      msdyn_HandoverContext: this.Parameters.msdyn_HandoverContext,
+      msdyn_SalesAgentRun: this.Parameters.msdyn_SalesAgentRun,
+      msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class msdyn_SalesAgents_IsOwnerAssignedRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAgents_IsOwnerAssignedResponse> {
-    const data = await response.json();
-    return msdyn_SalesAgents_IsOwnerAssignedResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_SalesAgents_IsOwnerAssignedResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

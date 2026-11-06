@@ -26,7 +26,8 @@ export class msdyn_IsSSSEnabledAction implements Executable<msdyn_IsSSSEnabledRe
   }
 
   async parseResponse(response: Response): Promise<msdyn_IsSSSEnabledResponse> {
-    const data = await response.json();
-    return data as msdyn_IsSSSEnabledResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_IsSSSEnabledResponse;
   }
 }

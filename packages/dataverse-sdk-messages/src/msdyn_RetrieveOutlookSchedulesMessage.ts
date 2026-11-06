@@ -1,7 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_RetrieveOutlookSchedulesResponse as msdyn_RetrieveOutlookSchedulesResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_RetrieveOutlookSchedules message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_RetrieveOutlookSchedulesRequestParameters {
+  Version?: string;
+  StartDate: string;
+  EndDate: string;
+  BookableResourceEmails: string;
+}
 
 /**
  * msdyn_RetrieveOutlookSchedules request message
@@ -12,24 +24,21 @@ export class msdyn_RetrieveOutlookSchedulesRequest
   extends OrganizationRequest
   implements Executable<msdyn_RetrieveOutlookSchedulesResponse>
 {
-  constructor(
-    public version: string | undefined,
-    public startDate: string,
-    public endDate: string,
-    public bookableResourceEmails: string
-  ) {
-    super("msdyn_RetrieveOutlookSchedules");
+  declare readonly Parameters: Readonly<msdyn_RetrieveOutlookSchedulesRequestParameters>;
+
+  constructor(parameters: msdyn_RetrieveOutlookSchedulesRequestParameters) {
+    super("msdyn_RetrieveOutlookSchedules", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_RetrieveOutlookSchedules`;
 
-    const body: Record<string, unknown> = {
-      Version: this.version,
-      StartDate: this.startDate,
-      EndDate: this.endDate,
-      BookableResourceEmails: this.bookableResourceEmails,
-    };
+    const body = requestBody({
+      Version: this.Parameters.Version,
+      StartDate: this.Parameters.StartDate,
+      EndDate: this.Parameters.EndDate,
+      BookableResourceEmails: this.Parameters.BookableResourceEmails,
+    });
 
     return {
       method: "POST",
@@ -42,8 +51,9 @@ export class msdyn_RetrieveOutlookSchedulesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrieveOutlookSchedulesResponse> {
-    const data = await response.json();
-    return msdyn_RetrieveOutlookSchedulesResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_RetrieveOutlookSchedulesResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

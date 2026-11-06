@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_CapacityProfilesToUsers message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CapacityProfilesToUsersRequestParameters {
+  AddedBookableResourceCapacityProfiles?: Record<string, unknown>[];
+  DeletedBookableResourceCapacityProfiles?: Record<string, unknown>[];
+}
 
 /**
  * msdyn_CapacityProfilesToUsers request message
@@ -10,20 +20,20 @@ export class msdyn_CapacityProfilesToUsersRequest
   extends OrganizationRequest
   implements Executable<msdyn_CapacityProfilesToUsersResponse>
 {
-  constructor(
-    public addedBookableResourceCapacityProfiles?: Record<string, unknown>[],
-    public deletedBookableResourceCapacityProfiles?: Record<string, unknown>[]
-  ) {
-    super("msdyn_CapacityProfilesToUsers");
+  declare readonly Parameters: Readonly<msdyn_CapacityProfilesToUsersRequestParameters>;
+
+  constructor(parameters: msdyn_CapacityProfilesToUsersRequestParameters = {}) {
+    super("msdyn_CapacityProfilesToUsers", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CapacityProfilesToUsers`;
 
-    const body: Record<string, unknown> = {
-      AddedBookableResourceCapacityProfiles: this.addedBookableResourceCapacityProfiles,
-      DeletedBookableResourceCapacityProfiles: this.deletedBookableResourceCapacityProfiles,
-    };
+    const body = requestBody({
+      AddedBookableResourceCapacityProfiles: this.Parameters.AddedBookableResourceCapacityProfiles,
+      DeletedBookableResourceCapacityProfiles:
+        this.Parameters.DeletedBookableResourceCapacityProfiles,
+    });
 
     return {
       method: "POST",

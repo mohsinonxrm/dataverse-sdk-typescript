@@ -1,7 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_ExecuteSIRequestResponse as msdyn_ExecuteSIRequestResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_ExecuteSIRequest message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ExecuteSIRequestRequestParameters {
+  MethodName: string;
+  MethodParams?: string;
+  HttpRequestType: string;
+  OrgMigratedToCoreServices?: boolean;
+}
 
 /**
  * msdyn_ExecuteSIRequest request message
@@ -12,24 +24,21 @@ export class msdyn_ExecuteSIRequestRequest
   extends OrganizationRequest
   implements Executable<msdyn_ExecuteSIRequestResponse>
 {
-  constructor(
-    public methodName: string,
-    public methodParams: string | undefined,
-    public httpRequestType: string,
-    public orgMigratedToCoreServices?: boolean
-  ) {
-    super("msdyn_ExecuteSIRequest");
+  declare readonly Parameters: Readonly<msdyn_ExecuteSIRequestRequestParameters>;
+
+  constructor(parameters: msdyn_ExecuteSIRequestRequestParameters) {
+    super("msdyn_ExecuteSIRequest", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ExecuteSIRequest`;
 
-    const body: Record<string, unknown> = {
-      MethodName: this.methodName,
-      MethodParams: this.methodParams,
-      HttpRequestType: this.httpRequestType,
-      OrgMigratedToCoreServices: this.orgMigratedToCoreServices,
-    };
+    const body = requestBody({
+      MethodName: this.Parameters.MethodName,
+      MethodParams: this.Parameters.MethodParams,
+      HttpRequestType: this.Parameters.HttpRequestType,
+      OrgMigratedToCoreServices: this.Parameters.OrgMigratedToCoreServices,
+    });
 
     return {
       method: "POST",
@@ -42,8 +51,9 @@ export class msdyn_ExecuteSIRequestRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ExecuteSIRequestResponse> {
-    const data = await response.json();
-    return msdyn_ExecuteSIRequestResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_ExecuteSIRequestResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

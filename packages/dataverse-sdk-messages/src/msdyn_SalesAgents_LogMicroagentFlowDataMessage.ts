@@ -1,7 +1,21 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_SalesAgents_LogMicroagentFlowDataResponse as msdyn_SalesAgents_LogMicroagentFlowDataResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_SalesAgents_LogMicroagentFlowData message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAgents_LogMicroagentFlowDataRequestParameters {
+  msdyn_salesagentrunid: string;
+  msdyn_agenttype: number;
+  msdyn_salesagenttype?: number;
+  trackingId?: string;
+  continueOnError?: boolean;
+  data: string;
+}
 
 /**
  * msdyn_SalesAgents_LogMicroagentFlowData request message
@@ -12,28 +26,23 @@ export class msdyn_SalesAgents_LogMicroagentFlowDataRequest
   extends OrganizationRequest
   implements Executable<msdyn_SalesAgents_LogMicroagentFlowDataResponse>
 {
-  constructor(
-    public msdyn_salesagentrunid: string,
-    public msdyn_agenttype: number,
-    public msdyn_salesagenttype: number | undefined,
-    public trackingId: string | undefined,
-    public continueOnError: boolean | undefined,
-    public data: string
-  ) {
-    super("msdyn_SalesAgents_LogMicroagentFlowData");
+  declare readonly Parameters: Readonly<msdyn_SalesAgents_LogMicroagentFlowDataRequestParameters>;
+
+  constructor(parameters: msdyn_SalesAgents_LogMicroagentFlowDataRequestParameters) {
+    super("msdyn_SalesAgents_LogMicroagentFlowData", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAgents_LogMicroagentFlowData`;
 
-    const body: Record<string, unknown> = {
-      msdyn_salesagentrunid: this.msdyn_salesagentrunid,
-      msdyn_agenttype: this.msdyn_agenttype,
-      msdyn_salesagenttype: this.msdyn_salesagenttype,
-      trackingId: this.trackingId,
-      continueOnError: this.continueOnError,
-      data: this.data,
-    };
+    const body = requestBody({
+      msdyn_salesagentrunid: this.Parameters.msdyn_salesagentrunid,
+      msdyn_agenttype: this.Parameters.msdyn_agenttype,
+      msdyn_salesagenttype: this.Parameters.msdyn_salesagenttype,
+      trackingId: this.Parameters.trackingId,
+      continueOnError: this.Parameters.continueOnError,
+      data: this.Parameters.data,
+    });
 
     return {
       method: "POST",
@@ -48,8 +57,11 @@ export class msdyn_SalesAgents_LogMicroagentFlowDataRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_LogMicroagentFlowDataResponse> {
-    const data = await response.json();
-    return msdyn_SalesAgents_LogMicroagentFlowDataResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_SalesAgents_LogMicroagentFlowDataResponse.fromResponse(
+      text ? JSON.parse(text) : {}
+    );
   }
 }
 

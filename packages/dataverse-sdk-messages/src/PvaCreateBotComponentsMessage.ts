@@ -1,29 +1,42 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the PvaCreateBotComponents message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface PvaCreateBotComponentsRequestParameters {
+  BotComponents: Record<string, unknown>[];
+}
 
 /**
  * PvaCreateBotComponents request message
  *
  * Web API Action: PvaCreateBotComponents
+ *
+ * The first argument is the id of the bot record to call it on.
  */
 export class PvaCreateBotComponentsRequest
   extends OrganizationRequest
   implements Executable<PvaCreateBotComponentsResponse>
 {
+  declare readonly Parameters: Readonly<PvaCreateBotComponentsRequestParameters>;
+
   constructor(
     public botId: string,
-    public botComponents: Record<string, unknown>[]
+    parameters: PvaCreateBotComponentsRequestParameters
   ) {
-    super("PvaCreateBotComponents");
+    super("PvaCreateBotComponents", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/bots(${this.botId})/Microsoft.Dynamics.CRM.PvaCreateBotComponents`;
 
-    const body: Record<string, unknown> = {
-      BotComponents: this.botComponents,
-    };
+    const body = requestBody({
+      BotComponents: this.Parameters.BotComponents,
+    });
 
     return {
       method: "POST",

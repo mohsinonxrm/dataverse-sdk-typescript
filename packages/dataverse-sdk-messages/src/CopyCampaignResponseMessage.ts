@@ -7,6 +7,8 @@ import type { campaignresponse } from "./types/index.js";
  * CopyCampaignResponse request message
  *
  * Web API Action: CopyCampaignResponse
+ *
+ * The first argument is the id of the campaignresponse record to call it on.
  */
 export class CopyCampaignResponseRequest
   extends OrganizationRequest
@@ -30,8 +32,9 @@ export class CopyCampaignResponseRequest
   }
 
   async parseResponse(response: Response): Promise<CopyCampaignResponseResponse> {
-    const data = await response.json();
-    return CopyCampaignResponseResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return CopyCampaignResponseResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

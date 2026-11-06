@@ -2,8 +2,17 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { RestoreResponse as RestoreResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the Restore message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RestoreRequestParameters {
+  Target: EntityReference | AnyEntityPayload;
+}
 
 /**
  * Restore request message
@@ -11,16 +20,18 @@ import type { RestoreResponse as RestoreResponseData } from "./types/index.js";
  * Web API Action: Restore
  */
 export class RestoreRequest extends OrganizationRequest implements Executable<RestoreResponse> {
-  constructor(public target: EntityReference | AnyEntityPayload) {
-    super("Restore");
+  declare readonly Parameters: Readonly<RestoreRequestParameters>;
+
+  constructor(parameters: RestoreRequestParameters) {
+    super("Restore", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/Restore`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-    };
+    const body = requestBody({
+      Target: this.Parameters.Target,
+    });
 
     return {
       method: "POST",
@@ -33,8 +44,9 @@ export class RestoreRequest extends OrganizationRequest implements Executable<Re
   }
 
   async parseResponse(response: Response): Promise<RestoreResponse> {
-    const data = await response.json();
-    return RestoreResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return RestoreResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

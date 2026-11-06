@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_CreateTrainEffortModelConfig action
@@ -8,27 +9,33 @@ export interface msdyn_CreateTrainEffortModelConfigResponse {
 }
 
 /**
+ * Parameters of the msdyn_CreateTrainEffortModelConfig action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CreateTrainEffortModelConfigActionParameters {
+  EntityLogicalName: string;
+  RecordId: string;
+  DataBinding: string;
+  CustomConfig: string;
+}
+
+/**
  * msdyn_CreateTrainEffortModelConfig action
  *
  * Unbound action
  */
 export class msdyn_CreateTrainEffortModelConfigAction implements Executable<msdyn_CreateTrainEffortModelConfigResponse> {
-  constructor(
-    public readonly entityLogicalName: string,
-    public readonly recordId: string,
-    public readonly dataBinding: string,
-    public readonly customConfig: string
-  ) {}
+  constructor(public readonly parameters: msdyn_CreateTrainEffortModelConfigActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CreateTrainEffortModelConfig`;
 
-    const body: Record<string, unknown> = {
-      EntityLogicalName: this.entityLogicalName,
-      RecordId: this.recordId,
-      DataBinding: this.dataBinding,
-      CustomConfig: this.customConfig,
-    };
+    const body = requestBody({
+      EntityLogicalName: this.parameters.EntityLogicalName,
+      RecordId: this.parameters.RecordId,
+      DataBinding: this.parameters.DataBinding,
+      CustomConfig: this.parameters.CustomConfig,
+    });
 
     return {
       method: "POST",
@@ -41,7 +48,8 @@ export class msdyn_CreateTrainEffortModelConfigAction implements Executable<msdy
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateTrainEffortModelConfigResponse> {
-    const data = await response.json();
-    return data as msdyn_CreateTrainEffortModelConfigResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_CreateTrainEffortModelConfigResponse;
   }
 }

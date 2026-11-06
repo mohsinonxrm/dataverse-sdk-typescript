@@ -1,7 +1,20 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_UpdateAutoCaptureSettingsResponse as msdyn_UpdateAutoCaptureSettingsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_UpdateAutoCaptureSettings message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_UpdateAutoCaptureSettingsRequestParameters {
+  actiontype: number;
+  dialogtype?: number;
+  BusinessProcessFlowId?: string;
+  BusinessProcessFlowInstanceId?: string;
+  ActionStepId?: string;
+}
 
 /**
  * msdyn_UpdateAutoCaptureSettings request message
@@ -12,26 +25,22 @@ export class msdyn_UpdateAutoCaptureSettingsRequest
   extends OrganizationRequest
   implements Executable<msdyn_UpdateAutoCaptureSettingsResponse>
 {
-  constructor(
-    public actiontype: number,
-    public dialogtype?: number,
-    public businessProcessFlowId?: string,
-    public businessProcessFlowInstanceId?: string,
-    public actionStepId?: string
-  ) {
-    super("msdyn_UpdateAutoCaptureSettings");
+  declare readonly Parameters: Readonly<msdyn_UpdateAutoCaptureSettingsRequestParameters>;
+
+  constructor(parameters: msdyn_UpdateAutoCaptureSettingsRequestParameters) {
+    super("msdyn_UpdateAutoCaptureSettings", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_UpdateAutoCaptureSettings`;
 
-    const body: Record<string, unknown> = {
-      actiontype: this.actiontype,
-      dialogtype: this.dialogtype,
-      BusinessProcessFlowId: this.businessProcessFlowId,
-      BusinessProcessFlowInstanceId: this.businessProcessFlowInstanceId,
-      ActionStepId: this.actionStepId,
-    };
+    const body = requestBody({
+      actiontype: this.Parameters.actiontype,
+      dialogtype: this.Parameters.dialogtype,
+      BusinessProcessFlowId: this.Parameters.BusinessProcessFlowId,
+      BusinessProcessFlowInstanceId: this.Parameters.BusinessProcessFlowInstanceId,
+      ActionStepId: this.Parameters.ActionStepId,
+    });
 
     return {
       method: "POST",
@@ -44,8 +53,9 @@ export class msdyn_UpdateAutoCaptureSettingsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_UpdateAutoCaptureSettingsResponse> {
-    const data = await response.json();
-    return msdyn_UpdateAutoCaptureSettingsResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_UpdateAutoCaptureSettingsResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

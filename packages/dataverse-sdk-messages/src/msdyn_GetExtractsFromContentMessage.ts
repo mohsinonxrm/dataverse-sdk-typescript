@@ -1,7 +1,21 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetExtractsFromContentResponse as msdyn_GetExtractsFromContentResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetExtractsFromContent message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetExtractsFromContentRequestParameters {
+  msdyn_activityId?: string;
+  msdyn_userQuery?: string;
+  msdyn_source?: string;
+  msdyn_top?: number;
+  msdyn_extractOperationInputParams?: string;
+  msdyn_keywords?: string;
+}
 
 /**
  * msdyn_GetExtractsFromContent request message
@@ -12,28 +26,23 @@ export class msdyn_GetExtractsFromContentRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetExtractsFromContentResponse>
 {
-  constructor(
-    public msdyn_activityId?: string,
-    public msdyn_userQuery?: string,
-    public msdyn_source?: string,
-    public msdyn_top?: number,
-    public msdyn_extractOperationInputParams?: string,
-    public msdyn_keywords?: string
-  ) {
-    super("msdyn_GetExtractsFromContent");
+  declare readonly Parameters: Readonly<msdyn_GetExtractsFromContentRequestParameters>;
+
+  constructor(parameters: msdyn_GetExtractsFromContentRequestParameters = {}) {
+    super("msdyn_GetExtractsFromContent", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetExtractsFromContent`;
 
-    const body: Record<string, unknown> = {
-      msdyn_activityId: this.msdyn_activityId,
-      msdyn_userQuery: this.msdyn_userQuery,
-      msdyn_source: this.msdyn_source,
-      msdyn_top: this.msdyn_top,
-      msdyn_extractOperationInputParams: this.msdyn_extractOperationInputParams,
-      msdyn_keywords: this.msdyn_keywords,
-    };
+    const body = requestBody({
+      msdyn_activityId: this.Parameters.msdyn_activityId,
+      msdyn_userQuery: this.Parameters.msdyn_userQuery,
+      msdyn_source: this.Parameters.msdyn_source,
+      msdyn_top: this.Parameters.msdyn_top,
+      msdyn_extractOperationInputParams: this.Parameters.msdyn_extractOperationInputParams,
+      msdyn_keywords: this.Parameters.msdyn_keywords,
+    });
 
     return {
       method: "POST",
@@ -46,8 +55,9 @@ export class msdyn_GetExtractsFromContentRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetExtractsFromContentResponse> {
-    const data = await response.json();
-    return msdyn_GetExtractsFromContentResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_GetExtractsFromContentResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

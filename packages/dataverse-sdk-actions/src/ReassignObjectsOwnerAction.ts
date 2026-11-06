@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,25 +11,31 @@ export interface ReassignObjectsOwnerResponse {
 }
 
 /**
+ * Parameters of the ReassignObjectsOwner action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ReassignObjectsOwnerActionParameters {
+  FromPrincipal: EntityReference | AnyEntityPayload;
+  ToPrincipal: EntityReference | AnyEntityPayload;
+  objectType?: number;
+}
+
+/**
  * ReassignObjectsOwner action
  *
  * Unbound action
  */
 export class ReassignObjectsOwnerAction implements Executable<ReassignObjectsOwnerResponse> {
-  constructor(
-    public readonly fromPrincipal: EntityReference | AnyEntityPayload,
-    public readonly toPrincipal: EntityReference | AnyEntityPayload,
-    public readonly objectType?: number
-  ) {}
+  constructor(public readonly parameters: ReassignObjectsOwnerActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ReassignObjectsOwner`;
 
-    const body: Record<string, unknown> = {
-      FromPrincipal: this.fromPrincipal,
-      ToPrincipal: this.toPrincipal,
-      objectType: this.objectType,
-    };
+    const body = requestBody({
+      FromPrincipal: this.parameters.FromPrincipal,
+      ToPrincipal: this.parameters.ToPrincipal,
+      objectType: this.parameters.objectType,
+    });
 
     return {
       method: "POST",
@@ -41,7 +48,8 @@ export class ReassignObjectsOwnerAction implements Executable<ReassignObjectsOwn
   }
 
   async parseResponse(response: Response): Promise<ReassignObjectsOwnerResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as ReassignObjectsOwnerResponse;
   }
 }

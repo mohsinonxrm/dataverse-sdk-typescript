@@ -2,32 +2,45 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { recurringappointmentmaster } from "./types/index.js";
+
+/**
+ * Parameters of the AddRecurrence message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AddRecurrenceRequestParameters {
+  Target: EntityReference | EntityPayload<recurringappointmentmaster>;
+}
 
 /**
  * AddRecurrence request message
  *
  * Web API Action: AddRecurrence
+ *
+ * The first argument is the id of the appointment record to call it on.
  */
 export class AddRecurrenceRequest
   extends OrganizationRequest
   implements Executable<AddRecurrenceResponse>
 {
+  declare readonly Parameters: Readonly<AddRecurrenceRequestParameters>;
+
   constructor(
     public appointmentId: string,
-    public target: EntityReference | EntityPayload<recurringappointmentmaster>
+    parameters: AddRecurrenceRequestParameters
   ) {
-    super("AddRecurrence");
+    super("AddRecurrence", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/appointments(${this.appointmentId})/Microsoft.Dynamics.CRM.AddRecurrence`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-    };
+    const body = requestBody({
+      Target: this.Parameters.Target,
+    });
 
     return {
       method: "POST",
@@ -40,8 +53,9 @@ export class AddRecurrenceRequest
   }
 
   async parseResponse(response: Response): Promise<AddRecurrenceResponse> {
-    const data = await response.json();
-    return AddRecurrenceResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return AddRecurrenceResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

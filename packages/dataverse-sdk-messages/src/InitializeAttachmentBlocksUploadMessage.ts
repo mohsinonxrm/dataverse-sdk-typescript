@@ -2,8 +2,17 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { InitializeAttachmentBlocksUploadResponse as InitializeAttachmentBlocksUploadResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the InitializeAttachmentBlocksUpload message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface InitializeAttachmentBlocksUploadRequestParameters {
+  Target: EntityReference | AnyEntityPayload;
+}
 
 /**
  * InitializeAttachmentBlocksUpload request message
@@ -14,16 +23,18 @@ export class InitializeAttachmentBlocksUploadRequest
   extends OrganizationRequest
   implements Executable<InitializeAttachmentBlocksUploadResponse>
 {
-  constructor(public target: EntityReference | AnyEntityPayload) {
-    super("InitializeAttachmentBlocksUpload");
+  declare readonly Parameters: Readonly<InitializeAttachmentBlocksUploadRequestParameters>;
+
+  constructor(parameters: InitializeAttachmentBlocksUploadRequestParameters) {
+    super("InitializeAttachmentBlocksUpload", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/InitializeAttachmentBlocksUpload`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-    };
+    const body = requestBody({
+      Target: this.Parameters.Target,
+    });
 
     return {
       method: "POST",
@@ -36,8 +47,9 @@ export class InitializeAttachmentBlocksUploadRequest
   }
 
   async parseResponse(response: Response): Promise<InitializeAttachmentBlocksUploadResponse> {
-    const data = await response.json();
-    return InitializeAttachmentBlocksUploadResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return InitializeAttachmentBlocksUploadResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

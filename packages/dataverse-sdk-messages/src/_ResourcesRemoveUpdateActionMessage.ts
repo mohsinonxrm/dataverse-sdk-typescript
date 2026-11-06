@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the _ResourcesRemoveUpdateAction message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface _ResourcesRemoveUpdateActionRequestParameters {
+  ResourcesToBeRemoved?: string;
+  ResourceGroupId?: string;
+}
 
 /**
  * _ResourcesRemoveUpdateAction request message
@@ -10,20 +20,19 @@ export class _ResourcesRemoveUpdateActionRequest
   extends OrganizationRequest
   implements Executable<_ResourcesRemoveUpdateActionResponse>
 {
-  constructor(
-    public resourcesToBeRemoved?: string,
-    public resourceGroupId?: string
-  ) {
-    super("_ResourcesRemoveUpdateAction");
+  declare readonly Parameters: Readonly<_ResourcesRemoveUpdateActionRequestParameters>;
+
+  constructor(parameters: _ResourcesRemoveUpdateActionRequestParameters = {}) {
+    super("_ResourcesRemoveUpdateAction", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/_ResourcesRemoveUpdateAction`;
 
-    const body: Record<string, unknown> = {
-      ResourcesToBeRemoved: this.resourcesToBeRemoved,
-      ResourceGroupId: this.resourceGroupId,
-    };
+    const body = requestBody({
+      ResourcesToBeRemoved: this.Parameters.ResourcesToBeRemoved,
+      ResourceGroupId: this.Parameters.ResourceGroupId,
+    });
 
     return {
       method: "POST",

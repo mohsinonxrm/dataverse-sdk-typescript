@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 import type { FeatureControlSettingData } from "./types/index.js";
 
 /**
@@ -9,19 +10,29 @@ export interface RetrieveFeatureControlSettingsByNamespaceResponse {
 }
 
 /**
+ * Parameters of the RetrieveFeatureControlSettingsByNamespace action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveFeatureControlSettingsByNamespaceActionParameters {
+  NamespaceName: string;
+}
+
+/**
  * RetrieveFeatureControlSettingsByNamespace action
  *
  * Unbound action
  */
 export class RetrieveFeatureControlSettingsByNamespaceAction implements Executable<RetrieveFeatureControlSettingsByNamespaceResponse> {
-  constructor(public readonly namespaceName: string) {}
+  constructor(
+    public readonly parameters: RetrieveFeatureControlSettingsByNamespaceActionParameters
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/RetrieveFeatureControlSettingsByNamespace`;
 
-    const body: Record<string, unknown> = {
-      NamespaceName: this.namespaceName,
-    };
+    const body = requestBody({
+      NamespaceName: this.parameters.NamespaceName,
+    });
 
     return {
       method: "POST",
@@ -36,7 +47,8 @@ export class RetrieveFeatureControlSettingsByNamespaceAction implements Executab
   async parseResponse(
     response: Response
   ): Promise<RetrieveFeatureControlSettingsByNamespaceResponse> {
-    const data = await response.json();
-    return data as RetrieveFeatureControlSettingsByNamespaceResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RetrieveFeatureControlSettingsByNamespaceResponse;
   }
 }

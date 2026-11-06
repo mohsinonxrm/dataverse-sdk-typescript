@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { AccessRights } from "./types/index.js";
@@ -12,23 +13,29 @@ export interface GenerateSharedLinkResponse {
 }
 
 /**
+ * Parameters of the GenerateSharedLink action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GenerateSharedLinkActionParameters {
+  Target: EntityReference | AnyEntityPayload;
+  SharedRights: AccessRights;
+}
+
+/**
  * GenerateSharedLink action
  *
  * Unbound action
  */
 export class GenerateSharedLinkAction implements Executable<GenerateSharedLinkResponse> {
-  constructor(
-    public readonly target: EntityReference | AnyEntityPayload,
-    public readonly sharedRights: AccessRights
-  ) {}
+  constructor(public readonly parameters: GenerateSharedLinkActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/GenerateSharedLink`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-      SharedRights: enumBody(this.sharedRights, "AccessRights"),
-    };
+    const body = requestBody({
+      Target: this.parameters.Target,
+      SharedRights: enumBody(this.parameters.SharedRights, "AccessRights"),
+    });
 
     return {
       method: "POST",
@@ -41,7 +48,8 @@ export class GenerateSharedLinkAction implements Executable<GenerateSharedLinkRe
   }
 
   async parseResponse(response: Response): Promise<GenerateSharedLinkResponse> {
-    const data = await response.json();
-    return data as GenerateSharedLinkResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as GenerateSharedLinkResponse;
   }
 }

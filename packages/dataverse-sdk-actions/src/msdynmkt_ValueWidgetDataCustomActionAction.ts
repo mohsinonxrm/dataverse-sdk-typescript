@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdynmkt_ValueWidgetDataCustomAction action
@@ -12,19 +13,29 @@ export interface msdynmkt_ValueWidgetDataCustomActionResponse {
 }
 
 /**
+ * Parameters of the msdynmkt_ValueWidgetDataCustomAction action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdynmkt_ValueWidgetDataCustomActionActionParameters {
+  WidgetRequest?: string;
+}
+
+/**
  * msdynmkt_ValueWidgetDataCustomAction action
  *
  * Unbound action
  */
 export class msdynmkt_ValueWidgetDataCustomActionAction implements Executable<msdynmkt_ValueWidgetDataCustomActionResponse> {
-  constructor(public readonly widgetRequest?: string) {}
+  constructor(
+    public readonly parameters: msdynmkt_ValueWidgetDataCustomActionActionParameters = {}
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_ValueWidgetDataCustomAction`;
 
-    const body: Record<string, unknown> = {
-      WidgetRequest: this.widgetRequest,
-    };
+    const body = requestBody({
+      WidgetRequest: this.parameters.WidgetRequest,
+    });
 
     return {
       method: "POST",
@@ -37,7 +48,8 @@ export class msdynmkt_ValueWidgetDataCustomActionAction implements Executable<ms
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_ValueWidgetDataCustomActionResponse> {
-    const data = await response.json();
-    return data as msdynmkt_ValueWidgetDataCustomActionResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdynmkt_ValueWidgetDataCustomActionResponse;
   }
 }

@@ -1,31 +1,44 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the CCaaS_ConversationTimeout message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_ConversationTimeoutRequestParameters {
+  ApiVersion: string;
+  SessionId: string;
+}
 
 /**
  * CCaaS_ConversationTimeout request message
  *
  * Web API Action: CCaaS_ConversationTimeout
+ *
+ * The first argument is the id of the msdyn_ocliveworkitem record to call it on.
  */
 export class CCaaS_ConversationTimeoutRequest
   extends OrganizationRequest
   implements Executable<CCaaS_ConversationTimeoutResponse>
 {
+  declare readonly Parameters: Readonly<CCaaS_ConversationTimeoutRequestParameters>;
+
   constructor(
     public msdyn_ocliveworkitemId: string,
-    public apiVersion: string,
-    public sessionId: string
+    parameters: CCaaS_ConversationTimeoutRequestParameters
   ) {
-    super("CCaaS_ConversationTimeout");
+    super("CCaaS_ConversationTimeout", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_ConversationTimeout`;
 
-    const body: Record<string, unknown> = {
-      ApiVersion: this.apiVersion,
-      SessionId: this.sessionId,
-    };
+    const body = requestBody({
+      ApiVersion: this.Parameters.ApiVersion,
+      SessionId: this.Parameters.SessionId,
+    });
 
     return {
       method: "POST",

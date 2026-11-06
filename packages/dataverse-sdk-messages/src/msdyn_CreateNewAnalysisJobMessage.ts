@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_analysisjob } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_CreateNewAnalysisJob message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CreateNewAnalysisJobRequestParameters {
+  ComponentInstances?: Record<string, unknown>[];
+}
 
 /**
  * msdyn_CreateNewAnalysisJob request message
@@ -12,16 +21,18 @@ export class msdyn_CreateNewAnalysisJobRequest
   extends OrganizationRequest
   implements Executable<msdyn_CreateNewAnalysisJobResponse>
 {
-  constructor(public componentInstances?: Record<string, unknown>[]) {
-    super("msdyn_CreateNewAnalysisJob");
+  declare readonly Parameters: Readonly<msdyn_CreateNewAnalysisJobRequestParameters>;
+
+  constructor(parameters: msdyn_CreateNewAnalysisJobRequestParameters = {}) {
+    super("msdyn_CreateNewAnalysisJob", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CreateNewAnalysisJob`;
 
-    const body: Record<string, unknown> = {
-      ComponentInstances: this.componentInstances,
-    };
+    const body = requestBody({
+      ComponentInstances: this.Parameters.ComponentInstances,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_CreateNewAnalysisJobRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateNewAnalysisJobResponse> {
-    const data = await response.json();
-    return msdyn_CreateNewAnalysisJobResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_CreateNewAnalysisJobResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

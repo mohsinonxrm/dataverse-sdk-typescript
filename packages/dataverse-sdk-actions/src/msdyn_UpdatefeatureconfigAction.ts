@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_Updatefeatureconfig action
@@ -8,23 +9,29 @@ export interface msdyn_UpdatefeatureconfigResponse {
 }
 
 /**
+ * Parameters of the msdyn_Updatefeatureconfig action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_UpdatefeatureconfigActionParameters {
+  featureType?: number;
+  configuration?: string;
+}
+
+/**
  * msdyn_Updatefeatureconfig action
  *
  * Unbound action
  */
 export class msdyn_UpdatefeatureconfigAction implements Executable<msdyn_UpdatefeatureconfigResponse> {
-  constructor(
-    public readonly featureType?: number,
-    public readonly configuration?: string
-  ) {}
+  constructor(public readonly parameters: msdyn_UpdatefeatureconfigActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_Updatefeatureconfig`;
 
-    const body: Record<string, unknown> = {
-      featureType: this.featureType,
-      configuration: this.configuration,
-    };
+    const body = requestBody({
+      featureType: this.parameters.featureType,
+      configuration: this.parameters.configuration,
+    });
 
     return {
       method: "POST",
@@ -37,7 +44,8 @@ export class msdyn_UpdatefeatureconfigAction implements Executable<msdyn_Updatef
   }
 
   async parseResponse(response: Response): Promise<msdyn_UpdatefeatureconfigResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_UpdatefeatureconfigResponse;
   }
 }

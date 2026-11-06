@@ -1,7 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { CCaaS_GetAvailabilityForSimulatedConversationResponse as CCaaS_GetAvailabilityForSimulatedConversationResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the CCaaS_GetAvailabilityForSimulatedConversation message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_GetAvailabilityForSimulatedConversationRequestParameters {
+  LiveWorkStreamId?: string;
+  CustomContextItems?: string;
+  ApiVersion: string;
+  ChannelEngagementContext?: string;
+}
 
 /**
  * CCaaS_GetAvailabilityForSimulatedConversation request message
@@ -12,24 +24,21 @@ export class CCaaS_GetAvailabilityForSimulatedConversationRequest
   extends OrganizationRequest
   implements Executable<CCaaS_GetAvailabilityForSimulatedConversationResponse>
 {
-  constructor(
-    public liveWorkStreamId: string | undefined,
-    public customContextItems: string | undefined,
-    public apiVersion: string,
-    public channelEngagementContext?: string
-  ) {
-    super("CCaaS_GetAvailabilityForSimulatedConversation");
+  declare readonly Parameters: Readonly<CCaaS_GetAvailabilityForSimulatedConversationRequestParameters>;
+
+  constructor(parameters: CCaaS_GetAvailabilityForSimulatedConversationRequestParameters) {
+    super("CCaaS_GetAvailabilityForSimulatedConversation", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CCaaS_GetAvailabilityForSimulatedConversation`;
 
-    const body: Record<string, unknown> = {
-      LiveWorkStreamId: this.liveWorkStreamId,
-      CustomContextItems: this.customContextItems,
-      ApiVersion: this.apiVersion,
-      ChannelEngagementContext: this.channelEngagementContext,
-    };
+    const body = requestBody({
+      LiveWorkStreamId: this.Parameters.LiveWorkStreamId,
+      CustomContextItems: this.Parameters.CustomContextItems,
+      ApiVersion: this.Parameters.ApiVersion,
+      ChannelEngagementContext: this.Parameters.ChannelEngagementContext,
+    });
 
     return {
       method: "POST",
@@ -44,8 +53,11 @@ export class CCaaS_GetAvailabilityForSimulatedConversationRequest
   async parseResponse(
     response: Response
   ): Promise<CCaaS_GetAvailabilityForSimulatedConversationResponse> {
-    const data = await response.json();
-    return CCaaS_GetAvailabilityForSimulatedConversationResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return CCaaS_GetAvailabilityForSimulatedConversationResponse.fromResponse(
+      text ? JSON.parse(text) : {}
+    );
   }
 }
 

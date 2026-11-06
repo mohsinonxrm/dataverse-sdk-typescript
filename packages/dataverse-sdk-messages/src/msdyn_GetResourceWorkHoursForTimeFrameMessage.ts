@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetResourceWorkHoursForTimeFrameResponse as msdyn_GetResourceWorkHoursForTimeFrameResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetResourceWorkHoursForTimeFrame message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetResourceWorkHoursForTimeFrameRequestParameters {
+  End: string;
+  Start: string;
+  ResourceIds: string;
+}
 
 /**
  * msdyn_GetResourceWorkHoursForTimeFrame request message
@@ -12,22 +23,20 @@ export class msdyn_GetResourceWorkHoursForTimeFrameRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetResourceWorkHoursForTimeFrameResponse>
 {
-  constructor(
-    public end: string,
-    public start: string,
-    public resourceIds: string
-  ) {
-    super("msdyn_GetResourceWorkHoursForTimeFrame");
+  declare readonly Parameters: Readonly<msdyn_GetResourceWorkHoursForTimeFrameRequestParameters>;
+
+  constructor(parameters: msdyn_GetResourceWorkHoursForTimeFrameRequestParameters) {
+    super("msdyn_GetResourceWorkHoursForTimeFrame", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetResourceWorkHoursForTimeFrame`;
 
-    const body: Record<string, unknown> = {
-      End: this.end,
-      Start: this.start,
-      ResourceIds: this.resourceIds,
-    };
+    const body = requestBody({
+      End: this.Parameters.End,
+      Start: this.Parameters.Start,
+      ResourceIds: this.Parameters.ResourceIds,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,11 @@ export class msdyn_GetResourceWorkHoursForTimeFrameRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetResourceWorkHoursForTimeFrameResponse> {
-    const data = await response.json();
-    return msdyn_GetResourceWorkHoursForTimeFrameResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_GetResourceWorkHoursForTimeFrameResponse.fromResponse(
+      text ? JSON.parse(text) : {}
+    );
   }
 }
 

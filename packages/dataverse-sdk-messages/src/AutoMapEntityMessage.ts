@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the AutoMapEntity message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AutoMapEntityRequestParameters {
+  EntityMapId: string;
+}
 
 /**
  * AutoMapEntity request message
@@ -10,16 +19,18 @@ export class AutoMapEntityRequest
   extends OrganizationRequest
   implements Executable<AutoMapEntityResponse>
 {
-  constructor(public entityMapId: string) {
-    super("AutoMapEntity");
+  declare readonly Parameters: Readonly<AutoMapEntityRequestParameters>;
+
+  constructor(parameters: AutoMapEntityRequestParameters) {
+    super("AutoMapEntity", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/AutoMapEntity`;
 
-    const body: Record<string, unknown> = {
-      EntityMapId: this.entityMapId,
-    };
+    const body = requestBody({
+      EntityMapId: this.Parameters.EntityMapId,
+    });
 
     return {
       method: "POST",

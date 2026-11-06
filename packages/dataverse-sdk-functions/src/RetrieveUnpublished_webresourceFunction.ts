@@ -16,6 +16,8 @@ export interface RetrieveUnpublished_webresourceResponse extends webresource {
  *
  * Bound function
  * Binding parameter: entity (mscrm.webresource)
+ *
+ * The first argument is the id of the webresource record to call it on.
  */
 export class RetrieveUnpublished_webresourceFunction implements Executable<RetrieveUnpublished_webresourceResponse> {
   constructor(public readonly webresourceId: string) {}
@@ -34,7 +36,8 @@ export class RetrieveUnpublished_webresourceFunction implements Executable<Retri
   }
 
   async parseResponse(response: Response): Promise<RetrieveUnpublished_webresourceResponse> {
-    const data = await response.json();
-    return data as RetrieveUnpublished_webresourceResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RetrieveUnpublished_webresourceResponse;
   }
 }

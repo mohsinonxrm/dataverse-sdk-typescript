@@ -31,8 +31,11 @@ export class msdynmkt_getObmDeprecationConfigurationRequest
   async parseResponse(
     response: Response
   ): Promise<msdynmkt_getObmDeprecationConfigurationResponse> {
-    const data = await response.json();
-    return msdynmkt_getObmDeprecationConfigurationResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdynmkt_getObmDeprecationConfigurationResponse.fromResponse(
+      text ? JSON.parse(text) : {}
+    );
   }
 }
 

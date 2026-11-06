@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_CheckMobileUserSecurityRoleResponse as msdyn_CheckMobileUserSecurityRoleResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_CheckMobileUserSecurityRole message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CheckMobileUserSecurityRoleRequestParameters {
+  SolutionId: string;
+}
 
 /**
  * msdyn_CheckMobileUserSecurityRole request message
@@ -12,16 +21,18 @@ export class msdyn_CheckMobileUserSecurityRoleRequest
   extends OrganizationRequest
   implements Executable<msdyn_CheckMobileUserSecurityRoleResponse>
 {
-  constructor(public solutionId: string) {
-    super("msdyn_CheckMobileUserSecurityRole");
+  declare readonly Parameters: Readonly<msdyn_CheckMobileUserSecurityRoleRequestParameters>;
+
+  constructor(parameters: msdyn_CheckMobileUserSecurityRoleRequestParameters) {
+    super("msdyn_CheckMobileUserSecurityRole", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckMobileUserSecurityRole`;
 
-    const body: Record<string, unknown> = {
-      SolutionId: this.solutionId,
-    };
+    const body = requestBody({
+      SolutionId: this.Parameters.SolutionId,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_CheckMobileUserSecurityRoleRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckMobileUserSecurityRoleResponse> {
-    const data = await response.json();
-    return msdyn_CheckMobileUserSecurityRoleResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_CheckMobileUserSecurityRoleResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

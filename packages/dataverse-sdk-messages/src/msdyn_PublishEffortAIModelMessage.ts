@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_PublishEffortAIModelResponse as msdyn_PublishEffortAIModelResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_PublishEffortAIModel message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_PublishEffortAIModelRequestParameters {
+  AiModelId: string;
+  TrainConfigId: string;
+}
 
 /**
  * msdyn_PublishEffortAIModel request message
@@ -12,20 +22,19 @@ export class msdyn_PublishEffortAIModelRequest
   extends OrganizationRequest
   implements Executable<msdyn_PublishEffortAIModelResponse>
 {
-  constructor(
-    public aiModelId: string,
-    public trainConfigId: string
-  ) {
-    super("msdyn_PublishEffortAIModel");
+  declare readonly Parameters: Readonly<msdyn_PublishEffortAIModelRequestParameters>;
+
+  constructor(parameters: msdyn_PublishEffortAIModelRequestParameters) {
+    super("msdyn_PublishEffortAIModel", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_PublishEffortAIModel`;
 
-    const body: Record<string, unknown> = {
-      AiModelId: this.aiModelId,
-      TrainConfigId: this.trainConfigId,
-    };
+    const body = requestBody({
+      AiModelId: this.Parameters.AiModelId,
+      TrainConfigId: this.Parameters.TrainConfigId,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class msdyn_PublishEffortAIModelRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_PublishEffortAIModelResponse> {
-    const data = await response.json();
-    return msdyn_PublishEffortAIModelResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_PublishEffortAIModelResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

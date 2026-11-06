@@ -1,5 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_PostOrganizationProvisioningStatus message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_PostOrganizationProvisioningStatusRequestParameters {
+  autoCaptureSettings: string;
+  autoCaptureRules: string;
+  orgProvisioningDetails: string;
+}
 
 /**
  * msdyn_PostOrganizationProvisioningStatus request message
@@ -10,22 +21,20 @@ export class msdyn_PostOrganizationProvisioningStatusRequest
   extends OrganizationRequest
   implements Executable<msdyn_PostOrganizationProvisioningStatusResponse>
 {
-  constructor(
-    public autoCaptureSettings: string,
-    public autoCaptureRules: string,
-    public orgProvisioningDetails: string
-  ) {
-    super("msdyn_PostOrganizationProvisioningStatus");
+  declare readonly Parameters: Readonly<msdyn_PostOrganizationProvisioningStatusRequestParameters>;
+
+  constructor(parameters: msdyn_PostOrganizationProvisioningStatusRequestParameters) {
+    super("msdyn_PostOrganizationProvisioningStatus", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_PostOrganizationProvisioningStatus`;
 
-    const body: Record<string, unknown> = {
-      autoCaptureSettings: this.autoCaptureSettings,
-      autoCaptureRules: this.autoCaptureRules,
-      orgProvisioningDetails: this.orgProvisioningDetails,
-    };
+    const body = requestBody({
+      autoCaptureSettings: this.Parameters.autoCaptureSettings,
+      autoCaptureRules: this.Parameters.autoCaptureRules,
+      orgProvisioningDetails: this.Parameters.orgProvisioningDetails,
+    });
 
     return {
       method: "POST",

@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_conversationclosecasesentiment message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_conversationclosecasesentimentRequestParameters {
+  LiveWorkItemGuid: string;
+}
 
 /**
  * msdyn_conversationclosecasesentiment request message
@@ -10,16 +19,18 @@ export class msdyn_conversationclosecasesentimentRequest
   extends OrganizationRequest
   implements Executable<msdyn_conversationclosecasesentimentResponse>
 {
-  constructor(public liveWorkItemGuid: string) {
-    super("msdyn_conversationclosecasesentiment");
+  declare readonly Parameters: Readonly<msdyn_conversationclosecasesentimentRequestParameters>;
+
+  constructor(parameters: msdyn_conversationclosecasesentimentRequestParameters) {
+    super("msdyn_conversationclosecasesentiment", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_conversationclosecasesentiment`;
 
-    const body: Record<string, unknown> = {
-      LiveWorkItemGuid: this.liveWorkItemGuid,
-    };
+    const body = requestBody({
+      LiveWorkItemGuid: this.Parameters.LiveWorkItemGuid,
+    });
 
     return {
       method: "POST",

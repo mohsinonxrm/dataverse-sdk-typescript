@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the msdyn_ExecutePrimaryCreatePostActions message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ExecutePrimaryCreatePostActionsRequestParameters {
+  SourceEntityReference: EntityReference | AnyEntityPayload;
+  PrimaryEntityReference: EntityReference | AnyEntityPayload;
+  RuleId: string;
+}
 
 /**
  * msdyn_ExecutePrimaryCreatePostActions request message
@@ -12,22 +23,20 @@ export class msdyn_ExecutePrimaryCreatePostActionsRequest
   extends OrganizationRequest
   implements Executable<msdyn_ExecutePrimaryCreatePostActionsResponse>
 {
-  constructor(
-    public sourceEntityReference: EntityReference | AnyEntityPayload,
-    public primaryEntityReference: EntityReference | AnyEntityPayload,
-    public ruleId: string
-  ) {
-    super("msdyn_ExecutePrimaryCreatePostActions");
+  declare readonly Parameters: Readonly<msdyn_ExecutePrimaryCreatePostActionsRequestParameters>;
+
+  constructor(parameters: msdyn_ExecutePrimaryCreatePostActionsRequestParameters) {
+    super("msdyn_ExecutePrimaryCreatePostActions", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ExecutePrimaryCreatePostActions`;
 
-    const body: Record<string, unknown> = {
-      SourceEntityReference: this.sourceEntityReference,
-      PrimaryEntityReference: this.primaryEntityReference,
-      RuleId: this.ruleId,
-    };
+    const body = requestBody({
+      SourceEntityReference: this.Parameters.SourceEntityReference,
+      PrimaryEntityReference: this.Parameters.PrimaryEntityReference,
+      RuleId: this.Parameters.RuleId,
+    });
 
     return {
       method: "POST",

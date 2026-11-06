@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { sitemap } from "./types/index.js";
 
@@ -15,23 +16,29 @@ export interface msdyn_SiteMapDiagnosisResponse {
 }
 
 /**
+ * Parameters of the msdyn_SiteMapDiagnosis action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SiteMapDiagnosisActionParameters {
+  IssueType: string;
+  ComponentInstance: EntityReference | EntityPayload<sitemap>;
+}
+
+/**
  * msdyn_SiteMapDiagnosis action
  *
  * Unbound action
  */
 export class msdyn_SiteMapDiagnosisAction implements Executable<msdyn_SiteMapDiagnosisResponse> {
-  constructor(
-    public readonly issueType: string,
-    public readonly componentInstance: EntityReference | EntityPayload<sitemap>
-  ) {}
+  constructor(public readonly parameters: msdyn_SiteMapDiagnosisActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SiteMapDiagnosis`;
 
-    const body: Record<string, unknown> = {
-      IssueType: this.issueType,
-      ComponentInstance: this.componentInstance,
-    };
+    const body = requestBody({
+      IssueType: this.parameters.IssueType,
+      ComponentInstance: this.parameters.ComponentInstance,
+    });
 
     return {
       method: "POST",
@@ -44,7 +51,8 @@ export class msdyn_SiteMapDiagnosisAction implements Executable<msdyn_SiteMapDia
   }
 
   async parseResponse(response: Response): Promise<msdyn_SiteMapDiagnosisResponse> {
-    const data = await response.json();
-    return data as msdyn_SiteMapDiagnosisResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_SiteMapDiagnosisResponse;
   }
 }

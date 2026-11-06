@@ -10,16 +10,22 @@ export interface msdyn_TradeCoverageNotificationResponse {
 }
 
 /**
+ * Parameters of the msdyn_TradeCoverageNotification function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_TradeCoverageNotificationFunctionParameters {
+  msdyn_WorkOrderServiceAccount: string;
+  msdyn_WorkOrderTrade: string;
+  msdyn_WorkOrderFunctionalLocation: string;
+}
+
+/**
  * msdyn_TradeCoverageNotification function
  *
  * Unbound function
  */
 export class msdyn_TradeCoverageNotificationFunction implements Executable<msdyn_TradeCoverageNotificationResponse> {
-  constructor(
-    public readonly msdyn_WorkOrderServiceAccount: string,
-    public readonly msdyn_WorkOrderTrade: string,
-    public readonly msdyn_WorkOrderFunctionalLocation: string
-  ) {}
+  constructor(public readonly parameters: msdyn_TradeCoverageNotificationFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/msdyn_TradeCoverageNotification`;
@@ -27,19 +33,25 @@ export class msdyn_TradeCoverageNotificationFunction implements Executable<msdyn
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.msdyn_WorkOrderServiceAccount !== undefined) {
+    if (this.parameters.msdyn_WorkOrderServiceAccount !== undefined) {
       aliases.push(`msdyn_WorkOrderServiceAccount=@p1`);
-      params.append("@p1", formatParameterAlias(this.msdyn_WorkOrderServiceAccount, "Edm.String"));
+      params.append(
+        "@p1",
+        formatParameterAlias(this.parameters.msdyn_WorkOrderServiceAccount, "Edm.String")
+      );
     }
-    if (this.msdyn_WorkOrderTrade !== undefined) {
+    if (this.parameters.msdyn_WorkOrderTrade !== undefined) {
       aliases.push(`msdyn_WorkOrderTrade=@p2`);
-      params.append("@p2", formatParameterAlias(this.msdyn_WorkOrderTrade, "Edm.String"));
+      params.append(
+        "@p2",
+        formatParameterAlias(this.parameters.msdyn_WorkOrderTrade, "Edm.String")
+      );
     }
-    if (this.msdyn_WorkOrderFunctionalLocation !== undefined) {
+    if (this.parameters.msdyn_WorkOrderFunctionalLocation !== undefined) {
       aliases.push(`msdyn_WorkOrderFunctionalLocation=@p3`);
       params.append(
         "@p3",
-        formatParameterAlias(this.msdyn_WorkOrderFunctionalLocation, "Edm.String")
+        formatParameterAlias(this.parameters.msdyn_WorkOrderFunctionalLocation, "Edm.String")
       );
     }
     if (aliases.length > 0) {
@@ -56,7 +68,8 @@ export class msdyn_TradeCoverageNotificationFunction implements Executable<msdyn
   }
 
   async parseResponse(response: Response): Promise<msdyn_TradeCoverageNotificationResponse> {
-    const data = await response.json();
-    return data as msdyn_TradeCoverageNotificationResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_TradeCoverageNotificationResponse;
   }
 }

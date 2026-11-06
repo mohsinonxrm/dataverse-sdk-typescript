@@ -1,8 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { ColumnSet } from "./types/index.js";
+
+/**
+ * Parameters of the GenerateInvoiceFromOpportunity message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GenerateInvoiceFromOpportunityRequestParameters {
+  OpportunityId: string;
+  ColumnSet?: ColumnSet;
+}
 
 /**
  * GenerateInvoiceFromOpportunity request message
@@ -13,20 +23,19 @@ export class GenerateInvoiceFromOpportunityRequest
   extends OrganizationRequest
   implements Executable<GenerateInvoiceFromOpportunityResponse>
 {
-  constructor(
-    public opportunityId: string,
-    public columnSet?: ColumnSet
-  ) {
-    super("GenerateInvoiceFromOpportunity");
+  declare readonly Parameters: Readonly<GenerateInvoiceFromOpportunityRequestParameters>;
+
+  constructor(parameters: GenerateInvoiceFromOpportunityRequestParameters) {
+    super("GenerateInvoiceFromOpportunity", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/GenerateInvoiceFromOpportunity`;
 
-    const body: Record<string, unknown> = {
-      OpportunityId: this.opportunityId,
-      ColumnSet: enumBody(this.columnSet, "ColumnSet"),
-    };
+    const body = requestBody({
+      OpportunityId: this.Parameters.OpportunityId,
+      ColumnSet: enumBody(this.Parameters.ColumnSet, "ColumnSet"),
+    });
 
     return {
       method: "POST",
@@ -39,8 +48,9 @@ export class GenerateInvoiceFromOpportunityRequest
   }
 
   async parseResponse(response: Response): Promise<GenerateInvoiceFromOpportunityResponse> {
-    const data = await response.json();
-    return GenerateInvoiceFromOpportunityResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return GenerateInvoiceFromOpportunityResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

@@ -1,6 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_SuggestPrimaryForMergeAction message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SuggestPrimaryForMergeActionRequestParameters {
+  RecordList?: Record<string, unknown>[];
+}
 
 /**
  * msdyn_SuggestPrimaryForMergeAction request message
@@ -11,16 +20,18 @@ export class msdyn_SuggestPrimaryForMergeActionRequest
   extends OrganizationRequest
   implements Executable<msdyn_SuggestPrimaryForMergeActionResponse>
 {
-  constructor(public recordList?: Record<string, unknown>[]) {
-    super("msdyn_SuggestPrimaryForMergeAction");
+  declare readonly Parameters: Readonly<msdyn_SuggestPrimaryForMergeActionRequestParameters>;
+
+  constructor(parameters: msdyn_SuggestPrimaryForMergeActionRequestParameters = {}) {
+    super("msdyn_SuggestPrimaryForMergeAction", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SuggestPrimaryForMergeAction`;
 
-    const body: Record<string, unknown> = {
-      RecordList: this.recordList,
-    };
+    const body = requestBody({
+      RecordList: this.Parameters.RecordList,
+    });
 
     return {
       method: "POST",
@@ -33,8 +44,9 @@ export class msdyn_SuggestPrimaryForMergeActionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SuggestPrimaryForMergeActionResponse> {
-    const data = await response.json();
-    return msdyn_SuggestPrimaryForMergeActionResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_SuggestPrimaryForMergeActionResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

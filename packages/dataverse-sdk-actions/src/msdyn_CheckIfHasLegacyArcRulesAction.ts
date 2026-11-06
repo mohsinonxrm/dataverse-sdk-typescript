@@ -28,7 +28,8 @@ export class msdyn_CheckIfHasLegacyArcRulesAction implements Executable<msdyn_Ch
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckIfHasLegacyArcRulesResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckIfHasLegacyArcRulesResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_CheckIfHasLegacyArcRulesResponse;
   }
 }

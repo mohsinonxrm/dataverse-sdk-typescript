@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_ConvertSequenceJsonToCJOJsonResponse as msdyn_ConvertSequenceJsonToCJOJsonResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_ConvertSequenceJsonToCJOJson message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ConvertSequenceJsonToCJOJsonRequestParameters {
+  SequenceId: string;
+}
 
 /**
  * msdyn_ConvertSequenceJsonToCJOJson request message
@@ -12,16 +21,18 @@ export class msdyn_ConvertSequenceJsonToCJOJsonRequest
   extends OrganizationRequest
   implements Executable<msdyn_ConvertSequenceJsonToCJOJsonResponse>
 {
-  constructor(public sequenceId: string) {
-    super("msdyn_ConvertSequenceJsonToCJOJson");
+  declare readonly Parameters: Readonly<msdyn_ConvertSequenceJsonToCJOJsonRequestParameters>;
+
+  constructor(parameters: msdyn_ConvertSequenceJsonToCJOJsonRequestParameters) {
+    super("msdyn_ConvertSequenceJsonToCJOJson", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ConvertSequenceJsonToCJOJson`;
 
-    const body: Record<string, unknown> = {
-      SequenceId: this.sequenceId,
-    };
+    const body = requestBody({
+      SequenceId: this.Parameters.SequenceId,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_ConvertSequenceJsonToCJOJsonRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ConvertSequenceJsonToCJOJsonResponse> {
-    const data = await response.json();
-    return msdyn_ConvertSequenceJsonToCJOJsonResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_ConvertSequenceJsonToCJOJsonResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

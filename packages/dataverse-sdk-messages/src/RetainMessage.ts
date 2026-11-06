@@ -2,8 +2,18 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { RetainResponse as RetainResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the Retain message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetainRequestParameters {
+  Target: EntityReference | AnyEntityPayload;
+  OperationId?: string;
+}
 
 /**
  * Retain request message
@@ -11,20 +21,19 @@ import type { RetainResponse as RetainResponseData } from "./types/index.js";
  * Web API Action: Retain
  */
 export class RetainRequest extends OrganizationRequest implements Executable<RetainResponse> {
-  constructor(
-    public target: EntityReference | AnyEntityPayload,
-    public operationId?: string
-  ) {
-    super("Retain");
+  declare readonly Parameters: Readonly<RetainRequestParameters>;
+
+  constructor(parameters: RetainRequestParameters) {
+    super("Retain", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/Retain`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-      OperationId: this.operationId,
-    };
+    const body = requestBody({
+      Target: this.Parameters.Target,
+      OperationId: this.Parameters.OperationId,
+    });
 
     return {
       method: "POST",
@@ -37,8 +46,9 @@ export class RetainRequest extends OrganizationRequest implements Executable<Ret
   }
 
   async parseResponse(response: Response): Promise<RetainResponse> {
-    const data = await response.json();
-    return RetainResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return RetainResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

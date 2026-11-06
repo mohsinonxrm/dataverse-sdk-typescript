@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AlmHandlerResponse as AlmHandlerResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the AlmHandler message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AlmHandlerRequestParameters {
+  action: string;
+  input?: string;
+}
 
 /**
  * AlmHandler request message
@@ -12,20 +22,19 @@ export class AlmHandlerRequest
   extends OrganizationRequest
   implements Executable<AlmHandlerResponse>
 {
-  constructor(
-    public action: string,
-    public input?: string
-  ) {
-    super("AlmHandler");
+  declare readonly Parameters: Readonly<AlmHandlerRequestParameters>;
+
+  constructor(parameters: AlmHandlerRequestParameters) {
+    super("AlmHandler", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/AlmHandler`;
 
-    const body: Record<string, unknown> = {
-      action: this.action,
-      input: this.input,
-    };
+    const body = requestBody({
+      action: this.Parameters.action,
+      input: this.Parameters.input,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class AlmHandlerRequest
   }
 
   async parseResponse(response: Response): Promise<AlmHandlerResponse> {
-    const data = await response.json();
-    return AlmHandlerResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return AlmHandlerResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

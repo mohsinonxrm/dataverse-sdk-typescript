@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_dataprovideroperationsResponse as msdyn_dataprovideroperationsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_dataprovideroperations message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_dataprovideroperationsRequestParameters {
+  msdyn_recordid?: string;
+  msdyn_payload?: string;
+  msdyn_httpmethod: string;
+}
 
 /**
  * msdyn_dataprovideroperations request message
@@ -12,22 +23,20 @@ export class msdyn_dataprovideroperationsRequest
   extends OrganizationRequest
   implements Executable<msdyn_dataprovideroperationsResponse>
 {
-  constructor(
-    public msdyn_recordid: string | undefined,
-    public msdyn_payload: string | undefined,
-    public msdyn_httpmethod: string
-  ) {
-    super("msdyn_dataprovideroperations");
+  declare readonly Parameters: Readonly<msdyn_dataprovideroperationsRequestParameters>;
+
+  constructor(parameters: msdyn_dataprovideroperationsRequestParameters) {
+    super("msdyn_dataprovideroperations", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_dataprovideroperations`;
 
-    const body: Record<string, unknown> = {
-      msdyn_recordid: this.msdyn_recordid,
-      msdyn_payload: this.msdyn_payload,
-      msdyn_httpmethod: this.msdyn_httpmethod,
-    };
+    const body = requestBody({
+      msdyn_recordid: this.Parameters.msdyn_recordid,
+      msdyn_payload: this.Parameters.msdyn_payload,
+      msdyn_httpmethod: this.Parameters.msdyn_httpmethod,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class msdyn_dataprovideroperationsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_dataprovideroperationsResponse> {
-    const data = await response.json();
-    return msdyn_dataprovideroperationsResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_dataprovideroperationsResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

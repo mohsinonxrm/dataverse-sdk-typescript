@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_CancelDataProcessingModuleExecutionResponse as msdyn_CancelDataProcessingModuleExecutionResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_CancelDataProcessingModuleExecution message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CancelDataProcessingModuleExecutionRequestParameters {
+  DataProcessingRequest: string;
+}
 
 /**
  * msdyn_CancelDataProcessingModuleExecution request message
@@ -12,16 +21,18 @@ export class msdyn_CancelDataProcessingModuleExecutionRequest
   extends OrganizationRequest
   implements Executable<msdyn_CancelDataProcessingModuleExecutionResponse>
 {
-  constructor(public dataProcessingRequest: string) {
-    super("msdyn_CancelDataProcessingModuleExecution");
+  declare readonly Parameters: Readonly<msdyn_CancelDataProcessingModuleExecutionRequestParameters>;
+
+  constructor(parameters: msdyn_CancelDataProcessingModuleExecutionRequestParameters) {
+    super("msdyn_CancelDataProcessingModuleExecution", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CancelDataProcessingModuleExecution`;
 
-    const body: Record<string, unknown> = {
-      DataProcessingRequest: this.dataProcessingRequest,
-    };
+    const body = requestBody({
+      DataProcessingRequest: this.Parameters.DataProcessingRequest,
+    });
 
     return {
       method: "POST",
@@ -36,8 +47,11 @@ export class msdyn_CancelDataProcessingModuleExecutionRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CancelDataProcessingModuleExecutionResponse> {
-    const data = await response.json();
-    return msdyn_CancelDataProcessingModuleExecutionResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_CancelDataProcessingModuleExecutionResponse.fromResponse(
+      text ? JSON.parse(text) : {}
+    );
   }
 }
 

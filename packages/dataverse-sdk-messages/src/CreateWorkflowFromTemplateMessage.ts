@@ -1,31 +1,44 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { workflow } from "./types/index.js";
+
+/**
+ * Parameters of the CreateWorkflowFromTemplate message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CreateWorkflowFromTemplateRequestParameters {
+  WorkflowName: string;
+}
 
 /**
  * CreateWorkflowFromTemplate request message
  *
  * Web API Action: CreateWorkflowFromTemplate
+ *
+ * The first argument is the id of the workflow record to call it on.
  */
 export class CreateWorkflowFromTemplateRequest
   extends OrganizationRequest
   implements Executable<CreateWorkflowFromTemplateResponse>
 {
+  declare readonly Parameters: Readonly<CreateWorkflowFromTemplateRequestParameters>;
+
   constructor(
     public workflowId: string,
-    public workflowName: string
+    parameters: CreateWorkflowFromTemplateRequestParameters
   ) {
-    super("CreateWorkflowFromTemplate");
+    super("CreateWorkflowFromTemplate", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/workflows(${this.workflowId})/Microsoft.Dynamics.CRM.CreateWorkflowFromTemplate`;
 
-    const body: Record<string, unknown> = {
-      WorkflowName: this.workflowName,
-    };
+    const body = requestBody({
+      WorkflowName: this.Parameters.WorkflowName,
+    });
 
     return {
       method: "POST",
@@ -38,8 +51,9 @@ export class CreateWorkflowFromTemplateRequest
   }
 
   async parseResponse(response: Response): Promise<CreateWorkflowFromTemplateResponse> {
-    const data = await response.json();
-    return CreateWorkflowFromTemplateResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return CreateWorkflowFromTemplateResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

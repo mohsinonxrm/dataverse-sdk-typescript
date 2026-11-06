@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -11,27 +12,33 @@ export interface BeginMachineImageProvisioningResponse {
 }
 
 /**
+ * Parameters of the BeginMachineImageProvisioning action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface BeginMachineImageProvisioningActionParameters {
+  vmImageDescription?: string;
+  vmImageName: string;
+  sharedImageGalleryDestination: EntityReference | AnyEntityPayload;
+  machineImageSource: EntityReference | AnyEntityPayload;
+}
+
+/**
  * BeginMachineImageProvisioning action
  *
  * Unbound action
  */
 export class BeginMachineImageProvisioningAction implements Executable<BeginMachineImageProvisioningResponse> {
-  constructor(
-    public readonly vmImageDescription: string | undefined,
-    public readonly vmImageName: string,
-    public readonly sharedImageGalleryDestination: EntityReference | AnyEntityPayload,
-    public readonly machineImageSource: EntityReference | AnyEntityPayload
-  ) {}
+  constructor(public readonly parameters: BeginMachineImageProvisioningActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/BeginMachineImageProvisioning`;
 
-    const body: Record<string, unknown> = {
-      vmImageDescription: this.vmImageDescription,
-      vmImageName: this.vmImageName,
-      sharedImageGalleryDestination: this.sharedImageGalleryDestination,
-      machineImageSource: this.machineImageSource,
-    };
+    const body = requestBody({
+      vmImageDescription: this.parameters.vmImageDescription,
+      vmImageName: this.parameters.vmImageName,
+      sharedImageGalleryDestination: this.parameters.sharedImageGalleryDestination,
+      machineImageSource: this.parameters.machineImageSource,
+    });
 
     return {
       method: "POST",
@@ -44,7 +51,8 @@ export class BeginMachineImageProvisioningAction implements Executable<BeginMach
   }
 
   async parseResponse(response: Response): Promise<BeginMachineImageProvisioningResponse> {
-    const data = await response.json();
-    return data as BeginMachineImageProvisioningResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as BeginMachineImageProvisioningResponse;
   }
 }

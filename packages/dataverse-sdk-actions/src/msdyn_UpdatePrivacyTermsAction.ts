@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_UpdatePrivacyTerms action
@@ -8,23 +9,29 @@ export interface msdyn_UpdatePrivacyTermsResponse {
 }
 
 /**
+ * Parameters of the msdyn_UpdatePrivacyTerms action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_UpdatePrivacyTermsActionParameters {
+  StreamSource: number;
+  IsAccepted: boolean;
+}
+
+/**
  * msdyn_UpdatePrivacyTerms action
  *
  * Unbound action
  */
 export class msdyn_UpdatePrivacyTermsAction implements Executable<msdyn_UpdatePrivacyTermsResponse> {
-  constructor(
-    public readonly streamSource: number,
-    public readonly isAccepted: boolean
-  ) {}
+  constructor(public readonly parameters: msdyn_UpdatePrivacyTermsActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_UpdatePrivacyTerms`;
 
-    const body: Record<string, unknown> = {
-      StreamSource: this.streamSource,
-      IsAccepted: this.isAccepted,
-    };
+    const body = requestBody({
+      StreamSource: this.parameters.StreamSource,
+      IsAccepted: this.parameters.IsAccepted,
+    });
 
     return {
       method: "POST",
@@ -37,7 +44,8 @@ export class msdyn_UpdatePrivacyTermsAction implements Executable<msdyn_UpdatePr
   }
 
   async parseResponse(response: Response): Promise<msdyn_UpdatePrivacyTermsResponse> {
-    const data = await response.json();
-    return data as msdyn_UpdatePrivacyTermsResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_UpdatePrivacyTermsResponse;
   }
 }

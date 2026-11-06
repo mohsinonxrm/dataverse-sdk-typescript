@@ -10,16 +10,26 @@ export interface RetrieveUserPrivilegeByPrivilegeNameResponse {
 }
 
 /**
+ * Parameters of the RetrieveUserPrivilegeByPrivilegeName function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveUserPrivilegeByPrivilegeNameFunctionParameters {
+  PrivilegeName: string;
+  ExcludeTeamBasic?: boolean;
+}
+
+/**
  * RetrieveUserPrivilegeByPrivilegeName function
  *
  * Bound function
  * Binding parameter: entity (mscrm.systemuser)
+ *
+ * The first argument is the id of the systemuser record to call it on.
  */
 export class RetrieveUserPrivilegeByPrivilegeNameFunction implements Executable<RetrieveUserPrivilegeByPrivilegeNameResponse> {
   constructor(
     public readonly systemuserId: string,
-    public readonly privilegeName: string,
-    public readonly excludeTeamBasic?: boolean
+    public readonly parameters: RetrieveUserPrivilegeByPrivilegeNameFunctionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -29,13 +39,13 @@ export class RetrieveUserPrivilegeByPrivilegeNameFunction implements Executable<
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.privilegeName !== undefined) {
+    if (this.parameters.PrivilegeName !== undefined) {
       aliases.push(`PrivilegeName=@p1`);
-      params.append("@p1", formatParameterAlias(this.privilegeName, "Edm.String"));
+      params.append("@p1", formatParameterAlias(this.parameters.PrivilegeName, "Edm.String"));
     }
-    if (this.excludeTeamBasic !== undefined) {
+    if (this.parameters.ExcludeTeamBasic !== undefined) {
       aliases.push(`ExcludeTeamBasic=@p2`);
-      params.append("@p2", formatParameterAlias(this.excludeTeamBasic, "Edm.Boolean"));
+      params.append("@p2", formatParameterAlias(this.parameters.ExcludeTeamBasic, "Edm.Boolean"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -51,7 +61,8 @@ export class RetrieveUserPrivilegeByPrivilegeNameFunction implements Executable<
   }
 
   async parseResponse(response: Response): Promise<RetrieveUserPrivilegeByPrivilegeNameResponse> {
-    const data = await response.json();
-    return data as RetrieveUserPrivilegeByPrivilegeNameResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RetrieveUserPrivilegeByPrivilegeNameResponse;
   }
 }

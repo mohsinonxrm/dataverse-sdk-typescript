@@ -9,12 +9,20 @@ export interface RetrieveFormattedImportJobResultsResponse {
 }
 
 /**
+ * Parameters of the RetrieveFormattedImportJobResults function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveFormattedImportJobResultsFunctionParameters {
+  ImportJobId: string;
+}
+
+/**
  * RetrieveFormattedImportJobResults function
  *
  * Unbound function
  */
 export class RetrieveFormattedImportJobResultsFunction implements Executable<RetrieveFormattedImportJobResultsResponse> {
-  constructor(public readonly importJobId: string) {}
+  constructor(public readonly parameters: RetrieveFormattedImportJobResultsFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveFormattedImportJobResults`;
@@ -22,9 +30,9 @@ export class RetrieveFormattedImportJobResultsFunction implements Executable<Ret
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.importJobId !== undefined) {
+    if (this.parameters.ImportJobId !== undefined) {
       aliases.push(`ImportJobId=@p1`);
-      params.append("@p1", formatParameterAlias(this.importJobId, "Edm.Guid"));
+      params.append("@p1", formatParameterAlias(this.parameters.ImportJobId, "Edm.Guid"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -40,7 +48,8 @@ export class RetrieveFormattedImportJobResultsFunction implements Executable<Ret
   }
 
   async parseResponse(response: Response): Promise<RetrieveFormattedImportJobResultsResponse> {
-    const data = await response.json();
-    return data as RetrieveFormattedImportJobResultsResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RetrieveFormattedImportJobResultsResponse;
   }
 }

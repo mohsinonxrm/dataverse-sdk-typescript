@@ -1,31 +1,44 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the CCaaS_InitiateQueueAssignment message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_InitiateQueueAssignmentRequestParameters {
+  ApiVersion: string;
+  QueueId: string;
+}
 
 /**
  * CCaaS_InitiateQueueAssignment request message
  *
  * Web API Action: CCaaS_InitiateQueueAssignment
+ *
+ * The first argument is the id of the msdyn_ocliveworkitem record to call it on.
  */
 export class CCaaS_InitiateQueueAssignmentRequest
   extends OrganizationRequest
   implements Executable<CCaaS_InitiateQueueAssignmentResponse>
 {
+  declare readonly Parameters: Readonly<CCaaS_InitiateQueueAssignmentRequestParameters>;
+
   constructor(
     public msdyn_ocliveworkitemId: string,
-    public apiVersion: string,
-    public queueId: string
+    parameters: CCaaS_InitiateQueueAssignmentRequestParameters
   ) {
-    super("CCaaS_InitiateQueueAssignment");
+    super("CCaaS_InitiateQueueAssignment", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_InitiateQueueAssignment`;
 
-    const body: Record<string, unknown> = {
-      ApiVersion: this.apiVersion,
-      QueueId: this.queueId,
-    };
+    const body = requestBody({
+      ApiVersion: this.Parameters.ApiVersion,
+      QueueId: this.Parameters.QueueId,
+    });
 
     return {
       method: "POST",

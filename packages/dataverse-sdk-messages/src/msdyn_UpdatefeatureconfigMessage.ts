@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_Updatefeatureconfig message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_UpdatefeatureconfigRequestParameters {
+  featureType?: number;
+  configuration?: string;
+}
 
 /**
  * msdyn_Updatefeatureconfig request message
@@ -10,20 +20,19 @@ export class msdyn_UpdatefeatureconfigRequest
   extends OrganizationRequest
   implements Executable<msdyn_UpdatefeatureconfigResponse>
 {
-  constructor(
-    public featureType?: number,
-    public configuration?: string
-  ) {
-    super("msdyn_Updatefeatureconfig");
+  declare readonly Parameters: Readonly<msdyn_UpdatefeatureconfigRequestParameters>;
+
+  constructor(parameters: msdyn_UpdatefeatureconfigRequestParameters = {}) {
+    super("msdyn_Updatefeatureconfig", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_Updatefeatureconfig`;
 
-    const body: Record<string, unknown> = {
-      featureType: this.featureType,
-      configuration: this.configuration,
-    };
+    const body = requestBody({
+      featureType: this.Parameters.featureType,
+      configuration: this.Parameters.configuration,
+    });
 
     return {
       method: "POST",

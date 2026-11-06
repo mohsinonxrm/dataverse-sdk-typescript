@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_TelephonyPhoneNumberReservationActionResponse as msdyn_TelephonyPhoneNumberReservationActionResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_TelephonyPhoneNumberReservationAction message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_TelephonyPhoneNumberReservationActionRequestParameters {
+  ActionRequest: string;
+}
 
 /**
  * msdyn_TelephonyPhoneNumberReservationAction request message
@@ -12,16 +21,18 @@ export class msdyn_TelephonyPhoneNumberReservationActionRequest
   extends OrganizationRequest
   implements Executable<msdyn_TelephonyPhoneNumberReservationActionResponse>
 {
-  constructor(public actionRequest: string) {
-    super("msdyn_TelephonyPhoneNumberReservationAction");
+  declare readonly Parameters: Readonly<msdyn_TelephonyPhoneNumberReservationActionRequestParameters>;
+
+  constructor(parameters: msdyn_TelephonyPhoneNumberReservationActionRequestParameters) {
+    super("msdyn_TelephonyPhoneNumberReservationAction", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_TelephonyPhoneNumberReservationAction`;
 
-    const body: Record<string, unknown> = {
-      ActionRequest: this.actionRequest,
-    };
+    const body = requestBody({
+      ActionRequest: this.Parameters.ActionRequest,
+    });
 
     return {
       method: "POST",
@@ -36,8 +47,11 @@ export class msdyn_TelephonyPhoneNumberReservationActionRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_TelephonyPhoneNumberReservationActionResponse> {
-    const data = await response.json();
-    return msdyn_TelephonyPhoneNumberReservationActionResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_TelephonyPhoneNumberReservationActionResponse.fromResponse(
+      text ? JSON.parse(text) : {}
+    );
   }
 }
 

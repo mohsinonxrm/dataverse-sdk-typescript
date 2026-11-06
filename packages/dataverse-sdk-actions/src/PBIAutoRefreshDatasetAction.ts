@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from PBIAutoRefreshDataset action
@@ -8,23 +9,29 @@ export interface PBIAutoRefreshDatasetResponse {
 }
 
 /**
+ * Parameters of the PBIAutoRefreshDataset action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface PBIAutoRefreshDatasetActionParameters {
+  ReportId: string;
+  AutoRefreshParameters: string;
+}
+
+/**
  * PBIAutoRefreshDataset action
  *
  * Unbound action
  */
 export class PBIAutoRefreshDatasetAction implements Executable<PBIAutoRefreshDatasetResponse> {
-  constructor(
-    public readonly reportId: string,
-    public readonly autoRefreshParameters: string
-  ) {}
+  constructor(public readonly parameters: PBIAutoRefreshDatasetActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/PBIAutoRefreshDataset`;
 
-    const body: Record<string, unknown> = {
-      ReportId: this.reportId,
-      AutoRefreshParameters: this.autoRefreshParameters,
-    };
+    const body = requestBody({
+      ReportId: this.parameters.ReportId,
+      AutoRefreshParameters: this.parameters.AutoRefreshParameters,
+    });
 
     return {
       method: "POST",
@@ -37,7 +44,8 @@ export class PBIAutoRefreshDatasetAction implements Executable<PBIAutoRefreshDat
   }
 
   async parseResponse(response: Response): Promise<PBIAutoRefreshDatasetResponse> {
-    const data = await response.json();
-    return data as PBIAutoRefreshDatasetResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as PBIAutoRefreshDatasetResponse;
   }
 }

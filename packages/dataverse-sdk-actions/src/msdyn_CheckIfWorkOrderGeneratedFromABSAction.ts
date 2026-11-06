@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_CheckIfWorkOrderGeneratedFromABS action
@@ -11,19 +12,27 @@ export interface msdyn_CheckIfWorkOrderGeneratedFromABSResponse {
 }
 
 /**
+ * Parameters of the msdyn_CheckIfWorkOrderGeneratedFromABS action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CheckIfWorkOrderGeneratedFromABSActionParameters {
+  TimeInterval: string;
+}
+
+/**
  * msdyn_CheckIfWorkOrderGeneratedFromABS action
  *
  * Unbound action
  */
 export class msdyn_CheckIfWorkOrderGeneratedFromABSAction implements Executable<msdyn_CheckIfWorkOrderGeneratedFromABSResponse> {
-  constructor(public readonly timeInterval: string) {}
+  constructor(public readonly parameters: msdyn_CheckIfWorkOrderGeneratedFromABSActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckIfWorkOrderGeneratedFromABS`;
 
-    const body: Record<string, unknown> = {
-      TimeInterval: this.timeInterval,
-    };
+    const body = requestBody({
+      TimeInterval: this.parameters.TimeInterval,
+    });
 
     return {
       method: "POST",
@@ -36,7 +45,8 @@ export class msdyn_CheckIfWorkOrderGeneratedFromABSAction implements Executable<
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckIfWorkOrderGeneratedFromABSResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckIfWorkOrderGeneratedFromABSResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_CheckIfWorkOrderGeneratedFromABSResponse;
   }
 }

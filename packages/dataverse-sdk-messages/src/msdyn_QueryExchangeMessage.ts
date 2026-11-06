@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_QueryExchangeResponse as msdyn_QueryExchangeResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_QueryExchange message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_QueryExchangeRequestParameters {
+  method: string;
+  body: string;
+  requesturl: string;
+}
 
 /**
  * msdyn_QueryExchange request message
@@ -12,22 +23,20 @@ export class msdyn_QueryExchangeRequest
   extends OrganizationRequest
   implements Executable<msdyn_QueryExchangeResponse>
 {
-  constructor(
-    public method: string,
-    public body: string,
-    public requesturl: string
-  ) {
-    super("msdyn_QueryExchange");
+  declare readonly Parameters: Readonly<msdyn_QueryExchangeRequestParameters>;
+
+  constructor(parameters: msdyn_QueryExchangeRequestParameters) {
+    super("msdyn_QueryExchange", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_QueryExchange`;
 
-    const body: Record<string, unknown> = {
-      method: this.method,
-      body: this.body,
-      requesturl: this.requesturl,
-    };
+    const body = requestBody({
+      method: this.Parameters.method,
+      body: this.Parameters.body,
+      requesturl: this.Parameters.requesturl,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class msdyn_QueryExchangeRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_QueryExchangeResponse> {
-    const data = await response.json();
-    return msdyn_QueryExchangeResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_QueryExchangeResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

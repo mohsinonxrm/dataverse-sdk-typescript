@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the DisconnectFromGit message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface DisconnectFromGitRequestParameters {
+  SolutionUniqueName?: string;
+}
 
 /**
  * DisconnectFromGit request message
@@ -10,16 +19,18 @@ export class DisconnectFromGitRequest
   extends OrganizationRequest
   implements Executable<DisconnectFromGitResponse>
 {
-  constructor(public solutionUniqueName?: string) {
-    super("DisconnectFromGit");
+  declare readonly Parameters: Readonly<DisconnectFromGitRequestParameters>;
+
+  constructor(parameters: DisconnectFromGitRequestParameters = {}) {
+    super("DisconnectFromGit", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/DisconnectFromGit`;
 
-    const body: Record<string, unknown> = {
-      SolutionUniqueName: this.solutionUniqueName,
-    };
+    const body = requestBody({
+      SolutionUniqueName: this.Parameters.SolutionUniqueName,
+    });
 
     return {
       method: "POST",

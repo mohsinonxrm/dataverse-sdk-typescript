@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_updateevaluationdetailsResponse as msdyn_updateevaluationdetailsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_updateevaluationdetails message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_updateevaluationdetailsRequestParameters {
+  msdyn_evaluationdetails: string;
+}
 
 /**
  * msdyn_updateevaluationdetails request message
@@ -12,16 +21,18 @@ export class msdyn_updateevaluationdetailsRequest
   extends OrganizationRequest
   implements Executable<msdyn_updateevaluationdetailsResponse>
 {
-  constructor(public msdyn_evaluationdetails: string) {
-    super("msdyn_updateevaluationdetails");
+  declare readonly Parameters: Readonly<msdyn_updateevaluationdetailsRequestParameters>;
+
+  constructor(parameters: msdyn_updateevaluationdetailsRequestParameters) {
+    super("msdyn_updateevaluationdetails", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_updateevaluationdetails`;
 
-    const body: Record<string, unknown> = {
-      msdyn_evaluationdetails: this.msdyn_evaluationdetails,
-    };
+    const body = requestBody({
+      msdyn_evaluationdetails: this.Parameters.msdyn_evaluationdetails,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_updateevaluationdetailsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_updateevaluationdetailsResponse> {
-    const data = await response.json();
-    return msdyn_updateevaluationdetailsResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_updateevaluationdetailsResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

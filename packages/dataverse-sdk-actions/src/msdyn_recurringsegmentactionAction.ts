@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_recurringsegmentaction action
@@ -8,25 +9,31 @@ export interface msdyn_recurringsegmentactionResponse {
 }
 
 /**
+ * Parameters of the msdyn_recurringsegmentaction action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_recurringsegmentactionActionParameters {
+  payload: string;
+  operationType: string;
+  segmentId: string;
+}
+
+/**
  * msdyn_recurringsegmentaction action
  *
  * Unbound action
  */
 export class msdyn_recurringsegmentactionAction implements Executable<msdyn_recurringsegmentactionResponse> {
-  constructor(
-    public readonly payload: string,
-    public readonly operationType: string,
-    public readonly segmentId: string
-  ) {}
+  constructor(public readonly parameters: msdyn_recurringsegmentactionActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_recurringsegmentaction`;
 
-    const body: Record<string, unknown> = {
-      payload: this.payload,
-      operationType: this.operationType,
-      segmentId: this.segmentId,
-    };
+    const body = requestBody({
+      payload: this.parameters.payload,
+      operationType: this.parameters.operationType,
+      segmentId: this.parameters.segmentId,
+    });
 
     return {
       method: "POST",
@@ -39,7 +46,8 @@ export class msdyn_recurringsegmentactionAction implements Executable<msdyn_recu
   }
 
   async parseResponse(response: Response): Promise<msdyn_recurringsegmentactionResponse> {
-    const data = await response.json();
-    return data as msdyn_recurringsegmentactionResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_recurringsegmentactionResponse;
   }
 }

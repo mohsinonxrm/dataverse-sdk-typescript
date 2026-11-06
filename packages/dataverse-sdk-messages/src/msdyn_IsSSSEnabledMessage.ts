@@ -29,8 +29,9 @@ export class msdyn_IsSSSEnabledRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_IsSSSEnabledResponse> {
-    const data = await response.json();
-    return msdyn_IsSSSEnabledResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_IsSSSEnabledResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

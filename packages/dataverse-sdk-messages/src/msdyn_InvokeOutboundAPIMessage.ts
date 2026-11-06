@@ -1,8 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_ocoutboundconfiguration } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_InvokeOutboundAPI message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_InvokeOutboundAPIRequestParameters {
+  OutboundSettingsRecord?: EntityReference | EntityPayload<msdyn_ocoutboundconfiguration>;
+  ContactList?: string;
+}
 
 /**
  * msdyn_InvokeOutboundAPI request message
@@ -13,20 +23,19 @@ export class msdyn_InvokeOutboundAPIRequest
   extends OrganizationRequest
   implements Executable<msdyn_InvokeOutboundAPIResponse>
 {
-  constructor(
-    public outboundSettingsRecord?: EntityReference | EntityPayload<msdyn_ocoutboundconfiguration>,
-    public contactList?: string
-  ) {
-    super("msdyn_InvokeOutboundAPI");
+  declare readonly Parameters: Readonly<msdyn_InvokeOutboundAPIRequestParameters>;
+
+  constructor(parameters: msdyn_InvokeOutboundAPIRequestParameters = {}) {
+    super("msdyn_InvokeOutboundAPI", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_InvokeOutboundAPI`;
 
-    const body: Record<string, unknown> = {
-      OutboundSettingsRecord: this.outboundSettingsRecord,
-      ContactList: this.contactList,
-    };
+    const body = requestBody({
+      OutboundSettingsRecord: this.Parameters.OutboundSettingsRecord,
+      ContactList: this.Parameters.ContactList,
+    });
 
     return {
       method: "POST",

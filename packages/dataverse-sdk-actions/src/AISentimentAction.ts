@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from AISentiment action
@@ -8,19 +9,27 @@ export interface AISentimentResponse {
 }
 
 /**
+ * Parameters of the AISentiment action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AISentimentActionParameters {
+  Text: string;
+}
+
+/**
  * AISentiment action
  *
  * Unbound action
  */
 export class AISentimentAction implements Executable<AISentimentResponse> {
-  constructor(public readonly text: string) {}
+  constructor(public readonly parameters: AISentimentActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/AISentiment`;
 
-    const body: Record<string, unknown> = {
-      Text: this.text,
-    };
+    const body = requestBody({
+      Text: this.parameters.Text,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class AISentimentAction implements Executable<AISentimentResponse> {
   }
 
   async parseResponse(response: Response): Promise<AISentimentResponse> {
-    const data = await response.json();
-    return data as AISentimentResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as AISentimentResponse;
   }
 }

@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_CreateEvaluationRecordsForPlanResponse as msdyn_CreateEvaluationRecordsForPlanResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_CreateEvaluationRecordsForPlan message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CreateEvaluationRecordsForPlanRequestParameters {
+  evaluationPlanId: string;
+  recordIdsForProcessing: string;
+}
 
 /**
  * msdyn_CreateEvaluationRecordsForPlan request message
@@ -12,20 +22,19 @@ export class msdyn_CreateEvaluationRecordsForPlanRequest
   extends OrganizationRequest
   implements Executable<msdyn_CreateEvaluationRecordsForPlanResponse>
 {
-  constructor(
-    public evaluationPlanId: string,
-    public recordIdsForProcessing: string
-  ) {
-    super("msdyn_CreateEvaluationRecordsForPlan");
+  declare readonly Parameters: Readonly<msdyn_CreateEvaluationRecordsForPlanRequestParameters>;
+
+  constructor(parameters: msdyn_CreateEvaluationRecordsForPlanRequestParameters) {
+    super("msdyn_CreateEvaluationRecordsForPlan", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CreateEvaluationRecordsForPlan`;
 
-    const body: Record<string, unknown> = {
-      evaluationPlanId: this.evaluationPlanId,
-      recordIdsForProcessing: this.recordIdsForProcessing,
-    };
+    const body = requestBody({
+      evaluationPlanId: this.Parameters.evaluationPlanId,
+      recordIdsForProcessing: this.Parameters.recordIdsForProcessing,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class msdyn_CreateEvaluationRecordsForPlanRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateEvaluationRecordsForPlanResponse> {
-    const data = await response.json();
-    return msdyn_CreateEvaluationRecordsForPlanResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_CreateEvaluationRecordsForPlanResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

@@ -1,32 +1,45 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { GetRunMapResponse as GetRunMapResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the GetRunMap message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GetRunMapRequestParameters {
+  runId: string;
+  continuationToken?: string;
+  max?: number;
+}
 
 /**
  * GetRunMap request message
  *
  * Web API Action: GetRunMap
+ *
+ * The first argument is the id of the businessprocess record to call it on.
  */
 export class GetRunMapRequest extends OrganizationRequest implements Executable<GetRunMapResponse> {
+  declare readonly Parameters: Readonly<GetRunMapRequestParameters>;
+
   constructor(
     public businessprocessId: string,
-    public runId: string,
-    public continuationToken?: string,
-    public max?: number
+    parameters: GetRunMapRequestParameters
   ) {
-    super("GetRunMap");
+    super("GetRunMap", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/businessprocesses(${this.businessprocessId})/Microsoft.Dynamics.CRM.GetRunMap`;
 
-    const body: Record<string, unknown> = {
-      runId: this.runId,
-      continuationToken: this.continuationToken,
-      max: this.max,
-    };
+    const body = requestBody({
+      runId: this.Parameters.runId,
+      continuationToken: this.Parameters.continuationToken,
+      max: this.Parameters.max,
+    });
 
     return {
       method: "POST",
@@ -39,8 +52,9 @@ export class GetRunMapRequest extends OrganizationRequest implements Executable<
   }
 
   async parseResponse(response: Response): Promise<GetRunMapResponse> {
-    const data = await response.json();
-    return GetRunMapResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return GetRunMapResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

@@ -13,6 +13,8 @@ export interface GetPublicKeyResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.flowmachinegroup)
+ *
+ * The first argument is the id of the flowmachinegroup record to call it on.
  */
 export class GetPublicKeyAction implements Executable<GetPublicKeyResponse> {
   constructor(public readonly flowmachinegroupId: string) {}
@@ -31,7 +33,8 @@ export class GetPublicKeyAction implements Executable<GetPublicKeyResponse> {
   }
 
   async parseResponse(response: Response): Promise<GetPublicKeyResponse> {
-    const data = await response.json();
-    return data as GetPublicKeyResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as GetPublicKeyResponse;
   }
 }

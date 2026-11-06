@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetResourcesResponse as msdyn_GetResourcesResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetResources message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetResourcesRequestParameters {
+  Page: number;
+  PageSize: number;
+  QueryString: string;
+}
 
 /**
  * msdyn_GetResources request message
@@ -12,22 +23,20 @@ export class msdyn_GetResourcesRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetResourcesResponse>
 {
-  constructor(
-    public page: number,
-    public pageSize: number,
-    public queryString: string
-  ) {
-    super("msdyn_GetResources");
+  declare readonly Parameters: Readonly<msdyn_GetResourcesRequestParameters>;
+
+  constructor(parameters: msdyn_GetResourcesRequestParameters) {
+    super("msdyn_GetResources", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetResources`;
 
-    const body: Record<string, unknown> = {
-      Page: this.page,
-      PageSize: this.pageSize,
-      QueryString: this.queryString,
-    };
+    const body = requestBody({
+      Page: this.Parameters.Page,
+      PageSize: this.Parameters.PageSize,
+      QueryString: this.Parameters.QueryString,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class msdyn_GetResourcesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetResourcesResponse> {
-    const data = await response.json();
-    return msdyn_GetResourcesResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_GetResourcesResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

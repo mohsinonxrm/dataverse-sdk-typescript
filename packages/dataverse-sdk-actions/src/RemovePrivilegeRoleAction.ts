@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { privilege } from "./types/index.js";
 
@@ -11,24 +12,34 @@ export interface RemovePrivilegeRoleResponse {
 }
 
 /**
+ * Parameters of the RemovePrivilegeRole action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RemovePrivilegeRoleActionParameters {
+  Privilege: EntityReference | EntityPayload<privilege>;
+}
+
+/**
  * RemovePrivilegeRole action
  *
  * Bound action
  * Binding parameter: entity (mscrm.role)
+ *
+ * The first argument is the id of the role record to call it on.
  */
 export class RemovePrivilegeRoleAction implements Executable<RemovePrivilegeRoleResponse> {
   constructor(
     public readonly roleId: string,
-    public readonly privilege: EntityReference | EntityPayload<privilege>
+    public readonly parameters: RemovePrivilegeRoleActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/roles(${this.roleId})/Microsoft.Dynamics.CRM.RemovePrivilegeRole`;
 
-    const body: Record<string, unknown> = {
-      Privilege: this.privilege,
-    };
+    const body = requestBody({
+      Privilege: this.parameters.Privilege,
+    });
 
     return {
       method: "POST",
@@ -41,7 +52,8 @@ export class RemovePrivilegeRoleAction implements Executable<RemovePrivilegeRole
   }
 
   async parseResponse(response: Response): Promise<RemovePrivilegeRoleResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RemovePrivilegeRoleResponse;
   }
 }

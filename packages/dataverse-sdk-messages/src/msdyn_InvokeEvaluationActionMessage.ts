@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_InvokeEvaluationActionResponse as msdyn_InvokeEvaluationActionResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_InvokeEvaluationAction message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_InvokeEvaluationActionRequestParameters {
+  AdditionalContext?: string;
+  ActionPayload: string;
+  ActionType: string;
+}
 
 /**
  * msdyn_InvokeEvaluationAction request message
@@ -12,22 +23,20 @@ export class msdyn_InvokeEvaluationActionRequest
   extends OrganizationRequest
   implements Executable<msdyn_InvokeEvaluationActionResponse>
 {
-  constructor(
-    public additionalContext: string | undefined,
-    public actionPayload: string,
-    public actionType: string
-  ) {
-    super("msdyn_InvokeEvaluationAction");
+  declare readonly Parameters: Readonly<msdyn_InvokeEvaluationActionRequestParameters>;
+
+  constructor(parameters: msdyn_InvokeEvaluationActionRequestParameters) {
+    super("msdyn_InvokeEvaluationAction", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_InvokeEvaluationAction`;
 
-    const body: Record<string, unknown> = {
-      AdditionalContext: this.additionalContext,
-      ActionPayload: this.actionPayload,
-      ActionType: this.actionType,
-    };
+    const body = requestBody({
+      AdditionalContext: this.Parameters.AdditionalContext,
+      ActionPayload: this.Parameters.ActionPayload,
+      ActionType: this.Parameters.ActionType,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class msdyn_InvokeEvaluationActionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_InvokeEvaluationActionResponse> {
-    const data = await response.json();
-    return msdyn_InvokeEvaluationActionResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_InvokeEvaluationActionResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

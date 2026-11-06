@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_DraftEmailForCase action
@@ -8,31 +9,37 @@ export interface msdyn_DraftEmailForCaseResponse {
 }
 
 /**
+ * Parameters of the msdyn_DraftEmailForCase action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_DraftEmailForCaseActionParameters {
+  additionalInstructions?: string;
+  context_CaseNotes?: string;
+  context_CaseTitle?: string;
+  context_CaseId?: string;
+  recipientName: string;
+  senderName: string;
+}
+
+/**
  * msdyn_DraftEmailForCase action
  *
  * Unbound action
  */
 export class msdyn_DraftEmailForCaseAction implements Executable<msdyn_DraftEmailForCaseResponse> {
-  constructor(
-    public readonly additionalInstructions: string | undefined,
-    public readonly context_CaseNotes: string | undefined,
-    public readonly context_CaseTitle: string | undefined,
-    public readonly context_CaseId: string | undefined,
-    public readonly recipientName: string,
-    public readonly senderName: string
-  ) {}
+  constructor(public readonly parameters: msdyn_DraftEmailForCaseActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_DraftEmailForCase`;
 
-    const body: Record<string, unknown> = {
-      additionalInstructions: this.additionalInstructions,
-      context_CaseNotes: this.context_CaseNotes,
-      context_CaseTitle: this.context_CaseTitle,
-      context_CaseId: this.context_CaseId,
-      recipientName: this.recipientName,
-      senderName: this.senderName,
-    };
+    const body = requestBody({
+      additionalInstructions: this.parameters.additionalInstructions,
+      context_CaseNotes: this.parameters.context_CaseNotes,
+      context_CaseTitle: this.parameters.context_CaseTitle,
+      context_CaseId: this.parameters.context_CaseId,
+      recipientName: this.parameters.recipientName,
+      senderName: this.parameters.senderName,
+    });
 
     return {
       method: "POST",
@@ -45,7 +52,8 @@ export class msdyn_DraftEmailForCaseAction implements Executable<msdyn_DraftEmai
   }
 
   async parseResponse(response: Response): Promise<msdyn_DraftEmailForCaseResponse> {
-    const data = await response.json();
-    return data as msdyn_DraftEmailForCaseResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_DraftEmailForCaseResponse;
   }
 }

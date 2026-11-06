@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,28 +11,38 @@ export interface AddToFeedbackLoopResponse {
 }
 
 /**
+ * Parameters of the AddToFeedbackLoop action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AddToFeedbackLoopActionParameters {
+  inputName?: string;
+  predictionOutput?: string;
+  predictionInput: EntityReference | AnyEntityPayload;
+}
+
+/**
  * AddToFeedbackLoop action
  *
  * Bound action
  * Binding parameter: entity (mscrm.msdyn_aimodel)
+ *
+ * The first argument is the id of the msdyn_aimodel record to call it on.
  */
 export class AddToFeedbackLoopAction implements Executable<AddToFeedbackLoopResponse> {
   constructor(
     public readonly msdyn_aimodelId: string,
-    public readonly inputName: string | undefined,
-    public readonly predictionOutput: string | undefined,
-    public readonly predictionInput: EntityReference | AnyEntityPayload
+    public readonly parameters: AddToFeedbackLoopActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_aimodels(${this.msdyn_aimodelId})/Microsoft.Dynamics.CRM.AddToFeedbackLoop`;
 
-    const body: Record<string, unknown> = {
-      inputName: this.inputName,
-      predictionOutput: this.predictionOutput,
-      predictionInput: this.predictionInput,
-    };
+    const body = requestBody({
+      inputName: this.parameters.inputName,
+      predictionOutput: this.parameters.predictionOutput,
+      predictionInput: this.parameters.predictionInput,
+    });
 
     return {
       method: "POST",
@@ -44,7 +55,8 @@ export class AddToFeedbackLoopAction implements Executable<AddToFeedbackLoopResp
   }
 
   async parseResponse(response: Response): Promise<AddToFeedbackLoopResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as AddToFeedbackLoopResponse;
   }
 }

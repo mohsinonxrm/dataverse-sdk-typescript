@@ -7,6 +7,8 @@ import type { asyncoperation } from "./types/index.js";
  * PublishDuplicateRule request message
  *
  * Web API Action: PublishDuplicateRule
+ *
+ * The first argument is the id of the duplicaterule record to call it on.
  */
 export class PublishDuplicateRuleRequest
   extends OrganizationRequest
@@ -30,8 +32,9 @@ export class PublishDuplicateRuleRequest
   }
 
   async parseResponse(response: Response): Promise<PublishDuplicateRuleResponse> {
-    const data = await response.json();
-    return PublishDuplicateRuleResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return PublishDuplicateRuleResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

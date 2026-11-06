@@ -1,6 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the SetupAiConnection message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SetupAiConnectionRequestParameters {
+  connectorName: string;
+  connectionName: string;
+}
 
 /**
  * SetupAiConnection request message
@@ -11,20 +21,19 @@ export class SetupAiConnectionRequest
   extends OrganizationRequest
   implements Executable<SetupAiConnectionResponse>
 {
-  constructor(
-    public connectorName: string,
-    public connectionName: string
-  ) {
-    super("SetupAiConnection");
+  declare readonly Parameters: Readonly<SetupAiConnectionRequestParameters>;
+
+  constructor(parameters: SetupAiConnectionRequestParameters) {
+    super("SetupAiConnection", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/SetupAiConnection`;
 
-    const body: Record<string, unknown> = {
-      connectorName: this.connectorName,
-      connectionName: this.connectionName,
-    };
+    const body = requestBody({
+      connectorName: this.Parameters.connectorName,
+      connectionName: this.Parameters.connectionName,
+    });
 
     return {
       method: "POST",
@@ -37,8 +46,9 @@ export class SetupAiConnectionRequest
   }
 
   async parseResponse(response: Response): Promise<SetupAiConnectionResponse> {
-    const data = await response.json();
-    return SetupAiConnectionResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return SetupAiConnectionResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

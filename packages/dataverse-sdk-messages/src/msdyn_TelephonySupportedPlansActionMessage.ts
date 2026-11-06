@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_TelephonySupportedPlansActionResponse as msdyn_TelephonySupportedPlansActionResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_TelephonySupportedPlansAction message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_TelephonySupportedPlansActionRequestParameters {
+  ActionRequest: string;
+}
 
 /**
  * msdyn_TelephonySupportedPlansAction request message
@@ -12,16 +21,18 @@ export class msdyn_TelephonySupportedPlansActionRequest
   extends OrganizationRequest
   implements Executable<msdyn_TelephonySupportedPlansActionResponse>
 {
-  constructor(public actionRequest: string) {
-    super("msdyn_TelephonySupportedPlansAction");
+  declare readonly Parameters: Readonly<msdyn_TelephonySupportedPlansActionRequestParameters>;
+
+  constructor(parameters: msdyn_TelephonySupportedPlansActionRequestParameters) {
+    super("msdyn_TelephonySupportedPlansAction", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_TelephonySupportedPlansAction`;
 
-    const body: Record<string, unknown> = {
-      ActionRequest: this.actionRequest,
-    };
+    const body = requestBody({
+      ActionRequest: this.Parameters.ActionRequest,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_TelephonySupportedPlansActionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_TelephonySupportedPlansActionResponse> {
-    const data = await response.json();
-    return msdyn_TelephonySupportedPlansActionResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_TelephonySupportedPlansActionResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

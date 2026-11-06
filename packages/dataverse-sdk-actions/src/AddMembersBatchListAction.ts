@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from AddMembersBatchList action
@@ -8,25 +9,31 @@ export interface AddMembersBatchListResponse {
 }
 
 /**
+ * Parameters of the AddMembersBatchList action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AddMembersBatchListActionParameters {
+  ListId?: string;
+  FetchXml?: string;
+  SkipCount?: number;
+}
+
+/**
  * AddMembersBatchList action
  *
  * Unbound action
  */
 export class AddMembersBatchListAction implements Executable<AddMembersBatchListResponse> {
-  constructor(
-    public readonly listId?: string,
-    public readonly fetchXml?: string,
-    public readonly skipCount?: number
-  ) {}
+  constructor(public readonly parameters: AddMembersBatchListActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/AddMembersBatchList`;
 
-    const body: Record<string, unknown> = {
-      ListId: this.listId,
-      FetchXml: this.fetchXml,
-      SkipCount: this.skipCount,
-    };
+    const body = requestBody({
+      ListId: this.parameters.ListId,
+      FetchXml: this.parameters.FetchXml,
+      SkipCount: this.parameters.SkipCount,
+    });
 
     return {
       method: "POST",
@@ -39,7 +46,8 @@ export class AddMembersBatchListAction implements Executable<AddMembersBatchList
   }
 
   async parseResponse(response: Response): Promise<AddMembersBatchListResponse> {
-    const data = await response.json();
-    return data as AddMembersBatchListResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as AddMembersBatchListResponse;
   }
 }

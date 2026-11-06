@@ -1,10 +1,21 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type {
   AddComponentToSolutionParametersCollection,
   AddComponentsToSolutionAsyncResponse as AddComponentsToSolutionAsyncResponseData,
 } from "./types/index.js";
+
+/**
+ * Parameters of the AddComponentsToSolutionAsync message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AddComponentsToSolutionAsyncRequestParameters {
+  SolutionComponentParameters?: AddComponentToSolutionParametersCollection;
+  SolutionUniqueName: string;
+  ContinueOnError: boolean;
+}
 
 /**
  * AddComponentsToSolutionAsync request message
@@ -15,22 +26,20 @@ export class AddComponentsToSolutionAsyncRequest
   extends OrganizationRequest
   implements Executable<AddComponentsToSolutionAsyncResponse>
 {
-  constructor(
-    public solutionComponentParameters: AddComponentToSolutionParametersCollection | undefined,
-    public solutionUniqueName: string,
-    public continueOnError: boolean
-  ) {
-    super("AddComponentsToSolutionAsync");
+  declare readonly Parameters: Readonly<AddComponentsToSolutionAsyncRequestParameters>;
+
+  constructor(parameters: AddComponentsToSolutionAsyncRequestParameters) {
+    super("AddComponentsToSolutionAsync", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/AddComponentsToSolutionAsync`;
 
-    const body: Record<string, unknown> = {
-      SolutionComponentParameters: this.solutionComponentParameters,
-      SolutionUniqueName: this.solutionUniqueName,
-      ContinueOnError: this.continueOnError,
-    };
+    const body = requestBody({
+      SolutionComponentParameters: this.Parameters.SolutionComponentParameters,
+      SolutionUniqueName: this.Parameters.SolutionUniqueName,
+      ContinueOnError: this.Parameters.ContinueOnError,
+    });
 
     return {
       method: "POST",
@@ -43,8 +52,9 @@ export class AddComponentsToSolutionAsyncRequest
   }
 
   async parseResponse(response: Response): Promise<AddComponentsToSolutionAsyncResponse> {
-    const data = await response.json();
-    return AddComponentsToSolutionAsyncResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return AddComponentsToSolutionAsyncResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

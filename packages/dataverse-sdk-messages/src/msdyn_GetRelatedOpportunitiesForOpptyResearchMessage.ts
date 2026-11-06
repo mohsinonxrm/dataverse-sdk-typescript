@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetRelatedOpportunitiesForOpptyResearchResponse as msdyn_GetRelatedOpportunitiesForOpptyResearchResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetRelatedOpportunitiesForOpptyResearch message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetRelatedOpportunitiesForOpptyResearchRequestParameters {
+  msdyn_TopCount: number;
+  msdyn_OpportunityId: string;
+}
 
 /**
  * msdyn_GetRelatedOpportunitiesForOpptyResearch request message
@@ -12,20 +22,19 @@ export class msdyn_GetRelatedOpportunitiesForOpptyResearchRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetRelatedOpportunitiesForOpptyResearchResponse>
 {
-  constructor(
-    public msdyn_TopCount: number,
-    public msdyn_OpportunityId: string
-  ) {
-    super("msdyn_GetRelatedOpportunitiesForOpptyResearch");
+  declare readonly Parameters: Readonly<msdyn_GetRelatedOpportunitiesForOpptyResearchRequestParameters>;
+
+  constructor(parameters: msdyn_GetRelatedOpportunitiesForOpptyResearchRequestParameters) {
+    super("msdyn_GetRelatedOpportunitiesForOpptyResearch", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetRelatedOpportunitiesForOpptyResearch`;
 
-    const body: Record<string, unknown> = {
-      msdyn_TopCount: this.msdyn_TopCount,
-      msdyn_OpportunityId: this.msdyn_OpportunityId,
-    };
+    const body = requestBody({
+      msdyn_TopCount: this.Parameters.msdyn_TopCount,
+      msdyn_OpportunityId: this.Parameters.msdyn_OpportunityId,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,11 @@ export class msdyn_GetRelatedOpportunitiesForOpptyResearchRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_GetRelatedOpportunitiesForOpptyResearchResponse> {
-    const data = await response.json();
-    return msdyn_GetRelatedOpportunitiesForOpptyResearchResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_GetRelatedOpportunitiesForOpptyResearchResponse.fromResponse(
+      text ? JSON.parse(text) : {}
+    );
   }
 }
 

@@ -9,12 +9,20 @@ export interface NextYearResponse {
 }
 
 /**
+ * Parameters of the NextYear function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface NextYearFunctionParameters {
+  PropertyName: string;
+}
+
+/**
  * NextYear function
  *
  * Unbound function
  */
 export class NextYearFunction implements Executable<NextYearResponse> {
-  constructor(public readonly propertyName: string) {}
+  constructor(public readonly parameters: NextYearFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/NextYear`;
@@ -22,9 +30,9 @@ export class NextYearFunction implements Executable<NextYearResponse> {
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.propertyName !== undefined) {
+    if (this.parameters.PropertyName !== undefined) {
       aliases.push(`PropertyName=@p1`);
-      params.append("@p1", formatParameterAlias(this.propertyName, "Edm.String"));
+      params.append("@p1", formatParameterAlias(this.parameters.PropertyName, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -40,7 +48,8 @@ export class NextYearFunction implements Executable<NextYearResponse> {
   }
 
   async parseResponse(response: Response): Promise<NextYearResponse> {
-    const data = await response.json();
-    return data as NextYearResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as NextYearResponse;
   }
 }

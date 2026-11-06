@@ -1,31 +1,44 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_TelephonyResourceProvisionActionResponse as msdyn_TelephonyResourceProvisionActionResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_TelephonyResourceProvisionAction message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_TelephonyResourceProvisionActionRequestParameters {
+  ActionRequest: string;
+}
 
 /**
  * msdyn_TelephonyResourceProvisionAction request message
  *
  * Web API Action: msdyn_TelephonyResourceProvisionAction
+ *
+ * The first argument is the id of the msdyn_occommunicationprovidersetting record to call it on.
  */
 export class msdyn_TelephonyResourceProvisionActionRequest
   extends OrganizationRequest
   implements Executable<msdyn_TelephonyResourceProvisionActionResponse>
 {
+  declare readonly Parameters: Readonly<msdyn_TelephonyResourceProvisionActionRequestParameters>;
+
   constructor(
     public msdyn_occommunicationprovidersettingId: string,
-    public actionRequest: string
+    parameters: msdyn_TelephonyResourceProvisionActionRequestParameters
   ) {
-    super("msdyn_TelephonyResourceProvisionAction");
+    super("msdyn_TelephonyResourceProvisionAction", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_occommunicationprovidersettings(${this.msdyn_occommunicationprovidersettingId})/Microsoft.Dynamics.CRM.msdyn_TelephonyResourceProvisionAction`;
 
-    const body: Record<string, unknown> = {
-      ActionRequest: this.actionRequest,
-    };
+    const body = requestBody({
+      ActionRequest: this.Parameters.ActionRequest,
+    });
 
     return {
       method: "POST",
@@ -38,8 +51,11 @@ export class msdyn_TelephonyResourceProvisionActionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_TelephonyResourceProvisionActionResponse> {
-    const data = await response.json();
-    return msdyn_TelephonyResourceProvisionActionResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_TelephonyResourceProvisionActionResponse.fromResponse(
+      text ? JSON.parse(text) : {}
+    );
   }
 }
 

@@ -29,8 +29,9 @@ export class RefreshRpaLicensingCapacityRequest
   }
 
   async parseResponse(response: Response): Promise<RefreshRpaLicensingCapacityResponse> {
-    const data = await response.json();
-    return RefreshRpaLicensingCapacityResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return RefreshRpaLicensingCapacityResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

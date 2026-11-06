@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 import type { SubstitutionResult } from "./types/index.js";
 
 /**
@@ -9,25 +10,31 @@ export interface SubstituteForAttributeResponse {
 }
 
 /**
+ * Parameters of the SubstituteForAttribute action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SubstituteForAttributeActionParameters {
+  AttributeName: string;
+  AttributeContent: string;
+  SubStore: string;
+}
+
+/**
  * SubstituteForAttribute action
  *
  * Unbound action
  */
 export class SubstituteForAttributeAction implements Executable<SubstituteForAttributeResponse> {
-  constructor(
-    public readonly attributeName: string,
-    public readonly attributeContent: string,
-    public readonly subStore: string
-  ) {}
+  constructor(public readonly parameters: SubstituteForAttributeActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/SubstituteForAttribute`;
 
-    const body: Record<string, unknown> = {
-      AttributeName: this.attributeName,
-      AttributeContent: this.attributeContent,
-      SubStore: this.subStore,
-    };
+    const body = requestBody({
+      AttributeName: this.parameters.AttributeName,
+      AttributeContent: this.parameters.AttributeContent,
+      SubStore: this.parameters.SubStore,
+    });
 
     return {
       method: "POST",
@@ -40,7 +47,8 @@ export class SubstituteForAttributeAction implements Executable<SubstituteForAtt
   }
 
   async parseResponse(response: Response): Promise<SubstituteForAttributeResponse> {
-    const data = await response.json();
-    return data as SubstituteForAttributeResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as SubstituteForAttributeResponse;
   }
 }

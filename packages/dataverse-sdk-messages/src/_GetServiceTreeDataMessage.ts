@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { _GetServiceTreeDataResponse as _GetServiceTreeDataResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the _GetServiceTreeData message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface _GetServiceTreeDataRequestParameters {
+  ServiceId: string;
+  InputSource?: string;
+}
 
 /**
  * _GetServiceTreeData request message
@@ -12,20 +22,19 @@ export class _GetServiceTreeDataRequest
   extends OrganizationRequest
   implements Executable<_GetServiceTreeDataResponse>
 {
-  constructor(
-    public serviceId: string,
-    public inputSource?: string
-  ) {
-    super("_GetServiceTreeData");
+  declare readonly Parameters: Readonly<_GetServiceTreeDataRequestParameters>;
+
+  constructor(parameters: _GetServiceTreeDataRequestParameters) {
+    super("_GetServiceTreeData", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/_GetServiceTreeData`;
 
-    const body: Record<string, unknown> = {
-      ServiceId: this.serviceId,
-      InputSource: this.inputSource,
-    };
+    const body = requestBody({
+      ServiceId: this.Parameters.ServiceId,
+      InputSource: this.Parameters.InputSource,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class _GetServiceTreeDataRequest
   }
 
   async parseResponse(response: Response): Promise<_GetServiceTreeDataResponse> {
-    const data = await response.json();
-    return _GetServiceTreeDataResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return _GetServiceTreeDataResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

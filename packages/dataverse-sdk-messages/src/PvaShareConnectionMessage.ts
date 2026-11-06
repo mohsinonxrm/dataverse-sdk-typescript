@@ -5,6 +5,8 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * PvaShareConnection request message
  *
  * Web API Action: PvaShareConnection
+ *
+ * The first argument is the id of the connectionreference record to call it on.
  */
 export class PvaShareConnectionRequest
   extends OrganizationRequest

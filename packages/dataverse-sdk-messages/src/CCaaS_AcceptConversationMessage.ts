@@ -1,31 +1,44 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the CCaaS_AcceptConversation message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_AcceptConversationRequestParameters {
+  ApiVersion: string;
+  SessionId: string;
+}
 
 /**
  * CCaaS_AcceptConversation request message
  *
  * Web API Action: CCaaS_AcceptConversation
+ *
+ * The first argument is the id of the msdyn_ocliveworkitem record to call it on.
  */
 export class CCaaS_AcceptConversationRequest
   extends OrganizationRequest
   implements Executable<CCaaS_AcceptConversationResponse>
 {
+  declare readonly Parameters: Readonly<CCaaS_AcceptConversationRequestParameters>;
+
   constructor(
     public msdyn_ocliveworkitemId: string,
-    public apiVersion: string,
-    public sessionId: string
+    parameters: CCaaS_AcceptConversationRequestParameters
   ) {
-    super("CCaaS_AcceptConversation");
+    super("CCaaS_AcceptConversation", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_AcceptConversation`;
 
-    const body: Record<string, unknown> = {
-      ApiVersion: this.apiVersion,
-      SessionId: this.sessionId,
-    };
+    const body = requestBody({
+      ApiVersion: this.Parameters.ApiVersion,
+      SessionId: this.Parameters.SessionId,
+    });
 
     return {
       method: "POST",

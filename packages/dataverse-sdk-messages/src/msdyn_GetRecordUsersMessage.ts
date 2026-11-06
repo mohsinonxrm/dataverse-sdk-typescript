@@ -1,6 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseValue } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_GetRecordUsers message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetRecordUsersRequestParameters {
+  RecordType: number;
+  RecordId: string;
+  RecordTypeName: string;
+}
 
 /**
  * msdyn_GetRecordUsers request message
@@ -11,22 +22,20 @@ export class msdyn_GetRecordUsersRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetRecordUsersResponse>
 {
-  constructor(
-    public recordType: number,
-    public recordId: string,
-    public recordTypeName: string
-  ) {
-    super("msdyn_GetRecordUsers");
+  declare readonly Parameters: Readonly<msdyn_GetRecordUsersRequestParameters>;
+
+  constructor(parameters: msdyn_GetRecordUsersRequestParameters) {
+    super("msdyn_GetRecordUsers", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetRecordUsers`;
 
-    const body: Record<string, unknown> = {
-      RecordType: this.recordType,
-      RecordId: this.recordId,
-      RecordTypeName: this.recordTypeName,
-    };
+    const body = requestBody({
+      RecordType: this.Parameters.RecordType,
+      RecordId: this.Parameters.RecordId,
+      RecordTypeName: this.Parameters.RecordTypeName,
+    });
 
     return {
       method: "POST",
@@ -39,8 +48,9 @@ export class msdyn_GetRecordUsersRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetRecordUsersResponse> {
-    const data = await response.json();
-    return msdyn_GetRecordUsersResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_GetRecordUsersResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

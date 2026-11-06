@@ -9,15 +9,21 @@ export interface OnOrBeforeResponse {
 }
 
 /**
+ * Parameters of the OnOrBefore function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface OnOrBeforeFunctionParameters {
+  PropertyName: string;
+  PropertyValue: string;
+}
+
+/**
  * OnOrBefore function
  *
  * Unbound function
  */
 export class OnOrBeforeFunction implements Executable<OnOrBeforeResponse> {
-  constructor(
-    public readonly propertyName: string,
-    public readonly propertyValue: string
-  ) {}
+  constructor(public readonly parameters: OnOrBeforeFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/OnOrBefore`;
@@ -25,13 +31,13 @@ export class OnOrBeforeFunction implements Executable<OnOrBeforeResponse> {
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.propertyName !== undefined) {
+    if (this.parameters.PropertyName !== undefined) {
       aliases.push(`PropertyName=@p1`);
-      params.append("@p1", formatParameterAlias(this.propertyName, "Edm.String"));
+      params.append("@p1", formatParameterAlias(this.parameters.PropertyName, "Edm.String"));
     }
-    if (this.propertyValue !== undefined) {
+    if (this.parameters.PropertyValue !== undefined) {
       aliases.push(`PropertyValue=@p2`);
-      params.append("@p2", formatParameterAlias(this.propertyValue, "Edm.String"));
+      params.append("@p2", formatParameterAlias(this.parameters.PropertyValue, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -47,7 +53,8 @@ export class OnOrBeforeFunction implements Executable<OnOrBeforeResponse> {
   }
 
   async parseResponse(response: Response): Promise<OnOrBeforeResponse> {
-    const data = await response.json();
-    return data as OnOrBeforeResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as OnOrBeforeResponse;
   }
 }

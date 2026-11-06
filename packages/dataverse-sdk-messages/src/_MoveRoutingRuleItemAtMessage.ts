@@ -1,7 +1,20 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the _MoveRoutingRuleItemAt message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface _MoveRoutingRuleItemAtRequestParameters {
+  RoutingRuleSetId: EntityReference | AnyEntityPayload;
+  RoutingRuleItemIdToMove: EntityReference | AnyEntityPayload;
+  TargetRoutingRuleItemId: EntityReference | AnyEntityPayload;
+  IsBefore: boolean;
+  Options?: string;
+}
 
 /**
  * _MoveRoutingRuleItemAt request message
@@ -12,26 +25,22 @@ export class _MoveRoutingRuleItemAtRequest
   extends OrganizationRequest
   implements Executable<_MoveRoutingRuleItemAtResponse>
 {
-  constructor(
-    public routingRuleSetId: EntityReference | AnyEntityPayload,
-    public routingRuleItemIdToMove: EntityReference | AnyEntityPayload,
-    public targetRoutingRuleItemId: EntityReference | AnyEntityPayload,
-    public isBefore: boolean,
-    public options?: string
-  ) {
-    super("_MoveRoutingRuleItemAt");
+  declare readonly Parameters: Readonly<_MoveRoutingRuleItemAtRequestParameters>;
+
+  constructor(parameters: _MoveRoutingRuleItemAtRequestParameters) {
+    super("_MoveRoutingRuleItemAt", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/_MoveRoutingRuleItemAt`;
 
-    const body: Record<string, unknown> = {
-      RoutingRuleSetId: this.routingRuleSetId,
-      RoutingRuleItemIdToMove: this.routingRuleItemIdToMove,
-      TargetRoutingRuleItemId: this.targetRoutingRuleItemId,
-      IsBefore: this.isBefore,
-      Options: this.options,
-    };
+    const body = requestBody({
+      RoutingRuleSetId: this.Parameters.RoutingRuleSetId,
+      RoutingRuleItemIdToMove: this.Parameters.RoutingRuleItemIdToMove,
+      TargetRoutingRuleItemId: this.Parameters.TargetRoutingRuleItemId,
+      IsBefore: this.Parameters.IsBefore,
+      Options: this.Parameters.Options,
+    });
 
     return {
       method: "POST",

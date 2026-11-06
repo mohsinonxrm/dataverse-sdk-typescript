@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_GetKAObjectFromTemplate action
@@ -12,19 +13,27 @@ export interface msdyn_GetKAObjectFromTemplateResponse {
 }
 
 /**
+ * Parameters of the msdyn_GetKAObjectFromTemplate action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetKAObjectFromTemplateActionParameters {
+  TemplateId: string;
+}
+
+/**
  * msdyn_GetKAObjectFromTemplate action
  *
  * Unbound action
  */
 export class msdyn_GetKAObjectFromTemplateAction implements Executable<msdyn_GetKAObjectFromTemplateResponse> {
-  constructor(public readonly templateId: string) {}
+  constructor(public readonly parameters: msdyn_GetKAObjectFromTemplateActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetKAObjectFromTemplate`;
 
-    const body: Record<string, unknown> = {
-      TemplateId: this.templateId,
-    };
+    const body = requestBody({
+      TemplateId: this.parameters.TemplateId,
+    });
 
     return {
       method: "POST",
@@ -37,7 +46,8 @@ export class msdyn_GetKAObjectFromTemplateAction implements Executable<msdyn_Get
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetKAObjectFromTemplateResponse> {
-    const data = await response.json();
-    return data as msdyn_GetKAObjectFromTemplateResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_GetKAObjectFromTemplateResponse;
   }
 }

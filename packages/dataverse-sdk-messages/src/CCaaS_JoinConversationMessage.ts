@@ -1,35 +1,48 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the CCaaS_JoinConversation message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_JoinConversationRequestParameters {
+  ClientId?: string;
+  ConversationAccess?: number;
+  SessionId: string;
+  ApiVersion: string;
+}
 
 /**
  * CCaaS_JoinConversation request message
  *
  * Web API Action: CCaaS_JoinConversation
+ *
+ * The first argument is the id of the msdyn_ocliveworkitem record to call it on.
  */
 export class CCaaS_JoinConversationRequest
   extends OrganizationRequest
   implements Executable<CCaaS_JoinConversationResponse>
 {
+  declare readonly Parameters: Readonly<CCaaS_JoinConversationRequestParameters>;
+
   constructor(
     public msdyn_ocliveworkitemId: string,
-    public clientId: string | undefined,
-    public conversationAccess: number | undefined,
-    public sessionId: string,
-    public apiVersion: string
+    parameters: CCaaS_JoinConversationRequestParameters
   ) {
-    super("CCaaS_JoinConversation");
+    super("CCaaS_JoinConversation", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_JoinConversation`;
 
-    const body: Record<string, unknown> = {
-      ClientId: this.clientId,
-      ConversationAccess: this.conversationAccess,
-      SessionId: this.sessionId,
-      ApiVersion: this.apiVersion,
-    };
+    const body = requestBody({
+      ClientId: this.Parameters.ClientId,
+      ConversationAccess: this.Parameters.ConversationAccess,
+      SessionId: this.Parameters.SessionId,
+      ApiVersion: this.Parameters.ApiVersion,
+    });
 
     return {
       method: "POST",

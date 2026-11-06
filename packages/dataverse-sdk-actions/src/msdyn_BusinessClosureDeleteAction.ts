@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_BusinessClosureDelete action
@@ -8,19 +9,27 @@ export interface msdyn_BusinessClosureDeleteResponse {
 }
 
 /**
+ * Parameters of the msdyn_BusinessClosureDelete action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_BusinessClosureDeleteActionParameters {
+  Ids: string;
+}
+
+/**
  * msdyn_BusinessClosureDelete action
  *
  * Unbound action
  */
 export class msdyn_BusinessClosureDeleteAction implements Executable<msdyn_BusinessClosureDeleteResponse> {
-  constructor(public readonly ids: string) {}
+  constructor(public readonly parameters: msdyn_BusinessClosureDeleteActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_BusinessClosureDelete`;
 
-    const body: Record<string, unknown> = {
-      Ids: this.ids,
-    };
+    const body = requestBody({
+      Ids: this.parameters.Ids,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class msdyn_BusinessClosureDeleteAction implements Executable<msdyn_Busin
   }
 
   async parseResponse(response: Response): Promise<msdyn_BusinessClosureDeleteResponse> {
-    const data = await response.json();
-    return data as msdyn_BusinessClosureDeleteResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_BusinessClosureDeleteResponse;
   }
 }

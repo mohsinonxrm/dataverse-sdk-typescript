@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdynmkt_doubleoptinstatusResponse as msdynmkt_doubleoptinstatusResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdynmkt_doubleoptinstatus message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdynmkt_doubleoptinstatusRequestParameters {
+  msdynmkt_complianceid: string;
+  DOI_Job_Status?: string;
+}
 
 /**
  * msdynmkt_doubleoptinstatus request message
@@ -12,20 +22,19 @@ export class msdynmkt_doubleoptinstatusRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_doubleoptinstatusResponse>
 {
-  constructor(
-    public msdynmkt_complianceid: string,
-    public dOI_Job_Status?: string
-  ) {
-    super("msdynmkt_doubleoptinstatus");
+  declare readonly Parameters: Readonly<msdynmkt_doubleoptinstatusRequestParameters>;
+
+  constructor(parameters: msdynmkt_doubleoptinstatusRequestParameters) {
+    super("msdynmkt_doubleoptinstatus", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_doubleoptinstatus`;
 
-    const body: Record<string, unknown> = {
-      msdynmkt_complianceid: this.msdynmkt_complianceid,
-      DOI_Job_Status: this.dOI_Job_Status,
-    };
+    const body = requestBody({
+      msdynmkt_complianceid: this.Parameters.msdynmkt_complianceid,
+      DOI_Job_Status: this.Parameters.DOI_Job_Status,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class msdynmkt_doubleoptinstatusRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_doubleoptinstatusResponse> {
-    const data = await response.json();
-    return msdynmkt_doubleoptinstatusResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdynmkt_doubleoptinstatusResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_publishScheduledRollout message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_publishScheduledRolloutRequestParameters {
+  RolloutPlanId: string;
+}
 
 /**
  * msdyn_publishScheduledRollout request message
@@ -10,16 +19,18 @@ export class msdyn_publishScheduledRolloutRequest
   extends OrganizationRequest
   implements Executable<msdyn_publishScheduledRolloutResponse>
 {
-  constructor(public rolloutPlanId: string) {
-    super("msdyn_publishScheduledRollout");
+  declare readonly Parameters: Readonly<msdyn_publishScheduledRolloutRequestParameters>;
+
+  constructor(parameters: msdyn_publishScheduledRolloutRequestParameters) {
+    super("msdyn_publishScheduledRollout", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_publishScheduledRollout`;
 
-    const body: Record<string, unknown> = {
-      RolloutPlanId: this.rolloutPlanId,
-    };
+    const body = requestBody({
+      RolloutPlanId: this.Parameters.RolloutPlanId,
+    });
 
     return {
       method: "POST",

@@ -5,6 +5,8 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * PublishProductHierarchy request message
  *
  * Web API Action: PublishProductHierarchy
+ *
+ * The first argument is the id of the product record to call it on.
  */
 export class PublishProductHierarchyRequest
   extends OrganizationRequest

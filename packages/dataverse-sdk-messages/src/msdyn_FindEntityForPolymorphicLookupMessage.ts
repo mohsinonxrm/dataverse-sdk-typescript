@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_FindEntityForPolymorphicLookupResponse as msdyn_FindEntityForPolymorphicLookupResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_FindEntityForPolymorphicLookup message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_FindEntityForPolymorphicLookupRequestParameters {
+  EntityLogicalName: string;
+  RecordId: string;
+  ListOfPolymorphicLookupsFromJSON: string;
+}
 
 /**
  * msdyn_FindEntityForPolymorphicLookup request message
@@ -12,22 +23,20 @@ export class msdyn_FindEntityForPolymorphicLookupRequest
   extends OrganizationRequest
   implements Executable<msdyn_FindEntityForPolymorphicLookupResponse>
 {
-  constructor(
-    public entityLogicalName: string,
-    public recordId: string,
-    public listOfPolymorphicLookupsFromJSON: string
-  ) {
-    super("msdyn_FindEntityForPolymorphicLookup");
+  declare readonly Parameters: Readonly<msdyn_FindEntityForPolymorphicLookupRequestParameters>;
+
+  constructor(parameters: msdyn_FindEntityForPolymorphicLookupRequestParameters) {
+    super("msdyn_FindEntityForPolymorphicLookup", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_FindEntityForPolymorphicLookup`;
 
-    const body: Record<string, unknown> = {
-      EntityLogicalName: this.entityLogicalName,
-      RecordId: this.recordId,
-      ListOfPolymorphicLookupsFromJSON: this.listOfPolymorphicLookupsFromJSON,
-    };
+    const body = requestBody({
+      EntityLogicalName: this.Parameters.EntityLogicalName,
+      RecordId: this.Parameters.RecordId,
+      ListOfPolymorphicLookupsFromJSON: this.Parameters.ListOfPolymorphicLookupsFromJSON,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class msdyn_FindEntityForPolymorphicLookupRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_FindEntityForPolymorphicLookupResponse> {
-    const data = await response.json();
-    return msdyn_FindEntityForPolymorphicLookupResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_FindEntityForPolymorphicLookupResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

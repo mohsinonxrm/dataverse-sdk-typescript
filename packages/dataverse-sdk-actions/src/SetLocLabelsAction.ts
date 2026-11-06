@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { LocalizedLabel } from "./types/index.js";
 
@@ -11,25 +12,31 @@ export interface SetLocLabelsResponse {
 }
 
 /**
+ * Parameters of the SetLocLabels action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SetLocLabelsActionParameters {
+  EntityMoniker: EntityReference | AnyEntityPayload;
+  AttributeName: string;
+  Labels?: LocalizedLabel[];
+}
+
+/**
  * SetLocLabels action
  *
  * Unbound action
  */
 export class SetLocLabelsAction implements Executable<SetLocLabelsResponse> {
-  constructor(
-    public readonly entityMoniker: EntityReference | AnyEntityPayload,
-    public readonly attributeName: string,
-    public readonly labels?: LocalizedLabel[]
-  ) {}
+  constructor(public readonly parameters: SetLocLabelsActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/SetLocLabels`;
 
-    const body: Record<string, unknown> = {
-      EntityMoniker: this.entityMoniker,
-      AttributeName: this.attributeName,
-      Labels: this.labels,
-    };
+    const body = requestBody({
+      EntityMoniker: this.parameters.EntityMoniker,
+      AttributeName: this.parameters.AttributeName,
+      Labels: this.parameters.Labels,
+    });
 
     return {
       method: "POST",
@@ -42,7 +49,8 @@ export class SetLocLabelsAction implements Executable<SetLocLabelsResponse> {
   }
 
   async parseResponse(response: Response): Promise<SetLocLabelsResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as SetLocLabelsResponse;
   }
 }

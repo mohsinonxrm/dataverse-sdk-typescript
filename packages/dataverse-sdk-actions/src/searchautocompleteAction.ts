@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from searchautocomplete action
@@ -8,31 +9,37 @@ export interface searchautocompleteResponse {
 }
 
 /**
+ * Parameters of the searchautocomplete action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface searchautocompleteActionParameters {
+  propertybag?: string;
+  filter?: string;
+  fuzzy?: boolean;
+  options?: string;
+  search: string;
+  entities?: string;
+}
+
+/**
  * searchautocomplete action
  *
  * Unbound action
  */
 export class searchautocompleteAction implements Executable<searchautocompleteResponse> {
-  constructor(
-    public readonly propertybag: string | undefined,
-    public readonly filter: string | undefined,
-    public readonly fuzzy: boolean | undefined,
-    public readonly options: string | undefined,
-    public readonly search: string,
-    public readonly entities?: string
-  ) {}
+  constructor(public readonly parameters: searchautocompleteActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/searchautocomplete`;
 
-    const body: Record<string, unknown> = {
-      propertybag: this.propertybag,
-      filter: this.filter,
-      fuzzy: this.fuzzy,
-      options: this.options,
-      search: this.search,
-      entities: this.entities,
-    };
+    const body = requestBody({
+      propertybag: this.parameters.propertybag,
+      filter: this.parameters.filter,
+      fuzzy: this.parameters.fuzzy,
+      options: this.parameters.options,
+      search: this.parameters.search,
+      entities: this.parameters.entities,
+    });
 
     return {
       method: "POST",
@@ -45,7 +52,8 @@ export class searchautocompleteAction implements Executable<searchautocompleteRe
   }
 
   async parseResponse(response: Response): Promise<searchautocompleteResponse> {
-    const data = await response.json();
-    return data as searchautocompleteResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as searchautocompleteResponse;
   }
 }

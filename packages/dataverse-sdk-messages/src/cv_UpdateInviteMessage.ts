@@ -2,8 +2,17 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { msfp_surveyinvite } from "./types/index.js";
+
+/**
+ * Parameters of the cv_UpdateInvite message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface cv_UpdateInviteRequestParameters {
+  inviteentity: EntityReference | EntityPayload<msfp_surveyinvite>;
+}
 
 /**
  * cv_UpdateInvite request message
@@ -14,16 +23,18 @@ export class cv_UpdateInviteRequest
   extends OrganizationRequest
   implements Executable<cv_UpdateInviteResponse>
 {
-  constructor(public inviteentity: EntityReference | EntityPayload<msfp_surveyinvite>) {
-    super("cv_UpdateInvite");
+  declare readonly Parameters: Readonly<cv_UpdateInviteRequestParameters>;
+
+  constructor(parameters: cv_UpdateInviteRequestParameters) {
+    super("cv_UpdateInvite", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/cv_UpdateInvite`;
 
-    const body: Record<string, unknown> = {
-      inviteentity: this.inviteentity,
-    };
+    const body = requestBody({
+      inviteentity: this.Parameters.inviteentity,
+    });
 
     return {
       method: "POST",
@@ -36,8 +47,9 @@ export class cv_UpdateInviteRequest
   }
 
   async parseResponse(response: Response): Promise<cv_UpdateInviteResponse> {
-    const data = await response.json();
-    return cv_UpdateInviteResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return cv_UpdateInviteResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

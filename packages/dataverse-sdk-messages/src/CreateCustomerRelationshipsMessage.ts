@@ -1,12 +1,23 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type {
   ComplexLookupAttributeMetadata,
   ComplexOneToManyRelationshipMetadata,
   CreateCustomerRelationshipsResponse as CreateCustomerRelationshipsResponseData,
 } from "./types/index.js";
+
+/**
+ * Parameters of the CreateCustomerRelationships message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CreateCustomerRelationshipsRequestParameters {
+  Lookup?: ComplexLookupAttributeMetadata;
+  OneToManyRelationships?: ComplexOneToManyRelationshipMetadata[];
+  SolutionUniqueName?: string;
+}
 
 /**
  * CreateCustomerRelationships request message
@@ -17,25 +28,23 @@ export class CreateCustomerRelationshipsRequest
   extends OrganizationRequest
   implements Executable<CreateCustomerRelationshipsResponse>
 {
-  constructor(
-    public lookup?: ComplexLookupAttributeMetadata,
-    public oneToManyRelationships?: ComplexOneToManyRelationshipMetadata[],
-    public solutionUniqueName?: string
-  ) {
-    super("CreateCustomerRelationships");
+  declare readonly Parameters: Readonly<CreateCustomerRelationshipsRequestParameters>;
+
+  constructor(parameters: CreateCustomerRelationshipsRequestParameters = {}) {
+    super("CreateCustomerRelationships", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CreateCustomerRelationships`;
 
-    const body: Record<string, unknown> = {
-      Lookup: enumBody(this.lookup, "ComplexLookupAttributeMetadata"),
+    const body = requestBody({
+      Lookup: enumBody(this.Parameters.Lookup, "ComplexLookupAttributeMetadata"),
       OneToManyRelationships: enumBody(
-        this.oneToManyRelationships,
+        this.Parameters.OneToManyRelationships,
         "ComplexOneToManyRelationshipMetadata"
       ),
-      SolutionUniqueName: this.solutionUniqueName,
-    };
+      SolutionUniqueName: this.Parameters.SolutionUniqueName,
+    });
 
     return {
       method: "POST",
@@ -48,8 +57,9 @@ export class CreateCustomerRelationshipsRequest
   }
 
   async parseResponse(response: Response): Promise<CreateCustomerRelationshipsResponse> {
-    const data = await response.json();
-    return CreateCustomerRelationshipsResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return CreateCustomerRelationshipsResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

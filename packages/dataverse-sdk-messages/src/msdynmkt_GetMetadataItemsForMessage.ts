@@ -1,6 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseValue } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdynmkt_GetMetadataItemsFor message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdynmkt_GetMetadataItemsForRequestParameters {
+  msdynmkt_GetMetadataItemsFor_request_LanguageCode?: number;
+  msdynmkt_GetMetadataItemsFor_request_SourceLogicalNames: string[];
+}
 
 /**
  * msdynmkt_GetMetadataItemsFor request message
@@ -11,22 +21,21 @@ export class msdynmkt_GetMetadataItemsForRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_GetMetadataItemsForResponse>
 {
-  constructor(
-    public msdynmkt_GetMetadataItemsFor_request_LanguageCode: number | undefined,
-    public msdynmkt_GetMetadataItemsFor_request_SourceLogicalNames: string[]
-  ) {
-    super("msdynmkt_GetMetadataItemsFor");
+  declare readonly Parameters: Readonly<msdynmkt_GetMetadataItemsForRequestParameters>;
+
+  constructor(parameters: msdynmkt_GetMetadataItemsForRequestParameters) {
+    super("msdynmkt_GetMetadataItemsFor", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_GetMetadataItemsFor`;
 
-    const body: Record<string, unknown> = {
+    const body = requestBody({
       msdynmkt_GetMetadataItemsFor_request_LanguageCode:
-        this.msdynmkt_GetMetadataItemsFor_request_LanguageCode,
+        this.Parameters.msdynmkt_GetMetadataItemsFor_request_LanguageCode,
       msdynmkt_GetMetadataItemsFor_request_SourceLogicalNames:
-        this.msdynmkt_GetMetadataItemsFor_request_SourceLogicalNames,
-    };
+        this.Parameters.msdynmkt_GetMetadataItemsFor_request_SourceLogicalNames,
+    });
 
     return {
       method: "POST",
@@ -39,8 +48,9 @@ export class msdynmkt_GetMetadataItemsForRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_GetMetadataItemsForResponse> {
-    const data = await response.json();
-    return msdynmkt_GetMetadataItemsForResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdynmkt_GetMetadataItemsForResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

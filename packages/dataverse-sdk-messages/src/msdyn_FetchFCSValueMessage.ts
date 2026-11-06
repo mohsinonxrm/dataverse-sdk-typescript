@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_FetchFCSValueResponse as msdyn_FetchFCSValueResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_FetchFCSValue message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_FetchFCSValueRequestParameters {
+  Namespace: string;
+  Key: string;
+}
 
 /**
  * msdyn_FetchFCSValue request message
@@ -12,20 +22,19 @@ export class msdyn_FetchFCSValueRequest
   extends OrganizationRequest
   implements Executable<msdyn_FetchFCSValueResponse>
 {
-  constructor(
-    public namespace: string,
-    public key: string
-  ) {
-    super("msdyn_FetchFCSValue");
+  declare readonly Parameters: Readonly<msdyn_FetchFCSValueRequestParameters>;
+
+  constructor(parameters: msdyn_FetchFCSValueRequestParameters) {
+    super("msdyn_FetchFCSValue", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_FetchFCSValue`;
 
-    const body: Record<string, unknown> = {
-      Namespace: this.namespace,
-      Key: this.key,
-    };
+    const body = requestBody({
+      Namespace: this.Parameters.Namespace,
+      Key: this.Parameters.Key,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class msdyn_FetchFCSValueRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_FetchFCSValueResponse> {
-    const data = await response.json();
-    return msdyn_FetchFCSValueResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_FetchFCSValueResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,19 +11,27 @@ export interface ApplyRoutingRuleResponse {
 }
 
 /**
+ * Parameters of the ApplyRoutingRule action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ApplyRoutingRuleActionParameters {
+  Target: EntityReference | AnyEntityPayload;
+}
+
+/**
  * ApplyRoutingRule action
  *
  * Unbound action
  */
 export class ApplyRoutingRuleAction implements Executable<ApplyRoutingRuleResponse> {
-  constructor(public readonly target: EntityReference | AnyEntityPayload) {}
+  constructor(public readonly parameters: ApplyRoutingRuleActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ApplyRoutingRule`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-    };
+    const body = requestBody({
+      Target: this.parameters.Target,
+    });
 
     return {
       method: "POST",
@@ -35,7 +44,8 @@ export class ApplyRoutingRuleAction implements Executable<ApplyRoutingRuleRespon
   }
 
   async parseResponse(response: Response): Promise<ApplyRoutingRuleResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as ApplyRoutingRuleResponse;
   }
 }

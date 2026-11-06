@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from ImportTranslation action
@@ -8,23 +9,29 @@ export interface ImportTranslationResponse {
 }
 
 /**
+ * Parameters of the ImportTranslation action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ImportTranslationActionParameters {
+  TranslationFile: string;
+  ImportJobId: string;
+}
+
+/**
  * ImportTranslation action
  *
  * Unbound action
  */
 export class ImportTranslationAction implements Executable<ImportTranslationResponse> {
-  constructor(
-    public readonly translationFile: string,
-    public readonly importJobId: string
-  ) {}
+  constructor(public readonly parameters: ImportTranslationActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ImportTranslation`;
 
-    const body: Record<string, unknown> = {
-      TranslationFile: this.translationFile,
-      ImportJobId: this.importJobId,
-    };
+    const body = requestBody({
+      TranslationFile: this.parameters.TranslationFile,
+      ImportJobId: this.parameters.ImportJobId,
+    });
 
     return {
       method: "POST",
@@ -37,7 +44,8 @@ export class ImportTranslationAction implements Executable<ImportTranslationResp
   }
 
   async parseResponse(response: Response): Promise<ImportTranslationResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as ImportTranslationResponse;
   }
 }

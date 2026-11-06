@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_EffortModelPrediction action
@@ -8,23 +9,29 @@ export interface msdyn_EffortModelPredictionResponse {
 }
 
 /**
+ * Parameters of the msdyn_EffortModelPrediction action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_EffortModelPredictionActionParameters {
+  InputRequest: string;
+  AiModelId: string;
+}
+
+/**
  * msdyn_EffortModelPrediction action
  *
  * Unbound action
  */
 export class msdyn_EffortModelPredictionAction implements Executable<msdyn_EffortModelPredictionResponse> {
-  constructor(
-    public readonly inputRequest: string,
-    public readonly aiModelId: string
-  ) {}
+  constructor(public readonly parameters: msdyn_EffortModelPredictionActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_EffortModelPrediction`;
 
-    const body: Record<string, unknown> = {
-      InputRequest: this.inputRequest,
-      AiModelId: this.aiModelId,
-    };
+    const body = requestBody({
+      InputRequest: this.parameters.InputRequest,
+      AiModelId: this.parameters.AiModelId,
+    });
 
     return {
       method: "POST",
@@ -37,7 +44,8 @@ export class msdyn_EffortModelPredictionAction implements Executable<msdyn_Effor
   }
 
   async parseResponse(response: Response): Promise<msdyn_EffortModelPredictionResponse> {
-    const data = await response.json();
-    return data as msdyn_EffortModelPredictionResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_EffortModelPredictionResponse;
   }
 }

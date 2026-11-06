@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_RetrieveDistanceMatrixResponse as msdyn_RetrieveDistanceMatrixResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_RetrieveDistanceMatrix message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_RetrieveDistanceMatrixRequestParameters {
+  Version?: string;
+  Sources: Record<string, unknown>[];
+  Targets: Record<string, unknown>[];
+}
 
 /**
  * msdyn_RetrieveDistanceMatrix request message
@@ -12,22 +23,20 @@ export class msdyn_RetrieveDistanceMatrixRequest
   extends OrganizationRequest
   implements Executable<msdyn_RetrieveDistanceMatrixResponse>
 {
-  constructor(
-    public version: string | undefined,
-    public sources: Record<string, unknown>[],
-    public targets: Record<string, unknown>[]
-  ) {
-    super("msdyn_RetrieveDistanceMatrix");
+  declare readonly Parameters: Readonly<msdyn_RetrieveDistanceMatrixRequestParameters>;
+
+  constructor(parameters: msdyn_RetrieveDistanceMatrixRequestParameters) {
+    super("msdyn_RetrieveDistanceMatrix", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_RetrieveDistanceMatrix`;
 
-    const body: Record<string, unknown> = {
-      Version: this.version,
-      Sources: this.sources,
-      Targets: this.targets,
-    };
+    const body = requestBody({
+      Version: this.Parameters.Version,
+      Sources: this.Parameters.Sources,
+      Targets: this.Parameters.Targets,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class msdyn_RetrieveDistanceMatrixRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrieveDistanceMatrixResponse> {
-    const data = await response.json();
-    return msdyn_RetrieveDistanceMatrixResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_RetrieveDistanceMatrixResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

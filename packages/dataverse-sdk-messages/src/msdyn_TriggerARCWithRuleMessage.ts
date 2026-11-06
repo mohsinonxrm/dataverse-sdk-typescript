@@ -1,31 +1,44 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_TriggerARCWithRule message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_TriggerARCWithRuleRequestParameters {
+  msdyn_ruleid: string;
+  msdyn_queueitemid: string;
+}
 
 /**
  * msdyn_TriggerARCWithRule request message
  *
  * Web API Action: msdyn_TriggerARCWithRule
+ *
+ * The first argument is the id of the queueitem record to call it on.
  */
 export class msdyn_TriggerARCWithRuleRequest
   extends OrganizationRequest
   implements Executable<msdyn_TriggerARCWithRuleResponse>
 {
+  declare readonly Parameters: Readonly<msdyn_TriggerARCWithRuleRequestParameters>;
+
   constructor(
     public queueitemId: string,
-    public msdyn_ruleid: string,
-    public msdyn_queueitemid: string
+    parameters: msdyn_TriggerARCWithRuleRequestParameters
   ) {
-    super("msdyn_TriggerARCWithRule");
+    super("msdyn_TriggerARCWithRule", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/queueitems(${this.queueitemId})/Microsoft.Dynamics.CRM.msdyn_TriggerARCWithRule`;
 
-    const body: Record<string, unknown> = {
-      msdyn_ruleid: this.msdyn_ruleid,
-      msdyn_queueitemid: this.msdyn_queueitemid,
-    };
+    const body = requestBody({
+      msdyn_ruleid: this.Parameters.msdyn_ruleid,
+      msdyn_queueitemid: this.Parameters.msdyn_queueitemid,
+    });
 
     return {
       method: "POST",

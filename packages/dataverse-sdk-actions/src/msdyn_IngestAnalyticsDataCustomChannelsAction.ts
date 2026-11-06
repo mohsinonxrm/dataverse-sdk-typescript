@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_IngestAnalyticsDataCustomChannels action
@@ -8,25 +9,33 @@ export interface msdyn_IngestAnalyticsDataCustomChannelsResponse {
 }
 
 /**
+ * Parameters of the msdyn_IngestAnalyticsDataCustomChannels action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_IngestAnalyticsDataCustomChannelsActionParameters {
+  msdyn_linkedactivityid?: string;
+  msdyn_eventname: string;
+  msdyn_sequencestepid?: string;
+}
+
+/**
  * msdyn_IngestAnalyticsDataCustomChannels action
  *
  * Unbound action
  */
 export class msdyn_IngestAnalyticsDataCustomChannelsAction implements Executable<msdyn_IngestAnalyticsDataCustomChannelsResponse> {
   constructor(
-    public readonly msdyn_linkedactivityid: string | undefined,
-    public readonly msdyn_eventname: string,
-    public readonly msdyn_sequencestepid?: string
+    public readonly parameters: msdyn_IngestAnalyticsDataCustomChannelsActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_IngestAnalyticsDataCustomChannels`;
 
-    const body: Record<string, unknown> = {
-      msdyn_linkedactivityid: this.msdyn_linkedactivityid,
-      msdyn_eventname: this.msdyn_eventname,
-      msdyn_sequencestepid: this.msdyn_sequencestepid,
-    };
+    const body = requestBody({
+      msdyn_linkedactivityid: this.parameters.msdyn_linkedactivityid,
+      msdyn_eventname: this.parameters.msdyn_eventname,
+      msdyn_sequencestepid: this.parameters.msdyn_sequencestepid,
+    });
 
     return {
       method: "POST",
@@ -41,7 +50,8 @@ export class msdyn_IngestAnalyticsDataCustomChannelsAction implements Executable
   async parseResponse(
     response: Response
   ): Promise<msdyn_IngestAnalyticsDataCustomChannelsResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_IngestAnalyticsDataCustomChannelsResponse;
   }
 }

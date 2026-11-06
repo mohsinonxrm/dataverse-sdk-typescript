@@ -9,12 +9,20 @@ export interface SearchResponse {
 }
 
 /**
+ * Parameters of the Search function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SearchFunctionParameters {
+  AppointmentRequest?: AppointmentRequest;
+}
+
+/**
  * Search function
  *
  * Unbound function
  */
 export class SearchFunction implements Executable<SearchResponse> {
-  constructor(public readonly appointmentRequest?: AppointmentRequest) {}
+  constructor(public readonly parameters: SearchFunctionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/Search`;
@@ -22,9 +30,9 @@ export class SearchFunction implements Executable<SearchResponse> {
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.appointmentRequest !== undefined) {
+    if (this.parameters.AppointmentRequest !== undefined) {
       aliases.push(`AppointmentRequest=@p1`);
-      params.append("@p1", JSON.stringify(this.appointmentRequest));
+      params.append("@p1", JSON.stringify(this.parameters.AppointmentRequest));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -40,7 +48,8 @@ export class SearchFunction implements Executable<SearchResponse> {
   }
 
   async parseResponse(response: Response): Promise<SearchResponse> {
-    const data = await response.json();
-    return data as SearchResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as SearchResponse;
   }
 }

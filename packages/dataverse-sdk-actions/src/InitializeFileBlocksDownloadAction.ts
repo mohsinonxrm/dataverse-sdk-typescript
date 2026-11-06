@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -13,25 +14,31 @@ export interface InitializeFileBlocksDownloadResponse {
 }
 
 /**
+ * Parameters of the InitializeFileBlocksDownload action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface InitializeFileBlocksDownloadActionParameters {
+  Target: EntityReference | AnyEntityPayload;
+  FileAttributeName: string;
+  DataSource?: string;
+}
+
+/**
  * InitializeFileBlocksDownload action
  *
  * Unbound action
  */
 export class InitializeFileBlocksDownloadAction implements Executable<InitializeFileBlocksDownloadResponse> {
-  constructor(
-    public readonly target: EntityReference | AnyEntityPayload,
-    public readonly fileAttributeName: string,
-    public readonly dataSource?: string
-  ) {}
+  constructor(public readonly parameters: InitializeFileBlocksDownloadActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/InitializeFileBlocksDownload`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-      FileAttributeName: this.fileAttributeName,
-      DataSource: this.dataSource,
-    };
+    const body = requestBody({
+      Target: this.parameters.Target,
+      FileAttributeName: this.parameters.FileAttributeName,
+      DataSource: this.parameters.DataSource,
+    });
 
     return {
       method: "POST",
@@ -44,7 +51,8 @@ export class InitializeFileBlocksDownloadAction implements Executable<Initialize
   }
 
   async parseResponse(response: Response): Promise<InitializeFileBlocksDownloadResponse> {
-    const data = await response.json();
-    return data as InitializeFileBlocksDownloadResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as InitializeFileBlocksDownloadResponse;
   }
 }

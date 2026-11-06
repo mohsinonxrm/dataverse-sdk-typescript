@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from AISummarize action
@@ -8,19 +9,27 @@ export interface AISummarizeResponse {
 }
 
 /**
+ * Parameters of the AISummarize action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AISummarizeActionParameters {
+  Text: string;
+}
+
+/**
  * AISummarize action
  *
  * Unbound action
  */
 export class AISummarizeAction implements Executable<AISummarizeResponse> {
-  constructor(public readonly text: string) {}
+  constructor(public readonly parameters: AISummarizeActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/AISummarize`;
 
-    const body: Record<string, unknown> = {
-      Text: this.text,
-    };
+    const body = requestBody({
+      Text: this.parameters.Text,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class AISummarizeAction implements Executable<AISummarizeResponse> {
   }
 
   async parseResponse(response: Response): Promise<AISummarizeResponse> {
-    const data = await response.json();
-    return data as AISummarizeResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as AISummarizeResponse;
   }
 }

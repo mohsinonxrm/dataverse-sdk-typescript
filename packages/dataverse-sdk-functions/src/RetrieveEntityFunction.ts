@@ -10,17 +10,23 @@ export interface RetrieveEntityResponse {
 }
 
 /**
+ * Parameters of the RetrieveEntity function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveEntityFunctionParameters {
+  EntityFilters: EntityFilters | keyof typeof EntityFilters;
+  LogicalName?: string;
+  MetadataId: string;
+  RetrieveAsIfPublished: boolean;
+}
+
+/**
  * RetrieveEntity function
  *
  * Unbound function
  */
 export class RetrieveEntityFunction implements Executable<RetrieveEntityResponse> {
-  constructor(
-    public readonly entityFilters: EntityFilters | keyof typeof EntityFilters,
-    public readonly logicalName: string | undefined,
-    public readonly metadataId: string,
-    public readonly retrieveAsIfPublished: boolean
-  ) {}
+  constructor(public readonly parameters: RetrieveEntityFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveEntity`;
@@ -28,24 +34,31 @@ export class RetrieveEntityFunction implements Executable<RetrieveEntityResponse
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.entityFilters !== undefined) {
+    if (this.parameters.EntityFilters !== undefined) {
       aliases.push(`EntityFilters=@p1`);
       params.append(
         "@p1",
-        formatParameterAlias(this.entityFilters, "mscrm.EntityFilters", "EnumerationType")
+        formatParameterAlias(
+          this.parameters.EntityFilters,
+          "mscrm.EntityFilters",
+          "EnumerationType"
+        )
       );
     }
-    if (this.logicalName !== undefined) {
+    if (this.parameters.LogicalName !== undefined) {
       aliases.push(`LogicalName=@p2`);
-      params.append("@p2", formatParameterAlias(this.logicalName, "Edm.String"));
+      params.append("@p2", formatParameterAlias(this.parameters.LogicalName, "Edm.String"));
     }
-    if (this.metadataId !== undefined) {
+    if (this.parameters.MetadataId !== undefined) {
       aliases.push(`MetadataId=@p3`);
-      params.append("@p3", formatParameterAlias(this.metadataId, "Edm.Guid"));
+      params.append("@p3", formatParameterAlias(this.parameters.MetadataId, "Edm.Guid"));
     }
-    if (this.retrieveAsIfPublished !== undefined) {
+    if (this.parameters.RetrieveAsIfPublished !== undefined) {
       aliases.push(`RetrieveAsIfPublished=@p4`);
-      params.append("@p4", formatParameterAlias(this.retrieveAsIfPublished, "Edm.Boolean"));
+      params.append(
+        "@p4",
+        formatParameterAlias(this.parameters.RetrieveAsIfPublished, "Edm.Boolean")
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -61,7 +74,8 @@ export class RetrieveEntityFunction implements Executable<RetrieveEntityResponse
   }
 
   async parseResponse(response: Response): Promise<RetrieveEntityResponse> {
-    const data = await response.json();
-    return data as RetrieveEntityResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RetrieveEntityResponse;
   }
 }

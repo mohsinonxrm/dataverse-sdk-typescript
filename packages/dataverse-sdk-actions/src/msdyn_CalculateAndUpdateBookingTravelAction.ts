@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_CalculateAndUpdateBookingTravel action
@@ -9,19 +10,27 @@ export interface msdyn_CalculateAndUpdateBookingTravelResponse {
 }
 
 /**
+ * Parameters of the msdyn_CalculateAndUpdateBookingTravel action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CalculateAndUpdateBookingTravelActionParameters {
+  Bookings: Record<string, unknown>[];
+}
+
+/**
  * msdyn_CalculateAndUpdateBookingTravel action
  *
  * Unbound action
  */
 export class msdyn_CalculateAndUpdateBookingTravelAction implements Executable<msdyn_CalculateAndUpdateBookingTravelResponse> {
-  constructor(public readonly bookings: Record<string, unknown>[]) {}
+  constructor(public readonly parameters: msdyn_CalculateAndUpdateBookingTravelActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CalculateAndUpdateBookingTravel`;
 
-    const body: Record<string, unknown> = {
-      Bookings: this.bookings,
-    };
+    const body = requestBody({
+      Bookings: this.parameters.Bookings,
+    });
 
     return {
       method: "POST",
@@ -34,7 +43,8 @@ export class msdyn_CalculateAndUpdateBookingTravelAction implements Executable<m
   }
 
   async parseResponse(response: Response): Promise<msdyn_CalculateAndUpdateBookingTravelResponse> {
-    const data = await response.json();
-    return data as msdyn_CalculateAndUpdateBookingTravelResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_CalculateAndUpdateBookingTravelResponse;
   }
 }

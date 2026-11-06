@@ -9,16 +9,26 @@ export interface RetrievePrincipalAccessInfo_systemuserResponse {
 }
 
 /**
+ * Parameters of the RetrievePrincipalAccessInfo function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrievePrincipalAccessInfo_systemuserFunctionParameters {
+  ObjectId: string;
+  EntityName: string;
+}
+
+/**
  * RetrievePrincipalAccessInfo function
  *
  * Bound function
  * Binding parameter: entity (mscrm.systemuser)
+ *
+ * The first argument is the id of the systemuser record to call it on.
  */
 export class RetrievePrincipalAccessInfo_systemuserFunction implements Executable<RetrievePrincipalAccessInfo_systemuserResponse> {
   constructor(
     public readonly systemuserId: string,
-    public readonly objectId: string,
-    public readonly entityName: string
+    public readonly parameters: RetrievePrincipalAccessInfo_systemuserFunctionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -28,13 +38,13 @@ export class RetrievePrincipalAccessInfo_systemuserFunction implements Executabl
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.objectId !== undefined) {
+    if (this.parameters.ObjectId !== undefined) {
       aliases.push(`ObjectId=@p1`);
-      params.append("@p1", formatParameterAlias(this.objectId, "Edm.Guid"));
+      params.append("@p1", formatParameterAlias(this.parameters.ObjectId, "Edm.Guid"));
     }
-    if (this.entityName !== undefined) {
+    if (this.parameters.EntityName !== undefined) {
       aliases.push(`EntityName=@p2`);
-      params.append("@p2", formatParameterAlias(this.entityName, "Edm.String"));
+      params.append("@p2", formatParameterAlias(this.parameters.EntityName, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -50,7 +60,8 @@ export class RetrievePrincipalAccessInfo_systemuserFunction implements Executabl
   }
 
   async parseResponse(response: Response): Promise<RetrievePrincipalAccessInfo_systemuserResponse> {
-    const data = await response.json();
-    return data as RetrievePrincipalAccessInfo_systemuserResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RetrievePrincipalAccessInfo_systemuserResponse;
   }
 }

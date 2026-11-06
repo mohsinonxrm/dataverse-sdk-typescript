@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,25 +11,31 @@ export interface msdyn_MergeDuplicatesActionResponse {
 }
 
 /**
+ * Parameters of the msdyn_MergeDuplicatesAction action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_MergeDuplicatesActionActionParameters {
+  Target?: EntityReference | AnyEntityPayload;
+  Duplicates?: Record<string, unknown>[];
+  PerformParentingChecks?: boolean;
+}
+
+/**
  * msdyn_MergeDuplicatesAction action
  *
  * Unbound action
  */
 export class msdyn_MergeDuplicatesActionAction implements Executable<msdyn_MergeDuplicatesActionResponse> {
-  constructor(
-    public readonly target?: EntityReference | AnyEntityPayload,
-    public readonly duplicates?: Record<string, unknown>[],
-    public readonly performParentingChecks?: boolean
-  ) {}
+  constructor(public readonly parameters: msdyn_MergeDuplicatesActionActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_MergeDuplicatesAction`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-      Duplicates: this.duplicates,
-      PerformParentingChecks: this.performParentingChecks,
-    };
+    const body = requestBody({
+      Target: this.parameters.Target,
+      Duplicates: this.parameters.Duplicates,
+      PerformParentingChecks: this.parameters.PerformParentingChecks,
+    });
 
     return {
       method: "POST",
@@ -41,7 +48,8 @@ export class msdyn_MergeDuplicatesActionAction implements Executable<msdyn_Merge
   }
 
   async parseResponse(response: Response): Promise<msdyn_MergeDuplicatesActionResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_MergeDuplicatesActionResponse;
   }
 }

@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from DownloadSolutionExportData action
@@ -8,19 +9,27 @@ export interface DownloadSolutionExportDataResponse {
 }
 
 /**
+ * Parameters of the DownloadSolutionExportData action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface DownloadSolutionExportDataActionParameters {
+  ExportJobId: string;
+}
+
+/**
  * DownloadSolutionExportData action
  *
  * Unbound action
  */
 export class DownloadSolutionExportDataAction implements Executable<DownloadSolutionExportDataResponse> {
-  constructor(public readonly exportJobId: string) {}
+  constructor(public readonly parameters: DownloadSolutionExportDataActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/DownloadSolutionExportData`;
 
-    const body: Record<string, unknown> = {
-      ExportJobId: this.exportJobId,
-    };
+    const body = requestBody({
+      ExportJobId: this.parameters.ExportJobId,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class DownloadSolutionExportDataAction implements Executable<DownloadSolu
   }
 
   async parseResponse(response: Response): Promise<DownloadSolutionExportDataResponse> {
-    const data = await response.json();
-    return data as DownloadSolutionExportDataResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as DownloadSolutionExportDataResponse;
   }
 }

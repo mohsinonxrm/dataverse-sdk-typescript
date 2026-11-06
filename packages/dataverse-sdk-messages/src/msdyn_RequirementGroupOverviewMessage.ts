@@ -1,45 +1,58 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_RequirementGroupOverviewResponse as msdyn_RequirementGroupOverviewResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_RequirementGroupOverview message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_RequirementGroupOverviewRequestParameters {
+  Start?: string;
+  End?: string;
+  Duration?: number;
+  Interval?: number;
+  ResourceIdsFilter?: string;
+  OverviewTypes?: string;
+  ConstraintBag?: string;
+  RemoveRedundantCrewCombinations?: boolean;
+}
 
 /**
  * msdyn_RequirementGroupOverview request message
  *
  * Web API Action: msdyn_RequirementGroupOverview
+ *
+ * The first argument is the id of the msdyn_requirementgroup record to call it on.
  */
 export class msdyn_RequirementGroupOverviewRequest
   extends OrganizationRequest
   implements Executable<msdyn_RequirementGroupOverviewResponse>
 {
+  declare readonly Parameters: Readonly<msdyn_RequirementGroupOverviewRequestParameters>;
+
   constructor(
     public msdyn_requirementgroupId: string,
-    public start?: string,
-    public end?: string,
-    public duration?: number,
-    public interval?: number,
-    public resourceIdsFilter?: string,
-    public overviewTypes?: string,
-    public constraintBag?: string,
-    public removeRedundantCrewCombinations?: boolean
+    parameters: msdyn_RequirementGroupOverviewRequestParameters = {}
   ) {
-    super("msdyn_RequirementGroupOverview");
+    super("msdyn_RequirementGroupOverview", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_requirementgroups(${this.msdyn_requirementgroupId})/Microsoft.Dynamics.CRM.msdyn_RequirementGroupOverview`;
 
-    const body: Record<string, unknown> = {
-      Start: this.start,
-      End: this.end,
-      Duration: this.duration,
-      Interval: this.interval,
-      ResourceIdsFilter: this.resourceIdsFilter,
-      OverviewTypes: this.overviewTypes,
-      ConstraintBag: this.constraintBag,
-      RemoveRedundantCrewCombinations: this.removeRedundantCrewCombinations,
-    };
+    const body = requestBody({
+      Start: this.Parameters.Start,
+      End: this.Parameters.End,
+      Duration: this.Parameters.Duration,
+      Interval: this.Parameters.Interval,
+      ResourceIdsFilter: this.Parameters.ResourceIdsFilter,
+      OverviewTypes: this.Parameters.OverviewTypes,
+      ConstraintBag: this.Parameters.ConstraintBag,
+      RemoveRedundantCrewCombinations: this.Parameters.RemoveRedundantCrewCombinations,
+    });
 
     return {
       method: "POST",
@@ -52,8 +65,9 @@ export class msdyn_RequirementGroupOverviewRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RequirementGroupOverviewResponse> {
-    const data = await response.json();
-    return msdyn_RequirementGroupOverviewResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_RequirementGroupOverviewResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

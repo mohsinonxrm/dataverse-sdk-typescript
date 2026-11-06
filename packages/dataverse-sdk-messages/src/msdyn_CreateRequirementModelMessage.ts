@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_CreateRequirementModelResponse as msdyn_CreateRequirementModelResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_CreateRequirementModel message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CreateRequirementModelRequestParameters {
+  Attributes: string;
+  From?: string;
+  To?: string;
+}
 
 /**
  * msdyn_CreateRequirementModel request message
@@ -12,22 +23,20 @@ export class msdyn_CreateRequirementModelRequest
   extends OrganizationRequest
   implements Executable<msdyn_CreateRequirementModelResponse>
 {
-  constructor(
-    public attributes: string,
-    public from?: string,
-    public to?: string
-  ) {
-    super("msdyn_CreateRequirementModel");
+  declare readonly Parameters: Readonly<msdyn_CreateRequirementModelRequestParameters>;
+
+  constructor(parameters: msdyn_CreateRequirementModelRequestParameters) {
+    super("msdyn_CreateRequirementModel", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CreateRequirementModel`;
 
-    const body: Record<string, unknown> = {
-      Attributes: this.attributes,
-      From: this.from,
-      To: this.to,
-    };
+    const body = requestBody({
+      Attributes: this.Parameters.Attributes,
+      From: this.Parameters.From,
+      To: this.Parameters.To,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class msdyn_CreateRequirementModelRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateRequirementModelResponse> {
-    const data = await response.json();
-    return msdyn_CreateRequirementModelResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_CreateRequirementModelResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

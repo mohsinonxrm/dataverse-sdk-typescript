@@ -28,7 +28,8 @@ export class msdyn_CheckForSolutionVersionAction implements Executable<msdyn_Che
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckForSolutionVersionResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckForSolutionVersionResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_CheckForSolutionVersionResponse;
   }
 }

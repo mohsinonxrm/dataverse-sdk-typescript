@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from McpCreateTable action
@@ -8,27 +9,33 @@ export interface McpCreateTableResponse {
 }
 
 /**
+ * Parameters of the McpCreateTable action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface McpCreateTableActionParameters {
+  displayname?: string;
+  item: string;
+  tablename: string;
+  description?: string;
+}
+
+/**
  * McpCreateTable action
  *
  * Unbound action
  */
 export class McpCreateTableAction implements Executable<McpCreateTableResponse> {
-  constructor(
-    public readonly displayname: string | undefined,
-    public readonly item: string,
-    public readonly tablename: string,
-    public readonly description?: string
-  ) {}
+  constructor(public readonly parameters: McpCreateTableActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/McpCreateTable`;
 
-    const body: Record<string, unknown> = {
-      displayname: this.displayname,
-      item: this.item,
-      tablename: this.tablename,
-      description: this.description,
-    };
+    const body = requestBody({
+      displayname: this.parameters.displayname,
+      item: this.parameters.item,
+      tablename: this.parameters.tablename,
+      description: this.parameters.description,
+    });
 
     return {
       method: "POST",
@@ -41,7 +48,8 @@ export class McpCreateTableAction implements Executable<McpCreateTableResponse> 
   }
 
   async parseResponse(response: Response): Promise<McpCreateTableResponse> {
-    const data = await response.json();
-    return data as McpCreateTableResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as McpCreateTableResponse;
   }
 }

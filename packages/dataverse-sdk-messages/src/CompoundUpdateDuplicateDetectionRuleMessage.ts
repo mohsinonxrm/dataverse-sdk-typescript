@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the CompoundUpdateDuplicateDetectionRule message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CompoundUpdateDuplicateDetectionRuleRequestParameters {
+  Entity: EntityReference | AnyEntityPayload;
+  ChildEntities: Record<string, unknown>[];
+}
 
 /**
  * CompoundUpdateDuplicateDetectionRule request message
@@ -12,20 +22,19 @@ export class CompoundUpdateDuplicateDetectionRuleRequest
   extends OrganizationRequest
   implements Executable<CompoundUpdateDuplicateDetectionRuleResponse>
 {
-  constructor(
-    public entity: EntityReference | AnyEntityPayload,
-    public childEntities: Record<string, unknown>[]
-  ) {
-    super("CompoundUpdateDuplicateDetectionRule");
+  declare readonly Parameters: Readonly<CompoundUpdateDuplicateDetectionRuleRequestParameters>;
+
+  constructor(parameters: CompoundUpdateDuplicateDetectionRuleRequestParameters) {
+    super("CompoundUpdateDuplicateDetectionRule", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CompoundUpdateDuplicateDetectionRule`;
 
-    const body: Record<string, unknown> = {
-      Entity: this.entity,
-      ChildEntities: this.childEntities,
-    };
+    const body = requestBody({
+      Entity: this.Parameters.Entity,
+      ChildEntities: this.Parameters.ChildEntities,
+    });
 
     return {
       method: "POST",

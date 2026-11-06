@@ -1,33 +1,46 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_FieldServiceWorkOrderIncidentStatusActionResponse as msdyn_FieldServiceWorkOrderIncidentStatusActionResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_FieldServiceWorkOrderIncidentStatusAction message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_FieldServiceWorkOrderIncidentStatusActionRequestParameters {
+  Type: number;
+  InputParameter: string;
+}
 
 /**
  * msdyn_FieldServiceWorkOrderIncidentStatusAction request message
  *
  * Web API Action: msdyn_FieldServiceWorkOrderIncidentStatusAction
+ *
+ * The first argument is the id of the msdyn_workorderincident record to call it on.
  */
 export class msdyn_FieldServiceWorkOrderIncidentStatusActionRequest
   extends OrganizationRequest
   implements Executable<msdyn_FieldServiceWorkOrderIncidentStatusActionResponse>
 {
+  declare readonly Parameters: Readonly<msdyn_FieldServiceWorkOrderIncidentStatusActionRequestParameters>;
+
   constructor(
     public msdyn_workorderincidentId: string,
-    public type: number,
-    public inputParameter: string
+    parameters: msdyn_FieldServiceWorkOrderIncidentStatusActionRequestParameters
   ) {
-    super("msdyn_FieldServiceWorkOrderIncidentStatusAction");
+    super("msdyn_FieldServiceWorkOrderIncidentStatusAction", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_workorderincidents(${this.msdyn_workorderincidentId})/Microsoft.Dynamics.CRM.msdyn_FieldServiceWorkOrderIncidentStatusAction`;
 
-    const body: Record<string, unknown> = {
-      Type: this.type,
-      InputParameter: this.inputParameter,
-    };
+    const body = requestBody({
+      Type: this.Parameters.Type,
+      InputParameter: this.Parameters.InputParameter,
+    });
 
     return {
       method: "POST",
@@ -42,8 +55,11 @@ export class msdyn_FieldServiceWorkOrderIncidentStatusActionRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_FieldServiceWorkOrderIncidentStatusActionResponse> {
-    const data = await response.json();
-    return msdyn_FieldServiceWorkOrderIncidentStatusActionResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_FieldServiceWorkOrderIncidentStatusActionResponse.fromResponse(
+      text ? JSON.parse(text) : {}
+    );
   }
 }
 

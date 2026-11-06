@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,23 +11,29 @@ export interface AppendRelatedPartyResponse {
 }
 
 /**
+ * Parameters of the AppendRelatedParty action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AppendRelatedPartyActionParameters {
+  Activity: EntityReference | AnyEntityPayload;
+  Party: EntityReference | AnyEntityPayload;
+}
+
+/**
  * AppendRelatedParty action
  *
  * Unbound action
  */
 export class AppendRelatedPartyAction implements Executable<AppendRelatedPartyResponse> {
-  constructor(
-    public readonly activity: EntityReference | AnyEntityPayload,
-    public readonly party: EntityReference | AnyEntityPayload
-  ) {}
+  constructor(public readonly parameters: AppendRelatedPartyActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/AppendRelatedParty`;
 
-    const body: Record<string, unknown> = {
-      Activity: this.activity,
-      Party: this.party,
-    };
+    const body = requestBody({
+      Activity: this.parameters.Activity,
+      Party: this.parameters.Party,
+    });
 
     return {
       method: "POST",
@@ -39,7 +46,8 @@ export class AppendRelatedPartyAction implements Executable<AppendRelatedPartyRe
   }
 
   async parseResponse(response: Response): Promise<AppendRelatedPartyResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as AppendRelatedPartyResponse;
   }
 }

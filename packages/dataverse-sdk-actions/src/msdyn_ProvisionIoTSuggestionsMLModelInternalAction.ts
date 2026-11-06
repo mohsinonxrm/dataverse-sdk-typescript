@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_ProvisionIoTSuggestionsMLModelInternal action
@@ -8,19 +9,29 @@ export interface msdyn_ProvisionIoTSuggestionsMLModelInternalResponse {
 }
 
 /**
+ * Parameters of the msdyn_ProvisionIoTSuggestionsMLModelInternal action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ProvisionIoTSuggestionsMLModelInternalActionParameters {
+  TenantId: string;
+}
+
+/**
  * msdyn_ProvisionIoTSuggestionsMLModelInternal action
  *
  * Unbound action
  */
 export class msdyn_ProvisionIoTSuggestionsMLModelInternalAction implements Executable<msdyn_ProvisionIoTSuggestionsMLModelInternalResponse> {
-  constructor(public readonly tenantId: string) {}
+  constructor(
+    public readonly parameters: msdyn_ProvisionIoTSuggestionsMLModelInternalActionParameters
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ProvisionIoTSuggestionsMLModelInternal`;
 
-    const body: Record<string, unknown> = {
-      TenantId: this.tenantId,
-    };
+    const body = requestBody({
+      TenantId: this.parameters.TenantId,
+    });
 
     return {
       method: "POST",
@@ -35,7 +46,8 @@ export class msdyn_ProvisionIoTSuggestionsMLModelInternalAction implements Execu
   async parseResponse(
     response: Response
   ): Promise<msdyn_ProvisionIoTSuggestionsMLModelInternalResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_ProvisionIoTSuggestionsMLModelInternalResponse;
   }
 }

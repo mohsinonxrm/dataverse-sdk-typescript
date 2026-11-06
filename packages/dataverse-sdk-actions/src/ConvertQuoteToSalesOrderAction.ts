@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { ColumnSet, salesorder } from "./types/index.js";
@@ -15,33 +16,39 @@ export interface ConvertQuoteToSalesOrderResponse extends salesorder {
 }
 
 /**
+ * Parameters of the ConvertQuoteToSalesOrder action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ConvertQuoteToSalesOrderActionParameters {
+  QuoteId: string;
+  ColumnSet?: ColumnSet;
+  QuoteCloseDate?: string;
+  QuoteCloseStatus?: number;
+  QuoteCloseSubject?: string;
+  QuoteCloseDescription?: string;
+  ProcessInstanceId?: EntityReference | AnyEntityPayload;
+}
+
+/**
  * ConvertQuoteToSalesOrder action
  *
  * Unbound action
  */
 export class ConvertQuoteToSalesOrderAction implements Executable<ConvertQuoteToSalesOrderResponse> {
-  constructor(
-    public readonly quoteId: string,
-    public readonly columnSet?: ColumnSet,
-    public readonly quoteCloseDate?: string,
-    public readonly quoteCloseStatus?: number,
-    public readonly quoteCloseSubject?: string,
-    public readonly quoteCloseDescription?: string,
-    public readonly processInstanceId?: EntityReference | AnyEntityPayload
-  ) {}
+  constructor(public readonly parameters: ConvertQuoteToSalesOrderActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ConvertQuoteToSalesOrder`;
 
-    const body: Record<string, unknown> = {
-      QuoteId: this.quoteId,
-      ColumnSet: enumBody(this.columnSet, "ColumnSet"),
-      QuoteCloseDate: this.quoteCloseDate,
-      QuoteCloseStatus: this.quoteCloseStatus,
-      QuoteCloseSubject: this.quoteCloseSubject,
-      QuoteCloseDescription: this.quoteCloseDescription,
-      ProcessInstanceId: this.processInstanceId,
-    };
+    const body = requestBody({
+      QuoteId: this.parameters.QuoteId,
+      ColumnSet: enumBody(this.parameters.ColumnSet, "ColumnSet"),
+      QuoteCloseDate: this.parameters.QuoteCloseDate,
+      QuoteCloseStatus: this.parameters.QuoteCloseStatus,
+      QuoteCloseSubject: this.parameters.QuoteCloseSubject,
+      QuoteCloseDescription: this.parameters.QuoteCloseDescription,
+      ProcessInstanceId: this.parameters.ProcessInstanceId,
+    });
 
     return {
       method: "POST",
@@ -54,7 +61,8 @@ export class ConvertQuoteToSalesOrderAction implements Executable<ConvertQuoteTo
   }
 
   async parseResponse(response: Response): Promise<ConvertQuoteToSalesOrderResponse> {
-    const data = await response.json();
-    return data as ConvertQuoteToSalesOrderResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as ConvertQuoteToSalesOrderResponse;
   }
 }

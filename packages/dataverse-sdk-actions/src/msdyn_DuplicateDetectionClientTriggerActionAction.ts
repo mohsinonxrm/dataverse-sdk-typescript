@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_DuplicateDetectionClientTriggerAction action
@@ -8,19 +9,29 @@ export interface msdyn_DuplicateDetectionClientTriggerActionResponse {
 }
 
 /**
+ * Parameters of the msdyn_DuplicateDetectionClientTriggerAction action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_DuplicateDetectionClientTriggerActionActionParameters {
+  InputData?: string;
+}
+
+/**
  * msdyn_DuplicateDetectionClientTriggerAction action
  *
  * Unbound action
  */
 export class msdyn_DuplicateDetectionClientTriggerActionAction implements Executable<msdyn_DuplicateDetectionClientTriggerActionResponse> {
-  constructor(public readonly inputData?: string) {}
+  constructor(
+    public readonly parameters: msdyn_DuplicateDetectionClientTriggerActionActionParameters = {}
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_DuplicateDetectionClientTriggerAction`;
 
-    const body: Record<string, unknown> = {
-      InputData: this.inputData,
-    };
+    const body = requestBody({
+      InputData: this.parameters.InputData,
+    });
 
     return {
       method: "POST",
@@ -35,7 +46,8 @@ export class msdyn_DuplicateDetectionClientTriggerActionAction implements Execut
   async parseResponse(
     response: Response
   ): Promise<msdyn_DuplicateDetectionClientTriggerActionResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_DuplicateDetectionClientTriggerActionResponse;
   }
 }

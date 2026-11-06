@@ -1,28 +1,41 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnalyzeResponse as AnalyzeResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the Analyze message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AnalyzeRequestParameters {
+  version: string;
+}
 
 /**
  * Analyze request message
  *
  * Web API Action: Analyze
+ *
+ * The first argument is the id of the msdyn_pminferredtask record to call it on.
  */
 export class AnalyzeRequest extends OrganizationRequest implements Executable<AnalyzeResponse> {
+  declare readonly Parameters: Readonly<AnalyzeRequestParameters>;
+
   constructor(
     public msdyn_pminferredtaskId: string,
-    public version: string
+    parameters: AnalyzeRequestParameters
   ) {
-    super("Analyze");
+    super("Analyze", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_pminferredtasks(${this.msdyn_pminferredtaskId})/Microsoft.Dynamics.CRM.Analyze`;
 
-    const body: Record<string, unknown> = {
-      version: this.version,
-    };
+    const body = requestBody({
+      version: this.Parameters.version,
+    });
 
     return {
       method: "POST",
@@ -35,8 +48,9 @@ export class AnalyzeRequest extends OrganizationRequest implements Executable<An
   }
 
   async parseResponse(response: Response): Promise<AnalyzeResponse> {
-    const data = await response.json();
-    return AnalyzeResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return AnalyzeResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from PowerAutomateProxy action
@@ -10,27 +11,33 @@ export interface PowerAutomateProxyResponse {
 }
 
 /**
+ * Parameters of the PowerAutomateProxy action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface PowerAutomateProxyActionParameters {
+  HttpMethod: string;
+  RelativeUrl: string;
+  RequestHeaders?: string;
+  RequestBody?: string;
+}
+
+/**
  * PowerAutomateProxy action
  *
  * Unbound action
  */
 export class PowerAutomateProxyAction implements Executable<PowerAutomateProxyResponse> {
-  constructor(
-    public readonly httpMethod: string,
-    public readonly relativeUrl: string,
-    public readonly requestHeaders?: string,
-    public readonly requestBody?: string
-  ) {}
+  constructor(public readonly parameters: PowerAutomateProxyActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/PowerAutomateProxy`;
 
-    const body: Record<string, unknown> = {
-      HttpMethod: this.httpMethod,
-      RelativeUrl: this.relativeUrl,
-      RequestHeaders: this.requestHeaders,
-      RequestBody: this.requestBody,
-    };
+    const body = requestBody({
+      HttpMethod: this.parameters.HttpMethod,
+      RelativeUrl: this.parameters.RelativeUrl,
+      RequestHeaders: this.parameters.RequestHeaders,
+      RequestBody: this.parameters.RequestBody,
+    });
 
     return {
       method: "POST",
@@ -43,7 +50,8 @@ export class PowerAutomateProxyAction implements Executable<PowerAutomateProxyRe
   }
 
   async parseResponse(response: Response): Promise<PowerAutomateProxyResponse> {
-    const data = await response.json();
-    return data as PowerAutomateProxyResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as PowerAutomateProxyResponse;
   }
 }

@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_CreateResourceOptimizationRequest action
@@ -8,31 +9,39 @@ export interface msdyn_CreateResourceOptimizationRequestResponse {
 }
 
 /**
+ * Parameters of the msdyn_CreateResourceOptimizationRequest action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CreateResourceOptimizationRequestActionParameters {
+  ResourceIds: string;
+  StartDate: string;
+  EndDate: string;
+  GoalId?: string;
+  IsSimulation?: boolean;
+  OptimizationRequestId?: string;
+}
+
+/**
  * msdyn_CreateResourceOptimizationRequest action
  *
  * Unbound action
  */
 export class msdyn_CreateResourceOptimizationRequestAction implements Executable<msdyn_CreateResourceOptimizationRequestResponse> {
   constructor(
-    public readonly resourceIds: string,
-    public readonly startDate: string,
-    public readonly endDate: string,
-    public readonly goalId?: string,
-    public readonly isSimulation?: boolean,
-    public readonly optimizationRequestId?: string
+    public readonly parameters: msdyn_CreateResourceOptimizationRequestActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CreateResourceOptimizationRequest`;
 
-    const body: Record<string, unknown> = {
-      ResourceIds: this.resourceIds,
-      StartDate: this.startDate,
-      EndDate: this.endDate,
-      GoalId: this.goalId,
-      IsSimulation: this.isSimulation,
-      OptimizationRequestId: this.optimizationRequestId,
-    };
+    const body = requestBody({
+      ResourceIds: this.parameters.ResourceIds,
+      StartDate: this.parameters.StartDate,
+      EndDate: this.parameters.EndDate,
+      GoalId: this.parameters.GoalId,
+      IsSimulation: this.parameters.IsSimulation,
+      OptimizationRequestId: this.parameters.OptimizationRequestId,
+    });
 
     return {
       method: "POST",
@@ -47,7 +56,8 @@ export class msdyn_CreateResourceOptimizationRequestAction implements Executable
   async parseResponse(
     response: Response
   ): Promise<msdyn_CreateResourceOptimizationRequestResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_CreateResourceOptimizationRequestResponse;
   }
 }

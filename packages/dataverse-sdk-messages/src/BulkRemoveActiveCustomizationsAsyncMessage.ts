@@ -1,10 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type {
   BulkRemoveActiveCustomizationsAsyncResponse as BulkRemoveActiveCustomizationsAsyncResponseData,
   BulkRemoveActiveCustomizationsParameters,
 } from "./types/index.js";
+
+/**
+ * Parameters of the BulkRemoveActiveCustomizationsAsync message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface BulkRemoveActiveCustomizationsAsyncRequestParameters {
+  BulkRemoveActiveCustomizationsParameters?: BulkRemoveActiveCustomizationsParameters;
+}
 
 /**
  * BulkRemoveActiveCustomizationsAsync request message
@@ -15,18 +24,19 @@ export class BulkRemoveActiveCustomizationsAsyncRequest
   extends OrganizationRequest
   implements Executable<BulkRemoveActiveCustomizationsAsyncResponse>
 {
-  constructor(
-    public bulkRemoveActiveCustomizationsParameters?: BulkRemoveActiveCustomizationsParameters
-  ) {
-    super("BulkRemoveActiveCustomizationsAsync");
+  declare readonly Parameters: Readonly<BulkRemoveActiveCustomizationsAsyncRequestParameters>;
+
+  constructor(parameters: BulkRemoveActiveCustomizationsAsyncRequestParameters = {}) {
+    super("BulkRemoveActiveCustomizationsAsync", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/BulkRemoveActiveCustomizationsAsync`;
 
-    const body: Record<string, unknown> = {
-      BulkRemoveActiveCustomizationsParameters: this.bulkRemoveActiveCustomizationsParameters,
-    };
+    const body = requestBody({
+      BulkRemoveActiveCustomizationsParameters:
+        this.Parameters.BulkRemoveActiveCustomizationsParameters,
+    });
 
     return {
       method: "POST",
@@ -39,8 +49,9 @@ export class BulkRemoveActiveCustomizationsAsyncRequest
   }
 
   async parseResponse(response: Response): Promise<BulkRemoveActiveCustomizationsAsyncResponse> {
-    const data = await response.json();
-    return BulkRemoveActiveCustomizationsAsyncResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return BulkRemoveActiveCustomizationsAsyncResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

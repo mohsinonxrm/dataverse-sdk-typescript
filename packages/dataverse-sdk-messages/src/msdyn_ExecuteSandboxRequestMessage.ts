@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_ExecuteSandboxRequestResponse as msdyn_ExecuteSandboxRequestResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_ExecuteSandboxRequest message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ExecuteSandboxRequestRequestParameters {
+  MethodName: string;
+  MethodParams?: string;
+}
 
 /**
  * msdyn_ExecuteSandboxRequest request message
@@ -12,20 +22,19 @@ export class msdyn_ExecuteSandboxRequestRequest
   extends OrganizationRequest
   implements Executable<msdyn_ExecuteSandboxRequestResponse>
 {
-  constructor(
-    public methodName: string,
-    public methodParams?: string
-  ) {
-    super("msdyn_ExecuteSandboxRequest");
+  declare readonly Parameters: Readonly<msdyn_ExecuteSandboxRequestRequestParameters>;
+
+  constructor(parameters: msdyn_ExecuteSandboxRequestRequestParameters) {
+    super("msdyn_ExecuteSandboxRequest", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ExecuteSandboxRequest`;
 
-    const body: Record<string, unknown> = {
-      MethodName: this.methodName,
-      MethodParams: this.methodParams,
-    };
+    const body = requestBody({
+      MethodName: this.Parameters.MethodName,
+      MethodParams: this.Parameters.MethodParams,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class msdyn_ExecuteSandboxRequestRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ExecuteSandboxRequestResponse> {
-    const data = await response.json();
-    return msdyn_ExecuteSandboxRequestResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_ExecuteSandboxRequestResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

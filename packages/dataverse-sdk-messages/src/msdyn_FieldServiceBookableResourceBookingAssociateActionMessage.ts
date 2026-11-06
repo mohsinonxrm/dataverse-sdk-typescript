@@ -1,33 +1,46 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_FieldServiceBookableResourceBookingAssociateActionResponse as msdyn_FieldServiceBookableResourceBookingAssociateActionResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_FieldServiceBookableResourceBookingAssociateAction message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_FieldServiceBookableResourceBookingAssociateActionRequestParameters {
+  Type: number;
+  InputParameter: string;
+}
 
 /**
  * msdyn_FieldServiceBookableResourceBookingAssociateAction request message
  *
  * Web API Action: msdyn_FieldServiceBookableResourceBookingAssociateAction
+ *
+ * The first argument is the id of the bookableresourcebooking record to call it on.
  */
 export class msdyn_FieldServiceBookableResourceBookingAssociateActionRequest
   extends OrganizationRequest
   implements Executable<msdyn_FieldServiceBookableResourceBookingAssociateActionResponse>
 {
+  declare readonly Parameters: Readonly<msdyn_FieldServiceBookableResourceBookingAssociateActionRequestParameters>;
+
   constructor(
     public bookableresourcebookingId: string,
-    public type: number,
-    public inputParameter: string
+    parameters: msdyn_FieldServiceBookableResourceBookingAssociateActionRequestParameters
   ) {
-    super("msdyn_FieldServiceBookableResourceBookingAssociateAction");
+    super("msdyn_FieldServiceBookableResourceBookingAssociateAction", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/bookableresourcebookings(${this.bookableresourcebookingId})/Microsoft.Dynamics.CRM.msdyn_FieldServiceBookableResourceBookingAssociateAction`;
 
-    const body: Record<string, unknown> = {
-      Type: this.type,
-      InputParameter: this.inputParameter,
-    };
+    const body = requestBody({
+      Type: this.Parameters.Type,
+      InputParameter: this.Parameters.InputParameter,
+    });
 
     return {
       method: "POST",
@@ -42,8 +55,11 @@ export class msdyn_FieldServiceBookableResourceBookingAssociateActionRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_FieldServiceBookableResourceBookingAssociateActionResponse> {
-    const data = await response.json();
-    return msdyn_FieldServiceBookableResourceBookingAssociateActionResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_FieldServiceBookableResourceBookingAssociateActionResponse.fromResponse(
+      text ? JSON.parse(text) : {}
+    );
   }
 }
 

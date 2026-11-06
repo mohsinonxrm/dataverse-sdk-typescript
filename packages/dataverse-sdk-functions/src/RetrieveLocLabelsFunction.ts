@@ -11,16 +11,22 @@ export interface RetrieveLocLabelsResponse {
 }
 
 /**
+ * Parameters of the RetrieveLocLabels function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveLocLabelsFunctionParameters {
+  EntityMoniker: EntityReference;
+  AttributeName: string;
+  IncludeUnpublished: boolean;
+}
+
+/**
  * RetrieveLocLabels function
  *
  * Unbound function
  */
 export class RetrieveLocLabelsFunction implements Executable<RetrieveLocLabelsResponse> {
-  constructor(
-    public readonly entityMoniker: EntityReference,
-    public readonly attributeName: string,
-    public readonly includeUnpublished: boolean
-  ) {}
+  constructor(public readonly parameters: RetrieveLocLabelsFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveLocLabels`;
@@ -28,20 +34,20 @@ export class RetrieveLocLabelsFunction implements Executable<RetrieveLocLabelsRe
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.entityMoniker !== undefined) {
+    if (this.parameters.EntityMoniker !== undefined) {
       aliases.push(`EntityMoniker=@p1`);
       params.append(
         "@p1",
-        formatParameterAlias(this.entityMoniker, "mscrm.crmbaseentity", "EntityType")
+        formatParameterAlias(this.parameters.EntityMoniker, "mscrm.crmbaseentity", "EntityType")
       );
     }
-    if (this.attributeName !== undefined) {
+    if (this.parameters.AttributeName !== undefined) {
       aliases.push(`AttributeName=@p2`);
-      params.append("@p2", formatParameterAlias(this.attributeName, "Edm.String"));
+      params.append("@p2", formatParameterAlias(this.parameters.AttributeName, "Edm.String"));
     }
-    if (this.includeUnpublished !== undefined) {
+    if (this.parameters.IncludeUnpublished !== undefined) {
       aliases.push(`IncludeUnpublished=@p3`);
-      params.append("@p3", formatParameterAlias(this.includeUnpublished, "Edm.Boolean"));
+      params.append("@p3", formatParameterAlias(this.parameters.IncludeUnpublished, "Edm.Boolean"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -57,7 +63,8 @@ export class RetrieveLocLabelsFunction implements Executable<RetrieveLocLabelsRe
   }
 
   async parseResponse(response: Response): Promise<RetrieveLocLabelsResponse> {
-    const data = await response.json();
-    return data as RetrieveLocLabelsResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RetrieveLocLabelsResponse;
   }
 }

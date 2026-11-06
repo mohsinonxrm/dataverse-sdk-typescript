@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_OrphanCalendarCleanup message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_OrphanCalendarCleanupRequestParameters {
+  CalendarId: string;
+}
 
 /**
  * msdyn_OrphanCalendarCleanup request message
@@ -10,16 +19,18 @@ export class msdyn_OrphanCalendarCleanupRequest
   extends OrganizationRequest
   implements Executable<msdyn_OrphanCalendarCleanupResponse>
 {
-  constructor(public calendarId: string) {
-    super("msdyn_OrphanCalendarCleanup");
+  declare readonly Parameters: Readonly<msdyn_OrphanCalendarCleanupRequestParameters>;
+
+  constructor(parameters: msdyn_OrphanCalendarCleanupRequestParameters) {
+    super("msdyn_OrphanCalendarCleanup", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_OrphanCalendarCleanup`;
 
-    const body: Record<string, unknown> = {
-      CalendarId: this.calendarId,
-    };
+    const body = requestBody({
+      CalendarId: this.Parameters.CalendarId,
+    });
 
     return {
       method: "POST",

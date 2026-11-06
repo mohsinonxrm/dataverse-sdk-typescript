@@ -16,6 +16,8 @@ export interface RetrieveUnpublished_mobileofflineprofileResponse extends mobile
  *
  * Bound function
  * Binding parameter: entity (mscrm.mobileofflineprofile)
+ *
+ * The first argument is the id of the mobileofflineprofile record to call it on.
  */
 export class RetrieveUnpublished_mobileofflineprofileFunction implements Executable<RetrieveUnpublished_mobileofflineprofileResponse> {
   constructor(public readonly mobileofflineprofileId: string) {}
@@ -36,7 +38,8 @@ export class RetrieveUnpublished_mobileofflineprofileFunction implements Executa
   async parseResponse(
     response: Response
   ): Promise<RetrieveUnpublished_mobileofflineprofileResponse> {
-    const data = await response.json();
-    return data as RetrieveUnpublished_mobileofflineprofileResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RetrieveUnpublished_mobileofflineprofileResponse;
   }
 }

@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_RetrieveKnowledgeSearchFiltersResponse as msdyn_RetrieveKnowledgeSearchFiltersResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_RetrieveKnowledgeSearchFilters message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_RetrieveKnowledgeSearchFiltersRequestParameters {
+  SearchFiltersMetadata?: string;
+}
 
 /**
  * msdyn_RetrieveKnowledgeSearchFilters request message
@@ -12,16 +21,18 @@ export class msdyn_RetrieveKnowledgeSearchFiltersRequest
   extends OrganizationRequest
   implements Executable<msdyn_RetrieveKnowledgeSearchFiltersResponse>
 {
-  constructor(public searchFiltersMetadata?: string) {
-    super("msdyn_RetrieveKnowledgeSearchFilters");
+  declare readonly Parameters: Readonly<msdyn_RetrieveKnowledgeSearchFiltersRequestParameters>;
+
+  constructor(parameters: msdyn_RetrieveKnowledgeSearchFiltersRequestParameters = {}) {
+    super("msdyn_RetrieveKnowledgeSearchFilters", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_RetrieveKnowledgeSearchFilters`;
 
-    const body: Record<string, unknown> = {
-      SearchFiltersMetadata: this.searchFiltersMetadata,
-    };
+    const body = requestBody({
+      SearchFiltersMetadata: this.Parameters.SearchFiltersMetadata,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_RetrieveKnowledgeSearchFiltersRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrieveKnowledgeSearchFiltersResponse> {
-    const data = await response.json();
-    return msdyn_RetrieveKnowledgeSearchFiltersResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_RetrieveKnowledgeSearchFiltersResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

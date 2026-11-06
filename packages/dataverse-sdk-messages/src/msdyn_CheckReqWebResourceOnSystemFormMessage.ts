@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_CheckReqWebResourceOnSystemFormResponse as msdyn_CheckReqWebResourceOnSystemFormResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_CheckReqWebResourceOnSystemForm message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CheckReqWebResourceOnSystemFormRequestParameters {
+  EntityAndWebResourceList?: string;
+}
 
 /**
  * msdyn_CheckReqWebResourceOnSystemForm request message
@@ -12,16 +21,18 @@ export class msdyn_CheckReqWebResourceOnSystemFormRequest
   extends OrganizationRequest
   implements Executable<msdyn_CheckReqWebResourceOnSystemFormResponse>
 {
-  constructor(public entityAndWebResourceList?: string) {
-    super("msdyn_CheckReqWebResourceOnSystemForm");
+  declare readonly Parameters: Readonly<msdyn_CheckReqWebResourceOnSystemFormRequestParameters>;
+
+  constructor(parameters: msdyn_CheckReqWebResourceOnSystemFormRequestParameters = {}) {
+    super("msdyn_CheckReqWebResourceOnSystemForm", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckReqWebResourceOnSystemForm`;
 
-    const body: Record<string, unknown> = {
-      EntityAndWebResourceList: this.entityAndWebResourceList,
-    };
+    const body = requestBody({
+      EntityAndWebResourceList: this.Parameters.EntityAndWebResourceList,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_CheckReqWebResourceOnSystemFormRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckReqWebResourceOnSystemFormResponse> {
-    const data = await response.json();
-    return msdyn_CheckReqWebResourceOnSystemFormResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_CheckReqWebResourceOnSystemFormResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

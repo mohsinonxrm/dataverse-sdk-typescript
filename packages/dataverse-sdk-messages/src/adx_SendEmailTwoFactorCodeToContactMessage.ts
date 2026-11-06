@@ -1,35 +1,48 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the adx_SendEmailTwoFactorCodeToContact message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface adx_SendEmailTwoFactorCodeToContactRequestParameters {
+  Code: string;
+  BusinessProcessFlowId?: string;
+  BusinessProcessFlowInstanceId?: string;
+  ActionStepId?: string;
+}
 
 /**
  * adx_SendEmailTwoFactorCodeToContact request message
  *
  * Web API Action: adx_SendEmailTwoFactorCodeToContact
+ *
+ * The first argument is the id of the contact record to call it on.
  */
 export class adx_SendEmailTwoFactorCodeToContactRequest
   extends OrganizationRequest
   implements Executable<adx_SendEmailTwoFactorCodeToContactResponse>
 {
+  declare readonly Parameters: Readonly<adx_SendEmailTwoFactorCodeToContactRequestParameters>;
+
   constructor(
     public contactId: string,
-    public code: string,
-    public businessProcessFlowId?: string,
-    public businessProcessFlowInstanceId?: string,
-    public actionStepId?: string
+    parameters: adx_SendEmailTwoFactorCodeToContactRequestParameters
   ) {
-    super("adx_SendEmailTwoFactorCodeToContact");
+    super("adx_SendEmailTwoFactorCodeToContact", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/contacts(${this.contactId})/Microsoft.Dynamics.CRM.adx_SendEmailTwoFactorCodeToContact`;
 
-    const body: Record<string, unknown> = {
-      Code: this.code,
-      BusinessProcessFlowId: this.businessProcessFlowId,
-      BusinessProcessFlowInstanceId: this.businessProcessFlowInstanceId,
-      ActionStepId: this.actionStepId,
-    };
+    const body = requestBody({
+      Code: this.Parameters.Code,
+      BusinessProcessFlowId: this.Parameters.BusinessProcessFlowId,
+      BusinessProcessFlowInstanceId: this.Parameters.BusinessProcessFlowInstanceId,
+      ActionStepId: this.Parameters.ActionStepId,
+    });
 
     return {
       method: "POST",

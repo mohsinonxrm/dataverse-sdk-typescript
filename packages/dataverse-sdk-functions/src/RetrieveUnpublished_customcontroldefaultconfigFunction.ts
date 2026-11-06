@@ -16,6 +16,8 @@ export interface RetrieveUnpublished_customcontroldefaultconfigResponse extends 
  *
  * Bound function
  * Binding parameter: entity (mscrm.customcontroldefaultconfig)
+ *
+ * The first argument is the id of the customcontroldefaultconfig record to call it on.
  */
 export class RetrieveUnpublished_customcontroldefaultconfigFunction implements Executable<RetrieveUnpublished_customcontroldefaultconfigResponse> {
   constructor(public readonly customcontroldefaultconfigId: string) {}
@@ -36,7 +38,8 @@ export class RetrieveUnpublished_customcontroldefaultconfigFunction implements E
   async parseResponse(
     response: Response
   ): Promise<RetrieveUnpublished_customcontroldefaultconfigResponse> {
-    const data = await response.json();
-    return data as RetrieveUnpublished_customcontroldefaultconfigResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RetrieveUnpublished_customcontroldefaultconfigResponse;
   }
 }

@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { list } from "./types/index.js";
 
@@ -11,24 +12,34 @@ export interface CopyMembersListResponse {
 }
 
 /**
+ * Parameters of the CopyMembersList action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CopyMembersListActionParameters {
+  TargetList: EntityReference | EntityPayload<list>;
+}
+
+/**
  * CopyMembersList action
  *
  * Bound action
  * Binding parameter: entity (mscrm.list)
+ *
+ * The first argument is the id of the list record to call it on.
  */
 export class CopyMembersListAction implements Executable<CopyMembersListResponse> {
   constructor(
     public readonly listId: string,
-    public readonly targetList: EntityReference | EntityPayload<list>
+    public readonly parameters: CopyMembersListActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/lists(${this.listId})/Microsoft.Dynamics.CRM.CopyMembersList`;
 
-    const body: Record<string, unknown> = {
-      TargetList: this.targetList,
-    };
+    const body = requestBody({
+      TargetList: this.parameters.TargetList,
+    });
 
     return {
       method: "POST",
@@ -41,7 +52,8 @@ export class CopyMembersListAction implements Executable<CopyMembersListResponse
   }
 
   async parseResponse(response: Response): Promise<CopyMembersListResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as CopyMembersListResponse;
   }
 }

@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_TrainEffortModelResponse as msdyn_TrainEffortModelResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_TrainEffortModel message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_TrainEffortModelRequestParameters {
+  TrainConfig: string;
+}
 
 /**
  * msdyn_TrainEffortModel request message
@@ -12,16 +21,18 @@ export class msdyn_TrainEffortModelRequest
   extends OrganizationRequest
   implements Executable<msdyn_TrainEffortModelResponse>
 {
-  constructor(public trainConfig: string) {
-    super("msdyn_TrainEffortModel");
+  declare readonly Parameters: Readonly<msdyn_TrainEffortModelRequestParameters>;
+
+  constructor(parameters: msdyn_TrainEffortModelRequestParameters) {
+    super("msdyn_TrainEffortModel", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_TrainEffortModel`;
 
-    const body: Record<string, unknown> = {
-      TrainConfig: this.trainConfig,
-    };
+    const body = requestBody({
+      TrainConfig: this.Parameters.TrainConfig,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_TrainEffortModelRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_TrainEffortModelResponse> {
-    const data = await response.json();
-    return msdyn_TrainEffortModelResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_TrainEffortModelResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

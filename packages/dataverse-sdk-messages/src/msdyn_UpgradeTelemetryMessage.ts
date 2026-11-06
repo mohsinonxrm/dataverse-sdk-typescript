@@ -1,7 +1,27 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_UpgradeTelemetryResponse as msdyn_UpgradeTelemetryResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_UpgradeTelemetry message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_UpgradeTelemetryRequestParameters {
+  EventId: number;
+  RunId?: string;
+  PackageName?: string;
+  SolutionName?: string;
+  StartingVersion?: string;
+  TargetVersion?: string;
+  DurationSeconds?: number;
+  Success?: number;
+  StepId?: string;
+  StepName?: string;
+  ErrorMessage?: string;
+  Details?: string;
+}
 
 /**
  * msdyn_UpgradeTelemetry request message
@@ -12,40 +32,29 @@ export class msdyn_UpgradeTelemetryRequest
   extends OrganizationRequest
   implements Executable<msdyn_UpgradeTelemetryResponse>
 {
-  constructor(
-    public eventId: number,
-    public runId?: string,
-    public packageName?: string,
-    public solutionName?: string,
-    public startingVersion?: string,
-    public targetVersion?: string,
-    public durationSeconds?: number,
-    public success?: number,
-    public stepId?: string,
-    public stepName?: string,
-    public errorMessage?: string,
-    public details?: string
-  ) {
-    super("msdyn_UpgradeTelemetry");
+  declare readonly Parameters: Readonly<msdyn_UpgradeTelemetryRequestParameters>;
+
+  constructor(parameters: msdyn_UpgradeTelemetryRequestParameters) {
+    super("msdyn_UpgradeTelemetry", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_UpgradeTelemetry`;
 
-    const body: Record<string, unknown> = {
-      EventId: this.eventId,
-      RunId: this.runId,
-      PackageName: this.packageName,
-      SolutionName: this.solutionName,
-      StartingVersion: this.startingVersion,
-      TargetVersion: this.targetVersion,
-      DurationSeconds: this.durationSeconds,
-      Success: this.success,
-      StepId: this.stepId,
-      StepName: this.stepName,
-      ErrorMessage: this.errorMessage,
-      Details: this.details,
-    };
+    const body = requestBody({
+      EventId: this.Parameters.EventId,
+      RunId: this.Parameters.RunId,
+      PackageName: this.Parameters.PackageName,
+      SolutionName: this.Parameters.SolutionName,
+      StartingVersion: this.Parameters.StartingVersion,
+      TargetVersion: this.Parameters.TargetVersion,
+      DurationSeconds: this.Parameters.DurationSeconds,
+      Success: this.Parameters.Success,
+      StepId: this.Parameters.StepId,
+      StepName: this.Parameters.StepName,
+      ErrorMessage: this.Parameters.ErrorMessage,
+      Details: this.Parameters.Details,
+    });
 
     return {
       method: "POST",
@@ -58,8 +67,9 @@ export class msdyn_UpgradeTelemetryRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_UpgradeTelemetryResponse> {
-    const data = await response.json();
-    return msdyn_UpgradeTelemetryResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_UpgradeTelemetryResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { RetrieveEnvironmentVariableSecretValueResponse as RetrieveEnvironmentVariableSecretValueResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the RetrieveEnvironmentVariableSecretValue message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveEnvironmentVariableSecretValueRequestParameters {
+  EnvironmentVariableName: string;
+}
 
 /**
  * RetrieveEnvironmentVariableSecretValue request message
@@ -12,16 +21,18 @@ export class RetrieveEnvironmentVariableSecretValueRequest
   extends OrganizationRequest
   implements Executable<RetrieveEnvironmentVariableSecretValueResponse>
 {
-  constructor(public environmentVariableName: string) {
-    super("RetrieveEnvironmentVariableSecretValue");
+  declare readonly Parameters: Readonly<RetrieveEnvironmentVariableSecretValueRequestParameters>;
+
+  constructor(parameters: RetrieveEnvironmentVariableSecretValueRequestParameters) {
+    super("RetrieveEnvironmentVariableSecretValue", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/RetrieveEnvironmentVariableSecretValue`;
 
-    const body: Record<string, unknown> = {
-      EnvironmentVariableName: this.environmentVariableName,
-    };
+    const body = requestBody({
+      EnvironmentVariableName: this.Parameters.EnvironmentVariableName,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,11 @@ export class RetrieveEnvironmentVariableSecretValueRequest
   }
 
   async parseResponse(response: Response): Promise<RetrieveEnvironmentVariableSecretValueResponse> {
-    const data = await response.json();
-    return RetrieveEnvironmentVariableSecretValueResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return RetrieveEnvironmentVariableSecretValueResponse.fromResponse(
+      text ? JSON.parse(text) : {}
+    );
   }
 }
 

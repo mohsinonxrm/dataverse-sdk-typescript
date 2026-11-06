@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_GetResourceBookingFormParameters action
@@ -8,23 +9,29 @@ export interface msdyn_GetResourceBookingFormParametersResponse {
 }
 
 /**
+ * Parameters of the msdyn_GetResourceBookingFormParameters action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetResourceBookingFormParametersActionParameters {
+  BookingContext: string;
+  TimeZoneCode?: number;
+}
+
+/**
  * msdyn_GetResourceBookingFormParameters action
  *
  * Unbound action
  */
 export class msdyn_GetResourceBookingFormParametersAction implements Executable<msdyn_GetResourceBookingFormParametersResponse> {
-  constructor(
-    public readonly bookingContext: string,
-    public readonly timeZoneCode?: number
-  ) {}
+  constructor(public readonly parameters: msdyn_GetResourceBookingFormParametersActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetResourceBookingFormParameters`;
 
-    const body: Record<string, unknown> = {
-      BookingContext: this.bookingContext,
-      TimeZoneCode: this.timeZoneCode,
-    };
+    const body = requestBody({
+      BookingContext: this.parameters.BookingContext,
+      TimeZoneCode: this.parameters.TimeZoneCode,
+    });
 
     return {
       method: "POST",
@@ -37,7 +44,8 @@ export class msdyn_GetResourceBookingFormParametersAction implements Executable<
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetResourceBookingFormParametersResponse> {
-    const data = await response.json();
-    return data as msdyn_GetResourceBookingFormParametersResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_GetResourceBookingFormParametersResponse;
   }
 }

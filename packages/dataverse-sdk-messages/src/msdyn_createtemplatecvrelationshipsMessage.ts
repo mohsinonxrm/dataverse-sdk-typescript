@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_createtemplatecvrelationshipsResponse as msdyn_createtemplatecvrelationshipsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_createtemplatecvrelationships message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_createtemplatecvrelationshipsRequestParameters {
+  msdyn_templaterulesetid: string;
+}
 
 /**
  * msdyn_createtemplatecvrelationships request message
@@ -12,16 +21,18 @@ export class msdyn_createtemplatecvrelationshipsRequest
   extends OrganizationRequest
   implements Executable<msdyn_createtemplatecvrelationshipsResponse>
 {
-  constructor(public msdyn_templaterulesetid: string) {
-    super("msdyn_createtemplatecvrelationships");
+  declare readonly Parameters: Readonly<msdyn_createtemplatecvrelationshipsRequestParameters>;
+
+  constructor(parameters: msdyn_createtemplatecvrelationshipsRequestParameters) {
+    super("msdyn_createtemplatecvrelationships", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_createtemplatecvrelationships`;
 
-    const body: Record<string, unknown> = {
-      msdyn_templaterulesetid: this.msdyn_templaterulesetid,
-    };
+    const body = requestBody({
+      msdyn_templaterulesetid: this.Parameters.msdyn_templaterulesetid,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_createtemplatecvrelationshipsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_createtemplatecvrelationshipsResponse> {
-    const data = await response.json();
-    return msdyn_createtemplatecvrelationshipsResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_createtemplatecvrelationshipsResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

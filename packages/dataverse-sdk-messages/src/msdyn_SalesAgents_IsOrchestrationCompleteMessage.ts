@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_SalesAgents_IsOrchestrationCompleteResponse as msdyn_SalesAgents_IsOrchestrationCompleteResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_SalesAgents_IsOrchestrationComplete message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAgents_IsOrchestrationCompleteRequestParameters {
+  msdyn_TrackingId?: string;
+  msdyn_AgentType: number;
+  msdyn_SalesAgentType: number;
+}
 
 /**
  * msdyn_SalesAgents_IsOrchestrationComplete request message
@@ -12,22 +23,20 @@ export class msdyn_SalesAgents_IsOrchestrationCompleteRequest
   extends OrganizationRequest
   implements Executable<msdyn_SalesAgents_IsOrchestrationCompleteResponse>
 {
-  constructor(
-    public msdyn_TrackingId: string | undefined,
-    public msdyn_AgentType: number,
-    public msdyn_SalesAgentType: number
-  ) {
-    super("msdyn_SalesAgents_IsOrchestrationComplete");
+  declare readonly Parameters: Readonly<msdyn_SalesAgents_IsOrchestrationCompleteRequestParameters>;
+
+  constructor(parameters: msdyn_SalesAgents_IsOrchestrationCompleteRequestParameters) {
+    super("msdyn_SalesAgents_IsOrchestrationComplete", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAgents_IsOrchestrationComplete`;
 
-    const body: Record<string, unknown> = {
-      msdyn_TrackingId: this.msdyn_TrackingId,
-      msdyn_AgentType: this.msdyn_AgentType,
-      msdyn_SalesAgentType: this.msdyn_SalesAgentType,
-    };
+    const body = requestBody({
+      msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
+      msdyn_AgentType: this.Parameters.msdyn_AgentType,
+      msdyn_SalesAgentType: this.Parameters.msdyn_SalesAgentType,
+    });
 
     return {
       method: "POST",
@@ -42,8 +51,11 @@ export class msdyn_SalesAgents_IsOrchestrationCompleteRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_IsOrchestrationCompleteResponse> {
-    const data = await response.json();
-    return msdyn_SalesAgents_IsOrchestrationCompleteResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_SalesAgents_IsOrchestrationCompleteResponse.fromResponse(
+      text ? JSON.parse(text) : {}
+    );
   }
 }
 

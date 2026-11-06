@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_BulkAITestRunResponse as msdyn_BulkAITestRunResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_BulkAITestRun message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_BulkAITestRunRequestParameters {
+  request: string;
+}
 
 /**
  * msdyn_BulkAITestRun request message
@@ -12,16 +21,18 @@ export class msdyn_BulkAITestRunRequest
   extends OrganizationRequest
   implements Executable<msdyn_BulkAITestRunResponse>
 {
-  constructor(public request: string) {
-    super("msdyn_BulkAITestRun");
+  declare readonly Parameters: Readonly<msdyn_BulkAITestRunRequestParameters>;
+
+  constructor(parameters: msdyn_BulkAITestRunRequestParameters) {
+    super("msdyn_BulkAITestRun", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_BulkAITestRun`;
 
-    const body: Record<string, unknown> = {
-      request: this.request,
-    };
+    const body = requestBody({
+      request: this.Parameters.request,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_BulkAITestRunRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_BulkAITestRunResponse> {
-    const data = await response.json();
-    return msdyn_BulkAITestRunResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_BulkAITestRunResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

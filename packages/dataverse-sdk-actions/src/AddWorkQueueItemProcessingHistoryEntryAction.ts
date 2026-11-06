@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,24 +11,34 @@ export interface AddWorkQueueItemProcessingHistoryEntryResponse {
 }
 
 /**
+ * Parameters of the AddWorkQueueItemProcessingHistoryEntry action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AddWorkQueueItemProcessingHistoryEntryActionParameters {
+  item: EntityReference | AnyEntityPayload;
+}
+
+/**
  * AddWorkQueueItemProcessingHistoryEntry action
  *
  * Bound action
  * Binding parameter: entity (mscrm.workqueueitem)
+ *
+ * The first argument is the id of the workqueueitem record to call it on.
  */
 export class AddWorkQueueItemProcessingHistoryEntryAction implements Executable<AddWorkQueueItemProcessingHistoryEntryResponse> {
   constructor(
     public readonly workqueueitemId: string,
-    public readonly item: EntityReference | AnyEntityPayload
+    public readonly parameters: AddWorkQueueItemProcessingHistoryEntryActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/workqueueitems(${this.workqueueitemId})/Microsoft.Dynamics.CRM.AddWorkQueueItemProcessingHistoryEntry`;
 
-    const body: Record<string, unknown> = {
-      item: this.item,
-    };
+    const body = requestBody({
+      item: this.parameters.item,
+    });
 
     return {
       method: "POST",
@@ -40,7 +51,8 @@ export class AddWorkQueueItemProcessingHistoryEntryAction implements Executable<
   }
 
   async parseResponse(response: Response): Promise<AddWorkQueueItemProcessingHistoryEntryResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as AddWorkQueueItemProcessingHistoryEntryResponse;
   }
 }

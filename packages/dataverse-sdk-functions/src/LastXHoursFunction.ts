@@ -9,15 +9,21 @@ export interface LastXHoursResponse {
 }
 
 /**
+ * Parameters of the LastXHours function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface LastXHoursFunctionParameters {
+  PropertyName: string;
+  PropertyValue: number;
+}
+
+/**
  * LastXHours function
  *
  * Unbound function
  */
 export class LastXHoursFunction implements Executable<LastXHoursResponse> {
-  constructor(
-    public readonly propertyName: string,
-    public readonly propertyValue: number
-  ) {}
+  constructor(public readonly parameters: LastXHoursFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/LastXHours`;
@@ -25,13 +31,13 @@ export class LastXHoursFunction implements Executable<LastXHoursResponse> {
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.propertyName !== undefined) {
+    if (this.parameters.PropertyName !== undefined) {
       aliases.push(`PropertyName=@p1`);
-      params.append("@p1", formatParameterAlias(this.propertyName, "Edm.String"));
+      params.append("@p1", formatParameterAlias(this.parameters.PropertyName, "Edm.String"));
     }
-    if (this.propertyValue !== undefined) {
+    if (this.parameters.PropertyValue !== undefined) {
       aliases.push(`PropertyValue=@p2`);
-      params.append("@p2", formatParameterAlias(this.propertyValue, "Edm.Int64"));
+      params.append("@p2", formatParameterAlias(this.parameters.PropertyValue, "Edm.Int64"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -47,7 +53,8 @@ export class LastXHoursFunction implements Executable<LastXHoursResponse> {
   }
 
   async parseResponse(response: Response): Promise<LastXHoursResponse> {
-    const data = await response.json();
-    return data as LastXHoursResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as LastXHoursResponse;
   }
 }

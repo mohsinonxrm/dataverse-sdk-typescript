@@ -2,7 +2,18 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the msdyn_PredictFieldsBasedOnRules message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_PredictFieldsBasedOnRulesRequestParameters {
+  msdyn_Target: EntityReference | AnyEntityPayload;
+  msdyn_ContextGenerationParameters?: string;
+  msdyn_Context?: EntityReference | AnyEntityPayload;
+}
 
 /**
  * msdyn_PredictFieldsBasedOnRules request message
@@ -13,22 +24,20 @@ export class msdyn_PredictFieldsBasedOnRulesRequest
   extends OrganizationRequest
   implements Executable<msdyn_PredictFieldsBasedOnRulesResponse>
 {
-  constructor(
-    public msdyn_Target: EntityReference | AnyEntityPayload,
-    public msdyn_ContextGenerationParameters?: string,
-    public msdyn_Context?: EntityReference | AnyEntityPayload
-  ) {
-    super("msdyn_PredictFieldsBasedOnRules");
+  declare readonly Parameters: Readonly<msdyn_PredictFieldsBasedOnRulesRequestParameters>;
+
+  constructor(parameters: msdyn_PredictFieldsBasedOnRulesRequestParameters) {
+    super("msdyn_PredictFieldsBasedOnRules", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_PredictFieldsBasedOnRules`;
 
-    const body: Record<string, unknown> = {
-      msdyn_Target: this.msdyn_Target,
-      msdyn_ContextGenerationParameters: this.msdyn_ContextGenerationParameters,
-      msdyn_Context: this.msdyn_Context,
-    };
+    const body = requestBody({
+      msdyn_Target: this.Parameters.msdyn_Target,
+      msdyn_ContextGenerationParameters: this.Parameters.msdyn_ContextGenerationParameters,
+      msdyn_Context: this.Parameters.msdyn_Context,
+    });
 
     return {
       method: "POST",
@@ -41,8 +50,9 @@ export class msdyn_PredictFieldsBasedOnRulesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_PredictFieldsBasedOnRulesResponse> {
-    const data = await response.json();
-    return msdyn_PredictFieldsBasedOnRulesResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_PredictFieldsBasedOnRulesResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

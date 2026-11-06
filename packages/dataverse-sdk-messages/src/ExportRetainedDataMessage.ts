@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { ExportRetainedDataResponse as ExportRetainedDataResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the ExportRetainedData message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ExportRetainedDataRequestParameters {
+  FetchXml: string;
+  LayoutXml?: string;
+}
 
 /**
  * ExportRetainedData request message
@@ -12,20 +22,19 @@ export class ExportRetainedDataRequest
   extends OrganizationRequest
   implements Executable<ExportRetainedDataResponse>
 {
-  constructor(
-    public fetchXml: string,
-    public layoutXml?: string
-  ) {
-    super("ExportRetainedData");
+  declare readonly Parameters: Readonly<ExportRetainedDataRequestParameters>;
+
+  constructor(parameters: ExportRetainedDataRequestParameters) {
+    super("ExportRetainedData", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ExportRetainedData`;
 
-    const body: Record<string, unknown> = {
-      FetchXml: this.fetchXml,
-      LayoutXml: this.layoutXml,
-    };
+    const body = requestBody({
+      FetchXml: this.Parameters.FetchXml,
+      LayoutXml: this.Parameters.LayoutXml,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class ExportRetainedDataRequest
   }
 
   async parseResponse(response: Response): Promise<ExportRetainedDataResponse> {
-    const data = await response.json();
-    return ExportRetainedDataResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return ExportRetainedDataResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

@@ -5,6 +5,8 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * Recalculate request message
  *
  * Web API Action: Recalculate
+ *
+ * The first argument is the id of the goal record to call it on.
  */
 export class RecalculateRequest
   extends OrganizationRequest

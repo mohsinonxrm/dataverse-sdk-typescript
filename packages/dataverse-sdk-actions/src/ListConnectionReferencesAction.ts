@@ -14,6 +14,8 @@ export interface ListConnectionReferencesResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.workflow)
+ *
+ * The first argument is the id of the workflow record to call it on.
  */
 export class ListConnectionReferencesAction implements Executable<ListConnectionReferencesResponse> {
   constructor(public readonly workflowId: string) {}
@@ -32,7 +34,8 @@ export class ListConnectionReferencesAction implements Executable<ListConnection
   }
 
   async parseResponse(response: Response): Promise<ListConnectionReferencesResponse> {
-    const data = await response.json();
-    return data as ListConnectionReferencesResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as ListConnectionReferencesResponse;
   }
 }

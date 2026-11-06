@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from SendFax action
@@ -8,23 +9,29 @@ export interface SendFaxResponse {
 }
 
 /**
+ * Parameters of the SendFax action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SendFaxActionParameters {
+  FaxId: string;
+  IssueSend: boolean;
+}
+
+/**
  * SendFax action
  *
  * Unbound action
  */
 export class SendFaxAction implements Executable<SendFaxResponse> {
-  constructor(
-    public readonly faxId: string,
-    public readonly issueSend: boolean
-  ) {}
+  constructor(public readonly parameters: SendFaxActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/SendFax`;
 
-    const body: Record<string, unknown> = {
-      FaxId: this.faxId,
-      IssueSend: this.issueSend,
-    };
+    const body = requestBody({
+      FaxId: this.parameters.FaxId,
+      IssueSend: this.parameters.IssueSend,
+    });
 
     return {
       method: "POST",
@@ -37,7 +44,8 @@ export class SendFaxAction implements Executable<SendFaxResponse> {
   }
 
   async parseResponse(response: Response): Promise<SendFaxResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as SendFaxResponse;
   }
 }

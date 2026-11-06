@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from GetConsentLink action
@@ -15,24 +16,34 @@ export interface GetConsentLinkResponse {
 }
 
 /**
+ * Parameters of the GetConsentLink action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GetConsentLinkActionParameters {
+  redirectUrl: string;
+}
+
+/**
  * GetConsentLink action
  *
  * Bound action
  * Binding parameter: entity (mscrm.connectioninstance)
+ *
+ * The first argument is the id of the connectioninstance record to call it on.
  */
 export class GetConsentLinkAction implements Executable<GetConsentLinkResponse> {
   constructor(
     public readonly connectioninstanceId: string,
-    public readonly redirectUrl: string
+    public readonly parameters: GetConsentLinkActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/connectioninstances(${this.connectioninstanceId})/Microsoft.Dynamics.CRM.GetConsentLink`;
 
-    const body: Record<string, unknown> = {
-      redirectUrl: this.redirectUrl,
-    };
+    const body = requestBody({
+      redirectUrl: this.parameters.redirectUrl,
+    });
 
     return {
       method: "POST",
@@ -45,7 +56,8 @@ export class GetConsentLinkAction implements Executable<GetConsentLinkResponse> 
   }
 
   async parseResponse(response: Response): Promise<GetConsentLinkResponse> {
-    const data = await response.json();
-    return data as GetConsentLinkResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as GetConsentLinkResponse;
   }
 }

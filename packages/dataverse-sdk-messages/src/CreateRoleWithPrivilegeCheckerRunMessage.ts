@@ -1,33 +1,46 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { CreateRoleWithPrivilegeCheckerRunResponse as CreateRoleWithPrivilegeCheckerRunResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the CreateRoleWithPrivilegeCheckerRun message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CreateRoleWithPrivilegeCheckerRunRequestParameters {
+  PrivilegeCheckerRunId: string;
+  RoleName: string;
+}
 
 /**
  * CreateRoleWithPrivilegeCheckerRun request message
  *
  * Web API Action: CreateRoleWithPrivilegeCheckerRun
+ *
+ * The first argument is the id of the privilegecheckerrun record to call it on.
  */
 export class CreateRoleWithPrivilegeCheckerRunRequest
   extends OrganizationRequest
   implements Executable<CreateRoleWithPrivilegeCheckerRunResponse>
 {
+  declare readonly Parameters: Readonly<CreateRoleWithPrivilegeCheckerRunRequestParameters>;
+
   constructor(
     public privilegecheckerrunId: string,
-    public privilegeCheckerRunId: string,
-    public roleName: string
+    parameters: CreateRoleWithPrivilegeCheckerRunRequestParameters
   ) {
-    super("CreateRoleWithPrivilegeCheckerRun");
+    super("CreateRoleWithPrivilegeCheckerRun", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/privilegecheckerruns(${this.privilegecheckerrunId})/Microsoft.Dynamics.CRM.CreateRoleWithPrivilegeCheckerRun`;
 
-    const body: Record<string, unknown> = {
-      PrivilegeCheckerRunId: this.privilegeCheckerRunId,
-      RoleName: this.roleName,
-    };
+    const body = requestBody({
+      PrivilegeCheckerRunId: this.Parameters.PrivilegeCheckerRunId,
+      RoleName: this.Parameters.RoleName,
+    });
 
     return {
       method: "POST",
@@ -40,8 +53,9 @@ export class CreateRoleWithPrivilegeCheckerRunRequest
   }
 
   async parseResponse(response: Response): Promise<CreateRoleWithPrivilegeCheckerRunResponse> {
-    const data = await response.json();
-    return CreateRoleWithPrivilegeCheckerRunResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return CreateRoleWithPrivilegeCheckerRunResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

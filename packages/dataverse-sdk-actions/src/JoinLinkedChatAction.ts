@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,25 +11,31 @@ export interface JoinLinkedChatResponse {
 }
 
 /**
+ * Parameters of the JoinLinkedChat action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface JoinLinkedChatActionParameters {
+  TeamsChatId: string;
+  UserId: string;
+  RegardingEntity: EntityReference | AnyEntityPayload;
+}
+
+/**
  * JoinLinkedChat action
  *
  * Unbound action
  */
 export class JoinLinkedChatAction implements Executable<JoinLinkedChatResponse> {
-  constructor(
-    public readonly teamsChatId: string,
-    public readonly userId: string,
-    public readonly regardingEntity: EntityReference | AnyEntityPayload
-  ) {}
+  constructor(public readonly parameters: JoinLinkedChatActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/JoinLinkedChat`;
 
-    const body: Record<string, unknown> = {
-      TeamsChatId: this.teamsChatId,
-      UserId: this.userId,
-      RegardingEntity: this.regardingEntity,
-    };
+    const body = requestBody({
+      TeamsChatId: this.parameters.TeamsChatId,
+      UserId: this.parameters.UserId,
+      RegardingEntity: this.parameters.RegardingEntity,
+    });
 
     return {
       method: "POST",
@@ -41,7 +48,8 @@ export class JoinLinkedChatAction implements Executable<JoinLinkedChatResponse> 
   }
 
   async parseResponse(response: Response): Promise<JoinLinkedChatResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as JoinLinkedChatResponse;
   }
 }

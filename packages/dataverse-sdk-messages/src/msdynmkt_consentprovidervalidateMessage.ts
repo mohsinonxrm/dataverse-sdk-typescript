@@ -2,8 +2,17 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdynmkt_consentprovidervalidateResponse as msdynmkt_consentprovidervalidateResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdynmkt_consentprovidervalidate message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdynmkt_consentprovidervalidateRequestParameters {
+  consentprovider: EntityReference | AnyEntityPayload;
+}
 
 /**
  * msdynmkt_consentprovidervalidate request message
@@ -14,16 +23,18 @@ export class msdynmkt_consentprovidervalidateRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_consentprovidervalidateResponse>
 {
-  constructor(public consentprovider: EntityReference | AnyEntityPayload) {
-    super("msdynmkt_consentprovidervalidate");
+  declare readonly Parameters: Readonly<msdynmkt_consentprovidervalidateRequestParameters>;
+
+  constructor(parameters: msdynmkt_consentprovidervalidateRequestParameters) {
+    super("msdynmkt_consentprovidervalidate", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_consentprovidervalidate`;
 
-    const body: Record<string, unknown> = {
-      consentprovider: this.consentprovider,
-    };
+    const body = requestBody({
+      consentprovider: this.Parameters.consentprovider,
+    });
 
     return {
       method: "POST",
@@ -36,8 +47,9 @@ export class msdynmkt_consentprovidervalidateRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_consentprovidervalidateResponse> {
-    const data = await response.json();
-    return msdynmkt_consentprovidervalidateResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdynmkt_consentprovidervalidateResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

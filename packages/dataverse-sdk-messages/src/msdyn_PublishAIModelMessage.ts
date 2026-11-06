@@ -5,6 +5,8 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * msdyn_PublishAIModel request message
  *
  * Web API Action: msdyn_PublishAIModel
+ *
+ * The first argument is the id of the msdyn_ocsimltraining record to call it on.
  */
 export class msdyn_PublishAIModelRequest
   extends OrganizationRequest

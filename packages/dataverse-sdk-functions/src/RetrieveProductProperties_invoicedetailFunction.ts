@@ -13,6 +13,8 @@ export interface RetrieveProductProperties_invoicedetailResponse {
  *
  * Bound function
  * Binding parameter: entity (mscrm.invoicedetail)
+ *
+ * The first argument is the id of the invoicedetail record to call it on.
  */
 export class RetrieveProductProperties_invoicedetailFunction implements Executable<RetrieveProductProperties_invoicedetailResponse> {
   constructor(public readonly invoicedetailId: string) {}
@@ -33,7 +35,8 @@ export class RetrieveProductProperties_invoicedetailFunction implements Executab
   async parseResponse(
     response: Response
   ): Promise<RetrieveProductProperties_invoicedetailResponse> {
-    const data = await response.json();
-    return data as RetrieveProductProperties_invoicedetailResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RetrieveProductProperties_invoicedetailResponse;
   }
 }

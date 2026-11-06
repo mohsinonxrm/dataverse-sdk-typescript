@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_OSGetTrainingResults action
@@ -8,19 +9,27 @@ export interface msdyn_OSGetTrainingResultsResponse {
 }
 
 /**
+ * Parameters of the msdyn_OSGetTrainingResults action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_OSGetTrainingResultsActionParameters {
+  PredictionName?: string;
+}
+
+/**
  * msdyn_OSGetTrainingResults action
  *
  * Unbound action
  */
 export class msdyn_OSGetTrainingResultsAction implements Executable<msdyn_OSGetTrainingResultsResponse> {
-  constructor(public readonly predictionName?: string) {}
+  constructor(public readonly parameters: msdyn_OSGetTrainingResultsActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_OSGetTrainingResults`;
 
-    const body: Record<string, unknown> = {
-      PredictionName: this.predictionName,
-    };
+    const body = requestBody({
+      PredictionName: this.parameters.PredictionName,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class msdyn_OSGetTrainingResultsAction implements Executable<msdyn_OSGetT
   }
 
   async parseResponse(response: Response): Promise<msdyn_OSGetTrainingResultsResponse> {
-    const data = await response.json();
-    return data as msdyn_OSGetTrainingResultsResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_OSGetTrainingResultsResponse;
   }
 }

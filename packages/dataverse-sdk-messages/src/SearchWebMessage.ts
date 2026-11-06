@@ -1,6 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the SearchWeb message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SearchWebRequestParameters {
+  query: string;
+  urls: string[];
+  partnerSource: string;
+  summarize: boolean;
+  maxResults: number;
+}
 
 /**
  * SearchWeb request message
@@ -8,26 +21,22 @@ import { responseObject } from "./internal/responseData.js";
  * Web API Action: SearchWeb
  */
 export class SearchWebRequest extends OrganizationRequest implements Executable<SearchWebResponse> {
-  constructor(
-    public query: string,
-    public urls: string[],
-    public partnerSource: string,
-    public summarize: boolean,
-    public maxResults: number
-  ) {
-    super("SearchWeb");
+  declare readonly Parameters: Readonly<SearchWebRequestParameters>;
+
+  constructor(parameters: SearchWebRequestParameters) {
+    super("SearchWeb", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/SearchWeb`;
 
-    const body: Record<string, unknown> = {
-      query: this.query,
-      urls: this.urls,
-      partnerSource: this.partnerSource,
-      summarize: this.summarize,
-      maxResults: this.maxResults,
-    };
+    const body = requestBody({
+      query: this.Parameters.query,
+      urls: this.Parameters.urls,
+      partnerSource: this.Parameters.partnerSource,
+      summarize: this.Parameters.summarize,
+      maxResults: this.Parameters.maxResults,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class SearchWebRequest extends OrganizationRequest implements Executable<
   }
 
   async parseResponse(response: Response): Promise<SearchWebResponse> {
-    const data = await response.json();
-    return SearchWebResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return SearchWebResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

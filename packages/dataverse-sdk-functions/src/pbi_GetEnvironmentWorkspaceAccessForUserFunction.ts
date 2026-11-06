@@ -9,12 +9,22 @@ export interface pbi_GetEnvironmentWorkspaceAccessForUserResponse {
 }
 
 /**
+ * Parameters of the pbi_GetEnvironmentWorkspaceAccessForUser function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface pbi_GetEnvironmentWorkspaceAccessForUserFunctionParameters {
+  pbi_UserObjectId: string;
+}
+
+/**
  * pbi_GetEnvironmentWorkspaceAccessForUser function
  *
  * Unbound function
  */
 export class pbi_GetEnvironmentWorkspaceAccessForUserFunction implements Executable<pbi_GetEnvironmentWorkspaceAccessForUserResponse> {
-  constructor(public readonly pbi_UserObjectId: string) {}
+  constructor(
+    public readonly parameters: pbi_GetEnvironmentWorkspaceAccessForUserFunctionParameters
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/pbi_GetEnvironmentWorkspaceAccessForUser`;
@@ -22,9 +32,9 @@ export class pbi_GetEnvironmentWorkspaceAccessForUserFunction implements Executa
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.pbi_UserObjectId !== undefined) {
+    if (this.parameters.pbi_UserObjectId !== undefined) {
       aliases.push(`pbi_UserObjectId=@p1`);
-      params.append("@p1", formatParameterAlias(this.pbi_UserObjectId, "Edm.String"));
+      params.append("@p1", formatParameterAlias(this.parameters.pbi_UserObjectId, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -42,7 +52,8 @@ export class pbi_GetEnvironmentWorkspaceAccessForUserFunction implements Executa
   async parseResponse(
     response: Response
   ): Promise<pbi_GetEnvironmentWorkspaceAccessForUserResponse> {
-    const data = await response.json();
-    return data as pbi_GetEnvironmentWorkspaceAccessForUserResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as pbi_GetEnvironmentWorkspaceAccessForUserResponse;
   }
 }

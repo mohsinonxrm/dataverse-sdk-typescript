@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AITranslateResponse as AITranslateResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the AITranslate message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AITranslateRequestParameters {
+  TargetLanguage?: string;
+  Text: string;
+}
 
 /**
  * AITranslate request message
@@ -12,20 +22,19 @@ export class AITranslateRequest
   extends OrganizationRequest
   implements Executable<AITranslateResponse>
 {
-  constructor(
-    public targetLanguage: string | undefined,
-    public text: string
-  ) {
-    super("AITranslate");
+  declare readonly Parameters: Readonly<AITranslateRequestParameters>;
+
+  constructor(parameters: AITranslateRequestParameters) {
+    super("AITranslate", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/AITranslate`;
 
-    const body: Record<string, unknown> = {
-      TargetLanguage: this.targetLanguage,
-      Text: this.text,
-    };
+    const body = requestBody({
+      TargetLanguage: this.Parameters.TargetLanguage,
+      Text: this.Parameters.Text,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class AITranslateRequest
   }
 
   async parseResponse(response: Response): Promise<AITranslateResponse> {
-    const data = await response.json();
-    return AITranslateResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return AITranslateResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

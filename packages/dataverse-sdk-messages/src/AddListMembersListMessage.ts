@@ -1,8 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { list } from "./types/index.js";
+
+/**
+ * Parameters of the AddListMembersList message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AddListMembersListRequestParameters {
+  List: EntityReference | EntityPayload<list>;
+  Members: Record<string, unknown>[];
+}
 
 /**
  * AddListMembersList request message
@@ -13,20 +23,19 @@ export class AddListMembersListRequest
   extends OrganizationRequest
   implements Executable<AddListMembersListResponse>
 {
-  constructor(
-    public list: EntityReference | EntityPayload<list>,
-    public members: Record<string, unknown>[]
-  ) {
-    super("AddListMembersList");
+  declare readonly Parameters: Readonly<AddListMembersListRequestParameters>;
+
+  constructor(parameters: AddListMembersListRequestParameters) {
+    super("AddListMembersList", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/AddListMembersList`;
 
-    const body: Record<string, unknown> = {
-      List: this.list,
-      Members: this.members,
-    };
+    const body = requestBody({
+      List: this.Parameters.List,
+      Members: this.Parameters.Members,
+    });
 
     return {
       method: "POST",

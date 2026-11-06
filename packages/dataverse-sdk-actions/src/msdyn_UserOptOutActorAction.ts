@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_UserOptOutActor action
@@ -8,19 +9,27 @@ export interface msdyn_UserOptOutActorResponse {
 }
 
 /**
+ * Parameters of the msdyn_UserOptOutActor action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_UserOptOutActorActionParameters {
+  InputData: string;
+}
+
+/**
  * msdyn_UserOptOutActor action
  *
  * Unbound action
  */
 export class msdyn_UserOptOutActorAction implements Executable<msdyn_UserOptOutActorResponse> {
-  constructor(public readonly inputData: string) {}
+  constructor(public readonly parameters: msdyn_UserOptOutActorActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_UserOptOutActor`;
 
-    const body: Record<string, unknown> = {
-      InputData: this.inputData,
-    };
+    const body = requestBody({
+      InputData: this.parameters.InputData,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class msdyn_UserOptOutActorAction implements Executable<msdyn_UserOptOutA
   }
 
   async parseResponse(response: Response): Promise<msdyn_UserOptOutActorResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_UserOptOutActorResponse;
   }
 }

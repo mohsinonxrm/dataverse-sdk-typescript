@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AISentimentResponse as AISentimentResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the AISentiment message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AISentimentRequestParameters {
+  Text: string;
+}
 
 /**
  * AISentiment request message
@@ -12,16 +21,18 @@ export class AISentimentRequest
   extends OrganizationRequest
   implements Executable<AISentimentResponse>
 {
-  constructor(public text: string) {
-    super("AISentiment");
+  declare readonly Parameters: Readonly<AISentimentRequestParameters>;
+
+  constructor(parameters: AISentimentRequestParameters) {
+    super("AISentiment", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/AISentiment`;
 
-    const body: Record<string, unknown> = {
-      Text: this.text,
-    };
+    const body = requestBody({
+      Text: this.Parameters.Text,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class AISentimentRequest
   }
 
   async parseResponse(response: Response): Promise<AISentimentResponse> {
-    const data = await response.json();
-    return AISentimentResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return AISentimentResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

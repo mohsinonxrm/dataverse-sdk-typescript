@@ -31,8 +31,11 @@ export class msdyn_WorkstreamCapacityShouldBeLessThanAgentsRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_WorkstreamCapacityShouldBeLessThanAgentsRuleResponse> {
-    const data = await response.json();
-    return msdyn_WorkstreamCapacityShouldBeLessThanAgentsRuleResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_WorkstreamCapacityShouldBeLessThanAgentsRuleResponse.fromResponse(
+      text ? JSON.parse(text) : {}
+    );
   }
 }
 

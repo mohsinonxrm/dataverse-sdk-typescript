@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_CreateActionFlow action
@@ -8,19 +9,27 @@ export interface msdyn_CreateActionFlowResponse {
 }
 
 /**
+ * Parameters of the msdyn_CreateActionFlow action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CreateActionFlowActionParameters {
+  SLAId: string;
+}
+
+/**
  * msdyn_CreateActionFlow action
  *
  * Unbound action
  */
 export class msdyn_CreateActionFlowAction implements Executable<msdyn_CreateActionFlowResponse> {
-  constructor(public readonly sLAId: string) {}
+  constructor(public readonly parameters: msdyn_CreateActionFlowActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CreateActionFlow`;
 
-    const body: Record<string, unknown> = {
-      SLAId: this.sLAId,
-    };
+    const body = requestBody({
+      SLAId: this.parameters.SLAId,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class msdyn_CreateActionFlowAction implements Executable<msdyn_CreateActi
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateActionFlowResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_CreateActionFlowResponse;
   }
 }

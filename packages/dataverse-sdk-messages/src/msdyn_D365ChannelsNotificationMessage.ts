@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_D365ChannelsNotificationResponse as msdyn_D365ChannelsNotificationResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_D365ChannelsNotification message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_D365ChannelsNotificationRequestParameters {
+  notificationPayLoad: string;
+}
 
 /**
  * msdyn_D365ChannelsNotification request message
@@ -12,16 +21,18 @@ export class msdyn_D365ChannelsNotificationRequest
   extends OrganizationRequest
   implements Executable<msdyn_D365ChannelsNotificationResponse>
 {
-  constructor(public notificationPayLoad: string) {
-    super("msdyn_D365ChannelsNotification");
+  declare readonly Parameters: Readonly<msdyn_D365ChannelsNotificationRequestParameters>;
+
+  constructor(parameters: msdyn_D365ChannelsNotificationRequestParameters) {
+    super("msdyn_D365ChannelsNotification", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_D365ChannelsNotification`;
 
-    const body: Record<string, unknown> = {
-      notificationPayLoad: this.notificationPayLoad,
-    };
+    const body = requestBody({
+      notificationPayLoad: this.Parameters.notificationPayLoad,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_D365ChannelsNotificationRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_D365ChannelsNotificationResponse> {
-    const data = await response.json();
-    return msdyn_D365ChannelsNotificationResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_D365ChannelsNotificationResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

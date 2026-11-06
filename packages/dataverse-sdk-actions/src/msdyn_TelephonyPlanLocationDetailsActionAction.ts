@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_TelephonyPlanLocationDetailsAction action
@@ -8,19 +9,29 @@ export interface msdyn_TelephonyPlanLocationDetailsActionResponse {
 }
 
 /**
+ * Parameters of the msdyn_TelephonyPlanLocationDetailsAction action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_TelephonyPlanLocationDetailsActionActionParameters {
+  ActionRequest: string;
+}
+
+/**
  * msdyn_TelephonyPlanLocationDetailsAction action
  *
  * Unbound action
  */
 export class msdyn_TelephonyPlanLocationDetailsActionAction implements Executable<msdyn_TelephonyPlanLocationDetailsActionResponse> {
-  constructor(public readonly actionRequest: string) {}
+  constructor(
+    public readonly parameters: msdyn_TelephonyPlanLocationDetailsActionActionParameters
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_TelephonyPlanLocationDetailsAction`;
 
-    const body: Record<string, unknown> = {
-      ActionRequest: this.actionRequest,
-    };
+    const body = requestBody({
+      ActionRequest: this.parameters.ActionRequest,
+    });
 
     return {
       method: "POST",
@@ -35,7 +46,8 @@ export class msdyn_TelephonyPlanLocationDetailsActionAction implements Executabl
   async parseResponse(
     response: Response
   ): Promise<msdyn_TelephonyPlanLocationDetailsActionResponse> {
-    const data = await response.json();
-    return data as msdyn_TelephonyPlanLocationDetailsActionResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_TelephonyPlanLocationDetailsActionResponse;
   }
 }

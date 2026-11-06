@@ -10,12 +10,20 @@ export interface RetrieveRolePrivilegesRoleResponse {
 }
 
 /**
+ * Parameters of the RetrieveRolePrivilegesRole function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveRolePrivilegesRoleFunctionParameters {
+  RoleId: string;
+}
+
+/**
  * RetrieveRolePrivilegesRole function
  *
  * Unbound function
  */
 export class RetrieveRolePrivilegesRoleFunction implements Executable<RetrieveRolePrivilegesRoleResponse> {
-  constructor(public readonly roleId: string) {}
+  constructor(public readonly parameters: RetrieveRolePrivilegesRoleFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveRolePrivilegesRole`;
@@ -23,9 +31,9 @@ export class RetrieveRolePrivilegesRoleFunction implements Executable<RetrieveRo
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.roleId !== undefined) {
+    if (this.parameters.RoleId !== undefined) {
       aliases.push(`RoleId=@p1`);
-      params.append("@p1", formatParameterAlias(this.roleId, "Edm.Guid"));
+      params.append("@p1", formatParameterAlias(this.parameters.RoleId, "Edm.Guid"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -41,7 +49,8 @@ export class RetrieveRolePrivilegesRoleFunction implements Executable<RetrieveRo
   }
 
   async parseResponse(response: Response): Promise<RetrieveRolePrivilegesRoleResponse> {
-    const data = await response.json();
-    return data as RetrieveRolePrivilegesRoleResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RetrieveRolePrivilegesRoleResponse;
   }
 }

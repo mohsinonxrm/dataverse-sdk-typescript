@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_RemoveRequirementModel message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_RemoveRequirementModelRequestParameters {
+  Attributes: string;
+}
 
 /**
  * msdyn_RemoveRequirementModel request message
@@ -10,16 +19,18 @@ export class msdyn_RemoveRequirementModelRequest
   extends OrganizationRequest
   implements Executable<msdyn_RemoveRequirementModelResponse>
 {
-  constructor(public attributes: string) {
-    super("msdyn_RemoveRequirementModel");
+  declare readonly Parameters: Readonly<msdyn_RemoveRequirementModelRequestParameters>;
+
+  constructor(parameters: msdyn_RemoveRequirementModelRequestParameters) {
+    super("msdyn_RemoveRequirementModel", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_RemoveRequirementModel`;
 
-    const body: Record<string, unknown> = {
-      Attributes: this.attributes,
-    };
+    const body = requestBody({
+      Attributes: this.Parameters.Attributes,
+    });
 
     return {
       method: "POST",

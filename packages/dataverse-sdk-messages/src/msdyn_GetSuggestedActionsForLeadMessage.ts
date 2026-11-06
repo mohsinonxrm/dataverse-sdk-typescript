@@ -7,6 +7,8 @@ import type { msdyn_GetSuggestedActionsForLeadResponse as msdyn_GetSuggestedActi
  * msdyn_GetSuggestedActionsForLead request message
  *
  * Web API Action: msdyn_GetSuggestedActionsForLead
+ *
+ * The first argument is the id of the lead record to call it on.
  */
 export class msdyn_GetSuggestedActionsForLeadRequest
   extends OrganizationRequest
@@ -30,8 +32,9 @@ export class msdyn_GetSuggestedActionsForLeadRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSuggestedActionsForLeadResponse> {
-    const data = await response.json();
-    return msdyn_GetSuggestedActionsForLeadResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_GetSuggestedActionsForLeadResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

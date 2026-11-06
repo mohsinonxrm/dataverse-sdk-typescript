@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_ActivateRoutingRule action
@@ -8,23 +9,29 @@ export interface msdyn_ActivateRoutingRuleResponse {
 }
 
 /**
+ * Parameters of the msdyn_ActivateRoutingRule action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ActivateRoutingRuleActionParameters {
+  msdyn_ownerId: string;
+  msdyn_routingRuleId: string;
+}
+
+/**
  * msdyn_ActivateRoutingRule action
  *
  * Unbound action
  */
 export class msdyn_ActivateRoutingRuleAction implements Executable<msdyn_ActivateRoutingRuleResponse> {
-  constructor(
-    public readonly msdyn_ownerId: string,
-    public readonly msdyn_routingRuleId: string
-  ) {}
+  constructor(public readonly parameters: msdyn_ActivateRoutingRuleActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ActivateRoutingRule`;
 
-    const body: Record<string, unknown> = {
-      msdyn_ownerId: this.msdyn_ownerId,
-      msdyn_routingRuleId: this.msdyn_routingRuleId,
-    };
+    const body = requestBody({
+      msdyn_ownerId: this.parameters.msdyn_ownerId,
+      msdyn_routingRuleId: this.parameters.msdyn_routingRuleId,
+    });
 
     return {
       method: "POST",
@@ -37,7 +44,8 @@ export class msdyn_ActivateRoutingRuleAction implements Executable<msdyn_Activat
   }
 
   async parseResponse(response: Response): Promise<msdyn_ActivateRoutingRuleResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_ActivateRoutingRuleResponse;
   }
 }

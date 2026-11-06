@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from PvaCreateBotComponents action
@@ -8,24 +9,34 @@ export interface PvaCreateBotComponentsResponse {
 }
 
 /**
+ * Parameters of the PvaCreateBotComponents action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface PvaCreateBotComponentsActionParameters {
+  BotComponents: Record<string, unknown>[];
+}
+
+/**
  * PvaCreateBotComponents action
  *
  * Bound action
  * Binding parameter: entity (mscrm.bot)
+ *
+ * The first argument is the id of the bot record to call it on.
  */
 export class PvaCreateBotComponentsAction implements Executable<PvaCreateBotComponentsResponse> {
   constructor(
     public readonly botId: string,
-    public readonly botComponents: Record<string, unknown>[]
+    public readonly parameters: PvaCreateBotComponentsActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/bots(${this.botId})/Microsoft.Dynamics.CRM.PvaCreateBotComponents`;
 
-    const body: Record<string, unknown> = {
-      BotComponents: this.botComponents,
-    };
+    const body = requestBody({
+      BotComponents: this.parameters.BotComponents,
+    });
 
     return {
       method: "POST",
@@ -38,7 +49,8 @@ export class PvaCreateBotComponentsAction implements Executable<PvaCreateBotComp
   }
 
   async parseResponse(response: Response): Promise<PvaCreateBotComponentsResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as PvaCreateBotComponentsResponse;
   }
 }

@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_CheckIfProcessesAreActiveResponse as msdyn_CheckIfProcessesAreActiveResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_CheckIfProcessesAreActive message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CheckIfProcessesAreActiveRequestParameters {
+  EntityIds?: string;
+  SolutionId?: string;
+}
 
 /**
  * msdyn_CheckIfProcessesAreActive request message
@@ -12,20 +22,19 @@ export class msdyn_CheckIfProcessesAreActiveRequest
   extends OrganizationRequest
   implements Executable<msdyn_CheckIfProcessesAreActiveResponse>
 {
-  constructor(
-    public entityIds?: string,
-    public solutionId?: string
-  ) {
-    super("msdyn_CheckIfProcessesAreActive");
+  declare readonly Parameters: Readonly<msdyn_CheckIfProcessesAreActiveRequestParameters>;
+
+  constructor(parameters: msdyn_CheckIfProcessesAreActiveRequestParameters = {}) {
+    super("msdyn_CheckIfProcessesAreActive", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckIfProcessesAreActive`;
 
-    const body: Record<string, unknown> = {
-      EntityIds: this.entityIds,
-      SolutionId: this.solutionId,
-    };
+    const body = requestBody({
+      EntityIds: this.Parameters.EntityIds,
+      SolutionId: this.Parameters.SolutionId,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class msdyn_CheckIfProcessesAreActiveRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckIfProcessesAreActiveResponse> {
-    const data = await response.json();
-    return msdyn_CheckIfProcessesAreActiveResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_CheckIfProcessesAreActiveResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

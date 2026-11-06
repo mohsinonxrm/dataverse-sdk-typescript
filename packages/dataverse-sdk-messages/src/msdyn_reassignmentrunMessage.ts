@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_reassignmentrun message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_reassignmentrunRequestParameters {
+  InputData: string;
+}
 
 /**
  * msdyn_reassignmentrun request message
@@ -10,16 +19,18 @@ export class msdyn_reassignmentrunRequest
   extends OrganizationRequest
   implements Executable<msdyn_reassignmentrunResponse>
 {
-  constructor(public inputData: string) {
-    super("msdyn_reassignmentrun");
+  declare readonly Parameters: Readonly<msdyn_reassignmentrunRequestParameters>;
+
+  constructor(parameters: msdyn_reassignmentrunRequestParameters) {
+    super("msdyn_reassignmentrun", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_reassignmentrun`;
 
-    const body: Record<string, unknown> = {
-      InputData: this.inputData,
-    };
+    const body = requestBody({
+      InputData: this.Parameters.InputData,
+    });
 
     return {
       method: "POST",

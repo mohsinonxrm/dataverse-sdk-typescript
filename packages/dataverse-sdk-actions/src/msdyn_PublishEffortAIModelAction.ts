@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_PublishEffortAIModel action
@@ -8,23 +9,29 @@ export interface msdyn_PublishEffortAIModelResponse {
 }
 
 /**
+ * Parameters of the msdyn_PublishEffortAIModel action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_PublishEffortAIModelActionParameters {
+  AiModelId: string;
+  TrainConfigId: string;
+}
+
+/**
  * msdyn_PublishEffortAIModel action
  *
  * Unbound action
  */
 export class msdyn_PublishEffortAIModelAction implements Executable<msdyn_PublishEffortAIModelResponse> {
-  constructor(
-    public readonly aiModelId: string,
-    public readonly trainConfigId: string
-  ) {}
+  constructor(public readonly parameters: msdyn_PublishEffortAIModelActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_PublishEffortAIModel`;
 
-    const body: Record<string, unknown> = {
-      AiModelId: this.aiModelId,
-      TrainConfigId: this.trainConfigId,
-    };
+    const body = requestBody({
+      AiModelId: this.parameters.AiModelId,
+      TrainConfigId: this.parameters.TrainConfigId,
+    });
 
     return {
       method: "POST",
@@ -37,7 +44,8 @@ export class msdyn_PublishEffortAIModelAction implements Executable<msdyn_Publis
   }
 
   async parseResponse(response: Response): Promise<msdyn_PublishEffortAIModelResponse> {
-    const data = await response.json();
-    return data as msdyn_PublishEffortAIModelResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_PublishEffortAIModelResponse;
   }
 }

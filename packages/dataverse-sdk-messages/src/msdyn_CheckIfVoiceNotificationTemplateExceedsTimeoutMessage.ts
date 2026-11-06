@@ -31,8 +31,11 @@ export class msdyn_CheckIfVoiceNotificationTemplateExceedsTimeoutRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckIfVoiceNotificationTemplateExceedsTimeoutResponse> {
-    const data = await response.json();
-    return msdyn_CheckIfVoiceNotificationTemplateExceedsTimeoutResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_CheckIfVoiceNotificationTemplateExceedsTimeoutResponse.fromResponse(
+      text ? JSON.parse(text) : {}
+    );
   }
 }
 

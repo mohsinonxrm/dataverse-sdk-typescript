@@ -16,12 +16,20 @@ export interface CCaaS_GetPresenceResponse {
 }
 
 /**
+ * Parameters of the CCaaS_GetPresence function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_GetPresenceFunctionParameters {
+  ApiVersion: string;
+}
+
+/**
  * CCaaS_GetPresence function
  *
  * Unbound function
  */
 export class CCaaS_GetPresenceFunction implements Executable<CCaaS_GetPresenceResponse> {
-  constructor(public readonly apiVersion: string) {}
+  constructor(public readonly parameters: CCaaS_GetPresenceFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/CCaaS_GetPresence`;
@@ -29,9 +37,9 @@ export class CCaaS_GetPresenceFunction implements Executable<CCaaS_GetPresenceRe
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.apiVersion !== undefined) {
+    if (this.parameters.ApiVersion !== undefined) {
       aliases.push(`ApiVersion=@p1`);
-      params.append("@p1", formatParameterAlias(this.apiVersion, "Edm.String"));
+      params.append("@p1", formatParameterAlias(this.parameters.ApiVersion, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -47,7 +55,8 @@ export class CCaaS_GetPresenceFunction implements Executable<CCaaS_GetPresenceRe
   }
 
   async parseResponse(response: Response): Promise<CCaaS_GetPresenceResponse> {
-    const data = await response.json();
-    return data as CCaaS_GetPresenceResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as CCaaS_GetPresenceResponse;
   }
 }

@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the msdyn_FastPassBotEventUpdate message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_FastPassBotEventUpdateRequestParameters {
+  msdyn_PreImageRecord: EntityReference | AnyEntityPayload;
+  msdyn_PostImageRecord: EntityReference | AnyEntityPayload;
+}
 
 /**
  * msdyn_FastPassBotEventUpdate request message
@@ -12,20 +22,19 @@ export class msdyn_FastPassBotEventUpdateRequest
   extends OrganizationRequest
   implements Executable<msdyn_FastPassBotEventUpdateResponse>
 {
-  constructor(
-    public msdyn_PreImageRecord: EntityReference | AnyEntityPayload,
-    public msdyn_PostImageRecord: EntityReference | AnyEntityPayload
-  ) {
-    super("msdyn_FastPassBotEventUpdate");
+  declare readonly Parameters: Readonly<msdyn_FastPassBotEventUpdateRequestParameters>;
+
+  constructor(parameters: msdyn_FastPassBotEventUpdateRequestParameters) {
+    super("msdyn_FastPassBotEventUpdate", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_FastPassBotEventUpdate`;
 
-    const body: Record<string, unknown> = {
-      msdyn_PreImageRecord: this.msdyn_PreImageRecord,
-      msdyn_PostImageRecord: this.msdyn_PostImageRecord,
-    };
+    const body = requestBody({
+      msdyn_PreImageRecord: this.Parameters.msdyn_PreImageRecord,
+      msdyn_PostImageRecord: this.Parameters.msdyn_PostImageRecord,
+    });
 
     return {
       method: "POST",

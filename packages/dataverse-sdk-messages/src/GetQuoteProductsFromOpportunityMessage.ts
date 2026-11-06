@@ -1,32 +1,45 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { opportunity } from "./types/index.js";
+
+/**
+ * Parameters of the GetQuoteProductsFromOpportunity message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GetQuoteProductsFromOpportunityRequestParameters {
+  Opportunity: EntityReference | EntityPayload<opportunity>;
+}
 
 /**
  * GetQuoteProductsFromOpportunity request message
  *
  * Web API Action: GetQuoteProductsFromOpportunity
+ *
+ * The first argument is the id of the quote record to call it on.
  */
 export class GetQuoteProductsFromOpportunityRequest
   extends OrganizationRequest
   implements Executable<GetQuoteProductsFromOpportunityResponse>
 {
+  declare readonly Parameters: Readonly<GetQuoteProductsFromOpportunityRequestParameters>;
+
   constructor(
     public quoteId: string,
-    public opportunity: EntityReference | EntityPayload<opportunity>
+    parameters: GetQuoteProductsFromOpportunityRequestParameters
   ) {
-    super("GetQuoteProductsFromOpportunity");
+    super("GetQuoteProductsFromOpportunity", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/quotes(${this.quoteId})/Microsoft.Dynamics.CRM.GetQuoteProductsFromOpportunity`;
 
-    const body: Record<string, unknown> = {
-      Opportunity: this.opportunity,
-    };
+    const body = requestBody({
+      Opportunity: this.Parameters.Opportunity,
+    });
 
     return {
       method: "POST",

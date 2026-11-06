@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,27 +11,33 @@ export interface CreateRpaBoxResponse {
 }
 
 /**
+ * Parameters of the CreateRpaBox action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CreateRpaBoxActionParameters {
+  machineDescription?: string;
+  machineNetworkId?: EntityReference | AnyEntityPayload;
+  machineName: string;
+  machineImageVersionId: EntityReference | AnyEntityPayload;
+}
+
+/**
  * CreateRpaBox action
  *
  * Unbound action
  */
 export class CreateRpaBoxAction implements Executable<CreateRpaBoxResponse> {
-  constructor(
-    public readonly machineDescription: string | undefined,
-    public readonly machineNetworkId: EntityReference | AnyEntityPayload | undefined,
-    public readonly machineName: string,
-    public readonly machineImageVersionId: EntityReference | AnyEntityPayload
-  ) {}
+  constructor(public readonly parameters: CreateRpaBoxActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CreateRpaBox`;
 
-    const body: Record<string, unknown> = {
-      machineDescription: this.machineDescription,
-      machineNetworkId: this.machineNetworkId,
-      machineName: this.machineName,
-      machineImageVersionId: this.machineImageVersionId,
-    };
+    const body = requestBody({
+      machineDescription: this.parameters.machineDescription,
+      machineNetworkId: this.parameters.machineNetworkId,
+      machineName: this.parameters.machineName,
+      machineImageVersionId: this.parameters.machineImageVersionId,
+    });
 
     return {
       method: "POST",
@@ -43,7 +50,8 @@ export class CreateRpaBoxAction implements Executable<CreateRpaBoxResponse> {
   }
 
   async parseResponse(response: Response): Promise<CreateRpaBoxResponse> {
-    const data = await response.json();
-    return data as CreateRpaBoxResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as CreateRpaBoxResponse;
   }
 }

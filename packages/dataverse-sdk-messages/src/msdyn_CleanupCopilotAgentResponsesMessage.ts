@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_CleanupCopilotAgentResponses message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CleanupCopilotAgentResponsesRequestParameters {
+  UntilMarker?: string;
+  ConversationId?: string;
+}
 
 /**
  * msdyn_CleanupCopilotAgentResponses request message
@@ -10,20 +20,19 @@ export class msdyn_CleanupCopilotAgentResponsesRequest
   extends OrganizationRequest
   implements Executable<msdyn_CleanupCopilotAgentResponsesResponse>
 {
-  constructor(
-    public untilMarker?: string,
-    public conversationId?: string
-  ) {
-    super("msdyn_CleanupCopilotAgentResponses");
+  declare readonly Parameters: Readonly<msdyn_CleanupCopilotAgentResponsesRequestParameters>;
+
+  constructor(parameters: msdyn_CleanupCopilotAgentResponsesRequestParameters = {}) {
+    super("msdyn_CleanupCopilotAgentResponses", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CleanupCopilotAgentResponses`;
 
-    const body: Record<string, unknown> = {
-      UntilMarker: this.untilMarker,
-      ConversationId: this.conversationId,
-    };
+    const body = requestBody({
+      UntilMarker: this.Parameters.UntilMarker,
+      ConversationId: this.Parameters.ConversationId,
+    });
 
     return {
       method: "POST",

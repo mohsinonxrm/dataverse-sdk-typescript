@@ -12,12 +12,20 @@ export interface msdyn_getchannelendpointurlResponse {
 }
 
 /**
+ * Parameters of the msdyn_getchannelendpointurl function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_getchannelendpointurlFunctionParameters {
+  channeldefinitionid: string;
+}
+
+/**
  * msdyn_getchannelendpointurl function
  *
  * Unbound function
  */
 export class msdyn_getchannelendpointurlFunction implements Executable<msdyn_getchannelendpointurlResponse> {
-  constructor(public readonly channeldefinitionid: string) {}
+  constructor(public readonly parameters: msdyn_getchannelendpointurlFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/msdyn_getchannelendpointurl`;
@@ -25,9 +33,9 @@ export class msdyn_getchannelendpointurlFunction implements Executable<msdyn_get
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.channeldefinitionid !== undefined) {
+    if (this.parameters.channeldefinitionid !== undefined) {
       aliases.push(`channeldefinitionid=@p1`);
-      params.append("@p1", formatParameterAlias(this.channeldefinitionid, "Edm.Guid"));
+      params.append("@p1", formatParameterAlias(this.parameters.channeldefinitionid, "Edm.Guid"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -43,7 +51,8 @@ export class msdyn_getchannelendpointurlFunction implements Executable<msdyn_get
   }
 
   async parseResponse(response: Response): Promise<msdyn_getchannelendpointurlResponse> {
-    const data = await response.json();
-    return data as msdyn_getchannelendpointurlResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_getchannelendpointurlResponse;
   }
 }

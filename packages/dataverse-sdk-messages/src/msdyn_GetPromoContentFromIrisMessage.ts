@@ -1,7 +1,22 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetPromoContentFromIrisResponse as msdyn_GetPromoContentFromIrisResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetPromoContentFromIris message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetPromoContentFromIrisRequestParameters {
+  msdyn_country?: string;
+  msdyn_placementId?: number;
+  msdyn_irisUrl?: string;
+  msdyn_pageType?: string;
+  msdyn_isAdmin?: boolean;
+  msdyn_pageName?: string;
+  msdyn_locale?: string;
+}
 
 /**
  * msdyn_GetPromoContentFromIris request message
@@ -12,30 +27,24 @@ export class msdyn_GetPromoContentFromIrisRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetPromoContentFromIrisResponse>
 {
-  constructor(
-    public msdyn_country?: string,
-    public msdyn_placementId?: number,
-    public msdyn_irisUrl?: string,
-    public msdyn_pageType?: string,
-    public msdyn_isAdmin?: boolean,
-    public msdyn_pageName?: string,
-    public msdyn_locale?: string
-  ) {
-    super("msdyn_GetPromoContentFromIris");
+  declare readonly Parameters: Readonly<msdyn_GetPromoContentFromIrisRequestParameters>;
+
+  constructor(parameters: msdyn_GetPromoContentFromIrisRequestParameters = {}) {
+    super("msdyn_GetPromoContentFromIris", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetPromoContentFromIris`;
 
-    const body: Record<string, unknown> = {
-      msdyn_country: this.msdyn_country,
-      msdyn_placementId: this.msdyn_placementId,
-      msdyn_irisUrl: this.msdyn_irisUrl,
-      msdyn_pageType: this.msdyn_pageType,
-      msdyn_isAdmin: this.msdyn_isAdmin,
-      msdyn_pageName: this.msdyn_pageName,
-      msdyn_locale: this.msdyn_locale,
-    };
+    const body = requestBody({
+      msdyn_country: this.Parameters.msdyn_country,
+      msdyn_placementId: this.Parameters.msdyn_placementId,
+      msdyn_irisUrl: this.Parameters.msdyn_irisUrl,
+      msdyn_pageType: this.Parameters.msdyn_pageType,
+      msdyn_isAdmin: this.Parameters.msdyn_isAdmin,
+      msdyn_pageName: this.Parameters.msdyn_pageName,
+      msdyn_locale: this.Parameters.msdyn_locale,
+    });
 
     return {
       method: "POST",
@@ -48,8 +57,9 @@ export class msdyn_GetPromoContentFromIrisRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetPromoContentFromIrisResponse> {
-    const data = await response.json();
-    return msdyn_GetPromoContentFromIrisResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_GetPromoContentFromIrisResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

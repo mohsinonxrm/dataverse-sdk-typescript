@@ -1,5 +1,21 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the UpsertEnvironmentVariable message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface UpsertEnvironmentVariableRequestParameters {
+  DisplayName?: string;
+  SchemaName: string;
+  Type: number;
+  DefaultValue?: string;
+  Value?: string;
+  SecretStore?: number;
+  ParameterKey?: string;
+  ApiId?: string;
+}
 
 /**
  * UpsertEnvironmentVariable request message
@@ -10,32 +26,25 @@ export class UpsertEnvironmentVariableRequest
   extends OrganizationRequest
   implements Executable<UpsertEnvironmentVariableResponse>
 {
-  constructor(
-    public displayName: string | undefined,
-    public schemaName: string,
-    public type: number,
-    public defaultValue?: string,
-    public value?: string,
-    public secretStore?: number,
-    public parameterKey?: string,
-    public apiId?: string
-  ) {
-    super("UpsertEnvironmentVariable");
+  declare readonly Parameters: Readonly<UpsertEnvironmentVariableRequestParameters>;
+
+  constructor(parameters: UpsertEnvironmentVariableRequestParameters) {
+    super("UpsertEnvironmentVariable", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/UpsertEnvironmentVariable`;
 
-    const body: Record<string, unknown> = {
-      DisplayName: this.displayName,
-      SchemaName: this.schemaName,
-      Type: this.type,
-      DefaultValue: this.defaultValue,
-      Value: this.value,
-      SecretStore: this.secretStore,
-      ParameterKey: this.parameterKey,
-      ApiId: this.apiId,
-    };
+    const body = requestBody({
+      DisplayName: this.Parameters.DisplayName,
+      SchemaName: this.Parameters.SchemaName,
+      Type: this.Parameters.Type,
+      DefaultValue: this.Parameters.DefaultValue,
+      Value: this.Parameters.Value,
+      SecretStore: this.Parameters.SecretStore,
+      ParameterKey: this.Parameters.ParameterKey,
+      ApiId: this.Parameters.ApiId,
+    });
 
     return {
       method: "POST",

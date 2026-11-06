@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_PollCopilotAgentResponses action
@@ -9,23 +10,29 @@ export interface msdyn_PollCopilotAgentResponsesResponse {
 }
 
 /**
+ * Parameters of the msdyn_PollCopilotAgentResponses action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_PollCopilotAgentResponsesActionParameters {
+  StartMarker?: string;
+  ConversationId: string;
+}
+
+/**
  * msdyn_PollCopilotAgentResponses action
  *
  * Unbound action
  */
 export class msdyn_PollCopilotAgentResponsesAction implements Executable<msdyn_PollCopilotAgentResponsesResponse> {
-  constructor(
-    public readonly startMarker: string | undefined,
-    public readonly conversationId: string
-  ) {}
+  constructor(public readonly parameters: msdyn_PollCopilotAgentResponsesActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_PollCopilotAgentResponses`;
 
-    const body: Record<string, unknown> = {
-      StartMarker: this.startMarker,
-      ConversationId: this.conversationId,
-    };
+    const body = requestBody({
+      StartMarker: this.parameters.StartMarker,
+      ConversationId: this.parameters.ConversationId,
+    });
 
     return {
       method: "POST",
@@ -38,7 +45,8 @@ export class msdyn_PollCopilotAgentResponsesAction implements Executable<msdyn_P
   }
 
   async parseResponse(response: Response): Promise<msdyn_PollCopilotAgentResponsesResponse> {
-    const data = await response.json();
-    return data as msdyn_PollCopilotAgentResponsesResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_PollCopilotAgentResponsesResponse;
   }
 }

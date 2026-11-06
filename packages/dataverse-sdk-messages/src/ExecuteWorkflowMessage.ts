@@ -1,33 +1,46 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { InputArgumentCollection, asyncoperation } from "./types/index.js";
+
+/**
+ * Parameters of the ExecuteWorkflow message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ExecuteWorkflowRequestParameters {
+  EntityId: string;
+  InputArguments?: InputArgumentCollection;
+}
 
 /**
  * ExecuteWorkflow request message
  *
  * Web API Action: ExecuteWorkflow
+ *
+ * The first argument is the id of the workflow record to call it on.
  */
 export class ExecuteWorkflowRequest
   extends OrganizationRequest
   implements Executable<ExecuteWorkflowResponse>
 {
+  declare readonly Parameters: Readonly<ExecuteWorkflowRequestParameters>;
+
   constructor(
     public workflowId: string,
-    public entityId: string,
-    public inputArguments?: InputArgumentCollection
+    parameters: ExecuteWorkflowRequestParameters
   ) {
-    super("ExecuteWorkflow");
+    super("ExecuteWorkflow", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/workflows(${this.workflowId})/Microsoft.Dynamics.CRM.ExecuteWorkflow`;
 
-    const body: Record<string, unknown> = {
-      EntityId: this.entityId,
-      InputArguments: this.inputArguments,
-    };
+    const body = requestBody({
+      EntityId: this.Parameters.EntityId,
+      InputArguments: this.Parameters.InputArguments,
+    });
 
     return {
       method: "POST",
@@ -40,8 +53,9 @@ export class ExecuteWorkflowRequest
   }
 
   async parseResponse(response: Response): Promise<ExecuteWorkflowResponse> {
-    const data = await response.json();
-    return ExecuteWorkflowResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return ExecuteWorkflowResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

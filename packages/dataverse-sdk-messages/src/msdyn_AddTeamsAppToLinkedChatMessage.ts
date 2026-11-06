@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_AddTeamsAppToLinkedChat message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_AddTeamsAppToLinkedChatRequestParameters {
+  msdyn_TeamsChatAssociationId: string;
+}
 
 /**
  * msdyn_AddTeamsAppToLinkedChat request message
@@ -10,16 +19,18 @@ export class msdyn_AddTeamsAppToLinkedChatRequest
   extends OrganizationRequest
   implements Executable<msdyn_AddTeamsAppToLinkedChatResponse>
 {
-  constructor(public msdyn_TeamsChatAssociationId: string) {
-    super("msdyn_AddTeamsAppToLinkedChat");
+  declare readonly Parameters: Readonly<msdyn_AddTeamsAppToLinkedChatRequestParameters>;
+
+  constructor(parameters: msdyn_AddTeamsAppToLinkedChatRequestParameters) {
+    super("msdyn_AddTeamsAppToLinkedChat", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_AddTeamsAppToLinkedChat`;
 
-    const body: Record<string, unknown> = {
-      msdyn_TeamsChatAssociationId: this.msdyn_TeamsChatAssociationId,
-    };
+    const body = requestBody({
+      msdyn_TeamsChatAssociationId: this.Parameters.msdyn_TeamsChatAssociationId,
+    });
 
     return {
       method: "POST",

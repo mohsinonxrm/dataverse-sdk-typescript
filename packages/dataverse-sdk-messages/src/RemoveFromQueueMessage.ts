@@ -5,6 +5,8 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * RemoveFromQueue request message
  *
  * Web API Action: RemoveFromQueue
+ *
+ * The first argument is the id of the queueitem record to call it on.
  */
 export class RemoveFromQueueRequest
   extends OrganizationRequest

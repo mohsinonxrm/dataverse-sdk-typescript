@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_GetAvailabilitySummaryFromDemand action
@@ -8,35 +9,41 @@ export interface msdyn_GetAvailabilitySummaryFromDemandResponse {
 }
 
 /**
+ * Parameters of the msdyn_GetAvailabilitySummaryFromDemand action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetAvailabilitySummaryFromDemandActionParameters {
+  RequirementIds: string;
+  Timescale: number;
+  TimeZoneCode: number;
+  ResourceIds: string;
+  StartDate: string;
+  EndDate: string;
+  ConsiderAppointments?: boolean;
+  IgnoreTimeZone?: boolean;
+}
+
+/**
  * msdyn_GetAvailabilitySummaryFromDemand action
  *
  * Unbound action
  */
 export class msdyn_GetAvailabilitySummaryFromDemandAction implements Executable<msdyn_GetAvailabilitySummaryFromDemandResponse> {
-  constructor(
-    public readonly requirementIds: string,
-    public readonly timescale: number,
-    public readonly timeZoneCode: number,
-    public readonly resourceIds: string,
-    public readonly startDate: string,
-    public readonly endDate: string,
-    public readonly considerAppointments?: boolean,
-    public readonly ignoreTimeZone?: boolean
-  ) {}
+  constructor(public readonly parameters: msdyn_GetAvailabilitySummaryFromDemandActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetAvailabilitySummaryFromDemand`;
 
-    const body: Record<string, unknown> = {
-      RequirementIds: this.requirementIds,
-      Timescale: this.timescale,
-      TimeZoneCode: this.timeZoneCode,
-      ResourceIds: this.resourceIds,
-      StartDate: this.startDate,
-      EndDate: this.endDate,
-      ConsiderAppointments: this.considerAppointments,
-      IgnoreTimeZone: this.ignoreTimeZone,
-    };
+    const body = requestBody({
+      RequirementIds: this.parameters.RequirementIds,
+      Timescale: this.parameters.Timescale,
+      TimeZoneCode: this.parameters.TimeZoneCode,
+      ResourceIds: this.parameters.ResourceIds,
+      StartDate: this.parameters.StartDate,
+      EndDate: this.parameters.EndDate,
+      ConsiderAppointments: this.parameters.ConsiderAppointments,
+      IgnoreTimeZone: this.parameters.IgnoreTimeZone,
+    });
 
     return {
       method: "POST",
@@ -49,7 +56,8 @@ export class msdyn_GetAvailabilitySummaryFromDemandAction implements Executable<
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAvailabilitySummaryFromDemandResponse> {
-    const data = await response.json();
-    return data as msdyn_GetAvailabilitySummaryFromDemandResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_GetAvailabilitySummaryFromDemandResponse;
   }
 }

@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetNotesAnalysisResponse as msdyn_GetNotesAnalysisResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetNotesAnalysis message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetNotesAnalysisRequestParameters {
+  NoteText?: string;
+  CrossGeoDataMovementEnabled?: boolean;
+}
 
 /**
  * msdyn_GetNotesAnalysis request message
@@ -12,20 +22,19 @@ export class msdyn_GetNotesAnalysisRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetNotesAnalysisResponse>
 {
-  constructor(
-    public noteText?: string,
-    public crossGeoDataMovementEnabled?: boolean
-  ) {
-    super("msdyn_GetNotesAnalysis");
+  declare readonly Parameters: Readonly<msdyn_GetNotesAnalysisRequestParameters>;
+
+  constructor(parameters: msdyn_GetNotesAnalysisRequestParameters = {}) {
+    super("msdyn_GetNotesAnalysis", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetNotesAnalysis`;
 
-    const body: Record<string, unknown> = {
-      NoteText: this.noteText,
-      CrossGeoDataMovementEnabled: this.crossGeoDataMovementEnabled,
-    };
+    const body = requestBody({
+      NoteText: this.Parameters.NoteText,
+      CrossGeoDataMovementEnabled: this.Parameters.CrossGeoDataMovementEnabled,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class msdyn_GetNotesAnalysisRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetNotesAnalysisResponse> {
-    const data = await response.json();
-    return msdyn_GetNotesAnalysisResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_GetNotesAnalysisResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

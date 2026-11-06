@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_SignalRInstanceActionsResponse as msdyn_SignalRInstanceActionsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_SignalRInstanceActions message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SignalRInstanceActionsRequestParameters {
+  ServiceName: string;
+  WebApiName: string;
+  RequestJson: string;
+}
 
 /**
  * msdyn_SignalRInstanceActions request message
@@ -12,22 +23,20 @@ export class msdyn_SignalRInstanceActionsRequest
   extends OrganizationRequest
   implements Executable<msdyn_SignalRInstanceActionsResponse>
 {
-  constructor(
-    public serviceName: string,
-    public webApiName: string,
-    public requestJson: string
-  ) {
-    super("msdyn_SignalRInstanceActions");
+  declare readonly Parameters: Readonly<msdyn_SignalRInstanceActionsRequestParameters>;
+
+  constructor(parameters: msdyn_SignalRInstanceActionsRequestParameters) {
+    super("msdyn_SignalRInstanceActions", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SignalRInstanceActions`;
 
-    const body: Record<string, unknown> = {
-      ServiceName: this.serviceName,
-      WebApiName: this.webApiName,
-      RequestJson: this.requestJson,
-    };
+    const body = requestBody({
+      ServiceName: this.Parameters.ServiceName,
+      WebApiName: this.Parameters.WebApiName,
+      RequestJson: this.Parameters.RequestJson,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class msdyn_SignalRInstanceActionsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SignalRInstanceActionsResponse> {
-    const data = await response.json();
-    return msdyn_SignalRInstanceActionsResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_SignalRInstanceActionsResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

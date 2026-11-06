@@ -29,7 +29,8 @@ export class msdyn_CheckIfTerritoryRecordsExistAction implements Executable<msdy
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckIfTerritoryRecordsExistResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckIfTerritoryRecordsExistResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_CheckIfTerritoryRecordsExistResponse;
   }
 }

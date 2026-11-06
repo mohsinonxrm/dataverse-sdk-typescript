@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the CancelSalesOrder message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CancelSalesOrderRequestParameters {
+  OrderClose: EntityReference | AnyEntityPayload;
+  Status: number;
+}
 
 /**
  * CancelSalesOrder request message
@@ -12,20 +22,19 @@ export class CancelSalesOrderRequest
   extends OrganizationRequest
   implements Executable<CancelSalesOrderResponse>
 {
-  constructor(
-    public orderClose: EntityReference | AnyEntityPayload,
-    public status: number
-  ) {
-    super("CancelSalesOrder");
+  declare readonly Parameters: Readonly<CancelSalesOrderRequestParameters>;
+
+  constructor(parameters: CancelSalesOrderRequestParameters) {
+    super("CancelSalesOrder", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CancelSalesOrder`;
 
-    const body: Record<string, unknown> = {
-      OrderClose: this.orderClose,
-      Status: this.status,
-    };
+    const body = requestBody({
+      OrderClose: this.Parameters.OrderClose,
+      Status: this.Parameters.Status,
+    });
 
     return {
       method: "POST",

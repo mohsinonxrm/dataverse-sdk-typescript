@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_RunSolutionCheckerRules message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_RunSolutionCheckerRulesRequestParameters {
+  AnalysisComponentId?: string;
+  InAppNotificationEnabled?: boolean;
+}
 
 /**
  * msdyn_RunSolutionCheckerRules request message
@@ -10,20 +20,19 @@ export class msdyn_RunSolutionCheckerRulesRequest
   extends OrganizationRequest
   implements Executable<msdyn_RunSolutionCheckerRulesResponse>
 {
-  constructor(
-    public analysisComponentId?: string,
-    public inAppNotificationEnabled?: boolean
-  ) {
-    super("msdyn_RunSolutionCheckerRules");
+  declare readonly Parameters: Readonly<msdyn_RunSolutionCheckerRulesRequestParameters>;
+
+  constructor(parameters: msdyn_RunSolutionCheckerRulesRequestParameters = {}) {
+    super("msdyn_RunSolutionCheckerRules", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_RunSolutionCheckerRules`;
 
-    const body: Record<string, unknown> = {
-      AnalysisComponentId: this.analysisComponentId,
-      InAppNotificationEnabled: this.inAppNotificationEnabled,
-    };
+    const body = requestBody({
+      AnalysisComponentId: this.Parameters.AnalysisComponentId,
+      InAppNotificationEnabled: this.Parameters.InAppNotificationEnabled,
+    });
 
     return {
       method: "POST",

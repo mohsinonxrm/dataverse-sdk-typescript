@@ -1,6 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseValue } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msft_LabelAttributeMapping message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msft_LabelAttributeMappingRequestParameters {
+  EntityId: string;
+}
 
 /**
  * msft_LabelAttributeMapping request message
@@ -11,16 +20,18 @@ export class msft_LabelAttributeMappingRequest
   extends OrganizationRequest
   implements Executable<msft_LabelAttributeMappingResponse>
 {
-  constructor(public entityId: string) {
-    super("msft_LabelAttributeMapping");
+  declare readonly Parameters: Readonly<msft_LabelAttributeMappingRequestParameters>;
+
+  constructor(parameters: msft_LabelAttributeMappingRequestParameters) {
+    super("msft_LabelAttributeMapping", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msft_LabelAttributeMapping`;
 
-    const body: Record<string, unknown> = {
-      EntityId: this.entityId,
-    };
+    const body = requestBody({
+      EntityId: this.Parameters.EntityId,
+    });
 
     return {
       method: "POST",
@@ -33,8 +44,9 @@ export class msft_LabelAttributeMappingRequest
   }
 
   async parseResponse(response: Response): Promise<msft_LabelAttributeMappingResponse> {
-    const data = await response.json();
-    return msft_LabelAttributeMappingResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msft_LabelAttributeMappingResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

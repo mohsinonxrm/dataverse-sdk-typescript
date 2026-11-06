@@ -1,7 +1,21 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdynmkt_consentvalidateformResponse as msdynmkt_consentvalidateformResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdynmkt_consentvalidateform message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdynmkt_consentvalidateformRequestParameters {
+  msdynmkt_editorname: string;
+  validationType?: number;
+  formBusinessUnitId?: string;
+  complianceProfileId?: string;
+  isDoubleOptInForciblyDisabled?: boolean;
+  msdynmkt_formhtml: string;
+}
 
 /**
  * msdynmkt_consentvalidateform request message
@@ -12,28 +26,23 @@ export class msdynmkt_consentvalidateformRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_consentvalidateformResponse>
 {
-  constructor(
-    public msdynmkt_editorname: string,
-    public validationType: number | undefined,
-    public formBusinessUnitId: string | undefined,
-    public complianceProfileId: string | undefined,
-    public isDoubleOptInForciblyDisabled: boolean | undefined,
-    public msdynmkt_formhtml: string
-  ) {
-    super("msdynmkt_consentvalidateform");
+  declare readonly Parameters: Readonly<msdynmkt_consentvalidateformRequestParameters>;
+
+  constructor(parameters: msdynmkt_consentvalidateformRequestParameters) {
+    super("msdynmkt_consentvalidateform", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_consentvalidateform`;
 
-    const body: Record<string, unknown> = {
-      msdynmkt_editorname: this.msdynmkt_editorname,
-      validationType: this.validationType,
-      formBusinessUnitId: this.formBusinessUnitId,
-      complianceProfileId: this.complianceProfileId,
-      isDoubleOptInForciblyDisabled: this.isDoubleOptInForciblyDisabled,
-      msdynmkt_formhtml: this.msdynmkt_formhtml,
-    };
+    const body = requestBody({
+      msdynmkt_editorname: this.Parameters.msdynmkt_editorname,
+      validationType: this.Parameters.validationType,
+      formBusinessUnitId: this.Parameters.formBusinessUnitId,
+      complianceProfileId: this.Parameters.complianceProfileId,
+      isDoubleOptInForciblyDisabled: this.Parameters.isDoubleOptInForciblyDisabled,
+      msdynmkt_formhtml: this.Parameters.msdynmkt_formhtml,
+    });
 
     return {
       method: "POST",
@@ -46,8 +55,9 @@ export class msdynmkt_consentvalidateformRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_consentvalidateformResponse> {
-    const data = await response.json();
-    return msdynmkt_consentvalidateformResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdynmkt_consentvalidateformResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

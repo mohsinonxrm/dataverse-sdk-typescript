@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,19 +11,29 @@ export interface msdyn_EvaluateMasterEntityRoutingConfigurationResponse {
 }
 
 /**
+ * Parameters of the msdyn_EvaluateMasterEntityRoutingConfiguration action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_EvaluateMasterEntityRoutingConfigurationActionParameters {
+  Target: EntityReference | AnyEntityPayload;
+}
+
+/**
  * msdyn_EvaluateMasterEntityRoutingConfiguration action
  *
  * Unbound action
  */
 export class msdyn_EvaluateMasterEntityRoutingConfigurationAction implements Executable<msdyn_EvaluateMasterEntityRoutingConfigurationResponse> {
-  constructor(public readonly target: EntityReference | AnyEntityPayload) {}
+  constructor(
+    public readonly parameters: msdyn_EvaluateMasterEntityRoutingConfigurationActionParameters
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_EvaluateMasterEntityRoutingConfiguration`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-    };
+    const body = requestBody({
+      Target: this.parameters.Target,
+    });
 
     return {
       method: "POST",
@@ -37,7 +48,8 @@ export class msdyn_EvaluateMasterEntityRoutingConfigurationAction implements Exe
   async parseResponse(
     response: Response
   ): Promise<msdyn_EvaluateMasterEntityRoutingConfigurationResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_EvaluateMasterEntityRoutingConfigurationResponse;
   }
 }

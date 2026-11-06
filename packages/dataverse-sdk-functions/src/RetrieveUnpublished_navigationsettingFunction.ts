@@ -16,6 +16,8 @@ export interface RetrieveUnpublished_navigationsettingResponse extends navigatio
  *
  * Bound function
  * Binding parameter: entity (mscrm.navigationsetting)
+ *
+ * The first argument is the id of the navigationsetting record to call it on.
  */
 export class RetrieveUnpublished_navigationsettingFunction implements Executable<RetrieveUnpublished_navigationsettingResponse> {
   constructor(public readonly navigationsettingId: string) {}
@@ -34,7 +36,8 @@ export class RetrieveUnpublished_navigationsettingFunction implements Executable
   }
 
   async parseResponse(response: Response): Promise<RetrieveUnpublished_navigationsettingResponse> {
-    const data = await response.json();
-    return data as RetrieveUnpublished_navigationsettingResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RetrieveUnpublished_navigationsettingResponse;
   }
 }

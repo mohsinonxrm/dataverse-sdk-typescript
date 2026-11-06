@@ -12,6 +12,8 @@ export interface CalculateTotalTimeIncidentResponse {
  *
  * Bound function
  * Binding parameter: entity (mscrm.incident)
+ *
+ * The first argument is the id of the incident record to call it on.
  */
 export class CalculateTotalTimeIncidentFunction implements Executable<CalculateTotalTimeIncidentResponse> {
   constructor(public readonly incidentId: string) {}
@@ -30,7 +32,8 @@ export class CalculateTotalTimeIncidentFunction implements Executable<CalculateT
   }
 
   async parseResponse(response: Response): Promise<CalculateTotalTimeIncidentResponse> {
-    const data = await response.json();
-    return data as CalculateTotalTimeIncidentResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as CalculateTotalTimeIncidentResponse;
   }
 }

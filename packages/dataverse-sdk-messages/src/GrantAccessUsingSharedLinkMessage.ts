@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the GrantAccessUsingSharedLink message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GrantAccessUsingSharedLinkRequestParameters {
+  RecordUrlWithSharedLink: string;
+}
 
 /**
  * GrantAccessUsingSharedLink request message
@@ -10,16 +19,18 @@ export class GrantAccessUsingSharedLinkRequest
   extends OrganizationRequest
   implements Executable<GrantAccessUsingSharedLinkResponse>
 {
-  constructor(public recordUrlWithSharedLink: string) {
-    super("GrantAccessUsingSharedLink");
+  declare readonly Parameters: Readonly<GrantAccessUsingSharedLinkRequestParameters>;
+
+  constructor(parameters: GrantAccessUsingSharedLinkRequestParameters) {
+    super("GrantAccessUsingSharedLink", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/GrantAccessUsingSharedLink`;
 
-    const body: Record<string, unknown> = {
-      RecordUrlWithSharedLink: this.recordUrlWithSharedLink,
-    };
+    const body = requestBody({
+      RecordUrlWithSharedLink: this.Parameters.RecordUrlWithSharedLink,
+    });
 
     return {
       method: "POST",

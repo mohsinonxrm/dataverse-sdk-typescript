@@ -10,12 +10,20 @@ export interface RetrieveActivePathResponse {
 }
 
 /**
+ * Parameters of the RetrieveActivePath function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveActivePathFunctionParameters {
+  ProcessInstanceId: string;
+}
+
+/**
  * RetrieveActivePath function
  *
  * Unbound function
  */
 export class RetrieveActivePathFunction implements Executable<RetrieveActivePathResponse> {
-  constructor(public readonly processInstanceId: string) {}
+  constructor(public readonly parameters: RetrieveActivePathFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveActivePath`;
@@ -23,9 +31,9 @@ export class RetrieveActivePathFunction implements Executable<RetrieveActivePath
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.processInstanceId !== undefined) {
+    if (this.parameters.ProcessInstanceId !== undefined) {
       aliases.push(`ProcessInstanceId=@p1`);
-      params.append("@p1", formatParameterAlias(this.processInstanceId, "Edm.Guid"));
+      params.append("@p1", formatParameterAlias(this.parameters.ProcessInstanceId, "Edm.Guid"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -41,7 +49,8 @@ export class RetrieveActivePathFunction implements Executable<RetrieveActivePath
   }
 
   async parseResponse(response: Response): Promise<RetrieveActivePathResponse> {
-    const data = await response.json();
-    return data as RetrieveActivePathResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RetrieveActivePathResponse;
   }
 }

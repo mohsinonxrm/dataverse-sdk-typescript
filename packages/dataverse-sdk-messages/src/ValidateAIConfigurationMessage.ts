@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { ValidateAIConfigurationResponse as ValidateAIConfigurationResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the ValidateAIConfiguration message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ValidateAIConfigurationRequestParameters {
+  version: string;
+  aiconfigurationId: string;
+}
 
 /**
  * ValidateAIConfiguration request message
@@ -12,20 +22,19 @@ export class ValidateAIConfigurationRequest
   extends OrganizationRequest
   implements Executable<ValidateAIConfigurationResponse>
 {
-  constructor(
-    public version: string,
-    public aiconfigurationId: string
-  ) {
-    super("ValidateAIConfiguration");
+  declare readonly Parameters: Readonly<ValidateAIConfigurationRequestParameters>;
+
+  constructor(parameters: ValidateAIConfigurationRequestParameters) {
+    super("ValidateAIConfiguration", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ValidateAIConfiguration`;
 
-    const body: Record<string, unknown> = {
-      version: this.version,
-      aiconfigurationId: this.aiconfigurationId,
-    };
+    const body = requestBody({
+      version: this.Parameters.version,
+      aiconfigurationId: this.Parameters.aiconfigurationId,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class ValidateAIConfigurationRequest
   }
 
   async parseResponse(response: Response): Promise<ValidateAIConfigurationResponse> {
-    const data = await response.json();
-    return ValidateAIConfigurationResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return ValidateAIConfigurationResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

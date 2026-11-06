@@ -10,14 +10,22 @@ export interface RetrieveMissingDependenciesWithMetadataResponse {
 }
 
 /**
+ * Parameters of the RetrieveMissingDependenciesWithMetadata function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveMissingDependenciesWithMetadataFunctionParameters {
+  SolutionUniqueName: string;
+  SkipManagedDependencies: boolean;
+}
+
+/**
  * RetrieveMissingDependenciesWithMetadata function
  *
  * Unbound function
  */
 export class RetrieveMissingDependenciesWithMetadataFunction implements Executable<RetrieveMissingDependenciesWithMetadataResponse> {
   constructor(
-    public readonly solutionUniqueName: string,
-    public readonly skipManagedDependencies: boolean
+    public readonly parameters: RetrieveMissingDependenciesWithMetadataFunctionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -26,13 +34,16 @@ export class RetrieveMissingDependenciesWithMetadataFunction implements Executab
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.solutionUniqueName !== undefined) {
+    if (this.parameters.SolutionUniqueName !== undefined) {
       aliases.push(`SolutionUniqueName=@p1`);
-      params.append("@p1", formatParameterAlias(this.solutionUniqueName, "Edm.String"));
+      params.append("@p1", formatParameterAlias(this.parameters.SolutionUniqueName, "Edm.String"));
     }
-    if (this.skipManagedDependencies !== undefined) {
+    if (this.parameters.SkipManagedDependencies !== undefined) {
       aliases.push(`SkipManagedDependencies=@p2`);
-      params.append("@p2", formatParameterAlias(this.skipManagedDependencies, "Edm.Boolean"));
+      params.append(
+        "@p2",
+        formatParameterAlias(this.parameters.SkipManagedDependencies, "Edm.Boolean")
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -50,7 +61,8 @@ export class RetrieveMissingDependenciesWithMetadataFunction implements Executab
   async parseResponse(
     response: Response
   ): Promise<RetrieveMissingDependenciesWithMetadataResponse> {
-    const data = await response.json();
-    return data as RetrieveMissingDependenciesWithMetadataResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RetrieveMissingDependenciesWithMetadataResponse;
   }
 }

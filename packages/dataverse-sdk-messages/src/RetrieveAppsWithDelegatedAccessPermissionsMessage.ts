@@ -1,6 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseValue } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the RetrieveAppsWithDelegatedAccessPermissions message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveAppsWithDelegatedAccessPermissionsRequestParameters {
+  cloud: number;
+}
 
 /**
  * RetrieveAppsWithDelegatedAccessPermissions request message
@@ -11,16 +20,18 @@ export class RetrieveAppsWithDelegatedAccessPermissionsRequest
   extends OrganizationRequest
   implements Executable<RetrieveAppsWithDelegatedAccessPermissionsResponse>
 {
-  constructor(public cloud: number) {
-    super("RetrieveAppsWithDelegatedAccessPermissions");
+  declare readonly Parameters: Readonly<RetrieveAppsWithDelegatedAccessPermissionsRequestParameters>;
+
+  constructor(parameters: RetrieveAppsWithDelegatedAccessPermissionsRequestParameters) {
+    super("RetrieveAppsWithDelegatedAccessPermissions", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/RetrieveAppsWithDelegatedAccessPermissions`;
 
-    const body: Record<string, unknown> = {
-      cloud: this.cloud,
-    };
+    const body = requestBody({
+      cloud: this.Parameters.cloud,
+    });
 
     return {
       method: "POST",
@@ -35,8 +46,11 @@ export class RetrieveAppsWithDelegatedAccessPermissionsRequest
   async parseResponse(
     response: Response
   ): Promise<RetrieveAppsWithDelegatedAccessPermissionsResponse> {
-    const data = await response.json();
-    return RetrieveAppsWithDelegatedAccessPermissionsResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return RetrieveAppsWithDelegatedAccessPermissionsResponse.fromResponse(
+      text ? JSON.parse(text) : {}
+    );
   }
 }
 

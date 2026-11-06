@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_GetRecordUsers action
@@ -9,25 +10,31 @@ export interface msdyn_GetRecordUsersResponse {
 }
 
 /**
+ * Parameters of the msdyn_GetRecordUsers action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetRecordUsersActionParameters {
+  RecordType: number;
+  RecordId: string;
+  RecordTypeName: string;
+}
+
+/**
  * msdyn_GetRecordUsers action
  *
  * Unbound action
  */
 export class msdyn_GetRecordUsersAction implements Executable<msdyn_GetRecordUsersResponse> {
-  constructor(
-    public readonly recordType: number,
-    public readonly recordId: string,
-    public readonly recordTypeName: string
-  ) {}
+  constructor(public readonly parameters: msdyn_GetRecordUsersActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetRecordUsers`;
 
-    const body: Record<string, unknown> = {
-      RecordType: this.recordType,
-      RecordId: this.recordId,
-      RecordTypeName: this.recordTypeName,
-    };
+    const body = requestBody({
+      RecordType: this.parameters.RecordType,
+      RecordId: this.parameters.RecordId,
+      RecordTypeName: this.parameters.RecordTypeName,
+    });
 
     return {
       method: "POST",
@@ -40,7 +47,8 @@ export class msdyn_GetRecordUsersAction implements Executable<msdyn_GetRecordUse
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetRecordUsersResponse> {
-    const data = await response.json();
-    return data as msdyn_GetRecordUsersResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_GetRecordUsersResponse;
   }
 }

@@ -9,17 +9,27 @@ export interface GetDistinctValuesImportFileResponse {
 }
 
 /**
+ * Parameters of the GetDistinctValuesImportFile function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GetDistinctValuesImportFileFunctionParameters {
+  columnNumber: number;
+  pageNumber: number;
+  recordsPerPage: number;
+}
+
+/**
  * GetDistinctValuesImportFile function
  *
  * Bound function
  * Binding parameter: entity (mscrm.importfile)
+ *
+ * The first argument is the id of the importfile record to call it on.
  */
 export class GetDistinctValuesImportFileFunction implements Executable<GetDistinctValuesImportFileResponse> {
   constructor(
     public readonly importfileId: string,
-    public readonly columnNumber: number,
-    public readonly pageNumber: number,
-    public readonly recordsPerPage: number
+    public readonly parameters: GetDistinctValuesImportFileFunctionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -29,17 +39,17 @@ export class GetDistinctValuesImportFileFunction implements Executable<GetDistin
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.columnNumber !== undefined) {
+    if (this.parameters.columnNumber !== undefined) {
       aliases.push(`columnNumber=@p1`);
-      params.append("@p1", formatParameterAlias(this.columnNumber, "Edm.Int32"));
+      params.append("@p1", formatParameterAlias(this.parameters.columnNumber, "Edm.Int32"));
     }
-    if (this.pageNumber !== undefined) {
+    if (this.parameters.pageNumber !== undefined) {
       aliases.push(`pageNumber=@p2`);
-      params.append("@p2", formatParameterAlias(this.pageNumber, "Edm.Int32"));
+      params.append("@p2", formatParameterAlias(this.parameters.pageNumber, "Edm.Int32"));
     }
-    if (this.recordsPerPage !== undefined) {
+    if (this.parameters.recordsPerPage !== undefined) {
       aliases.push(`recordsPerPage=@p3`);
-      params.append("@p3", formatParameterAlias(this.recordsPerPage, "Edm.Int32"));
+      params.append("@p3", formatParameterAlias(this.parameters.recordsPerPage, "Edm.Int32"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -55,7 +65,8 @@ export class GetDistinctValuesImportFileFunction implements Executable<GetDistin
   }
 
   async parseResponse(response: Response): Promise<GetDistinctValuesImportFileResponse> {
-    const data = await response.json();
-    return data as GetDistinctValuesImportFileResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as GetDistinctValuesImportFileResponse;
   }
 }

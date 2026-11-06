@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the RemoveParent message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RemoveParentRequestParameters {
+  Target: EntityReference | AnyEntityPayload;
+}
 
 /**
  * RemoveParent request message
@@ -12,16 +21,18 @@ export class RemoveParentRequest
   extends OrganizationRequest
   implements Executable<RemoveParentResponse>
 {
-  constructor(public target: EntityReference | AnyEntityPayload) {
-    super("RemoveParent");
+  declare readonly Parameters: Readonly<RemoveParentRequestParameters>;
+
+  constructor(parameters: RemoveParentRequestParameters) {
+    super("RemoveParent", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/RemoveParent`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-    };
+    const body = requestBody({
+      Target: this.Parameters.Target,
+    });
 
     return {
       method: "POST",

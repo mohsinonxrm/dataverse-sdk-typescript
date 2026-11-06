@@ -13,6 +13,8 @@ export interface RetrieveProductProperties_salesorderdetailResponse {
  *
  * Bound function
  * Binding parameter: entity (mscrm.salesorderdetail)
+ *
+ * The first argument is the id of the salesorderdetail record to call it on.
  */
 export class RetrieveProductProperties_salesorderdetailFunction implements Executable<RetrieveProductProperties_salesorderdetailResponse> {
   constructor(public readonly salesorderdetailId: string) {}
@@ -33,7 +35,8 @@ export class RetrieveProductProperties_salesorderdetailFunction implements Execu
   async parseResponse(
     response: Response
   ): Promise<RetrieveProductProperties_salesorderdetailResponse> {
-    const data = await response.json();
-    return data as RetrieveProductProperties_salesorderdetailResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as RetrieveProductProperties_salesorderdetailResponse;
   }
 }

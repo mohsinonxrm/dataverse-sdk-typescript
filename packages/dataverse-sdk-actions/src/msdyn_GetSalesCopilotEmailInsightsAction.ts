@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_GetSalesCopilotEmailInsights action
@@ -6,29 +7,35 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 export interface msdyn_GetSalesCopilotEmailInsightsResponse {}
 
 /**
+ * Parameters of the msdyn_GetSalesCopilotEmailInsights action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetSalesCopilotEmailInsightsActionParameters {
+  msdyn_activityid?: string;
+  msdyn_regardinglogicalname: string;
+  msdyn_internetmessageid: string;
+  msdyn_regardingid: string;
+  msdyn_messageid: string;
+}
+
+/**
  * msdyn_GetSalesCopilotEmailInsights action
  *
  * Unbound action
  */
 export class msdyn_GetSalesCopilotEmailInsightsAction implements Executable<msdyn_GetSalesCopilotEmailInsightsResponse> {
-  constructor(
-    public readonly msdyn_activityid: string | undefined,
-    public readonly msdyn_regardinglogicalname: string,
-    public readonly msdyn_internetmessageid: string,
-    public readonly msdyn_regardingid: string,
-    public readonly msdyn_messageid: string
-  ) {}
+  constructor(public readonly parameters: msdyn_GetSalesCopilotEmailInsightsActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetSalesCopilotEmailInsights`;
 
-    const body: Record<string, unknown> = {
-      msdyn_activityid: this.msdyn_activityid,
-      msdyn_regardinglogicalname: this.msdyn_regardinglogicalname,
-      msdyn_internetmessageid: this.msdyn_internetmessageid,
-      msdyn_regardingid: this.msdyn_regardingid,
-      msdyn_messageid: this.msdyn_messageid,
-    };
+    const body = requestBody({
+      msdyn_activityid: this.parameters.msdyn_activityid,
+      msdyn_regardinglogicalname: this.parameters.msdyn_regardinglogicalname,
+      msdyn_internetmessageid: this.parameters.msdyn_internetmessageid,
+      msdyn_regardingid: this.parameters.msdyn_regardingid,
+      msdyn_messageid: this.parameters.msdyn_messageid,
+    });
 
     return {
       method: "POST",
@@ -41,7 +48,8 @@ export class msdyn_GetSalesCopilotEmailInsightsAction implements Executable<msdy
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSalesCopilotEmailInsightsResponse> {
-    const data = await response.json();
-    return data as msdyn_GetSalesCopilotEmailInsightsResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_GetSalesCopilotEmailInsightsResponse;
   }
 }

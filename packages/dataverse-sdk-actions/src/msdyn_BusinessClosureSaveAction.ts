@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_BusinessClosureSave action
@@ -8,27 +9,33 @@ export interface msdyn_BusinessClosureSaveResponse {
 }
 
 /**
+ * Parameters of the msdyn_BusinessClosureSave action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_BusinessClosureSaveActionParameters {
+  Id?: string;
+  Name: string;
+  Start: string;
+  End: string;
+}
+
+/**
  * msdyn_BusinessClosureSave action
  *
  * Unbound action
  */
 export class msdyn_BusinessClosureSaveAction implements Executable<msdyn_BusinessClosureSaveResponse> {
-  constructor(
-    public readonly id: string | undefined,
-    public readonly name: string,
-    public readonly start: string,
-    public readonly end: string
-  ) {}
+  constructor(public readonly parameters: msdyn_BusinessClosureSaveActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_BusinessClosureSave`;
 
-    const body: Record<string, unknown> = {
-      Id: this.id,
-      Name: this.name,
-      Start: this.start,
-      End: this.end,
-    };
+    const body = requestBody({
+      Id: this.parameters.Id,
+      Name: this.parameters.Name,
+      Start: this.parameters.Start,
+      End: this.parameters.End,
+    });
 
     return {
       method: "POST",
@@ -41,7 +48,8 @@ export class msdyn_BusinessClosureSaveAction implements Executable<msdyn_Busines
   }
 
   async parseResponse(response: Response): Promise<msdyn_BusinessClosureSaveResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_BusinessClosureSaveResponse;
   }
 }

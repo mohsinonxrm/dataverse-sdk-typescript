@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_SalesAgents_TriggerOutreachAgent action
@@ -8,25 +9,31 @@ export interface msdyn_SalesAgents_TriggerOutreachAgentResponse {
 }
 
 /**
+ * Parameters of the msdyn_SalesAgents_TriggerOutreachAgent action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAgents_TriggerOutreachAgentActionParameters {
+  msdyn_TrackingId: string;
+  msdyn_SalesAgentRun: string;
+  msdyn_OutreachConfig?: string;
+}
+
+/**
  * msdyn_SalesAgents_TriggerOutreachAgent action
  *
  * Unbound action
  */
 export class msdyn_SalesAgents_TriggerOutreachAgentAction implements Executable<msdyn_SalesAgents_TriggerOutreachAgentResponse> {
-  constructor(
-    public readonly msdyn_TrackingId: string,
-    public readonly msdyn_SalesAgentRun: string,
-    public readonly msdyn_OutreachConfig?: string
-  ) {}
+  constructor(public readonly parameters: msdyn_SalesAgents_TriggerOutreachAgentActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAgents_TriggerOutreachAgent`;
 
-    const body: Record<string, unknown> = {
-      msdyn_TrackingId: this.msdyn_TrackingId,
-      msdyn_SalesAgentRun: this.msdyn_SalesAgentRun,
-      msdyn_OutreachConfig: this.msdyn_OutreachConfig,
-    };
+    const body = requestBody({
+      msdyn_TrackingId: this.parameters.msdyn_TrackingId,
+      msdyn_SalesAgentRun: this.parameters.msdyn_SalesAgentRun,
+      msdyn_OutreachConfig: this.parameters.msdyn_OutreachConfig,
+    });
 
     return {
       method: "POST",
@@ -39,7 +46,8 @@ export class msdyn_SalesAgents_TriggerOutreachAgentAction implements Executable<
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAgents_TriggerOutreachAgentResponse> {
-    const data = await response.json();
-    return data as msdyn_SalesAgents_TriggerOutreachAgentResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_SalesAgents_TriggerOutreachAgentResponse;
   }
 }

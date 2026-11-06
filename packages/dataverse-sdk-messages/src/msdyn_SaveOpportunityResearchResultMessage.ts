@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_SaveOpportunityResearchResultResponse as msdyn_SaveOpportunityResearchResultResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_SaveOpportunityResearchResult message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SaveOpportunityResearchResultRequestParameters {
+  OpportunityResearchResultPayload: string;
+}
 
 /**
  * msdyn_SaveOpportunityResearchResult request message
@@ -12,16 +21,18 @@ export class msdyn_SaveOpportunityResearchResultRequest
   extends OrganizationRequest
   implements Executable<msdyn_SaveOpportunityResearchResultResponse>
 {
-  constructor(public opportunityResearchResultPayload: string) {
-    super("msdyn_SaveOpportunityResearchResult");
+  declare readonly Parameters: Readonly<msdyn_SaveOpportunityResearchResultRequestParameters>;
+
+  constructor(parameters: msdyn_SaveOpportunityResearchResultRequestParameters) {
+    super("msdyn_SaveOpportunityResearchResult", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SaveOpportunityResearchResult`;
 
-    const body: Record<string, unknown> = {
-      OpportunityResearchResultPayload: this.opportunityResearchResultPayload,
-    };
+    const body = requestBody({
+      OpportunityResearchResultPayload: this.Parameters.OpportunityResearchResultPayload,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_SaveOpportunityResearchResultRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SaveOpportunityResearchResultResponse> {
-    const data = await response.json();
-    return msdyn_SaveOpportunityResearchResultResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_SaveOpportunityResearchResultResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

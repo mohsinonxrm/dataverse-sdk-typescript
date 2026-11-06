@@ -1,7 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { CCaaS_BroadcastMessageResponse as CCaaS_BroadcastMessageResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the CCaaS_BroadcastMessage message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_BroadcastMessageRequestParameters {
+  Message: string;
+  Title: string;
+  ApiVersion: string;
+  ConversationIds: string[];
+}
 
 /**
  * CCaaS_BroadcastMessage request message
@@ -12,24 +24,21 @@ export class CCaaS_BroadcastMessageRequest
   extends OrganizationRequest
   implements Executable<CCaaS_BroadcastMessageResponse>
 {
-  constructor(
-    public message: string,
-    public title: string,
-    public apiVersion: string,
-    public conversationIds: string[]
-  ) {
-    super("CCaaS_BroadcastMessage");
+  declare readonly Parameters: Readonly<CCaaS_BroadcastMessageRequestParameters>;
+
+  constructor(parameters: CCaaS_BroadcastMessageRequestParameters) {
+    super("CCaaS_BroadcastMessage", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CCaaS_BroadcastMessage`;
 
-    const body: Record<string, unknown> = {
-      Message: this.message,
-      Title: this.title,
-      ApiVersion: this.apiVersion,
-      ConversationIds: this.conversationIds,
-    };
+    const body = requestBody({
+      Message: this.Parameters.Message,
+      Title: this.Parameters.Title,
+      ApiVersion: this.Parameters.ApiVersion,
+      ConversationIds: this.Parameters.ConversationIds,
+    });
 
     return {
       method: "POST",
@@ -42,8 +51,9 @@ export class CCaaS_BroadcastMessageRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_BroadcastMessageResponse> {
-    const data = await response.json();
-    return CCaaS_BroadcastMessageResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return CCaaS_BroadcastMessageResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

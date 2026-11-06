@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -11,19 +12,27 @@ export interface msdyn_CheckForDuplicatesActionResponse {
 }
 
 /**
+ * Parameters of the msdyn_CheckForDuplicatesAction action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CheckForDuplicatesActionActionParameters {
+  Record?: EntityReference | AnyEntityPayload;
+}
+
+/**
  * msdyn_CheckForDuplicatesAction action
  *
  * Unbound action
  */
 export class msdyn_CheckForDuplicatesActionAction implements Executable<msdyn_CheckForDuplicatesActionResponse> {
-  constructor(public readonly record?: EntityReference | AnyEntityPayload) {}
+  constructor(public readonly parameters: msdyn_CheckForDuplicatesActionActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckForDuplicatesAction`;
 
-    const body: Record<string, unknown> = {
-      Record: this.record,
-    };
+    const body = requestBody({
+      Record: this.parameters.Record,
+    });
 
     return {
       method: "POST",
@@ -36,7 +45,8 @@ export class msdyn_CheckForDuplicatesActionAction implements Executable<msdyn_Ch
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckForDuplicatesActionResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckForDuplicatesActionResponse;
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return (text ? JSON.parse(text) : {}) as msdyn_CheckForDuplicatesActionResponse;
   }
 }

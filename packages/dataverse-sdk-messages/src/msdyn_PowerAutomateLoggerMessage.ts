@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_PowerAutomateLoggerResponse as msdyn_PowerAutomateLoggerResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_PowerAutomateLogger message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_PowerAutomateLoggerRequestParameters {
+  LogType: string;
+  LogMessage: string;
+}
 
 /**
  * msdyn_PowerAutomateLogger request message
@@ -12,20 +22,19 @@ export class msdyn_PowerAutomateLoggerRequest
   extends OrganizationRequest
   implements Executable<msdyn_PowerAutomateLoggerResponse>
 {
-  constructor(
-    public logType: string,
-    public logMessage: string
-  ) {
-    super("msdyn_PowerAutomateLogger");
+  declare readonly Parameters: Readonly<msdyn_PowerAutomateLoggerRequestParameters>;
+
+  constructor(parameters: msdyn_PowerAutomateLoggerRequestParameters) {
+    super("msdyn_PowerAutomateLogger", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_PowerAutomateLogger`;
 
-    const body: Record<string, unknown> = {
-      LogType: this.logType,
-      LogMessage: this.logMessage,
-    };
+    const body = requestBody({
+      LogType: this.Parameters.LogType,
+      LogMessage: this.Parameters.LogMessage,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class msdyn_PowerAutomateLoggerRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_PowerAutomateLoggerResponse> {
-    const data = await response.json();
-    return msdyn_PowerAutomateLoggerResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_PowerAutomateLoggerResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

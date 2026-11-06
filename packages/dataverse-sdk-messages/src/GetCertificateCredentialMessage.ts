@@ -1,6 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseValue } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the GetCertificateCredential message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GetCertificateCredentialRequestParameters {
+  entityId: string;
+  entityLogicalName: string;
+}
 
 /**
  * GetCertificateCredential request message
@@ -11,20 +21,19 @@ export class GetCertificateCredentialRequest
   extends OrganizationRequest
   implements Executable<GetCertificateCredentialResponse>
 {
-  constructor(
-    public entityId: string,
-    public entityLogicalName: string
-  ) {
-    super("GetCertificateCredential");
+  declare readonly Parameters: Readonly<GetCertificateCredentialRequestParameters>;
+
+  constructor(parameters: GetCertificateCredentialRequestParameters) {
+    super("GetCertificateCredential", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/GetCertificateCredential`;
 
-    const body: Record<string, unknown> = {
-      entityId: this.entityId,
-      entityLogicalName: this.entityLogicalName,
-    };
+    const body = requestBody({
+      entityId: this.Parameters.entityId,
+      entityLogicalName: this.Parameters.entityLogicalName,
+    });
 
     return {
       method: "POST",
@@ -37,8 +46,9 @@ export class GetCertificateCredentialRequest
   }
 
   async parseResponse(response: Response): Promise<GetCertificateCredentialResponse> {
-    const data = await response.json();
-    return GetCertificateCredentialResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return GetCertificateCredentialResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

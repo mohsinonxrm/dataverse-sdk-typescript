@@ -1,5 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_GenerateGeofenceEvent message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GenerateGeofenceEventRequestParameters {
+  GeofenceId: string;
+  BookableResourceId: string;
+  Latitude: number;
+  Longitude: number;
+  Timestamp: string;
+  UseTargetEntityLocation: boolean;
+}
 
 /**
  * msdyn_GenerateGeofenceEvent request message
@@ -10,28 +24,23 @@ export class msdyn_GenerateGeofenceEventRequest
   extends OrganizationRequest
   implements Executable<msdyn_GenerateGeofenceEventResponse>
 {
-  constructor(
-    public geofenceId: string,
-    public bookableResourceId: string,
-    public latitude: number,
-    public longitude: number,
-    public timestamp: string,
-    public useTargetEntityLocation: boolean
-  ) {
-    super("msdyn_GenerateGeofenceEvent");
+  declare readonly Parameters: Readonly<msdyn_GenerateGeofenceEventRequestParameters>;
+
+  constructor(parameters: msdyn_GenerateGeofenceEventRequestParameters) {
+    super("msdyn_GenerateGeofenceEvent", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GenerateGeofenceEvent`;
 
-    const body: Record<string, unknown> = {
-      GeofenceId: this.geofenceId,
-      BookableResourceId: this.bookableResourceId,
-      Latitude: this.latitude,
-      Longitude: this.longitude,
-      Timestamp: this.timestamp,
-      UseTargetEntityLocation: this.useTargetEntityLocation,
-    };
+    const body = requestBody({
+      GeofenceId: this.Parameters.GeofenceId,
+      BookableResourceId: this.Parameters.BookableResourceId,
+      Latitude: this.Parameters.Latitude,
+      Longitude: this.Parameters.Longitude,
+      Timestamp: this.Parameters.Timestamp,
+      UseTargetEntityLocation: this.Parameters.UseTargetEntityLocation,
+    });
 
     return {
       method: "POST",

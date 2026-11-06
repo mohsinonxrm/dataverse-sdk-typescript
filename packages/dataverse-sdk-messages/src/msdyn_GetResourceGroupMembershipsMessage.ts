@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetResourceGroupMembershipsResponse as msdyn_GetResourceGroupMembershipsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetResourceGroupMemberships message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetResourceGroupMembershipsRequestParameters {
+  Start: string;
+  End: string;
+  ResourceIds: string;
+}
 
 /**
  * msdyn_GetResourceGroupMemberships request message
@@ -12,22 +23,20 @@ export class msdyn_GetResourceGroupMembershipsRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetResourceGroupMembershipsResponse>
 {
-  constructor(
-    public start: string,
-    public end: string,
-    public resourceIds: string
-  ) {
-    super("msdyn_GetResourceGroupMemberships");
+  declare readonly Parameters: Readonly<msdyn_GetResourceGroupMembershipsRequestParameters>;
+
+  constructor(parameters: msdyn_GetResourceGroupMembershipsRequestParameters) {
+    super("msdyn_GetResourceGroupMemberships", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetResourceGroupMemberships`;
 
-    const body: Record<string, unknown> = {
-      Start: this.start,
-      End: this.end,
-      ResourceIds: this.resourceIds,
-    };
+    const body = requestBody({
+      Start: this.Parameters.Start,
+      End: this.Parameters.End,
+      ResourceIds: this.Parameters.ResourceIds,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class msdyn_GetResourceGroupMembershipsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetResourceGroupMembershipsResponse> {
-    const data = await response.json();
-    return msdyn_GetResourceGroupMembershipsResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_GetResourceGroupMembershipsResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

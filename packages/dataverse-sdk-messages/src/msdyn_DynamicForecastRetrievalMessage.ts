@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_DynamicForecastRetrievalResponse as msdyn_DynamicForecastRetrievalResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_DynamicForecastRetrieval message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_DynamicForecastRetrievalRequestParameters {
+  msdyn_dynamicForecastRetrievalRequest: string;
+}
 
 /**
  * msdyn_DynamicForecastRetrieval request message
@@ -12,16 +21,18 @@ export class msdyn_DynamicForecastRetrievalRequest
   extends OrganizationRequest
   implements Executable<msdyn_DynamicForecastRetrievalResponse>
 {
-  constructor(public msdyn_dynamicForecastRetrievalRequest: string) {
-    super("msdyn_DynamicForecastRetrieval");
+  declare readonly Parameters: Readonly<msdyn_DynamicForecastRetrievalRequestParameters>;
+
+  constructor(parameters: msdyn_DynamicForecastRetrievalRequestParameters) {
+    super("msdyn_DynamicForecastRetrieval", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_DynamicForecastRetrieval`;
 
-    const body: Record<string, unknown> = {
-      msdyn_dynamicForecastRetrievalRequest: this.msdyn_dynamicForecastRetrievalRequest,
-    };
+    const body = requestBody({
+      msdyn_dynamicForecastRetrievalRequest: this.Parameters.msdyn_dynamicForecastRetrievalRequest,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_DynamicForecastRetrievalRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_DynamicForecastRetrievalResponse> {
-    const data = await response.json();
-    return msdyn_DynamicForecastRetrievalResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_DynamicForecastRetrievalResponse.fromResponse(text ? JSON.parse(text) : {});
   }
 }
 

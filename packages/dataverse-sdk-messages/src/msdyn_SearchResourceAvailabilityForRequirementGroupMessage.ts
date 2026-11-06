@@ -2,8 +2,21 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_SearchResourceAvailabilityForRequirementGroupResponse as msdyn_SearchResourceAvailabilityForRequirementGroupResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_SearchResourceAvailabilityForRequirementGroup message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SearchResourceAvailabilityForRequirementGroupRequestParameters {
+  Version?: string;
+  IsWebApi?: boolean;
+  RequirementGroup: EntityReference | AnyEntityPayload;
+  RequirementSpecification?: EntityReference | AnyEntityPayload;
+  Settings?: EntityReference | AnyEntityPayload;
+}
 
 /**
  * msdyn_SearchResourceAvailabilityForRequirementGroup request message
@@ -14,26 +27,22 @@ export class msdyn_SearchResourceAvailabilityForRequirementGroupRequest
   extends OrganizationRequest
   implements Executable<msdyn_SearchResourceAvailabilityForRequirementGroupResponse>
 {
-  constructor(
-    public version: string | undefined,
-    public isWebApi: boolean | undefined,
-    public requirementGroup: EntityReference | AnyEntityPayload,
-    public requirementSpecification?: EntityReference | AnyEntityPayload,
-    public settings?: EntityReference | AnyEntityPayload
-  ) {
-    super("msdyn_SearchResourceAvailabilityForRequirementGroup");
+  declare readonly Parameters: Readonly<msdyn_SearchResourceAvailabilityForRequirementGroupRequestParameters>;
+
+  constructor(parameters: msdyn_SearchResourceAvailabilityForRequirementGroupRequestParameters) {
+    super("msdyn_SearchResourceAvailabilityForRequirementGroup", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SearchResourceAvailabilityForRequirementGroup`;
 
-    const body: Record<string, unknown> = {
-      Version: this.version,
-      IsWebApi: this.isWebApi,
-      RequirementGroup: this.requirementGroup,
-      RequirementSpecification: this.requirementSpecification,
-      Settings: this.settings,
-    };
+    const body = requestBody({
+      Version: this.Parameters.Version,
+      IsWebApi: this.Parameters.IsWebApi,
+      RequirementGroup: this.Parameters.RequirementGroup,
+      RequirementSpecification: this.Parameters.RequirementSpecification,
+      Settings: this.Parameters.Settings,
+    });
 
     return {
       method: "POST",
@@ -48,8 +57,11 @@ export class msdyn_SearchResourceAvailabilityForRequirementGroupRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SearchResourceAvailabilityForRequirementGroupResponse> {
-    const data = await response.json();
-    return msdyn_SearchResourceAvailabilityForRequirementGroupResponse.fromResponse(data);
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? "" : await response.text();
+    return msdyn_SearchResourceAvailabilityForRequirementGroupResponse.fromResponse(
+      text ? JSON.parse(text) : {}
+    );
   }
 }
 
