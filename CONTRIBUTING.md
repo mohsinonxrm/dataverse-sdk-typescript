@@ -60,7 +60,7 @@ pnpm lint
 ### TypeScript
 
 - **TypeScript strict mode** is required
-- **No `any`** in public APIs (internal use with `@internal` tag allowed)
+- **No `any`** in new public APIs (internal use with `@internal` tag allowed). A few older signatures still use it (`OrganizationService<T = any>`, `IEntity`'s index signature, `BatchRequestBuilder.addRequest(body)`); don't add more, and prefer `unknown` or a generic
 - Prefer discriminated unions over string flags
 
 ### Public APIs
@@ -107,7 +107,7 @@ Before submitting a PR, ensure:
 ```
 packages/
   dataverse-sdk-core/          # Core HTTP pipeline & client
-  dataverse-sdk-auth-*         # Auth providers (MSAL browser/node)
+  dataverse-sdk-auth-*         # Auth providers (MSAL browser, MSAL node, Azure Identity)
   dataverse-sdk-batch/         # $batch operations
   dataverse-sdk-messages/      # SDK message request/response
   dataverse-sdk-xrm/           # OrganizationService facade
@@ -180,7 +180,7 @@ pnpm run release
 Major architectural decisions are documented in `docs/adr/`. Before proposing significant changes:
 
 1. Review existing ADRs in `docs/adr/`
-2. Create a new ADR if needed (follow template)
+2. Create a new ADR if needed: copy the structure of an existing one (Status, Context, Decision, Consequences) and number it next in sequence
 3. Discuss in issue/PR before implementing
 
 ## Licensing

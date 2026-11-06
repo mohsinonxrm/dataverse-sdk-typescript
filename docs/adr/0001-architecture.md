@@ -7,7 +7,7 @@
 
 ### Context
 
-We are building a TypeScript SDK for Microsoft Dataverse (Online only) that is usable in both Node and browsers with **ESM-only** distribution and **Node 18+** baseline (native `fetch`). We need a resilient and scalable HTTP client that follows a **Graph SDK–like architecture** with middleware policies (retry, throttling awareness, concurrency control, circuit breaker/bulkhead optional), and exposes two developer entry points: a fluent HTTP/OData front door and a C#-familiar OrganizationService-style front door.
+We are building a TypeScript SDK for Microsoft Dataverse (Online only) that is usable in both Node and browsers with **ESM-only** distribution and **Node 22+** baseline (native `fetch`; originally Node 18+, raised when Node 18 and 20 reached end of life). We need a resilient and scalable HTTP client that follows a **Graph SDK–like architecture** with middleware policies (retry, throttling awareness, concurrency control, circuit breaker/bulkhead optional), and exposes two developer entry points: a fluent HTTP/OData front door and a C#-familiar OrganizationService-style front door.
 
 Dataverse publishes a recommended **degree of parallelism** via the `x-ms-dop-hint` response header and recommends using it rather than guessing a fixed concurrency level. Service protection limits include concurrency enforcement and return specific errors when exceeded, so the SDK must include throttling/resiliency guidance and controls.
 
@@ -17,7 +17,7 @@ Dataverse supports `$batch` operations with **up to 1000** individual requests p
 
 1.  **Monorepo + packages:** Use a monorepo (pnpm workspaces + changesets) publishing packages under `@mohsinonxrm/dataverse-sdk-*`.
 2.  **Core client:** Implement `@mohsinonxrm/dataverse-sdk-core` as the smallest stable layer providing:
-    - Fetch-based request adapter (Node 18+ + browsers).
+    - Fetch-based request adapter (Node 22+ and browsers).
     - Middleware pipeline (Graph-style): auth adapter, OData headers, retry, concurrency limiter, telemetry/logging, optional circuit breaker/bulkhead.
     - Fluent request builder `client.api(path)` supporting full OData query options (select/filter/expand/orderby/top/skip/count/search/apply), Prefer header helpers, paging helpers (single page by default).
 3.  **Two front doors:**
