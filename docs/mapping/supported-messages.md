@@ -48,7 +48,7 @@ await orgService.execute<WinOpportunityResponse>(
 ```
 
 A response that returns an entity or a complex type has it in `result`
-(`ExecuteWorkflowResponse.result.asyncoperationid`).
+(`ExecuteWorkflowResponse.result?.asyncoperationid`).
 
 ### Generic `OrganizationRequest`
 
@@ -207,6 +207,8 @@ runs, and 30 (succeeded), 31 (failed) or 32 (canceled) once it ends, so poll unt
 const { result } = await orgService.execute<ExecuteWorkflowResponse>(
   new ExecuteWorkflowRequest(workflowId, { EntityId: recordId })
 );
+// The asyncoperation record, or null if the Web API answered 204 No Content
+if (!result) throw new Error("ExecuteWorkflow returned no system job");
 let job: { statuscode: number };
 do {
   await new Promise((r) => setTimeout(r, 2000));

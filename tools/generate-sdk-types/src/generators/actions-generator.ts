@@ -6,7 +6,6 @@ import type {
 import { resolve, join } from "path";
 import {
   csdlTypeToTs,
-  csdlTypeToTsWithExpansion,
   toPascalCase as _toPascalCase,
   getEntitySetName,
   isCollectionType,
@@ -17,7 +16,6 @@ import {
   parametersArgument,
   parametersInterface,
   parametersInterfaceName,
-  parseResponseBody,
   REQUEST_BODY_MODULE,
   REQUEST_BODY_SOURCE,
   requestBodyExpression,
@@ -28,7 +26,7 @@ import {
   purgeDirectory,
 } from "../utils/file-writer.js";
 import { polymorphicParameterType } from "../utils/polymorphism.js";
-import { entityReturn, entityResponseInterface } from "../utils/entity-return.js";
+import { operationReturn, parseResponseMethod } from "../utils/operation-return.js";
 import { entityReferenceSource } from "../utils/entity-reference.js";
 import { bodyEnumType, ENUM_BODY_MODULE, enumBodySource } from "../utils/enum-body.js";
 import { exportedEnumNames } from "./complex-types-generator.js";
@@ -170,38 +168,14 @@ function generateActionClass(csdl: CsdlSchema, action: CsdlAction, stem = action
   // Collect all complex type and entity type references used in this file
   const complexTypesUsed = new Set<string>();
 
-  // Check return type
-  if (action.returnType) {
-    const normalizedReturnType = action.returnType.replace("mscrm.", "Microsoft.Dynamics.CRM.");
-    const complexType = csdl.complexTypes.find(
-      (ct) => `${ct.namespace}.${ct.name}` === normalizedReturnType
-    );
-
-    if (complexType) {
-      // Collect types from complex type properties
-      for (const prop of complexType.properties) {
-        const typeName = csdlTypeToTsWithExpansion(prop.type, csdl);
-        // Extract base type name (remove [] suffix if array)
-        const baseType = typeName.replace("[]", "");
-        // If it's not a primitive type, add it
-        if (!["string", "number", "boolean", "any", "unknown"].includes(baseType)) {
-          complexTypesUsed.add(baseType);
-        }
-      }
-    } else {
-      // Return type might be an entity type or other type not expanded
-      const tsType = csdlTypeToTs(action.returnType);
-      const baseType = tsType.replace("[]", "");
-      if (
-        !["string", "number", "boolean", "any", "unknown"].includes(baseType) &&
-        !systemEntities.includes(baseType.toLowerCase())
-      ) {
-        // Map Complex* types to non-Complex EntityType versions
-        const mappedType = mapComplexTypeToEntityType(baseType);
-        complexTypesUsed.add(mappedType);
-      }
-    }
-  }
+  // Return type: the value execute() resolves (#300)
+  const ret = operationReturn(
+    csdl,
+    action.returnType,
+    responseInterfaceName,
+    `${action.name} action`
+  );
+  for (const t of ret.imports) complexTypesUsed.add(t);
 
   // Check parameters
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -227,17 +201,8 @@ function generateActionClass(csdl: CsdlSchema, action: CsdlAction, stem = action
 
   let code = `import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';\n`;
 
-  // Check if EntityReference is needed (from return type or parameters)
-  let needsEntityReference = false;
-
-  // Check return type for EntityReference (a single system-entity return is a record, #71)
-  if (action.returnType && entityReturn(csdl, action.returnType)?.kind !== "record") {
-    const tsType = csdlTypeToTs(action.returnType, false);
-    const baseType = tsType.replace("[]", "");
-    if (baseType === "EntityReference") {
-      needsEntityReference = true;
-    }
-  }
+  // EntityReference is needed by the return type's declaration or by a parameter
+  let needsEntityReference = ret.needsEntityReference;
 
   // Check parameters for EntityReference (single entity references, not Collections)
   if (!needsEntityReference) {
@@ -281,7 +246,7 @@ function generateActionClass(csdl: CsdlSchema, action: CsdlAction, stem = action
   code += `\n`;
 
   // Generate response interface
-  code += generateResponseInterface(csdl, action, responseInterfaceName);
+  code += ret.declaration;
   code += `\n`;
 
   // Collection-bound: called on an entity set (#69)
@@ -441,61 +406,7 @@ function generateActionClass(csdl: CsdlSchema, action: CsdlAction, stem = action
   code += `  }\n\n`;
 
   // Generate parseResponse method
-  code += `  async parseResponse(response: Response): Promise<${responseInterfaceName}> {\n`;
-  code += parseResponseBody(responseInterfaceName);
-  code += `  }\n`;
-
-  code += `}\n`;
-
-  return code;
-}
-
-/**
- * Generate response interface.
- */
-function generateResponseInterface(
-  csdl: CsdlSchema,
-  action: CsdlAction,
-  interfaceName: string
-): string {
-  // An entity return is the entity itself (#71)
-  const entityShape = action.returnType ? entityReturn(csdl, action.returnType) : undefined;
-  if (entityShape) {
-    return entityResponseInterface(
-      interfaceName,
-      entityShape,
-      `Response from ${action.name} action`
-    );
-  }
-
-  let code = `/**\n`;
-  code += ` * Response from ${action.name} action\n`;
-  code += ` */\n`;
-  code += `export interface ${interfaceName} {\n`;
-
-  if (action.returnType) {
-    // Check if return type is a complex type
-    // Handle both namespace formats: mscrm.TypeName and Microsoft.Dynamics.CRM.TypeName
-    const normalizedReturnType = action.returnType.replace("mscrm.", "Microsoft.Dynamics.CRM.");
-    const complexType = csdl.complexTypes.find(
-      (ct) => `${ct.namespace}.${ct.name}` === normalizedReturnType
-    );
-
-    if (complexType) {
-      // Expand complex type properties
-      for (const prop of complexType.properties) {
-        const tsType = csdlTypeToTsWithExpansion(prop.type, csdl);
-        const optional = prop.nullable ? "?" : "";
-        code += `  ${prop.name}${optional}: ${tsType};\n`;
-      }
-    } else {
-      // Primitive or collection type
-      const tsType = csdlTypeToTs(action.returnType);
-      code += `  value: ${tsType};\n`;
-    }
-  } else {
-    code += `  // No content returned\n`;
-  }
+  code += parseResponseMethod(ret, responseInterfaceName);
 
   code += `}\n`;
 

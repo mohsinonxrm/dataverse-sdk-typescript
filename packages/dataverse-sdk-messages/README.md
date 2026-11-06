@@ -89,8 +89,29 @@ const service = new OrganizationService(client);
 const request = new ExecuteWorkflowRequest(workflowId, { EntityId: recordId });
 
 const response = await service.execute(request);
-console.log("Async Operation ID:", response.result.asyncoperationid);
+console.log("Async Operation ID:", response.result?.asyncoperationid);
 ```
+
+## Results
+
+A message's `result` is the value the action of the same name returns, with the same type,
+exported as `<Name>Result` (#300). A message without a return type has no `result`.
+
+| Return type in `$metadata`                       | Web API response                                          | Value                                                       |
+| ------------------------------------------------ | --------------------------------------------------------- | ----------------------------------------------------------- |
+| none                                             | `204 No Content`                                          | `undefined` (`<Name>Response` is `void`)                    |
+| primitive or enum (`Edm.Boolean`, …)             | `{ "@odata.context", "value": … }`                        | the value (an enum is its member name)                      |
+| collection (`Collection(mscrm.role)`, …)         | `{ "@odata.context", "value": [ … ] }`, or 204 when unset | the array, each record with `@odata.etag`; `[]` for a 204   |
+| complex type (`mscrm.WhoAmIResponse`)            | the properties, with `@odata.context`                     | the body, with `@odata.context`                             |
+| entity (`mscrm.asyncoperation`, `crmbaseentity`) | the record, with its annotations, or 204 when unset       | the record (`@odata.etag`, `@odata.type`); `null` for a 204 |
+
+Dataverse answers `204 No Content` for an entity or entity-collection output that wasn't set,
+although `$metadata` declares the return `Nullable="false"`, so an entity return is
+`<Entity> | null`. `@odata.type` says which table a `crmbaseentity` record is.
+
+`<Name>Response.fromResponse(data)` reads `result` from a parsed response body (`undefined` for a
+204), for example the body of a `$batch` step. Unlike the `Results` of the generic
+`OrganizationRequest`, `result` keeps the annotations, as the action's value does.
 
 ## Common Messages
 
@@ -122,7 +143,7 @@ import { ExecuteWorkflowRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 const request = new ExecuteWorkflowRequest(workflowId, { EntityId: recordId, InputArguments: {} });
 
 const response = await service.execute(request);
-console.log("Async Operation ID:", response.result.asyncoperationid);
+console.log("Async Operation ID:", response.result?.asyncoperationid);
 // Poll asyncoperation entity to check workflow status
 ```
 
@@ -134,7 +155,7 @@ console.log("Async Operation ID:", response.result.asyncoperationid);
 
 **Response:**
 
-- `result: asyncoperation` - The async operation record (system job)
+- `result: ExecuteWorkflowResult` - The async operation record (system job), with its annotations, or `null` if the Web API answered 204
 
 ---
 

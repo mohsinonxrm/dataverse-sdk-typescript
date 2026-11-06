@@ -117,8 +117,8 @@ export class WinOpportunityAction implements Executable<WinOpportunityResponse> 
     // POST with requestBody({ OpportunityClose: …, Caller: …, Status: … }): undefined ones left out
   }
 
-  async parseResponse(response: Response): Promise<WinOpportunityResponse> {
-    // The JSON body, or {} for 204 No Content
+  parseResponse(_response: Response): Promise<WinOpportunityResponse> {
+    // WinOpportunity returns nothing: WinOpportunityResponse is void
   }
 }
 ```
@@ -158,7 +158,7 @@ export class WhoAmIFunction implements Executable<WhoAmIResponse> {
   }
 
   async parseResponse(response: Response): Promise<WhoAmIResponse> {
-    // Parses JSON response
+    // The body is the complex value, with its @odata.context
   }
 }
 ```
@@ -231,6 +231,26 @@ csdlTypeToTs(csdlType: string): string {
   return csdlType.split('.').pop() || 'unknown';
 }
 ```
+
+### Return values (#300)
+
+`src/utils/operation-return.ts` declares `<Name>Response` (`<Name>Result` in a message) and writes
+`parseResponse` for every action, function and message, so all three agree; dataverse-gen
+(`packages/dataverse-sdk-generator`, `operationReturn()` in `typescript-generator.ts`) writes the
+same. `execute()` resolves the value the operation returns, not the OData envelope:
+
+| Return type                 | Web API response                                          | `<Name>Response`                                                            |
+| --------------------------- | --------------------------------------------------------- | --------------------------------------------------------------------------- |
+| none                        | `204 No Content`                                          | `void`                                                                      |
+| primitive or enum           | `{ "@odata.context", "value": … }`                        | the value (`string` for an enum: its member name)                           |
+| collection                  | `{ "@odata.context", "value": [ … ] }`, or 204 when unset | the array (`[]` for a 204); entity records add `@odata.etag`, `@odata.type` |
+| complex type                | the properties, with `@odata.context`                     | an interface with the properties and `@odata.context`                       |
+| entity (or `crmbaseentity`) | the record, with its annotations, or 204 when unset       | `(<entity> & { annotations }) \| null`                                      |
+
+Dataverse answers 204 for an entity or entity-collection output that wasn't set, although the CSDL
+says `Nullable="false"` (checked live with a custom API whose outputs weren't set); a complex output
+that wasn't set is a 200 with the properties `null`. A message's `result` is the action's value, and
+`<Name>Response.fromResponse(data)` reads it from a parsed body (`undefined` for a 204).
 
 ### Nullable Handling
 

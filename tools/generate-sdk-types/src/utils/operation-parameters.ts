@@ -132,14 +132,3 @@ export function requestBodyExpression(
   code += `    })`;
   return code;
 }
-
-/**
- * The body of `parseResponse`: the JSON body of a 200 response, and an empty result for
- * `204 No Content`.
- */
-export function parseResponseBody(responseType: string): string {
-  let code = `    // 204 No Content is an empty result\n`;
-  code += `    if (response.status === 204) return {} as ${responseType};\n`;
-  code += `    return (await response.json()) as ${responseType};\n`;
-  return code;
-}

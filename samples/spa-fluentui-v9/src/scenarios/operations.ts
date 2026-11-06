@@ -54,6 +54,8 @@ export async function newContactFromAccount({ client }: Sdk, signal: AbortSignal
     { signal }
   );
 
+  // The record, or null if the Web API answered 204 No Content (no record to start from).
+  if (!template) throw new Error("InitializeFrom returned no record.");
   // Keep the column values and @odata.bind lookups, not the response's @odata.context.
   const values = Object.fromEntries(
     Object.entries(template).filter(([key]) => key !== "@odata.context")

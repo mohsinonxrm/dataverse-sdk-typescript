@@ -38,7 +38,8 @@ describe("#70: message responses", () => {
     );
 
     expect(res.result.FetchXml).toBe('<fetch><entity name="account" /></fetch>');
-    expect(res.result).not.toHaveProperty("@odata.context");
+    // The same value as QueryExpressionToFetchXmlAction returns: the body, annotations kept (#300)
+    expect(res.result["@odata.context"]).toContain("QueryExpressionToFetchXmlResponse");
   });
 
   it("ExecuteWorkflow exposes the asyncoperation it returns", async () => {
@@ -55,7 +56,7 @@ describe("#70: message responses", () => {
       new ExecuteWorkflowRequest(WORKFLOW, { EntityId: ACCOUNT, InputArguments: {} })
     );
 
-    expect(res.result.asyncoperationid).toBe("33333333-3333-3333-3333-333333333333");
+    expect(res.result?.asyncoperationid).toBe("33333333-3333-3333-3333-333333333333");
   });
 
   it("ExportSolution exposes the exported solution file", async () => {
