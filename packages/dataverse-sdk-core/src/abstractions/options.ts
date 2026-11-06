@@ -100,10 +100,6 @@ export interface RetryOptions {
    * error it throws is logged and ignored. A per-request `onRetry` replaces the client's.
    */
   onRetry?: (info: RetryInfo) => void;
-  /** @deprecated Use `baseDelayMs`. */
-  delay?: number;
-  /** @deprecated Has no effect: backoff is always exponential. */
-  useExponentialBackoff?: boolean;
 }
 
 /** Per-header switches for `DataverseClientOptions.diagnosticHeaders`. Each defaults to `true`. */
@@ -146,19 +142,6 @@ export interface ConcurrencyOptions {
   max?: number;
 }
 
-export interface CircuitBreakerOptions {
-  enabled?: boolean;
-  failureThreshold?: number;
-  samplingWindowMs?: number;
-  openDurationMs?: number;
-}
-
-export interface BulkheadOptions {
-  enabled?: boolean;
-  maxParallel?: number;
-  maxQueue?: number;
-}
-
 /**
  * Executor callback for bindMany() — allows the batch package to provide the
  * implementation without creating a circular package dependency.
@@ -190,6 +173,18 @@ export interface RequestOptions {
    * Allows fine-grained control of middleware behavior on a per-request basis
    */
   middlewareOptions?: import("../middleware/RequestOptions.js").RequestOptions;
+}
+
+/** Options for `createAndGetId()`: the request options, plus where a returned record keeps its id. */
+export interface CreateAndGetIdOptions extends RequestOptions {
+  /**
+   * The table's primary key column, e.g. `"accountid"`. Needed only when the create asks for the
+   * record back (`Prefer: return=representation`, from `prefer`, the request's headers or the
+   * client's `defaultPrefer`): Dataverse then answers `201 Created` with the record in the body
+   * and no `OData-EntityId` or `Location` header, so the id is read from this property of the
+   * body. The headers win when both are present.
+   */
+  primaryIdAttribute?: string;
 }
 
 /** A Dataverse Web API version string such as `"v9.2"`. */
@@ -230,10 +225,6 @@ export interface DataverseClientOptions {
   diagnosticHeaders?: boolean | DiagnosticHeaderOptions;
   retry?: RetryOptions;
   concurrency?: ConcurrencyOptions;
-  /** @deprecated Not implemented yet: it has no effect (tracked in #100). */
-  circuitBreaker?: CircuitBreakerOptions;
-  /** @deprecated Not implemented yet: it has no effect (tracked in #100). */
-  bulkhead?: BulkheadOptions;
   /** Headers added to every request. A header the request sets itself wins. */
   defaultHeaders?: Record<string, string>;
   /**

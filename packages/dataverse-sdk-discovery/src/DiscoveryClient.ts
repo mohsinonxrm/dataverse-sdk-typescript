@@ -82,7 +82,7 @@ export class DiscoveryClient {
    *
    * @param tokenProvider - Token provider for authentication
    * @param options - A cloud (`{ cloud: "usg" }`), a custom `baseUrl`, `scopes`, and pipeline
-   *   options (`fetchProvider`, `logger`, `telemetry`, `retry`). For backward compatibility a
+   *   options (`fetchProvider`, `logger`, `telemetry`, `retry`, `middleware`). For backward compatibility a
    *   string is taken as `baseUrl`. Defaults to the Commercial cloud.
    *
    * @throws {DataverseInvalidRequestError} If `cloud` is unknown or `baseUrl` is not an absolute
@@ -125,6 +125,7 @@ export class DiscoveryClient {
       logger: opts.logger,
       telemetry: opts.telemetry,
       retry: opts.retry,
+      middleware: opts.middleware,
     });
   }
 

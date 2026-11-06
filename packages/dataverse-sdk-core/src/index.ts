@@ -10,7 +10,6 @@ export * from "./paging/index.js";
 // New exports for enhanced patterns
 export {
   RequestOptions as MiddlewareRequestOptions,
-  RetryOptions as MiddlewareRetryOptions,
   ConcurrencyOptions as MiddlewareConcurrencyOptions,
   TelemetryOptions,
   LoggingOptions,
@@ -22,6 +21,7 @@ export * from "./utils/HeaderUtils.js";
 export { entityIdFromResponse } from "./utils/response.js";
 export { ConsoleLogger, type LogLevel } from "./utils/consoleLogger.js";
 export { defaultRedactUrl } from "./utils/redact.js";
+export { buildUrl } from "./utils/url.js";
 export { SDK_VERSION } from "./version.js";
 export { parseClaimsChallenge } from "./utils/claimsChallenge.js";
 
@@ -50,7 +50,14 @@ export * from "./telemetry/FeatureUsageTracker.js";
 
 export { odata } from "./odata/filter.js";
 export type { ExpandOptions } from "./odata/expand.js";
-export { odataLiteral, odataKey, type ODataKey, type ODataScalar } from "./odata/literal.js";
+export {
+  odataLiteral,
+  odataKey,
+  type ODataKey,
+  type ODataParameterKind,
+  type ODataRecordReference,
+  type ODataScalar,
+} from "./odata/literal.js";
 
 // FetchXML (#51)
 export type { FetchXmlPage, FetchXmlOptions } from "./fetchxml/page.js";

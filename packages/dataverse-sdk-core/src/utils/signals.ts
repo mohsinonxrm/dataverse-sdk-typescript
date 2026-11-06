@@ -68,6 +68,20 @@ export function startDeadline(ms: number, caller?: AbortSignal): Deadline {
   };
 }
 
+/** Whether `err` is the `TimeoutError` a timed-out signal aborts with (`AbortSignal.timeout()`). */
+export function isTimeoutError(err: unknown): boolean {
+  return err instanceof Error && err.name === "TimeoutError";
+}
+
+/**
+ * The error a wait rejects with when `signal` aborts, matching what fetch throws: the signal's
+ * `TimeoutError` reason when it timed out, otherwise an `AbortError`.
+ */
+export function abortError(signal: AbortSignal | undefined): Error {
+  const reason: unknown = signal?.reason;
+  return isTimeoutError(reason) ? (reason as Error) : new DOMException("Aborted", "AbortError");
+}
+
 function noop(): void {
   // nothing attached
 }
