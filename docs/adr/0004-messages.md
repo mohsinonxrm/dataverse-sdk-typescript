@@ -38,7 +38,7 @@ Developers coming from .NET expect:
     - message ↔ Web API action/function mapping when it exists,
     - fallback to HTTP CRUD when it does not,
     - bound/unbound invocation and examples
-7.  **OptionSet ergonomics:** Message constructors may accept either `number` or `OptionSetValue`-like shapes and normalize internally, but responses match documented contracts.
+7.  **OptionSet values:** Message constructors and properties take plain `number` values for choice fields (for example `new WinOpportunityRequest(opportunityClose, "", 3)`), matching the Web API wire format. An `OptionSetValue`-style `{ Value }` wrapper is not implemented; responses match documented contracts.
 
 ### Consequences
 
