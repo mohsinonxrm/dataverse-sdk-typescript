@@ -49,3 +49,13 @@ export {
 export * from "./telemetry/FeatureUsageTracker.js";
 
 export { odata } from "./odata/filter.js";
+export { odataLiteral, odataKey, type ODataKey, type ODataScalar } from "./odata/literal.js";
+
+// FetchXML (#51)
+export type { FetchXmlPage, FetchXmlOptions } from "./fetchxml/page.js";
+export {
+  parsePagingCookie,
+  buildPagedFetchXml,
+  type ParsedPagingCookie,
+  type FetchXmlPaging,
+} from "./fetchxml/pagingCookie.js";

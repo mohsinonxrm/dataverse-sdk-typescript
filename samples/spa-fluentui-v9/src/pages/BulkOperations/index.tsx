@@ -8,18 +8,25 @@ import {
   Button,
   Input,
   Label,
-  Spinner,
 } from "@fluentui/react-components";
 import {
   DatabaseMultipleRegular,
   CloudArrowUpRegular,
   ArrowSyncRegular,
 } from "@fluentui/react-icons";
+import type { PageResponse } from "@mohsinonxrm/dataverse-sdk-core";
+import type { Account } from "../../types/Account";
 import { useDataverse } from "../../context/DataverseContext";
 import { LoadingState } from "../../components/demo/LoadingState";
 import { ErrorDisplay } from "../../components/errors/ErrorDisplay";
 import { ProgressTracker } from "../../components/demo/ProgressTracker";
 import { CodeComparison } from "../../components/demo/CodeComparison";
+import {
+  patchProgress,
+  type ResultView,
+  type ProgressState,
+  type JsonObject,
+} from "../../types/common";
 
 const useStyles = makeStyles({
   container: {
@@ -31,7 +38,7 @@ const useStyles = makeStyles({
     marginBottom: "24px",
   },
   description: {
-    color: (tokens as any).colorNeutralForeground2,
+    color: tokens.colorNeutralForeground2,
     marginTop: "8px",
   },
   grid: {
@@ -54,7 +61,7 @@ const useStyles = makeStyles({
   decisionMatrix: {
     marginTop: "32px",
     padding: "24px",
-    backgroundColor: (tokens as any).colorNeutralBackground2,
+    backgroundColor: tokens.colorNeutralBackground2,
   },
   table: {
     width: "100%",
@@ -63,22 +70,25 @@ const useStyles = makeStyles({
     "& th, & td": {
       padding: "12px",
       textAlign: "left",
-      borderBottom: `1px solid ${(tokens as any).colorNeutralStroke1}`,
+      borderBottom: `1px solid ${tokens.colorNeutralStroke1}`,
     },
     "& th": {
       fontWeight: 600,
-      backgroundColor: (tokens as any).colorNeutralBackground3,
+      backgroundColor: tokens.colorNeutralBackground3,
     },
   },
 });
+
+/** Deterministic sample revenue for the demo records (no randomness needed). */
+const demoRevenue = (index: number) => (index * 137_000) % 10_000_000;
 
 export default function BulkOperations() {
   const styles = useStyles();
   const { client, isReady } = useDataverse();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const [progress, setProgress] = useState<any>(null);
-  const [results, setResults] = useState<any>(null);
+  const [progress, setProgress] = useState<ProgressState | null>(null);
+  const [results, setResults] = useState<ResultView | null>(null);
 
   // Operation state
   const [recordCount, setRecordCount] = useState("100");
@@ -97,42 +107,39 @@ export default function BulkOperations() {
 
     try {
       const count = parseInt(recordCount);
-      const targets = [];
+      const targets: JsonObject[] = [];
 
       for (let i = 1; i <= count; i++) {
-        (targets as any).push({
-          "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).account",
-          name: `Bulk Account ${(Date as any).now()}-${i}`,
-          revenue: (Math as any).floor((Math as any).random() * 10000000),
-          numberofemployees: (Math as any).floor((Math as any).random() * 1000),
+        targets.push({
+          "@odata.type": "Microsoft.Dynamics.CRM.account",
+          name: `Bulk Account ${Date.now()}-${i}`,
+          revenue: demoRevenue(i),
+          numberofemployees: 10 + ((i * 37) % 990),
         });
 
         // Update progress
-        setProgress((prev: any) => ({ ...prev, current: i }));
+        setProgress(patchProgress({ current: i }));
       }
 
       // Execute CreateMultiple action
-      const startTime = (Date as any).now();
-      const response = await (client as any).api("/CreateMultiple").post({
+      const startTime = Date.now();
+      const response = await client.api("/CreateMultiple").post<{ Ids?: string[] }>({
         Targets: targets,
         ConcurrencyBehavior: "IgnoreErrors", // Continue on errors
       });
-      const endTime = (Date as any).now();
+      const endTime = Date.now();
 
       setResults({
         operation: "CreateMultiple",
-        count: (response as any).Ids?.length || count,
+        count: response.Ids?.length || count,
         duration: `${((endTime - startTime) / 1000).toFixed(2)}s`,
-        idsCreated: (response as any).Ids,
+        idsCreated: response.Ids,
       });
 
-      setProgress((prev: any) => ({
-        ...prev,
-        successCount: (response as any).Ids?.length || count,
-      }));
+      setProgress(patchProgress({ successCount: response.Ids?.length || count }));
     } catch (err) {
       setError(err as Error);
-      setProgress((prev: any) => ({ ...prev, errorCount: 1 }));
+      setProgress(patchProgress({ errorCount: 1 }));
     } finally {
       setLoading(false);
     }
@@ -151,42 +158,42 @@ export default function BulkOperations() {
         .api("/accounts")
         .select()
         .top(parseInt(recordCount))
-        .get();
+        .get<PageResponse<Account>>();
 
-      const accounts = (accountsResponse as any).value;
-      if (!accounts || (accounts as any).length === 0) {
+      const accounts = accountsResponse.value;
+      if (!accounts || accounts.length === 0) {
         throw new Error("No accounts found to update. Create some accounts first.");
       }
 
-      const targets = (accounts as any).map((account: any, i: number) => {
-        setProgress((prev: any) => ({ ...prev, current: i + 1 }));
+      const targets = accounts.map((account, i) => {
+        setProgress(patchProgress({ current: i + 1 }));
         return {
-          "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).account",
-          accountid: (account as any).accountid,
-          name: `${(account as any).name} (Updated ${(Date as any).now()})`,
-          revenue: (Math as any).floor((Math as any).random() * 10000000),
+          "@odata.type": "Microsoft.Dynamics.CRM.account",
+          accountid: account.accountid,
+          name: `${account.name} (Updated ${Date.now()})`,
+          revenue: demoRevenue(i),
         };
       });
 
       // Execute UpdateMultiple action
-      const startTime = (Date as any).now();
-      await (client as any).api("/UpdateMultiple").post({
+      const startTime = Date.now();
+      await client.api("/UpdateMultiple").post<JsonObject>({
         Targets: targets,
         ConcurrencyBehavior: "IgnoreErrors",
       });
-      const endTime = (Date as any).now();
+      const endTime = Date.now();
 
       setResults({
         operation: "UpdateMultiple",
-        count: (targets as any).length,
+        count: targets.length,
         duration: `${((endTime - startTime) / 1000).toFixed(2)}s`,
         message: "Records updated successfully (204 No Content)",
       });
 
-      setProgress((prev: any) => ({ ...prev, successCount: (targets as any).length }));
+      setProgress(patchProgress({ successCount: targets.length }));
     } catch (err) {
       setError(err as Error);
-      setProgress((prev: any) => ({ ...prev, errorCount: 1 }));
+      setProgress(patchProgress({ errorCount: 1 }));
     } finally {
       setLoading(false);
     }
@@ -201,87 +208,87 @@ export default function BulkOperations() {
 
     try {
       const count = parseInt(recordCount);
-      const targets = [];
+      const targets: JsonObject[] = [];
 
       // Get some existing accounts
       const accountsResponse = await client
         .api("/accounts")
         .select()
-        .top((Math as any).floor(count / 2))
-        .get();
+        .top(Math.floor(count / 2))
+        .get<PageResponse<Account>>();
 
-      const existingAccounts = (accountsResponse as any).value || [];
+      const existingAccounts = accountsResponse.value;
 
       // Mix of updates and creates
       for (let i = 0; i < count; i++) {
-        const target: any = {
-          "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).account",
-          name: `Upsert Account ${(Date as any).now()}-${i}`,
-          revenue: (Math as any).floor((Math as any).random() * 10000000),
+        const target: JsonObject = {
+          "@odata.type": "Microsoft.Dynamics.CRM.account",
+          name: `Upsert Account ${Date.now()}-${i}`,
+          revenue: demoRevenue(i),
         };
 
         // 50% will be updates (if we have existing accounts)
-        if (i < (existingAccounts as any).length) {
-          (target as any).accountid = existingAccounts[i].accountid;
+        if (i < existingAccounts.length) {
+          target.accountid = existingAccounts[i].accountid;
         }
 
-        (targets as any).push(target);
-        setProgress((prev: any) => ({ ...prev, current: i + 1 }));
+        targets.push(target);
+        setProgress(patchProgress({ current: i + 1 }));
       }
 
       // Execute UpsertMultiple action
-      const startTime = (Date as any).now();
-      await (client as any).api("/UpsertMultiple").post({
+      const startTime = Date.now();
+      await client.api("/UpsertMultiple").post<JsonObject>({
         Targets: targets,
         ConcurrencyBehavior: "IgnoreErrors",
       });
-      const endTime = (Date as any).now();
+      const endTime = Date.now();
 
       setResults({
         operation: "UpsertMultiple",
-        count: (targets as any).length,
-        created: (targets as any).filter((t) => !(t as any).accountid).length,
-        updated: (targets as any).filter((t) => (t as any).accountid).length,
+        count: targets.length,
+        created: targets.filter((t) => !t.accountid).length,
+        updated: targets.filter((t) => t.accountid).length,
         duration: `${((endTime - startTime) / 1000).toFixed(2)}s`,
         message: "Records upserted successfully (204 No Content)",
       });
 
-      setProgress((prev: any) => ({ ...prev, successCount: (targets as any).length }));
+      setProgress(patchProgress({ successCount: targets.length }));
     } catch (err) {
       setError(err as Error);
-      setProgress((prev: any) => ({ ...prev, errorCount: 1 }));
+      setProgress(patchProgress({ errorCount: 1 }));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className={(styles as any).container}>
-      <div className={(styles as any).header}>
+    <div className={styles.container}>
+      <div className={styles.header}>
         <Title3>Bulk Operations</Title3>
-        <Text className={(styles as any).description}>
+        <Text className={styles.description}>
           High-performance operations for creating, updating, or upserting hundreds of records
           efficiently
         </Text>
       </div>
 
-      <div className={(styles as any).grid}>
-        <Card className={(styles as any).card}>
+      <div className={styles.grid}>
+        <Card className={styles.card}>
           <Title3>CreateMultiple</Title3>
           <Text>Create multiple records in a single request</Text>
 
-          <div className={(styles as any).input}>
+          <div className={styles.input}>
             <Label>Number of Records</Label>
             <Input
               type="number"
               value={recordCount}
-              onChange={(_e, data) => setRecordCount((data as any).value)}
+              onChange={(_e, data) => setRecordCount(data.value)}
               min={1}
               max={1000}
             />
           </div>
 
-          <div className={(styles as any).actions}>
+          <div className={styles.actions}>
             <Button
               appearance="primary"
               icon={<CloudArrowUpRegular />}
@@ -293,22 +300,22 @@ export default function BulkOperations() {
           </div>
         </Card>
 
-        <Card className={(styles as any).card}>
+        <Card className={styles.card}>
           <Title3>UpdateMultiple</Title3>
           <Text>Update multiple existing records in a single request</Text>
 
-          <div className={(styles as any).input}>
+          <div className={styles.input}>
             <Label>Number of Records</Label>
             <Input
               type="number"
               value={recordCount}
-              onChange={(_e, data) => setRecordCount((data as any).value)}
+              onChange={(_e, data) => setRecordCount(data.value)}
               min={1}
               max={1000}
             />
           </div>
 
-          <div className={(styles as any).actions}>
+          <div className={styles.actions}>
             <Button
               appearance="primary"
               icon={<ArrowSyncRegular />}
@@ -320,22 +327,22 @@ export default function BulkOperations() {
           </div>
         </Card>
 
-        <Card className={(styles as any).card}>
+        <Card className={styles.card}>
           <Title3>UpsertMultiple</Title3>
           <Text>Create or update multiple records (mixed operation)</Text>
 
-          <div className={(styles as any).input}>
+          <div className={styles.input}>
             <Label>Number of Records</Label>
             <Input
               type="number"
               value={recordCount}
-              onChange={(_e, data) => setRecordCount((data as any).value)}
+              onChange={(_e, data) => setRecordCount(data.value)}
               min={1}
               max={1000}
             />
           </div>
 
-          <div className={(styles as any).actions}>
+          <div className={styles.actions}>
             <Button
               appearance="primary"
               icon={<DatabaseMultipleRegular />}
@@ -350,11 +357,11 @@ export default function BulkOperations() {
 
       {loading && progress && (
         <ProgressTracker
-          total={(progress as any).total}
-          current={(progress as any).current}
+          total={progress.total}
+          current={progress.current}
           label={`Executing ${operation}...`}
-          successCount={(progress as any).successCount}
-          errorCount={(progress as any).errorCount}
+          successCount={progress.successCount}
+          errorCount={progress.errorCount}
         />
       )}
 
@@ -365,19 +372,19 @@ export default function BulkOperations() {
           items={[
             {
               label: "Operation",
-              code: `await (client as any).api('/${(results as any).operation}').post({
+              code: `await client.api('/${String(results.operation)}').post({
   Targets: [...],
   ConcurrencyBehavior: 'IgnoreErrors'
 })`,
-              result: (JSON as any).stringify(results, null, 2),
+              result: JSON.stringify(results, null, 2),
             },
           ]}
         />
       )}
 
-      <Card className={(styles as any).decisionMatrix}>
+      <Card className={styles.decisionMatrix}>
         <Title3>When to Use: Bulk Operations vs $batch</Title3>
-        <table className={(styles as any).table}>
+        <table className={styles.table}>
           <thead>
             <tr>
               <th>Scenario</th>

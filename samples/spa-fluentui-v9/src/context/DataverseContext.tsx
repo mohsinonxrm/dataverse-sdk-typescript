@@ -1,7 +1,10 @@
 import { createContext, useContext, ReactNode, useEffect, useState } from "react";
 import { useMsal } from "@azure/msal-react";
 import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
-import { MsalBrowserTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-msal-browser";
+import {
+  createMsalBrowserProvider,
+  type MsalBrowserTokenProvider,
+} from "@mohsinonxrm/dataverse-sdk-auth-msal-browser";
 import { OrganizationService } from "@mohsinonxrm/dataverse-sdk-xrm";
 import { loginRequest } from "../config";
 
@@ -13,6 +16,8 @@ import { loginRequest } from "../config";
  */
 interface DataverseContextValue {
   client: DataverseClient | null;
+  /** The MSAL-backed token provider; pass it to SDK clients that need their own token (e.g. discovery). */
+  tokenProvider: MsalBrowserTokenProvider | null;
   orgService: OrganizationService | null;
   baseUrl: string;
   apiVersion: string;
@@ -43,6 +48,7 @@ export function DataverseProvider({ children, baseUrl }: DataverseProviderProps)
   const { instance, accounts } = useMsal();
   const [contextValue, setContextValue] = useState<DataverseContextValue>({
     client: null,
+    tokenProvider: null,
     orgService: null,
     baseUrl,
     apiVersion: "v9.2",
@@ -58,7 +64,7 @@ export function DataverseProvider({ children, baseUrl }: DataverseProviderProps)
 
     try {
       // Create token provider
-      const tokenProvider = new MsalBrowserTokenProvider(instance, {
+      const tokenProvider = createMsalBrowserProvider(instance, {
         account: accounts[0],
         scopes: loginRequest.scopes,
       });
@@ -75,6 +81,7 @@ export function DataverseProvider({ children, baseUrl }: DataverseProviderProps)
 
       setContextValue({
         client,
+        tokenProvider,
         orgService,
         baseUrl,
         apiVersion: "v9.2",

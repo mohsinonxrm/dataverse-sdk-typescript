@@ -10,6 +10,7 @@ import {
   Button,
 } from "@fluentui/react-components";
 import { Code24Regular, Document24Regular, Box24Regular } from "@fluentui/react-icons";
+import type { Account } from "../../types/Account";
 import { useDataverse } from "../../context/DataverseContext";
 import { LoadingState } from "../../components/demo/LoadingState";
 import { ErrorDisplay } from "../../components/errors/ErrorDisplay";
@@ -25,7 +26,7 @@ const useStyles = makeStyles({
     marginBottom: "24px",
   },
   description: {
-    color: (tokens as any).colorNeutralForeground2,
+    color: tokens.colorNeutralForeground2,
     marginTop: "8px",
   },
   tabs: {
@@ -48,9 +49,9 @@ type TabValue = "raw" | "typed" | "orgservice";
  * CRUD Operations Page
  *
  * Demonstrates three approaches to CRUD operations:
- * 1. Raw API - (client as any).api('/accounts')
- * 2. Typed API - (client as any).api<Account>('/accounts')
- * 3. OrgService - (orgService as any).create(), retrieve(), etc.
+ * 1. Raw API - client.api('/accounts')
+ * 2. Typed API - client.api('/accounts').post<Account>()
+ * 3. OrgService - orgService.create(), retrieve(), etc.
  *
  * Shows side-by-side comparisons with identical operations.
  */
@@ -60,7 +61,7 @@ export default function CrudOperations() {
   const [selectedTab, setSelectedTab] = useState<TabValue>("raw");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<unknown>(null);
 
   if (!isReady) {
     return <LoadingState label="Initializing SDK..." />;
@@ -72,8 +73,8 @@ export default function CrudOperations() {
     setResult(null);
 
     try {
-      const accountName = `Test Account ${(Date as any).now()}`;
-      let response: any;
+      const accountName = `Test Account ${Date.now()}`;
+      let response: unknown;
 
       switch (selectedTab) {
         case "raw":
@@ -85,21 +86,22 @@ export default function CrudOperations() {
           break;
 
         case "typed":
-          response = await client!.api("/accounts").post({
+          response = await client!.api("/accounts").post<Account>({
             name: accountName,
             revenue: 1000000,
             numberofemployees: 250,
           });
           break;
 
-        case "orgservice":
-          const id = await orgService!.create("accounts", {
+        case "orgservice": {
+          const id = await orgService!.create<string>("accounts", {
             name: accountName,
             revenue: 1000000,
             numberofemployees: 250,
           });
           response = { accountid: id };
           break;
+        }
       }
 
       setResult(response);
@@ -112,22 +114,19 @@ export default function CrudOperations() {
 
   const comparisonItems = [
     {
-      label: "Raw API ((client as any).api)",
-      code: `const response = await (client as any).api('/accounts').post({
+      label: "Raw API (client.api)",
+      code: `const response = await client.api('/accounts').post({
   name: 'Contoso Ltd',
   revenue: 1000000,
   numberofemployees: 250
 });
 
 // Returns: { accountid: '...', ...other fields }`,
-      result:
-        selectedTab === "raw" && result ? (
-          <pre>{(JSON as any).stringify(result, null, 2)}</pre>
-        ) : null,
+      result: selectedTab === "raw" && result ? <pre>{JSON.stringify(result, null, 2)}</pre> : null,
     },
     {
-      label: "Typed API ((client as any).api<T>)",
-      code: `const response = await (client as any).api<Account>('/accounts').post({
+      label: "Typed API (post<T>, get<T>)",
+      code: `const response = await client.api('/accounts').post<Account>({
   name: 'Contoso Ltd',
   revenue: 1000000,
   numberofemployees: 250
@@ -136,13 +135,11 @@ export default function CrudOperations() {
 // Returns: { accountid: '...', ...other fields }
 // With full TypeScript type inference`,
       result:
-        selectedTab === "typed" && result ? (
-          <pre>{(JSON as any).stringify(result, null, 2)}</pre>
-        ) : null,
+        selectedTab === "typed" && result ? <pre>{JSON.stringify(result, null, 2)}</pre> : null,
     },
     {
       label: "OrganizationService (C#-familiar)",
-      code: `const accountId = await (orgService as any).create('accounts', {
+      code: `const accountId = await orgService.create('accounts', {
   name: 'Contoso Ltd',
   revenue: 1000000,
   numberofemployees: 250
@@ -152,16 +149,16 @@ export default function CrudOperations() {
 // Familiar to Dynamics 365 C# developers`,
       result:
         selectedTab === "orgservice" && result ? (
-          <pre>{(JSON as any).stringify(result, null, 2)}</pre>
+          <pre>{JSON.stringify(result, null, 2)}</pre>
         ) : null,
     },
   ];
 
   return (
-    <div className={(styles as any).container}>
-      <div className={(styles as any).header}>
+    <div className={styles.container}>
+      <div className={styles.header}>
         <Title3>CRUD Operations</Title3>
-        <Text className={(styles as any).description}>
+        <Text className={styles.description}>
           Compare three approaches to Create, Read, Update, and Delete operations. Each approach
           provides the same functionality with different syntax and patterns.
         </Text>
@@ -169,8 +166,8 @@ export default function CrudOperations() {
 
       <TabList
         selectedValue={selectedTab}
-        onTabSelect={(_, data) => setSelectedTab((data as any).value as TabValue)}
-        className={(styles as any).tabs}
+        onTabSelect={(_, data) => setSelectedTab(data.value as TabValue)}
+        className={styles.tabs}
       >
         <Tab value="raw" icon={<Code24Regular />}>
           Raw API
@@ -191,7 +188,7 @@ export default function CrudOperations() {
         />
       )}
 
-      <div className={(styles as any).actions}>
+      <div className={styles.actions}>
         <Button appearance="primary" onClick={handleExecuteCreate} disabled={loading}>
           {loading ? "Creating Account..." : "Execute Create Example"}
         </Button>
@@ -200,7 +197,7 @@ export default function CrudOperations() {
         </Button>
       </div>
 
-      <div className={(styles as any).content}>
+      <div className={styles.content}>
         <CodeComparison items={comparisonItems} />
       </div>
 

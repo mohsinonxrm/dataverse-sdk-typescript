@@ -17,8 +17,8 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     }
   },
   "sideEffects": false,
@@ -46,14 +46,29 @@
     "node": ">=22"
   },
   "dependencies": {
+    "@mohsinonxrm/dataverse-sdk-core": "workspace:*"
+  },
+  "peerDependencies": {
     "@azure/monitor-opentelemetry": "^1.20.1",
-    "@mohsinonxrm/dataverse-sdk-core": "workspace:*",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/api-logs": "^0.221.0",
-    "@opentelemetry/resources": "^2.10.0"
+    "@opentelemetry/resources": "^2.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@azure/monitor-opentelemetry": {
+      "optional": true
+    },
+    "@opentelemetry/resources": {
+      "optional": true
+    }
   },
   "devDependencies": {
+    "@azure/monitor-opentelemetry": "^1.20.1",
     "@mohsinonxrm/dataverse-sdk-testing": "workspace:*",
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/api-logs": "^0.221.0",
+    "@opentelemetry/context-async-hooks": "^2.10.0",
+    "@opentelemetry/resources": "^2.10.0",
     "@opentelemetry/sdk-logs": "^0.221.0",
     "@opentelemetry/sdk-trace-base": "^2.10.0",
     "eslint": "^9.39.5",

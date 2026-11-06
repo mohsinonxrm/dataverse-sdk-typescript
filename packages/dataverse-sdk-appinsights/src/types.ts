@@ -14,6 +14,10 @@ export interface ApplicationInsightsConfig {
    * Application Insights connection string. When set, the adapter calls
    * `useAzureMonitor({ azureMonitorExporterOptions: { connectionString } })` once per process.
    * Omit it when your app already calls `useAzureMonitor()`.
+   *
+   * Needs the optional peer dependency `@azure/monitor-opentelemetry` (and
+   * `@opentelemetry/resources` with `cloudRoleName`); without it the constructor throws a
+   * `DataverseInvalidRequestError` naming the package to install.
    */
   connectionString?: string;
 

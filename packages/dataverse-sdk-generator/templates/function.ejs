@@ -1,24 +1,16 @@
-import { FunctionBase } from '@mohsinonxrm/dataverse-sdk-entities-runtime';
-
+<%# Patterned on the templates of dataverse-gen by Scott Durow (https://github.com/scottdurow/dataverse-gen), Copyright (c) 2020 Scott Durow, MIT License. See THIRD_PARTY_NOTICES.md in this package. -%>
+<%_ const responseType = func.ReturnType ? formatType(func.ReturnType) : 'void'; _%>
 /**
- * Response type for <%= func.Name %> function
+ * <%- doc(func.Name) %> function
+ * <%- func.IsBound ? 'Bound to: ' + doc(func.BindingType) : 'Unbound function' %>
  */
-export interface <%= func.Name %>Response {
-<%_ if (func.ReturnType) { _%>
-  result: <%= formatType(func.ReturnType) %>;
-<%_ } else { _%>
-  // No return value
-<%_ } _%>
-}
-
-/**
- * <%= func.Name %> function
- * <%_ if (func.IsBound) { _%>Bound to: <%= func.BindingType %><%_ } else { _%>Unbound function<%_ } _%>
- */
-export class <%= func.Name %>Function extends FunctionBase<<%= func.Name %>Response> {
+export class <%- className %> extends FunctionBase<<%- responseType %>> {
   constructor(
+<%_ if (bindingDeclaration) { _%>
+    <%- bindingDeclaration %>
+<%_ } _%>
 <%_ func.Parameters.forEach(function(param, index){ _%>
-    public <%= param.Name %>: <%= formatType(param.TypeScriptType) %><%= param.Nullable ? ' | null' : '' %><%= index < func.Parameters.length - 1 ? ',' : '' %>
+    public <%- identifier(param.Name) %><%- isOptional(index) ? '?' : '' %>: <%- parameterType(param) %><%- param.Nullable ? ' | null' : '' %>,
 <%_ }) _%>
   ) {
     super();
@@ -28,38 +20,48 @@ export class <%= func.Name %>Function extends FunctionBase<<%= func.Name %>Respo
    * Parameter metadata for runtime type checking
    */
   static parameterTypes = {
-<%_ func.Parameters.forEach(function(param, index){ _%>
-    <%= param.Name %>: {
-      type: '<%= param.Type %>',
-      structuralProperty: '<%= getStructuralType(param.Type) %>',
-      nullable: <%= param.Nullable || false %>
-    }<%= index < func.Parameters.length - 1 ? ',' : '' %>
+<%_ func.Parameters.forEach(function(param){ _%>
+    <%- propertyKey(param.Name) %>: {
+      type: <%- literal(param.Type) %>,
+      structuralProperty: <%- literal(getStructuralType(param.Type)) %>,
+      nullable: <%- param.Nullable ? 'true' : 'false' %>,
+    },
 <%_ }) _%>
   };
 
-  toRequestInformation(baseUrl: string) {
-    // Build parameter aliases for GET request
-    const paramAliases = new URLSearchParams();
-<%_ func.Parameters.forEach(function(param){ _%>
-    paramAliases.set('@<%= param.Name %>', String(this.<%= param.Name %>));
+  toRequestInformation(baseUrl: string): RequestInformation {
+    // Parameters travel as aliases: Name(Param=@p1)?@p1=<OData literal>
+    const aliases: string[] = [];
+    const values = new URLSearchParams();
+<%_ func.Parameters.forEach(function(param, index){ _%>
+    if (this.<%- identifier(param.Name) %> !== undefined) {
+      aliases.push(<%- literal(param.Name + '=@p' + (index + 1)) %>);
+      values.append(<%- literal('@p' + (index + 1)) %>, formatParameterAlias(this.<%- identifier(param.Name) %>, <%- literal(param.Type) %>, <%- literal(parameterKind(param)) %>));
+    }
 <%_ }) _%>
-
-    const paramString = <%= func.Parameters.length > 0 ? 
-      '`(' + func.Parameters.map(p => p.Name + '=@' + p.Name).join(',') + ')`' : 
-      '""' %>;
+    const query = values.toString();
 
     return {
-      method: 'GET' as const,
-      url: `${baseUrl}/<%= func.Name %>${paramString}`,
+      method: "GET",
+      url: `${baseUrl}<%- operationPath %>(${aliases.join(",")})${query ? `?${query}` : ""}`,
       headers: {
-        Accept: 'application/json'
+        accept: "application/json",
       },
-      query: Object.fromEntries(paramAliases)
     };
   }
 
-  async parseResponse(response: Response): Promise<<%= func.Name %>Response> {
-    const data = await response.json();
-    return { result: data };
+<%_ if (!func.ReturnType) { _%>
+  async parseResponse(_response: Response): Promise<void> {
+    // No return value
   }
+<%_ } else if (returnsBody(func.ReturnType)) { _%>
+  async parseResponse(response: Response): Promise<<%- responseType %>> {
+    return (await response.json()) as <%- responseType %>;
+  }
+<%_ } else { _%>
+  async parseResponse(response: Response): Promise<<%- responseType %>> {
+    const data = (await response.json()) as { value: <%- responseType %> };
+    return data.value;
+  }
+<%_ } _%>
 }

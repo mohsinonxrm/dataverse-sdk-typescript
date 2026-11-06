@@ -15,16 +15,11 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
-    /* Linting - Relaxed while SDK packages are in Phase 0 development */
-    /* See BUILD_STATUS.md for details */
-    "strict": false,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitAny": false,
-    "strictNullChecks": false,
-    "strictFunctionTypes": false,
-    "strictPropertyInitialization": false
+    /* Strict type checking (inherited from tsconfig.base.json) */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]

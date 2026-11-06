@@ -1,4 +1,10 @@
 /**
+ * Portions of this file are adapted from dataverse-gen by Scott Durow
+ * (https://github.com/scottdurow/dataverse-gen), Copyright (c) 2020 Scott Durow, licensed under
+ * the MIT License. See THIRD_PARTY_NOTICES.md in this package for the notice.
+ */
+
+/**
  * Configuration for the Dataverse code generator.
  */
 export interface DataverseGenConfig {
@@ -49,29 +55,45 @@ export interface DataverseGenConfig {
   };
 
   /**
-   * MSAL authentication configuration for metadata retrieval
+   * MSAL authentication for metadata retrieval (used by `dataverse-gen generate`).
+   * `--token` on the command line takes precedence.
    */
-  auth?: {
-    /**
-     * Azure AD tenant ID
-     */
-    tenantId: string;
+  auth?: DataverseGenAuthConfig;
+}
 
-    /**
-     * Azure AD client/app ID
-     */
-    clientId: string;
+/**
+ * How `dataverse-gen` signs in to read metadata. Values left out are read from the
+ * `DATAVERSE_TENANT_ID`, `DATAVERSE_CLIENT_ID` and `DATAVERSE_CLIENT_SECRET` environment
+ * variables, so the config file can be committed without them.
+ */
+export interface DataverseGenAuthConfig {
+  /**
+   * Authentication flow:
+   * - `"deviceCode"`: sign in as a user with a code shown in the terminal (public client app);
+   * - `"clientCredentials"` (or `"clientSecret"`): an app registration with a client secret,
+   *   added to the org as an application user.
+   *
+   * `"interactive"` is not supported; use `"deviceCode"`.
+   */
+  flow: "deviceCode" | "clientCredentials" | "clientSecret" | "interactive";
 
-    /**
-     * Authentication flow: "deviceCode" | "clientSecret" | "interactive"
-     */
-    flow: "deviceCode" | "clientSecret" | "interactive";
+  /** Microsoft Entra tenant ID (default: `DATAVERSE_TENANT_ID`) */
+  tenantId?: string;
 
-    /**
-     * Client secret (required for clientSecret flow)
-     */
-    clientSecret?: string;
-  };
+  /** App registration (client) ID (default: `DATAVERSE_CLIENT_ID`) */
+  clientId?: string;
+
+  /**
+   * Client secret, for client credentials (default: `DATAVERSE_CLIENT_SECRET`). Prefer the
+   * environment variable to keep the secret out of the config file.
+   */
+  clientSecret?: string;
+
+  /**
+   * Authority URL (default: `https://login.microsoftonline.com/<tenantId>`). Set it for a
+   * sovereign cloud, e.g. `https://login.microsoftonline.us/<tenantId>`.
+   */
+  authority?: string;
 }
 
 /**
@@ -154,6 +176,9 @@ export interface PropertyType {
 
   /** Dataverse/OData type */
   Type: string;
+
+  /** Dataverse attribute type from RetrieveMetadataChanges (e.g. "Lookup", "Picklist") */
+  AttributeType?: string;
 
   /** TypeScript type */
   TypeScriptType: TypeScriptType;
@@ -274,6 +299,15 @@ export interface ActionType {
   /** Binding parameter type (if bound) */
   BindingType?: string;
 
+  /** Entity type the operation is bound to, without the namespace (e.g. "account") */
+  BindingEntity?: string;
+
+  /** Bound to the entity collection (`Collection(mscrm.account)`) rather than to one record */
+  IsCollectionBound?: boolean;
+
+  /** Entity set of the binding entity type, when it has one (e.g. "accounts") */
+  BindingEntitySetName?: string;
+
   /** Parameters */
   Parameters: ParameterType[];
 
@@ -293,6 +327,15 @@ export interface FunctionType {
 
   /** Binding parameter type (if bound) */
   BindingType?: string;
+
+  /** Entity type the operation is bound to, without the namespace (e.g. "account") */
+  BindingEntity?: string;
+
+  /** Bound to the entity collection (`Collection(mscrm.account)`) rather than to one record */
+  IsCollectionBound?: boolean;
+
+  /** Entity set of the binding entity type, when it has one (e.g. "accounts") */
+  BindingEntitySetName?: string;
 
   /** Parameters */
   Parameters: ParameterType[];
@@ -328,6 +371,9 @@ export interface ComplexType {
   /** Type name */
   Name: string;
 
+  /** Base complex type name, if this type derives from another one */
+  BaseType?: string;
+
   /** Properties */
   Properties: PropertyType[];
 }
@@ -338,6 +384,12 @@ export interface ComplexType {
 export interface TypeScriptType {
   /** Type name in TypeScript */
   name: string;
+
+  /**
+   * Name of the referenced entity, complex or enum type in the Dataverse schema (without the
+   * namespace), when this is not a primitive type. The generator resolves it to an import.
+   */
+  reference?: string;
 
   /** Import path (if external type) */
   importPath?: string;

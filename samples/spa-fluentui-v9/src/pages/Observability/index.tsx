@@ -9,7 +9,6 @@ import {
   Tab,
   TabList,
   Badge,
-  Spinner,
 } from "@fluentui/react-components";
 import {
   ArrowClockwiseRegular,
@@ -22,6 +21,7 @@ import { LoadingState } from "../../components/demo/LoadingState";
 import { ErrorDisplay } from "../../components/errors/ErrorDisplay";
 
 import { CodeComparison } from "../../components/demo/CodeComparison";
+import type { ResultView } from "../../types/common";
 
 const useStyles = makeStyles({
   container: {
@@ -33,7 +33,7 @@ const useStyles = makeStyles({
     marginBottom: "24px",
   },
   description: {
-    color: (tokens as any).colorNeutralForeground2,
+    color: tokens.colorNeutralForeground2,
     marginTop: "8px",
   },
   tabs: {
@@ -55,8 +55,8 @@ const useStyles = makeStyles({
   logEntry: {
     padding: "12px",
     marginTop: "8px",
-    backgroundColor: (tokens as any).colorNeutralBackground2,
-    borderRadius: (tokens as any).borderRadiusMedium,
+    backgroundColor: tokens.colorNeutralBackground2,
+    borderRadius: tokens.borderRadiusMedium,
     fontFamily: "monospace",
     fontSize: "12px",
   },
@@ -68,8 +68,8 @@ const useStyles = makeStyles({
   },
   statCard: {
     padding: "16px",
-    backgroundColor: (tokens as any).colorNeutralBackground3,
-    borderRadius: (tokens as any).borderRadiusMedium,
+    backgroundColor: tokens.colorNeutralBackground3,
+    borderRadius: tokens.borderRadiusMedium,
     textAlign: "center",
   },
 });
@@ -82,15 +82,22 @@ interface LogEntry {
   message: string;
 }
 
+interface ConcurrencyStats {
+  total: number;
+  completed: number;
+  concurrent: number;
+  adaptiveLimit: number;
+}
+
 export default function Observability() {
   const styles = useStyles();
   const { isReady } = useDataverse();
   const [selectedTab, setSelectedTab] = useState<TabValue>("retry");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const [results, setResults] = useState<any>(null);
+  const [results, setResults] = useState<ResultView | null>(null);
   const [logs, setLogs] = useState<LogEntry[]>([]);
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<ConcurrencyStats | null>(null);
 
   if (!isReady) {
     return <LoadingState label="Initializing Dataverse SDK..." />;
@@ -110,7 +117,7 @@ export default function Observability() {
     setError(null);
     setLogs([]);
     let attempts = 0;
-    let lastError: any = null;
+    let lastError: unknown = null;
 
     try {
       addLog("info", "Starting retry demonstration...");
@@ -136,12 +143,15 @@ export default function Observability() {
             status: "Success",
           });
           break;
-        } catch (err: any) {
+        } catch (err) {
           lastError = err;
-          addLog("warning", `Attempt ${attempts} failed: ${(err as any).message}`);
+          addLog(
+            "warning",
+            `Attempt ${attempts} failed: ${err instanceof Error ? err.message : String(err)}`
+          );
 
           if (attempts < maxAttempts) {
-            const backoffMs = (Math as any).min(1000 * (Math as any).pow(2, attempts - 1), 30000);
+            const backoffMs = Math.min(1000 * Math.pow(2, attempts - 1), 30000);
             addLog("info", `Waiting ${backoffMs}ms before retry (exponential backoff)...`);
             await new Promise((resolve) => setTimeout(resolve, backoffMs));
           }
@@ -217,13 +227,13 @@ export default function Observability() {
         // Simulate x-ms-dop-hint header from server
         if (i === 15) {
           addLog("info", "Received x-ms-dop-hint: 5 (server suggests reducing concurrency)");
-          setStats((prev: any) => ({ ...prev, adaptiveLimit: 5, concurrent: 5 }));
+          setStats((prev) => prev && { ...prev, adaptiveLimit: 5, concurrent: 5 });
         } else if (i === 35) {
           addLog("info", "Received x-ms-dop-hint: 15 (server allows more concurrency)");
-          setStats((prev: any) => ({ ...prev, adaptiveLimit: 15, concurrent: 15 }));
+          setStats((prev) => prev && { ...prev, adaptiveLimit: 15, concurrent: 15 });
         }
 
-        setStats((prev: any) => ({ ...prev, completed: i }));
+        setStats((prev) => prev && { ...prev, completed: i });
       }
 
       addLog("success", `Completed ${totalRequests} requests with adaptive concurrency`);
@@ -274,7 +284,7 @@ export default function Observability() {
         },
       };
 
-      addLog("info", `Telemetry data: ${(JSON as any).stringify(telemetryData, null, 2)}`);
+      addLog("info", `Telemetry data: ${JSON.stringify(telemetryData, null, 2)}`);
 
       setResults({
         demo: "Telemetry Integration",
@@ -290,14 +300,14 @@ export default function Observability() {
 
   const renderRetryTab = () => (
     <div>
-      <Card className={(styles as any).card}>
+      <Card className={styles.card}>
         <Title3>Automatic Retry Logic</Title3>
         <Text>
           The SDK automatically retries failed requests with exponential backoff for transient
           errors (429, 502, 503, 504)
         </Text>
 
-        <div className={(styles as any).actions}>
+        <div className={styles.actions}>
           <Button
             appearance="primary"
             icon={<ArrowClockwiseRegular />}
@@ -309,28 +319,28 @@ export default function Observability() {
         </div>
       </Card>
 
-      {(logs as any).length > 0 && (
-        <Card className={(styles as any).card}>
+      {logs.length > 0 && (
+        <Card className={styles.card}>
           <Title3>Request Log</Title3>
-          {(logs as any).map((log, i) => (
-            <div key={i} className={(styles as any).logEntry}>
+          {logs.map((log, i) => (
+            <div key={i} className={styles.logEntry}>
               <Badge
                 appearance="filled"
                 color={
-                  (log as any).type === "success"
+                  log.type === "success"
                     ? "success"
-                    : (log as any).type === "error"
+                    : log.type === "error"
                       ? "danger"
-                      : (log as any).type === "warning"
+                      : log.type === "warning"
                         ? "warning"
                         : "informative"
                 }
                 style={{ marginRight: "8px" }}
               >
-                {(log as any).type.toUpperCase()}
+                {log.type.toUpperCase()}
               </Badge>
               <Text size={200}>
-                [{new Date((log as any).timestamp).toLocaleTimeString()}] {(log as any).message}
+                [{new Date(log.timestamp).toLocaleTimeString()}] {log.message}
               </Text>
             </div>
           ))}
@@ -341,13 +351,13 @@ export default function Observability() {
 
   const renderThrottlingTab = () => (
     <div>
-      <Card className={(styles as any).card}>
+      <Card className={styles.card}>
         <Title3>Throttling Awareness</Title3>
         <Text>
           The SDK honors Retry-After headers and monitors rate limit headers to avoid throttling
         </Text>
 
-        <div className={(styles as any).actions}>
+        <div className={styles.actions}>
           <Button
             appearance="primary"
             icon={<FlashRegular />}
@@ -359,28 +369,28 @@ export default function Observability() {
         </div>
       </Card>
 
-      {(logs as any).length > 0 && (
-        <Card className={(styles as any).card}>
+      {logs.length > 0 && (
+        <Card className={styles.card}>
           <Title3>Throttling Log</Title3>
-          {(logs as any).map((log, i) => (
-            <div key={i} className={(styles as any).logEntry}>
+          {logs.map((log, i) => (
+            <div key={i} className={styles.logEntry}>
               <Badge
                 appearance="filled"
                 color={
-                  (log as any).type === "success"
+                  log.type === "success"
                     ? "success"
-                    : (log as any).type === "error"
+                    : log.type === "error"
                       ? "danger"
-                      : (log as any).type === "warning"
+                      : log.type === "warning"
                         ? "warning"
                         : "informative"
                 }
                 style={{ marginRight: "8px" }}
               >
-                {(log as any).type.toUpperCase()}
+                {log.type.toUpperCase()}
               </Badge>
               <Text size={200}>
-                [{new Date((log as any).timestamp).toLocaleTimeString()}] {(log as any).message}
+                [{new Date(log.timestamp).toLocaleTimeString()}] {log.message}
               </Text>
             </div>
           ))}
@@ -391,14 +401,14 @@ export default function Observability() {
 
   const renderConcurrencyTab = () => (
     <div>
-      <Card className={(styles as any).card}>
+      <Card className={styles.card}>
         <Title3>Adaptive Concurrency Control</Title3>
         <Text>
           The SDK adjusts concurrency based on x-ms-dop-hint headers from the server for optimal
           performance
         </Text>
 
-        <div className={(styles as any).actions}>
+        <div className={styles.actions}>
           <Button
             appearance="primary"
             icon={<GaugeRegular />}
@@ -410,28 +420,28 @@ export default function Observability() {
         </div>
 
         {stats && (
-          <div className={(styles as any).statsGrid}>
-            <div className={(styles as any).statCard}>
+          <div className={styles.statsGrid}>
+            <div className={styles.statCard}>
               <Text weight="semibold" size={500}>
-                {(stats as any).completed}
+                {stats.completed}
               </Text>
               <Text size={200}>Completed</Text>
             </div>
-            <div className={(styles as any).statCard}>
+            <div className={styles.statCard}>
               <Text weight="semibold" size={500}>
-                {(stats as any).total}
+                {stats.total}
               </Text>
               <Text size={200}>Total</Text>
             </div>
-            <div className={(styles as any).statCard}>
+            <div className={styles.statCard}>
               <Text weight="semibold" size={500}>
-                {(stats as any).concurrent}
+                {stats.concurrent}
               </Text>
               <Text size={200}>Current</Text>
             </div>
-            <div className={(styles as any).statCard}>
+            <div className={styles.statCard}>
               <Text weight="semibold" size={500}>
-                {(stats as any).adaptiveLimit}
+                {stats.adaptiveLimit}
               </Text>
               <Text size={200}>Limit</Text>
             </div>
@@ -439,20 +449,20 @@ export default function Observability() {
         )}
       </Card>
 
-      {(logs as any).length > 0 && (
-        <Card className={(styles as any).card}>
+      {logs.length > 0 && (
+        <Card className={styles.card}>
           <Title3>Concurrency Log</Title3>
-          {(logs as any).map((log, i) => (
-            <div key={i} className={(styles as any).logEntry}>
+          {logs.map((log, i) => (
+            <div key={i} className={styles.logEntry}>
               <Badge
                 appearance="filled"
-                color={(log as any).type === "success" ? "success" : "informative"}
+                color={log.type === "success" ? "success" : "informative"}
                 style={{ marginRight: "8px" }}
               >
-                {(log as any).type.toUpperCase()}
+                {log.type.toUpperCase()}
               </Badge>
               <Text size={200}>
-                [{new Date((log as any).timestamp).toLocaleTimeString()}] {(log as any).message}
+                [{new Date(log.timestamp).toLocaleTimeString()}] {log.message}
               </Text>
             </div>
           ))}
@@ -463,14 +473,14 @@ export default function Observability() {
 
   const renderTelemetryTab = () => (
     <div>
-      <Card className={(styles as any).card}>
+      <Card className={styles.card}>
         <Title3>Telemetry Integration</Title3>
         <Text>
           The SDK integrates with Application Insights and OpenTelemetry for comprehensive
           observability
         </Text>
 
-        <div className={(styles as any).actions}>
+        <div className={styles.actions}>
           <Button
             appearance="primary"
             icon={<EyeTrackingRegular />}
@@ -482,20 +492,20 @@ export default function Observability() {
         </div>
       </Card>
 
-      {(logs as any).length > 0 && (
-        <Card className={(styles as any).card}>
+      {logs.length > 0 && (
+        <Card className={styles.card}>
           <Title3>Telemetry Log</Title3>
-          {(logs as any).map((log, i) => (
-            <div key={i} className={(styles as any).logEntry}>
+          {logs.map((log, i) => (
+            <div key={i} className={styles.logEntry}>
               <Badge
                 appearance="filled"
-                color={(log as any).type === "success" ? "success" : "informative"}
+                color={log.type === "success" ? "success" : "informative"}
                 style={{ marginRight: "8px" }}
               >
-                {(log as any).type.toUpperCase()}
+                {log.type.toUpperCase()}
               </Badge>
               <Text size={200}>
-                [{new Date((log as any).timestamp).toLocaleTimeString()}] {(log as any).message}
+                [{new Date(log.timestamp).toLocaleTimeString()}] {log.message}
               </Text>
             </div>
           ))}
@@ -505,10 +515,10 @@ export default function Observability() {
   );
 
   return (
-    <div className={(styles as any).container}>
-      <div className={(styles as any).header}>
+    <div className={styles.container}>
+      <div className={styles.header}>
         <Title3>Observability & Resiliency</Title3>
-        <Text className={(styles as any).description}>
+        <Text className={styles.description}>
           Built-in retry logic, throttling awareness, adaptive concurrency, and telemetry
           integration
         </Text>
@@ -516,8 +526,8 @@ export default function Observability() {
 
       <TabList
         selectedValue={selectedTab}
-        onTabSelect={(_, data) => setSelectedTab((data as any).value as TabValue)}
-        className={(styles as any).tabs}
+        onTabSelect={(_, data) => setSelectedTab(data.value as TabValue)}
+        className={styles.tabs}
       >
         <Tab value="retry" icon={<ArrowClockwiseRegular />}>
           Retry Logic
@@ -533,7 +543,7 @@ export default function Observability() {
         </Tab>
       </TabList>
 
-      <div className={(styles as any).content}>
+      <div className={styles.content}>
         {loading && <LoadingState label="Running demonstration..." />}
         {error && <ErrorDisplay error={error} onDismiss={() => setError(null)} />}
 
@@ -549,7 +559,7 @@ export default function Observability() {
             {
               label: "Results",
               code: "",
-              result: (JSON as any).stringify(results, null, 2),
+              result: JSON.stringify(results, null, 2),
             },
           ]}
         />

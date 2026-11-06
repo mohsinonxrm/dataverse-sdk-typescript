@@ -12,6 +12,13 @@ pnpm add -D @mohsinonxrm/dataverse-sdk-generator
 pnpm add -g @mohsinonxrm/dataverse-sdk-generator
 ```
 
+Generated code imports its base types from `@mohsinonxrm/dataverse-sdk-entities-runtime`, so add
+that package (and `@mohsinonxrm/dataverse-sdk-core` for the client) to your app's dependencies:
+
+```bash
+pnpm add @mohsinonxrm/dataverse-sdk-entities-runtime @mohsinonxrm/dataverse-sdk-core
+```
+
 ## 🚀 Quick Start
 
 ### 1. Initialize Configuration
@@ -50,34 +57,88 @@ Edit `.dataverse-gen.json`:
 - **entities**: Array of entity logical names to generate (empty = all)
 - **actions**: Array of action names to generate (empty = all)
 - **functions**: Array of function names to generate (empty = all)
-- **auth**: MSAL authentication configuration
+- **auth**: how the generator signs in to read metadata (see [Authentication](#-authentication))
 
 ### 3. Generate Code
 
 ```bash
-# With authentication flow (future implementation)
+# Sign in with the configured auth flow
 pnpm dataverse-gen generate
 
-# With manual access token
+# Or pass an access token for the environment yourself
 pnpm dataverse-gen generate --token "eyJ0eXAi..."
 ```
+
+---
+
+## 🔐 Authentication
+
+`generate` gets a token for `<environmentUrl>/.default` through
+`@mohsinonxrm/dataverse-sdk-auth-msal-node`. The token is acquired once per run, before generation
+starts, and `--token` takes precedence over `auth`.
+
+| `auth.flow`                                    | Client application                                 | Use it for                                                     |
+| ---------------------------------------------- | -------------------------------------------------- | -------------------------------------------------------------- |
+| `"deviceCode"`                                 | public client (enable "Allow public client flows") | a developer signing in; the code is shown in the terminal      |
+| `"clientCredentials"` (alias `"clientSecret"`) | confidential client with a client secret           | CI and scripts; the app must be an application user in the org |
+
+Settings left out of `auth` are read from the environment, so the config file can be committed
+without them:
+
+| Setting             | Environment variable      |
+| ------------------- | ------------------------- |
+| `auth.tenantId`     | `DATAVERSE_TENANT_ID`     |
+| `auth.clientId`     | `DATAVERSE_CLIENT_ID`     |
+| `auth.clientSecret` | `DATAVERSE_CLIENT_SECRET` |
+
+Keep the client secret in the environment variable rather than in the file (`validate` warns
+when the file has one). For a sovereign cloud, set `auth.authority`
+(e.g. `"https://login.microsoftonline.us/<tenant-id>"`).
+
+```json
+{
+  "environmentUrl": "https://yourorg.crm.dynamics.com",
+  "entities": ["account", "contact"],
+  "auth": { "flow": "clientCredentials" }
+}
+```
+
+```bash
+DATAVERSE_TENANT_ID=... DATAVERSE_CLIENT_ID=... DATAVERSE_CLIENT_SECRET=... pnpm dataverse-gen generate
+```
+
+With device code, the CLI prints the sign-in instructions
+("To sign in, use a web browser to open the page https://login.microsoft.com/device and enter the
+code ...") and continues once you have signed in. `"interactive"` is not supported; use
+`"deviceCode"`.
 
 ### 4. Use Generated Types
 
 ```typescript
-import { Account, AccountMetadata } from "./generated/entities/Account.js";
 import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  createEntityReference,
+  formatEntityForWrite,
+} from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { type Account, AccountMetadata } from "./generated/entities/Account.js";
+import { EntityMetadataCache } from "./generated/metadata.js";
 
 const client = new DataverseClient({/* ... */});
 
-// Type-safe entity creation
+// Type-safe entity creation. Lookups take an EntityReference.
 const account: Account = {
-  logicalName: "account",
   name: "Contoso",
   creditlimit: 50000,
+  primarycontactid: createEntityReference("contact", contactId),
 };
 
-await client.api("/accounts").post(account);
+// formatEntityForWrite adds @odata.type and turns the lookup into
+// "primarycontactid@odata.bind": "/contacts(<id>)"
+const accountId = await client
+  .api(`/${AccountMetadata.collectionName}`)
+  .createAndGetId(
+    formatEntityForWrite(account, AccountMetadata, { metadataCache: EntityMetadataCache })
+  );
 
 // Use metadata
 console.log(AccountMetadata.collectionName); // "accounts"
@@ -105,7 +166,7 @@ dataverse-gen generate [options]
 
 Options:
   -c, --config <path>  Path to configuration file (default: ".dataverse-gen.json")
-  --token <token>      Access token (if not using auth flow)
+  --token <token>      Access token to use instead of the configured auth flow
 ```
 
 ### `validate`
@@ -154,12 +215,13 @@ interface DataverseGenConfig {
     fileSuffix?: string;
   };
 
-  /** MSAL authentication (future feature) */
+  /** How `generate` signs in (see Authentication) */
   auth?: {
-    tenantId: string;
-    clientId: string;
-    flow: "deviceCode" | "clientSecret" | "interactive";
-    clientSecret?: string;
+    flow: "deviceCode" | "clientCredentials" | "clientSecret";
+    tenantId?: string; // default: DATAVERSE_TENANT_ID
+    clientId?: string; // default: DATAVERSE_CLIENT_ID
+    clientSecret?: string; // default: DATAVERSE_CLIENT_SECRET
+    authority?: string; // default: https://login.microsoftonline.com/<tenantId>
   };
 }
 ```
@@ -223,26 +285,43 @@ generated/
 
 ## 🎯 Generated Code Examples
 
+Entity interfaces and files are named after the table's schema name (`Account`). Option-set
+enums keep the option set's name (`account_industrycode`). Everything a file references is
+imported, and the output type-checks under `strict`, `verbatimModuleSyntax` and `NodeNext`
+(the package's tests generate code from a fixture and run the TypeScript compiler on it).
+
 ### Entity Interface
 
 ```typescript
 // generated/entities/Account.ts
-import type { IEntity, EntityMetadata } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import type {
+  EntityMetadata,
+  EntityReference,
+  IEntity,
+} from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import type { account_industrycode } from "../enums/account_industrycode.js";
+import type { Contact } from "./Contact.js";
 
+/**
+ * Account entity
+ * Logical Name: account
+ * Entity Set: accounts
+ */
 export interface Account extends IEntity {
-  logicalName: "account";
-
   /** accountid */
-  accountid?: string;
+  accountid?: string | null;
 
-  /** name */
+  /** Type the company or business name. */
   name?: string | null;
 
-  /** creditlimit */
-  creditlimit?: number | null;
+  /** Select the account's primary industry. */
+  industrycode?: account_industrycode | null;
+
+  /** _primarycontactid_value */
+  _primarycontactid_value?: string | null;
 
   /** Navigation: account_primary_contact */
-  primarycontactid?: Contact;
+  primarycontactid?: Contact | EntityReference;
 }
 
 export const AccountMetadata: EntityMetadata = {
@@ -254,7 +333,27 @@ export const AccountMetadata: EntityMetadata = {
   attributeTypes: {
     accountid: "Edm.Guid",
     name: "Edm.String",
-    creditlimit: "Edm.Money",
+    industrycode: "Edm.Int32",
+    _primarycontactid_value: "Edm.Guid",
+  },
+  attributes: {
+    name: {
+      logicalName: "name",
+      schemaName: "Name",
+      attributeType: "String",
+      typescriptType: "string",
+      odataType: "Edm.String",
+      isRequired: true,
+    },
+    industrycode: {
+      logicalName: "industrycode",
+      schemaName: "IndustryCode",
+      attributeType: "Picklist",
+      typescriptType: "account_industrycode",
+      odataType: "Edm.Int32",
+      optionSetType: "account_industrycode",
+    },
+    // ...
   },
   navigation: {
     primarycontactid: {
@@ -267,51 +366,138 @@ export const AccountMetadata: EntityMetadata = {
 };
 ```
 
+A single-valued navigation property is the related record when you read it (with `$expand`) or
+an `EntityReference` when you write it. A target table that isn't generated (or is abstract,
+such as `ownerid`'s `principal`) is typed as `IEntity`. Interfaces have no `logicalName`: the Web
+API rejects unknown properties, and the metadata already names the table.
+
 ### Enum Type
 
 ```typescript
-// generated/enums/AccountStateCode.ts
-export const enum AccountStateCode {
-  Active = 0,
-  Inactive = 1,
+// generated/enums/account_industrycode.ts
+export const enum account_industrycode {
+  Accounting = 1,
+  AgricultureAndNonPetrolNaturalResourceExtraction = 2,
+  // ...
 }
 ```
+
+Option labels become PascalCase identifiers; a label that isn't usable (empty, or a duplicate)
+falls back to `Value<n>` or gets the value appended.
 
 ### Action Class
 
 ```typescript
 // generated/actions/WinOpportunityAction.ts
-import { ActionBase } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import {
+  ActionBase,
+  type IEntity,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 
 export class WinOpportunityAction extends ActionBase<void> {
   constructor(
-    public OpportunityClose: any,
+    public OpportunityClose: IEntity,
+    public Caller: string | null,
     public Status: number
   ) {
     super();
   }
 
-  toRequestInformation(baseUrl: string) {
+  toRequestInformation(baseUrl: string): RequestInformation {
     return {
-      method: "POST" as const,
+      method: "POST",
       url: `${baseUrl}/WinOpportunity`,
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
+      headers: { "content-type": "application/json", accept: "application/json" },
       body: {
         OpportunityClose: this.OpportunityClose,
+        Caller: this.Caller,
         Status: this.Status,
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<void> {
+  async parseResponse(_response: Response): Promise<void> {
     // 204 No Content
-    return;
   }
 }
 ```
+
+`ActionBase` and `FunctionBase` implement core's `Executable`, so generated operations go straight
+to `client.execute()`. An operation that returns a complex type or an entity resolves to that
+type; one that returns a primitive or a collection resolves to the `value` of the response:
+
+```typescript
+import { WhoAmIFunction } from "./generated/functions/WhoAmIFunction.js";
+
+const whoAmI = await client.execute(new WhoAmIFunction()); // WhoAmIResponse
+console.log(whoAmI.UserId);
+```
+
+### Function Class
+
+Function parameters are sent as parameter aliases (`Name(Param=@p1)?@p1=<literal>`), and each
+value is written as the OData literal for its type by `formatParameterAlias()` from
+`@mohsinonxrm/dataverse-sdk-entities-runtime`:
+
+- strings are quoted, with `'` doubled: `'O''Brien'`;
+- GUIDs, numbers and booleans are written bare; `Date` values become ISO strings (`Edm.Date` takes
+  only the date part);
+- enum values become enum literals: `Microsoft.Dynamics.CRM.EntityFilters'1'`;
+- collections and complex values are written as JSON, and an entity reference as
+  `{"@odata.id":"accounts(<id>)"}`.
+
+Trailing nullable parameters are optional; a parameter left `undefined` is left out of the call.
+
+```typescript
+// generated/functions/RetrieveUserPrivilegeByPrivilegeNameFunction.ts (bound to systemuser)
+export class RetrieveUserPrivilegeByPrivilegeNameFunction extends FunctionBase<RetrieveUserPrivilegeByPrivilegeNameResponse> {
+  constructor(
+    public readonly targetId: string,
+    public PrivilegeName: string,
+    public ExcludeTeamBasic?: boolean | null
+  ) {
+    super();
+  }
+
+  toRequestInformation(baseUrl: string): RequestInformation {
+    const aliases: string[] = [];
+    const values = new URLSearchParams();
+    if (this.PrivilegeName !== undefined) {
+      aliases.push("PrivilegeName=@p1");
+      values.append("@p1", formatParameterAlias(this.PrivilegeName, "Edm.String", "PrimitiveType"));
+    }
+    // ...
+    const query = values.toString();
+    return {
+      method: "GET",
+      url: `${baseUrl}/systemusers(${formatParameterAlias(this.targetId, "Edm.Guid")})/Microsoft.Dynamics.CRM.RetrieveUserPrivilegeByPrivilegeName(${aliases.join(",")})${query ? `?${query}` : ""}`,
+      headers: { accept: "application/json" },
+    };
+  }
+  // ...
+}
+
+const result = await client.execute(
+  new RetrieveUserPrivilegeByPrivilegeNameFunction(userId, "prvReadAccount")
+);
+```
+
+### Bound Actions and Functions
+
+A bound operation is called on what it is bound to, `/<entity set>(<id>)/Microsoft.Dynamics.CRM.<Name>`
+for one record or `/<entity set>/Microsoft.Dynamics.CRM.<Name>` for a collection:
+
+| Bound to                                   | First constructor parameter                    |
+| ------------------------------------------ | ---------------------------------------------- |
+| one record of a table (`mscrm.systemuser`) | `targetId: string`                             |
+| a table's collection                       | none (the entity set is known)                 |
+| an abstract type (`mscrm.crmbaseentity`)   | `target: EntityReference` with `entitySetName` |
+| a collection of an abstract type           | `entitySetName: string`                        |
+
+An operation bound to several tables (`RetrieveUnpublished` is bound to about twenty) gets one
+class per binding, named after the table: `RetrieveUnpublished_savedqueryFunction`,
+`RetrieveUnpublished_systemformFunction`, and so on.
 
 ---
 
@@ -341,6 +527,9 @@ await generateCode(config, accessToken);
 console.log("✓ Code generation complete!");
 ```
 
+Without an access token, `generateCode(config)` signs in with `config.auth`, as the CLI does.
+`createCliTokenProvider(config)` returns the token provider for those settings.
+
 ---
 
 ## 🧪 Integration with SDK
@@ -349,9 +538,10 @@ Generated types work seamlessly with the core SDK:
 
 ```typescript
 import { ConfidentialClientApplication } from "@azure/msal-node";
-import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+import { DataverseClient, Prefer } from "@mohsinonxrm/dataverse-sdk-core";
 import { MsalNodeTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-msal-node";
-import { Account, Contact } from "./generated/index.js";
+import { formatEntityForWrite } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { type Account, AccountMetadata } from "./generated/index.js";
 
 // Setup client
 const cca = new ConfidentialClientApplication({
@@ -366,31 +556,29 @@ const tokenProvider = new MsalNodeTokenProvider(cca, {
   scopes: ["https://org.crm.dynamics.com/.default"],
 });
 const client = new DataverseClient({
-  baseUrl: "https://org.crm.dynamics.com/api/data/v9.2",
+  baseUrl: "https://org.crm.dynamics.com",
   tokenProvider,
 });
 
 // Type-safe CRUD operations
 const account: Account = {
-  logicalName: "account",
   name: "Contoso",
   creditlimit: 100000,
 };
 
-const createResponse = await client
+const createdAccount = await client
   .api("/accounts")
-  .header("Prefer", "return=representation")
-  .post(account);
+  .prefer(Prefer.returnRepresentation())
+  .post<Account>(formatEntityForWrite(account, AccountMetadata));
 
-const createdAccount = createResponse as Account;
 console.log("Created:", createdAccount.accountid);
 
 // Type-safe queries
 const accounts = await client
   .api("/accounts")
-  .select(["name", "creditlimit"])
+  .select("name", "creditlimit")
   .filter("creditlimit gt 50000")
-  .get<Account[]>();
+  .get<{ value: Account[] }>();
 
 console.log(`Found ${accounts.value.length} accounts`);
 ```
@@ -409,20 +597,27 @@ The generator follows Scott Durow's proven three-phase pipeline architecture fro
 
 ### Phase 2: Filter
 
-1. **Apply Configuration**: Filters entities based on `.dataverse-gen.json`
-2. **Resolve Dependencies**: Includes entities referenced by navigation properties
-3. **Build Initial Model**: Creates PropertyType, NavigationPropertyType structures from CSDL
+1. **Apply Configuration**: Filters entities, actions and functions based on `.dataverse-gen.json`.
+   With no `entities` list, every table is generated (abstract types such as `crmbaseentity` and
+   types without an entity set are skipped).
+2. **Build Initial Model**: Creates PropertyType, NavigationPropertyType structures from CSDL.
+   Entities that are referenced but not generated aren't pulled in; references to them are typed
+   as `IEntity`.
 
 ### Phase 3: Enrich with RetrieveMetadataChanges
 
-For each entity, the generator calls `RetrieveMetadataChanges` to fetch detailed metadata:
+For each entity, the generator calls the `RetrieveMetadataChanges` function
+(`GET RetrieveMetadataChanges(Query=@q)?@q={...}`) to fetch detailed metadata:
 
 ```typescript
-// Query structure per Scott's pattern
+// The Query parameter (an EntityQueryExpression)
 {
   Query: {
-    Criteria: { Conditions: [{ PropertyName: 'LogicalName', Value: 'account' }] },
-    Properties: { PropertyNames: ['Attributes', 'SchemaName', 'EntitySetName', 'Keys'] },
+    Criteria: {
+      Conditions: [{ PropertyName: 'LogicalName', ConditionOperator: 'Equals', Value: { Value: 'account', Type: 'System.String' } }],
+      FilterOperator: 'And',
+    },
+    Properties: { PropertyNames: ['Attributes', 'SchemaName', 'EntitySetName', 'Keys', 'PrimaryIdAttribute', 'PrimaryNameAttribute'] },
     AttributeQuery: {
       Properties: {
         PropertyNames: [
@@ -439,8 +634,9 @@ For each entity, the generator calls `RetrieveMetadataChanges` to fetch detailed
 This enrichment enables:
 
 - **Local Option Set Enums**: Non-global option sets generate entity-specific enums
-  - Example: `Account_IndustryCode` enum for `account.industrycode`
+  - Example: `account_industrycode` enum for `account.industrycode`, and the property is typed with it
   - Sorted by value, localized label extraction
+  - Multi-select columns stay `string` (the Web API sends them as `"1,2"`); global option sets stay `number`
 
 - **Polymorphic Lookup Consolidation**: Merges navigation properties
   - CSDL: `customerid_account`, `customerid_contact` (separate)
@@ -463,10 +659,12 @@ This enrichment enables:
 ### Type Generation
 
 1. **Resolve Types**: Maps Dataverse types to TypeScript types
-   - `Edm.String` → `string`
-   - `Edm.Int32` → `number`
-   - `Edm.Guid` → `string`
-   - Lookup attributes → navigation property
+   - `Edm.String`, `Edm.Guid`, `Edm.Binary`, `Edm.Date` → `string`
+   - `Edm.Int32`, `Edm.Int64`, `Edm.Decimal`, `Edm.Double` → `number`
+   - `Edm.Boolean` → `boolean`, `Edm.DateTimeOffset` → `Date`
+   - `mscrm.*` entity, complex and enum types → the generated type (imported), or `IEntity` for an
+     entity that isn't generated
+   - Lookup attributes → `_<name>_value` (`string`) plus a navigation property
 
 2. **Generate Code**: Renders EJS templates
    - `entity.ejs` → Entity interface + runtime metadata
@@ -488,8 +686,8 @@ generated/
     Contact.ts
     index.ts                # Barrel export
   enums/
-    Account_IndustryCode.ts # Local option set enum
-    StateCode.ts            # Global option set enum
+    account_industrycode.ts # Local option set enum
+    AccessRights.ts         # Enum type from $metadata
     index.ts
   actions/
     WinOpportunityAction.ts # Action class with parameterTypes
@@ -504,52 +702,36 @@ generated/
   index.ts                  # Root barrel export
 ```
 
-### Entity File Example
+### Entity File Example: rollup columns and polymorphic lookups
 
 ```typescript
-// Account.ts (generated)
-export interface Account extends IEntity {
-  logicalName: "account";
+// Contact.ts (generated)
+export interface Contact extends IEntity {
+  /** Total Spend */
+  contoso_totalspend?: number | null; // Rollup
 
-  /** Account Name */
-  name?: string;
-
-  /** Annual Revenue */
-  revenue?: number; // Calculated
-
-  /** Industry */
-  industrycode?: Account_IndustryCode; // Local enum
-
-  /** Primary Contact (polymorphic: account, contact) */
-  primarycontactid?: any;
+  /** Navigation: contact_customer_accounts (polymorphic: account, contact) */
+  parentcustomerid?: Account | Contact | EntityReference;
 }
 
-export const AccountMetadata: EntityMetadata = {
-  typeName: "Microsoft.Dynamics.CRM.account",
-  logicalName: "account",
-  collectionName: "accounts",
-  primaryIdAttribute: "accountid",
-  primaryNameAttribute: "name",
-  attributeTypes: {
-    accountid: { logicalName: "accountid", schemaName: "AccountId", type: "Edm.Guid" },
-    name: { logicalName: "name", schemaName: "Name", type: "Edm.String", isRequired: true },
-    revenue: {
-      logicalName: "revenue",
-      schemaName: "Revenue",
-      type: "Edm.Decimal",
-      sourceType: "calculated",
-    },
-    industrycode: {
-      logicalName: "industrycode",
-      schemaName: "IndustryCode",
-      type: "Edm.Int32",
-      enumType: "Account_IndustryCode",
+export const ContactMetadata: EntityMetadata = {
+  // ...
+  attributeTypes: { contoso_totalspend: "Edm.Decimal" /* ... */ },
+  attributes: {
+    contoso_totalspend: {
+      logicalName: "contoso_totalspend",
+      schemaName: "contoso_TotalSpend",
+      attributeType: "Money",
+      typescriptType: "number",
+      odataType: "Edm.Decimal",
+      sourceType: "rollup",
     },
   },
   navigation: {
-    primarycontactid: {
-      name: "primarycontactid",
-      targetType: "account,contact",
+    parentcustomerid: {
+      name: "parentcustomerid",
+      fullName: "parentcustomerid",
+      targetType: "account",
       isPolymorphic: true,
       targets: ["account", "contact"],
       isCollection: false,
@@ -559,10 +741,20 @@ export const AccountMetadata: EntityMetadata = {
 };
 ```
 
+`attributeTypes` maps each column to its OData type; `attributes` has the details. A polymorphic
+lookup's targets that are all generated give a union type; otherwise it's `IEntity`. To set it,
+pass a reference to any target: `formatEntityForWrite()` binds through the navigation property
+for that table (`parentcustomerid_account@odata.bind` for an account).
+
 ### Metadata File Example
 
 ```typescript
 // metadata.ts (generated)
+import type { EntityMetadata } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { AccountMetadata } from "./entities/Account.js";
+import { ContactMetadata } from "./entities/Contact.js";
+import { OpportunityMetadata } from "./entities/Opportunity.js";
+
 export const Entities = {
   Account: "account",
   Contact: "contact",
@@ -580,7 +772,7 @@ export function getEntityMetadata(logicalName: string): EntityMetadata | undefin
 }
 
 export function getLogicalName(schemaName: string): string | undefined {
-  return Entities[schemaName as keyof typeof Entities];
+  return (Entities as Record<string, string>)[schemaName];
 }
 ```
 
@@ -594,7 +786,7 @@ export function getLogicalName(schemaName: string): string | undefined {
 - ✅ Polymorphic lookup consolidation
 - ✅ Calculated/rollup field annotations
 - ✅ Alternate keys support
-- ⏳ MSAL authentication flows (device code, client credentials)
+- ✅ MSAL authentication flows (device code, client credentials)
 - ⏳ Create/Update type splitting (exclude read-only fields)
 - ⏳ Custom template support (eject command)
 - ⏳ Incremental generation (only changed entities)
@@ -605,14 +797,21 @@ export function getLogicalName(schemaName: string): string | undefined {
 
 ## 🙏 Acknowledgments
 
-This implementation is heavily inspired by [scottdurow/dataverse-gen](https://github.com/scottdurow/dataverse-gen). We adapted Scott's proven patterns:
+Portions of this package are adapted from
+[scottdurow/dataverse-gen](https://github.com/scottdurow/dataverse-gen) (Copyright (c) 2020 Scott
+Durow, MIT License). The MIT copyright and permission notice is in
+[THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md), which ships with the package, and each adapted
+file has a header pointing to it. The adapted parts are:
 
-- Three-phase pipeline architecture (Load → Filter → Enrich)
-- Per-entity `RetrieveMetadataChanges` calls with `AttributeQuery`
-- Polymorphic lookup consolidation logic
-- Local option set enum generation strategy
-- Structural property type determination for actions/functions
-- Reserved keyword handling and code-safe naming
+- the three-phase pipeline (load `$metadata`, filter, enrich) and the `SchemaModel` /
+  `TypescriptGenerator` / `MetadataService` design;
+- per-entity `RetrieveMetadataChanges` calls with an `AttributeQuery`;
+- polymorphic lookup consolidation;
+- local option set enum generation;
+- structural property types for action and function parameters;
+- code-safe navigation names;
+- the `.dataverse-gen.json` configuration and the `init` / `generate` commands;
+- the EJS templates' entity metadata, enum and parameter metadata shapes.
 
 Key differences from scottdurow/dataverse-gen:
 
@@ -620,7 +819,7 @@ Key differences from scottdurow/dataverse-gen:
 - **Integrates with `@mohsinonxrm/dataverse-sdk-*`** packages (HTTP-first + OrganizationService)
 - **TypeScript-first** (no JavaScript transpilation output)
 - **Simplified configuration** (JSON-based, no prompts)
-- **AGPL v3 license** (vs MIT)
+- **AGPL v3 license** for this package; the adapted portions keep their MIT notice
 
 ---
 
