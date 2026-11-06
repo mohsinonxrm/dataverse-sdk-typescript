@@ -14,13 +14,13 @@ export class RunDesktopFlowRequest
 {
   constructor(
     public workflowId: string,
-    public inputs: string,
+    public inputs: string | undefined,
     public runMode: string,
     public connectionName: string,
-    public runPriority: string,
-    public timeout: number,
-    public connectionType: number,
-    public callbackUrl: string
+    public runPriority?: string,
+    public timeout?: number,
+    public connectionType?: number,
+    public callbackUrl?: string
   ) {
     super("RunDesktopFlow");
   }

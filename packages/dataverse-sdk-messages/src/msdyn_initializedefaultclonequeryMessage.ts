@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import type { EntityReference } from "./EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_bookingsetupmetadata, msdyn_configuration } from "./types/index.js";
 
 /**
@@ -13,8 +15,8 @@ export class msdyn_initializedefaultclonequeryRequest
   implements Executable<msdyn_initializedefaultclonequeryResponse>
 {
   constructor(
-    public workType: msdyn_bookingsetupmetadata,
-    public configuration: msdyn_configuration
+    public workType: EntityReference | EntityPayload<msdyn_bookingsetupmetadata>,
+    public configuration?: EntityReference | EntityPayload<msdyn_configuration>
   ) {
     super("msdyn_initializedefaultclonequery");
   }

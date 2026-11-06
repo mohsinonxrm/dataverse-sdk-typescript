@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { sharedworkspace } from "./types/index.js";
 
 /**
@@ -19,8 +20,8 @@ export interface GetOrCreateSharedWorkspaceResponse extends sharedworkspace {
  */
 export class GetOrCreateSharedWorkspaceAction implements Executable<GetOrCreateSharedWorkspaceResponse> {
   constructor(
-    public readonly customclaims: EntityReference,
-    public readonly target: sharedworkspace
+    public readonly customclaims: EntityReference | AnyEntityPayload | undefined,
+    public readonly target: EntityReference | EntityPayload<sharedworkspace>
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

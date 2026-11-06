@@ -1,81 +1,70 @@
 # Supported Messages Reference
 
-> **Status**: Complete coverage - 1,356 typed Organization Service messages
->
 > **Package**: `@mohsinonxrm/dataverse-sdk-messages`
 >
-> **Last Updated**: 2026-02-08 (the count was checked against the generated package on 2026-11-05)
+> **Coverage**: <!-- count:messages -->1,360<!-- /count --> typed messages, one per Web API action in the `$metadata` the package was generated from. The lists below are generated from the package source by `pnpm --filter generate-sdk-types docs`, so every class, constructor and route shown exists.
 
 ---
 
 ## Overview
 
-Messages are **request/response pairs** that follow the **OrganizationService** pattern familiar from C# SDK. This package provides 1,356 typed message classes that map to Web API actions, functions, and HTTP operations.
+Each Web API **action** has a `<Name>Request` / `<Name>Response` pair, for code written in the
+style of the .NET SDK's `OrganizationRequest` classes. A request takes the same positional
+arguments as the matching class in `@mohsinonxrm/dataverse-sdk-actions` and sends the same `POST`.
+Run it with `client.execute(request)`, or with `OrganizationService.execute` from
+`@mohsinonxrm/dataverse-sdk-xrm`.
 
-### Coverage Summary
+- **Functions aren't messages.** Read-only operations such as `WhoAmI` are GET functions: use
+  `WhoAmIFunction` from `@mohsinonxrm/dataverse-sdk-functions`.
+- **CRUD isn't a message.** Create, retrieve, update, delete, associate and disassociate are HTTP
+  requests on entity sets: use `client.api("accounts")…` or `OrganizationService.create/retrieve/
+update/delete`. There is no CreateRequest, AssignRequest or SetStateRequest (.NET names): assign by
+  updating `ownerid@odata.bind`, and change state by updating `statecode` / `statuscode`.
+- An operation declared with several bindings has one pair per binding,
+  `<Name>_<table>Request` (for example `AddItemCampaign_listRequest`).
 
-- **Total Messages**: 1,356 typed request/response pairs
-- **Generation Source**: Dataverse v9.2 CSDL metadata (Sales + Customer Service installed)
-- **Import Pattern**: Direct named exports (e.g., `import { WhoAmIRequest } from '@mohsinonxrm/dataverse-sdk-messages'`)
-- **Web API Mapping**: Messages map to actions (POST), functions (GET), or HTTP CRUD operations
-
----
-
-## Usage Patterns
-
-### OrganizationService Pattern (C#-Familiar)
+## Usage
 
 ```typescript
 import { OrganizationService } from "@mohsinonxrm/dataverse-sdk-xrm";
-import { WhoAmIRequest } from "@mohsinonxrm/dataverse-sdk-messages";
+import { WinOpportunityRequest, WinOpportunityResponse } from "@mohsinonxrm/dataverse-sdk-messages";
 
 const orgService = new OrganizationService(client);
 
-// Execute platform message
-const request = new WhoAmIRequest();
-const response = await orgService.execute(request);
-
-console.log(`User ID: ${response.UserId}`);
-console.log(`Org ID: ${response.OrganizationId}`);
-console.log(`Business Unit: ${response.BusinessUnitId}`);
+await orgService.execute<WinOpportunityResponse>(
+  new WinOpportunityRequest(
+    {
+      "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
+      subject: "Deal closed",
+      "opportunityid@odata.bind": `/opportunities(${opportunityId})`,
+      actualrevenue: 150000,
+    },
+    undefined, // Caller
+    3 // Status: Won
+  )
+);
 ```
 
-### Business Logic Message
+A response that returns an entity or a complex type has it in `result`
+(`ExecuteWorkflowResponse.result.asyncoperationid`).
 
-```typescript
-import { WinOpportunityRequest } from "@mohsinonxrm/dataverse-sdk-messages";
+### Generic `OrganizationRequest`
 
-const request = new WinOpportunityRequest({
-  OpportunityClose: {
-    subject: "Deal Closed - Q4 2024",
-    opportunityid: opportunityId,
-    actualrevenue: 150000,
-    actualend: new Date(),
-  },
-  Status: -1, // Won
-});
-
-const response = await orgService.execute(request);
-// Response is empty (void) for WinOpportunity
-```
-
-### Generic OrganizationRequest
-
-For messages not yet typed or custom messages:
+For a custom API, or an action the package doesn't have:
 
 ```typescript
 import { OrganizationRequest, OrganizationResponse } from "@mohsinonxrm/dataverse-sdk-messages";
 
-// Unbound action: POST /CustomAction. Values are sent as given, so an entity parameter uses
-// the Web API shape.
-const request = new OrganizationRequest("CustomAction", {
-  Account: { "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: accountId },
-  Parameter1: "value",
-});
-const response = await orgService.execute<OrganizationResponse>(request);
+// POST /new_CustomAction. Values are sent as given, so an entity parameter uses the Web API shape.
+const response = await orgService.execute<OrganizationResponse>(
+  new OrganizationRequest("new_CustomAction", {
+    Account: { "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: accountId },
+    Parameter1: "value",
+  })
+);
 console.log(response.Results);
 
-// Bound action: POST /accounts({accountId})/Microsoft.Dynamics.CRM.new_BoundAction
+// POST /accounts(<id>)/Microsoft.Dynamics.CRM.new_BoundAction
 await orgService.execute(
   new OrganizationRequest(
     "new_BoundAction",
@@ -91,472 +80,143 @@ await orgService.execute(
 
 ## Message Categories
 
-The 1,356 messages are organized by functional area below. All messages are imported directly using named exports.
+Each line shows the constructor (`?` marks an argument you can leave out) and the request it sends.
 
-### Platform Messages (Core Operations)
+### Platform
 
-Core platform operations available in all Dataverse environments.
+<!-- operations:messages
+CreateMultiple: Create records of one table in one request.
+UpdateMultiple: Update records of one table in one request.
+UpsertMultiple: Create or update records of one table in one request.
+ExecuteWorkflow: Run an on-demand workflow on a record; `result` is the `asyncoperation`.
+Merge: Merge a subordinate record into a target.
+BulkDelete: Start an asynchronous bulk delete job.
+ExportToExcel: Export a view's rows as an .xlsx file (base64).
+-->
 
-#### Identity & Security
+- `new CreateMultipleRequest(entitySetName, targets)` (`POST /{entitySetName}/Microsoft.Dynamics.CRM.CreateMultiple`): Create records of one table in one request.
+- `new UpdateMultipleRequest(entitySetName, targets)` (`POST /{entitySetName}/Microsoft.Dynamics.CRM.UpdateMultiple`): Update records of one table in one request.
+- `new UpsertMultipleRequest(entitySetName, targets)` (`POST /{entitySetName}/Microsoft.Dynamics.CRM.UpsertMultiple`): Create or update records of one table in one request.
+- `new ExecuteWorkflowRequest(workflowId, entityId, inputArguments?)` (`POST /workflows({workflowId})/Microsoft.Dynamics.CRM.ExecuteWorkflow`): Run an on-demand workflow on a record; `result` is the `asyncoperation`.
+- `new MergeRequest(target, subordinate, updateContent, performParentingChecks)` (`POST /Merge`): Merge a subordinate record into a target.
+- `new BulkDeleteRequest(querySet, jobName, sendEmailNotification, toRecipients, cCRecipients, recurrencePattern, startDateTime, sourceImportId?, runNow?)` (`POST /BulkDelete`): Start an asynchronous bulk delete job.
+- `new ExportToExcelRequest(view, fetchXml, layoutXml, queryApi, queryParameters)` (`POST /ExportToExcel`): Export a view's rows as an .xlsx file (base64).
 
-**User Identity**:
+<!-- /operations -->
 
-- `WhoAmIRequest/Response` - Get current user context (maps to WhoAmI function)
+### Security and teams
 
-**Record Ownership**:
+<!-- operations:messages
+GrantAccess: Share a record with a user or team.
+ModifyAccess: Change shared access.
+RevokeAccess: Stop sharing a record.
+AddMembersTeam: Add users to a team.
+RemoveMembersTeam: Remove users from a team.
+-->
 
-- `AssignRequest` - Assign record to user/team (maps to Assign action)
-- `GrantAccessRequest` - Grant access to principal (maps to GrantAccess action)
-- `ModifyAccessRequest` - Modify access rights (maps to ModifyAccess action)
-- `RevokeAccessRequest` - Revoke access from principal (maps to RevokeAccess action)
-- `RetrievePrincipalAccessRequest/Response` - Get access rights (maps to RetrievePrincipalAccess function)
+- `new GrantAccessRequest(target, principalAccess?)` (`POST /GrantAccess`): Share a record with a user or team.
+- `new ModifyAccessRequest(target, principalAccess?)` (`POST /ModifyAccess`): Change shared access.
+- `new RevokeAccessRequest(target, revokee)` (`POST /RevokeAccess`): Stop sharing a record.
+- `new AddMembersTeamRequest(teamId, members)` (`POST /teams({teamId})/Microsoft.Dynamics.CRM.AddMembersTeam`): Add users to a team.
+- `new RemoveMembersTeamRequest(teamId, members)` (`POST /teams({teamId})/Microsoft.Dynamics.CRM.RemoveMembersTeam`): Remove users from a team.
 
-**Privilege Checks**:
+<!-- /operations -->
 
-- `RetrievePrivilegeSetRequest/Response` - Get privilege set
-- `CheckPrivilegeRequest/Response` - Validate privilege
+### Solutions and customization
 
-#### Record State Management
+<!-- operations:messages
+ImportSolution: Import a solution file (base64).
+ExportSolution: Export a solution; `result.ExportSolutionFile` is the file (base64).
+PublishXml: Publish the customizations named in `parameterXml`.
+PublishAllXml: Publish all customizations.
+AddSolutionComponent: Add a component to an unmanaged solution.
+-->
 
-**State Transitions**:
+- `new ImportSolutionRequest(overwriteUnmanagedCustomizations, publishWorkflows, customizationFile, importJobId, convertToManaged?, skipProductUpdateDependencies?, holdingSolution?, skipQueueRibbonJob?, layerDesiredOrder?, asyncRibbonProcessing?, componentParameters?, isTemplateMode?, templateSuffix?, solutionParameters?, templateDisplayNamePrefix?, stageAndUpgrade?, schemaUpdatesOnly?)` (`POST /ImportSolution`): Import a solution file (base64).
+- `new ExportSolutionRequest(solutionName, managed, targetVersion?, exportAutoNumberingSettings?, exportCalendarSettings?, exportCustomizationSettings?, exportEmailTrackingSettings?, exportGeneralSettings?, exportMarketingSettings?, exportOutlookSynchronizationSettings?, exportRelationshipRoles?, exportIsvConfig?, exportSales?, exportExternalApplications?, exportComponentsParams?)` (`POST /ExportSolution`): Export a solution; `result.ExportSolutionFile` is the file (base64).
+- `new PublishXmlRequest(parameterXml)` (`POST /PublishXml`): Publish the customizations named in `parameterXml`.
+- `new PublishAllXmlRequest()` (`POST /PublishAllXml`): Publish all customizations.
+- `new AddSolutionComponentRequest(componentId, componentType, solutionUniqueName, addRequiredComponents, doNotIncludeSubcomponents?, includedComponentSettingsValues?)` (`POST /AddSolutionComponent`): Add a component to an unmanaged solution.
 
-- `SetStateRequest` - Change state/status (maps to SetState action)
-- `CloseIncidentRequest` - Close case with resolution (maps to CloseIncident action)
-- `CloseQuoteRequest` - Close quote (maps to CloseQuote action)
-- `CancelSalesOrderRequest` - Cancel sales order (maps to CancelSalesOrder action)
+<!-- /operations -->
 
-**Activation**:
+### Sales
 
-- `SetBusinessSystemUserRequest` - Enable/disable user (maps to SetBusinessSystemUser action)
+<!-- operations:messages
+WinOpportunity: Close an opportunity as won.
+LoseOpportunity: Close an opportunity as lost.
+QualifyLead: Qualify a lead.
+WinQuote: Close a quote as won.
+ConvertQuoteToSalesOrder: Create an order from a quote.
+ConvertSalesOrderToInvoice: Create an invoice from an order.
+-->
 
-#### Relationship Operations
+- `new WinOpportunityRequest(opportunityClose, caller, status)` (`POST /WinOpportunity`): Close an opportunity as won.
+- `new LoseOpportunityRequest(caller, opportunityClose, status)` (`POST /LoseOpportunity`): Close an opportunity as lost.
+- `new QualifyLeadRequest(leadId, createAccount, createContact, createOpportunity, opportunityCurrencyId, opportunityCustomerId, sourceCampaignId, status, processInstanceId?, leadQualificationV2Param?)` (`POST /leads({leadId})/Microsoft.Dynamics.CRM.QualifyLead`): Qualify a lead.
+- `new WinQuoteRequest(quoteClose, status)` (`POST /WinQuote`): Close a quote as won.
+- `new ConvertQuoteToSalesOrderRequest(quoteId, columnSet?, quoteCloseDate?, quoteCloseStatus?, quoteCloseSubject?, quoteCloseDescription?, processInstanceId?)` (`POST /ConvertQuoteToSalesOrder`): Create an order from a quote.
+- `new ConvertSalesOrderToInvoiceRequest(salesOrderId, columnSet?, processInstanceId?)` (`POST /ConvertSalesOrderToInvoice`): Create an invoice from an order.
 
-**Associate/Disassociate**:
+<!-- /operations -->
 
-- `AssociateRequest` - Create N:N relationship (maps to POST collection navigation)
-- `DisassociateRequest` - Remove N:N relationship (maps to DELETE collection navigation)
+### Service and queues
 
-#### Data Export
+<!-- operations:messages
+CloseIncident: Resolve a case with an `incidentresolution`.
+AddToQueue: Move a record into a queue.
+PickFromQueue: Assign a queue item to a user.
+RouteTo: Route a queue item with routing rules.
+-->
 
-**Export**:
+- `new CloseIncidentRequest(incidentResolution, status)` (`POST /CloseIncident`): Resolve a case with an `incidentresolution`.
+- `new AddToQueueRequest(queueId, target, sourceQueue?, queueItemProperties?)` (`POST /queues({queueId})/Microsoft.Dynamics.CRM.AddToQueue`): Move a record into a queue.
+- `new PickFromQueueRequest(queueitemId, systemUser, removeQueueItem)` (`POST /queueitems({queueitemId})/Microsoft.Dynamics.CRM.PickFromQueue`): Assign a queue item to a user.
+- `new RouteToRequest(target, queueItem?)` (`POST /RouteTo`): Route a queue item with routing rules.
 
-- `ExportToExcelRequest/Response` - Export to Excel (maps to ExportToExcel action)
-- `ExportSolutionRequest/Response` - Export solution (maps to ExportSolution action)
+<!-- /operations -->
 
-#### Metadata Operations
-
-**Metadata Changes**:
-
-- `RetrieveMetadataChangesRequest/Response` - Incremental metadata sync (maps to RetrieveMetadataChanges function)
-- `RetrieveEntityRequest/Response` - Get entity definition (maps to EntityDefinitions HTTP GET)
-- `RetrieveAttributeRequest/Response` - Get attribute definition (maps to HTTP GET)
-
-**Solution Publishing**:
-
-- `PublishXmlRequest` - Publish components (maps to PublishXml action)
-- `PublishAllXmlRequest` - Publish all customizations (maps to PublishAllXml action)
+Solution-specific messages (`msdyn_*`, `msdynmkt_*`, `CCaaS_*`, …) are included for the solutions
+installed in the org the package was generated from, and only work in an org that has them.
 
 ---
 
-### Business Module Messages (Sales, Service, Marketing, etc.)
+## Web API mapping
 
-Business-specific operations organized by module.
+| You want                         | Use                                                                           |
+| -------------------------------- | ----------------------------------------------------------------------------- |
+| A Web API action (POST)          | `<Name>Request` here, or `<Name>Action` in the actions package                |
+| A Web API function (GET)         | `<Name>Function` in the functions package                                     |
+| Create, retrieve, update, delete | `client.api(...)` or `OrganizationService` (`@mohsinonxrm/dataverse-sdk-xrm`) |
+| Several operations in one call   | `$batch` (`@mohsinonxrm/dataverse-sdk-batch`)                                 |
 
-#### Sales Module Messages
+## Choice (option set) values
 
-**Opportunity Management**:
+Option-set parameters and columns are plain numbers (`3`), as the Web API sends them. Metadata
+enums are member names; see `@mohsinonxrm/dataverse-sdk-metadata`.
 
-- `WinOpportunityRequest` - Close opportunity as won (maps to WinOpportunity action)
-- `LoseOpportunityRequest` - Close opportunity as lost (maps to LoseOpportunity action)
-- `CalculateActualValueOpportunityRequest/Response` - Recalculate value (maps to action)
+## Waiting for an asynchronous job
 
-**Lead Management**:
-
-- `QualifyLeadRequest/Response` - Convert lead (maps to QualifyLead action)
-- `DisqualifyLeadRequest` - Disqualify lead (maps to DisqualifyLead action)
-
-**Quote Management**:
-
-- `WinQuoteRequest` - Mark quote as won (maps to WinQuote action)
-- `GetQuoteProductsFromOpportunityRequest` - Copy products (maps to action)
-
-**Order Management**:
-
-- `FulfillSalesOrderRequest` - Fulfill order (maps to FulfillSalesOrder action)
-- `ConvertSalesOrderToInvoiceRequest/Response` - Generate invoice (maps to action)
-
-**Forecasting**:
-
-- `RetrieveForecastColumnsRequest/Response` - Get forecast columns
-- `CommitForecastRequest` - Commit forecast data
-
-#### Customer Service Module Messages
-
-**Case Management**:
-
-- `CloseIncidentRequest` - Close case with resolution (maps to CloseIncident action)
-- `ReopenIncidentRequest` - Reopen case (maps to ReopenIncident action)
-- `EscalateIncidentRequest` - Escalate case (maps to EscalateIncident action)
-
-**Routing**:
-
-- `ApplyRoutingRuleRequest` - Apply routing rule (maps to ApplyRoutingRule action)
-
-**Entitlements**:
-
-- `RenewEntitlementRequest/Response` - Renew entitlement (maps to RenewEntitlement action)
-- `ValidateEntitlementRequest/Response` - Check validity (maps to ValidateEntitlement function)
-
-**Knowledge Base**:
-
-- `IncrementKnowledgeArticleViewCountRequest` - Increment views (maps to action)
-- `DecrementKnowledgeArticleViewCountRequest` - Decrement views (maps to action)
-
-#### Field Service Module Messages (msdyn\_\*)
-
-**Work Order Management**:
-
-- `msdyn_BookRequirementGroupRequest/Response` - Book resource group
-- `msdyn_CreateWorkOrderRequest/Response` - Create work order
-
-**Resource Scheduling**:
-
-- `msdyn_SearchResourceAvailabilityRequest/Response` - Find available resources
-- `msdyn_ApplyWorkTemplateRequest` - Apply template
-
-**Inventory Management**:
-
-- `msdyn_InventoryAdjustmentRequest` - Adjust inventory
-- `msdyn_TransferInventoryRequest` - Transfer inventory
-
-**Time Entry**:
-
-- `msdyn_SubmitTimeEntryRequest` - Submit for approval
-- `msdyn_ApproveTimeEntryRequest` - Approve time entry
-
-**IoT Integration**:
-
-- `msdyn_RegisterIoTDeviceRequest/Response` - Register device
-- `msdyn_UnregisterIoTDeviceRequest` - Unregister device
-
-#### Marketing Module Messages (msdynmkt\_\*)
-
-**Email Marketing**:
-
-- `msdynmkt_SendEmailRequest` - Send marketing email
-- `msdynmkt_PreviewEmailRequest/Response` - Preview email
-
-**Journey Orchestration**:
-
-- `msdynmkt_StartCustomerJourneyRequest` - Start journey
-- `msdynmkt_StopCustomerJourneyRequest` - Stop journey
-
-**Segment Management**:
-
-- `msdynmkt_RefreshSegmentRequest` - Refresh dynamic segment
-- `msdynmkt_ExportSegmentMembersRequest/Response` - Export segment
-
-**Event Management**:
-
-- `msdynmkt_RegisterEventAttendeeRequest` - Register attendee
-- `msdynmkt_CancelEventRegistrationRequest` - Cancel registration
-
-#### Project Operations Messages (msdyn\_\*)
-
-**Project Management**:
-
-- `msdyn_CreateProjectTaskRequest/Response` - Create task
-- `msdyn_UpdateProjectStatusRequest` - Update status
-
-**Resource Allocation**:
-
-- `msdyn_AllocateResourceRequest` - Allocate resource
-- `msdyn_DeallocateResourceRequest` - Remove allocation
-
-**Expense Management**:
-
-- `msdyn_SubmitExpenseRequest` - Submit for approval
-- `msdyn_ApproveExpenseRequest` - Approve expense
-
----
-
-## Web API Mapping
-
-Messages map to different Web API patterns depending on the operation:
-
-### Messages → Actions (POST)
-
-Business logic messages map to actions:
+`ExecuteWorkflow`, `BulkDelete` and asynchronous imports return or create an `asyncoperation`. Its
+`statuscode` is 0 (waiting for resources), 10 (waiting), 20 (in progress) or 21 (pausing) while it
+runs, and 30 (succeeded), 31 (failed) or 32 (canceled) once it ends, so poll until it is 30 or more:
 
 ```typescript
-// WinOpportunityRequest → POST /WinOpportunity
-const request = new WinOpportunityRequest({ ... });
-await orgService.execute(request);
-
-// Equivalent raw API:
-await client.api('/WinOpportunity').post({ ... });
+const { result } = await orgService.execute<ExecuteWorkflowResponse>(
+  new ExecuteWorkflowRequest(workflowId, recordId)
+);
+let job: { statuscode: number };
+do {
+  await new Promise((r) => setTimeout(r, 2000));
+  job = await client
+    .api(`asyncoperations(${String(result.asyncoperationid)})`)
+    .select("statuscode")
+    .get<{ statuscode: number }>();
+} while (job.statuscode < 30);
 ```
-
-### Messages → Functions (GET)
-
-Read-only messages map to functions:
-
-```typescript
-// WhoAmIRequest → GET /WhoAmI()
-const request = new WhoAmIRequest();
-const response = await orgService.execute(request);
-
-// Equivalent raw API:
-const response = await client.api("/WhoAmI()").get();
-```
-
-### Messages → HTTP CRUD
-
-CRUD messages map to standard HTTP operations:
-
-```typescript
-// CreateRequest → POST /accounts
-// UpdateRequest → PATCH /accounts(id)
-// DeleteRequest → DELETE /accounts(id)
-// RetrieveRequest → GET /accounts(id)
-
-// These are handled by OrganizationService.create/update/delete/retrieve
-```
-
----
-
-## OptionSet Ergonomics
-
-Messages accept both `number` and `{ Value: number }` for OptionSet fields:
-
-```typescript
-import { SetStateRequest } from "@mohsinonxrm/dataverse-sdk-messages";
-
-// Both patterns work:
-const request1 = new SetStateRequest({
-  EntityMoniker: { entityLogicalName: "account", id: accountId },
-  State: 1, // Simple number
-  Status: -1,
-});
-
-const request2 = new SetStateRequest({
-  EntityMoniker: { entityLogicalName: "account", id: accountId },
-  State: { Value: 1 }, // OptionSetValue object
-  Status: { Value: -1 },
-});
-
-// SDK normalizes both to Web API format
-```
-
----
-
-## Advanced Patterns
-
-### Batch Execute Messages
-
-Combine the Web API forms of several messages in a single batch. `BatchRequestBuilder.addRequest()` takes the HTTP request itself (`id, method, url, headers?, body?`), not a message object, so write each message as the request it maps to (see the table above):
-
-```typescript
-import { BatchRequestBuilder } from "@mohsinonxrm/dataverse-sdk-batch";
-
-const batch = new BatchRequestBuilder(client);
-
-// Begin changeset for transactional execution
-batch.beginChangeset();
-
-// Assign: PATCH the record's owner
-batch.addRequest("assign", "PATCH", `accounts(${accountId})`, undefined, {
-  "ownerid@odata.bind": `/systemusers(${newOwnerId})`,
-});
-
-// SetState: PATCH statecode and statuscode
-batch.addRequest("setState", "PATCH", `accounts(${accountId})`, undefined, {
-  statecode: 0,
-  statuscode: 1,
-});
-
-// An action: POST to the action's URL with its parameters as the body
-batch.addRequest("win", "POST", "WinOpportunity", undefined, {
-  Status: 3,
-  OpportunityClose: {
-    subject: "Won",
-    "opportunityid@odata.bind": `/opportunities(${opportunityId})`,
-  },
-});
-
-batch.endChangeset();
-
-// Execute all requests atomically; results are keyed by the ids above
-const result = await batch.execute();
-```
-
-### Metadata Operations
-
-Retrieve metadata changes incrementally:
-
-```typescript
-import {
-  RetrieveMetadataChangesRequest,
-  RetrieveMetadataChangesResponse,
-} from "@mohsinonxrm/dataverse-sdk-messages";
-
-const request = new RetrieveMetadataChangesRequest({
-  Query: {
-    Criteria: {
-      FilterOperator: "And",
-      Conditions: [
-        {
-          PropertyName: "SchemaName",
-          ConditionOperator: "Equals",
-          Value: "Account",
-        },
-      ],
-    },
-    Properties: {
-      AllProperties: false,
-      PropertyNames: ["Attributes", "DisplayName", "SchemaName"],
-    },
-  },
-  ClientVersionStamp: previousVersionStamp, // from last sync
-});
-
-const response = await orgService.execute(request);
-
-console.log(`Server version: ${response.ServerVersionStamp}`);
-console.log(`Deleted metadata: ${response.DeletedMetadata.length}`);
-console.log(`Entity metadata: ${response.EntityMetadata.length}`);
-
-// Store ServerVersionStamp for next incremental sync
-```
-
-### Workflow Execution
-
-Trigger on-demand workflow:
-
-```typescript
-import {
-  ExecuteWorkflowRequest,
-  ExecuteWorkflowResponse,
-} from "@mohsinonxrm/dataverse-sdk-messages";
-
-const request = new ExecuteWorkflowRequest({
-  EntityId: accountId, // Record to run workflow against
-  WorkflowId: workflowId, // Workflow definition ID
-});
-
-const response = await orgService.execute(request);
-
-console.log(`Async operation ID: ${response.Id}`);
-
-// Poll async operation for completion
-const asyncOp = await orgService.retrieve("asyncoperation", response.Id, {
-  select: ["statecode", "statuscode", "message"],
-});
-```
-
----
-
-## Message vs Action vs Function
-
-| Feature         | Messages                             | Actions                 | Functions                 |
-| --------------- | ------------------------------------ | ----------------------- | ------------------------- |
-| **Pattern**     | OrganizationService (C#-familiar)    | Direct action execution | Direct function execution |
-| **HTTP**        | POST /api/data/v9.2/ExecuteAction    | POST /actionname        | GET /functionname()       |
-| **When to Use** | C# background, CRUD + business logic | Business logic only     | Read-only queries         |
-| **Typed**       | Request/Response pairs               | Action classes          | Function classes          |
-| **Examples**    | WinOpportunityRequest                | WinOpportunityAction    | WhoAmIFunction            |
-
-### Choosing the Right Approach
-
-**Use Messages When**:
-
-- Coming from C# SDK background
-- Need `OrganizationService` pattern (create/retrieve/update/delete)
-- Combining CRUD + execute in same codebase
-- Want consistent request/response pattern
-
-**Use Actions/Functions When**:
-
-- Prefer HTTP-first approach
-- Only executing business logic (not CRUD)
-- Want cleaner syntax for single operations
-- Building new TypeScript-first applications
-
-**Use Raw API When**:
-
-- Need maximum performance (no abstraction overhead)
-- Working with dynamic/unknown entities
-- Building low-level infrastructure
-
----
-
-## Solution Dependencies
-
-### Platform Messages (No Dependencies)
-
-All platform messages available in base Dataverse:
-
-- WhoAmI, Assign, SetState, Associate, Disassociate
-- GrantAccess, RevokeAccess, ModifyAccess
-- PublishXml, PublishAllXml, ExportSolution
-
-### Sales Module (msdyn_SalesApp)
-
-- WinOpportunity, LoseOpportunity, CalculateActualValueOpportunity
-- QualifyLead, DisqualifyLead
-- WinQuote, FulfillSalesOrder, ConvertSalesOrderToInvoice
-
-### Customer Service Module (msdyn_CustomerService)
-
-- CloseIncident, ReopenIncident, EscalateIncident
-- ApplyRoutingRule, RenewEntitlement, ValidateEntitlement
-
-### Field Service Module (msdyn_FieldService)
-
-- msdyn_BookRequirementGroup, msdyn_CreateWorkOrder
-- msdyn_SearchResourceAvailability, msdyn_ApplyWorkTemplate
-- msdyn_InventoryAdjustment, msdyn_TransferInventory
-
-### Marketing Module (MicrosoftDynamics_MarketingApp)
-
-- msdynmkt_SendEmail, msdynmkt_PreviewEmail
-- msdynmkt_StartCustomerJourney, msdynmkt_StopCustomerJourney
-- msdynmkt_RefreshSegment, msdynmkt_ExportSegmentMembers
-
-### Project Operations (msdyn_ProjectService)
-
-- msdyn_CreateProjectTask, msdyn_UpdateProjectStatus
-- msdyn_AllocateResource, msdyn_DeallocateResource
-- msdyn_SubmitExpense, msdyn_ApproveExpense
-
----
-
-## Performance Considerations
-
-### Use Messages When:
-
-- You need `OrganizationService` CRUD pattern (create/retrieve/update/delete)
-- Coming from C# SDK and want familiar patterns
-- Building tools/utilities that mirror C# SDK behavior
-
-### Use Actions/Functions Instead When:
-
-- Only executing business logic (not CRUD)
-- Prefer HTTP-first approach
-- Want lighter syntax (no Request/Response wrapping)
-
-### Use Raw API Instead When:
-
-- Maximum performance required (no abstraction)
-- Dynamic entity operations
-- Building low-level infrastructure
-
----
 
 ## Additional Resources
 
-- [Master Supported Operations](./supported-operations.md) - Complete SDK operation reference
-- [Supported Actions](./supported-actions.md) - Action reference with bulk operations
-- [Supported Functions](./supported-functions.md) - Read-only function reference
-- [Message to Web API Mapping](./message-to-webapi.md) - Detailed HTTP mapping guide
-- [OrganizationService Guide](../../packages/dataverse-sdk-xrm/README.md) - CRUD + execute patterns
+- [Use Web API actions](https://learn.microsoft.com/power-apps/developer/data-platform/webapi/use-web-api-actions)
+- [supported-actions.md](./supported-actions.md), [supported-functions.md](./supported-functions.md)
+- [message-to-webapi.md](./message-to-webapi.md)

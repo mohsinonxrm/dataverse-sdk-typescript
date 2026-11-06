@@ -15,7 +15,7 @@ export class msdyn_GetContactsForOptyConnectedSalesTeamMemberRequest
   constructor(
     public entityLogicalName: string,
     public recordId: string,
-    public customActionInputs: string
+    public customActionInputs?: string
   ) {
     super("msdyn_GetContactsForOptyConnectedSalesTeamMember");
   }

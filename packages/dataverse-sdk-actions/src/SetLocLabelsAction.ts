@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { LocalizedLabel } from "./types/index.js";
 
 /**
@@ -16,9 +17,9 @@ export interface SetLocLabelsResponse {
  */
 export class SetLocLabelsAction implements Executable<SetLocLabelsResponse> {
   constructor(
-    public readonly entityMoniker: EntityReference,
+    public readonly entityMoniker: EntityReference | AnyEntityPayload,
     public readonly attributeName: string,
-    public readonly labels: LocalizedLabel[]
+    public readonly labels?: LocalizedLabel[]
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

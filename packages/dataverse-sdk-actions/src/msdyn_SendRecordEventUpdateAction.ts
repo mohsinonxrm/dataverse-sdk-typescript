@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_SendRecordEventUpdate action
@@ -16,10 +17,10 @@ export interface msdyn_SendRecordEventUpdateResponse {
 export class msdyn_SendRecordEventUpdateAction implements Executable<msdyn_SendRecordEventUpdateResponse> {
   constructor(
     public readonly msdyn_EventType: string,
-    public readonly msdyn_RegardingRecord: EntityReference,
-    public readonly msdyn_AttributeDisplayValues: string[],
-    public readonly msdyn_AttributeNames: string[],
-    public readonly msdyn_RegardingActivity: EntityReference
+    public readonly msdyn_RegardingRecord: EntityReference | AnyEntityPayload,
+    public readonly msdyn_AttributeDisplayValues?: string[],
+    public readonly msdyn_AttributeNames?: string[],
+    public readonly msdyn_RegardingActivity?: EntityReference | AnyEntityPayload
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -15,7 +15,7 @@ export class PublishAIConfigurationRequest
   constructor(
     public msdyn_aiconfigurationId: string,
     public version: string,
-    public source: string
+    public source?: string
   ) {
     super("PublishAIConfiguration");
   }

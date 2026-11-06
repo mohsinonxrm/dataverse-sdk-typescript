@@ -17,7 +17,7 @@ export class CCaaS_MonitorConversationAction implements Executable<CCaaS_Monitor
   constructor(
     public readonly msdyn_ocliveworkitemId: string,
     public readonly apiVersion: string,
-    public readonly clientId: string
+    public readonly clientId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

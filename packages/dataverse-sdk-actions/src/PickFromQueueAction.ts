@@ -1,4 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { systemuser } from "./types/index.js";
 
 /**
@@ -17,7 +19,7 @@ export interface PickFromQueueResponse {
 export class PickFromQueueAction implements Executable<PickFromQueueResponse> {
   constructor(
     public readonly queueitemId: string,
-    public readonly systemUser: systemuser,
+    public readonly systemUser: EntityReference | EntityPayload<systemuser>,
     public readonly removeQueueItem: boolean
   ) {}
 

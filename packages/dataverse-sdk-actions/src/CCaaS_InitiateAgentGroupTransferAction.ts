@@ -18,9 +18,9 @@ export class CCaaS_InitiateAgentGroupTransferAction implements Executable<CCaaS_
     public readonly msdyn_ocliveworkitemId: string,
     public readonly agentGroupId: string,
     public readonly apiVersion: string,
-    public readonly intentId: string,
-    public readonly intentGroupId: string,
-    public readonly intentFamilyId: string
+    public readonly intentId?: string,
+    public readonly intentGroupId?: string,
+    public readonly intentFamilyId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

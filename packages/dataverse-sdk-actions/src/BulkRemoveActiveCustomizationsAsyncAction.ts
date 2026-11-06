@@ -15,7 +15,7 @@ export interface BulkRemoveActiveCustomizationsAsyncResponse {
  */
 export class BulkRemoveActiveCustomizationsAsyncAction implements Executable<BulkRemoveActiveCustomizationsAsyncResponse> {
   constructor(
-    public readonly bulkRemoveActiveCustomizationsParameters: BulkRemoveActiveCustomizationsParameters
+    public readonly bulkRemoveActiveCustomizationsParameters?: BulkRemoveActiveCustomizationsParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

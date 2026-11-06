@@ -13,9 +13,9 @@ export class adx_SendEmailTwoFactorCodeToContactRequest
   constructor(
     public contactId: string,
     public code: string,
-    public businessProcessFlowId: string,
-    public businessProcessFlowInstanceId: string,
-    public actionStepId: string
+    public businessProcessFlowId?: string,
+    public businessProcessFlowInstanceId?: string,
+    public actionStepId?: string
   ) {
     super("adx_SendEmailTwoFactorCodeToContact");
   }

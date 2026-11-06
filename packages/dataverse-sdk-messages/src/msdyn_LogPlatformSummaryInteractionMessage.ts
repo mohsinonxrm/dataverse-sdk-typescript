@@ -13,9 +13,9 @@ export class msdyn_LogPlatformSummaryInteractionRequest
   implements Executable<msdyn_LogPlatformSummaryInteractionResponse>
 {
   constructor(
-    public interactionData: string,
-    public context: string,
-    public interactionType: string
+    public interactionData?: string,
+    public context?: string,
+    public interactionType?: string
   ) {
     super("msdyn_LogPlatformSummaryInteraction");
   }

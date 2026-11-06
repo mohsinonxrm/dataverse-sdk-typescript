@@ -21,9 +21,9 @@ export class adx_SendPasswordResetToContactAction implements Executable<adx_Send
     public readonly urlCode: string,
     public readonly email: string,
     public readonly userId: string,
-    public readonly businessProcessFlowId: string,
-    public readonly businessProcessFlowInstanceId: string,
-    public readonly actionStepId: string
+    public readonly businessProcessFlowId?: string,
+    public readonly businessProcessFlowInstanceId?: string,
+    public readonly actionStepId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

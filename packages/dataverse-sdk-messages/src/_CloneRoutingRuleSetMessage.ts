@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { _CloneRoutingRuleSetResponse as _CloneRoutingRuleSetResponseData } from "./types/index.js";
 
 /**
@@ -14,8 +15,8 @@ export class _CloneRoutingRuleSetRequest
   implements Executable<_CloneRoutingRuleSetResponse>
 {
   constructor(
-    public routingRuleSetIdToClone: EntityReference,
-    public routingRuleSetIdToOverwrite: EntityReference,
+    public routingRuleSetIdToClone: EntityReference | AnyEntityPayload,
+    public routingRuleSetIdToOverwrite: EntityReference | AnyEntityPayload | undefined,
     public options: string
   ) {
     super("_CloneRoutingRuleSet");

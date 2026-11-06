@@ -15,12 +15,12 @@ export interface msdyn_GetExtractsFromContentResponse {
  */
 export class msdyn_GetExtractsFromContentAction implements Executable<msdyn_GetExtractsFromContentResponse> {
   constructor(
-    public readonly msdyn_activityId: string,
-    public readonly msdyn_userQuery: string,
-    public readonly msdyn_source: string,
-    public readonly msdyn_top: number,
-    public readonly msdyn_extractOperationInputParams: string,
-    public readonly msdyn_keywords: string
+    public readonly msdyn_activityId?: string,
+    public readonly msdyn_userQuery?: string,
+    public readonly msdyn_source?: string,
+    public readonly msdyn_top?: number,
+    public readonly msdyn_extractOperationInputParams?: string,
+    public readonly msdyn_keywords?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

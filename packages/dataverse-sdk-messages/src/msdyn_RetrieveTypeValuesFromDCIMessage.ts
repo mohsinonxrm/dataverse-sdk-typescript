@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_RetrieveTypeValuesFromDCIResponse as msdyn_RetrieveTypeValuesFromDCIResponseData } from "./types/index.js";
 
 /**
@@ -14,11 +15,11 @@ export class msdyn_RetrieveTypeValuesFromDCIRequest
   implements Executable<msdyn_RetrieveTypeValuesFromDCIResponse>
 {
   constructor(
-    public crmRecord: EntityReference,
+    public crmRecord: EntityReference | AnyEntityPayload,
     public resourceType: number,
     public resourceTypeName: string,
-    public startDate: string,
-    public endDate: string
+    public startDate?: string,
+    public endDate?: string
   ) {
     super("msdyn_RetrieveTypeValuesFromDCI");
   }

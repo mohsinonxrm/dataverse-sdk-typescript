@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_RetrieveKpiValuesFromRI action
@@ -15,7 +16,7 @@ export interface msdyn_RetrieveKpiValuesFromRIResponse {
  */
 export class msdyn_RetrieveKpiValuesFromRIAction implements Executable<msdyn_RetrieveKpiValuesFromRIResponse> {
   constructor(
-    public readonly crmRecord: EntityReference,
+    public readonly crmRecord: EntityReference | AnyEntityPayload,
     public readonly kpiType: string
   ) {}
 

@@ -12,7 +12,7 @@ export class msdynmkt_PersonalizationGetEventsByNameRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_PersonalizationGetEventsByNameResponse>
 {
-  constructor(public getPersonalizationEventRequest: string) {
+  constructor(public getPersonalizationEventRequest?: string) {
     super("msdynmkt_PersonalizationGetEventsByName");
   }
 

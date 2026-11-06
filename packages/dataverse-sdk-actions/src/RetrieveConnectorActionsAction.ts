@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from RetrieveConnectorActions action
@@ -14,7 +15,7 @@ export interface RetrieveConnectorActionsResponse {
  * Unbound action
  */
 export class RetrieveConnectorActionsAction implements Executable<RetrieveConnectorActionsResponse> {
-  constructor(public readonly connectionReference: EntityReference) {}
+  constructor(public readonly connectionReference: EntityReference | AnyEntityPayload) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/RetrieveConnectorActions`;

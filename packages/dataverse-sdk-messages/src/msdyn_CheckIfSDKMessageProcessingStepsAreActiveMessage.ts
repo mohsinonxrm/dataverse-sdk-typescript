@@ -13,8 +13,8 @@ export class msdyn_CheckIfSDKMessageProcessingStepsAreActiveRequest
   implements Executable<msdyn_CheckIfSDKMessageProcessingStepsAreActiveResponse>
 {
   constructor(
-    public entityIds: string,
-    public solutionId: string
+    public entityIds?: string,
+    public solutionId?: string
   ) {
     super("msdyn_CheckIfSDKMessageProcessingStepsAreActive");
   }

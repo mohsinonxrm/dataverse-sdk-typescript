@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { enumBody } from "./internal/enumBody.js";
 import type { RolePrivilege } from "./types/index.js";
 
 /**
@@ -13,7 +14,7 @@ export class ReplacePrivilegesRoleRequest
 {
   constructor(
     public roleId: string,
-    public privileges: RolePrivilege[]
+    public privileges?: RolePrivilege[]
   ) {
     super("ReplacePrivilegesRole");
   }
@@ -23,7 +24,7 @@ export class ReplacePrivilegesRoleRequest
     const url = `${baseUrl}/roles(${this.roleId})/Microsoft.Dynamics.CRM.ReplacePrivilegesRole`;
 
     const body: Record<string, unknown> = {
-      Privileges: this.privileges,
+      Privileges: enumBody(this.privileges, "RolePrivilege"),
     };
 
     return {

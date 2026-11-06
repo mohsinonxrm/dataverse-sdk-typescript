@@ -13,14 +13,14 @@ export class searchsuggestRequest
   implements Executable<searchsuggestResponse>
 {
   constructor(
-    public entities: string,
-    public top: number,
+    public entities: string | undefined,
+    public top: number | undefined,
     public search: string,
-    public filter: string,
-    public options: string,
-    public orderby: string,
-    public fuzzy: boolean,
-    public propertybag: string
+    public filter?: string,
+    public options?: string,
+    public orderby?: string,
+    public fuzzy?: boolean,
+    public propertybag?: string
   ) {
     super("searchsuggest");
   }

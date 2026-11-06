@@ -10,7 +10,7 @@ export class DisconnectFromGitRequest
   extends OrganizationRequest
   implements Executable<DisconnectFromGitResponse>
 {
-  constructor(public solutionUniqueName: string) {
+  constructor(public solutionUniqueName?: string) {
     super("DisconnectFromGit");
   }
 

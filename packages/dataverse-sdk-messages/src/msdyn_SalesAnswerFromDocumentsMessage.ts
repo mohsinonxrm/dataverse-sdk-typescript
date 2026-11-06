@@ -13,11 +13,11 @@ export class msdyn_SalesAnswerFromDocumentsRequest
   implements Executable<msdyn_SalesAnswerFromDocumentsResponse>
 {
   constructor(
-    public msdyn_queryLocale: string,
-    public msdyn_responseFormat: string,
+    public msdyn_queryLocale: string | undefined,
+    public msdyn_responseFormat: string | undefined,
     public msdyn_userQuery: string,
-    public msdyn_additionalParameters: string,
-    public msdyn_activityId: string
+    public msdyn_additionalParameters?: string,
+    public msdyn_activityId?: string
   ) {
     super("msdyn_SalesAnswerFromDocuments");
   }

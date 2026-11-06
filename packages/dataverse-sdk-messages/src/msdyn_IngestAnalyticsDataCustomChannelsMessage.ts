@@ -11,9 +11,9 @@ export class msdyn_IngestAnalyticsDataCustomChannelsRequest
   implements Executable<msdyn_IngestAnalyticsDataCustomChannelsResponse>
 {
   constructor(
-    public msdyn_linkedactivityid: string,
+    public msdyn_linkedactivityid: string | undefined,
     public msdyn_eventname: string,
-    public msdyn_sequencestepid: string
+    public msdyn_sequencestepid?: string
   ) {
     super("msdyn_IngestAnalyticsDataCustomChannels");
   }

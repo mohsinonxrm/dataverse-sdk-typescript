@@ -16,11 +16,11 @@ export interface msdyn_GetDocumentContentResponse {
 export class msdyn_GetDocumentContentAction implements Executable<msdyn_GetDocumentContentResponse> {
   constructor(
     public readonly msdyn_documents: string,
-    public readonly msdyn_activityId: string,
+    public readonly msdyn_activityId: string | undefined,
     public readonly msdyn_type: string,
-    public readonly msdyn_userQuery: string,
-    public readonly msdyn_shouldUpload: boolean,
-    public readonly msdyn_keywords: string
+    public readonly msdyn_userQuery?: string,
+    public readonly msdyn_shouldUpload?: boolean,
+    public readonly msdyn_keywords?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

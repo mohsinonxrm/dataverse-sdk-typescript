@@ -15,7 +15,7 @@ export interface msdynmkt_optoutofallvoicecommunicationResponse {
 export class msdynmkt_optoutofallvoicecommunicationAction implements Executable<msdynmkt_optoutofallvoicecommunicationResponse> {
   constructor(
     public readonly msdynmkt_contactpointvalue: string,
-    public readonly msdynmkt_correlationid: string
+    public readonly msdynmkt_correlationid?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

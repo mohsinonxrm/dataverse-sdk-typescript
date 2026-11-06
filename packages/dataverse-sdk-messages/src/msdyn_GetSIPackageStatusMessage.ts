@@ -12,7 +12,7 @@ export class msdyn_GetSIPackageStatusRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetSIPackageStatusResponse>
 {
-  constructor(public apiVersion: string) {
+  constructor(public apiVersion?: string) {
     super("msdyn_GetSIPackageStatus");
   }
 

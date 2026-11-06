@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_ocflaggedspam } from "./types/index.js";
 
 /**
@@ -11,7 +13,7 @@ export class msdyn_SetAutoBlockedFlagRequest
   extends OrganizationRequest
   implements Executable<msdyn_SetAutoBlockedFlagResponse>
 {
-  constructor(public flaggedSpamEntity: msdyn_ocflaggedspam) {
+  constructor(public flaggedSpamEntity: EntityReference | EntityPayload<msdyn_ocflaggedspam>) {
     super("msdyn_SetAutoBlockedFlag");
   }
 

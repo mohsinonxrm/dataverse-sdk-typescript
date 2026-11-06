@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_transformentity action
@@ -19,8 +20,8 @@ export interface msdyn_transformentityResponse {
  */
 export class msdyn_transformentityAction implements Executable<msdyn_transformentityResponse> {
   constructor(
-    public readonly entity: EntityReference,
-    public readonly params: EntityReference
+    public readonly entity: EntityReference | AnyEntityPayload,
+    public readonly params: EntityReference | AnyEntityPayload
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

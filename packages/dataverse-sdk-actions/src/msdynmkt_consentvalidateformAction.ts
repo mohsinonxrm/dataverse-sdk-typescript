@@ -15,10 +15,10 @@ export interface msdynmkt_consentvalidateformResponse {
 export class msdynmkt_consentvalidateformAction implements Executable<msdynmkt_consentvalidateformResponse> {
   constructor(
     public readonly msdynmkt_editorname: string,
-    public readonly validationType: number,
-    public readonly formBusinessUnitId: string,
-    public readonly complianceProfileId: string,
-    public readonly isDoubleOptInForciblyDisabled: boolean,
+    public readonly validationType: number | undefined,
+    public readonly formBusinessUnitId: string | undefined,
+    public readonly complianceProfileId: string | undefined,
+    public readonly isDoubleOptInForciblyDisabled: boolean | undefined,
     public readonly msdynmkt_formhtml: string
   ) {}
 

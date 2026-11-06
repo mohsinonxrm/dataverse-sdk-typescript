@@ -12,7 +12,7 @@ export class msdyn_IoTCheckIfRecordExistsInEntityRequest
   extends OrganizationRequest
   implements Executable<msdyn_IoTCheckIfRecordExistsInEntityResponse>
 {
-  constructor(public entitiesLogicalNames: string) {
+  constructor(public entitiesLogicalNames?: string) {
     super("msdyn_IoTCheckIfRecordExistsInEntity");
   }
 

@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * AddToFeedbackLoop request message
@@ -13,9 +14,9 @@ export class AddToFeedbackLoopRequest
 {
   constructor(
     public msdyn_aimodelId: string,
-    public inputName: string,
-    public predictionOutput: string,
-    public predictionInput: EntityReference
+    public inputName: string | undefined,
+    public predictionOutput: string | undefined,
+    public predictionInput: EntityReference | AnyEntityPayload
   ) {
     super("AddToFeedbackLoop");
   }

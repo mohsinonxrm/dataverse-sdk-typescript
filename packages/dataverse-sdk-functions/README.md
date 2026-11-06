@@ -153,16 +153,20 @@ Creates a new record with pre-populated values from an existing record.
 **Example:**
 
 ```typescript
-import { InitializeFromFunction } from "@mohsinonxrm/dataverse-sdk-functions";
+import {
+  InitializeFromFunction,
+  createEntityReference,
+} from "@mohsinonxrm/dataverse-sdk-functions";
 
-const initFunc = new InitializeFromFunction(
-  "account", // Source entity
-  sourceId, // Source record ID
-  "contact" // Target entity
+const contact = await client.execute(
+  new InitializeFromFunction(
+    createEntityReference("account", sourceId), // EntityMoniker: the source record
+    undefined, // SkipParentalRelationshipMapping
+    "contact", // TargetEntityName
+    "ValidForCreate" // TargetFieldType
+  )
 );
-
-const response = await client.execute(initFunc);
-// response contains pre-populated contact values from account
+// contact holds the values the account-contact mapping copies
 ```
 
 #### RetrieveMetadataChanges
@@ -176,12 +180,35 @@ Retrieves metadata changes since a specific version.
 ```typescript
 import { RetrieveMetadataChangesFunction } from "@mohsinonxrm/dataverse-sdk-functions";
 
-const metadataFunc = new RetrieveMetadataChangesFunction({
-  Query: {/* EntityQueryExpression */},
-  ClientVersionStamp: previousVersionStamp,
-});
+const { EntityMetadata, ServerVersionStamp } = await client.execute(
+  new RetrieveMetadataChangesFunction(
+    {}, // Query: an EntityQueryExpression (Criteria, Properties, AttributeQuery, …)
+    undefined, // DeletedMetadataFilters
+    previousVersionStamp // ClientVersionStamp
+  )
+);
+```
 
-const response = await client.execute(metadataFunc);
+## Overloads (one class per binding)
+
+When `$metadata` declares an operation several times with different bindings, each binding has its
+own class: `<Name>_<table>Function`, with `_collection` for a collection binding. An unbound
+overload keeps the plain name. A name with no unbound overload is still exported under the plain
+name, as a `@deprecated` alias of the binding it exported before.
+
+```typescript
+import {
+  RetrievePrincipalAccess_systemuserFunction,
+  RetrievePrincipalAccess_teamFunction,
+  createEntityReference,
+} from "@mohsinonxrm/dataverse-sdk-functions";
+
+const target = createEntityReference("account", accountId);
+// GET /systemusers(<userId>)/Microsoft.Dynamics.CRM.RetrievePrincipalAccess(Target=@p1)
+const { AccessRights } = await client.execute(
+  new RetrievePrincipalAccess_systemuserFunction(userId, target)
+);
+await client.execute(new RetrievePrincipalAccess_teamFunction(teamId, target));
 ```
 
 ## Parameter Values
@@ -260,10 +287,10 @@ const response = await client.execute(whoAmI);
 You can call custom or unsupported functions using the raw API:
 
 ```typescript
-// Raw function call with parameter aliases
+// Raw function call with the parameter aliases in the URL (the request builder has no
+// parameter-alias method; encode string literals yourself)
 const result = await client
-  .api("/CustomFunction(Name=@Name,Count=@Count)")
-  .query({ "@Name": "value", "@Count": 5 })
+  .api(`new_CustomFunction(Name=@p1,Count=@p2)?@p1=${encodeURIComponent("'value'")}&@p2=5`)
   .get();
 ```
 

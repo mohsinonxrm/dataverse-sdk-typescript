@@ -13,7 +13,7 @@ export class msdyn_GetSalesCopilotEmailInsightsRequest
   implements Executable<msdyn_GetSalesCopilotEmailInsightsResponse>
 {
   constructor(
-    public msdyn_activityid: string,
+    public msdyn_activityid: string | undefined,
     public msdyn_regardinglogicalname: string,
     public msdyn_internetmessageid: string,
     public msdyn_regardingid: string,

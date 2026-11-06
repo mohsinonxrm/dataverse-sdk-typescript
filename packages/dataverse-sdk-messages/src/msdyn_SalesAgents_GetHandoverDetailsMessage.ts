@@ -14,7 +14,7 @@ export class msdyn_SalesAgents_GetHandoverDetailsRequest
 {
   constructor(
     public msdyn_SalesAgentRun: string,
-    public msdyn_TrackingId: string
+    public msdyn_TrackingId?: string
   ) {
     super("msdyn_SalesAgents_GetHandoverDetails");
   }

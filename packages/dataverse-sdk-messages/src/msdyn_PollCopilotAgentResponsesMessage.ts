@@ -13,7 +13,7 @@ export class msdyn_PollCopilotAgentResponsesRequest
   implements Executable<msdyn_PollCopilotAgentResponsesResponse>
 {
   constructor(
-    public startMarker: string,
+    public startMarker: string | undefined,
     public conversationId: string
   ) {
     super("msdyn_PollCopilotAgentResponses");

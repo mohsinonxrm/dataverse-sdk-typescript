@@ -14,8 +14,8 @@ export interface msdyn_GetSalesRowSummaryResponse {
  */
 export class msdyn_GetSalesRowSummaryAction implements Executable<msdyn_GetSalesRowSummaryResponse> {
   constructor(
-    public readonly clientContext: string,
-    public readonly otherData: string
+    public readonly clientContext?: string,
+    public readonly otherData?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -17,7 +17,7 @@ export interface msdyn_CreateNewAnalysisJobResponse extends msdyn_analysisjob {
  * Unbound action
  */
 export class msdyn_CreateNewAnalysisJobAction implements Executable<msdyn_CreateNewAnalysisJobResponse> {
-  constructor(public readonly componentInstances: Record<string, unknown>[]) {}
+  constructor(public readonly componentInstances?: Record<string, unknown>[]) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CreateNewAnalysisJob`;

@@ -14,7 +14,7 @@ export class msdyn_GetBookingDetailsByRequirementIdsRequest
 {
   constructor(
     public requirementIds: string,
-    public timescale: number
+    public timescale?: number
   ) {
     super("msdyn_GetBookingDetailsByRequirementIds");
   }

@@ -14,7 +14,7 @@ export class CCaaS_RejectConversationRequest
     public msdyn_ocliveworkitemId: string,
     public apiVersion: string,
     public sessionId: string,
-    public rejectReason: string
+    public rejectReason?: string
   ) {
     super("CCaaS_RejectConversation");
   }

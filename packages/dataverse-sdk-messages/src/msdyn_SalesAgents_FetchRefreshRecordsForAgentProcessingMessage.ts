@@ -12,9 +12,9 @@ export class msdyn_SalesAgents_FetchRefreshRecordsForAgentProcessingRequest
   implements Executable<msdyn_SalesAgents_FetchRefreshRecordsForAgentProcessingResponse>
 {
   constructor(
-    public msdyn_Top: number,
+    public msdyn_Top: number | undefined,
     public msdyn_SalesAgentType: number,
-    public msdyn_TrackingId: string
+    public msdyn_TrackingId?: string
   ) {
     super("msdyn_SalesAgents_FetchRefreshRecordsForAgentProcessing");
   }

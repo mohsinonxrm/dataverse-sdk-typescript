@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * msdyn_ForecastRecalculate request message
@@ -12,7 +13,7 @@ export class msdyn_ForecastRecalculateRequest
   implements Executable<msdyn_ForecastRecalculateResponse>
 {
   constructor(
-    public forecastInstance: EntityReference,
+    public forecastInstance: EntityReference | AnyEntityPayload,
     public isRefreshHierarchy: boolean
   ) {
     super("msdyn_ForecastRecalculate");

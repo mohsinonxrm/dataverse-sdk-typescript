@@ -16,7 +16,7 @@ export class msdyn_ExecuteHttpServiceRequestRequest
     public msdyn_RequestType: string,
     public msdyn_RequestUrl: string,
     public msdyn_CloudServiceApplicationType: number,
-    public msdyn_RequestBody: string,
+    public msdyn_RequestBody: string | undefined,
     public msdyn_Method: string
   ) {
     super("msdyn_ExecuteHttpServiceRequest");

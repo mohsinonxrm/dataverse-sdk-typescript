@@ -13,7 +13,7 @@ export interface msdyn_OSUpdateModelGradesResponse {
  * Unbound action
  */
 export class msdyn_OSUpdateModelGradesAction implements Executable<msdyn_OSUpdateModelGradesResponse> {
-  constructor(public readonly predictionGrade: string) {}
+  constructor(public readonly predictionGrade?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_OSUpdateModelGrades`;

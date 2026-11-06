@@ -20,9 +20,9 @@ export class adx_SendEmailConfirmationToContactAction implements Executable<adx_
     public readonly code: string,
     public readonly urlCode: string,
     public readonly userId: string,
-    public readonly businessProcessFlowId: string,
-    public readonly businessProcessFlowInstanceId: string,
-    public readonly actionStepId: string
+    public readonly businessProcessFlowId?: string,
+    public readonly businessProcessFlowInstanceId?: string,
+    public readonly actionStepId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

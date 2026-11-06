@@ -14,13 +14,13 @@ export interface msdynmkt_consentsubmissionResponse {
  */
 export class msdynmkt_consentsubmissionAction implements Executable<msdynmkt_consentsubmissionResponse> {
   constructor(
-    public readonly msdynmkt_preferencecenterid: string,
-    public readonly msdynmkt_consentversion: string,
+    public readonly msdynmkt_preferencecenterid: string | undefined,
+    public readonly msdynmkt_consentversion: string | undefined,
     public readonly msdynmkt_purposeconsents: string,
-    public readonly msdynmkt_trackingcontextid: string,
+    public readonly msdynmkt_trackingcontextid: string | undefined,
     public readonly msdynmkt_contactpointtype: number,
     public readonly msdynmkt_contactpointvalue: string,
-    public readonly msdynmkt_topicconsents: string
+    public readonly msdynmkt_topicconsents?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

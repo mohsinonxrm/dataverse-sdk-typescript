@@ -1,48 +1,20 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { campaign, campaignitem } from "./types/index.js";
+import {
+  AddItemCampaign_salesliteratureAction,
+  type AddItemCampaign_salesliteratureResponse,
+} from "./AddItemCampaign_salesliteratureAction.js";
 
 /**
- * Response from AddItemCampaign action
- *
- * The response is the entity itself, not wrapped in `value`.
+ * @deprecated Use `AddItemCampaign_salesliteratureAction`. `AddItemCampaign` has a class per binding (#75);
+ * this name kept the one bound to salesliterature.
  */
-export interface AddItemCampaignResponse extends campaignitem {
-  "@odata.context"?: string;
-  "@odata.etag"?: string;
-}
-
+export const AddItemCampaignAction = AddItemCampaign_salesliteratureAction;
 /**
- * AddItemCampaign action
- *
- * Bound action
- * Binding parameter: entity (mscrm.salesliterature)
+ * @deprecated Use `AddItemCampaign_salesliteratureAction`. `AddItemCampaign` has a class per binding (#75);
+ * this name kept the one bound to salesliterature.
  */
-export class AddItemCampaignAction implements Executable<AddItemCampaignResponse> {
-  constructor(
-    public readonly salesliteratureId: string,
-    public readonly campaign: campaign
-  ) {}
-
-  toRequestInformation(baseUrl: string): RequestInformation {
-    // Bound action
-    const url = `${baseUrl}/salesliteratures(${this.salesliteratureId})/Microsoft.Dynamics.CRM.AddItemCampaign`;
-
-    const body: Record<string, unknown> = {
-      Campaign: this.campaign,
-    };
-
-    return {
-      method: "POST",
-      url,
-      headers: {
-        "content-type": "application/json",
-      },
-      body,
-    };
-  }
-
-  async parseResponse(response: Response): Promise<AddItemCampaignResponse> {
-    const data = await response.json();
-    return data as AddItemCampaignResponse;
-  }
-}
+export type AddItemCampaignAction = AddItemCampaign_salesliteratureAction;
+/**
+ * @deprecated Use `AddItemCampaign_salesliteratureResponse`. `AddItemCampaign` has a class per binding (#75);
+ * this name kept the one bound to salesliterature.
+ */
+export type AddItemCampaignResponse = AddItemCampaign_salesliteratureResponse;

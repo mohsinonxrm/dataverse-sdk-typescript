@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { enumBody } from "./internal/enumBody.js";
 import type { TypedQueryBase } from "./types/index.js";
 
 /**
@@ -20,7 +21,7 @@ export class FullTextSearchKnowledgeArticleAction implements Executable<FullText
     public readonly useInflection: boolean,
     public readonly removeDuplicates: boolean,
     public readonly stateCode: number,
-    public readonly queryExpression: TypedQueryBase
+    public readonly queryExpression?: TypedQueryBase
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -31,7 +32,7 @@ export class FullTextSearchKnowledgeArticleAction implements Executable<FullText
       UseInflection: this.useInflection,
       RemoveDuplicates: this.removeDuplicates,
       StateCode: this.stateCode,
-      QueryExpression: this.queryExpression,
+      QueryExpression: enumBody(this.queryExpression, "QueryBase"),
     };
 
     return {

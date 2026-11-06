@@ -13,7 +13,7 @@ export class msdyn_RetrieveOutlookSchedulesRequest
   implements Executable<msdyn_RetrieveOutlookSchedulesResponse>
 {
   constructor(
-    public version: string,
+    public version: string | undefined,
     public startDate: string,
     public endDate: string,
     public bookableResourceEmails: string

@@ -13,7 +13,7 @@ export class CCaaS_MonitorConversationRequest
   constructor(
     public msdyn_ocliveworkitemId: string,
     public apiVersion: string,
-    public clientId: string
+    public clientId?: string
   ) {
     super("CCaaS_MonitorConversation");
   }

@@ -13,7 +13,7 @@ export class msdyn_GetRequirementDependencySetRequest
   implements Executable<msdyn_GetRequirementDependencySetResponse>
 {
   constructor(
-    public version: string,
+    public version: string | undefined,
     public requirementIds: string
   ) {
     super("msdyn_GetRequirementDependencySet");

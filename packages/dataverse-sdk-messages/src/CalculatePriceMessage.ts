@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * CalculatePrice request message
@@ -12,8 +13,8 @@ export class CalculatePriceRequest
   implements Executable<CalculatePriceResponse>
 {
   constructor(
-    public target: EntityReference,
-    public parentId: string
+    public target: EntityReference | AnyEntityPayload,
+    public parentId?: string
   ) {
     super("CalculatePrice");
   }

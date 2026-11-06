@@ -17,7 +17,7 @@ export class msdyn_GetInsightsAction implements Executable<msdyn_GetInsightsResp
   constructor(
     public readonly msdyn_payload: string,
     public readonly msdyn_insighttype: string,
-    public readonly msdyn_responseFormat: string
+    public readonly msdyn_responseFormat?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

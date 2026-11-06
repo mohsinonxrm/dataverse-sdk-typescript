@@ -15,7 +15,8 @@ export interface AddComponentsToSolutionAsyncResponse {
  */
 export class AddComponentsToSolutionAsyncAction implements Executable<AddComponentsToSolutionAsyncResponse> {
   constructor(
-    public readonly solutionComponentParameters: AddComponentToSolutionParametersCollection,
+    public readonly solutionComponentParameters:
+      AddComponentToSolutionParametersCollection | undefined,
     public readonly solutionUniqueName: string,
     public readonly continueOnError: boolean
   ) {}

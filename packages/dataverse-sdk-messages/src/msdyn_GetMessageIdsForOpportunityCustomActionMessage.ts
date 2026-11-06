@@ -12,7 +12,7 @@ export class msdyn_GetMessageIdsForOpportunityCustomActionRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetMessageIdsForOpportunityCustomActionResponse>
 {
-  constructor(public opportunityId: string) {
+  constructor(public opportunityId?: string) {
     super("msdyn_GetMessageIdsForOpportunityCustomAction");
   }
 

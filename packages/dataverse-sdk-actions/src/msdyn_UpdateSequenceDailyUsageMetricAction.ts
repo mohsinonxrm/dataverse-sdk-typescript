@@ -13,7 +13,7 @@ export interface msdyn_UpdateSequenceDailyUsageMetricResponse {
  * Unbound action
  */
 export class msdyn_UpdateSequenceDailyUsageMetricAction implements Executable<msdyn_UpdateSequenceDailyUsageMetricResponse> {
-  constructor(public readonly previousDaysCount: number) {}
+  constructor(public readonly previousDaysCount?: number) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_UpdateSequenceDailyUsageMetric`;

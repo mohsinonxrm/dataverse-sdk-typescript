@@ -15,7 +15,7 @@ export interface msdyn_PollCopilotAgentResponsesResponse {
  */
 export class msdyn_PollCopilotAgentResponsesAction implements Executable<msdyn_PollCopilotAgentResponsesResponse> {
   constructor(
-    public readonly startMarker: string,
+    public readonly startMarker: string | undefined,
     public readonly conversationId: string
   ) {}
 

@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { businessunit } from "./types/index.js";
 
 /**
@@ -18,9 +19,9 @@ export interface SetBusinessSystemUserResponse {
 export class SetBusinessSystemUserAction implements Executable<SetBusinessSystemUserResponse> {
   constructor(
     public readonly systemuserId: string,
-    public readonly businessUnit: businessunit,
-    public readonly reassignPrincipal: EntityReference,
-    public readonly doNotMoveAllRecords: boolean
+    public readonly businessUnit: EntityReference | EntityPayload<businessunit>,
+    public readonly reassignPrincipal: EntityReference | AnyEntityPayload,
+    public readonly doNotMoveAllRecords?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

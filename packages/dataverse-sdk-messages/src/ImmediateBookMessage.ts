@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { ImmediateBookResponse as ImmediateBookResponseData } from "./types/index.js";
 
 /**
@@ -14,10 +15,10 @@ export class ImmediateBookRequest
   implements Executable<ImmediateBookResponse>
 {
   constructor(
-    public target: EntityReference,
-    public attachmentIds: string[],
-    public eWSUrl: string,
-    public attachmentToken: string
+    public target: EntityReference | AnyEntityPayload,
+    public attachmentIds?: string[],
+    public eWSUrl?: string,
+    public attachmentToken?: string
   ) {
     super("ImmediateBook");
   }

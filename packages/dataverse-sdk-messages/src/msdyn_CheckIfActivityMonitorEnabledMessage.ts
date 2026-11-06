@@ -12,7 +12,7 @@ export class msdyn_CheckIfActivityMonitorEnabledRequest
   extends OrganizationRequest
   implements Executable<msdyn_CheckIfActivityMonitorEnabledResponse>
 {
-  constructor(public solutionId: string) {
+  constructor(public solutionId?: string) {
     super("msdyn_CheckIfActivityMonitorEnabled");
   }
 

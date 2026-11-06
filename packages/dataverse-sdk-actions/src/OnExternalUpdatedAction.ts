@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from OnExternalUpdated action
@@ -15,9 +16,9 @@ export interface OnExternalUpdatedResponse {
  */
 export class OnExternalUpdatedAction implements Executable<OnExternalUpdatedResponse> {
   constructor(
-    public readonly target: EntityReference,
-    public readonly preImage: EntityReference,
-    public readonly changedFields: string[]
+    public readonly target: EntityReference | AnyEntityPayload,
+    public readonly preImage?: EntityReference | AnyEntityPayload,
+    public readonly changedFields?: string[]
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

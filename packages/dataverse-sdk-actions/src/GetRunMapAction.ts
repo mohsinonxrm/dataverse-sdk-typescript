@@ -18,8 +18,8 @@ export class GetRunMapAction implements Executable<GetRunMapResponse> {
   constructor(
     public readonly businessprocessId: string,
     public readonly runId: string,
-    public readonly continuationToken: string,
-    public readonly max: number
+    public readonly continuationToken?: string,
+    public readonly max?: number
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

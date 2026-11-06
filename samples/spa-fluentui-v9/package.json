@@ -3,18 +3,18 @@
   "version": "0.0.2",
   "private": true,
   "type": "module",
-  "description": "Production-quality React 18 + Fluent UI v9 SPA demonstrating Dataverse SDK",
+  "description": "React 18 + Fluent UI v9 (Fluent 2) single-page app that showcases the Dataverse SDK in a browser",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests"
+    "typecheck": "tsc --noEmit && tsc -p test --noEmit",
+    "test": "vitest run --config vitest.config.ts",
+    "test:e2e": "vitest run --config vitest.e2e.config.ts"
   },
   "dependencies": {
     "@azure/msal-browser": "^3.30.0",
-    "@azure/msal-react": "^2.2.0",
     "@fluentui/react-components": "^9.75.1",
     "@fluentui/react-icons": "^2.0.345",
     "@mohsinonxrm/dataverse-sdk-actions": "workspace:*",
@@ -32,10 +32,13 @@
     "react-router-dom": "^6.30.6"
   },
   "devDependencies": {
+    "@mohsinonxrm/dataverse-sdk-testing": "workspace:*",
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react": "^4.7.0",
+    "playwright": "1.63.0",
     "typescript": "^5.9.3",
-    "vite": "^6.4.5"
+    "vite": "^6.4.5",
+    "vitest": "^4.1.11"
   }
 }

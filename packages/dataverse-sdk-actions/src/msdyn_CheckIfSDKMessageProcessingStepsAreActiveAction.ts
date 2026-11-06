@@ -18,8 +18,8 @@ export interface msdyn_CheckIfSDKMessageProcessingStepsAreActiveResponse {
  */
 export class msdyn_CheckIfSDKMessageProcessingStepsAreActiveAction implements Executable<msdyn_CheckIfSDKMessageProcessingStepsAreActiveResponse> {
   constructor(
-    public readonly entityIds: string,
-    public readonly solutionId: string
+    public readonly entityIds?: string,
+    public readonly solutionId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

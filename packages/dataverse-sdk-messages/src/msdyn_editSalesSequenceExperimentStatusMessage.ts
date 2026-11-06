@@ -15,8 +15,8 @@ export class msdyn_editSalesSequenceExperimentStatusRequest
   constructor(
     public msdyn_winnerOrDefault: string,
     public msdyn_experimentKey: string,
-    public msdyn_expiryTime: string,
-    public msdyn_isDeactivated: boolean,
+    public msdyn_expiryTime: string | undefined,
+    public msdyn_isDeactivated: boolean | undefined,
     public msdyn_experimentVersionRecordId: string
   ) {
     super("msdyn_editSalesSequenceExperimentStatus");

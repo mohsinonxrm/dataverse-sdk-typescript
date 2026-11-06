@@ -15,7 +15,7 @@ export interface msdyn_GetBookingDetailsByRequirementIdsResponse {
 export class msdyn_GetBookingDetailsByRequirementIdsAction implements Executable<msdyn_GetBookingDetailsByRequirementIdsResponse> {
   constructor(
     public readonly requirementIds: string,
-    public readonly timescale: number
+    public readonly timescale?: number
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

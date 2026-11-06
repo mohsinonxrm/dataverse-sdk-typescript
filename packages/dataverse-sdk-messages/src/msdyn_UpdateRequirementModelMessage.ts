@@ -11,9 +11,9 @@ export class msdyn_UpdateRequirementModelRequest
   implements Executable<msdyn_UpdateRequirementModelResponse>
 {
   constructor(
-    public from: string,
-    public to: string,
-    public requirementGroupId: string,
+    public from: string | undefined,
+    public to: string | undefined,
+    public requirementGroupId: string | undefined,
     public attributes: string
   ) {
     super("msdyn_UpdateRequirementModel");

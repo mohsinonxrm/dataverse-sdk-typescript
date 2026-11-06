@@ -14,8 +14,8 @@ export interface msdyn_IntentServiceAPICallProxyResponse {
  */
 export class msdyn_IntentServiceAPICallProxyAction implements Executable<msdyn_IntentServiceAPICallProxyResponse> {
   constructor(
-    public readonly intentServiceEntityType: string,
-    public readonly intentServiceRequestPayload: string,
+    public readonly intentServiceEntityType: string | undefined,
+    public readonly intentServiceRequestPayload: string | undefined,
     public readonly intentServiceRequestPayloadForTelemetry: string
   ) {}
 

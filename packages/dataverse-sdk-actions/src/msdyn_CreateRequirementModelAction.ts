@@ -15,8 +15,8 @@ export interface msdyn_CreateRequirementModelResponse {
 export class msdyn_CreateRequirementModelAction implements Executable<msdyn_CreateRequirementModelResponse> {
   constructor(
     public readonly attributes: string,
-    public readonly from: string,
-    public readonly to: string
+    public readonly from?: string,
+    public readonly to?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

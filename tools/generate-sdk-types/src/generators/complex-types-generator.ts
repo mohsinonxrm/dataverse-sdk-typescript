@@ -8,6 +8,10 @@ import { resolve, join } from "path";
 import { csdlTypeToTs, toPascalCase as _toPascalCase } from "../utils/typescript-writer.js";
 import { writeTypeScriptFile, purgeDirectory } from "../utils/file-writer.js";
 import { concreteTypesOf, generatedBaseType, typedUnionName } from "../utils/polymorphism.js";
+import { ENTITY_PAYLOAD_MODULE, entityParameterType } from "../utils/entity-payload.js";
+
+/** The package a `types/` folder belongs to: where its `EntityReference` module is. */
+export type TypesTarget = "actions" | "functions" | "messages";
 
 /**
  * Generate TypeScript interfaces for all complex types, entity types, AND enums from CSDL.
@@ -16,11 +20,13 @@ import { concreteTypesOf, generatedBaseType, typedUnionName } from "../utils/pol
  * @param csdl - Parsed CSDL schema
  * @param outputPath - Output directory path
  * @param purge - If true, delete existing output before generating
+ * @param target - The package: the messages package keeps `EntityReference.ts` out of `types/`
  */
 export async function generateComplexTypes(
   csdl: CsdlSchema,
   outputPath: string,
-  purge = false
+  purge = false,
+  target: TypesTarget = "actions"
 ): Promise<void> {
   const absolutePath = resolve(outputPath);
 
@@ -51,6 +57,11 @@ export async function generateComplexTypes(
   for (const et of enumTypes) {
     existingTypeNames.add(et.name.toLowerCase());
   }
+  /** The file of an entity type: `<name>_entity` when it would collide with another type. */
+  const entityFile = (name: string): string =>
+    existingTypeNames.has(name.toLowerCase()) && name.toLowerCase() in caseConflicts
+      ? `${name}_entity`
+      : name;
 
   console.log(`📝 Generating complex types, entity types, and enums...`);
 
@@ -63,7 +74,7 @@ export async function generateComplexTypes(
 
   // Generate one file per complex type
   for (const complexType of complexTypes) {
-    const content = generateComplexTypeInterface(csdl, complexType);
+    const content = generateComplexTypeInterface(csdl, complexType, target, entityFile);
     const filename = `${complexType.name}.ts`;
     await writeTypeScriptFile(join(absolutePath, filename), content);
   }
@@ -72,16 +83,8 @@ export async function generateComplexTypes(
   const entityTypeMetadata: Array<{ type: CsdlEntityType; filename: string }> = [];
   for (const entityType of entityTypes) {
     const content = generateEntityTypeInterface(csdl, entityType);
-    let filename = `${entityType.name}.ts`;
-
-    // Check for case conflicts on case-insensitive filesystems
-    if (
-      existingTypeNames.has(entityType.name.toLowerCase()) &&
-      entityType.name.toLowerCase() in caseConflicts
-    ) {
-      // Suffix with _entity to avoid collision
-      filename = `${entityType.name}_entity.ts`;
-    }
+    // On a case conflict (case-insensitive filesystems) the file is suffixed with _entity
+    const filename = `${entityFile(entityType.name)}.ts`;
 
     await writeTypeScriptFile(join(absolutePath, filename), content);
     entityTypeMetadata.push({ type: entityType, filename: filename.replace(".ts", "") });
@@ -135,7 +138,12 @@ export function exportedEnumNames(csdl: CsdlSchema): string[] {
 /**
  * Generate TypeScript interface for a complex type.
  */
-function generateComplexTypeInterface(csdl: CsdlSchema, complexType: CsdlComplexType): string {
+function generateComplexTypeInterface(
+  csdl: CsdlSchema,
+  complexType: CsdlComplexType,
+  target: TypesTarget,
+  entityFile: (name: string) => string
+): string {
   const safeName = makeCodeSafe(complexType.name);
   const baseTypeName = generatedBaseType(csdl, complexType.name);
   const concreteTypes = concreteTypesOf(csdl, complexType.name);
@@ -158,14 +166,31 @@ function generateComplexTypeInterface(csdl: CsdlSchema, complexType: CsdlComplex
     }
   }
 
+  // Entity-valued members (#231), typed like entity-typed action parameters
+  const navigation = complexType.navigationProperties.map((nav) => ({
+    nav,
+    ...navigationType(csdl, nav.type),
+  }));
+  const files = new Map([...importsNeeded].map((t) => [t, t] as const));
+  for (const n of navigation) if (n.entity) files.set(n.entity, entityFile(n.entity));
+  const payloads = [...new Set(navigation.flatMap((n) => n.payload))].sort();
+  const needsReference = navigation.some((n) => n.tsType.includes("EntityReference"));
+
   let code = "";
 
   // Add imports if needed
-  if (importsNeeded.size > 0) {
-    for (const typeName of Array.from(importsNeeded).sort()) {
+  if (files.size > 0 || needsReference || payloads.length > 0) {
+    for (const [typeName, file] of [...files].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) {
       // Use escaped name for the import identifier
       const safeTypeName = makeCodeSafe(typeName);
-      code += `import type { ${safeTypeName} } from './${typeName}.js';\n`;
+      code += `import type { ${safeTypeName} } from './${file}.js';\n`;
+    }
+    if (needsReference) {
+      const module = target === "messages" ? "../EntityReference.js" : "./EntityReference.js";
+      code += `import type { EntityReference } from '${module}';\n`;
+    }
+    if (payloads.length > 0) {
+      code += `import type { ${payloads.join(", ")} } from './${ENTITY_PAYLOAD_MODULE}.js';\n`;
     }
     code += `\n`;
   }
@@ -175,7 +200,7 @@ function generateComplexTypeInterface(csdl: CsdlSchema, complexType: CsdlComplex
   code += ` */\n`;
   code += `export interface ${safeName}${extendsClause(baseTypeName)} {\n`;
 
-  if (complexType.properties.length === 0) {
+  if (complexType.properties.length === 0 && navigation.length === 0) {
     code += `  // No properties defined\n`;
   } else {
     for (const prop of complexType.properties) {
@@ -188,12 +213,34 @@ function generateComplexTypeInterface(csdl: CsdlSchema, complexType: CsdlComplex
       }
       code += `  ${prop.name}${optionalMark(prop)}: ${tsType};\n`;
     }
+    for (const { nav, tsType } of navigation) {
+      code += `  ${nav.name}${optionalMark(nav)}: ${tsType};\n`;
+    }
   }
 
   code += `}\n`;
   code += typedUnion(complexType.name, concreteTypes);
 
   return code;
+}
+
+/**
+ * The type of a navigation property of a complex type, such as `PrincipalAccess.Principal`
+ * (#231). In a request body its value is an entity, so it is typed like an entity-typed action
+ * parameter: a reference or a payload. `Collection(crmbaseentity)` is `Record<string, unknown>[]`,
+ * and `principal` and the other abstract system types are references, also as for parameters.
+ */
+function navigationType(
+  csdl: CsdlSchema,
+  csdlType: string
+): { tsType: string; entity?: string; payload: string[] } {
+  const parameter = entityParameterType(csdl, csdlType);
+  if (parameter) {
+    return { tsType: parameter.tsType, entity: parameter.entity, payload: parameter.payload };
+  }
+  return csdlType.startsWith("Collection(")
+    ? { tsType: "Record<string, unknown>[]", payload: [] }
+    : { tsType: "EntityReference", payload: [] };
 }
 
 /**

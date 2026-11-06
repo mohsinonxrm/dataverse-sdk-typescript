@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { businessunit } from "./types/index.js";
 
 /**
@@ -13,8 +15,8 @@ export class SetParentTeamRequest
 {
   constructor(
     public teamId: string,
-    public businessUnit: businessunit,
-    public doNotMoveAllRecords: boolean
+    public businessUnit: EntityReference | EntityPayload<businessunit>,
+    public doNotMoveAllRecords?: boolean
   ) {
     super("SetParentTeam");
   }

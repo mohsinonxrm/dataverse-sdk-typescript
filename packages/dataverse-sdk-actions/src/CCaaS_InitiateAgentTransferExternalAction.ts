@@ -18,9 +18,9 @@ export class CCaaS_InitiateAgentTransferExternalAction implements Executable<CCa
     public readonly msdyn_ocliveworkitemId: string,
     public readonly externalParticipantChannel: string,
     public readonly externalParticipantChannelType: string,
-    public readonly agentName: string,
-    public readonly externalReferenceId: string,
-    public readonly externalReferenceType: string,
+    public readonly agentName: string | undefined,
+    public readonly externalReferenceId: string | undefined,
+    public readonly externalReferenceType: string | undefined,
     public readonly apiVersion: string
   ) {}
 

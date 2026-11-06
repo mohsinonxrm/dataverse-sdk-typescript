@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import type { EntityReference } from "./EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_analysisjob, msdyn_solutionhealthruleset } from "./types/index.js";
 
 /**
@@ -13,9 +15,9 @@ export class msdyn_CreateNewAnalysisJobForRuleSetRequest
   implements Executable<msdyn_CreateNewAnalysisJobForRuleSetResponse>
 {
   constructor(
-    public solutionHealthRuleSet: msdyn_solutionhealthruleset,
-    public triggerType: string,
-    public inAppNotificationEnabled: boolean
+    public solutionHealthRuleSet: EntityReference | EntityPayload<msdyn_solutionhealthruleset>,
+    public triggerType?: string,
+    public inAppNotificationEnabled?: boolean
   ) {
     super("msdyn_CreateNewAnalysisJobForRuleSet");
   }

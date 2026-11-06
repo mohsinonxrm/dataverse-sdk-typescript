@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type {
   AddToQueueResponse as AddToQueueResponseData,
   queue,
@@ -19,9 +20,9 @@ export class AddToQueueRequest
 {
   constructor(
     public queueId: string,
-    public target: EntityReference,
-    public sourceQueue: queue,
-    public queueItemProperties: queueitem
+    public target: EntityReference | AnyEntityPayload,
+    public sourceQueue?: EntityReference | EntityPayload<queue>,
+    public queueItemProperties?: EntityReference | EntityPayload<queueitem>
   ) {
     super("AddToQueue");
   }

@@ -13,12 +13,12 @@ export class msdynmkt_DateTimeFormatOptionsRequest
   implements Executable<msdynmkt_DateTimeFormatOptionsResponse>
 {
   constructor(
-    public msdynmkt_DateTimeRequestDateOnly: boolean,
-    public msdynmkt_DateTimeRequestTimeZoneId: string,
-    public msdynmkt_DateTimeRequestTimezoneIndepentent: boolean,
-    public msdynmkt_DateTimeRequestDateOnlyV2: boolean,
-    public msdynmkt_DateTimeRequestLCID: number,
-    public msdynmkt_DateTimeRequestCultureName: string
+    public msdynmkt_DateTimeRequestDateOnly?: boolean,
+    public msdynmkt_DateTimeRequestTimeZoneId?: string,
+    public msdynmkt_DateTimeRequestTimezoneIndepentent?: boolean,
+    public msdynmkt_DateTimeRequestDateOnlyV2?: boolean,
+    public msdynmkt_DateTimeRequestLCID?: number,
+    public msdynmkt_DateTimeRequestCultureName?: string
   ) {
     super("msdynmkt_DateTimeFormatOptions");
   }

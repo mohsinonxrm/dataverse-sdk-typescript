@@ -12,6 +12,7 @@ import {
   PublishXmlResponse,
   PublishAllXmlRequest,
   PublishAllXmlResponse,
+  createEntityReference,
 } from "../src/index.js";
 
 describe("OrganizationRequest/Response", () => {
@@ -85,9 +86,9 @@ describe("Message Classes", () => {
   describe("MergeRequest/Response", () => {
     it("should create Merge request with correct message name", () => {
       const request = new MergeRequest(
-        { logicalName: "account", id: "master-id" },
-        { logicalName: "account", id: "subordinate-id" },
-        {} as any,
+        createEntityReference("account", "master-id"),
+        createEntityReference("account", "subordinate-id"),
+        undefined,
         false
       );
       expect(request.messageName).toBe("Merge");

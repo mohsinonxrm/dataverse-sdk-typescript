@@ -11,14 +11,14 @@ export class UpdateInstantPluginRequest
   implements Executable<UpdateInstantPluginResponse>
 {
   constructor(
-    public description: string,
+    public description: string | undefined,
     public fxExpressionUniqueName: string,
-    public parameters: string,
-    public context: string,
-    public entityLogicalName: string,
-    public solutionUniqueName: string,
-    public expression: string,
-    public name: string
+    public parameters?: string,
+    public context?: string,
+    public entityLogicalName?: string,
+    public solutionUniqueName?: string,
+    public expression?: string,
+    public name?: string
   ) {
     super("UpdateInstantPlugin");
   }

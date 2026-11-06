@@ -1,4 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { campaignitem } from "./types/index.js";
 
 /**
@@ -17,7 +19,7 @@ export interface RemoveItemCampaignResponse {
 export class RemoveItemCampaignAction implements Executable<RemoveItemCampaignResponse> {
   constructor(
     public readonly campaignId: string,
-    public readonly campaignItem: campaignitem
+    public readonly campaignItem: EntityReference | EntityPayload<campaignitem>
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

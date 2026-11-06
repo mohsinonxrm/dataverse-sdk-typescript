@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { enumBody } from "./internal/enumBody.js";
 import type { ColumnSet, quote } from "./types/index.js";
 
 /**
@@ -19,7 +20,7 @@ export interface ReviseQuoteResponse extends quote {
 export class ReviseQuoteAction implements Executable<ReviseQuoteResponse> {
   constructor(
     public readonly quoteId: string,
-    public readonly columnSet: ColumnSet
+    public readonly columnSet?: ColumnSet
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -27,7 +28,7 @@ export class ReviseQuoteAction implements Executable<ReviseQuoteResponse> {
 
     const body: Record<string, unknown> = {
       QuoteId: this.quoteId,
-      ColumnSet: this.columnSet,
+      ColumnSet: enumBody(this.columnSet, "ColumnSet"),
     };
 
     return {

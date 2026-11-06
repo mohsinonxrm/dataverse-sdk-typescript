@@ -13,8 +13,8 @@ export class msdyn_GetSalesRowSummaryRequest
   implements Executable<msdyn_GetSalesRowSummaryResponse>
 {
   constructor(
-    public clientContext: string,
-    public otherData: string
+    public clientContext?: string,
+    public otherData?: string
   ) {
     super("msdyn_GetSalesRowSummary");
   }

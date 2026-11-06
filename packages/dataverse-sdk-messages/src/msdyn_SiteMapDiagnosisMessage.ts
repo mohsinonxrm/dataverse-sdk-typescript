@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import type { EntityReference } from "./EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type {
   msdyn_SiteMapDiagnosisResponse as msdyn_SiteMapDiagnosisResponseData,
   sitemap,
@@ -17,7 +19,7 @@ export class msdyn_SiteMapDiagnosisRequest
 {
   constructor(
     public issueType: string,
-    public componentInstance: sitemap
+    public componentInstance: EntityReference | EntityPayload<sitemap>
   ) {
     super("msdyn_SiteMapDiagnosis");
   }

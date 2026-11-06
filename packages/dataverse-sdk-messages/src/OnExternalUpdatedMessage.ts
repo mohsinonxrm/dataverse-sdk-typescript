@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * OnExternalUpdated request message
@@ -12,9 +13,9 @@ export class OnExternalUpdatedRequest
   implements Executable<OnExternalUpdatedResponse>
 {
   constructor(
-    public target: EntityReference,
-    public preImage: EntityReference,
-    public changedFields: string[]
+    public target: EntityReference | AnyEntityPayload,
+    public preImage?: EntityReference | AnyEntityPayload,
+    public changedFields?: string[]
   ) {
     super("OnExternalUpdated");
   }

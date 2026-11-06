@@ -13,10 +13,10 @@ export class msdyn_SalesAgents_FetchRecordsForAgentProcessingRequest
   implements Executable<msdyn_SalesAgents_FetchRecordsForAgentProcessingResponse>
 {
   constructor(
-    public msdyn_Top: number,
+    public msdyn_Top: number | undefined,
     public msdyn_SalesAgentType: number,
-    public msdyn_NextLink: string,
-    public msdyn_TrackingId: string
+    public msdyn_NextLink?: string,
+    public msdyn_TrackingId?: string
   ) {
     super("msdyn_SalesAgents_FetchRecordsForAgentProcessing");
   }

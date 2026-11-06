@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_FastPassBotEventUpdate action
@@ -15,8 +16,8 @@ export interface msdyn_FastPassBotEventUpdateResponse {
  */
 export class msdyn_FastPassBotEventUpdateAction implements Executable<msdyn_FastPassBotEventUpdateResponse> {
   constructor(
-    public readonly msdyn_PreImageRecord: EntityReference,
-    public readonly msdyn_PostImageRecord: EntityReference
+    public readonly msdyn_PreImageRecord: EntityReference | AnyEntityPayload,
+    public readonly msdyn_PostImageRecord: EntityReference | AnyEntityPayload
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

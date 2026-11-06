@@ -13,8 +13,8 @@ export class msdyn_GetAllSuggestedActionCardsForPrioritizedLeadsRequest
   implements Executable<msdyn_GetAllSuggestedActionCardsForPrioritizedLeadsResponse>
 {
   constructor(
-    public clientContext: string,
-    public otherData: string
+    public clientContext?: string,
+    public otherData?: string
   ) {
     super("msdyn_GetAllSuggestedActionCardsForPrioritizedLeads");
   }

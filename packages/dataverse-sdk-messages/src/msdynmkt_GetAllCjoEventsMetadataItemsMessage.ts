@@ -11,7 +11,7 @@ export class msdynmkt_GetAllCjoEventsMetadataItemsRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_GetAllCjoEventsMetadataItemsResponse>
 {
-  constructor(public msdynmkt_GetAllCjoEventsMetadataItems_request_LanguageCode: number) {
+  constructor(public msdynmkt_GetAllCjoEventsMetadataItems_request_LanguageCode?: number) {
     super("msdynmkt_GetAllCjoEventsMetadataItems");
   }
 

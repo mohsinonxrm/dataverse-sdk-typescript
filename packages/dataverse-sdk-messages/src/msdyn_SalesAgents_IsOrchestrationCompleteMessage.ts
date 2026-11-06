@@ -13,7 +13,7 @@ export class msdyn_SalesAgents_IsOrchestrationCompleteRequest
   implements Executable<msdyn_SalesAgents_IsOrchestrationCompleteResponse>
 {
   constructor(
-    public msdyn_TrackingId: string,
+    public msdyn_TrackingId: string | undefined,
     public msdyn_AgentType: number,
     public msdyn_SalesAgentType: number
   ) {

@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * msdyn_cloneentity request message
@@ -13,10 +14,10 @@ export class msdyn_cloneentityRequest
   implements Executable<msdyn_cloneentityResponse>
 {
   constructor(
-    public sourceEntity: EntityReference,
-    public queryReference: EntityReference,
-    public transformAction: string,
-    public transformParams: EntityReference
+    public sourceEntity: EntityReference | AnyEntityPayload,
+    public queryReference?: EntityReference | AnyEntityPayload,
+    public transformAction?: string,
+    public transformParams?: EntityReference | AnyEntityPayload
   ) {
     super("msdyn_cloneentity");
   }

@@ -12,7 +12,7 @@ export class msdyn_DeleteCalendarRequest
   extends OrganizationRequest
   implements Executable<msdyn_DeleteCalendarResponse>
 {
-  constructor(public calendarEventInfo: string) {
+  constructor(public calendarEventInfo?: string) {
     super("msdyn_DeleteCalendar");
   }
 

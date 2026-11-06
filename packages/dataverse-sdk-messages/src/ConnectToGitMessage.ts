@@ -11,16 +11,16 @@ export class ConnectToGitRequest
   implements Executable<ConnectToGitResponse>
 {
   constructor(
-    public connectionType: number,
-    public solutionUniqueName: string,
-    public gitProvider: number,
+    public connectionType: number | undefined,
+    public solutionUniqueName: string | undefined,
+    public gitProvider: number | undefined,
     public branch: string,
-    public rootFolder: string,
-    public organization: string,
+    public rootFolder: string | undefined,
+    public organization: string | undefined,
     public gitFolder: string,
-    public project: string,
-    public repository: string,
-    public upstreamBranch: string
+    public project?: string,
+    public repository?: string,
+    public upstreamBranch?: string
   ) {
     super("ConnectToGit");
   }

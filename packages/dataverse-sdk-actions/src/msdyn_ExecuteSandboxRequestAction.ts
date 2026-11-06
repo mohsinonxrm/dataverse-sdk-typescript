@@ -15,7 +15,7 @@ export interface msdyn_ExecuteSandboxRequestResponse {
 export class msdyn_ExecuteSandboxRequestAction implements Executable<msdyn_ExecuteSandboxRequestResponse> {
   constructor(
     public readonly methodName: string,
-    public readonly methodParams: string
+    public readonly methodParams?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

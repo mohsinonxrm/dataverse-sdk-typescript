@@ -13,7 +13,7 @@ export interface msdyn_IoTPullDeviceDataActionHandlerResponse {
  * Unbound action
  */
 export class msdyn_IoTPullDeviceDataActionHandlerAction implements Executable<msdyn_IoTPullDeviceDataActionHandlerResponse> {
-  constructor(public readonly entityCollection: Record<string, unknown>[]) {}
+  constructor(public readonly entityCollection?: Record<string, unknown>[]) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_IoTPullDeviceDataActionHandler`;

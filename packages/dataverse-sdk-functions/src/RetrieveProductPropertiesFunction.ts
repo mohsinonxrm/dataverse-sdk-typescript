@@ -1,37 +1,20 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { dynamicproperty } from "./types/index.js";
+import {
+  RetrieveProductProperties_invoicedetailFunction,
+  type RetrieveProductProperties_invoicedetailResponse,
+} from "./RetrieveProductProperties_invoicedetailFunction.js";
 
 /**
- * Response from RetrieveProductProperties function
+ * @deprecated Use `RetrieveProductProperties_invoicedetailFunction`. `RetrieveProductProperties` has a class per binding (#75);
+ * this name kept the one bound to invoicedetail.
  */
-export interface RetrieveProductPropertiesResponse {
-  value: dynamicproperty[];
-}
-
+export const RetrieveProductPropertiesFunction = RetrieveProductProperties_invoicedetailFunction;
 /**
- * RetrieveProductProperties function
- *
- * Bound function
- * Binding parameter: entity (mscrm.invoicedetail)
+ * @deprecated Use `RetrieveProductProperties_invoicedetailFunction`. `RetrieveProductProperties` has a class per binding (#75);
+ * this name kept the one bound to invoicedetail.
  */
-export class RetrieveProductPropertiesFunction implements Executable<RetrieveProductPropertiesResponse> {
-  constructor(public readonly invoicedetailId: string) {}
-
-  toRequestInformation(baseUrl: string): RequestInformation {
-    // Bound function
-    let url = `${baseUrl}/invoicedetails(${this.invoicedetailId})/Microsoft.Dynamics.CRM.RetrieveProductProperties`;
-
-    return {
-      method: "GET",
-      url,
-      headers: {
-        Accept: "application/json",
-      },
-    };
-  }
-
-  async parseResponse(response: Response): Promise<RetrieveProductPropertiesResponse> {
-    const data = await response.json();
-    return data as RetrieveProductPropertiesResponse;
-  }
-}
+export type RetrieveProductPropertiesFunction = RetrieveProductProperties_invoicedetailFunction;
+/**
+ * @deprecated Use `RetrieveProductProperties_invoicedetailResponse`. `RetrieveProductProperties` has a class per binding (#75);
+ * this name kept the one bound to invoicedetail.
+ */
+export type RetrieveProductPropertiesResponse = RetrieveProductProperties_invoicedetailResponse;

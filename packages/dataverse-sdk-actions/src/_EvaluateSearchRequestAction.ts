@@ -15,22 +15,22 @@ export interface _EvaluateSearchRequestResponse {
  */
 export class _EvaluateSearchRequestAction implements Executable<_EvaluateSearchRequestResponse> {
   constructor(
-    public readonly serviceAppointmentId: string,
+    public readonly serviceAppointmentId: string | undefined,
     public readonly serviceId: string,
-    public readonly dateOptionSet: number,
-    public readonly timeOptionSet: number,
-    public readonly dayList: string,
-    public readonly requiredResources: Record<string, unknown>[],
-    public readonly searchWindowStart: string,
-    public readonly searchWindowEnd: string,
-    public readonly searchRecurrenceStart: number,
-    public readonly timeRangeEnd: number,
+    public readonly dateOptionSet: number | undefined,
+    public readonly timeOptionSet: number | undefined,
+    public readonly dayList: string | undefined,
+    public readonly requiredResources: Record<string, unknown>[] | undefined,
+    public readonly searchWindowStart: string | undefined,
+    public readonly searchWindowEnd: string | undefined,
+    public readonly searchRecurrenceStart: number | undefined,
+    public readonly timeRangeEnd: number | undefined,
     public readonly duration: number,
-    public readonly direction: number,
-    public readonly sites: Record<string, unknown>[],
-    public readonly numberOfResults: number,
-    public readonly _SearchWindowStart: string,
-    public readonly _SearchWindowEnd: string
+    public readonly direction?: number,
+    public readonly sites?: Record<string, unknown>[],
+    public readonly numberOfResults?: number,
+    public readonly _SearchWindowStart?: string,
+    public readonly _SearchWindowEnd?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

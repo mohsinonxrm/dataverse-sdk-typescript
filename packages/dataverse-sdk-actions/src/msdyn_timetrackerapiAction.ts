@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_timetrackerapi action
@@ -15,10 +16,10 @@ export interface msdyn_timetrackerapiResponse {
  */
 export class msdyn_timetrackerapiAction implements Executable<msdyn_timetrackerapiResponse> {
   constructor(
-    public readonly timeTrackerRecordId: string,
+    public readonly timeTrackerRecordId: string | undefined,
     public readonly entitylogicalname: string,
     public readonly entityid: string,
-    public readonly timeTrackerRecord: EntityReference
+    public readonly timeTrackerRecord?: EntityReference | AnyEntityPayload
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

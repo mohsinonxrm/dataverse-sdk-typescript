@@ -16,9 +16,9 @@ export interface UpdateFlowMachineNetworkResponse {
 export class UpdateFlowMachineNetworkAction implements Executable<UpdateFlowMachineNetworkResponse> {
   constructor(
     public readonly flowmachinenetworkId: string,
-    public readonly description: string,
-    public readonly extendedproperties: string,
-    public readonly name: string
+    public readonly description?: string,
+    public readonly extendedproperties?: string,
+    public readonly name?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

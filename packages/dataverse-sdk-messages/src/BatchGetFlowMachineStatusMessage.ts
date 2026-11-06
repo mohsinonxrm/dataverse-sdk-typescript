@@ -14,7 +14,7 @@ export class BatchGetFlowMachineStatusRequest
 {
   constructor(
     public machineIds: string,
-    public version: string
+    public version?: string
   ) {
     super("BatchGetFlowMachineStatus");
   }

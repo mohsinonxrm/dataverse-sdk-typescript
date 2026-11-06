@@ -13,7 +13,7 @@ export class msdyn_GetAgentAssistStreamRequest
   implements Executable<msdyn_GetAgentAssistStreamResponse>
 {
   constructor(
-    public context: string,
+    public context: string | undefined,
     public requestPayload: string
   ) {
     super("msdyn_GetAgentAssistStream");

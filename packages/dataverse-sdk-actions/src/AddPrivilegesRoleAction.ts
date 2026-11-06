@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { enumBody } from "./internal/enumBody.js";
 import type { RolePrivilege } from "./types/index.js";
 
 /**
@@ -17,7 +18,7 @@ export interface AddPrivilegesRoleResponse {
 export class AddPrivilegesRoleAction implements Executable<AddPrivilegesRoleResponse> {
   constructor(
     public readonly roleId: string,
-    public readonly privileges: RolePrivilege[]
+    public readonly privileges?: RolePrivilege[]
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -25,7 +26,7 @@ export class AddPrivilegesRoleAction implements Executable<AddPrivilegesRoleResp
     const url = `${baseUrl}/roles(${this.roleId})/Microsoft.Dynamics.CRM.AddPrivilegesRole`;
 
     const body: Record<string, unknown> = {
-      Privileges: this.privileges,
+      Privileges: enumBody(this.privileges, "RolePrivilege"),
     };
 
     return {

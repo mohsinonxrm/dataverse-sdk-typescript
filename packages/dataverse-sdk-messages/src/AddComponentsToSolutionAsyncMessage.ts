@@ -16,7 +16,7 @@ export class AddComponentsToSolutionAsyncRequest
   implements Executable<AddComponentsToSolutionAsyncResponse>
 {
   constructor(
-    public solutionComponentParameters: AddComponentToSolutionParametersCollection,
+    public solutionComponentParameters: AddComponentToSolutionParametersCollection | undefined,
     public solutionUniqueName: string,
     public continueOnError: boolean
   ) {

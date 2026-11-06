@@ -16,8 +16,8 @@ export interface DetectLanguageResponse {
 export class DetectLanguageAction implements Executable<DetectLanguageResponse> {
   constructor(
     public readonly text: string,
-    public readonly modelId: string,
-    public readonly countryHint: string
+    public readonly modelId?: string,
+    public readonly countryHint?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

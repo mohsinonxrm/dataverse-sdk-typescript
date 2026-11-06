@@ -11,8 +11,8 @@ export class msdyn_UpdatefeatureconfigRequest
   implements Executable<msdyn_UpdatefeatureconfigResponse>
 {
   constructor(
-    public featureType: number,
-    public configuration: string
+    public featureType?: number,
+    public configuration?: string
   ) {
     super("msdyn_Updatefeatureconfig");
   }

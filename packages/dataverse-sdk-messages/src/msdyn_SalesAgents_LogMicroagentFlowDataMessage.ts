@@ -15,9 +15,9 @@ export class msdyn_SalesAgents_LogMicroagentFlowDataRequest
   constructor(
     public msdyn_salesagentrunid: string,
     public msdyn_agenttype: number,
-    public msdyn_salesagenttype: number,
-    public trackingId: string,
-    public continueOnError: boolean,
+    public msdyn_salesagenttype: number | undefined,
+    public trackingId: string | undefined,
+    public continueOnError: boolean | undefined,
     public data: string
   ) {
     super("msdyn_SalesAgents_LogMicroagentFlowData");

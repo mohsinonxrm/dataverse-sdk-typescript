@@ -15,7 +15,7 @@ export class CreateVirtualConnectorTableRequest
   extends OrganizationRequest
   implements Executable<CreateVirtualConnectorTableResponse>
 {
-  constructor(public createVirtualConnectorTableMetadata: CreateVirtualConnectorTableMetadata) {
+  constructor(public createVirtualConnectorTableMetadata?: CreateVirtualConnectorTableMetadata) {
     super("CreateVirtualConnectorTable");
   }
 

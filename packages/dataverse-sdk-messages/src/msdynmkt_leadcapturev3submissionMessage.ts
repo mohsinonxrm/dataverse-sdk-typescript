@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * msdynmkt_leadcapturev3submission request message
@@ -12,9 +13,9 @@ export class msdynmkt_leadcapturev3submissionRequest
   implements Executable<msdynmkt_leadcapturev3submissionResponse>
 {
   constructor(
-    public msdynmkt_formsubmissionid: EntityReference,
-    public msdynmkt_consentversion: string,
-    public msdynmkt_marketingformid: EntityReference
+    public msdynmkt_formsubmissionid: EntityReference | AnyEntityPayload,
+    public msdynmkt_consentversion: string | undefined,
+    public msdynmkt_marketingformid: EntityReference | AnyEntityPayload
   ) {
     super("msdynmkt_leadcapturev3submission");
   }

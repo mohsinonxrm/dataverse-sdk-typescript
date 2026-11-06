@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * CompoundUpdateDuplicateDetectionRule request message
@@ -12,7 +13,7 @@ export class CompoundUpdateDuplicateDetectionRuleRequest
   implements Executable<CompoundUpdateDuplicateDetectionRuleResponse>
 {
   constructor(
-    public entity: EntityReference,
+    public entity: EntityReference | AnyEntityPayload,
     public childEntities: Record<string, unknown>[]
   ) {
     super("CompoundUpdateDuplicateDetectionRule");

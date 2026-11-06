@@ -15,9 +15,9 @@ export interface msdyn_SalesAgents_FetchRefreshRecordsForAgentProcessingResponse
  */
 export class msdyn_SalesAgents_FetchRefreshRecordsForAgentProcessingAction implements Executable<msdyn_SalesAgents_FetchRefreshRecordsForAgentProcessingResponse> {
   constructor(
-    public readonly msdyn_Top: number,
+    public readonly msdyn_Top: number | undefined,
     public readonly msdyn_SalesAgentType: number,
-    public readonly msdyn_TrackingId: string
+    public readonly msdyn_TrackingId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

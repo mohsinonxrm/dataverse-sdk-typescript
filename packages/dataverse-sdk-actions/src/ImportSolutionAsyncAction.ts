@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { enumBody } from "./internal/enumBody.js";
 import type { LayerDesiredOrder, SolutionParameters } from "./types/index.js";
 
 /**
@@ -18,21 +19,21 @@ export class ImportSolutionAsyncAction implements Executable<ImportSolutionAsync
   constructor(
     public readonly overwriteUnmanagedCustomizations: boolean,
     public readonly publishWorkflows: boolean,
-    public readonly customizationFile: string,
-    public readonly importJobId: string,
-    public readonly convertToManaged: boolean,
-    public readonly skipProductUpdateDependencies: boolean,
-    public readonly holdingSolution: boolean,
-    public readonly skipQueueRibbonJob: boolean,
-    public readonly layerDesiredOrder: LayerDesiredOrder,
-    public readonly asyncRibbonProcessing: boolean,
-    public readonly componentParameters: Record<string, unknown>[],
-    public readonly solutionParameters: SolutionParameters,
-    public readonly isTemplateMode: boolean,
-    public readonly templateSuffix: string,
-    public readonly templateDisplayNamePrefix: string,
-    public readonly stageAndUpgrade: boolean,
-    public readonly schemaUpdatesOnly: boolean
+    public readonly customizationFile?: string,
+    public readonly importJobId?: string,
+    public readonly convertToManaged?: boolean,
+    public readonly skipProductUpdateDependencies?: boolean,
+    public readonly holdingSolution?: boolean,
+    public readonly skipQueueRibbonJob?: boolean,
+    public readonly layerDesiredOrder?: LayerDesiredOrder,
+    public readonly asyncRibbonProcessing?: boolean,
+    public readonly componentParameters?: Record<string, unknown>[],
+    public readonly solutionParameters?: SolutionParameters,
+    public readonly isTemplateMode?: boolean,
+    public readonly templateSuffix?: string,
+    public readonly templateDisplayNamePrefix?: string,
+    public readonly stageAndUpgrade?: boolean,
+    public readonly schemaUpdatesOnly?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -47,10 +48,10 @@ export class ImportSolutionAsyncAction implements Executable<ImportSolutionAsync
       SkipProductUpdateDependencies: this.skipProductUpdateDependencies,
       HoldingSolution: this.holdingSolution,
       SkipQueueRibbonJob: this.skipQueueRibbonJob,
-      LayerDesiredOrder: this.layerDesiredOrder,
+      LayerDesiredOrder: enumBody(this.layerDesiredOrder, "LayerDesiredOrder"),
       AsyncRibbonProcessing: this.asyncRibbonProcessing,
       ComponentParameters: this.componentParameters,
-      SolutionParameters: this.solutionParameters,
+      SolutionParameters: enumBody(this.solutionParameters, "SolutionParameters"),
       IsTemplateMode: this.isTemplateMode,
       TemplateSuffix: this.templateSuffix,
       TemplateDisplayNamePrefix: this.templateDisplayNamePrefix,

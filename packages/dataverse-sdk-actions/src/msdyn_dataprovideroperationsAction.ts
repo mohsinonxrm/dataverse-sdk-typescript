@@ -14,8 +14,8 @@ export interface msdyn_dataprovideroperationsResponse {
  */
 export class msdyn_dataprovideroperationsAction implements Executable<msdyn_dataprovideroperationsResponse> {
   constructor(
-    public readonly msdyn_recordid: string,
-    public readonly msdyn_payload: string,
+    public readonly msdyn_recordid: string | undefined,
+    public readonly msdyn_payload: string | undefined,
     public readonly msdyn_httpmethod: string
   ) {}
 

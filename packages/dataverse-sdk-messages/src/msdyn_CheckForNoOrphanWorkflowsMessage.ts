@@ -12,7 +12,7 @@ export class msdyn_CheckForNoOrphanWorkflowsRequest
   extends OrganizationRequest
   implements Executable<msdyn_CheckForNoOrphanWorkflowsResponse>
 {
-  constructor(public solutionId: string) {
+  constructor(public solutionId?: string) {
     super("msdyn_CheckForNoOrphanWorkflows");
   }
 

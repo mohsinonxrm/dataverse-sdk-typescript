@@ -16,8 +16,8 @@ export class msdyn_editSalesSequenceExperimentStatusAction implements Executable
   constructor(
     public readonly msdyn_winnerOrDefault: string,
     public readonly msdyn_experimentKey: string,
-    public readonly msdyn_expiryTime: string,
-    public readonly msdyn_isDeactivated: boolean,
+    public readonly msdyn_expiryTime: string | undefined,
+    public readonly msdyn_isDeactivated: boolean | undefined,
     public readonly msdyn_experimentVersionRecordId: string
   ) {}
 

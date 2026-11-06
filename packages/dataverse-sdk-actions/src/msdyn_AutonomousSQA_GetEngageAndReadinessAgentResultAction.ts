@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_AutonomousSQA_GetEngageAndReadinessAgentResult action
@@ -15,7 +16,7 @@ export interface msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResponse {
  */
 export class msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultAction implements Executable<msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResponse> {
   constructor(
-    public readonly msdyn_RegardingObjectId: EntityReference,
+    public readonly msdyn_RegardingObjectId: EntityReference | AnyEntityPayload,
     public readonly msdyn_TrackingId: string
   ) {}
 

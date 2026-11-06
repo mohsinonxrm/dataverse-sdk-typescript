@@ -19,7 +19,7 @@ export interface msdyn_RetrieveActivityAnalyticsConfigurationResponse {
  * Unbound action
  */
 export class msdyn_RetrieveActivityAnalyticsConfigurationAction implements Executable<msdyn_RetrieveActivityAnalyticsConfigurationResponse> {
-  constructor(public readonly sIParameters: string) {}
+  constructor(public readonly sIParameters?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_RetrieveActivityAnalyticsConfiguration`;

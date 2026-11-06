@@ -14,9 +14,9 @@ export class CCaaS_GetRepresentativeAvailabilityBeforeConversationRequest
 {
   constructor(
     public apiVersion: string,
-    public liveWorkStreamId: string,
-    public channelEngagementContext: string,
-    public customContextItems: string
+    public liveWorkStreamId?: string,
+    public channelEngagementContext?: string,
+    public customContextItems?: string
   ) {
     super("CCaaS_GetRepresentativeAvailabilityBeforeConversation");
   }

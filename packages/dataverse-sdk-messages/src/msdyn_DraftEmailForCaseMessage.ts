@@ -13,10 +13,10 @@ export class msdyn_DraftEmailForCaseRequest
   implements Executable<msdyn_DraftEmailForCaseResponse>
 {
   constructor(
-    public additionalInstructions: string,
-    public context_CaseNotes: string,
-    public context_CaseTitle: string,
-    public context_CaseId: string,
+    public additionalInstructions: string | undefined,
+    public context_CaseNotes: string | undefined,
+    public context_CaseTitle: string | undefined,
+    public context_CaseId: string | undefined,
     public recipientName: string,
     public senderName: string
   ) {

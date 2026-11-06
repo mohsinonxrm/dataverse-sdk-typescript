@@ -13,10 +13,10 @@ export class CCaaS_GetAvailabilityForSimulatedConversationRequest
   implements Executable<CCaaS_GetAvailabilityForSimulatedConversationResponse>
 {
   constructor(
-    public liveWorkStreamId: string,
-    public customContextItems: string,
+    public liveWorkStreamId: string | undefined,
+    public customContextItems: string | undefined,
     public apiVersion: string,
-    public channelEngagementContext: string
+    public channelEngagementContext?: string
   ) {
     super("CCaaS_GetAvailabilityForSimulatedConversation");
   }

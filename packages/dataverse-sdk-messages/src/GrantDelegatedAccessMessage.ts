@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { delegatedauthorization } from "./types/index.js";
 
 /**
@@ -13,8 +14,8 @@ export class GrantDelegatedAccessRequest
   implements Executable<GrantDelegatedAccessResponse>
 {
   constructor(
-    public target: EntityReference,
-    public delegatedauthorization: delegatedauthorization,
+    public target: EntityReference | AnyEntityPayload,
+    public delegatedauthorization: EntityReference | EntityPayload<delegatedauthorization>,
     public owneraccess: boolean
   ) {
     super("GrantDelegatedAccess");

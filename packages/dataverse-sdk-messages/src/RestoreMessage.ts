@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { RestoreResponse as RestoreResponseData } from "./types/index.js";
 
 /**
@@ -10,7 +11,7 @@ import type { RestoreResponse as RestoreResponseData } from "./types/index.js";
  * Web API Action: Restore
  */
 export class RestoreRequest extends OrganizationRequest implements Executable<RestoreResponse> {
-  constructor(public target: EntityReference) {
+  constructor(public target: EntityReference | AnyEntityPayload) {
     super("Restore");
   }
 

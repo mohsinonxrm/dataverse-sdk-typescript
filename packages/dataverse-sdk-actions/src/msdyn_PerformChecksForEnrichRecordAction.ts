@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_PerformChecksForEnrichRecord action
@@ -14,7 +15,7 @@ export interface msdyn_PerformChecksForEnrichRecordResponse {
  * Unbound action
  */
 export class msdyn_PerformChecksForEnrichRecordAction implements Executable<msdyn_PerformChecksForEnrichRecordResponse> {
-  constructor(public readonly msdyn_Target: EntityReference) {}
+  constructor(public readonly msdyn_Target: EntityReference | AnyEntityPayload) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_PerformChecksForEnrichRecord`;

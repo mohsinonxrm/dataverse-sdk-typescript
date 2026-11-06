@@ -12,8 +12,8 @@ export class msdyn_HandleTrainingStatusRequest
 {
   constructor(
     public curentModel: string,
-    public previousModel: string,
-    public predictionScheduledOperation: string,
+    public previousModel: string | undefined,
+    public predictionScheduledOperation: string | undefined,
     public trainingResult: string
   ) {
     super("msdyn_HandleTrainingStatus");

@@ -14,10 +14,10 @@ export class msdyn_GetWidgetsDataRequest
 {
   constructor(
     public msdyn_request: string,
-    public msdyn_entityname: string,
+    public msdyn_entityname: string | undefined,
     public msdyn_widgettype: string,
     public msdyn_widgetid: string,
-    public msdyn_recordid: string
+    public msdyn_recordid?: string
   ) {
     super("msdyn_GetWidgetsData");
   }

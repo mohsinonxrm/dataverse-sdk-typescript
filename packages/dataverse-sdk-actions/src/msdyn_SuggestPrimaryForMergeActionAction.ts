@@ -17,7 +17,7 @@ export interface msdyn_SuggestPrimaryForMergeActionResponse {
  * Unbound action
  */
 export class msdyn_SuggestPrimaryForMergeActionAction implements Executable<msdyn_SuggestPrimaryForMergeActionResponse> {
-  constructor(public readonly recordList: Record<string, unknown>[]) {}
+  constructor(public readonly recordList?: Record<string, unknown>[]) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SuggestPrimaryForMergeAction`;

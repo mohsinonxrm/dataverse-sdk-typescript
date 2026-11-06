@@ -12,6 +12,7 @@ import {
   getEntitySetName,
   isCollectionType,
   extractEntityTypeName,
+  constructorParameterList,
 } from "../utils/typescript-writer.js";
 import {
   writeTypeScriptFile,
@@ -21,6 +22,14 @@ import {
 import { polymorphicParameterType } from "../utils/polymorphism.js";
 import { entityReturn, entityResponseInterface } from "../utils/entity-return.js";
 import { entityReferenceSource } from "../utils/entity-reference.js";
+import { bodyEnumType, ENUM_BODY_MODULE, enumBodySource } from "../utils/enum-body.js";
+import { exportedEnumNames } from "./complex-types-generator.js";
+import { deprecatedAliasSource, operationNames } from "../utils/overloads.js";
+import {
+  ENTITY_PAYLOAD_MODULE,
+  ENTITY_PAYLOAD_SOURCE,
+  entityParameterType,
+} from "../utils/entity-payload.js";
 import { collectionBinding, ENTITY_SET_PARAM } from "../utils/binding.js";
 
 /**
@@ -106,25 +115,38 @@ export async function generateActions(
 
   // Ensure EntityReference.ts exists in types folder
   await ensureEntityReferenceType(absolutePath, csdl);
+  // Enum values in bodies are sent as member names (#232)
+  await writeTypeScriptFile(
+    join(absolutePath, "internal", `${ENUM_BODY_MODULE}.ts`),
+    enumBodySource(csdl)
+  );
 
   const generatedFiles: string[] = [];
 
-  // Generate one file per action
+  // One file per action; overloads with different bindings each get their own (#75)
+  const { stems, aliases } = operationNames(actions);
   for (const action of actions) {
+    const stem = stems.get(action) ?? action.name;
     try {
-      const content = generateActionClass(csdl, action);
-      const filename = `${action.name}Action.ts`;
+      const content = generateActionClass(csdl, action, stem);
+      const filename = `${stem}Action.ts`;
       await writeTypeScriptFile(join(absolutePath, filename), content);
-      generatedFiles.push(`${action.name}Action`);
+      generatedFiles.push(`${stem}Action`);
       console.log(`  ✅ Generated ${filename}`);
     } catch (error) {
-      console.error(`  ❌ Failed to generate ${action.name}Action.ts:`, error);
+      console.error(`  ❌ Failed to generate ${stem}Action.ts:`, error);
       throw error;
     }
   }
+  for (const alias of aliases) {
+    await writeTypeScriptFile(
+      join(absolutePath, `${alias.name}Action.ts`),
+      deprecatedAliasSource(alias, "Action", ["Action", "Response"], ["Action"])
+    );
+  }
 
   // Generate index.ts
-  const indexContent = generateActionsIndex(actions);
+  const indexContent = generateActionsIndex(actions, stems, aliases, exportedEnumNames(csdl));
   await writeTypeScriptFile(join(absolutePath, "index.ts"), indexContent);
   console.log(`  ✅ Generated index.ts`);
 
@@ -134,9 +156,9 @@ export async function generateActions(
 /**
  * Generate TypeScript class for an action.
  */
-function generateActionClass(csdl: CsdlSchema, action: CsdlAction): string {
-  const className = `${action.name}Action`;
-  const responseInterfaceName = `${action.name}Response`;
+function generateActionClass(csdl: CsdlSchema, action: CsdlAction, stem = action.name): string {
+  const className = `${stem}Action`;
+  const responseInterfaceName = `${stem}Response`;
 
   // System entities that are filtered out and should be treated as 'any'
   const systemEntities = ["crmbaseentity", "principal", "crmmodelbaseentity", "expando"];
@@ -220,8 +242,25 @@ function generateActionClass(csdl: CsdlSchema, action: CsdlAction): string {
     );
   }
 
+  // Entity-typed parameters take an entity payload or a reference (#74)
+  const payloadTypes = new Set<string>();
+  for (const p of action.parameters) {
+    if (p.name === action.bindingParameter?.name || polymorphicParameterType(csdl, p.type))
+      continue;
+    const entityParam = entityParameterType(csdl, p.type);
+    if (!entityParam) continue;
+    for (const t of entityParam.payload) payloadTypes.add(t);
+    if (entityParam.tsType.includes("EntityReference")) needsEntityReference = true;
+  }
+
   if (needsEntityReference) {
     code += `import type { EntityReference } from './types/EntityReference.js';\n`;
+  }
+  if (action.parameters.some((p) => bodyEnumType(csdl, p.type))) {
+    code += `import { enumBody } from './internal/${ENUM_BODY_MODULE}.js';\n`;
+  }
+  if (payloadTypes.size > 0) {
+    code += `import type { ${[...payloadTypes].sort().join(", ")} } from './types/${ENTITY_PAYLOAD_MODULE}.js';\n`;
   }
 
   // Import complex types from types folder (excluding EntityReference)
@@ -266,6 +305,9 @@ function generateActionClass(csdl: CsdlSchema, action: CsdlAction): string {
     type: string;
     tsName: string;
     isBinding: boolean;
+    optional?: boolean;
+    /** Enum or complex type to pass to `enumBody` (#232). */
+    enumType?: string;
   }> = [];
 
   // Check if binding parameter is a Collection type (e.g., CreateMultiple, UpdateMultiple)
@@ -306,17 +348,21 @@ function generateActionClass(csdl: CsdlSchema, action: CsdlAction): string {
 
     constructorParams.push({
       name: toCamelCase(param.name),
-      type: polymorphicParameterType(csdl, param.type)?.tsType ?? csdlTypeToTs(param.type, true),
+      type:
+        polymorphicParameterType(csdl, param.type)?.tsType ??
+        entityParameterType(csdl, param.type)?.tsType ??
+        csdlTypeToTs(param.type, true),
       tsName: param.name,
       isBinding: false,
+      // In CSDL a parameter without Nullable="false" may be left out (#74, as #68 for functions)
+      optional: param.nullable !== false,
+      enumType: bodyEnumType(csdl, param.type),
     });
   }
 
   if (constructorParams.length > 0) {
     code += `  constructor(\n`;
-    for (const param of constructorParams) {
-      code += `    public readonly ${param.name}: ${param.type},\n`;
-    }
+    code += constructorParameterList(constructorParams, "public readonly");
     code += `  ) {}\n\n`;
   }
 
@@ -359,7 +405,10 @@ function generateActionClass(csdl: CsdlSchema, action: CsdlAction): string {
   if (bodyParams.length > 0) {
     code += `    const body: Record<string, unknown> = {\n`;
     for (const param of bodyParams) {
-      code += `      ${param.tsName}: this.${param.name},\n`;
+      const value = param.enumType
+        ? `enumBody(this.${param.name}, ${JSON.stringify(param.enumType)})`
+        : `this.${param.name}`;
+      code += `      ${param.tsName}: ${value},\n`;
     }
     code += `    };\n\n`;
   }
@@ -449,26 +498,36 @@ function generateResponseInterface(
 /**
  * Generate index.ts with all exports.
  */
-function generateActionsIndex(actions: CsdlAction[]): string {
-  const sorted = actions.sort((a, b) => a.name.localeCompare(b.name));
-
+function generateActionsIndex(
+  operations: CsdlAction[],
+  stems: Map<CsdlAction, string>,
+  aliases: ReadonlyArray<{ name: string }>,
+  enumNames: string[]
+): string {
   let code = `/**\n`;
   code += ` * @mohsinonxrm/dataverse-sdk-actions\n`;
   code += ` *\n`;
   code += ` * Auto-generated typed Web API actions.\n`;
   code += ` */\n\n`;
 
-  // Dedupe by action name (handle overloads for bound actions)
-  const seen = new Set<string>();
-  for (const action of sorted) {
-    if (!seen.has(action.name)) {
-      code += `export { ${action.name}Action, type ${action.name}Response } from './${action.name}Action.js';\n`;
-      seen.add(action.name);
-    }
+  // One export per class: overloads have their own (#75), plus the deprecated plain-name aliases
+  const entries = [
+    ...operations.map((op) => stems.get(op) ?? op.name),
+    ...aliases.map((a) => a.name),
+  ].sort((a, b) => a.localeCompare(b));
+  for (const stem of entries) {
+    code += `export { ${stem}Action, type ${stem}Response } from './${stem}Action.js';\n`;
   }
 
   // Export EntityReference type
-  code += `\nexport { type EntityReference, type EntityReferenceOptions, createEntityReference, getEntitySetNameFromReference } from './types/EntityReference.js';\n`;
+  code += `\nexport { type EntityReference, type EntityReferenceOptions, type WebApiEntityReference, createEntityReference, getEntitySetNameFromReference } from './types/EntityReference.js';\n`;
+  code += `export type { AnyEntityPayload, EntityPayload } from './types/${ENTITY_PAYLOAD_MODULE}.js';\n`;
+
+  // Enum values for parameters (AccessRights.ReadAccess | AccessRights.WriteAccess), as in the
+  // functions package; bodies send them as member names (#232)
+  if (enumNames.length > 0) {
+    code += `\nexport { ${enumNames.join(", ")} } from './types/index.js';\n`;
+  }
 
   return code;
 }
@@ -481,5 +540,10 @@ async function ensureEntityReferenceType(outputPath: string, csdl: CsdlSchema): 
   await writeTypeScriptFile(
     join(outputPath, "types", "EntityReference.ts"),
     entityReferenceSource(csdl, "actions")
+  );
+  // The payload types of entity-typed parameters (#74)
+  await writeTypeScriptFile(
+    join(outputPath, "types", `${ENTITY_PAYLOAD_MODULE}.ts`),
+    ENTITY_PAYLOAD_SOURCE
   );
 }

@@ -15,15 +15,15 @@ export interface InsertStatusValueResponse {
  */
 export class InsertStatusValueAction implements Executable<InsertStatusValueResponse> {
   constructor(
-    public readonly color: string,
-    public readonly optionSetName: string,
-    public readonly attributeLogicalName: string,
-    public readonly entityLogicalName: string,
-    public readonly value: number,
-    public readonly label: Label,
-    public readonly description: Label,
+    public readonly color: string | undefined,
+    public readonly optionSetName: string | undefined,
+    public readonly attributeLogicalName: string | undefined,
+    public readonly entityLogicalName: string | undefined,
+    public readonly value: number | undefined,
+    public readonly label: Label | undefined,
+    public readonly description: Label | undefined,
     public readonly stateCode: number,
-    public readonly solutionUniqueName: string
+    public readonly solutionUniqueName?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -2,6 +2,8 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { enumBody } from "./internal/enumBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type {
   CreateActivitiesListResponse as CreateActivitiesListResponseData,
   PropagationOwnershipOptions,
@@ -19,14 +21,14 @@ export class CreateActivitiesListRequest
   constructor(
     public listId: string,
     public friendlyName: string,
-    public activity: EntityReference,
+    public activity: EntityReference | AnyEntityPayload,
     public templateId: string,
     public propagate: boolean,
     public ownershipOptions: PropagationOwnershipOptions,
-    public owner: EntityReference,
+    public owner: EntityReference | AnyEntityPayload,
     public sendEmail: boolean,
     public postWorkflowEvent: boolean,
-    public queueId: string
+    public queueId?: string
   ) {
     super("CreateActivitiesList");
   }
@@ -40,7 +42,7 @@ export class CreateActivitiesListRequest
       Activity: this.activity,
       TemplateId: this.templateId,
       Propagate: this.propagate,
-      OwnershipOptions: this.ownershipOptions,
+      OwnershipOptions: enumBody(this.ownershipOptions, "PropagationOwnershipOptions"),
       Owner: this.owner,
       sendEmail: this.sendEmail,
       PostWorkflowEvent: this.postWorkflowEvent,

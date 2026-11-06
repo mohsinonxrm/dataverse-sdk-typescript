@@ -16,12 +16,12 @@ export class msdyn_ConnectSequenceRequest
     public regardingEntityId: string,
     public regardingEntityName: string,
     public sequenceId: string,
-    public segmentId: string,
-    public source: string,
-    public waitTime: number,
-    public advancedToOtherSequenceTargetStepId: string,
-    public ownerEntityId: string,
-    public ownerEntityName: string
+    public segmentId?: string,
+    public source?: string,
+    public waitTime?: number,
+    public advancedToOtherSequenceTargetStepId?: string,
+    public ownerEntityId?: string,
+    public ownerEntityName?: string
   ) {
     super("msdyn_ConnectSequence");
   }

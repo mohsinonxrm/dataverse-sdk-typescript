@@ -15,7 +15,7 @@ export interface BatchGetFlowMachineStatusResponse {
 export class BatchGetFlowMachineStatusAction implements Executable<BatchGetFlowMachineStatusResponse> {
   constructor(
     public readonly machineIds: string,
-    public readonly version: string
+    public readonly version?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

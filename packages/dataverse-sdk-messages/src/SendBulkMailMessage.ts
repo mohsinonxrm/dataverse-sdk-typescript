@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import { enumBody } from "./internal/enumBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { TypedQueryBase } from "./types/index.js";
 
 /**
@@ -13,11 +15,11 @@ export class SendBulkMailRequest
   implements Executable<SendBulkMailResponse>
 {
   constructor(
-    public sender: EntityReference,
+    public sender: EntityReference | AnyEntityPayload,
     public templateId: string,
     public regardingType: string,
     public regardingId: string,
-    public query: TypedQueryBase
+    public query?: TypedQueryBase
   ) {
     super("SendBulkMail");
   }
@@ -30,7 +32,7 @@ export class SendBulkMailRequest
       TemplateId: this.templateId,
       RegardingType: this.regardingType,
       RegardingId: this.regardingId,
-      Query: this.query,
+      Query: enumBody(this.query, "QueryBase"),
     };
 
     return {

@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from InitializeAttachmentBlocksUpload action
@@ -14,7 +15,7 @@ export interface InitializeAttachmentBlocksUploadResponse {
  * Unbound action
  */
 export class InitializeAttachmentBlocksUploadAction implements Executable<InitializeAttachmentBlocksUploadResponse> {
-  constructor(public readonly target: EntityReference) {}
+  constructor(public readonly target: EntityReference | AnyEntityPayload) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/InitializeAttachmentBlocksUpload`;

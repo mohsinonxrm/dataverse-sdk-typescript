@@ -14,9 +14,9 @@ export interface AddMembersBatchListResponse {
  */
 export class AddMembersBatchListAction implements Executable<AddMembersBatchListResponse> {
   constructor(
-    public readonly listId: string,
-    public readonly fetchXml: string,
-    public readonly skipCount: number
+    public readonly listId?: string,
+    public readonly fetchXml?: string,
+    public readonly skipCount?: number
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

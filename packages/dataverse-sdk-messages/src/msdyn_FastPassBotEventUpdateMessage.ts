@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * msdyn_FastPassBotEventUpdate request message
@@ -12,8 +13,8 @@ export class msdyn_FastPassBotEventUpdateRequest
   implements Executable<msdyn_FastPassBotEventUpdateResponse>
 {
   constructor(
-    public msdyn_PreImageRecord: EntityReference,
-    public msdyn_PostImageRecord: EntityReference
+    public msdyn_PreImageRecord: EntityReference | AnyEntityPayload,
+    public msdyn_PostImageRecord: EntityReference | AnyEntityPayload
   ) {
     super("msdyn_FastPassBotEventUpdate");
   }

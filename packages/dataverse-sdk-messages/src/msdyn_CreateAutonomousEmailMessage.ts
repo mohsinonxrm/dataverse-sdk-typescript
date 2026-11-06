@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_CreateAutonomousEmailResponse as msdyn_CreateAutonomousEmailResponseData } from "./types/index.js";
 
 /**
@@ -14,17 +15,17 @@ export class msdyn_CreateAutonomousEmailRequest
   implements Executable<msdyn_CreateAutonomousEmailResponse>
 {
   constructor(
-    public sourceContextEntity: EntityReference,
-    public entity: EntityReference,
-    public standardizedIntent: string,
-    public intentFamilyId: string,
-    public fallbackEmailTemplateId: string,
+    public sourceContextEntity: EntityReference | AnyEntityPayload | undefined,
+    public entity: EntityReference | AnyEntityPayload | undefined,
+    public standardizedIntent: string | undefined,
+    public intentFamilyId: string | undefined,
+    public fallbackEmailTemplateId: string | undefined,
     public suggestionType: string,
-    public senderEntity: EntityReference,
+    public senderEntity: EntityReference | AnyEntityPayload,
     public suggestionSubtype: string,
-    public useCopilotRecommendedTemplate: boolean,
-    public suggestionResponse: string,
-    public automationLevel: string
+    public useCopilotRecommendedTemplate?: boolean,
+    public suggestionResponse?: string,
+    public automationLevel?: string
   ) {
     super("msdyn_CreateAutonomousEmail");
   }

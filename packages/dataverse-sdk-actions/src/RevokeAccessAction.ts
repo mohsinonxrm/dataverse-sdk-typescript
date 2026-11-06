@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from RevokeAccess action
@@ -15,8 +16,8 @@ export interface RevokeAccessResponse {
  */
 export class RevokeAccessAction implements Executable<RevokeAccessResponse> {
   constructor(
-    public readonly target: EntityReference,
-    public readonly revokee: EntityReference
+    public readonly target: EntityReference | AnyEntityPayload,
+    public readonly revokee: EntityReference | AnyEntityPayload
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

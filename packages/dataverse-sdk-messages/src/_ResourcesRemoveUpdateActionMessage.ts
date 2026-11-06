@@ -11,8 +11,8 @@ export class _ResourcesRemoveUpdateActionRequest
   implements Executable<_ResourcesRemoveUpdateActionResponse>
 {
   constructor(
-    public resourcesToBeRemoved: string,
-    public resourceGroupId: string
+    public resourcesToBeRemoved?: string,
+    public resourceGroupId?: string
   ) {
     super("_ResourcesRemoveUpdateAction");
   }

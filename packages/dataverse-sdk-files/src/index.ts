@@ -8,4 +8,11 @@
  */
 
 export { FileColumnClient } from "./FileColumnClient.js";
-export type { FileUploadOptions, FileDownloadOptions, UploadProgress } from "./types.js";
+export type {
+  FileUploadOptions,
+  FileDownloadOptions,
+  UploadProgress,
+  DownloadProgress,
+  UploadMethod,
+  DownloadMethod,
+} from "./types.js";

@@ -1,4 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { businessunit } from "./types/index.js";
 
 /**
@@ -17,8 +19,8 @@ export interface SetParentTeamResponse {
 export class SetParentTeamAction implements Executable<SetParentTeamResponse> {
   constructor(
     public readonly teamId: string,
-    public readonly businessUnit: businessunit,
-    public readonly doNotMoveAllRecords: boolean
+    public readonly businessUnit: EntityReference | EntityPayload<businessunit>,
+    public readonly doNotMoveAllRecords?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

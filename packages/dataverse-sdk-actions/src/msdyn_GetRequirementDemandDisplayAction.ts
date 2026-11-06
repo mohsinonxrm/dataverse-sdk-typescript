@@ -17,7 +17,7 @@ export class msdyn_GetRequirementDemandDisplayAction implements Executable<msdyn
     public readonly requirementIds: string,
     public readonly timescale: number,
     public readonly timeZoneCode: number,
-    public readonly ignoreTimeZone: boolean
+    public readonly ignoreTimeZone?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

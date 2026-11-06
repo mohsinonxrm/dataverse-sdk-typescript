@@ -20,8 +20,8 @@ export class msdyn_GetAvailabilitySummaryFromDemandAction implements Executable<
     public readonly resourceIds: string,
     public readonly startDate: string,
     public readonly endDate: string,
-    public readonly considerAppointments: boolean,
-    public readonly ignoreTimeZone: boolean
+    public readonly considerAppointments?: boolean,
+    public readonly ignoreTimeZone?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

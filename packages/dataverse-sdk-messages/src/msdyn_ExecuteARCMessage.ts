@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_ExecuteARCResponse as msdyn_ExecuteARCResponseData } from "./types/index.js";
 
 /**
@@ -14,8 +15,8 @@ export class msdyn_ExecuteARCRequest
   implements Executable<msdyn_ExecuteARCResponse>
 {
   constructor(
-    public createdEntityReference: EntityReference,
-    public ruleId: string
+    public createdEntityReference: EntityReference | AnyEntityPayload,
+    public ruleId?: string
   ) {
     super("msdyn_ExecuteARC");
   }

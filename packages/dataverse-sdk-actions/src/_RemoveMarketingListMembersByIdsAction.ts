@@ -14,8 +14,8 @@ export interface _RemoveMarketingListMembersByIdsResponse {
  */
 export class _RemoveMarketingListMembersByIdsAction implements Executable<_RemoveMarketingListMembersByIdsResponse> {
   constructor(
-    public readonly listId: string,
-    public readonly memberIds: string
+    public readonly listId?: string,
+    public readonly memberIds?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

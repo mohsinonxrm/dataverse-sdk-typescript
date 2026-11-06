@@ -17,9 +17,9 @@ export interface msdyn_CheckForDeletedWebResourcesResponse {
  */
 export class msdyn_CheckForDeletedWebResourcesAction implements Executable<msdyn_CheckForDeletedWebResourcesResponse> {
   constructor(
-    public readonly entityIds: string,
-    public readonly solutionId: string,
-    public readonly excludeSolutionIds: string
+    public readonly entityIds?: string,
+    public readonly solutionId?: string,
+    public readonly excludeSolutionIds?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

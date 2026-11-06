@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from JoinLinkedChat action
@@ -17,7 +18,7 @@ export class JoinLinkedChatAction implements Executable<JoinLinkedChatResponse> 
   constructor(
     public readonly teamsChatId: string,
     public readonly userId: string,
-    public readonly regardingEntity: EntityReference
+    public readonly regardingEntity: EntityReference | AnyEntityPayload
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

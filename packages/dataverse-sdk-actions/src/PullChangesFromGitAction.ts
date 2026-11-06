@@ -16,7 +16,7 @@ export interface PullChangesFromGitResponse {
 export class PullChangesFromGitAction implements Executable<PullChangesFromGitResponse> {
   constructor(
     public readonly solutionUniqueName: string,
-    public readonly additionalParameters: PullChangesFromGitParameters
+    public readonly additionalParameters?: PullChangesFromGitParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

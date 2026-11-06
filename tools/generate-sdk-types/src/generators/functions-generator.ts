@@ -21,6 +21,8 @@ import {
 import { polymorphicParameterType } from "../utils/polymorphism.js";
 import { entityReturn, entityResponseInterface } from "../utils/entity-return.js";
 import { entityReferenceSource } from "../utils/entity-reference.js";
+import { ENTITY_PAYLOAD_MODULE, ENTITY_PAYLOAD_SOURCE } from "../utils/entity-payload.js";
+import { deprecatedAliasSource, operationNames } from "../utils/overloads.js";
 import { exportedEnumNames } from "./complex-types-generator.js";
 import { collectionBinding, ENTITY_SET_PARAM } from "../utils/binding.js";
 
@@ -318,17 +320,25 @@ export async function generateFunctions(
 
   const generatedFiles: string[] = [];
 
-  // Generate one file per function
+  // One file per function; overloads with different bindings each get their own (#75)
+  const { stems, aliases } = operationNames(functions);
   for (const func of functions) {
-    const content = generateFunctionClass(csdl, func);
-    const filename = `${func.name}Function.ts`;
+    const stem = stems.get(func) ?? func.name;
+    const content = generateFunctionClass(csdl, func, stem);
+    const filename = `${stem}Function.ts`;
     await writeTypeScriptFile(join(absolutePath, filename), content);
-    generatedFiles.push(`${func.name}Function`);
+    generatedFiles.push(`${stem}Function`);
     console.log(`  ✅ Generated ${filename}`);
+  }
+  for (const alias of aliases) {
+    await writeTypeScriptFile(
+      join(absolutePath, `${alias.name}Function.ts`),
+      deprecatedAliasSource(alias, "Function", ["Function", "Response"], ["Function"])
+    );
   }
 
   // Generate index.ts
-  const indexContent = generateFunctionsIndex(functions, exportedEnumNames(csdl));
+  const indexContent = generateFunctionsIndex(functions, stems, aliases, exportedEnumNames(csdl));
   await writeTypeScriptFile(join(absolutePath, "index.ts"), indexContent);
   console.log(`  ✅ Generated index.ts`);
 
@@ -338,9 +348,9 @@ export async function generateFunctions(
 /**
  * Generate TypeScript class for a function.
  */
-function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction): string {
-  const className = `${func.name}Function`;
-  const responseInterfaceName = `${func.name}Response`;
+function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction, stem = func.name): string {
+  const className = `${stem}Function`;
+  const responseInterfaceName = `${stem}Response`;
 
   // System entities that are filtered out and should be treated as 'any'
   const systemEntities = ["crmbaseentity", "principal", "crmmodelbaseentity", "expando"];
@@ -737,26 +747,30 @@ function generateResponseInterface(
 /**
  * Generate index.ts with all exports.
  */
-function generateFunctionsIndex(functions: CsdlFunction[], enumNames: string[]): string {
-  const sorted = functions.sort((a, b) => a.name.localeCompare(b.name));
-
+function generateFunctionsIndex(
+  operations: CsdlFunction[],
+  stems: Map<CsdlFunction, string>,
+  aliases: ReadonlyArray<{ name: string }>,
+  enumNames: string[]
+): string {
   let code = `/**\n`;
   code += ` * @mohsinonxrm/dataverse-sdk-functions\n`;
   code += ` *\n`;
   code += ` * Auto-generated typed Web API functions.\n`;
   code += ` */\n\n`;
 
-  // Deduplicate by function name
-  const seen = new Set<string>();
-  for (const func of sorted) {
-    if (!seen.has(func.name)) {
-      code += `export { ${func.name}Function, type ${func.name}Response } from './${func.name}Function.js';\n`;
-      seen.add(func.name);
-    }
+  // One export per class: overloads have their own (#75), plus the deprecated plain-name aliases
+  const entries = [
+    ...operations.map((op) => stems.get(op) ?? op.name),
+    ...aliases.map((a) => a.name),
+  ].sort((a, b) => a.localeCompare(b));
+  for (const stem of entries) {
+    code += `export { ${stem}Function, type ${stem}Response } from './${stem}Function.js';\n`;
   }
 
   // Export EntityReference type
   code += `\nexport { type EntityReference, type EntityReferenceOptions, createEntityReference, getEntitySetNameFromReference } from './types/EntityReference.js';\n`;
+  code += `export type { AnyEntityPayload, EntityPayload } from './types/${ENTITY_PAYLOAD_MODULE}.js';\n`;
 
   // Enum parameters take these values (EntityFilters.Entity | EntityFilters.Attributes) (#67)
   if (enumNames.length > 0) {
@@ -774,5 +788,10 @@ async function ensureEntityReferenceType(outputPath: string, csdl: CsdlSchema): 
   await writeTypeScriptFile(
     join(outputPath, "types", "EntityReference.ts"),
     entityReferenceSource(csdl, "functions")
+  );
+  // The entity payload types: navigation properties of complex types use them (#231)
+  await writeTypeScriptFile(
+    join(outputPath, "types", `${ENTITY_PAYLOAD_MODULE}.ts`),
+    ENTITY_PAYLOAD_SOURCE
   );
 }

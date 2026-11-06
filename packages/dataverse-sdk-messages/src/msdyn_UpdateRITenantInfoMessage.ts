@@ -11,8 +11,8 @@ export class msdyn_UpdateRITenantInfoRequest
   implements Executable<msdyn_UpdateRITenantInfoResponse>
 {
   constructor(
-    public hubName: string,
-    public primaryKey: string
+    public hubName?: string,
+    public primaryKey?: string
   ) {
     super("msdyn_UpdateRITenantInfo");
   }

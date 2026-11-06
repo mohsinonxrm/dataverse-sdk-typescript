@@ -11,10 +11,10 @@ export class SaveSettingValueRequest
   implements Executable<SaveSettingValueResponse>
 {
   constructor(
-    public appUniqueName: string,
+    public appUniqueName: string | undefined,
     public settingName: string,
     public value: string,
-    public solutionUniqueName: string
+    public solutionUniqueName?: string
   ) {
     super("SaveSettingValue");
   }

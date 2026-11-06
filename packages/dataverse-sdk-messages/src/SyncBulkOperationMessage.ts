@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { enumBody } from "./internal/enumBody.js";
 import type {
   QueryExpression,
   SyncBulkOperationResponse as SyncBulkOperationResponseData,
@@ -16,7 +17,7 @@ export class SyncBulkOperationRequest
   implements Executable<SyncBulkOperationResponse>
 {
   constructor(
-    public querySet: QueryExpression[],
+    public querySet: QueryExpression[] | undefined,
     public operationType: number
   ) {
     super("SyncBulkOperation");
@@ -26,7 +27,7 @@ export class SyncBulkOperationRequest
     const url = `${baseUrl}/SyncBulkOperation`;
 
     const body: Record<string, unknown> = {
-      QuerySet: this.querySet,
+      QuerySet: enumBody(this.querySet, "QueryExpression"),
       OperationType: this.operationType,
     };
 

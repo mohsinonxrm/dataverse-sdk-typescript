@@ -13,9 +13,9 @@ export class msdyn_CheckForCustomizedSitemapRequest
   implements Executable<msdyn_CheckForCustomizedSitemapResponse>
 {
   constructor(
-    public entityIds: string,
-    public solutionId: string,
-    public excludeSolutionIds: string
+    public entityIds?: string,
+    public solutionId?: string,
+    public excludeSolutionIds?: string
   ) {
     super("msdyn_CheckForCustomizedSitemap");
   }

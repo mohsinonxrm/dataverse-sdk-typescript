@@ -12,9 +12,9 @@ export class CCaaS_RejoinConversationRequest
 {
   constructor(
     public msdyn_ocliveworkitemId: string,
-    public clientId: string,
+    public clientId: string | undefined,
     public apiVersion: string,
-    public sessionId: string
+    public sessionId?: string
   ) {
     super("CCaaS_RejoinConversation");
   }

@@ -3,4 +3,6 @@
  */
 export interface msdyn_CloneMultipleResponse {
   CopiedEntities?: string;
+  SourceEntities?: Record<string, unknown>[];
+  TargetEntities?: Record<string, unknown>[];
 }

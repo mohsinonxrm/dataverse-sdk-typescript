@@ -11,8 +11,8 @@ export class msdyn_StartRIProvisioningRequest
   implements Executable<msdyn_StartRIProvisioningResponse>
 {
   constructor(
-    public hubName: string,
-    public primaryKey: string
+    public hubName?: string,
+    public primaryKey?: string
   ) {
     super("msdyn_StartRIProvisioning");
   }

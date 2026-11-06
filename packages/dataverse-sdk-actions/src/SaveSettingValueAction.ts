@@ -14,10 +14,10 @@ export interface SaveSettingValueResponse {
  */
 export class SaveSettingValueAction implements Executable<SaveSettingValueResponse> {
   constructor(
-    public readonly appUniqueName: string,
+    public readonly appUniqueName: string | undefined,
     public readonly settingName: string,
     public readonly value: string,
-    public readonly solutionUniqueName: string
+    public readonly solutionUniqueName?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

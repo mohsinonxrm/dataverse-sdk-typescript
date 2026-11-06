@@ -16,7 +16,7 @@ export interface ExportMappingsImportMapResponse {
 export class ExportMappingsImportMapAction implements Executable<ExportMappingsImportMapResponse> {
   constructor(
     public readonly importmapId: string,
-    public readonly exportIds: boolean
+    public readonly exportIds?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

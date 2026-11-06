@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdynmkt_consentprovidervalidateResponse as msdynmkt_consentprovidervalidateResponseData } from "./types/index.js";
 
 /**
@@ -13,7 +14,7 @@ export class msdynmkt_consentprovidervalidateRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_consentprovidervalidateResponse>
 {
-  constructor(public consentprovider: EntityReference) {
+  constructor(public consentprovider: EntityReference | AnyEntityPayload) {
     super("msdynmkt_consentprovidervalidate");
   }
 

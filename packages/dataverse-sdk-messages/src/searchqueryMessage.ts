@@ -13,17 +13,17 @@ export class searchqueryRequest
   implements Executable<searchqueryResponse>
 {
   constructor(
-    public options: string,
-    public filter: string,
-    public propertybag: string,
-    public entities: string,
+    public options: string | undefined,
+    public filter: string | undefined,
+    public propertybag: string | undefined,
+    public entities: string | undefined,
     public search: string,
-    public facets: string,
-    public skip: number,
-    public count: boolean,
-    public top: number,
-    public orderby: string,
-    public semanticquery: string
+    public facets?: string,
+    public skip?: number,
+    public count?: boolean,
+    public top?: number,
+    public orderby?: string,
+    public semanticquery?: string
   ) {
     super("searchquery");
   }

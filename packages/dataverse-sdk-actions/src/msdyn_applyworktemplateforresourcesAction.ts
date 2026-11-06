@@ -15,7 +15,7 @@ export interface msdyn_applyworktemplateforresourcesResponse {
 export class msdyn_applyworktemplateforresourcesAction implements Executable<msdyn_applyworktemplateforresourcesResponse> {
   constructor(
     public readonly calendarIds: string,
-    public readonly templateCalendarId: string
+    public readonly templateCalendarId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

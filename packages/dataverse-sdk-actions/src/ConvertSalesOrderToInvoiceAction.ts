@@ -1,5 +1,7 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { enumBody } from "./internal/enumBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { ColumnSet, invoice } from "./types/index.js";
 
 /**
@@ -20,8 +22,8 @@ export interface ConvertSalesOrderToInvoiceResponse extends invoice {
 export class ConvertSalesOrderToInvoiceAction implements Executable<ConvertSalesOrderToInvoiceResponse> {
   constructor(
     public readonly salesOrderId: string,
-    public readonly columnSet: ColumnSet,
-    public readonly processInstanceId: EntityReference
+    public readonly columnSet?: ColumnSet,
+    public readonly processInstanceId?: EntityReference | AnyEntityPayload
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -29,7 +31,7 @@ export class ConvertSalesOrderToInvoiceAction implements Executable<ConvertSales
 
     const body: Record<string, unknown> = {
       SalesOrderId: this.salesOrderId,
-      ColumnSet: this.columnSet,
+      ColumnSet: enumBody(this.columnSet, "ColumnSet"),
       ProcessInstanceId: this.processInstanceId,
     };
 

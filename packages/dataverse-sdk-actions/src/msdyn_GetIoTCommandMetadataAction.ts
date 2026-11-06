@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_GetIoTCommandMetadata action
@@ -14,7 +15,7 @@ export interface msdyn_GetIoTCommandMetadataResponse {
  * Unbound action
  */
 export class msdyn_GetIoTCommandMetadataAction implements Executable<msdyn_GetIoTCommandMetadataResponse> {
-  constructor(public readonly ioTCommandDefinition: EntityReference) {}
+  constructor(public readonly ioTCommandDefinition: EntityReference | AnyEntityPayload) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetIoTCommandMetadata`;

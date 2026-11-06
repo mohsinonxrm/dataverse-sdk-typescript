@@ -15,7 +15,7 @@ export interface msdyn_FpsActionResponse {
 export class msdyn_FpsActionAction implements Executable<msdyn_FpsActionResponse> {
   constructor(
     public readonly type: number,
-    public readonly inputParameter: string
+    public readonly inputParameter?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -1,5 +1,7 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { enumBody } from "./internal/enumBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { PrincipalAccess } from "./types/index.js";
 
 /**
@@ -16,8 +18,8 @@ export interface GrantAccessResponse {
  */
 export class GrantAccessAction implements Executable<GrantAccessResponse> {
   constructor(
-    public readonly target: EntityReference,
-    public readonly principalAccess: PrincipalAccess
+    public readonly target: EntityReference | AnyEntityPayload,
+    public readonly principalAccess?: PrincipalAccess
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -25,7 +27,7 @@ export class GrantAccessAction implements Executable<GrantAccessResponse> {
 
     const body: Record<string, unknown> = {
       Target: this.target,
-      PrincipalAccess: this.principalAccess,
+      PrincipalAccess: enumBody(this.principalAccess, "PrincipalAccess"),
     };
 
     return {

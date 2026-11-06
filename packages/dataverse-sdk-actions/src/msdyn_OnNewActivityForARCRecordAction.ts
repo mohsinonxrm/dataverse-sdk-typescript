@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_OnNewActivityForARCRecord action
@@ -15,8 +16,8 @@ export interface msdyn_OnNewActivityForARCRecordResponse {
  */
 export class msdyn_OnNewActivityForARCRecordAction implements Executable<msdyn_OnNewActivityForARCRecordResponse> {
   constructor(
-    public readonly msdyn_primaryEntityReference: EntityReference,
-    public readonly msdyn_sourceEntityReference: EntityReference
+    public readonly msdyn_primaryEntityReference: EntityReference | AnyEntityPayload,
+    public readonly msdyn_sourceEntityReference: EntityReference | AnyEntityPayload
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

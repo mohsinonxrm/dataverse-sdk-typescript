@@ -1,4 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_configuration } from "./types/index.js";
 
 /**
@@ -16,10 +18,10 @@ export interface msdyn_CloneMultipleResponse {
 export class msdyn_CloneMultipleAction implements Executable<msdyn_CloneMultipleResponse> {
   constructor(
     public readonly entityIds: string,
-    public readonly queryReference: msdyn_configuration,
-    public readonly ufxQuery: string,
-    public readonly transformAction: string,
-    public readonly transformParams: string
+    public readonly queryReference?: EntityReference | EntityPayload<msdyn_configuration>,
+    public readonly ufxQuery?: string,
+    public readonly transformAction?: string,
+    public readonly transformParams?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

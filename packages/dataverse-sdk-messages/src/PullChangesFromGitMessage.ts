@@ -13,7 +13,7 @@ export class PullChangesFromGitRequest
 {
   constructor(
     public solutionUniqueName: string,
-    public additionalParameters: PullChangesFromGitParameters
+    public additionalParameters?: PullChangesFromGitParameters
   ) {
     super("PullChangesFromGit");
   }

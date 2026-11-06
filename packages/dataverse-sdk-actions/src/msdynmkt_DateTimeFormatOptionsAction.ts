@@ -14,12 +14,12 @@ export interface msdynmkt_DateTimeFormatOptionsResponse {
  */
 export class msdynmkt_DateTimeFormatOptionsAction implements Executable<msdynmkt_DateTimeFormatOptionsResponse> {
   constructor(
-    public readonly msdynmkt_DateTimeRequestDateOnly: boolean,
-    public readonly msdynmkt_DateTimeRequestTimeZoneId: string,
-    public readonly msdynmkt_DateTimeRequestTimezoneIndepentent: boolean,
-    public readonly msdynmkt_DateTimeRequestDateOnlyV2: boolean,
-    public readonly msdynmkt_DateTimeRequestLCID: number,
-    public readonly msdynmkt_DateTimeRequestCultureName: string
+    public readonly msdynmkt_DateTimeRequestDateOnly?: boolean,
+    public readonly msdynmkt_DateTimeRequestTimeZoneId?: string,
+    public readonly msdynmkt_DateTimeRequestTimezoneIndepentent?: boolean,
+    public readonly msdynmkt_DateTimeRequestDateOnlyV2?: boolean,
+    public readonly msdynmkt_DateTimeRequestLCID?: number,
+    public readonly msdynmkt_DateTimeRequestCultureName?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import type { EntityReference } from "./EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type {
   CreateExceptionResponse as CreateExceptionResponseData,
   appointment,
@@ -16,7 +18,7 @@ export class CreateExceptionRequest
   implements Executable<CreateExceptionResponse>
 {
   constructor(
-    public target: appointment,
+    public target: EntityReference | EntityPayload<appointment>,
     public originalStartDate: string,
     public isDeleted: boolean
   ) {

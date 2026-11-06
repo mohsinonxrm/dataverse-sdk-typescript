@@ -14,7 +14,7 @@ export class msdyn_autonomousCaseCreateUpdateRequest
 {
   constructor(
     public autonomousCaseRequest: string,
-    public slot__conversation: string[]
+    public slot__conversation?: string[]
   ) {
     super("msdyn_autonomousCaseCreateUpdate");
   }

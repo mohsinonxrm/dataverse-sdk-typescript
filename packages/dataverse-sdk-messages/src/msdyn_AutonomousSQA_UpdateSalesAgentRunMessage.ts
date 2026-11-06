@@ -11,15 +11,15 @@ export class msdyn_AutonomousSQA_UpdateSalesAgentRunRequest
   implements Executable<msdyn_AutonomousSQA_UpdateSalesAgentRunResponse>
 {
   constructor(
-    public msdyn_IsNonRetryableError: boolean,
-    public msdyn_IsSalesAgentRunComplete: boolean,
-    public msdyn_SalesAgentRun: string,
-    public msdyn_TrackingId: string,
-    public msdyn_HasAgentRunFailed: boolean,
-    public msdyn_IsAgentThrottled: boolean,
-    public msdyn_RetryAfterDate: string,
-    public msdyn_HasAgentRunStarted: boolean,
-    public msdyn_SalesMacroAgentType: number
+    public msdyn_IsNonRetryableError?: boolean,
+    public msdyn_IsSalesAgentRunComplete?: boolean,
+    public msdyn_SalesAgentRun?: string,
+    public msdyn_TrackingId?: string,
+    public msdyn_HasAgentRunFailed?: boolean,
+    public msdyn_IsAgentThrottled?: boolean,
+    public msdyn_RetryAfterDate?: string,
+    public msdyn_HasAgentRunStarted?: boolean,
+    public msdyn_SalesMacroAgentType?: number
   ) {
     super("msdyn_AutonomousSQA_UpdateSalesAgentRun");
   }

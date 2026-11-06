@@ -16,8 +16,8 @@ export interface CCaaS_JoinConversationResponse {
 export class CCaaS_JoinConversationAction implements Executable<CCaaS_JoinConversationResponse> {
   constructor(
     public readonly msdyn_ocliveworkitemId: string,
-    public readonly clientId: string,
-    public readonly conversationAccess: number,
+    public readonly clientId: string | undefined,
+    public readonly conversationAccess: number | undefined,
     public readonly sessionId: string,
     public readonly apiVersion: string
   ) {}

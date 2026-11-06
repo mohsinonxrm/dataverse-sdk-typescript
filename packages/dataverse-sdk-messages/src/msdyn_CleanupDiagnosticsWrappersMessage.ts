@@ -11,8 +11,8 @@ export class msdyn_CleanupDiagnosticsWrappersRequest
   implements Executable<msdyn_CleanupDiagnosticsWrappersResponse>
 {
   constructor(
-    public workItemId: string,
-    public targetId: string,
+    public workItemId: string | undefined,
+    public targetId: string | undefined,
     public runNumber: number
   ) {
     super("msdyn_CleanupDiagnosticsWrappers");

@@ -13,9 +13,9 @@ export class msdyn_CheckForCustomizedWebResourcesRequest
   implements Executable<msdyn_CheckForCustomizedWebResourcesResponse>
 {
   constructor(
-    public entityIds: string,
-    public solutionId: string,
-    public excludeSolutionIds: string
+    public entityIds?: string,
+    public solutionId?: string,
+    public excludeSolutionIds?: string
   ) {
     super("msdyn_CheckForCustomizedWebResources");
   }

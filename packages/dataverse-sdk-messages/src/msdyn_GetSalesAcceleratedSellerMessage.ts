@@ -13,7 +13,7 @@ export class msdyn_GetSalesAcceleratedSellerRequest
 {
   constructor(
     public isTeamsRequest: boolean,
-    public expandDetails: boolean
+    public expandDetails?: boolean
   ) {
     super("msdyn_GetSalesAcceleratedSeller");
   }

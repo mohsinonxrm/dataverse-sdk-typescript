@@ -17,8 +17,8 @@ export interface msdyn_CheckForDeletedSDKMessageProcessingStepsResponse {
  */
 export class msdyn_CheckForDeletedSDKMessageProcessingStepsAction implements Executable<msdyn_CheckForDeletedSDKMessageProcessingStepsResponse> {
   constructor(
-    public readonly entityIds: string,
-    public readonly solutionId: string
+    public readonly entityIds?: string,
+    public readonly solutionId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

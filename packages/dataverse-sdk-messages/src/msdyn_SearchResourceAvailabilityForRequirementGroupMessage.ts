@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_SearchResourceAvailabilityForRequirementGroupResponse as msdyn_SearchResourceAvailabilityForRequirementGroupResponseData } from "./types/index.js";
 
 /**
@@ -14,11 +15,11 @@ export class msdyn_SearchResourceAvailabilityForRequirementGroupRequest
   implements Executable<msdyn_SearchResourceAvailabilityForRequirementGroupResponse>
 {
   constructor(
-    public version: string,
-    public isWebApi: boolean,
-    public requirementGroup: EntityReference,
-    public requirementSpecification: EntityReference,
-    public settings: EntityReference
+    public version: string | undefined,
+    public isWebApi: boolean | undefined,
+    public requirementGroup: EntityReference | AnyEntityPayload,
+    public requirementSpecification?: EntityReference | AnyEntityPayload,
+    public settings?: EntityReference | AnyEntityPayload
   ) {
     super("msdyn_SearchResourceAvailabilityForRequirementGroup");
   }

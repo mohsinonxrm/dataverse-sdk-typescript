@@ -13,10 +13,10 @@ export class msdyn_SalesMeetingPreparationRequest
   implements Executable<msdyn_SalesMeetingPreparationResponse>
 {
   constructor(
-    public msdyn_sessionId: string,
-    public msdyn_activityId: string,
+    public msdyn_sessionId: string | undefined,
+    public msdyn_activityId: string | undefined,
     public msdyn_id: string,
-    public msdyn_responseFormat: string
+    public msdyn_responseFormat?: string
   ) {
     super("msdyn_SalesMeetingPreparation");
   }

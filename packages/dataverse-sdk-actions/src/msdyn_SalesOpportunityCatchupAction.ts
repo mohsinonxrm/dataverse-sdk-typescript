@@ -17,12 +17,12 @@ export interface msdyn_SalesOpportunityCatchupResponse {
  */
 export class msdyn_SalesOpportunityCatchupAction implements Executable<msdyn_SalesOpportunityCatchupResponse> {
   constructor(
-    public readonly msdyn_since: string,
-    public readonly msdyn_responseFormat: string,
-    public readonly msdyn_additionalParams: string,
-    public readonly msdyn_sessionId: string,
-    public readonly msdyn_activityId: string,
-    public readonly msdyn_skipHeader: string,
+    public readonly msdyn_since: string | undefined,
+    public readonly msdyn_responseFormat: string | undefined,
+    public readonly msdyn_additionalParams: string | undefined,
+    public readonly msdyn_sessionId: string | undefined,
+    public readonly msdyn_activityId: string | undefined,
+    public readonly msdyn_skipHeader: string | undefined,
     public readonly msdyn_id: string
   ) {}
 

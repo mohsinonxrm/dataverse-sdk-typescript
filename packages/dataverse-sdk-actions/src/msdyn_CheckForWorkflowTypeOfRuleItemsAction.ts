@@ -17,7 +17,7 @@ export interface msdyn_CheckForWorkflowTypeOfRuleItemsResponse {
  * Unbound action
  */
 export class msdyn_CheckForWorkflowTypeOfRuleItemsAction implements Executable<msdyn_CheckForWorkflowTypeOfRuleItemsResponse> {
-  constructor(public readonly solutionId: string) {}
+  constructor(public readonly solutionId?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckForWorkflowTypeOfRuleItems`;

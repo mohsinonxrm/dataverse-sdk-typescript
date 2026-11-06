@@ -18,7 +18,7 @@ export class ExportSolutionFromGitAction implements Executable<ExportSolutionFro
     public readonly solutionName: string,
     public readonly managed: boolean,
     public readonly releaseBranch: string,
-    public readonly isLiteExport: boolean
+    public readonly isLiteExport?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

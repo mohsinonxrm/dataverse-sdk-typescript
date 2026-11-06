@@ -30,65 +30,52 @@ Messages execute via `OrganizationService.execute()` from `@mohsinonxrm/datavers
 
 ## Message Categories
 
-The SDK includes **1,356+ typed messages** organized into the following categories:
+The package has <!-- count:messages -->1,360<!-- /count --> typed messages: a `<Name>Request` /
+`<Name>Response` pair for each Web API **action** in the `$metadata` it was generated from,
+including solution-specific ones (`msdyn_*`, `msdynmkt_*`, `CCaaS_*`, …). This list is generated
+from the package source (`pnpm --filter generate-sdk-types docs`);
+[supported-messages.md](../../docs/mapping/supported-messages.md) has more.
 
-### Platform Messages
+- Functions (GET) aren't messages: `WhoAmI`, `RetrievePrincipalAccess` and
+  `RetrieveMetadataChanges` are in `@mohsinonxrm/dataverse-sdk-functions`.
+- There is no AssignRequest or SetStateRequest (.NET names): they aren't Web API actions. Assign by updating
+  `ownerid@odata.bind`, and change state by updating `statecode` and `statuscode`.
+- Tables and columns are created with `@mohsinonxrm/dataverse-sdk-metadata`, not with
+  the .NET CreateEntityRequest / CreateAttributeRequest.
 
-**Identity & Security:**
+<!-- operations:messages
+GrantAccess: Share a record with a user or team.
+RevokeAccess: Stop sharing a record.
+Merge: Merge duplicate records.
+ExecuteWorkflow: Run an on-demand workflow on a record.
+WinOpportunity: Close an opportunity as won.
+LoseOpportunity: Close an opportunity as lost.
+QualifyLead: Qualify a lead.
+ConvertQuoteToSalesOrder: Create an order from a quote.
+CalculatePrice: Recalculate a quote, order or invoice.
+CloseIncident: Resolve a case.
+ExportSolution: Export a solution.
+ImportSolution: Import a solution.
+PublishXml: Publish the named customizations.
+PublishAllXml: Publish all customizations.
+-->
 
-- `RetrievePrincipalAccessRequest/Response` - Get access rights
-- `GrantAccessRequest/Response` - Grant access to record
-- `RevokeAccessRequest/Response` - Revoke access to record
+- `new GrantAccessRequest(target, principalAccess?)` (`POST /GrantAccess`): Share a record with a user or team.
+- `new RevokeAccessRequest(target, revokee)` (`POST /RevokeAccess`): Stop sharing a record.
+- `new MergeRequest(target, subordinate, updateContent, performParentingChecks)` (`POST /Merge`): Merge duplicate records.
+- `new ExecuteWorkflowRequest(workflowId, entityId, inputArguments?)` (`POST /workflows({workflowId})/Microsoft.Dynamics.CRM.ExecuteWorkflow`): Run an on-demand workflow on a record.
+- `new WinOpportunityRequest(opportunityClose, caller, status)` (`POST /WinOpportunity`): Close an opportunity as won.
+- `new LoseOpportunityRequest(caller, opportunityClose, status)` (`POST /LoseOpportunity`): Close an opportunity as lost.
+- `new QualifyLeadRequest(leadId, createAccount, createContact, createOpportunity, opportunityCurrencyId, opportunityCustomerId, sourceCampaignId, status, processInstanceId?, leadQualificationV2Param?)` (`POST /leads({leadId})/Microsoft.Dynamics.CRM.QualifyLead`): Qualify a lead.
+- `new ConvertQuoteToSalesOrderRequest(quoteId, columnSet?, quoteCloseDate?, quoteCloseStatus?, quoteCloseSubject?, quoteCloseDescription?, processInstanceId?)` (`POST /ConvertQuoteToSalesOrder`): Create an order from a quote.
+- `new CalculatePriceRequest(target, parentId?)` (`POST /CalculatePrice`): Recalculate a quote, order or invoice.
+- `new CloseIncidentRequest(incidentResolution, status)` (`POST /CloseIncident`): Resolve a case.
+- `new ExportSolutionRequest(solutionName, managed, targetVersion?, exportAutoNumberingSettings?, exportCalendarSettings?, exportCustomizationSettings?, exportEmailTrackingSettings?, exportGeneralSettings?, exportMarketingSettings?, exportOutlookSynchronizationSettings?, exportRelationshipRoles?, exportIsvConfig?, exportSales?, exportExternalApplications?, exportComponentsParams?)` (`POST /ExportSolution`): Export a solution.
+- `new ImportSolutionRequest(overwriteUnmanagedCustomizations, publishWorkflows, customizationFile, importJobId, convertToManaged?, skipProductUpdateDependencies?, holdingSolution?, skipQueueRibbonJob?, layerDesiredOrder?, asyncRibbonProcessing?, componentParameters?, isTemplateMode?, templateSuffix?, solutionParameters?, templateDisplayNamePrefix?, stageAndUpgrade?, schemaUpdatesOnly?)` (`POST /ImportSolution`): Import a solution.
+- `new PublishXmlRequest(parameterXml)` (`POST /PublishXml`): Publish the named customizations.
+- `new PublishAllXmlRequest()` (`POST /PublishAllXml`): Publish all customizations.
 
-**Entity Operations:**
-
-- `AssignRequest/Response` - Assign record ownership
-- `SetStateRequest/Response` - Set state and status
-- `MergeRequest/Response` - Merge duplicate records
-
-**Metadata:**
-
-- `RetrieveMetadataChangesRequest/Response` - Get metadata delta
-- `CreateEntityRequest/Response` - Create custom entity
-- `CreateAttributeRequest/Response` - Create column
-
-### Business Messages
-
-**Sales Module:**
-
-- `WinOpportunityRequest/Response` - Close opportunity as won
-- `LoseOpportunityRequest/Response` - Close opportunity as lost
-- `QualifyLeadRequest/Response` - Qualify lead to opportunity
-- `ConvertQuoteToSalesOrderRequest/Response` - Convert quote
-- `CalculatePriceRequest/Response` - Calculate pricing
-
-**Customer Service Module:**
-
-- `CloseIncidentRequest/Response` - Close case
-- `ExecuteWorkflowRequest/Response` - Run workflow
-- `ApplyRoutingRuleRequest/Response` - Apply routing rules
-
-**Solution Management:**
-
-- `ExportSolutionRequest/Response` - Export solution
-- `ImportSolutionRequest/Response` - Import solution
-- `PublishXmlRequest/Response` - Publish metadata
-- `PublishAllXmlRequest/Response` - Publish all changes
-
-**Field Service (msdyn\_\*):**
-
-- Work order management messages
-- Resource scheduling messages
-- Booking operation messages
-
-**Marketing (msdynmkt\_\*):**
-
-- Campaign operation messages
-- Consent management messages
-
-### Complete Message Reference
-
-For a complete list of all 1,356+ messages with descriptions, see [docs/mapping/supported-messages.md](../../docs/mapping/supported-messages.md).
+<!-- /operations -->
 
 ## Quick Start
 
@@ -101,8 +88,7 @@ const service = new OrganizationService(client);
 // Execute workflow message
 const request = new ExecuteWorkflowRequest(
   workflowId, // Workflow GUID
-  recordId, // Entity record GUID
-  {} // Input arguments (optional)
+  recordId // Entity record GUID; InputArguments is optional
 );
 
 const response = await service.execute(request);
@@ -111,54 +97,19 @@ console.log("Async Operation ID:", response.result.asyncoperationid);
 
 ## Common Messages
 
-### Assign
+### Assign and SetState
 
-Assigns a record to a user or team.
-
-**Maps to:** Assign action (POST)
+These aren't Web API actions, so there are no message classes for them. Update the record:
 
 ```typescript
-import { AssignRequest, createEntityReference } from "@mohsinonxrm/dataverse-sdk-messages";
+// Assign
+await client.api(`accounts(${accountId})`).patch({
+  "ownerid@odata.bind": `/systemusers(${userId})`,
+});
 
-const request = new AssignRequest(
-  createEntityReference("account", accountId),
-  createEntityReference("systemuser", userId)
-);
-
-await service.execute(request);
+// Deactivate
+await client.api(`accounts(${accountId})`).patch({ statecode: 1, statuscode: 2 });
 ```
-
-**Constructor:**
-
-- `target: EntityReference` - The record to assign
-- `assignee: EntityReference` - The user or team to assign the record to
-
----
-
-### SetState
-
-Sets the state and status of a record.
-
-**Maps to:** PATCH with statecode/statuscode
-
-```typescript
-import { SetStateRequest, createEntityReference } from "@mohsinonxrm/dataverse-sdk-messages";
-
-// Deactivate an account
-const request = new SetStateRequest(
-  createEntityReference("account", accountId),
-  1, // State: Inactive
-  2 // Status: Inactive
-);
-
-await service.execute(request);
-```
-
-**Constructor:**
-
-- `entityMoniker: EntityReference` - The record to update
-- `state: number` - The state code value (e.g., 0 = Active, 1 = Inactive)
-- `status: number` - The status code value
 
 ---
 
@@ -213,6 +164,7 @@ const opportunityClose = {
 
 const request = new WinOpportunityRequest(
   opportunityClose,
+  undefined, // Caller
   3 // Status: Won
 );
 
@@ -221,7 +173,9 @@ await service.execute(request);
 
 **Constructor:**
 
-- `opportunityClose: opportunityclose` - The opportunity close record
+- `opportunityClose: EntityReference | EntityPayload<opportunityclose>` - The opportunity close
+  activity, with `"opportunityid@odata.bind"`
+- `caller: string | undefined` - Optional
 - `status: number` - The status code for won opportunities
 
 ---
@@ -238,9 +192,10 @@ import { MergeRequest, createEntityReference } from "@mohsinonxrm/dataverse-sdk-
 
 const request = new MergeRequest(
   createEntityReference("account", masterAccountId), // Target (keep)
-  subordinateAccountId, // Subordinate (merge & deactivate)
+  createEntityReference("account", subordinateAccountId), // Subordinate (merge & deactivate)
   {
-    // Update content
+    // UpdateContent: column values to set on the target
+    "@odata.type": "Microsoft.Dynamics.CRM.account",
     name: "Merged Company Name",
     revenue: 1000000,
   },
@@ -252,9 +207,10 @@ await service.execute(request);
 
 **Constructor:**
 
-- `target: EntityReference` - The master record (will remain after merge)
-- `subordinateId: string` - GUID of the subordinate record (will be deactivated/deleted)
-- `updateContent: Record<string, unknown>` - Updates to apply to the master record
+- `target: EntityReference | AnyEntityPayload` - The master record (will remain after merge)
+- `subordinate: EntityReference | AnyEntityPayload` - The subordinate record (will be deactivated)
+- `updateContent: EntityReference | AnyEntityPayload | undefined` - Column values to set on the
+  master record, with `@odata.type` naming the table
 - `performParentingChecks: boolean` - Whether to perform parenting checks
 
 ---
@@ -268,21 +224,8 @@ Exports a solution from the environment.
 ```typescript
 import { ExportSolutionRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 
-const request = new ExportSolutionRequest(
-  "MySolution", // Solution name
-  false, // Managed
-  false, // ExportAutoNumberingSettings
-  false, // ExportCalendarSettings
-  false, // ExportCustomizationSettings
-  false, // ExportEmailTrackingSettings
-  false, // ExportGeneralSettings
-  false, // ExportMarketingSettings
-  false, // ExportOutlookSynchronizationSettings
-  false, // ExportRelationshipRoles
-  false, // ExportIsvConfig
-  false, // ExportSales
-  false // ExportExternalApplications
-);
+// SolutionName and Managed are required; TargetVersion and the Export* settings are optional
+const request = new ExportSolutionRequest("MySolution", false);
 
 const response = await service.execute(request);
 
@@ -308,17 +251,15 @@ import { ImportSolutionRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 
 const solutionBytes = fs.readFileSync("solution.zip");
 
+const importJobId = crypto.randomUUID();
 const request = new ImportSolutionRequest(
-  solutionBytes.toString("base64"), // CustomizationFile
-  true, // PublishWorkflows
   false, // OverwriteUnmanagedCustomizations
-  false, // SkipProductUpdateDependencies
-  false, // HoldingSolution
-  false // ConvertToManaged
+  true, // PublishWorkflows
+  solutionBytes.toString("base64"), // CustomizationFile
+  importJobId // ImportJobId; the other parameters are optional
 );
 
-// ImportSolution returns no content. To follow the import, pass your own ImportJobId
-// (a new GUID) and read the importjob record with that id.
+// ImportSolution returns no content. Follow the import with the importjob record.
 await service.execute(request);
 ```
 
@@ -364,6 +305,27 @@ await service.execute(request);
 ```
 
 ---
+
+## Overloads (one class per binding)
+
+When `$metadata` declares an operation several times with different bindings, each binding has its
+own class: `<Name>_<table>Request` / `<Name>_<table>Response`, with `_collection` for a collection binding. An unbound
+overload keeps the plain name. A name with no unbound overload is still exported under the plain
+name, as a `@deprecated` alias of the binding it exported before.
+
+```typescript
+import {
+  AddItemCampaign_listRequest,
+  createEntityReference,
+} from "@mohsinonxrm/dataverse-sdk-messages";
+
+await service.execute(
+  new AddItemCampaign_listRequest(listId, createEntityReference("campaign", campaignId))
+);
+```
+
+`ExportToExcelRequest` is generated too, from a supplemental definition (`$metadata` leaves it out);
+see the actions package README.
 
 ## Generic OrganizationRequest
 
@@ -435,13 +397,41 @@ See [docs/mapping/message-to-webapi.md](../../docs/mapping/message-to-webapi.md)
 
 ## EntityReference Type
 
-```typescript
-interface EntityReference {
-  logicalName: string; // e.g., 'account', 'contact'
-  id: string; // GUID
-  name?: string; // Optional display name
-}
-```
+A reference to one record. Its enumerable properties are the Web API shape, `@odata.type` and
+the table's primary key (`{ "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "<id>" }`;
+activities use `activityid`). `logicalName`, `id`, `name` and `entitySetName` are kept on it but
+not sent.
+
+Only `createEntityReference` makes an `EntityReference`. A hand-written
+`{ "@odata.type", logicalName, id }` doesn't type-check, because it would send `logicalName` and
+`id`, which the Web API rejects. To write the reference by hand, use `WebApiEntityReference`, the
+JSON shape: `{ "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: id }`.
+
+### Entity Payloads
+
+An entity-typed parameter also takes the record itself, with column values:
+
+- a parameter of one table (`WinOpportunity`'s `OpportunityClose`) is
+  `EntityReference | EntityPayload<opportunityclose>`: its columns, `@odata.type`, and lookups set
+  with `<navigation property>@odata.bind`;
+- a parameter of any table (`crmbaseentity`, such as `Merge`'s `UpdateContent`) is
+  `EntityReference | AnyEntityPayload`, and `@odata.type` names the table.
+
+Parameters that `$metadata` doesn't mark `Nullable="false"` are optional: at the end of the
+argument list they can be left out (`new ExecuteWorkflowRequest(workflowId, entityId)`), and
+elsewhere they accept `undefined`.
+
+### Enum Values
+
+The Web API reads an enum value in a request body only as a string, such as `"ReadAccess"` or
+`"ReadAccess, WriteAccess"` for a flags enum, and rejects a number. The generated enums are
+numeric, so you can combine flags with `|`, and the messages send member names. This covers enum
+parameters and enums inside complex types, such as `PrincipalAccess.AccessMask` and the operators
+of a `QueryExpression`. The enums are exported from the package root.
+
+An entity member of a complex type, such as `PrincipalAccess.Principal`, takes a reference or a
+payload, like an entity-typed parameter:
+`new GrantAccessRequest(createEntityReference("account", id), { Principal: createEntityReference("team", teamId), AccessMask: AccessRights.ReadAccess })`.
 
 ---
 
@@ -455,7 +445,10 @@ Helper to create entity references.
 import { createEntityReference } from "@mohsinonxrm/dataverse-sdk-messages";
 
 const accountRef = createEntityReference("account", accountId);
-// { logicalName: 'account', id: '...' }
+// JSON: {"@odata.type":"Microsoft.Dynamics.CRM.account","accountid":"<id>"}
+const named = createEntityReference("contact", contactId, "John Doe"); // name is kept, not sent
+// A table the generated CSDL doesn't know:
+createEntityReference("new_project", id, { primaryIdAttribute: "new_projectid" });
 ```
 
 ---

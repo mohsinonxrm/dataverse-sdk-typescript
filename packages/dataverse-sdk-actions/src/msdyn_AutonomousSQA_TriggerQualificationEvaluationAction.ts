@@ -14,9 +14,9 @@ export interface msdyn_AutonomousSQA_TriggerQualificationEvaluationResponse {
  */
 export class msdyn_AutonomousSQA_TriggerQualificationEvaluationAction implements Executable<msdyn_AutonomousSQA_TriggerQualificationEvaluationResponse> {
   constructor(
-    public readonly msdyn_IsResearchOnly: boolean,
-    public readonly msdyn_ShouldOverwriteQualificationDecision: boolean,
-    public readonly msdyn_QualificationDecision: number,
+    public readonly msdyn_IsResearchOnly: boolean | undefined,
+    public readonly msdyn_ShouldOverwriteQualificationDecision: boolean | undefined,
+    public readonly msdyn_QualificationDecision: number | undefined,
     public readonly msdyn_TrackingId: string,
     public readonly msdyn_SalesAgentRun: string
   ) {}

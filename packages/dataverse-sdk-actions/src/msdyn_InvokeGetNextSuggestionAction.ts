@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_InvokeGetNextSuggestion action
@@ -15,9 +16,9 @@ export interface msdyn_InvokeGetNextSuggestionResponse {
  */
 export class msdyn_InvokeGetNextSuggestionAction implements Executable<msdyn_InvokeGetNextSuggestionResponse> {
   constructor(
-    public readonly entity: EntityReference,
-    public readonly customAgentResponse: string,
-    public readonly sourceContextEntity: EntityReference
+    public readonly entity?: EntityReference | AnyEntityPayload,
+    public readonly customAgentResponse?: string,
+    public readonly sourceContextEntity?: EntityReference | AnyEntityPayload
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

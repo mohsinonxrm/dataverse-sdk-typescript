@@ -13,7 +13,7 @@ export interface msdyn_GetSIPackageStatusResponse {
  * Unbound action
  */
 export class msdyn_GetSIPackageStatusAction implements Executable<msdyn_GetSIPackageStatusResponse> {
-  constructor(public readonly apiVersion: string) {}
+  constructor(public readonly apiVersion?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetSIPackageStatus`;

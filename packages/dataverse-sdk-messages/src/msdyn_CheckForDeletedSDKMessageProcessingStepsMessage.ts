@@ -13,8 +13,8 @@ export class msdyn_CheckForDeletedSDKMessageProcessingStepsRequest
   implements Executable<msdyn_CheckForDeletedSDKMessageProcessingStepsResponse>
 {
   constructor(
-    public entityIds: string,
-    public solutionId: string
+    public entityIds?: string,
+    public solutionId?: string
   ) {
     super("msdyn_CheckForDeletedSDKMessageProcessingSteps");
   }

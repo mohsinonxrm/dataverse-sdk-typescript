@@ -16,7 +16,7 @@ export class CCaaS_InitiateAgentGroupConsultRequest
     public intentGroupId: string,
     public apiVersion: string,
     public conversationAccess: string,
-    public agentGroupId: string,
+    public agentGroupId: string | undefined,
     public intentFamilyId: string,
     public consultType: string
   ) {

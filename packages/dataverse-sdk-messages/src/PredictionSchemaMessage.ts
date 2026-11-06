@@ -15,7 +15,7 @@ export class PredictionSchemaRequest
   constructor(
     public msdyn_aimodelId: string,
     public version: string,
-    public predictionMode: string
+    public predictionMode?: string
   ) {
     super("PredictionSchema");
   }

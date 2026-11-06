@@ -15,7 +15,7 @@ export interface ExportRetainedDataResponse {
 export class ExportRetainedDataAction implements Executable<ExportRetainedDataResponse> {
   constructor(
     public readonly fetchXml: string,
-    public readonly layoutXml: string
+    public readonly layoutXml?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

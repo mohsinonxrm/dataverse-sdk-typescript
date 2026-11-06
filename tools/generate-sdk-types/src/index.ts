@@ -5,6 +5,7 @@ import { generateMessages } from "./generators/messages-generator.js";
 import { generateActions } from "./generators/actions-generator.js";
 import { generateFunctions } from "./generators/functions-generator.js";
 import { generateComplexTypes } from "./generators/complex-types-generator.js";
+import { withSupplementalMetadata } from "./supplemental/supplemental-metadata.js";
 import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
 import { AzureIdentityTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-azure-identity";
 import { ClientSecretCredential } from "@azure/identity";
@@ -59,6 +60,8 @@ export async function generateTargets(
   console.log(`✅ Parsed ${String(csdl.enumTypes.length)} enum types`);
   console.log(`✅ Parsed ${String(csdl.actions.length)} actions`);
   console.log(`✅ Parsed ${String(csdl.functions.length)} functions\n`);
+  // Operations Dataverse runs but leaves out of $metadata, such as ExportToExcel (#75)
+  const operations = withSupplementalMetadata(csdl);
 
   // 4. Generate each target
   for (const target of targets) {
@@ -77,20 +80,20 @@ export async function generateTargets(
 
       case "messages":
         // Generate complex types first
-        await generateComplexTypes(csdl, `${targetConfig.outputPath}/types`, purge);
-        await generateMessages(csdl, targetConfig.outputPath, dryRun, purge);
+        await generateComplexTypes(operations, `${targetConfig.outputPath}/types`, purge, target);
+        await generateMessages(operations, targetConfig.outputPath, dryRun, purge);
         break;
 
       case "actions":
         // Generate complex types first
-        await generateComplexTypes(csdl, `${targetConfig.outputPath}/types`, purge);
-        await generateActions(csdl, targetConfig.outputPath, dryRun, purge);
+        await generateComplexTypes(operations, `${targetConfig.outputPath}/types`, purge, target);
+        await generateActions(operations, targetConfig.outputPath, dryRun, purge);
         break;
 
       case "functions":
         // Generate complex types first
-        await generateComplexTypes(csdl, `${targetConfig.outputPath}/types`, purge);
-        await generateFunctions(csdl, targetConfig.outputPath, dryRun, purge);
+        await generateComplexTypes(operations, `${targetConfig.outputPath}/types`, purge, target);
+        await generateFunctions(operations, targetConfig.outputPath, dryRun, purge);
         break;
     }
 
@@ -153,3 +156,8 @@ async function fetchMetadata(config: SdkGeneratorConfig): Promise<string> {
   const text = await response.text();
   return text;
 }
+
+export {
+  SUPPLEMENTAL_METADATA,
+  withSupplementalMetadata,
+} from "./supplemental/supplemental-metadata.js";

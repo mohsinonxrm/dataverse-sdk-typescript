@@ -16,12 +16,12 @@ export interface msdyn_RetrieveAppointmentsByAttendeesResponse {
  */
 export class msdyn_RetrieveAppointmentsByAttendeesAction implements Executable<msdyn_RetrieveAppointmentsByAttendeesResponse> {
   constructor(
-    public readonly version: string,
+    public readonly version: string | undefined,
     public readonly startDate: string,
     public readonly endDate: string,
     public readonly bookableResourceIds: string,
-    public readonly onlyRetrieveCompletedOrScheduled: boolean,
-    public readonly modifiedOnDate: string
+    public readonly onlyRetrieveCompletedOrScheduled?: boolean,
+    public readonly modifiedOnDate?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

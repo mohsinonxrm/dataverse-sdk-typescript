@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { enumBody } from "./internal/enumBody.js";
 import type { TypedQueryBase } from "./types/index.js";
 
 /**
@@ -14,13 +15,13 @@ export interface QueryExpressionToFetchXmlResponse {
  * Unbound action
  */
 export class QueryExpressionToFetchXmlAction implements Executable<QueryExpressionToFetchXmlResponse> {
-  constructor(public readonly query: TypedQueryBase) {}
+  constructor(public readonly query?: TypedQueryBase) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/QueryExpressionToFetchXml`;
 
     const body: Record<string, unknown> = {
-      Query: this.query,
+      Query: enumBody(this.query, "QueryBase"),
     };
 
     return {

@@ -13,7 +13,7 @@ export interface msdyn_ConvertToLocalizedFeaturesResponse {
  * Unbound action
  */
 export class msdyn_ConvertToLocalizedFeaturesAction implements Executable<msdyn_ConvertToLocalizedFeaturesResponse> {
-  constructor(public readonly predictionFeatures: string) {}
+  constructor(public readonly predictionFeatures?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ConvertToLocalizedFeatures`;

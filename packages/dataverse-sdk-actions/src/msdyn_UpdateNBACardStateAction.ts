@@ -14,7 +14,7 @@ export interface msdyn_UpdateNBACardStateResponse {
  */
 export class msdyn_UpdateNBACardStateAction implements Executable<msdyn_UpdateNBACardStateResponse> {
   constructor(
-    public readonly msdyn_SnoozeTill: string,
+    public readonly msdyn_SnoozeTill: string | undefined,
     public readonly msdyn_OperationType: number,
     public readonly msdyn_NBAEntityLogicalName: string,
     public readonly msdyn_NBAEntityIds: string

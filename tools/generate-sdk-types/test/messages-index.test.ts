@@ -46,7 +46,7 @@ beforeAll(async () => {
   dir = await mkdtemp(join(OUT_ROOT, ".gen-messages-index-test-"));
   await generateMessages(parseEdmx(EDMX), dir, false);
   // The hand-written files the generator keeps rather than writes.
-  for (const file of ["OrganizationRequest.ts", "EntityReference.ts", "types.ts"]) {
+  for (const file of ["OrganizationRequest.ts", "types.ts"]) {
     await copyFile(join(MESSAGES_SRC, file), join(dir, file));
   }
 });

@@ -12,7 +12,7 @@ export interface msdyn_GetSalesCopilotEmailInsightsResponse {}
  */
 export class msdyn_GetSalesCopilotEmailInsightsAction implements Executable<msdyn_GetSalesCopilotEmailInsightsResponse> {
   constructor(
-    public readonly msdyn_activityid: string,
+    public readonly msdyn_activityid: string | undefined,
     public readonly msdyn_regardinglogicalname: string,
     public readonly msdyn_internetmessageid: string,
     public readonly msdyn_regardingid: string,

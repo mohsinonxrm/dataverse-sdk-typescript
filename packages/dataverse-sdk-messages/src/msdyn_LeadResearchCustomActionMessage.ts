@@ -12,7 +12,7 @@ export class msdyn_LeadResearchCustomActionRequest
   extends OrganizationRequest
   implements Executable<msdyn_LeadResearchCustomActionResponse>
 {
-  constructor(public researchRequest: string) {
+  constructor(public researchRequest?: string) {
     super("msdyn_LeadResearchCustomAction");
   }
 

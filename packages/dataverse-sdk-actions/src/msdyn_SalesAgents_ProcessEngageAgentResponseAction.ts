@@ -19,10 +19,10 @@ export interface msdyn_SalesAgents_ProcessEngageAgentResponseResponse {
  */
 export class msdyn_SalesAgents_ProcessEngageAgentResponseAction implements Executable<msdyn_SalesAgents_ProcessEngageAgentResponseResponse> {
   constructor(
-    public readonly msdyn_Thread: string,
-    public readonly msdyn_TrackingId: string,
+    public readonly msdyn_Thread: string | undefined,
+    public readonly msdyn_TrackingId: string | undefined,
     public readonly msdyn_SalesMacroAgentType: number,
-    public readonly msdyn_SalesAgentRun: string,
+    public readonly msdyn_SalesAgentRun: string | undefined,
     public readonly msdyn_EngageAgentActivities: string
   ) {}
 

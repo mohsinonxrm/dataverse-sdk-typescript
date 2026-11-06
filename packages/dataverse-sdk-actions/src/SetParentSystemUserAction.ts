@@ -1,4 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { systemuser } from "./types/index.js";
 
 /**
@@ -17,7 +19,7 @@ export interface SetParentSystemUserResponse {
 export class SetParentSystemUserAction implements Executable<SetParentSystemUserResponse> {
   constructor(
     public readonly systemuserId: string,
-    public readonly parent: systemuser,
+    public readonly parent: EntityReference | EntityPayload<systemuser>,
     public readonly keepChildUsers: boolean
   ) {}
 

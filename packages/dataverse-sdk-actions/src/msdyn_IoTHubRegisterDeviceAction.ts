@@ -13,7 +13,7 @@ export interface msdyn_IoTHubRegisterDeviceResponse {
  * Unbound action
  */
 export class msdyn_IoTHubRegisterDeviceAction implements Executable<msdyn_IoTHubRegisterDeviceResponse> {
-  constructor(public readonly entityCollection: Record<string, unknown>[]) {}
+  constructor(public readonly entityCollection?: Record<string, unknown>[]) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_IoTHubRegisterDevice`;

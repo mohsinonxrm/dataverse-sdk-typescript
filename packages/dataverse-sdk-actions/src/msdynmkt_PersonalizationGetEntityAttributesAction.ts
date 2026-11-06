@@ -13,7 +13,7 @@ export interface msdynmkt_PersonalizationGetEntityAttributesResponse {
  * Unbound action
  */
 export class msdynmkt_PersonalizationGetEntityAttributesAction implements Executable<msdynmkt_PersonalizationGetEntityAttributesResponse> {
-  constructor(public readonly getEntityAttributesRequest: string) {}
+  constructor(public readonly getEntityAttributesRequest?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_PersonalizationGetEntityAttributes`;

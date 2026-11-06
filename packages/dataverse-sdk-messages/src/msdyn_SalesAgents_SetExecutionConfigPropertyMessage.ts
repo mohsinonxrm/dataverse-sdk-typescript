@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * msdyn_SalesAgents_SetExecutionConfigProperty request message
@@ -12,7 +13,7 @@ export class msdyn_SalesAgents_SetExecutionConfigPropertyRequest
   implements Executable<msdyn_SalesAgents_SetExecutionConfigPropertyResponse>
 {
   constructor(
-    public msdyn_salesagentprofileid: EntityReference,
+    public msdyn_salesagentprofileid: EntityReference | AnyEntityPayload,
     public msdyn_config_key: string,
     public msdyn_config_value: string
   ) {

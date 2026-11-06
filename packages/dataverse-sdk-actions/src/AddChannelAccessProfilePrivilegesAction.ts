@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { enumBody } from "./internal/enumBody.js";
 import type { ChannelAccessProfilePrivilege } from "./types/index.js";
 
 /**
@@ -16,7 +17,7 @@ export interface AddChannelAccessProfilePrivilegesResponse {
 export class AddChannelAccessProfilePrivilegesAction implements Executable<AddChannelAccessProfilePrivilegesResponse> {
   constructor(
     public readonly channelAccessProfileId: string,
-    public readonly privileges: ChannelAccessProfilePrivilege[]
+    public readonly privileges?: ChannelAccessProfilePrivilege[]
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -24,7 +25,7 @@ export class AddChannelAccessProfilePrivilegesAction implements Executable<AddCh
 
     const body: Record<string, unknown> = {
       ChannelAccessProfileId: this.channelAccessProfileId,
-      Privileges: this.privileges,
+      Privileges: enumBody(this.privileges, "ChannelAccessProfilePrivilege"),
     };
 
     return {

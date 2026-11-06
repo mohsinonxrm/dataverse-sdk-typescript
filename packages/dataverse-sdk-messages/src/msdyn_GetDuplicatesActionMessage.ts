@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseValue } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * msdyn_GetDuplicatesAction request message
@@ -12,7 +13,7 @@ export class msdyn_GetDuplicatesActionRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetDuplicatesActionResponse>
 {
-  constructor(public record: EntityReference) {
+  constructor(public record?: EntityReference | AnyEntityPayload) {
     super("msdyn_GetDuplicatesAction");
   }
 

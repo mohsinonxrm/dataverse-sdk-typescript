@@ -14,11 +14,11 @@ export interface msdyn_SalesAnswerFromDocumentsResponse {
  */
 export class msdyn_SalesAnswerFromDocumentsAction implements Executable<msdyn_SalesAnswerFromDocumentsResponse> {
   constructor(
-    public readonly msdyn_queryLocale: string,
-    public readonly msdyn_responseFormat: string,
+    public readonly msdyn_queryLocale: string | undefined,
+    public readonly msdyn_responseFormat: string | undefined,
     public readonly msdyn_userQuery: string,
-    public readonly msdyn_additionalParameters: string,
-    public readonly msdyn_activityId: string
+    public readonly msdyn_additionalParameters?: string,
+    public readonly msdyn_activityId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -14,7 +14,7 @@ export class msdyn_GetSequenceAnalyticsKPIsRequest
 {
   constructor(
     public sequenceId: string,
-    public sequenceStepId: string,
+    public sequenceStepId: string | undefined,
     public startDate: string,
     public endDate: string,
     public configuration: number

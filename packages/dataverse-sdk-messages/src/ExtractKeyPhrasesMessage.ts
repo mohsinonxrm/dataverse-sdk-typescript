@@ -14,8 +14,8 @@ export class ExtractKeyPhrasesRequest
 {
   constructor(
     public text: string,
-    public modelId: string,
-    public language: string
+    public modelId?: string,
+    public language?: string
   ) {
     super("ExtractKeyPhrases");
   }

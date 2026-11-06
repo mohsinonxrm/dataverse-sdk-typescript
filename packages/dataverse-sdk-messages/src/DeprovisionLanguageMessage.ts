@@ -12,7 +12,7 @@ export class DeprovisionLanguageRequest
 {
   constructor(
     public language: number,
-    public cleanupLanguageRows: boolean
+    public cleanupLanguageRows?: boolean
   ) {
     super("DeprovisionLanguage");
   }

@@ -166,6 +166,10 @@ function parseComplexTypes(complexTypeElements: any[], namespace: string): CsdlC
       baseType: ct["@_BaseType"],
       abstract: ct["@_Abstract"] === true || ct["@_Abstract"] === "true",
       properties,
+      // Entity-valued members (#231), such as PrincipalAccess.Principal
+      navigationProperties: ct.NavigationProperty
+        ? parseNavigationProperties(ct.NavigationProperty)
+        : [],
     };
   });
 }
@@ -185,6 +189,7 @@ function parseEnumTypes(enumTypeElements: any[], namespace: string): CsdlEnumTyp
     return {
       name: et["@_Name"],
       namespace,
+      isFlags: et["@_IsFlags"] === true || et["@_IsFlags"] === "true",
       members,
     };
   });
@@ -277,6 +282,7 @@ function parseNavigationProperties(navPropElements: any[]): CsdlNavigationProper
     type: nav["@_Type"],
     partner: nav["@_Partner"],
     containsTarget: nav["@_ContainsTarget"],
+    nullable: nav["@_Nullable"],
   }));
 }
 

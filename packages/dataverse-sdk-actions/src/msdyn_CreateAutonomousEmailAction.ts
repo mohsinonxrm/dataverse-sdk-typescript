@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_CreateAutonomousEmail action
@@ -15,17 +16,17 @@ export interface msdyn_CreateAutonomousEmailResponse {
  */
 export class msdyn_CreateAutonomousEmailAction implements Executable<msdyn_CreateAutonomousEmailResponse> {
   constructor(
-    public readonly sourceContextEntity: EntityReference,
-    public readonly entity: EntityReference,
-    public readonly standardizedIntent: string,
-    public readonly intentFamilyId: string,
-    public readonly fallbackEmailTemplateId: string,
+    public readonly sourceContextEntity: EntityReference | AnyEntityPayload | undefined,
+    public readonly entity: EntityReference | AnyEntityPayload | undefined,
+    public readonly standardizedIntent: string | undefined,
+    public readonly intentFamilyId: string | undefined,
+    public readonly fallbackEmailTemplateId: string | undefined,
     public readonly suggestionType: string,
-    public readonly senderEntity: EntityReference,
+    public readonly senderEntity: EntityReference | AnyEntityPayload,
     public readonly suggestionSubtype: string,
-    public readonly useCopilotRecommendedTemplate: boolean,
-    public readonly suggestionResponse: string,
-    public readonly automationLevel: string
+    public readonly useCopilotRecommendedTemplate?: boolean,
+    public readonly suggestionResponse?: string,
+    public readonly automationLevel?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

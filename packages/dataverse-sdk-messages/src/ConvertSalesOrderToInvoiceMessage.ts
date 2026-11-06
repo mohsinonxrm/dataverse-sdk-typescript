@@ -2,6 +2,8 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { enumBody } from "./internal/enumBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { ColumnSet, invoice } from "./types/index.js";
 
 /**
@@ -15,8 +17,8 @@ export class ConvertSalesOrderToInvoiceRequest
 {
   constructor(
     public salesOrderId: string,
-    public columnSet: ColumnSet,
-    public processInstanceId: EntityReference
+    public columnSet?: ColumnSet,
+    public processInstanceId?: EntityReference | AnyEntityPayload
   ) {
     super("ConvertSalesOrderToInvoice");
   }
@@ -26,7 +28,7 @@ export class ConvertSalesOrderToInvoiceRequest
 
     const body: Record<string, unknown> = {
       SalesOrderId: this.salesOrderId,
-      ColumnSet: this.columnSet,
+      ColumnSet: enumBody(this.columnSet, "ColumnSet"),
       ProcessInstanceId: this.processInstanceId,
     };
 

@@ -17,7 +17,7 @@ export class msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentExecutionConfigActi
     public readonly msdyn_SalesAgentType: number,
     public readonly msdyn_AgentExecutionConfigToUpdate: string,
     public readonly msdyn_SARRecordsToCreate: string,
-    public readonly msdyn_TrackingId: string
+    public readonly msdyn_TrackingId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

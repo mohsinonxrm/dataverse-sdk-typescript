@@ -209,7 +209,7 @@ async function executeWorkflowDemo(orgService: OrganizationService): Promise<voi
     console.log(chalk.dim("\nExample code:"));
     console.log(
       chalk.dim(`
-  const request = new ExecuteWorkflowRequest(workflowId, targetRecordId, { Arguments: [] });
+  const request = new ExecuteWorkflowRequest(workflowId, targetRecordId);
   const response = await orgService.execute(request);
   console.log(\`Async Operation ID: \${response.result.asyncoperationid}\`);
     `)
@@ -226,8 +226,8 @@ async function executeWorkflowDemo(orgService: OrganizationService): Promise<voi
 
   console.log(`Executing workflow ${chalk.dim(workflowId.substring(0, 8) + "...")}`);
   console.log(`  On account: ${chalk.dim(targetAccount.substring(0, 8) + "...")}`);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const request = new ExecuteWorkflowRequest(workflowId, targetAccount, { Arguments: [] } as any);
+  // InputArguments is optional; this workflow takes none
+  const request = new ExecuteWorkflowRequest(workflowId, targetAccount);
   const response = await orgService.execute<ExecuteWorkflowResponse>(request);
 
   console.log(chalk.green("✓ Workflow execution initiated"));
@@ -249,7 +249,7 @@ async function winOpportunityDemo(
 
   // Create test opportunity
   console.log("Creating test opportunity...");
-  const opportunityId: string = await orgService.create("opportunities", {
+  const opportunityId = await orgService.create("opportunities", {
     name: "Test Opportunity for Win",
     estimatedvalue: 75000,
     estimatedclosedate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
@@ -263,14 +263,12 @@ async function winOpportunityDemo(
   // Win the opportunity
   console.log("\nWinning opportunity...");
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const request = new WinOpportunityRequest(
     {
       "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
       "opportunityid@odata.bind": `/opportunities(${opportunityId})`,
       actualrevenue: 78000,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any, // opportunityclose type
+    },
     "", // caller (empty for current user)
     3 // Won status code
   );
@@ -338,16 +336,14 @@ async function mergeDemo(orgService: OrganizationService, client: DataverseClien
   // Merge subordinate into target
   console.log("\nMerging leads...");
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const request = new MergeRequest(
     createEntityReference("lead", targetId),
     createEntityReference("lead", subordinateId),
-
+    // UpdateContent: the column values to set on the target
     {
       "@odata.type": "Microsoft.Dynamics.CRM.lead",
       subject: "Merged lead - consolidated from duplicate",
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any, // UpdateContent uses entity properties
+    },
     false // performParentingChecks
   );
 

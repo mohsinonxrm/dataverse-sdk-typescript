@@ -12,7 +12,7 @@ export class msdynmkt_ValidatePlaceholdersRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_ValidatePlaceholdersResponse>
 {
-  constructor(public validatePlaceholdersRequest: string) {
+  constructor(public validatePlaceholdersRequest?: string) {
     super("msdynmkt_ValidatePlaceholders");
   }
 

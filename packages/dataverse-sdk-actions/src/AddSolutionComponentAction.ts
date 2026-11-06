@@ -18,8 +18,8 @@ export class AddSolutionComponentAction implements Executable<AddSolutionCompone
     public readonly componentType: number,
     public readonly solutionUniqueName: string,
     public readonly addRequiredComponents: boolean,
-    public readonly doNotIncludeSubcomponents: boolean,
-    public readonly includedComponentSettingsValues: string[]
+    public readonly doNotIncludeSubcomponents?: boolean,
+    public readonly includedComponentSettingsValues?: string[]
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

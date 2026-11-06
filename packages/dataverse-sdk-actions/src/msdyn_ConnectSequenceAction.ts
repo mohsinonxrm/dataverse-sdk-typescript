@@ -17,12 +17,12 @@ export class msdyn_ConnectSequenceAction implements Executable<msdyn_ConnectSequ
     public readonly regardingEntityId: string,
     public readonly regardingEntityName: string,
     public readonly sequenceId: string,
-    public readonly segmentId: string,
-    public readonly source: string,
-    public readonly waitTime: number,
-    public readonly advancedToOtherSequenceTargetStepId: string,
-    public readonly ownerEntityId: string,
-    public readonly ownerEntityName: string
+    public readonly segmentId?: string,
+    public readonly source?: string,
+    public readonly waitTime?: number,
+    public readonly advancedToOtherSequenceTargetStepId?: string,
+    public readonly ownerEntityId?: string,
+    public readonly ownerEntityName?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

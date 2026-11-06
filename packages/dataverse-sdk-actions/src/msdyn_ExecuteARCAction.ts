@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_ExecuteARC action
@@ -16,8 +17,8 @@ export interface msdyn_ExecuteARCResponse {
  */
 export class msdyn_ExecuteARCAction implements Executable<msdyn_ExecuteARCResponse> {
   constructor(
-    public readonly createdEntityReference: EntityReference,
-    public readonly ruleId: string
+    public readonly createdEntityReference: EntityReference | AnyEntityPayload,
+    public readonly ruleId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -13,8 +13,8 @@ export class msdyn_CopilotCreateOutlookMessageOrAppointmentRequest
   implements Executable<msdyn_CopilotCreateOutlookMessageOrAppointmentResponse>
 {
   constructor(
-    public msdyn_messageId: string,
-    public msdyn_correlationId: string,
+    public msdyn_messageId: string | undefined,
+    public msdyn_correlationId: string | undefined,
     public msdyn_outlookItemType: string,
     public msdyn_outlookPayload: string
   ) {

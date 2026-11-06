@@ -15,7 +15,7 @@ export interface msdyn_SalesAgents_GetHandoverDetailsResponse {
 export class msdyn_SalesAgents_GetHandoverDetailsAction implements Executable<msdyn_SalesAgents_GetHandoverDetailsResponse> {
   constructor(
     public readonly msdyn_SalesAgentRun: string,
-    public readonly msdyn_TrackingId: string
+    public readonly msdyn_TrackingId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

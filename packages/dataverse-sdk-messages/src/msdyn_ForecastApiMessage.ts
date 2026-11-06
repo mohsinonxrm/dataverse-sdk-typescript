@@ -14,7 +14,7 @@ export class msdyn_ForecastApiRequest
 {
   constructor(
     public webApiName: string,
-    public requestJson: string
+    public requestJson?: string
   ) {
     super("msdyn_ForecastApi");
   }

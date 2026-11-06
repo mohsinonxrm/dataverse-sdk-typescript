@@ -13,8 +13,8 @@ export class msdyn_CheckGeolocationEnabledRequest
   implements Executable<msdyn_CheckGeolocationEnabledResponse>
 {
   constructor(
-    public version: string,
-    public noCache: boolean
+    public version?: string,
+    public noCache?: boolean
   ) {
     super("msdyn_CheckGeolocationEnabled");
   }

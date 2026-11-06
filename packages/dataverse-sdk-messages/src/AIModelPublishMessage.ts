@@ -14,7 +14,7 @@ export class AIModelPublishRequest
   constructor(
     public modelId: string,
     public modelName: string,
-    public source: string,
+    public source: string | undefined,
     public runConfigurationId: string,
     public templateId: string,
     public runConfiguration: string,

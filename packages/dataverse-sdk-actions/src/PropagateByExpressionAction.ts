@@ -1,5 +1,7 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { enumBody } from "./internal/enumBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { PropagationOwnershipOptions, TypedQueryBase } from "./types/index.js";
 
 /**
@@ -16,28 +18,28 @@ export interface PropagateByExpressionResponse {
  */
 export class PropagateByExpressionAction implements Executable<PropagateByExpressionResponse> {
   constructor(
-    public readonly queryExpression: TypedQueryBase,
+    public readonly queryExpression: TypedQueryBase | undefined,
     public readonly friendlyName: string,
     public readonly executeImmediately: boolean,
-    public readonly activity: EntityReference,
+    public readonly activity: EntityReference | AnyEntityPayload,
     public readonly templateId: string,
     public readonly ownershipOptions: PropagationOwnershipOptions,
     public readonly postWorkflowEvent: boolean,
-    public readonly owner: EntityReference,
+    public readonly owner: EntityReference | AnyEntityPayload,
     public readonly sendEmail: boolean,
-    public readonly queueId: string
+    public readonly queueId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/PropagateByExpression`;
 
     const body: Record<string, unknown> = {
-      QueryExpression: this.queryExpression,
+      QueryExpression: enumBody(this.queryExpression, "QueryBase"),
       FriendlyName: this.friendlyName,
       ExecuteImmediately: this.executeImmediately,
       Activity: this.activity,
       TemplateId: this.templateId,
-      OwnershipOptions: this.ownershipOptions,
+      OwnershipOptions: enumBody(this.ownershipOptions, "PropagationOwnershipOptions"),
       PostWorkflowEvent: this.postWorkflowEvent,
       Owner: this.owner,
       SendEmail: this.sendEmail,

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { opportunity } from "./types/index.js";
 
 /**
@@ -13,7 +15,7 @@ export class GetSalesOrderProductsFromOpportunityRequest
 {
   constructor(
     public salesorderId: string,
-    public opportunity: opportunity
+    public opportunity: EntityReference | EntityPayload<opportunity>
   ) {
     super("GetSalesOrderProductsFromOpportunity");
   }

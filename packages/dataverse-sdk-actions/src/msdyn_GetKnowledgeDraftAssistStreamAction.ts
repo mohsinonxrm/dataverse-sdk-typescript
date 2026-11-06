@@ -15,7 +15,7 @@ export interface msdyn_GetKnowledgeDraftAssistStreamResponse {
 export class msdyn_GetKnowledgeDraftAssistStreamAction implements Executable<msdyn_GetKnowledgeDraftAssistStreamResponse> {
   constructor(
     public readonly requestPayload: string,
-    public readonly context: string
+    public readonly context?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

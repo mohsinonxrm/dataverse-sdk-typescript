@@ -8,8 +8,9 @@
 // Base classes and types
 export { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 export type { OrganizationRequestOptions } from "./OrganizationRequest.js";
-export type { EntityReference } from "./EntityReference.js";
-export { createEntityReference } from "./EntityReference.js";
+export type { EntityReference, EntityReferenceOptions } from "./EntityReference.js";
+export { createEntityReference, type WebApiEntityReference } from "./EntityReference.js";
+export type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 export type { MessageRequest, MessageResponse } from "./types.js";
 
 // Message classes
@@ -96,6 +97,22 @@ export {
   AddComponentToSolutionAsyncResponse,
 } from "./AddComponentToSolutionAsyncMessage.js";
 export { AddItemCampaignRequest, AddItemCampaignResponse } from "./AddItemCampaignMessage.js";
+export {
+  AddItemCampaign_campaignRequest,
+  AddItemCampaign_campaignResponse,
+} from "./AddItemCampaign_campaignMessage.js";
+export {
+  AddItemCampaign_listRequest,
+  AddItemCampaign_listResponse,
+} from "./AddItemCampaign_listMessage.js";
+export {
+  AddItemCampaign_productRequest,
+  AddItemCampaign_productResponse,
+} from "./AddItemCampaign_productMessage.js";
+export {
+  AddItemCampaign_salesliteratureRequest,
+  AddItemCampaign_salesliteratureResponse,
+} from "./AddItemCampaign_salesliteratureMessage.js";
 export {
   AddItemCampaignActivityRequest,
   AddItemCampaignActivityResponse,
@@ -634,6 +651,7 @@ export {
   ExportSolutionFromGitAsyncRequest,
   ExportSolutionFromGitAsyncResponse,
 } from "./ExportSolutionFromGitAsyncMessage.js";
+export { ExportToExcelRequest, ExportToExcelResponse } from "./ExportToExcelMessage.js";
 export { ExportTranslationRequest, ExportTranslationResponse } from "./ExportTranslationMessage.js";
 export { ExtractKeyPhrasesRequest, ExtractKeyPhrasesResponse } from "./ExtractKeyPhrasesMessage.js";
 export {
@@ -4849,3 +4867,68 @@ export {
 } from "./ValidateUnpublishedMessage.js";
 export { WinOpportunityRequest, WinOpportunityResponse } from "./WinOpportunityMessage.js";
 export { WinQuoteRequest, WinQuoteResponse } from "./WinQuoteMessage.js";
+
+// Enums
+export {
+  AccessRights,
+  AssociatedMenuBehavior,
+  AssociatedMenuGroup,
+  AttributeRequiredLevel,
+  AttributeTypeCode,
+  BusinessNotificationParameterType,
+  BusinessNotificationSeverity,
+  CascadeType,
+  ChannelAccessProfilePrivilegeDepth,
+  ConditionOperator,
+  DateTimeFormat,
+  DeletedMetadataFilters,
+  DependencyDepth,
+  EndpointAccessType,
+  EndpointType,
+  EntityClusterMode,
+  EntityFilters,
+  EntityKeyIndexStatus,
+  ErrorType,
+  ImeMode,
+  ImportDecision,
+  IntegerFormat,
+  JoinOperator,
+  LayerDesiredOrderType,
+  LogicalOperator,
+  LookupFormat,
+  ManagedPropertyEvaluationPriority,
+  ManagedPropertyOperation,
+  ManagedPropertyType,
+  MetadataConditionOperator,
+  MissingPackageResolutionAction,
+  OptionSetType,
+  OrderType,
+  OrganizationState,
+  OrganizationType,
+  OwnershipTypes,
+  PresentInOrg,
+  PrivilegeDepth,
+  PrivilegeType,
+  PropagationOwnershipOptions,
+  ProvisionLanguageForUserStatusType,
+  RecentlyViewedRecordType,
+  RelationshipType,
+  ResultCode,
+  RibbonLocationFilters,
+  RollupType,
+  SearchDirection,
+  SecurityTypes,
+  ShareAccessRights,
+  SolutionOperationStatus,
+  SolutionOperationType,
+  SolutionValidationResultType,
+  StageSolutionStatus,
+  StringFormat,
+  SubCode,
+  SubstitutionStatus,
+  TargetFieldType,
+  TimeCode,
+  ValidateSolutionStatus,
+  XrmAggregateType,
+  XrmDateTimeGrouping,
+} from "./types/index.js";

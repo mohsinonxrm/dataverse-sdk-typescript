@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * msdyn_CreateSwarmParticipants request message
@@ -11,7 +12,7 @@ export class msdyn_CreateSwarmParticipantsRequest
   extends OrganizationRequest
   implements Executable<msdyn_CreateSwarmParticipantsResponse>
 {
-  constructor(public swarmEntityReference: EntityReference) {
+  constructor(public swarmEntityReference: EntityReference | AnyEntityPayload) {
     super("msdyn_CreateSwarmParticipants");
   }
 

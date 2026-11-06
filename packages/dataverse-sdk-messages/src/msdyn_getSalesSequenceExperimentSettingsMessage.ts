@@ -13,7 +13,7 @@ export class msdyn_getSalesSequenceExperimentSettingsRequest
   implements Executable<msdyn_getSalesSequenceExperimentSettingsResponse>
 {
   constructor(
-    public msdyn_experimentRecordId: string,
+    public msdyn_experimentRecordId: string | undefined,
     public msdyn_experimentKey: string,
     public msdyn_experimentVersionRecordId: string
   ) {

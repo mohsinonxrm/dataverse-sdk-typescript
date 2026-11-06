@@ -10,7 +10,7 @@ export class msdyn_PredictiveScoringDataMigrationRequest
   extends OrganizationRequest
   implements Executable<msdyn_PredictiveScoringDataMigrationResponse>
 {
-  constructor(public inputData: string) {
+  constructor(public inputData?: string) {
     super("msdyn_PredictiveScoringDataMigration");
   }
 

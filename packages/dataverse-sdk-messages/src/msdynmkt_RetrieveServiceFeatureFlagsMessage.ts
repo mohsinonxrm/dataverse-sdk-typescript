@@ -12,7 +12,7 @@ export class msdynmkt_RetrieveServiceFeatureFlagsRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_RetrieveServiceFeatureFlagsResponse>
 {
-  constructor(public serviceName: string) {
+  constructor(public serviceName?: string) {
     super("msdynmkt_RetrieveServiceFeatureFlags");
   }
 

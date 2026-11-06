@@ -1,53 +1,20 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatParameterAlias } from "./internal/odataLiteral.js";
-import type { EntityReference } from "./types/EntityReference.js";
-import type { AccessRights } from "./types/index.js";
+import {
+  RetrievePrincipalAccess_organizationFunction,
+  type RetrievePrincipalAccess_organizationResponse,
+} from "./RetrievePrincipalAccess_organizationFunction.js";
 
 /**
- * Response from RetrievePrincipalAccess function
+ * @deprecated Use `RetrievePrincipalAccess_organizationFunction`. `RetrievePrincipalAccess` has a class per binding (#75);
+ * this name kept the one bound to organization.
  */
-export interface RetrievePrincipalAccessResponse {
-  AccessRights: AccessRights;
-}
-
+export const RetrievePrincipalAccessFunction = RetrievePrincipalAccess_organizationFunction;
 /**
- * RetrievePrincipalAccess function
- *
- * Bound function
- * Binding parameter: entity (mscrm.organization)
+ * @deprecated Use `RetrievePrincipalAccess_organizationFunction`. `RetrievePrincipalAccess` has a class per binding (#75);
+ * this name kept the one bound to organization.
  */
-export class RetrievePrincipalAccessFunction implements Executable<RetrievePrincipalAccessResponse> {
-  constructor(
-    public readonly organizationId: string,
-    public readonly target: EntityReference
-  ) {}
-
-  toRequestInformation(baseUrl: string): RequestInformation {
-    // Bound function
-    let url = `${baseUrl}/organizations(${this.organizationId})/Microsoft.Dynamics.CRM.RetrievePrincipalAccess`;
-
-    // Build query parameters using parameter aliases
-    const params = new URLSearchParams();
-    const aliases: string[] = [];
-    if (this.target !== undefined) {
-      aliases.push(`Target=@p1`);
-      params.append("@p1", formatParameterAlias(this.target, "mscrm.crmbaseentity", "EntityType"));
-    }
-    if (aliases.length > 0) {
-      url += `(${aliases.join(",")})?${params.toString()}`;
-    }
-
-    return {
-      method: "GET",
-      url,
-      headers: {
-        Accept: "application/json",
-      },
-    };
-  }
-
-  async parseResponse(response: Response): Promise<RetrievePrincipalAccessResponse> {
-    const data = await response.json();
-    return data as RetrievePrincipalAccessResponse;
-  }
-}
+export type RetrievePrincipalAccessFunction = RetrievePrincipalAccess_organizationFunction;
+/**
+ * @deprecated Use `RetrievePrincipalAccess_organizationResponse`. `RetrievePrincipalAccess` has a class per binding (#75);
+ * this name kept the one bound to organization.
+ */
+export type RetrievePrincipalAccessResponse = RetrievePrincipalAccess_organizationResponse;

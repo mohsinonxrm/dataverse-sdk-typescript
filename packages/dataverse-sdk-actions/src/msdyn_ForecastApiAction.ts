@@ -15,7 +15,7 @@ export interface msdyn_ForecastApiResponse {
 export class msdyn_ForecastApiAction implements Executable<msdyn_ForecastApiResponse> {
   constructor(
     public readonly webApiName: string,
-    public readonly requestJson: string
+    public readonly requestJson?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -13,13 +13,13 @@ export class msdyn_GetPromoContentFromIrisRequest
   implements Executable<msdyn_GetPromoContentFromIrisResponse>
 {
   constructor(
-    public msdyn_country: string,
-    public msdyn_placementId: number,
-    public msdyn_irisUrl: string,
-    public msdyn_pageType: string,
-    public msdyn_isAdmin: boolean,
-    public msdyn_pageName: string,
-    public msdyn_locale: string
+    public msdyn_country?: string,
+    public msdyn_placementId?: number,
+    public msdyn_irisUrl?: string,
+    public msdyn_pageType?: string,
+    public msdyn_isAdmin?: boolean,
+    public msdyn_pageName?: string,
+    public msdyn_locale?: string
   ) {
     super("msdyn_GetPromoContentFromIris");
   }

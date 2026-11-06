@@ -10,7 +10,7 @@ export class msdyn_CreatePredictionRequest
   extends OrganizationRequest
   implements Executable<msdyn_CreatePredictionResponse>
 {
-  constructor(public modelState: string) {
+  constructor(public modelState?: string) {
     super("msdyn_CreatePrediction");
   }
 

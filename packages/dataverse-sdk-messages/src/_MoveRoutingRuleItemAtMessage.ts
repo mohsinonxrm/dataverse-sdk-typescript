@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * _MoveRoutingRuleItemAt request message
@@ -12,11 +13,11 @@ export class _MoveRoutingRuleItemAtRequest
   implements Executable<_MoveRoutingRuleItemAtResponse>
 {
   constructor(
-    public routingRuleSetId: EntityReference,
-    public routingRuleItemIdToMove: EntityReference,
-    public targetRoutingRuleItemId: EntityReference,
+    public routingRuleSetId: EntityReference | AnyEntityPayload,
+    public routingRuleItemIdToMove: EntityReference | AnyEntityPayload,
+    public targetRoutingRuleItemId: EntityReference | AnyEntityPayload,
     public isBefore: boolean,
-    public options: string
+    public options?: string
   ) {
     super("_MoveRoutingRuleItemAt");
   }

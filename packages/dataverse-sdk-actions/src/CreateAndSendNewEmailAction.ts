@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from CreateAndSendNewEmail action
@@ -15,14 +16,14 @@ export interface CreateAndSendNewEmailResponse {
  */
 export class CreateAndSendNewEmailAction implements Executable<CreateAndSendNewEmailResponse> {
   constructor(
-    public readonly subject: string,
-    public readonly body: string,
-    public readonly from: string,
-    public readonly to: string,
-    public readonly cc: string,
-    public readonly bcc: string,
-    public readonly regarding: EntityReference,
-    public readonly importance: number
+    public readonly subject?: string,
+    public readonly body?: string,
+    public readonly from?: string,
+    public readonly to?: string,
+    public readonly cc?: string,
+    public readonly bcc?: string,
+    public readonly regarding?: EntityReference | AnyEntityPayload,
+    public readonly importance?: number
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

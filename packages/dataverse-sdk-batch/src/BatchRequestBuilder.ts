@@ -583,15 +583,19 @@ function batchError(
   cause?: unknown
 ): DataverseBatchError {
   const failed = new Map<string, BatchResponseStep>();
-  for (const step of result.results) {
-    if (result.errors.has(step.id)) failed.set(step.id, step);
-  }
+  const partErrors: Array<{ index: number; status: number; error: DataverseError }> = [];
+  result.results.forEach((step, index) => {
+    const error = result.errors.get(step.id);
+    if (!error) return;
+    failed.set(step.id, step);
+    if (error instanceof DataverseError) partErrors.push({ index, status: step.status, error });
+  });
   return new DataverseBatchError(
     message,
     failed,
     result.totalRequests,
     result.successfulRequests,
     result.failedRequests,
-    { result, ...(cause !== undefined ? { cause } : {}) }
+    { result, partErrors, ...(cause !== undefined ? { cause } : {}) }
   );
 }

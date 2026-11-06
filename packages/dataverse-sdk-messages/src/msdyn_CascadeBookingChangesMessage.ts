@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_CascadeBookingChangesResponse as msdyn_CascadeBookingChangesResponseData } from "./types/index.js";
 
 /**
@@ -16,13 +17,13 @@ export class msdyn_CascadeBookingChangesRequest
   constructor(
     public messageName: string,
     public stage: number,
-    public sourceBooking: EntityReference,
-    public sourcePreImageBooking: EntityReference,
-    public sourceRelatedBookingsCreate: Record<string, unknown>[],
-    public sourceRelatedBookingsUpdate: Record<string, unknown>[],
-    public sourceRelatedBookingsDelete: Record<string, unknown>[],
-    public sourcePreImageRelatedBookingsUpdate: Record<string, unknown>[],
-    public sourcePreImageRelatedBookingsDelete: Record<string, unknown>[]
+    public sourceBooking: EntityReference | AnyEntityPayload,
+    public sourcePreImageBooking?: EntityReference | AnyEntityPayload,
+    public sourceRelatedBookingsCreate?: Record<string, unknown>[],
+    public sourceRelatedBookingsUpdate?: Record<string, unknown>[],
+    public sourceRelatedBookingsDelete?: Record<string, unknown>[],
+    public sourcePreImageRelatedBookingsUpdate?: Record<string, unknown>[],
+    public sourcePreImageRelatedBookingsDelete?: Record<string, unknown>[]
   ) {
     super("msdyn_CascadeBookingChanges");
   }

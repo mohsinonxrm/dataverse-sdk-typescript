@@ -13,12 +13,12 @@ export class msdyn_CreateEntityRequest
   implements Executable<msdyn_CreateEntityResponse>
 {
   constructor(
-    public useUserSettings: boolean,
-    public connectionInfo: string,
-    public fileInfo: string,
-    public previewData: string,
-    public isToExistingTable: boolean,
-    public sampleData: string,
+    public useUserSettings: boolean | undefined,
+    public connectionInfo: string | undefined,
+    public fileInfo: string | undefined,
+    public previewData: string | undefined,
+    public isToExistingTable: boolean | undefined,
+    public sampleData: string | undefined,
     public entityDefinition: string
   ) {
     super("msdyn_CreateEntity");

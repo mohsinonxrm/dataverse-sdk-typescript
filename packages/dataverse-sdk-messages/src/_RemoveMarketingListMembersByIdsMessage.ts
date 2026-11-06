@@ -11,8 +11,8 @@ export class _RemoveMarketingListMembersByIdsRequest
   implements Executable<_RemoveMarketingListMembersByIdsResponse>
 {
   constructor(
-    public listId: string,
-    public memberIds: string
+    public listId?: string,
+    public memberIds?: string
   ) {
     super("_RemoveMarketingListMembersByIds");
   }

@@ -14,10 +14,10 @@ export interface pm_CreateProcessResponse {
  */
 export class pm_CreateProcessAction implements Executable<pm_CreateProcessResponse> {
   constructor(
-    public readonly reportData: string,
+    public readonly reportData: string | undefined,
     public readonly inputDataBinding: string,
     public readonly name: string,
-    public readonly description: string
+    public readonly description?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

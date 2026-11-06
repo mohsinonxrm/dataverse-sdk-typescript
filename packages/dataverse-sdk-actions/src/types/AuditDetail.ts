@@ -5,12 +5,14 @@ import type { RelationshipAuditDetail } from "./RelationshipAuditDetail.js";
 import type { RolePrivilegeAuditDetail } from "./RolePrivilegeAuditDetail.js";
 import type { ShareAuditDetail } from "./ShareAuditDetail.js";
 import type { UserAccessAuditDetail } from "./UserAccessAuditDetail.js";
+import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./EntityPayload.js";
 
 /**
  * AuditDetail complex type
  */
 export interface AuditDetail {
-  // No properties defined
+  AuditRecord: EntityReference | AnyEntityPayload;
 }
 
 /**

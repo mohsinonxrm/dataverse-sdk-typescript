@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { enumBody } from "./internal/enumBody.js";
 import type { ColumnSet, quote } from "./types/index.js";
 
 /**
@@ -14,7 +15,7 @@ export class ReviseQuoteRequest
 {
   constructor(
     public quoteId: string,
-    public columnSet: ColumnSet
+    public columnSet?: ColumnSet
   ) {
     super("ReviseQuote");
   }
@@ -24,7 +25,7 @@ export class ReviseQuoteRequest
 
     const body: Record<string, unknown> = {
       QuoteId: this.quoteId,
-      ColumnSet: this.columnSet,
+      ColumnSet: enumBody(this.columnSet, "ColumnSet"),
     };
 
     return {

@@ -1,4 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { opportunityclose } from "./types/index.js";
 
 /**
@@ -15,8 +17,8 @@ export interface LoseOpportunityResponse {
  */
 export class LoseOpportunityAction implements Executable<LoseOpportunityResponse> {
   constructor(
-    public readonly caller: string,
-    public readonly opportunityClose: opportunityclose,
+    public readonly caller: string | undefined,
+    public readonly opportunityClose: EntityReference | EntityPayload<opportunityclose>,
     public readonly status: number
   ) {}
 

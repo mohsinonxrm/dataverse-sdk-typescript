@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { queue, queueitem } from "./types/index.js";
 
 /**
@@ -18,9 +19,9 @@ export interface AddToQueueResponse {
 export class AddToQueueAction implements Executable<AddToQueueResponse> {
   constructor(
     public readonly queueId: string,
-    public readonly target: EntityReference,
-    public readonly sourceQueue: queue,
-    public readonly queueItemProperties: queueitem
+    public readonly target: EntityReference | AnyEntityPayload,
+    public readonly sourceQueue?: EntityReference | EntityPayload<queue>,
+    public readonly queueItemProperties?: EntityReference | EntityPayload<queueitem>
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

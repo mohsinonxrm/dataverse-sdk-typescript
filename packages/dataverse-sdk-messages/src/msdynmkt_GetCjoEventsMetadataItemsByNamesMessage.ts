@@ -12,7 +12,7 @@ export class msdynmkt_GetCjoEventsMetadataItemsByNamesRequest
   implements Executable<msdynmkt_GetCjoEventsMetadataItemsByNamesResponse>
 {
   constructor(
-    public msdynmkt_GetCjoEventsMetadataItemsByNames_request_LanguageCode: number,
+    public msdynmkt_GetCjoEventsMetadataItemsByNames_request_LanguageCode: number | undefined,
     public msdynmkt_GetCjoEventsMetadataItemsByNames_request_EventNames: string[]
   ) {
     super("msdynmkt_GetCjoEventsMetadataItemsByNames");

@@ -13,7 +13,7 @@ export interface msdyn_PredictiveScoringBackgroundJobResponse {
  * Unbound action
  */
 export class msdyn_PredictiveScoringBackgroundJobAction implements Executable<msdyn_PredictiveScoringBackgroundJobResponse> {
-  constructor(public readonly inputData: string) {}
+  constructor(public readonly inputData?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_PredictiveScoringBackgroundJob`;

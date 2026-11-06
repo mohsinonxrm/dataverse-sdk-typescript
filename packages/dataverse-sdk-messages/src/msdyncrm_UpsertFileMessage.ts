@@ -14,7 +14,7 @@ export class msdyncrm_UpsertFileRequest
 {
   constructor(
     public inputFile: string,
-    public inputKeywords: string
+    public inputKeywords?: string
   ) {
     super("msdyncrm_UpsertFile");
   }

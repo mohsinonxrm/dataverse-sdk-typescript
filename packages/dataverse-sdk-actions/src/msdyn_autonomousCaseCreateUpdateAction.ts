@@ -15,7 +15,7 @@ export interface msdyn_autonomousCaseCreateUpdateResponse {
 export class msdyn_autonomousCaseCreateUpdateAction implements Executable<msdyn_autonomousCaseCreateUpdateResponse> {
   constructor(
     public readonly autonomousCaseRequest: string,
-    public readonly slot__conversation: string[]
+    public readonly slot__conversation?: string[]
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

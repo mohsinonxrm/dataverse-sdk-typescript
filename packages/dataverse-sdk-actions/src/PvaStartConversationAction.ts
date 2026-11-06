@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from PvaStartConversation action
@@ -20,7 +21,7 @@ export interface PvaStartConversationResponse {
 export class PvaStartConversationAction implements Executable<PvaStartConversationResponse> {
   constructor(
     public readonly version: string,
-    public readonly request: EntityReference
+    public readonly request: EntityReference | AnyEntityPayload
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -12,8 +12,18 @@ import {
   getEntitySetName,
   isCollectionType,
   extractEntityTypeName,
+  constructorParameterList,
 } from "../utils/typescript-writer.js";
 import { writeTypeScriptFile, purgeDirectory } from "../utils/file-writer.js";
+import { bodyEnumType, ENUM_BODY_MODULE, enumBodySource } from "../utils/enum-body.js";
+import { exportedEnumNames } from "./complex-types-generator.js";
+import {
+  ENTITY_PAYLOAD_MODULE,
+  ENTITY_PAYLOAD_SOURCE,
+  entityParameterType,
+} from "../utils/entity-payload.js";
+import { entityReferenceSource } from "../utils/entity-reference.js";
+import { deprecatedAliasSource, operationNames } from "../utils/overloads.js";
 import { polymorphicParameterType } from "../utils/polymorphism.js";
 import { collectionBinding, ENTITY_SET_PARAM } from "../utils/binding.js";
 
@@ -171,7 +181,6 @@ export async function generateMessages(
     console.log(`\n  🗑️  Purging ${absolutePath}...`);
     await purgeDirectory(absolutePath, [
       "OrganizationRequest.ts",
-      "EntityReference.ts",
       "types.ts",
       "types", // Don't delete the types folder (complex types are generated first)
     ]);
@@ -180,17 +189,43 @@ export async function generateMessages(
 
   // Runtime helpers the generated response classes use to read the body
   await writeTypeScriptFile(join(absolutePath, `${RESPONSE_DATA_MODULE}.ts`), RESPONSE_DATA_SOURCE);
+  // Enum values in bodies are sent as member names (#232)
+  await writeTypeScriptFile(
+    join(absolutePath, "internal", `${ENUM_BODY_MODULE}.ts`),
+    enumBodySource(csdl)
+  );
+
+  // Entity references with the CSDL's primary keys, as in the actions package: a reference in a
+  // body is {"@odata.type", <primary key>}; the hand-written one sent "id", which the Web API
+  // rejects (#74). And the payload types of entity-typed parameters.
+  await writeTypeScriptFile(
+    join(absolutePath, "EntityReference.ts"),
+    entityReferenceSource(csdl, "messages")
+  );
+  await writeTypeScriptFile(
+    join(absolutePath, "types", `${ENTITY_PAYLOAD_MODULE}.ts`),
+    ENTITY_PAYLOAD_SOURCE
+  );
 
   // Generate all messages
   console.log(`\n  Generating ${String(allActions.length)} Web API action messages...`);
+  // Overloads with different bindings each get their own classes (#75)
+  const { stems, aliases } = operationNames(allActions);
   for (const action of allActions) {
-    const content = generateMessageClass(csdl, action);
-    const filename = `${action.name}Message.ts`;
+    const stem = stems.get(action) ?? action.name;
+    const content = generateMessageClass(csdl, action, stem);
+    const filename = `${stem}Message.ts`;
     await writeTypeScriptFile(join(absolutePath, filename), content);
+  }
+  for (const alias of aliases) {
+    await writeTypeScriptFile(
+      join(absolutePath, `${alias.name}Message.ts`),
+      deprecatedAliasSource(alias, "Message", ["Request", "Response"], ["Request", "Response"])
+    );
   }
 
   // Generate index
-  const indexContent = generateMessagesIndex(allActions);
+  const indexContent = generateMessagesIndex(allActions, stems, aliases, exportedEnumNames(csdl));
   await writeTypeScriptFile(join(absolutePath, "index.ts"), indexContent);
   console.log(`  ✅ Generated index.ts`);
 
@@ -200,15 +235,16 @@ export async function generateMessages(
 /**
  * Generate TypeScript class for a message (request + response).
  */
-function generateMessageClass(csdl: CsdlSchema, action: CsdlAction): string {
-  const requestClassName = `${action.name}Request`;
-  const responseClassName = `${action.name}Response`;
+function generateMessageClass(csdl: CsdlSchema, action: CsdlAction, stem = action.name): string {
+  const requestClassName = `${stem}Request`;
+  const responseClassName = `${stem}Response`;
 
   // System entities that are filtered out and should be treated as 'any'
   const systemEntities = ["crmbaseentity", "principal", "crmmodelbaseentity", "expando"];
 
   // Collect all complex type references used in this file
   const complexTypesUsed = new Set<string>();
+  const payloadTypes = new Set<string>();
   let needsEntityReference = false;
 
   let code = `import { OrganizationRequest, OrganizationResponse } from './OrganizationRequest.js';\n`;
@@ -225,6 +261,16 @@ function generateMessageClass(csdl: CsdlSchema, action: CsdlAction): string {
     }
     const typeName = csdlTypeToTs(param.type, true);
     const baseType = typeName.replace("[]", "");
+
+    // Entity-typed parameters take an entity payload or a reference (#74)
+    const entityParam =
+      param.name === action.bindingParameter?.name
+        ? undefined
+        : entityParameterType(csdl, param.type);
+    if (entityParam) {
+      for (const t of entityParam.payload) payloadTypes.add(t);
+      if (entityParam.tsType.includes("EntityReference")) needsEntityReference = true;
+    }
 
     // Check if this is EntityReference
     if (baseType === "EntityReference" || param.type === "Microsoft.Dynamics.CRM.crmbaseentity") {
@@ -252,6 +298,12 @@ function generateMessageClass(csdl: CsdlSchema, action: CsdlAction): string {
   // Add import for EntityReference if needed
   if (needsEntityReference) {
     code += `import type { EntityReference } from './EntityReference.js';\n`;
+  }
+  if (action.parameters.some((p) => bodyEnumType(csdl, p.type))) {
+    code += `import { enumBody } from './internal/${ENUM_BODY_MODULE}.js';\n`;
+  }
+  if (payloadTypes.size > 0) {
+    code += `import type { ${[...payloadTypes].sort().join(", ")} } from './types/${ENTITY_PAYLOAD_MODULE}.js';\n`;
   }
 
   // Import complex types from local types folder (following actions package pattern)
@@ -288,6 +340,7 @@ function generateMessageClass(csdl: CsdlSchema, action: CsdlAction): string {
     tsName: string;
     isBinding: boolean;
     nullable: boolean;
+    optional?: boolean;
   }> = [];
 
   // Check if binding parameter is a Collection type
@@ -330,18 +383,22 @@ function generateMessageClass(csdl: CsdlSchema, action: CsdlAction): string {
 
     constructorParams.push({
       name: toCamelCase(param.name),
-      type: polymorphicParameterType(csdl, param.type)?.tsType ?? csdlTypeToTs(param.type, true),
+      type:
+        polymorphicParameterType(csdl, param.type)?.tsType ??
+        entityParameterType(csdl, param.type)?.tsType ??
+        csdlTypeToTs(param.type, true),
       tsName: param.name,
       isBinding: false,
       nullable: param.nullable ?? false,
+      // In CSDL a parameter without Nullable="false" may be left out (#74, as #68 for functions)
+      // A `MessageName` parameter shadows OrganizationRequest.messageName (a string), so it stays
+      // required.
+      optional: param.nullable !== false && toCamelCase(param.name) !== "messageName",
     });
   }
 
   code += `  constructor(\n`;
-  for (const param of constructorParams) {
-    const optional = param.nullable ? "?" : "";
-    code += `    public ${param.name}${optional}: ${param.type},\n`;
-  }
+  code += constructorParameterList(constructorParams, "public");
   code += `  ) {\n`;
   code += `    super('${action.name}');\n`;
   code += `  }\n\n`;
@@ -442,10 +499,16 @@ function generateToRequestInformation(
   if (bodyParams.length > 0) {
     code += `    const body: Record<string, unknown> = {\n`;
     for (const param of bodyParams) {
+      // Enum values are sent as member names (#232)
+      const csdlType = action.parameters.find((p) => p.name === param.tsName)?.type;
+      const enumType = csdlType ? bodyEnumType(csdl, csdlType) : undefined;
+      const value = enumType
+        ? `enumBody(this.${param.name}, ${JSON.stringify(enumType)})`
+        : `this.${param.name}`;
       if (param.nullable) {
-        code += `      ...(this.${param.name} !== undefined && { ${param.tsName}: this.${param.name} }),\n`;
+        code += `      ...(this.${param.name} !== undefined && { ${param.tsName}: ${value} }),\n`;
       } else {
-        code += `      ${param.tsName}: this.${param.name},\n`;
+        code += `      ${param.tsName}: ${value},\n`;
       }
     }
     code += `    };\n\n`;
@@ -489,9 +552,12 @@ function generateParseResponse(action: CsdlAction, responseClassName: string): s
 /**
  * Generate index.ts for messages.
  */
-function generateMessagesIndex(actions: CsdlAction[]): string {
-  const sorted = actions.sort((a, b) => a.name.localeCompare(b.name));
-
+function generateMessagesIndex(
+  operations: CsdlAction[],
+  stems: Map<CsdlAction, string>,
+  aliases: ReadonlyArray<{ name: string }>,
+  enumNames: string[]
+): string {
   let code = `/**\n`;
   code += ` * Web API Action Messages\n`;
   code += ` *\n`;
@@ -503,20 +569,26 @@ function generateMessagesIndex(actions: CsdlAction[]): string {
   code += `// Base classes and types\n`;
   code += `export { OrganizationRequest, OrganizationResponse } from './OrganizationRequest.js';\n`;
   code += `export type { OrganizationRequestOptions } from './OrganizationRequest.js';\n`;
-  code += `export type { EntityReference } from './EntityReference.js';\n`;
-  code += `export { createEntityReference } from './EntityReference.js';\n`;
+  code += `export type { EntityReference, EntityReferenceOptions } from './EntityReference.js';\n`;
+  code += `export { createEntityReference, type WebApiEntityReference } from './EntityReference.js';\n`;
+  code += `export type { AnyEntityPayload, EntityPayload } from './types/${ENTITY_PAYLOAD_MODULE}.js';\n`;
   code += `export type { MessageRequest, MessageResponse } from './types.js';\n\n`;
 
   // Export all message classes
   code += `// Message classes\n`;
 
-  // Dedupe by action name (handle overloads for bound actions)
-  const seen = new Set<string>();
-  for (const action of sorted) {
-    if (!seen.has(action.name)) {
-      code += `export { ${action.name}Request, ${action.name}Response } from './${action.name}Message.js';\n`;
-      seen.add(action.name);
-    }
+  // One export per class: overloads have their own (#75), plus the deprecated plain-name aliases
+  const entries = [
+    ...operations.map((op) => stems.get(op) ?? op.name),
+    ...aliases.map((a) => a.name),
+  ].sort((a, b) => a.localeCompare(b));
+  for (const stem of entries) {
+    code += `export { ${stem}Request, ${stem}Response } from './${stem}Message.js';\n`;
+  }
+
+  // Enum values for parameters, as in the functions package; bodies send member names (#232)
+  if (enumNames.length > 0) {
+    code += `\n// Enums\nexport { ${enumNames.join(", ")} } from './types/index.js';\n`;
   }
 
   return code;

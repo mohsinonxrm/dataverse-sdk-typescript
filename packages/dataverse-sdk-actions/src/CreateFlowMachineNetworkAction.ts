@@ -17,10 +17,10 @@ export class CreateFlowMachineNetworkAction implements Executable<CreateFlowMach
   constructor(
     public readonly subnet: string,
     public readonly type: string,
-    public readonly extendedproperties: string,
+    public readonly extendedproperties: string | undefined,
     public readonly supportedscenario: string,
     public readonly name: string,
-    public readonly description: string
+    public readonly description?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

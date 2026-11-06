@@ -597,7 +597,7 @@ await service.getEntitySetName("opportunity"); // "opportunities" (one metadata 
 
 ### assign
 
-Assigns a record to a user or team.
+Assigns a record to a user or team. Sends `If-Match: *`, so a missing record rejects with 404 instead of being created.
 
 ```typescript
 async assign(
@@ -629,7 +629,7 @@ await service.assign("lead", leadId, teamId, "team");
 
 ### setState
 
-Sets the state and status of a record.
+Sets the state and status of a record. Sends `If-Match: *`, so a missing record rejects with 404 instead of being created.
 
 ```typescript
 async setState(

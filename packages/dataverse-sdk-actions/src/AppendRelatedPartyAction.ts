@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from AppendRelatedParty action
@@ -15,8 +16,8 @@ export interface AppendRelatedPartyResponse {
  */
 export class AppendRelatedPartyAction implements Executable<AppendRelatedPartyResponse> {
   constructor(
-    public readonly activity: EntityReference,
-    public readonly party: EntityReference
+    public readonly activity: EntityReference | AnyEntityPayload,
+    public readonly party: EntityReference | AnyEntityPayload
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

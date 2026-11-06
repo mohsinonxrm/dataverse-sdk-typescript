@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseValue } from "./internal/responseData.js";
+import { enumBody } from "./internal/enumBody.js";
 import type { TypedQueryBase } from "./types/index.js";
 
 /**
@@ -17,7 +18,7 @@ export class FullTextSearchKnowledgeArticleRequest
     public useInflection: boolean,
     public removeDuplicates: boolean,
     public stateCode: number,
-    public queryExpression: TypedQueryBase
+    public queryExpression?: TypedQueryBase
   ) {
     super("FullTextSearchKnowledgeArticle");
   }
@@ -30,7 +31,7 @@ export class FullTextSearchKnowledgeArticleRequest
       UseInflection: this.useInflection,
       RemoveDuplicates: this.removeDuplicates,
       StateCode: this.stateCode,
-      QueryExpression: this.queryExpression,
+      QueryExpression: enumBody(this.queryExpression, "QueryBase"),
     };
 
     return {

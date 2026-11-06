@@ -14,8 +14,8 @@ export interface msdyn_EditSequenceResponse {
  */
 export class msdyn_EditSequenceAction implements Executable<msdyn_EditSequenceResponse> {
   constructor(
-    public readonly sequenceId: string,
-    public readonly discardChanges: boolean
+    public readonly sequenceId?: string,
+    public readonly discardChanges?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

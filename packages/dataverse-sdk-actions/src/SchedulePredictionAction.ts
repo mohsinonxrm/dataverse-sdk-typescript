@@ -17,8 +17,8 @@ export class SchedulePredictionAction implements Executable<SchedulePredictionRe
   constructor(
     public readonly msdyn_aimodelId: string,
     public readonly version: string,
-    public readonly predictImmediately: boolean,
-    public readonly cleanupRequired: boolean
+    public readonly predictImmediately?: boolean,
+    public readonly cleanupRequired?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

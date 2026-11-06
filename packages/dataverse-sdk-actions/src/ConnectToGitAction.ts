@@ -14,16 +14,16 @@ export interface ConnectToGitResponse {
  */
 export class ConnectToGitAction implements Executable<ConnectToGitResponse> {
   constructor(
-    public readonly connectionType: number,
-    public readonly solutionUniqueName: string,
-    public readonly gitProvider: number,
+    public readonly connectionType: number | undefined,
+    public readonly solutionUniqueName: string | undefined,
+    public readonly gitProvider: number | undefined,
     public readonly branch: string,
-    public readonly rootFolder: string,
-    public readonly organization: string,
+    public readonly rootFolder: string | undefined,
+    public readonly organization: string | undefined,
     public readonly gitFolder: string,
-    public readonly project: string,
-    public readonly repository: string,
-    public readonly upstreamBranch: string
+    public readonly project?: string,
+    public readonly repository?: string,
+    public readonly upstreamBranch?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

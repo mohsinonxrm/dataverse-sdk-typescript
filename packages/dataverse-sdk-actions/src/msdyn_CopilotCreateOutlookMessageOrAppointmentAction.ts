@@ -16,8 +16,8 @@ export interface msdyn_CopilotCreateOutlookMessageOrAppointmentResponse {
  */
 export class msdyn_CopilotCreateOutlookMessageOrAppointmentAction implements Executable<msdyn_CopilotCreateOutlookMessageOrAppointmentResponse> {
   constructor(
-    public readonly msdyn_messageId: string,
-    public readonly msdyn_correlationId: string,
+    public readonly msdyn_messageId: string | undefined,
+    public readonly msdyn_correlationId: string | undefined,
     public readonly msdyn_outlookItemType: string,
     public readonly msdyn_outlookPayload: string
   ) {}

@@ -13,7 +13,7 @@ export interface msdyn_GetSalesAcceleratedSellerDetailsResponse {
  * Unbound action
  */
 export class msdyn_GetSalesAcceleratedSellerDetailsAction implements Executable<msdyn_GetSalesAcceleratedSellerDetailsResponse> {
-  constructor(public readonly filterConditions: string) {}
+  constructor(public readonly filterConditions?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetSalesAcceleratedSellerDetails`;

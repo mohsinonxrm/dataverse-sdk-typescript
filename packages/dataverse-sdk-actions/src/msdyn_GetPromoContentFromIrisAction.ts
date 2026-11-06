@@ -14,13 +14,13 @@ export interface msdyn_GetPromoContentFromIrisResponse {
  */
 export class msdyn_GetPromoContentFromIrisAction implements Executable<msdyn_GetPromoContentFromIrisResponse> {
   constructor(
-    public readonly msdyn_country: string,
-    public readonly msdyn_placementId: number,
-    public readonly msdyn_irisUrl: string,
-    public readonly msdyn_pageType: string,
-    public readonly msdyn_isAdmin: boolean,
-    public readonly msdyn_pageName: string,
-    public readonly msdyn_locale: string
+    public readonly msdyn_country?: string,
+    public readonly msdyn_placementId?: number,
+    public readonly msdyn_irisUrl?: string,
+    public readonly msdyn_pageType?: string,
+    public readonly msdyn_isAdmin?: boolean,
+    public readonly msdyn_pageName?: string,
+    public readonly msdyn_locale?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -16,7 +16,7 @@ export interface msdyn_GetSalesAcceleratedSellerResponse {
 export class msdyn_GetSalesAcceleratedSellerAction implements Executable<msdyn_GetSalesAcceleratedSellerResponse> {
   constructor(
     public readonly isTeamsRequest: boolean,
-    public readonly expandDetails: boolean
+    public readonly expandDetails?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

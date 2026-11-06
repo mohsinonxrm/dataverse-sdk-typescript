@@ -13,9 +13,9 @@ export class msdyn_SalesAgents_IsOwnerAssignedRequest
   implements Executable<msdyn_SalesAgents_IsOwnerAssignedResponse>
 {
   constructor(
-    public msdyn_HandoverContext: string,
+    public msdyn_HandoverContext: string | undefined,
     public msdyn_SalesAgentRun: string,
-    public msdyn_TrackingId: string
+    public msdyn_TrackingId?: string
   ) {
     super("msdyn_SalesAgents_IsOwnerAssigned");
   }

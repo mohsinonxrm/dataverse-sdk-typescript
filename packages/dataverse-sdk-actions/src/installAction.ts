@@ -19,9 +19,9 @@ export class installAction implements Executable<installResponse> {
   constructor(
     public readonly workflowId: string,
     public readonly connectionReferences: string,
-    public readonly appIds: string,
-    public readonly context: string,
-    public readonly expand: string
+    public readonly appIds?: string,
+    public readonly context?: string,
+    public readonly expand?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

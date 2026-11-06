@@ -14,7 +14,7 @@ export class CCaaS_InitiateAgentTransferRequest
     public msdyn_ocliveworkitemId: string,
     public agentId: string,
     public apiVersion: string,
-    public queueId: string
+    public queueId?: string
   ) {
     super("CCaaS_InitiateAgentTransfer");
   }

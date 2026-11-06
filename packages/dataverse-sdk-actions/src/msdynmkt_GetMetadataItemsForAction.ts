@@ -15,7 +15,7 @@ export interface msdynmkt_GetMetadataItemsForResponse {
  */
 export class msdynmkt_GetMetadataItemsForAction implements Executable<msdynmkt_GetMetadataItemsForResponse> {
   constructor(
-    public readonly msdynmkt_GetMetadataItemsFor_request_LanguageCode: number,
+    public readonly msdynmkt_GetMetadataItemsFor_request_LanguageCode: number | undefined,
     public readonly msdynmkt_GetMetadataItemsFor_request_SourceLogicalNames: string[]
   ) {}
 

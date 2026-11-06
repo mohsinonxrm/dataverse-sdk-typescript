@@ -14,10 +14,10 @@ export interface msdyn_DraftEmailForCaseResponse {
  */
 export class msdyn_DraftEmailForCaseAction implements Executable<msdyn_DraftEmailForCaseResponse> {
   constructor(
-    public readonly additionalInstructions: string,
-    public readonly context_CaseNotes: string,
-    public readonly context_CaseTitle: string,
-    public readonly context_CaseId: string,
+    public readonly additionalInstructions: string | undefined,
+    public readonly context_CaseNotes: string | undefined,
+    public readonly context_CaseTitle: string | undefined,
+    public readonly context_CaseId: string | undefined,
     public readonly recipientName: string,
     public readonly senderName: string
   ) {}

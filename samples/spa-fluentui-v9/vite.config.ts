@@ -6,10 +6,14 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 3000,
-    open: true,
+  },
+  preview: {
+    port: 3000,
   },
   build: {
     outDir: "dist",
     sourcemap: true,
+    // Each scenario page is its own chunk (React.lazy); the shell stays small.
+    chunkSizeWarningLimit: 600,
   },
 });

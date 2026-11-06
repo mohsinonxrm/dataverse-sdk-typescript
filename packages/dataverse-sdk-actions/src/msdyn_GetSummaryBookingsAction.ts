@@ -17,10 +17,10 @@ export class msdyn_GetSummaryBookingsAction implements Executable<msdyn_GetSumma
     public readonly resourceIds: string,
     public readonly startDate: string,
     public readonly endDate: string,
-    public readonly timeZoneCode: number,
+    public readonly timeZoneCode: number | undefined,
     public readonly timescale: number,
-    public readonly considerAppointments: boolean,
-    public readonly considerFirstDayOfWeekSettings: boolean
+    public readonly considerAppointments?: boolean,
+    public readonly considerFirstDayOfWeekSettings?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

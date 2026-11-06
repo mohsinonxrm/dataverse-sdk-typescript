@@ -18,19 +18,19 @@ export class ExportSolutionRequest
   constructor(
     public solutionName: string,
     public managed: boolean,
-    public targetVersion: string,
-    public exportAutoNumberingSettings: boolean,
-    public exportCalendarSettings: boolean,
-    public exportCustomizationSettings: boolean,
-    public exportEmailTrackingSettings: boolean,
-    public exportGeneralSettings: boolean,
-    public exportMarketingSettings: boolean,
-    public exportOutlookSynchronizationSettings: boolean,
-    public exportRelationshipRoles: boolean,
-    public exportIsvConfig: boolean,
-    public exportSales: boolean,
-    public exportExternalApplications: boolean,
-    public exportComponentsParams: ExportComponentsParams
+    public targetVersion?: string,
+    public exportAutoNumberingSettings?: boolean,
+    public exportCalendarSettings?: boolean,
+    public exportCustomizationSettings?: boolean,
+    public exportEmailTrackingSettings?: boolean,
+    public exportGeneralSettings?: boolean,
+    public exportMarketingSettings?: boolean,
+    public exportOutlookSynchronizationSettings?: boolean,
+    public exportRelationshipRoles?: boolean,
+    public exportIsvConfig?: boolean,
+    public exportSales?: boolean,
+    public exportExternalApplications?: boolean,
+    public exportComponentsParams?: ExportComponentsParams
   ) {
     super("ExportSolution");
   }

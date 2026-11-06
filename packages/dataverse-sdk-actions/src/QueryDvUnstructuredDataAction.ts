@@ -13,7 +13,7 @@ export interface QueryDvUnstructuredDataResponse {
  * Unbound action
  */
 export class QueryDvUnstructuredDataAction implements Executable<QueryDvUnstructuredDataResponse> {
-  constructor(public readonly userQueryText: string) {}
+  constructor(public readonly userQueryText?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/QueryDvUnstructuredData`;

@@ -14,14 +14,14 @@ export interface UpdateAutomatedPluginResponse {
  */
 export class UpdateAutomatedPluginAction implements Executable<UpdateAutomatedPluginResponse> {
   constructor(
-    public readonly expression: string,
-    public readonly solutionUniqueName: string,
-    public readonly entityLogicalName: string,
-    public readonly context: string,
-    public readonly name: string,
-    public readonly stage: number,
+    public readonly expression: string | undefined,
+    public readonly solutionUniqueName: string | undefined,
+    public readonly entityLogicalName: string | undefined,
+    public readonly context: string | undefined,
+    public readonly name: string | undefined,
+    public readonly stage: number | undefined,
     public readonly fxExpressionUniqueName: string,
-    public readonly messageName: string
+    public readonly messageName?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * msdyn_OnNewActivityForARCRecord request message
@@ -12,8 +13,8 @@ export class msdyn_OnNewActivityForARCRecordRequest
   implements Executable<msdyn_OnNewActivityForARCRecordResponse>
 {
   constructor(
-    public msdyn_primaryEntityReference: EntityReference,
-    public msdyn_sourceEntityReference: EntityReference
+    public msdyn_primaryEntityReference: EntityReference | AnyEntityPayload,
+    public msdyn_sourceEntityReference: EntityReference | AnyEntityPayload
   ) {
     super("msdyn_OnNewActivityForARCRecord");
   }

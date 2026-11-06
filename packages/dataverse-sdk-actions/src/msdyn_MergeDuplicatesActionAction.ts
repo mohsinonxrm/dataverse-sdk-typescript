@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_MergeDuplicatesAction action
@@ -15,9 +16,9 @@ export interface msdyn_MergeDuplicatesActionResponse {
  */
 export class msdyn_MergeDuplicatesActionAction implements Executable<msdyn_MergeDuplicatesActionResponse> {
   constructor(
-    public readonly target: EntityReference,
-    public readonly duplicates: Record<string, unknown>[],
-    public readonly performParentingChecks: boolean
+    public readonly target?: EntityReference | AnyEntityPayload,
+    public readonly duplicates?: Record<string, unknown>[],
+    public readonly performParentingChecks?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import type { EntityReference } from "./EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_requirementgroup } from "./types/index.js";
 
 /**
@@ -13,12 +15,12 @@ export class msdyn_RetrieveRequirementGroupCandidatesRequest
   implements Executable<msdyn_RetrieveRequirementGroupCandidatesResponse>
 {
   constructor(
-    public requirementGroup: msdyn_requirementgroup,
+    public requirementGroup: EntityReference | EntityPayload<msdyn_requirementgroup> | undefined,
     public startTime: string,
     public endTime: string,
     public duration: number,
-    public constraintBag: string,
-    public version: string
+    public constraintBag?: string,
+    public version?: string
   ) {
     super("msdyn_RetrieveRequirementGroupCandidates");
   }

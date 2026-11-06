@@ -12,7 +12,7 @@ export class msdynmkt_StartMigrationCustomActionRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_StartMigrationCustomActionResponse>
 {
-  constructor(public whatIf: boolean) {
+  constructor(public whatIf?: boolean) {
     super("msdynmkt_StartMigrationCustomAction");
   }
 

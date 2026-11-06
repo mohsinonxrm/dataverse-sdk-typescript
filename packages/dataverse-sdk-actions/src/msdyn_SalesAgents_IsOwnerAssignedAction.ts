@@ -14,9 +14,9 @@ export interface msdyn_SalesAgents_IsOwnerAssignedResponse {
  */
 export class msdyn_SalesAgents_IsOwnerAssignedAction implements Executable<msdyn_SalesAgents_IsOwnerAssignedResponse> {
   constructor(
-    public readonly msdyn_HandoverContext: string,
+    public readonly msdyn_HandoverContext: string | undefined,
     public readonly msdyn_SalesAgentRun: string,
-    public readonly msdyn_TrackingId: string
+    public readonly msdyn_TrackingId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

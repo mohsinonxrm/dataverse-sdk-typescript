@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_SearchResourceAvailability action
@@ -13,11 +14,11 @@ export interface msdyn_SearchResourceAvailabilityResponse {}
  */
 export class msdyn_SearchResourceAvailabilityAction implements Executable<msdyn_SearchResourceAvailabilityResponse> {
   constructor(
-    public readonly version: string,
-    public readonly isWebApi: boolean,
-    public readonly requirement: EntityReference,
-    public readonly settings: EntityReference,
-    public readonly resourceSpecification: EntityReference
+    public readonly version: string | undefined,
+    public readonly isWebApi: boolean | undefined,
+    public readonly requirement: EntityReference | AnyEntityPayload,
+    public readonly settings: EntityReference | AnyEntityPayload,
+    public readonly resourceSpecification?: EntityReference | AnyEntityPayload
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

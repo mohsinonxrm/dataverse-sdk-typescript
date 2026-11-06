@@ -15,11 +15,11 @@ export interface msdynmkt_checkconsentbatchResponse {
  */
 export class msdynmkt_checkconsentbatchAction implements Executable<msdynmkt_checkconsentbatchResponse> {
   constructor(
-    public readonly msdynmkt_owningbusinessunitid: string,
+    public readonly msdynmkt_owningbusinessunitid: string | undefined,
     public readonly msdynmkt_channeltype: string,
     public readonly msdynmkt_contactpoints: string[],
     public readonly msdynmkt_compliancesettingsid: string,
-    public readonly msdynmkt_topicid: string,
+    public readonly msdynmkt_topicid: string | undefined,
     public readonly msdynmkt_purposeid: string
   ) {}
 

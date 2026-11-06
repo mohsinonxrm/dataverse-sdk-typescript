@@ -14,8 +14,8 @@ export class ExtractTextEntitiesRequest
 {
   constructor(
     public text: string,
-    public modelId: string,
-    public language: string
+    public modelId?: string,
+    public language?: string
   ) {
     super("ExtractTextEntities");
   }

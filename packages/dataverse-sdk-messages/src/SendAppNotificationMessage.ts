@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { SendAppNotificationResponse as SendAppNotificationResponseData } from "./types/index.js";
 
 /**
@@ -14,15 +15,15 @@ export class SendAppNotificationRequest
   implements Executable<SendAppNotificationResponse>
 {
   constructor(
-    public recipient: EntityReference,
-    public expiry: number,
-    public priority: number,
-    public overrideContent: EntityReference,
+    public recipient: EntityReference | AnyEntityPayload,
+    public expiry: number | undefined,
+    public priority: number | undefined,
+    public overrideContent: EntityReference | AnyEntityPayload | undefined,
     public title: string,
-    public iconType: number,
-    public body: string,
-    public actions: EntityReference,
-    public toastType: number
+    public iconType?: number,
+    public body?: string,
+    public actions?: EntityReference | AnyEntityPayload,
+    public toastType?: number
   ) {
     super("SendAppNotification");
   }

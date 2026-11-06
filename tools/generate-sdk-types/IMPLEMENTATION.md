@@ -232,7 +232,70 @@ csdlTypeToTs(csdlType: string): string {
   required: Dataverse always includes them (as `null` when empty).
 - Function parameters without `Nullable="false"` are optional: `?` when every later parameter is
   optional too, otherwise `T | undefined` in place. An `undefined` parameter is left out of the URL.
-  Action and message parameters are still all required.
+- Action and message parameters follow the same rule (#74); `JSON.stringify` leaves an
+  `undefined` one out of the body. A message parameter named `MessageName` stays required, because
+  it shadows `OrganizationRequest.messageName`.
+
+### Entity-typed parameters
+
+Action and message body parameters of an entity type take an entity payload or a reference
+(`src/utils/entity-payload.ts`, #74). The Web API reads them as entities: a reference is the same
+shape with only the primary key.
+
+- `crmbaseentity` (any table, such as `Merge`'s `UpdateContent`): `EntityReference | AnyEntityPayload`.
+- A table (`WinOpportunity`'s `OpportunityClose`): `EntityReference | EntityPayload<opportunityclose>`,
+  its columns plus `@odata.type` and `<lookup>@odata.bind`.
+- A collection of a table: `(EntityReference | EntityPayload<table>)[]`.
+- `principal` and the other abstract system types stay `EntityReference`.
+
+`types/EntityPayload.ts` is generated into both packages. The messages package's `EntityReference.ts`
+is generated from the CSDL like the actions package's (`entityReferenceSource(csdl, "messages")`), so a
+reference sends the table's primary key, not `id`. Its third argument is still a display name.
+
+In both packages `EntityReference` carries a type-only brand (`declare const entityReferenceBrand:
+unique symbol`), so only `createEntityReference` makes one, and both payload types declare
+`logicalName?: never` and `entitySetName?: never` (#251). A hand-written
+`{ "@odata.type", logicalName, id }` would send `logicalName` and `id`, so it doesn't type-check as
+any entity parameter. `WebApiEntityReference` is the JSON shape, for a reference written by hand.
+The functions package's `EntityReference` has no brand: a function parameter reads `logicalName`,
+`id` and `entitySetName` itself, so a literal works there.
+
+### Navigation properties of complex types
+
+Complex types can have `NavigationProperty` members, such as `PrincipalAccess.Principal` (#231). The
+parser reads them, with `Nullable`, and `generateComplexTypes` writes them after the properties. In a
+request body their value is an entity, so they are typed like entity-typed action parameters:
+
+- `crmbaseentity`: `EntityReference | AnyEntityPayload`;
+- a table: `EntityReference | EntityPayload<table>`, or an array of that for a collection;
+- `Collection(crmbaseentity)`: `Record<string, unknown>[]`;
+- `principal` and the other abstract system types: `EntityReference`.
+
+A member is required only with `Nullable="false"`. The `target` argument of `generateComplexTypes`
+says where `EntityReference` is: `../EntityReference.js` in messages, `./EntityReference.js`
+otherwise. The functions package now also gets `types/EntityPayload.ts`.
+
+### Enum values in bodies
+
+The Web API reads an enum value in a JSON body only as a string, and answers 400 to a number
+("Cannot read the value '1' as a quoted JSON string value", #232). The generated enums stay numeric,
+because the functions combine flags with `|`. Instead, `src/utils/enum-body.ts` writes
+`internal/enumBody.ts` into the actions and messages packages. It has two tables taken from the CSDL:
+
+- the members of each enum a body can hold, and whether it is a flags enum;
+- for each complex type an action parameter can reach that holds an enum, which properties are
+  enums or such complex types.
+
+A complex type is in the second table when it holds an enum itself, through an inherited or nested
+property, or through a derived type. Recursive types resolve to a fixed point.
+
+Each body parameter whose type (or collection item type) is in a table is written as
+`enumBody(this.x, "<Type>")`. `enumBody` copies the objects and arrays it changes, picks a derived
+type by the value's `@odata.type`, and writes:
+
+- a member name;
+- for a flags enum, the names of its bits joined with `, `;
+- or, when no member matches, the number as a string, which Dataverse also reads.
 
 ### Function parameter literals
 
@@ -254,6 +317,18 @@ package root.
   use the union, so the value must say which derived type it is. Dataverse rejects a `QueryBase`
   without `@odata.type` (HTTP 400, "The property 'EntityName' does not exist on type
   'Microsoft.Dynamics.CRM.QueryBase'").
+
+### Overloads and supplemental operations (#75)
+
+- `src/utils/overloads.ts`: an operation name declared with several bindings gets a class per
+  binding, `<Name>_<table>` (`_collection` for a collection binding), as `packages/dataverse-sdk-generator`
+  does (#202). An unbound overload keeps the plain name. A name with no unbound overload keeps a
+  plain-name file that re-exports the last binding (the one the plain name used to be) as
+  `@deprecated` aliases. A definition that still collides gets `_2`, `_3`, … and a warning, so
+  nothing is overwritten silently.
+- `src/supplemental/supplemental-metadata.ts`: operations Dataverse runs but leaves out of
+  `$metadata` (`ExportToExcel`), as EDMX. `generateTargets` merges them into the CSDL for the
+  actions, functions and messages targets; an org's own definition of the same name wins.
 
 ### Namespace Filtering
 

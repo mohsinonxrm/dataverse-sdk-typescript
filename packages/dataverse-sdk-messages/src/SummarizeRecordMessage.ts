@@ -15,8 +15,8 @@ export class SummarizeRecordRequest
   constructor(
     public id: string,
     public entityLogicalName: string,
-    public recordContext: string,
-    public isMergedCatchupAndSummary: boolean
+    public recordContext?: string,
+    public isMergedCatchupAndSummary?: boolean
   ) {
     super("SummarizeRecord");
   }

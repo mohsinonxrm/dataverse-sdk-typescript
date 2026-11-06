@@ -12,7 +12,7 @@ export class msdyn_OSConvertToLocalizedFeaturesRequest
   extends OrganizationRequest
   implements Executable<msdyn_OSConvertToLocalizedFeaturesResponse>
 {
-  constructor(public predictionFeatures: string) {
+  constructor(public predictionFeatures?: string) {
     super("msdyn_OSConvertToLocalizedFeatures");
   }
 

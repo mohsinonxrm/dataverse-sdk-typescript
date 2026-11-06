@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from CancelSalesOrder action
@@ -15,7 +16,7 @@ export interface CancelSalesOrderResponse {
  */
 export class CancelSalesOrderAction implements Executable<CancelSalesOrderResponse> {
   constructor(
-    public readonly orderClose: EntityReference,
+    public readonly orderClose: EntityReference | AnyEntityPayload,
     public readonly status: number
   ) {}
 

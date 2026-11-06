@@ -13,10 +13,10 @@ export class msdyn_CheckIfFormsHaveTooManyCustomControlsRequest
   implements Executable<msdyn_CheckIfFormsHaveTooManyCustomControlsResponse>
 {
   constructor(
-    public solutionName: string,
-    public logicalNamesOfEntitiesToCheck: string,
-    public notificationRecipientUserIds: string,
-    public controlsAndLimits: string
+    public solutionName?: string,
+    public logicalNamesOfEntitiesToCheck?: string,
+    public notificationRecipientUserIds?: string,
+    public controlsAndLimits?: string
   ) {
     super("msdyn_CheckIfFormsHaveTooManyCustomControls");
   }

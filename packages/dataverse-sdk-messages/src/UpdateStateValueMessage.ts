@@ -12,14 +12,14 @@ export class UpdateStateValueRequest
   implements Executable<UpdateStateValueResponse>
 {
   constructor(
-    public optionSetName: string,
-    public attributeLogicalName: string,
-    public entityLogicalName: string,
+    public optionSetName: string | undefined,
+    public attributeLogicalName: string | undefined,
+    public entityLogicalName: string | undefined,
     public value: number,
-    public label: Label,
-    public description: Label,
+    public label: Label | undefined,
+    public description: Label | undefined,
     public mergeLabels: boolean,
-    public defaultStatusCode: number
+    public defaultStatusCode?: number
   ) {
     super("UpdateStateValue");
   }

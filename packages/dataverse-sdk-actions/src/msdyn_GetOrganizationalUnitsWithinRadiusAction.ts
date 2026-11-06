@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_GetOrganizationalUnitsWithinRadius action
@@ -16,13 +17,13 @@ export interface msdyn_GetOrganizationalUnitsWithinRadiusResponse {
  */
 export class msdyn_GetOrganizationalUnitsWithinRadiusAction implements Executable<msdyn_GetOrganizationalUnitsWithinRadiusResponse> {
   constructor(
-    public readonly version: string,
+    public readonly version: string | undefined,
     public readonly latitude: number,
     public readonly longitude: number,
     public readonly radius: number,
     public readonly unit: number,
-    public readonly eligibleOrganizationlUnitIds: Record<string, unknown>[],
-    public readonly additionalCustomInput: EntityReference
+    public readonly eligibleOrganizationlUnitIds?: Record<string, unknown>[],
+    public readonly additionalCustomInput?: EntityReference | AnyEntityPayload
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

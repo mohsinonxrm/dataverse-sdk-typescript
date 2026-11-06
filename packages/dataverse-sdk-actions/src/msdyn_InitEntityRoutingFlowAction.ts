@@ -15,10 +15,10 @@ export interface msdyn_InitEntityRoutingFlowResponse {
 export class msdyn_InitEntityRoutingFlowAction implements Executable<msdyn_InitEntityRoutingFlowResponse> {
   constructor(
     public readonly liveWorkStreamId: string,
-    public readonly queueId: string,
+    public readonly queueId: string | undefined,
     public readonly entityRecordId: string,
     public readonly entityLogicalName: string,
-    public readonly liveWorkItemTitle: string
+    public readonly liveWorkItemTitle?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

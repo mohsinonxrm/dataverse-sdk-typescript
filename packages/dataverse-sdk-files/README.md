@@ -16,7 +16,11 @@ npm install @mohsinonxrm/dataverse-sdk-files @mohsinonxrm/dataverse-sdk-core @mo
 - ✅ **Download support**: Retrieve file content as a `Blob` (browser and Node.js)
 - ✅ **Browser and Node.js**: Takes a `Blob`, `File`, `ArrayBuffer` or typed array; no `Buffer` polyfill needed
 - ✅ **TypeScript first**: Fully typed with comprehensive IntelliSense
-- ✅ **Actions-based approach**: Uses Microsoft-recommended Web API actions
+- ✅ **Three upload routes**: the block actions (default), a chunked `PATCH` with `Content-Range`, or a single `PATCH`
+- ✅ **Three download routes**: one `GET`, `Range` requests, or `InitializeFileBlocksDownload` / `DownloadBlock`
+- ✅ **Streams**: upload a `ReadableStream`; `downloadStream()` returns one without holding the file in memory
+- ✅ **Image sizes**: full-size or thumbnail
+- ✅ **Cancellation**: every call takes an `AbortSignal`
 
 ## Supported Column Types
 
@@ -116,9 +120,66 @@ await writeFile("downloaded-logo.png", Buffer.from(await file.arrayBuffer()));
 await fileClient.delete("accounts", accountId, "new_logo");
 ```
 
+### Upload Routes
+
+```typescript
+// "actions" (default): InitializeFileBlocksUpload, UploadBlock per chunk, CommitFileBlocksUpload.
+// "patch-chunked": PATCH with x-ms-transfer-mode: chunked, then PATCH chunks to the returned
+//   Location with Content-Range. Dataverse dictates the chunk size (x-ms-chunk-size, 4 MB), so
+//   chunkSize is ignored; it needs the total size.
+// "single": one PATCH with the whole file.
+await fileClient.upload("accounts", accountId, "new_document", file, "contract.pdf", {
+  method: "patch-chunked",
+});
+```
+
+`method: "auto"` (the default) is `"actions"`, the route that works everywhere. `"patch-chunked"` reads the `Location` and `x-ms-chunk-size` response headers, which a browser can read only if Dataverse's CORS policy exposes them (it rejects with a clear error when `Location` is missing); use `"actions"` in browsers. `"single"` sends the file in one request, so it is limited by the column's maximum size and holds the whole file in memory.
+
+### Upload a Stream
+
+```typescript
+// A Blob is read one slice at a time; a ReadableStream<Uint8Array> as it arrives.
+const response = await fetch(sourceUrl);
+await fileClient.upload("accounts", accountId, "new_document", response.body!, "copy.pdf", {
+  size: Number(response.headers.get("content-length")), // needed for "patch-chunked"
+  mimeType: "application/pdf", // committed by the "actions" route
+});
+```
+
+Without `size`, an `"actions"` upload still works, but `progress.total` is the bytes read so far and `percentage` is 0 until the last chunk. Only the current and the next chunk are held in memory.
+
+### Ranged and Streaming Download
+
+```typescript
+// Range requests (Range: bytes=0-4194303, size from x-ms-file-size), with progress.
+const blob = await fileClient.download("accounts", accountId, "new_document", {
+  method: "range", // or "actions" for InitializeFileBlocksDownload / DownloadBlock
+  chunkSize: 4 * 1024 * 1024,
+  onProgress: (p) => console.log(`${p.percentage}% (${p.downloaded}/${p.total})`),
+  signal: controller.signal,
+});
+
+// A ReadableStream: each chunk is requested as the stream is read.
+const stream = await fileClient.downloadStream("accounts", accountId, "new_document");
+for await (const chunk of stream) {
+  /* write the chunk somewhere */
+}
+```
+
+`download()` with `method: "auto"` (default) is one `GET .../$value`. `downloadStream()` defaults to `"range"` (and streams the response body if Dataverse ignores `Range`). Cancelling the stream stops further requests.
+
+### Image Sizes
+
+```typescript
+// Thumbnail (default) or the full-size image (?size=full).
+const full = await fileClient.download("accounts", accountId, "new_photo", { imageSize: "full" });
+```
+
+Dataverse returns the full-size image only for an image column with `CanStoreFullImage` true (the platform's own `entityimage` columns don't keep one: `?size=full` answers 204 with no body). Full size is not available with `method: "actions"`.
+
 ## Chunking Strategy
 
-The `FileColumnClient` uses a three-step chunked upload process based on Microsoft's Web API actions:
+By default the `FileColumnClient` uses a three-step chunked upload process based on Microsoft's Web API actions:
 
 1. **Initialize**: `InitializeFileBlocksUpload` action creates upload session. Its `Target` is a typed entity reference, `{ "@odata.type": "Microsoft.Dynamics.CRM.account", "accountid": "…" }`, so the first upload to a table looks up its logical name and primary key from `EntityDefinitions` (once per entity set; the result is reused by every `FileColumnClient` on the same `DataverseClient`)
 2. **Upload blocks**: `UploadBlock` action uploads each chunk sequentially
@@ -243,7 +304,7 @@ async upload(
   entitySetName: string,
   recordId: string,
   columnName: string,
-  file: Blob | ArrayBuffer | ArrayBufferView,
+  file: Blob | ArrayBuffer | ArrayBufferView | ReadableStream<Uint8Array>,
   fileName: string,
   options?: FileUploadOptions
 ): Promise<void>
@@ -256,7 +317,7 @@ Upload a file to a file or image column.
 - `entitySetName`: Entity set name (e.g., `'accounts'`, `'emails'`). The table's logical name and primary key are looked up from it once (see [Chunking Strategy](#chunking-strategy))
 - `recordId`: Record GUID (with or without braces)
 - `columnName`: Logical name of file/image column
-- `file`: File data: a `Blob` or `File`, an `ArrayBuffer`, or a typed-array view such as `Uint8Array` (a Node.js `Buffer` is a `Uint8Array`). A `Blob`'s `type` becomes the file's MIME type; otherwise it is `application/octet-stream`.
+- `file`: File data: a `Blob` or `File`, an `ArrayBuffer`, a typed-array view such as `Uint8Array` (a Node.js `Buffer` is a `Uint8Array`), or a `ReadableStream<Uint8Array>`. A `Blob`'s `type` becomes the file's MIME type (the `mimeType` option overrides it); otherwise it is `application/octet-stream`.
 - `fileName`: Name of file being uploaded
 - `options`: Upload options (optional)
 
@@ -284,13 +345,27 @@ Download a file from a file or image column.
 
 **Returns:** File data as a `Blob`, in browsers and in Node.js.
 
+##### `downloadStream()`
+
+```typescript
+async downloadStream(
+  entitySetName: string,
+  recordId: string,
+  columnName: string,
+  options?: FileDownloadOptions
+): Promise<ReadableStream<Uint8Array>>
+```
+
+Download a file as a stream. The first request is made before the promise resolves, so a missing file rejects there (status 404).
+
 ##### `delete()`
 
 ```typescript
 async delete(
   entitySetName: string,
   recordId: string,
-  columnName: string
+  columnName: string,
+  options?: { signal?: AbortSignal }
 ): Promise<void>
 ```
 
@@ -311,6 +386,22 @@ interface FileUploadOptions {
   chunkSize?: number; // Chunk size in bytes (default and maximum: 4MB)
   onProgress?: (progress: UploadProgress) => void;
   signal?: AbortSignal; // Cancels the upload; it rejects with DataverseAbortError
+  method?: "auto" | "actions" | "patch-chunked" | "single"; // default "auto" = "actions"
+  size?: number; // total bytes of a ReadableStream (needed for "patch-chunked")
+  mimeType?: string; // committed by the "actions" route
+}
+```
+
+### FileDownloadOptions
+
+```typescript
+interface FileDownloadOptions {
+  method?: "auto" | "single" | "range" | "actions"; // download(): "auto" = "single"
+  chunkSize?: number; // bytes per request for "range"/"actions" (default and maximum: 4MB)
+  onProgress?: (progress: DownloadProgress) => void; // downloaded, total, percentage, chunkIndex, totalChunks
+  signal?: AbortSignal;
+  timeout?: number; // milliseconds per request; no limit unless set
+  imageSize?: "full" | "thumbnail"; // image columns; default thumbnail
 }
 ```
 
@@ -331,7 +422,7 @@ interface UploadProgress {
 ### Chunk Size
 
 - The default 4MB is also the largest block Dataverse accepts, and needs the fewest requests.
-- `upload()` reads the whole file into memory before it sends the first block.
+- `upload()` reads a `Blob` one slice at a time and a `ReadableStream` as it arrives, so memory use is a couple of chunks (except `method: "single"`, which holds the whole file). `download()` collects the chunks into one `Blob`; use `downloadStream()` to avoid that.
 
 ### Parallel Uploads
 

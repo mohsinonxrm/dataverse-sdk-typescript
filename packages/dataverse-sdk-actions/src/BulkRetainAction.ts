@@ -18,11 +18,11 @@ export interface BulkRetainResponse {
  */
 export class BulkRetainAction implements Executable<BulkRetainResponse> {
   constructor(
-    public readonly entityName: string,
+    public readonly entityName: string | undefined,
     public readonly fetchXml: string,
-    public readonly pageSize: number,
-    public readonly operationId: string,
-    public readonly pagingCookie: string
+    public readonly pageSize?: number,
+    public readonly operationId?: string,
+    public readonly pagingCookie?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

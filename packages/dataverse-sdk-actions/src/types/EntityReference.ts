@@ -4,15 +4,36 @@
  */
 import { DataverseInvalidRequestError } from "@mohsinonxrm/dataverse-sdk-core";
 
+/** Only {@link createEntityReference} makes an {@link EntityReference}. */
+declare const entityReferenceBrand: unique symbol;
+
+/**
+ * The JSON of a record reference in a request body: `@odata.type` and the primary key, for example
+ * `{ "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "<id>" }`. Write one by hand when
+ * you know the primary key column, or use {@link createEntityReference}. `logicalName`, `id` and
+ * `entitySetName` are not part of it: the Web API rejects them.
+ */
+export interface WebApiEntityReference {
+  readonly "@odata.type": string;
+  readonly logicalName?: never;
+  readonly id?: never;
+  readonly entitySetName?: never;
+  /** The primary key column, e.g. `accountid`. */
+  readonly [primaryKey: string]: string | undefined;
+}
+
 /**
  * A reference to one record.
  *
  * Its enumerable properties are the Web API shape: `@odata.type` and the primary key, for example
  * `{ "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "<id>" }` (activities use
  * `activityid`). `logicalName`, `id` and `entitySetName` are not enumerable, so they are not sent
- * in a request body. Create one with {@link createEntityReference}.
+ * in a request body. Create one with {@link createEntityReference};
+ * to write the JSON by hand, use {@link WebApiEntityReference}.
  */
 export interface EntityReference {
+  /** Set by {@link createEntityReference}: a hand-written object isn't an `EntityReference`. */
+  readonly [entityReferenceBrand]: true;
   readonly "@odata.type": string;
   /** Logical name, e.g. `account` (not enumerable). */
   readonly logicalName: string;

@@ -15,8 +15,8 @@ export interface msdyn_ExecuteSISampleDataRequestResponse {
 export class msdyn_ExecuteSISampleDataRequestAction implements Executable<msdyn_ExecuteSISampleDataRequestResponse> {
   constructor(
     public readonly operation: string,
-    public readonly version: string,
-    public readonly lcid: string
+    public readonly version?: string,
+    public readonly lcid?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

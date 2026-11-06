@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * SendTemplate request message
@@ -13,10 +14,10 @@ export class SendTemplateRequest
 {
   constructor(
     public templateId: string,
-    public sender: EntityReference,
+    public sender: EntityReference | AnyEntityPayload,
     public recipients: Record<string, unknown>[],
-    public regarding: EntityReference,
-    public deliveryPriorityCode: number
+    public regarding: EntityReference | AnyEntityPayload,
+    public deliveryPriorityCode?: number
   ) {
     super("SendTemplate");
   }

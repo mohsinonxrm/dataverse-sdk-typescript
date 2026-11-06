@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { ValidateRetentionConfigResponse as ValidateRetentionConfigResponseData } from "./types/index.js";
 
 /**
@@ -14,10 +15,10 @@ export class ValidateRetentionConfigRequest
   implements Executable<ValidateRetentionConfigResponse>
 {
   constructor(
-    public target: EntityReference,
-    public entityName: string,
+    public target: EntityReference | AnyEntityPayload | undefined,
+    public entityName: string | undefined,
     public fetchXml: string,
-    public retentionConfigId: string
+    public retentionConfigId?: string
   ) {
     super("ValidateRetentionConfig");
   }

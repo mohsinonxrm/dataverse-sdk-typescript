@@ -13,10 +13,10 @@ export class msdyn_GetWorkListConfigurationRequest
   implements Executable<msdyn_GetWorkListConfigurationResponse>
 {
   constructor(
-    public viewtype: string,
-    public getData: boolean,
-    public defaultViewType: string,
-    public queryParams: string
+    public viewtype?: string,
+    public getData?: boolean,
+    public defaultViewType?: string,
+    public queryParams?: string
   ) {
     super("msdyn_GetWorkListConfiguration");
   }

@@ -15,7 +15,7 @@ export class UnschedulePredictionRequest
   constructor(
     public msdyn_aimodelId: string,
     public version: string,
-    public skipStatusUpdate: boolean
+    public skipStatusUpdate?: boolean
   ) {
     super("UnschedulePrediction");
   }

@@ -14,7 +14,7 @@ export class AlmHandlerRequest
 {
   constructor(
     public action: string,
-    public input: string
+    public input?: string
   ) {
     super("AlmHandler");
   }

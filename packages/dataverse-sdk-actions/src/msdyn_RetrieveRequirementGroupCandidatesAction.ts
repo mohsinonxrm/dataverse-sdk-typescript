@@ -1,4 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_requirementgroup } from "./types/index.js";
 
 /**
@@ -19,12 +21,13 @@ export interface msdyn_RetrieveRequirementGroupCandidatesResponse {
  */
 export class msdyn_RetrieveRequirementGroupCandidatesAction implements Executable<msdyn_RetrieveRequirementGroupCandidatesResponse> {
   constructor(
-    public readonly requirementGroup: msdyn_requirementgroup,
+    public readonly requirementGroup:
+      EntityReference | EntityPayload<msdyn_requirementgroup> | undefined,
     public readonly startTime: string,
     public readonly endTime: string,
     public readonly duration: number,
-    public readonly constraintBag: string,
-    public readonly version: string
+    public readonly constraintBag?: string,
+    public readonly version?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from RegisterFlowMachine action
@@ -18,14 +19,14 @@ export interface RegisterFlowMachineResponse {
 export class RegisterFlowMachineAction implements Executable<RegisterFlowMachineResponse> {
   constructor(
     public readonly machineName: string,
-    public readonly machineDescription: string,
+    public readonly machineDescription: string | undefined,
     public readonly machineCapacity: number,
     public readonly agentVersion: string,
     public readonly groupPublicKey: string,
-    public readonly hostingType: number,
-    public readonly targetGroup: EntityReference,
-    public readonly pictureInPictureSupport: number,
-    public readonly machineDomain: string
+    public readonly hostingType?: number,
+    public readonly targetGroup?: EntityReference | AnyEntityPayload,
+    public readonly pictureInPictureSupport?: number,
+    public readonly machineDomain?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

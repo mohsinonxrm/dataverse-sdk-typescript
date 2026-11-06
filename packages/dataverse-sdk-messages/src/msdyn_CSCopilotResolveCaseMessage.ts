@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_CSCopilotResolveCaseResponse as msdyn_CSCopilotResolveCaseResponseData } from "./types/index.js";
 
 /**
@@ -14,7 +15,7 @@ export class msdyn_CSCopilotResolveCaseRequest
   implements Executable<msdyn_CSCopilotResolveCaseResponse>
 {
   constructor(
-    public incident: EntityReference,
+    public incident: EntityReference | AnyEntityPayload,
     public resolutionReason: number,
     public callerIdentifier: string,
     public statusReason: number

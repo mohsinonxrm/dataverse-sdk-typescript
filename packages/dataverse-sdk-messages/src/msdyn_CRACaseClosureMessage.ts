@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_CRACaseClosureResponse as msdyn_CRACaseClosureResponseData } from "./types/index.js";
 
 /**
@@ -19,7 +20,7 @@ export class msdyn_CRACaseClosureRequest
     public msdyn_McsConversationId: string,
     public msdyn_IncomingEmailId: string,
     public msdyn_IsMonitoringActive: boolean,
-    public msdyn_Entity: EntityReference
+    public msdyn_Entity: EntityReference | AnyEntityPayload
   ) {
     super("msdyn_CRACaseClosure");
   }

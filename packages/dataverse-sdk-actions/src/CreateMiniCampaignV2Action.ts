@@ -27,7 +27,7 @@ export class CreateMiniCampaignV2Action implements Executable<CreateMiniCampaign
     public readonly ownerId: string,
     public readonly ownerTypeCode: number,
     public readonly sendEmail: boolean,
-    public readonly queueId: string
+    public readonly queueId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

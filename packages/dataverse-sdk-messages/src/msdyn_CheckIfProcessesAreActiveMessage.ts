@@ -13,8 +13,8 @@ export class msdyn_CheckIfProcessesAreActiveRequest
   implements Executable<msdyn_CheckIfProcessesAreActiveResponse>
 {
   constructor(
-    public entityIds: string,
-    public solutionId: string
+    public entityIds?: string,
+    public solutionId?: string
   ) {
     super("msdyn_CheckIfProcessesAreActive");
   }

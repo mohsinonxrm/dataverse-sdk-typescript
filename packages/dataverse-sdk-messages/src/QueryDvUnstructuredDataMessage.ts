@@ -12,7 +12,7 @@ export class QueryDvUnstructuredDataRequest
   extends OrganizationRequest
   implements Executable<QueryDvUnstructuredDataResponse>
 {
-  constructor(public userQueryText: string) {
+  constructor(public userQueryText?: string) {
     super("QueryDvUnstructuredData");
   }
 

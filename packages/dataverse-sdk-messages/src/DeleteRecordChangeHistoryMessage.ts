@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { DeleteRecordChangeHistoryResponse as DeleteRecordChangeHistoryResponseData } from "./types/index.js";
 
 /**
@@ -13,7 +14,7 @@ export class DeleteRecordChangeHistoryRequest
   extends OrganizationRequest
   implements Executable<DeleteRecordChangeHistoryResponse>
 {
-  constructor(public target: EntityReference) {
+  constructor(public target: EntityReference | AnyEntityPayload) {
     super("DeleteRecordChangeHistory");
   }
 

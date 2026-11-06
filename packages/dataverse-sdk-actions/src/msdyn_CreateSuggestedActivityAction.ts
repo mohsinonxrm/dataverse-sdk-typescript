@@ -18,7 +18,7 @@ export class msdyn_CreateSuggestedActivityAction implements Executable<msdyn_Cre
     public readonly suggestedActivityId: string,
     public readonly regardingObjectId: string,
     public readonly regardingObjectEntity: string,
-    public readonly isAdminConsented: boolean
+    public readonly isAdminConsented?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

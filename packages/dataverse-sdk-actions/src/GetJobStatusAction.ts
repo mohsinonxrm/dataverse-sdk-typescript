@@ -15,8 +15,8 @@ export interface GetJobStatusResponse {
 export class GetJobStatusAction implements Executable<GetJobStatusResponse> {
   constructor(
     public readonly istrain: boolean,
-    public readonly correlationid: string,
-    public readonly aimodelid: string
+    public readonly correlationid?: string,
+    public readonly aimodelid?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

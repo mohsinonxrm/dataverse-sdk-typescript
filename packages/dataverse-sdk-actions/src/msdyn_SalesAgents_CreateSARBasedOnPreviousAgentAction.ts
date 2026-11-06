@@ -16,7 +16,7 @@ export class msdyn_SalesAgents_CreateSARBasedOnPreviousAgentAction implements Ex
   constructor(
     public readonly msdyn_SalesAgentType: number,
     public readonly msdyn_PreviousSarRecordId: string,
-    public readonly msdyn_TrackingId: string
+    public readonly msdyn_TrackingId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

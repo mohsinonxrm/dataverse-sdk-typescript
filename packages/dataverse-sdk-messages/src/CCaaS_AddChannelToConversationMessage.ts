@@ -14,9 +14,9 @@ export class CCaaS_AddChannelToConversationRequest
 {
   constructor(
     public msdyn_ocliveworkitemId: string,
-    public agentId: string,
+    public agentId: string | undefined,
     public channelType: string,
-    public destinationPhoneNumber: string,
+    public destinationPhoneNumber: string | undefined,
     public apiVersion: string
   ) {
     super("CCaaS_AddChannelToConversation");

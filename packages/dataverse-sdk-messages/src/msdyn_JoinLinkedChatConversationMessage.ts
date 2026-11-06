@@ -11,7 +11,7 @@ export class msdyn_JoinLinkedChatConversationRequest
   implements Executable<msdyn_JoinLinkedChatConversationResponse>
 {
   constructor(
-    public msdyn_UserId: string,
+    public msdyn_UserId: string | undefined,
     public msdyn_RegardingEntityId: string,
     public msdyn_TeamsConversationId: string
   ) {

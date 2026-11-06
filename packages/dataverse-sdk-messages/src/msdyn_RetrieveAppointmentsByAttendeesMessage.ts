@@ -13,12 +13,12 @@ export class msdyn_RetrieveAppointmentsByAttendeesRequest
   implements Executable<msdyn_RetrieveAppointmentsByAttendeesResponse>
 {
   constructor(
-    public version: string,
+    public version: string | undefined,
     public startDate: string,
     public endDate: string,
     public bookableResourceIds: string,
-    public onlyRetrieveCompletedOrScheduled: boolean,
-    public modifiedOnDate: string
+    public onlyRetrieveCompletedOrScheduled?: boolean,
+    public modifiedOnDate?: string
   ) {
     super("msdyn_RetrieveAppointmentsByAttendees");
   }

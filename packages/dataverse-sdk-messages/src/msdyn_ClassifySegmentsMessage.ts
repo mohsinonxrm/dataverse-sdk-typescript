@@ -11,8 +11,8 @@ export class msdyn_ClassifySegmentsRequest
   implements Executable<msdyn_ClassifySegmentsResponse>
 {
   constructor(
-    public regardingEntityId: string,
-    public regardingEntityName: string
+    public regardingEntityId?: string,
+    public regardingEntityName?: string
   ) {
     super("msdyn_ClassifySegments");
   }

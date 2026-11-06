@@ -19,17 +19,17 @@ export interface msdyn_SalesLeadSummaryResponse {
  */
 export class msdyn_SalesLeadSummaryAction implements Executable<msdyn_SalesLeadSummaryResponse> {
   constructor(
-    public readonly msdyn_additionalParams: string,
-    public readonly msdyn_activityId: string,
-    public readonly msdyn_doSuggestUpdates: boolean,
-    public readonly msdyn_parentContactId: string,
+    public readonly msdyn_additionalParams: string | undefined,
+    public readonly msdyn_activityId: string | undefined,
+    public readonly msdyn_doSuggestUpdates: boolean | undefined,
+    public readonly msdyn_parentContactId: string | undefined,
     public readonly msdyn_id: string,
-    public readonly msdyn_lastComputationTime: string,
-    public readonly msdyn_isMergedCatchupAndSummary: boolean,
-    public readonly msdyn_skipHeader: string,
-    public readonly msdyn_sessionId: string,
-    public readonly msdyn_parentAccountId: string,
-    public readonly msdyn_responseFormat: string
+    public readonly msdyn_lastComputationTime?: string,
+    public readonly msdyn_isMergedCatchupAndSummary?: boolean,
+    public readonly msdyn_skipHeader?: string,
+    public readonly msdyn_sessionId?: string,
+    public readonly msdyn_parentAccountId?: string,
+    public readonly msdyn_responseFormat?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

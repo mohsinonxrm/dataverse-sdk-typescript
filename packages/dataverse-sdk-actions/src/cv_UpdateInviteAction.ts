@@ -1,4 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { msfp_surveyinvite } from "./types/index.js";
 
 /**
@@ -17,7 +19,7 @@ export interface cv_UpdateInviteResponse extends msfp_surveyinvite {
  * Unbound action
  */
 export class cv_UpdateInviteAction implements Executable<cv_UpdateInviteResponse> {
-  constructor(public readonly inviteentity: msfp_surveyinvite) {}
+  constructor(public readonly inviteentity: EntityReference | EntityPayload<msfp_surveyinvite>) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/cv_UpdateInvite`;

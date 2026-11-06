@@ -17,7 +17,7 @@ export class TrainAction implements Executable<TrainResponse> {
   constructor(
     public readonly msdyn_aiconfigurationId: string,
     public readonly version: string,
-    public readonly source: string
+    public readonly source?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

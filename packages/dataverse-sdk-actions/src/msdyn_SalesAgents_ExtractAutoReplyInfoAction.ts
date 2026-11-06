@@ -14,11 +14,11 @@ export interface msdyn_SalesAgents_ExtractAutoReplyInfoResponse {
  */
 export class msdyn_SalesAgents_ExtractAutoReplyInfoAction implements Executable<msdyn_SalesAgents_ExtractAutoReplyInfoResponse> {
   constructor(
-    public readonly msdyn_TrackingId: string,
-    public readonly msdyn_SalesAgentRun: string,
-    public readonly msdyn_AuthType: number,
+    public readonly msdyn_TrackingId: string | undefined,
+    public readonly msdyn_SalesAgentRun: string | undefined,
+    public readonly msdyn_AuthType: number | undefined,
     public readonly msdyn_SalesMacroAgentType: number,
-    public readonly msdyn_Thread: string
+    public readonly msdyn_Thread?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_UpdateBookingsStatusResponse as msdyn_UpdateBookingsStatusResponseData } from "./types/index.js";
 
 /**
@@ -15,10 +16,10 @@ export class msdyn_UpdateBookingsStatusRequest
 {
   constructor(
     public targetStatusId: string,
-    public bookingIds: string,
-    public defaultBookingDetail: EntityReference,
-    public bookingStatusChangeContext: string,
-    public considerAppointments: boolean
+    public bookingIds?: string,
+    public defaultBookingDetail?: EntityReference | AnyEntityPayload,
+    public bookingStatusChangeContext?: string,
+    public considerAppointments?: boolean
   ) {
     super("msdyn_UpdateBookingsStatus");
   }

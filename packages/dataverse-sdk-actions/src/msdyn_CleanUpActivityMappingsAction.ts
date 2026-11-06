@@ -13,7 +13,7 @@ export interface msdyn_CleanUpActivityMappingsResponse {
  * Unbound action
  */
 export class msdyn_CleanUpActivityMappingsAction implements Executable<msdyn_CleanUpActivityMappingsResponse> {
-  constructor(public readonly inputData: string) {}
+  constructor(public readonly inputData?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CleanUpActivityMappings`;

@@ -14,8 +14,8 @@ export interface msdyn_ClassifySegmentsResponse {
  */
 export class msdyn_ClassifySegmentsAction implements Executable<msdyn_ClassifySegmentsResponse> {
   constructor(
-    public readonly regardingEntityId: string,
-    public readonly regardingEntityName: string
+    public readonly regardingEntityId?: string,
+    public readonly regardingEntityName?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

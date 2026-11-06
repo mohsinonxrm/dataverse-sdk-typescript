@@ -16,7 +16,7 @@ export class msdyn_SalesAgents_TriggerOutreachAgentAction implements Executable<
   constructor(
     public readonly msdyn_TrackingId: string,
     public readonly msdyn_SalesAgentRun: string,
-    public readonly msdyn_OutreachConfig: string
+    public readonly msdyn_OutreachConfig?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

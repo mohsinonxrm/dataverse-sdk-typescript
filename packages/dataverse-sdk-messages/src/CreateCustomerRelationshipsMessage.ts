@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { enumBody } from "./internal/enumBody.js";
 import type {
   ComplexLookupAttributeMetadata,
   ComplexOneToManyRelationshipMetadata,
@@ -17,9 +18,9 @@ export class CreateCustomerRelationshipsRequest
   implements Executable<CreateCustomerRelationshipsResponse>
 {
   constructor(
-    public lookup: ComplexLookupAttributeMetadata,
-    public oneToManyRelationships: ComplexOneToManyRelationshipMetadata[],
-    public solutionUniqueName: string
+    public lookup?: ComplexLookupAttributeMetadata,
+    public oneToManyRelationships?: ComplexOneToManyRelationshipMetadata[],
+    public solutionUniqueName?: string
   ) {
     super("CreateCustomerRelationships");
   }
@@ -28,8 +29,11 @@ export class CreateCustomerRelationshipsRequest
     const url = `${baseUrl}/CreateCustomerRelationships`;
 
     const body: Record<string, unknown> = {
-      Lookup: this.lookup,
-      OneToManyRelationships: this.oneToManyRelationships,
+      Lookup: enumBody(this.lookup, "ComplexLookupAttributeMetadata"),
+      OneToManyRelationships: enumBody(
+        this.oneToManyRelationships,
+        "ComplexOneToManyRelationshipMetadata"
+      ),
       SolutionUniqueName: this.solutionUniqueName,
     };
 

@@ -169,6 +169,26 @@ export class OrganizationService {
    * });
    * ```
    */
+  create(
+    entitySetName: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    entity: Record<string, any>,
+    options?: CreateOptions & { returnRepresentation?: false }
+  ): Promise<string>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  create<T = any>(
+    entitySetName: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    entity: Record<string, any>,
+    options: CreateOptions & { returnRepresentation: true }
+  ): Promise<T>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  create<T = any>(
+    entitySetName: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    entity: Record<string, any>,
+    options?: CreateOptions
+  ): Promise<string | T>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async create<T = any>(
     entitySetName: string,
@@ -550,6 +570,8 @@ export class OrganizationService {
     const normalizedAssigneeId = this.normalizeGuid(assigneeId);
 
     const builder = this.client.api(`/${entitySetName}(${normalizedId})`);
+    // `If-Match: *`: a missing record rejects with 404 instead of being created (#272).
+    builder.ifMatch("*");
     await builder.patch({
       [`ownerid@odata.bind`]: `/${assigneeSetName}(${normalizedAssigneeId})`,
     });
@@ -580,6 +602,8 @@ export class OrganizationService {
     const normalizedId = this.normalizeGuid(recordId);
 
     const builder = this.client.api(`/${entitySetName}(${normalizedId})`);
+    // `If-Match: *`: a missing record rejects with 404 instead of being created (#272).
+    builder.ifMatch("*");
     await builder.patch({
       statecode: stateCode,
       statuscode: statusCode,

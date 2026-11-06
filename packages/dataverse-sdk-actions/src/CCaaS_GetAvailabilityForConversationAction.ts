@@ -21,9 +21,9 @@ export interface CCaaS_GetAvailabilityForConversationResponse {
  */
 export class CCaaS_GetAvailabilityForConversationAction implements Executable<CCaaS_GetAvailabilityForConversationResponse> {
   constructor(
-    public readonly customContextItems: string,
+    public readonly customContextItems: string | undefined,
     public readonly apiVersion: string,
-    public readonly conversationId: string
+    public readonly conversationId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

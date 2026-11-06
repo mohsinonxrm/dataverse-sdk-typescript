@@ -13,7 +13,7 @@ export interface msdynmkt_ValidatePlaceholdersResponse {
  * Unbound action
  */
 export class msdynmkt_ValidatePlaceholdersAction implements Executable<msdynmkt_ValidatePlaceholdersResponse> {
-  constructor(public readonly validatePlaceholdersRequest: string) {}
+  constructor(public readonly validatePlaceholdersRequest?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_ValidatePlaceholders`;

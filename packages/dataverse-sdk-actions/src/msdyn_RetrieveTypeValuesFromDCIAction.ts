@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_RetrieveTypeValuesFromDCI action
@@ -15,11 +16,11 @@ export interface msdyn_RetrieveTypeValuesFromDCIResponse {
  */
 export class msdyn_RetrieveTypeValuesFromDCIAction implements Executable<msdyn_RetrieveTypeValuesFromDCIResponse> {
   constructor(
-    public readonly crmRecord: EntityReference,
+    public readonly crmRecord: EntityReference | AnyEntityPayload,
     public readonly resourceType: number,
     public readonly resourceTypeName: string,
-    public readonly startDate: string,
-    public readonly endDate: string
+    public readonly startDate?: string,
+    public readonly endDate?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

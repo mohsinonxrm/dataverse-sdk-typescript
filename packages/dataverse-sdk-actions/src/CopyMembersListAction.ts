@@ -1,4 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { list } from "./types/index.js";
 
 /**
@@ -17,7 +19,7 @@ export interface CopyMembersListResponse {
 export class CopyMembersListAction implements Executable<CopyMembersListResponse> {
   constructor(
     public readonly listId: string,
-    public readonly targetList: list
+    public readonly targetList: EntityReference | EntityPayload<list>
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

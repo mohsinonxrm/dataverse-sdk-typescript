@@ -13,9 +13,9 @@ export class msdyn_RegisterCustomEntityRequest
   constructor(
     public entityIds: string,
     public entityLogicalName: string,
-    public deviceIds: string,
-    public names: string,
-    public accountIds: string
+    public deviceIds?: string,
+    public names?: string,
+    public accountIds?: string
   ) {
     super("msdyn_RegisterCustomEntity");
   }

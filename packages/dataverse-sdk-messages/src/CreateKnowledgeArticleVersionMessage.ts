@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * CreateKnowledgeArticleVersion request message
@@ -13,7 +14,7 @@ export class CreateKnowledgeArticleVersionRequest
   implements Executable<CreateKnowledgeArticleVersionResponse>
 {
   constructor(
-    public source: EntityReference,
+    public source: EntityReference | AnyEntityPayload,
     public isMajor: boolean
   ) {
     super("CreateKnowledgeArticleVersion");

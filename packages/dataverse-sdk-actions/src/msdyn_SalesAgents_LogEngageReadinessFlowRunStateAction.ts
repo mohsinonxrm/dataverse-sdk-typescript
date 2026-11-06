@@ -14,10 +14,10 @@ export interface msdyn_SalesAgents_LogEngageReadinessFlowRunStateResponse {
  */
 export class msdyn_SalesAgents_LogEngageReadinessFlowRunStateAction implements Executable<msdyn_SalesAgents_LogEngageReadinessFlowRunStateResponse> {
   constructor(
-    public readonly msdyn_TrackingId: string,
-    public readonly msdyn_SalesAgentRun: string,
-    public readonly msdyn_Thread: string,
-    public readonly msdyn_FlowRunState: string
+    public readonly msdyn_TrackingId?: string,
+    public readonly msdyn_SalesAgentRun?: string,
+    public readonly msdyn_Thread?: string,
+    public readonly msdyn_FlowRunState?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

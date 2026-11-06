@@ -14,7 +14,7 @@ export class StageSolutionRequest
 {
   constructor(
     public customizationFile: string,
-    public stageSolutionUploadId: string
+    public stageSolutionUploadId?: string
   ) {
     super("StageSolution");
   }

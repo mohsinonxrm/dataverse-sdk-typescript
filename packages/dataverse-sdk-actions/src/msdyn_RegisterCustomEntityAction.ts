@@ -16,9 +16,9 @@ export class msdyn_RegisterCustomEntityAction implements Executable<msdyn_Regist
   constructor(
     public readonly entityIds: string,
     public readonly entityLogicalName: string,
-    public readonly deviceIds: string,
-    public readonly names: string,
-    public readonly accountIds: string
+    public readonly deviceIds?: string,
+    public readonly names?: string,
+    public readonly accountIds?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

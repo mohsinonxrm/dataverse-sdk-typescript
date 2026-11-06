@@ -15,7 +15,7 @@ export interface msdyn_ActivateWorkflowResponse {
 export class msdyn_ActivateWorkflowAction implements Executable<msdyn_ActivateWorkflowResponse> {
   constructor(
     public readonly msdyn_WorkflowId: string,
-    public readonly msdyn_WorkflowUniqueName: string
+    public readonly msdyn_WorkflowUniqueName?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

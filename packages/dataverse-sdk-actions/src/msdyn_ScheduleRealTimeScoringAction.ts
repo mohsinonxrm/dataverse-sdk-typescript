@@ -13,7 +13,7 @@ export interface msdyn_ScheduleRealTimeScoringResponse {
  * Unbound action
  */
 export class msdyn_ScheduleRealTimeScoringAction implements Executable<msdyn_ScheduleRealTimeScoringResponse> {
-  constructor(public readonly inputData: string) {}
+  constructor(public readonly inputData?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ScheduleRealTimeScoring`;

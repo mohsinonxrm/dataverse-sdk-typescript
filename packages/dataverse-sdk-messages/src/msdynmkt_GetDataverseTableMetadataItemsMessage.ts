@@ -12,9 +12,9 @@ export class msdynmkt_GetDataverseTableMetadataItemsRequest
   implements Executable<msdynmkt_GetDataverseTableMetadataItemsResponse>
 {
   constructor(
-    public msdynmkt_GetDataverseTableMetadataItems_request_LanguageCode: number,
+    public msdynmkt_GetDataverseTableMetadataItems_request_LanguageCode: number | undefined,
     public msdynmkt_GetDataverseTableMetadataItems_request_SourceLogicalNames: string[],
-    public msdynmkt_GetDataverseTableMetadataItems_request_UseLazyLoading: boolean
+    public msdynmkt_GetDataverseTableMetadataItems_request_UseLazyLoading?: boolean
   ) {
     super("msdynmkt_GetDataverseTableMetadataItems");
   }

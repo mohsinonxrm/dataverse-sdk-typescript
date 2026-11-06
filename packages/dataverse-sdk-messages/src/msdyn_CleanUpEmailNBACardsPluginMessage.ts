@@ -10,7 +10,7 @@ export class msdyn_CleanUpEmailNBACardsPluginRequest
   extends OrganizationRequest
   implements Executable<msdyn_CleanUpEmailNBACardsPluginResponse>
 {
-  constructor(public inputData: string) {
+  constructor(public inputData?: string) {
     super("msdyn_CleanUpEmailNBACardsPlugin");
   }
 

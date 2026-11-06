@@ -15,10 +15,10 @@ export interface msdyn_GetWidgetsDataResponse {
 export class msdyn_GetWidgetsDataAction implements Executable<msdyn_GetWidgetsDataResponse> {
   constructor(
     public readonly msdyn_request: string,
-    public readonly msdyn_entityname: string,
+    public readonly msdyn_entityname: string | undefined,
     public readonly msdyn_widgettype: string,
     public readonly msdyn_widgetid: string,
-    public readonly msdyn_recordid: string
+    public readonly msdyn_recordid?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -13,7 +13,7 @@ export class msdyn_SalesAgents_CreateSARRecordsRequest
 {
   constructor(
     public msdyn_InputPayload: string,
-    public msdyn_TrackingId: string
+    public msdyn_TrackingId?: string
   ) {
     super("msdyn_SalesAgents_CreateSARRecords");
   }

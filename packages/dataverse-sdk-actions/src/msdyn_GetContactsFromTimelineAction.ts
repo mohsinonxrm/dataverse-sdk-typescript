@@ -16,7 +16,7 @@ export class msdyn_GetContactsFromTimelineAction implements Executable<msdyn_Get
   constructor(
     public readonly entityLogicalName: string,
     public readonly recordId: string,
-    public readonly customActionInputs: string
+    public readonly customActionInputs?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

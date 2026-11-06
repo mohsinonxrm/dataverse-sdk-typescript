@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { enumBody } from "./internal/enumBody.js";
 import type {
   ImportSolutionAsyncResponse as ImportSolutionAsyncResponseData,
   LayerDesiredOrder,
@@ -19,21 +20,21 @@ export class ImportSolutionAsyncRequest
   constructor(
     public overwriteUnmanagedCustomizations: boolean,
     public publishWorkflows: boolean,
-    public customizationFile: string,
-    public importJobId: string,
-    public convertToManaged: boolean,
-    public skipProductUpdateDependencies: boolean,
-    public holdingSolution: boolean,
-    public skipQueueRibbonJob: boolean,
-    public layerDesiredOrder: LayerDesiredOrder,
-    public asyncRibbonProcessing: boolean,
-    public componentParameters: Record<string, unknown>[],
-    public solutionParameters: SolutionParameters,
-    public isTemplateMode: boolean,
-    public templateSuffix: string,
-    public templateDisplayNamePrefix: string,
-    public stageAndUpgrade: boolean,
-    public schemaUpdatesOnly: boolean
+    public customizationFile?: string,
+    public importJobId?: string,
+    public convertToManaged?: boolean,
+    public skipProductUpdateDependencies?: boolean,
+    public holdingSolution?: boolean,
+    public skipQueueRibbonJob?: boolean,
+    public layerDesiredOrder?: LayerDesiredOrder,
+    public asyncRibbonProcessing?: boolean,
+    public componentParameters?: Record<string, unknown>[],
+    public solutionParameters?: SolutionParameters,
+    public isTemplateMode?: boolean,
+    public templateSuffix?: string,
+    public templateDisplayNamePrefix?: string,
+    public stageAndUpgrade?: boolean,
+    public schemaUpdatesOnly?: boolean
   ) {
     super("ImportSolutionAsync");
   }
@@ -50,10 +51,10 @@ export class ImportSolutionAsyncRequest
       SkipProductUpdateDependencies: this.skipProductUpdateDependencies,
       HoldingSolution: this.holdingSolution,
       SkipQueueRibbonJob: this.skipQueueRibbonJob,
-      LayerDesiredOrder: this.layerDesiredOrder,
+      LayerDesiredOrder: enumBody(this.layerDesiredOrder, "LayerDesiredOrder"),
       AsyncRibbonProcessing: this.asyncRibbonProcessing,
       ComponentParameters: this.componentParameters,
-      SolutionParameters: this.solutionParameters,
+      SolutionParameters: enumBody(this.solutionParameters, "SolutionParameters"),
       IsTemplateMode: this.isTemplateMode,
       TemplateSuffix: this.templateSuffix,
       TemplateDisplayNamePrefix: this.templateDisplayNamePrefix,

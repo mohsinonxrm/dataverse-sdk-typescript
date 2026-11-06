@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_InvokeIntelligenceAction action
@@ -16,8 +17,8 @@ export interface msdyn_InvokeIntelligenceActionResponse {
  */
 export class msdyn_InvokeIntelligenceActionAction implements Executable<msdyn_InvokeIntelligenceActionResponse> {
   constructor(
-    public readonly context: string,
-    public readonly entityReference: EntityReference,
+    public readonly context: string | undefined,
+    public readonly entityReference: EntityReference | AnyEntityPayload | undefined,
     public readonly scenarioType: string,
     public readonly requestPayload: string
   ) {}

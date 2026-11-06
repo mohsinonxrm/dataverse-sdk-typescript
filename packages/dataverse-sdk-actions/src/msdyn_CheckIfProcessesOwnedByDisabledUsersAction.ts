@@ -18,7 +18,7 @@ export interface msdyn_CheckIfProcessesOwnedByDisabledUsersResponse {
  * Unbound action
  */
 export class msdyn_CheckIfProcessesOwnedByDisabledUsersAction implements Executable<msdyn_CheckIfProcessesOwnedByDisabledUsersResponse> {
-  constructor(public readonly solutionId: string) {}
+  constructor(public readonly solutionId?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckIfProcessesOwnedByDisabledUsers`;

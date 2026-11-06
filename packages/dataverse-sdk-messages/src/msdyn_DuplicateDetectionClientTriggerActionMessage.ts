@@ -10,7 +10,7 @@ export class msdyn_DuplicateDetectionClientTriggerActionRequest
   extends OrganizationRequest
   implements Executable<msdyn_DuplicateDetectionClientTriggerActionResponse>
 {
-  constructor(public inputData: string) {
+  constructor(public inputData?: string) {
     super("msdyn_DuplicateDetectionClientTriggerAction");
   }
 

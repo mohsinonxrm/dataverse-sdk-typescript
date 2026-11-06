@@ -15,18 +15,18 @@ export interface msdynmkt_StartLoadConsentV4CustomActionResponse {
  */
 export class msdynmkt_StartLoadConsentV4CustomActionAction implements Executable<msdynmkt_StartLoadConsentV4CustomActionResponse> {
   constructor(
-    public readonly commercialPurposeId: string,
-    public readonly commercialTopicId: string,
-    public readonly transactionalPurposeId: string,
-    public readonly transactionalTopicId: string,
-    public readonly trackingPurposeId: string,
-    public readonly sourceEntity: string,
-    public readonly owningBusinessUnit: string,
-    public readonly filterType: string,
-    public readonly filterId: string,
-    public readonly consentValue: number,
-    public readonly updateExistingRecords: boolean,
-    public readonly complianceProfileId: string
+    public readonly commercialPurposeId?: string,
+    public readonly commercialTopicId?: string,
+    public readonly transactionalPurposeId?: string,
+    public readonly transactionalTopicId?: string,
+    public readonly trackingPurposeId?: string,
+    public readonly sourceEntity?: string,
+    public readonly owningBusinessUnit?: string,
+    public readonly filterType?: string,
+    public readonly filterId?: string,
+    public readonly consentValue?: number,
+    public readonly updateExistingRecords?: boolean,
+    public readonly complianceProfileId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -13,11 +13,11 @@ export class msdyn_SalesAgents_ExtractAutoReplyInfoRequest
   implements Executable<msdyn_SalesAgents_ExtractAutoReplyInfoResponse>
 {
   constructor(
-    public msdyn_TrackingId: string,
-    public msdyn_SalesAgentRun: string,
-    public msdyn_AuthType: number,
+    public msdyn_TrackingId: string | undefined,
+    public msdyn_SalesAgentRun: string | undefined,
+    public msdyn_AuthType: number | undefined,
     public msdyn_SalesMacroAgentType: number,
-    public msdyn_Thread: string
+    public msdyn_Thread?: string
   ) {
     super("msdyn_SalesAgents_ExtractAutoReplyInfo");
   }

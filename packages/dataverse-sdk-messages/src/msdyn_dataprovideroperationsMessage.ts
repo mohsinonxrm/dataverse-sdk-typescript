@@ -13,8 +13,8 @@ export class msdyn_dataprovideroperationsRequest
   implements Executable<msdyn_dataprovideroperationsResponse>
 {
   constructor(
-    public msdyn_recordid: string,
-    public msdyn_payload: string,
+    public msdyn_recordid: string | undefined,
+    public msdyn_payload: string | undefined,
     public msdyn_httpmethod: string
   ) {
     super("msdyn_dataprovideroperations");

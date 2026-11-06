@@ -12,7 +12,7 @@ export class GetTrackingTokenEmailRequest
   extends OrganizationRequest
   implements Executable<GetTrackingTokenEmailResponse>
 {
-  constructor(public subject: string) {
+  constructor(public subject?: string) {
     super("GetTrackingTokenEmail");
   }
 

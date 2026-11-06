@@ -12,7 +12,7 @@ export class msdynmkt_PersonalizationGetEntityProvidersRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_PersonalizationGetEntityProvidersResponse>
 {
-  constructor(public getProvidersRequest: string) {
+  constructor(public getProvidersRequest?: string) {
     super("msdynmkt_PersonalizationGetEntityProviders");
   }
 

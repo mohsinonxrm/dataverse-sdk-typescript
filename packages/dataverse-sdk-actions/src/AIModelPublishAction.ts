@@ -20,7 +20,7 @@ export class AIModelPublishAction implements Executable<AIModelPublishResponse> 
   constructor(
     public readonly modelId: string,
     public readonly modelName: string,
-    public readonly source: string,
+    public readonly source: string | undefined,
     public readonly runConfigurationId: string,
     public readonly templateId: string,
     public readonly runConfiguration: string,

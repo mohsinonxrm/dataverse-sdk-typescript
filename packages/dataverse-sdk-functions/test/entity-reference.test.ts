@@ -8,7 +8,7 @@ import { DataverseInvalidRequestError } from "@mohsinonxrm/dataverse-sdk-core";
 import { createTestClient, jsonResponse } from "@mohsinonxrm/dataverse-sdk-testing";
 import {
   InitializeFromFunction,
-  RetrievePrincipalAccessFunction,
+  RetrievePrincipalAccess_organizationFunction,
   createEntityReference,
 } from "../src/index.js";
 
@@ -25,7 +25,10 @@ describe("#72: function entity references", () => {
     fake.on("GET", /RetrievePrincipalAccess/, () => jsonResponse({ AccessRights: "ReadAccess" }));
 
     await client.execute(
-      new RetrievePrincipalAccessFunction(ORG, createEntityReference("accountleads", "l1"))
+      new RetrievePrincipalAccess_organizationFunction(
+        ORG,
+        createEntityReference("accountleads", "l1")
+      )
     );
 
     expect(aliases(fake.last().url)).toEqual({

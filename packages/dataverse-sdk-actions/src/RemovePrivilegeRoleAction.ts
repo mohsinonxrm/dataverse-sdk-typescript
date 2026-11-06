@@ -1,4 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { privilege } from "./types/index.js";
 
 /**
@@ -17,7 +19,7 @@ export interface RemovePrivilegeRoleResponse {
 export class RemovePrivilegeRoleAction implements Executable<RemovePrivilegeRoleResponse> {
   constructor(
     public readonly roleId: string,
-    public readonly privilege: privilege
+    public readonly privilege: EntityReference | EntityPayload<privilege>
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

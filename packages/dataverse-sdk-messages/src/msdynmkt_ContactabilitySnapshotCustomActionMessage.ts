@@ -12,7 +12,7 @@ export class msdynmkt_ContactabilitySnapshotCustomActionRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_ContactabilitySnapshotCustomActionResponse>
 {
-  constructor(public input: string) {
+  constructor(public input?: string) {
     super("msdynmkt_ContactabilitySnapshotCustomAction");
   }
 

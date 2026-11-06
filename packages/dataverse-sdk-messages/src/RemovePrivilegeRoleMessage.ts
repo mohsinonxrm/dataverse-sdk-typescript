@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { privilege } from "./types/index.js";
 
 /**
@@ -13,7 +15,7 @@ export class RemovePrivilegeRoleRequest
 {
   constructor(
     public roleId: string,
-    public privilege: privilege
+    public privilege: EntityReference | EntityPayload<privilege>
   ) {
     super("RemovePrivilegeRole");
   }

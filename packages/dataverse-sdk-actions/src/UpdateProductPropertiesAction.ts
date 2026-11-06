@@ -1,4 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { dynamicpropertyinstance } from "./types/index.js";
 
 /**
@@ -14,7 +16,11 @@ export interface UpdateProductPropertiesResponse {
  * Unbound action
  */
 export class UpdateProductPropertiesAction implements Executable<UpdateProductPropertiesResponse> {
-  constructor(public readonly propertyInstanceList: dynamicpropertyinstance[]) {}
+  constructor(
+    public readonly propertyInstanceList: (
+      EntityReference | EntityPayload<dynamicpropertyinstance>
+    )[]
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/UpdateProductProperties`;

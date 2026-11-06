@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { sharedworkspace } from "./types/index.js";
 
 /**
@@ -14,8 +15,8 @@ export class GetOrCreateSharedWorkspaceRequest
   implements Executable<GetOrCreateSharedWorkspaceResponse>
 {
   constructor(
-    public customclaims: EntityReference,
-    public target: sharedworkspace
+    public customclaims: EntityReference | AnyEntityPayload | undefined,
+    public target: EntityReference | EntityPayload<sharedworkspace>
   ) {
     super("GetOrCreateSharedWorkspace");
   }

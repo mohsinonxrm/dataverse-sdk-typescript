@@ -13,7 +13,7 @@ export interface msdyn_RetrieveKnowledgeSearchFiltersResponse {
  * Unbound action
  */
 export class msdyn_RetrieveKnowledgeSearchFiltersAction implements Executable<msdyn_RetrieveKnowledgeSearchFiltersResponse> {
-  constructor(public readonly searchFiltersMetadata: string) {}
+  constructor(public readonly searchFiltersMetadata?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_RetrieveKnowledgeSearchFilters`;

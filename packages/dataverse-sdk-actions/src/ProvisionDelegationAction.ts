@@ -1,4 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { delegatedauthorization, team } from "./types/index.js";
 
 /**
@@ -17,7 +19,9 @@ export interface ProvisionDelegationResponse extends team {
  * Unbound action
  */
 export class ProvisionDelegationAction implements Executable<ProvisionDelegationResponse> {
-  constructor(public readonly delegatedauthorization: delegatedauthorization) {}
+  constructor(
+    public readonly delegatedauthorization: EntityReference | EntityPayload<delegatedauthorization>
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ProvisionDelegation`;

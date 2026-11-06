@@ -13,9 +13,9 @@ export class _ResourcesAddUpdateActionRequest
   implements Executable<_ResourcesAddUpdateActionResponse>
 {
   constructor(
-    public newlyAddedResources: string,
-    public resourceGroupId: string,
-    public resourceGroupsToAdd: string
+    public newlyAddedResources?: string,
+    public resourceGroupId?: string,
+    public resourceGroupsToAdd?: string
   ) {
     super("_ResourcesAddUpdateAction");
   }

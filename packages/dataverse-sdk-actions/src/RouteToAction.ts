@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { queueitem } from "./types/index.js";
 
 /**
@@ -16,8 +17,8 @@ export interface RouteToResponse {
  */
 export class RouteToAction implements Executable<RouteToResponse> {
   constructor(
-    public readonly target: EntityReference,
-    public readonly queueItem: queueitem
+    public readonly target: EntityReference | AnyEntityPayload,
+    public readonly queueItem?: EntityReference | EntityPayload<queueitem>
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

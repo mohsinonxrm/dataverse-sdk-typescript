@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { enumBody } from "./internal/enumBody.js";
 import type {
   LayerDesiredOrder,
   SolutionParameters,
@@ -21,14 +22,14 @@ export class StageAndUpgradeRequest
     public publishWorkflows: boolean,
     public customizationFile: string,
     public importJobId: string,
-    public convertToManaged: boolean,
-    public skipProductUpdateDependencies: boolean,
-    public skipQueueRibbonJob: boolean,
-    public asyncRibbonProcessing: boolean,
-    public componentParameters: Record<string, unknown>[],
-    public solutionParameters: SolutionParameters,
-    public layerDesiredOrder: LayerDesiredOrder,
-    public schemaUpdatesOnly: boolean
+    public convertToManaged?: boolean,
+    public skipProductUpdateDependencies?: boolean,
+    public skipQueueRibbonJob?: boolean,
+    public asyncRibbonProcessing?: boolean,
+    public componentParameters?: Record<string, unknown>[],
+    public solutionParameters?: SolutionParameters,
+    public layerDesiredOrder?: LayerDesiredOrder,
+    public schemaUpdatesOnly?: boolean
   ) {
     super("StageAndUpgrade");
   }
@@ -46,8 +47,8 @@ export class StageAndUpgradeRequest
       SkipQueueRibbonJob: this.skipQueueRibbonJob,
       AsyncRibbonProcessing: this.asyncRibbonProcessing,
       ComponentParameters: this.componentParameters,
-      SolutionParameters: this.solutionParameters,
-      LayerDesiredOrder: this.layerDesiredOrder,
+      SolutionParameters: enumBody(this.solutionParameters, "SolutionParameters"),
+      LayerDesiredOrder: enumBody(this.layerDesiredOrder, "LayerDesiredOrder"),
       SchemaUpdatesOnly: this.schemaUpdatesOnly,
     };
 

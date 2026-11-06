@@ -23,9 +23,9 @@ export interface CCaaS_GetRepresentativeAvailabilityBeforeConversationResponse {
 export class CCaaS_GetRepresentativeAvailabilityBeforeConversationAction implements Executable<CCaaS_GetRepresentativeAvailabilityBeforeConversationResponse> {
   constructor(
     public readonly apiVersion: string,
-    public readonly liveWorkStreamId: string,
-    public readonly channelEngagementContext: string,
-    public readonly customContextItems: string
+    public readonly liveWorkStreamId?: string,
+    public readonly channelEngagementContext?: string,
+    public readonly customContextItems?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

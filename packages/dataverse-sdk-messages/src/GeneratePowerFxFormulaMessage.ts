@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseValue } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * GeneratePowerFxFormula request message
@@ -14,8 +15,8 @@ export class GeneratePowerFxFormulaRequest
 {
   constructor(
     public operationId: string,
-    public parameterValues: EntityReference,
-    public connectionReference: EntityReference
+    public parameterValues: EntityReference | AnyEntityPayload | undefined,
+    public connectionReference: EntityReference | AnyEntityPayload
   ) {
     super("GeneratePowerFxFormula");
   }

@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Merge request message
@@ -9,9 +10,9 @@ import type { EntityReference } from "./EntityReference.js";
  */
 export class MergeRequest extends OrganizationRequest implements Executable<MergeResponse> {
   constructor(
-    public target: EntityReference,
-    public subordinate: EntityReference,
-    public updateContent: EntityReference,
+    public target: EntityReference | AnyEntityPayload,
+    public subordinate: EntityReference | AnyEntityPayload,
+    public updateContent: EntityReference | AnyEntityPayload | undefined,
     public performParentingChecks: boolean
   ) {
     super("Merge");

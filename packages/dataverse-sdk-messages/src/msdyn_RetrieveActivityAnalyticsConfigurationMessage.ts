@@ -12,7 +12,7 @@ export class msdyn_RetrieveActivityAnalyticsConfigurationRequest
   extends OrganizationRequest
   implements Executable<msdyn_RetrieveActivityAnalyticsConfigurationResponse>
 {
-  constructor(public sIParameters: string) {
+  constructor(public sIParameters?: string) {
     super("msdyn_RetrieveActivityAnalyticsConfiguration");
   }
 

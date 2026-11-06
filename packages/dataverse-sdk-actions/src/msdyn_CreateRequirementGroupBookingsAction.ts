@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_CreateRequirementGroupBookings action
@@ -15,11 +16,11 @@ export interface msdyn_CreateRequirementGroupBookingsResponse {
  */
 export class msdyn_CreateRequirementGroupBookingsAction implements Executable<msdyn_CreateRequirementGroupBookingsResponse> {
   constructor(
-    public readonly version: string,
+    public readonly version: string | undefined,
     public readonly start: string,
     public readonly duration: number,
     public readonly resourceAssignments: Record<string, unknown>[],
-    public readonly requirementGroup: EntityReference
+    public readonly requirementGroup: EntityReference | AnyEntityPayload
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

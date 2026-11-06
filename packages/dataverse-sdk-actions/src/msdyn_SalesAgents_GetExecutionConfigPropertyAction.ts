@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_SalesAgents_GetExecutionConfigProperty action
@@ -15,7 +16,7 @@ export interface msdyn_SalesAgents_GetExecutionConfigPropertyResponse {
  */
 export class msdyn_SalesAgents_GetExecutionConfigPropertyAction implements Executable<msdyn_SalesAgents_GetExecutionConfigPropertyResponse> {
   constructor(
-    public readonly msdyn_salesagentprofileid: EntityReference,
+    public readonly msdyn_salesagentprofileid: EntityReference | AnyEntityPayload,
     public readonly msdyn_config_key: string
   ) {}
 

@@ -15,7 +15,7 @@ export class ExecuteWorkflowRequest
   constructor(
     public workflowId: string,
     public entityId: string,
-    public inputArguments: InputArgumentCollection
+    public inputArguments?: InputArgumentCollection
   ) {
     super("ExecuteWorkflow");
   }

@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { CreateHostedFlowMachineGroupResponse as CreateHostedFlowMachineGroupResponseData } from "./types/index.js";
 
 /**
@@ -14,16 +15,16 @@ export class CreateHostedFlowMachineGroupRequest
   implements Executable<CreateHostedFlowMachineGroupResponse>
 {
   constructor(
-    public groupImage: string,
-    public groupCapacityCount: number,
-    public groupDomainSetting: string,
-    public groupDescription: string,
-    public groupMachineNetworkId: EntityReference,
-    public groupMaximumMachineCount: number,
-    public groupName: string,
+    public groupImage: string | undefined,
+    public groupCapacityCount: number | undefined,
+    public groupDomainSetting: string | undefined,
+    public groupDescription: string | undefined,
+    public groupMachineNetworkId: EntityReference | AnyEntityPayload | undefined,
+    public groupMaximumMachineCount: number | undefined,
+    public groupName: string | undefined,
     public groupCredentials: string,
-    public groupUsageType: string,
-    public groupManagedVersion: string
+    public groupUsageType?: string,
+    public groupManagedVersion?: string
   ) {
     super("CreateHostedFlowMachineGroup");
   }

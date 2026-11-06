@@ -15,8 +15,8 @@ export interface msdyn_GetNotesAnalysisResponse {
  */
 export class msdyn_GetNotesAnalysisAction implements Executable<msdyn_GetNotesAnalysisResponse> {
   constructor(
-    public readonly noteText: string,
-    public readonly crossGeoDataMovementEnabled: boolean
+    public readonly noteText?: string,
+    public readonly crossGeoDataMovementEnabled?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

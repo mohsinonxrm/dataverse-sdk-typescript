@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { CreateRpaBoxResponse as CreateRpaBoxResponseData } from "./types/index.js";
 
 /**
@@ -14,10 +15,10 @@ export class CreateRpaBoxRequest
   implements Executable<CreateRpaBoxResponse>
 {
   constructor(
-    public machineDescription: string,
-    public machineNetworkId: EntityReference,
+    public machineDescription: string | undefined,
+    public machineNetworkId: EntityReference | AnyEntityPayload | undefined,
     public machineName: string,
-    public machineImageVersionId: EntityReference
+    public machineImageVersionId: EntityReference | AnyEntityPayload
   ) {
     super("CreateRpaBox");
   }

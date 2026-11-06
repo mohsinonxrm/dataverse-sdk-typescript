@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import type { EntityReference } from "./EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { socialprofile } from "./types/index.js";
 
 /**
@@ -12,7 +14,7 @@ export class GenerateSocialProfileRequest
   extends OrganizationRequest
   implements Executable<GenerateSocialProfileResponse>
 {
-  constructor(public entity: socialprofile) {
+  constructor(public entity: EntityReference | EntityPayload<socialprofile>) {
     super("GenerateSocialProfile");
   }
 

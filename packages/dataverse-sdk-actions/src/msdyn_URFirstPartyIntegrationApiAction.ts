@@ -15,7 +15,7 @@ export interface msdyn_URFirstPartyIntegrationApiResponse {
 export class msdyn_URFirstPartyIntegrationApiAction implements Executable<msdyn_URFirstPartyIntegrationApiResponse> {
   constructor(
     public readonly methodName: string,
-    public readonly inputParameter: string
+    public readonly inputParameter?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

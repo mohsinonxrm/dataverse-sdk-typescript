@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_TrackExchangeActivity action
@@ -15,9 +16,9 @@ export interface msdyn_TrackExchangeActivityResponse {
  */
 export class msdyn_TrackExchangeActivityAction implements Executable<msdyn_TrackExchangeActivityResponse> {
   constructor(
-    public readonly exchangeItemId: string,
-    public readonly regarding: EntityReference,
-    public readonly entitySetName: string
+    public readonly exchangeItemId?: string,
+    public readonly regarding?: EntityReference | AnyEntityPayload,
+    public readonly entitySetName?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

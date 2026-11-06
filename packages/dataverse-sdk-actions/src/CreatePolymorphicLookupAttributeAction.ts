@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { enumBody } from "./internal/enumBody.js";
 import type {
   ComplexLookupAttributeMetadata,
   ComplexOneToManyRelationshipMetadata,
@@ -19,17 +20,20 @@ export interface CreatePolymorphicLookupAttributeResponse {
  */
 export class CreatePolymorphicLookupAttributeAction implements Executable<CreatePolymorphicLookupAttributeResponse> {
   constructor(
-    public readonly lookup: ComplexLookupAttributeMetadata,
-    public readonly oneToManyRelationships: ComplexOneToManyRelationshipMetadata[],
-    public readonly solutionUniqueName: string
+    public readonly lookup?: ComplexLookupAttributeMetadata,
+    public readonly oneToManyRelationships?: ComplexOneToManyRelationshipMetadata[],
+    public readonly solutionUniqueName?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CreatePolymorphicLookupAttribute`;
 
     const body: Record<string, unknown> = {
-      Lookup: this.lookup,
-      OneToManyRelationships: this.oneToManyRelationships,
+      Lookup: enumBody(this.lookup, "ComplexLookupAttributeMetadata"),
+      OneToManyRelationships: enumBody(
+        this.oneToManyRelationships,
+        "ComplexOneToManyRelationshipMetadata"
+      ),
       SolutionUniqueName: this.solutionUniqueName,
     };
 

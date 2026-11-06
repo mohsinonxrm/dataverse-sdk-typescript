@@ -14,10 +14,10 @@ export interface msdyn_SetFeatureStatusResponse {
  */
 export class msdyn_SetFeatureStatusAction implements Executable<msdyn_SetFeatureStatusResponse> {
   constructor(
-    public readonly featureType: number,
-    public readonly status: boolean,
-    public readonly isSolutionUninstall: boolean,
-    public readonly configurationData: string
+    public readonly featureType?: number,
+    public readonly status?: boolean,
+    public readonly isSolutionUninstall?: boolean,
+    public readonly configurationData?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

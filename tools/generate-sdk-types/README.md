@@ -129,13 +129,14 @@ packages/
     ...
     types/                              # complex types, entity types and enums from the CSDL
     index.ts
-    OrganizationRequest.ts, EntityReference.ts, types.ts   # hand-written, not generated
+    OrganizationRequest.ts, types.ts    # hand-written, not generated
+    EntityReference.ts                  # references with the CSDL primary keys (generated)
 
   dataverse-sdk-actions/src/            # flat: one file per action
     CreateMultipleAction.ts
     ExecuteWorkflowAction.ts
     ...
-    types/                              # complex types, entity types, enums, EntityReference.ts
+    types/                              # complex types, entity types, enums, EntityReference.ts, EntityPayload.ts
     index.ts
 
   dataverse-sdk-functions/src/          # flat: one file per function
@@ -199,6 +200,11 @@ node dist/cli.js --help
   `types/` properties, so a full regeneration is a large, partly breaking diff. Generator fixes
   have instead been applied to the committed files with a script, checked to be byte-identical to
   the new generator's output on the same `$metadata`.
+- **Docs**: after regenerating the actions, functions or messages packages, run
+  `pnpm --filter generate-sdk-types build && pnpm --filter generate-sdk-types docs`. It rewrites the
+  operation lists (`<!-- operations:… -->` blocks) and counts in the packages' READMEs and
+  `docs/mapping/*` from the package source; `test/operation-docs.test.ts` fails while one is stale
+  or a doc names a class no package exports.
 - **CI**: `.github/workflows/generate-metadata-types.yml` (manual) regenerates the metadata types
   and opens a PR for review.
 

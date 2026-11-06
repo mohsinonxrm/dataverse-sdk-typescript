@@ -1,4 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { incidentresolution } from "./types/index.js";
 
 /**
@@ -15,7 +17,7 @@ export interface CloseIncidentResponse {
  */
 export class CloseIncidentAction implements Executable<CloseIncidentResponse> {
   constructor(
-    public readonly incidentResolution: incidentresolution,
+    public readonly incidentResolution: EntityReference | EntityPayload<incidentresolution>,
     public readonly status: number
   ) {}
 

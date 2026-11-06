@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { enumBody } from "./internal/enumBody.js";
 import type { LayerDesiredOrder, SolutionParameters } from "./types/index.js";
 
 /**
@@ -19,14 +20,14 @@ export class StageAndUpgradeAction implements Executable<StageAndUpgradeResponse
     public readonly publishWorkflows: boolean,
     public readonly customizationFile: string,
     public readonly importJobId: string,
-    public readonly convertToManaged: boolean,
-    public readonly skipProductUpdateDependencies: boolean,
-    public readonly skipQueueRibbonJob: boolean,
-    public readonly asyncRibbonProcessing: boolean,
-    public readonly componentParameters: Record<string, unknown>[],
-    public readonly solutionParameters: SolutionParameters,
-    public readonly layerDesiredOrder: LayerDesiredOrder,
-    public readonly schemaUpdatesOnly: boolean
+    public readonly convertToManaged?: boolean,
+    public readonly skipProductUpdateDependencies?: boolean,
+    public readonly skipQueueRibbonJob?: boolean,
+    public readonly asyncRibbonProcessing?: boolean,
+    public readonly componentParameters?: Record<string, unknown>[],
+    public readonly solutionParameters?: SolutionParameters,
+    public readonly layerDesiredOrder?: LayerDesiredOrder,
+    public readonly schemaUpdatesOnly?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -42,8 +43,8 @@ export class StageAndUpgradeAction implements Executable<StageAndUpgradeResponse
       SkipQueueRibbonJob: this.skipQueueRibbonJob,
       AsyncRibbonProcessing: this.asyncRibbonProcessing,
       ComponentParameters: this.componentParameters,
-      SolutionParameters: this.solutionParameters,
-      LayerDesiredOrder: this.layerDesiredOrder,
+      SolutionParameters: enumBody(this.solutionParameters, "SolutionParameters"),
+      LayerDesiredOrder: enumBody(this.layerDesiredOrder, "LayerDesiredOrder"),
       SchemaUpdatesOnly: this.schemaUpdatesOnly,
     };
 

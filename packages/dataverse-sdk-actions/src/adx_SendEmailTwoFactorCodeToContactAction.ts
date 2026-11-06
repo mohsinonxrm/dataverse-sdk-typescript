@@ -17,9 +17,9 @@ export class adx_SendEmailTwoFactorCodeToContactAction implements Executable<adx
   constructor(
     public readonly contactId: string,
     public readonly code: string,
-    public readonly businessProcessFlowId: string,
-    public readonly businessProcessFlowInstanceId: string,
-    public readonly actionStepId: string
+    public readonly businessProcessFlowId?: string,
+    public readonly businessProcessFlowInstanceId?: string,
+    public readonly actionStepId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

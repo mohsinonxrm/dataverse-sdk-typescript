@@ -14,8 +14,8 @@ export interface msdyn_CheckGeolocationEnabledResponse {
  */
 export class msdyn_CheckGeolocationEnabledAction implements Executable<msdyn_CheckGeolocationEnabledResponse> {
   constructor(
-    public readonly version: string,
-    public readonly noCache: boolean
+    public readonly version?: string,
+    public readonly noCache?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

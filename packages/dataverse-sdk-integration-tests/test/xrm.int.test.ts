@@ -82,11 +82,11 @@ describe.skipIf(!live)("live: OrganizationService (#83, #84)", () => {
   it("create with returnRepresentation returns the record", async () => {
     const org = service();
     const name = `sdk-int xrm rep ${runId}`;
-    const account = (await org.create<Account>(
+    const account = await org.create<Account>(
       "accounts",
       { name },
       { returnRepresentation: true, select: ["accountid", "name"] }
-    )) as Account;
+    );
     expect(account.accountid).toMatch(GUID);
     expect(account.name).toBe(name);
     created.push({ set: "accounts", id: account.accountid });

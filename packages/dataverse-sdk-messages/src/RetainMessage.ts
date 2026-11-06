@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { RetainResponse as RetainResponseData } from "./types/index.js";
 
 /**
@@ -11,8 +12,8 @@ import type { RetainResponse as RetainResponseData } from "./types/index.js";
  */
 export class RetainRequest extends OrganizationRequest implements Executable<RetainResponse> {
   constructor(
-    public target: EntityReference,
-    public operationId: string
+    public target: EntityReference | AnyEntityPayload,
+    public operationId?: string
   ) {
     super("Retain");
   }

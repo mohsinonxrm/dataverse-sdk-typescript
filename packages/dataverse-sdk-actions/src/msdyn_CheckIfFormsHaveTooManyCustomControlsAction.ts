@@ -18,10 +18,10 @@ export interface msdyn_CheckIfFormsHaveTooManyCustomControlsResponse {
  */
 export class msdyn_CheckIfFormsHaveTooManyCustomControlsAction implements Executable<msdyn_CheckIfFormsHaveTooManyCustomControlsResponse> {
   constructor(
-    public readonly solutionName: string,
-    public readonly logicalNamesOfEntitiesToCheck: string,
-    public readonly notificationRecipientUserIds: string,
-    public readonly controlsAndLimits: string
+    public readonly solutionName?: string,
+    public readonly logicalNamesOfEntitiesToCheck?: string,
+    public readonly notificationRecipientUserIds?: string,
+    public readonly controlsAndLimits?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

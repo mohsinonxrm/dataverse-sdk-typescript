@@ -13,9 +13,9 @@ export class msdyn_SetTalkingPointLikedStatusRequest
   implements Executable<msdyn_SetTalkingPointLikedStatusResponse>
 {
   constructor(
-    public messageId: string,
-    public inferredMessageId: string,
-    public isLiked: boolean
+    public messageId?: string,
+    public inferredMessageId?: string,
+    public isLiked?: boolean
   ) {
     super("msdyn_SetTalkingPointLikedStatus");
   }

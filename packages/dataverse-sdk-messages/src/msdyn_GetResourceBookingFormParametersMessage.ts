@@ -14,7 +14,7 @@ export class msdyn_GetResourceBookingFormParametersRequest
 {
   constructor(
     public bookingContext: string,
-    public timeZoneCode: number
+    public timeZoneCode?: number
   ) {
     super("msdyn_GetResourceBookingFormParameters");
   }

@@ -22,9 +22,9 @@ export interface CCaaS_GetRepresentativeAvailabilityForConversationResponse {
  */
 export class CCaaS_GetRepresentativeAvailabilityForConversationAction implements Executable<CCaaS_GetRepresentativeAvailabilityForConversationResponse> {
   constructor(
-    public readonly conversationId: string,
+    public readonly conversationId: string | undefined,
     public readonly apiVersion: string,
-    public readonly customContextItems: string
+    public readonly customContextItems?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

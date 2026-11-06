@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_GetSwarmResponseCardResponse as msdyn_GetSwarmResponseCardResponseData } from "./types/index.js";
 
 /**
@@ -13,7 +14,7 @@ export class msdyn_GetSwarmResponseCardRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetSwarmResponseCardResponse>
 {
-  constructor(public msdyn_SwarmParticipant: EntityReference) {
+  constructor(public msdyn_SwarmParticipant: EntityReference | AnyEntityPayload) {
     super("msdyn_GetSwarmResponseCard");
   }
 

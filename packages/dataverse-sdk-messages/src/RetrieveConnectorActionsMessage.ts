@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseValue } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * RetrieveConnectorActions request message
@@ -12,7 +13,7 @@ export class RetrieveConnectorActionsRequest
   extends OrganizationRequest
   implements Executable<RetrieveConnectorActionsResponse>
 {
-  constructor(public connectionReference: EntityReference) {
+  constructor(public connectionReference: EntityReference | AnyEntityPayload) {
     super("RetrieveConnectorActions");
   }
 

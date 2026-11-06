@@ -14,14 +14,14 @@ export interface UpdateInstantPluginResponse {
  */
 export class UpdateInstantPluginAction implements Executable<UpdateInstantPluginResponse> {
   constructor(
-    public readonly description: string,
+    public readonly description: string | undefined,
     public readonly fxExpressionUniqueName: string,
-    public readonly parameters: string,
-    public readonly context: string,
-    public readonly entityLogicalName: string,
-    public readonly solutionUniqueName: string,
-    public readonly expression: string,
-    public readonly name: string
+    public readonly parameters?: string,
+    public readonly context?: string,
+    public readonly entityLogicalName?: string,
+    public readonly solutionUniqueName?: string,
+    public readonly expression?: string,
+    public readonly name?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

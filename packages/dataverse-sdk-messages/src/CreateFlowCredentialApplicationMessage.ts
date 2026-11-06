@@ -14,9 +14,9 @@ export class CreateFlowCredentialApplicationRequest
 {
   constructor(
     public flowmachinegroupId: string,
-    public sharingtype: string,
-    public password: string,
-    public description: string,
+    public sharingtype: string | undefined,
+    public password: string | undefined,
+    public description: string | undefined,
     public certificate: string,
     public applicationId: string
   ) {
