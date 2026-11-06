@@ -166,6 +166,10 @@ function parseComplexTypes(complexTypeElements: any[], namespace: string): CsdlC
       baseType: ct["@_BaseType"],
       abstract: ct["@_Abstract"] === true || ct["@_Abstract"] === "true",
       properties,
+      // Entity-valued members (#231), such as PrincipalAccess.Principal
+      navigationProperties: ct.NavigationProperty
+        ? parseNavigationProperties(ct.NavigationProperty)
+        : [],
     };
   });
 }
@@ -278,6 +282,7 @@ function parseNavigationProperties(navPropElements: any[]): CsdlNavigationProper
     type: nav["@_Type"],
     partner: nav["@_Partner"],
     containsTarget: nav["@_ContainsTarget"],
+    nullable: nav["@_Nullable"],
   }));
 }
 

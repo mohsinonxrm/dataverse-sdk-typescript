@@ -5,4 +5,5 @@ import type { AuditDetail } from "./AuditDetail.js";
  */
 export interface RelationshipAuditDetail extends AuditDetail {
   RelationshipName?: string;
+  TargetRecords?: Record<string, unknown>[];
 }

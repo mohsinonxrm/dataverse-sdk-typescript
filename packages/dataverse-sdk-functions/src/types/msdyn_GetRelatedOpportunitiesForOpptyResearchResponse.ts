@@ -1,6 +1,10 @@
+import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./EntityPayload.js";
+
 /**
  * msdyn_GetRelatedOpportunitiesForOpptyResearchResponse complex type
  */
 export interface msdyn_GetRelatedOpportunitiesForOpptyResearchResponse {
-  // No properties defined
+  msdyn_RelatedOpportunities?: Record<string, unknown>[];
+  msdyn_Owner: EntityReference | AnyEntityPayload;
 }

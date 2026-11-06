@@ -20,4 +20,5 @@ export interface CreateVirtualConnectorTableMetadata {
   ConnectionReferenceLogicalName?: string;
   DataSourceId?: string;
   DataSourceName?: string;
+  EnvironmentVariables?: Record<string, unknown>[];
 }

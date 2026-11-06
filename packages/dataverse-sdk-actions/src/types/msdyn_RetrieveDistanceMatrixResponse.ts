@@ -3,4 +3,5 @@
  */
 export interface msdyn_RetrieveDistanceMatrixResponse {
   ExceptionMessage?: string;
+  Result?: Record<string, unknown>[];
 }

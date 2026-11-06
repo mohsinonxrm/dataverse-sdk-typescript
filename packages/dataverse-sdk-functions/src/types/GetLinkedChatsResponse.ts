@@ -3,4 +3,5 @@
  */
 export interface GetLinkedChatsResponse {
   LinkedChatDetails?: string;
+  LinkedChatList?: Record<string, unknown>[];
 }

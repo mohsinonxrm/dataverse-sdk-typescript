@@ -10,4 +10,5 @@ export interface msdyn_get_required_fieldsResponse {
   eligible_primary_fields?: string[];
   table_display_name?: string;
   table_schema_name?: string;
+  virtual_table_column_candidates?: Record<string, unknown>[];
 }

@@ -3,4 +3,5 @@
  */
 export interface msdyn_FetchDiagnosticEntitiesAndCountResponse {
   msdyn_Count?: number;
+  msdyn_DiagnosticEntities?: Record<string, unknown>[];
 }

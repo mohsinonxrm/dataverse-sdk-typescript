@@ -21,6 +21,7 @@ import {
 import { polymorphicParameterType } from "../utils/polymorphism.js";
 import { entityReturn, entityResponseInterface } from "../utils/entity-return.js";
 import { entityReferenceSource } from "../utils/entity-reference.js";
+import { ENTITY_PAYLOAD_MODULE, ENTITY_PAYLOAD_SOURCE } from "../utils/entity-payload.js";
 import { deprecatedAliasSource, operationNames } from "../utils/overloads.js";
 import { exportedEnumNames } from "./complex-types-generator.js";
 import { collectionBinding, ENTITY_SET_PARAM } from "../utils/binding.js";
@@ -769,6 +770,7 @@ function generateFunctionsIndex(
 
   // Export EntityReference type
   code += `\nexport { type EntityReference, type EntityReferenceOptions, createEntityReference, getEntitySetNameFromReference } from './types/EntityReference.js';\n`;
+  code += `export type { AnyEntityPayload, EntityPayload } from './types/${ENTITY_PAYLOAD_MODULE}.js';\n`;
 
   // Enum parameters take these values (EntityFilters.Entity | EntityFilters.Attributes) (#67)
   if (enumNames.length > 0) {
@@ -786,5 +788,10 @@ async function ensureEntityReferenceType(outputPath: string, csdl: CsdlSchema): 
   await writeTypeScriptFile(
     join(outputPath, "types", "EntityReference.ts"),
     entityReferenceSource(csdl, "functions")
+  );
+  // The entity payload types: navigation properties of complex types use them (#231)
+  await writeTypeScriptFile(
+    join(outputPath, "types", `${ENTITY_PAYLOAD_MODULE}.ts`),
+    ENTITY_PAYLOAD_SOURCE
   );
 }

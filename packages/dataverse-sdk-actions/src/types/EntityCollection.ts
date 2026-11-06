@@ -2,5 +2,5 @@
  * EntityCollection complex type
  */
 export interface EntityCollection {
-  // No properties defined
+  Items?: Record<string, unknown>[];
 }

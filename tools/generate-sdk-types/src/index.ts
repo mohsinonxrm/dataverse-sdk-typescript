@@ -80,19 +80,19 @@ export async function generateTargets(
 
       case "messages":
         // Generate complex types first
-        await generateComplexTypes(operations, `${targetConfig.outputPath}/types`, purge);
+        await generateComplexTypes(operations, `${targetConfig.outputPath}/types`, purge, target);
         await generateMessages(operations, targetConfig.outputPath, dryRun, purge);
         break;
 
       case "actions":
         // Generate complex types first
-        await generateComplexTypes(operations, `${targetConfig.outputPath}/types`, purge);
+        await generateComplexTypes(operations, `${targetConfig.outputPath}/types`, purge, target);
         await generateActions(operations, targetConfig.outputPath, dryRun, purge);
         break;
 
       case "functions":
         // Generate complex types first
-        await generateComplexTypes(operations, `${targetConfig.outputPath}/types`, purge);
+        await generateComplexTypes(operations, `${targetConfig.outputPath}/types`, purge, target);
         await generateFunctions(operations, targetConfig.outputPath, dryRun, purge);
         break;
     }

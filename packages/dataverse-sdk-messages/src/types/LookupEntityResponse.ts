@@ -8,4 +8,5 @@ export interface LookupEntityResponse {
   EntityLogicalName?: string;
   TotalRecordCount?: number;
   PagingCookie?: string;
+  Data?: Record<string, unknown>[];
 }
