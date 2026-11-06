@@ -1,37 +1,23 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  RetrieveAbsoluteAndSiteCollectionUrl_sharepointdocumentlocationFunction,
+  type RetrieveAbsoluteAndSiteCollectionUrl_sharepointdocumentlocationResponse,
+} from "./RetrieveAbsoluteAndSiteCollectionUrl_sharepointdocumentlocationFunction.js";
 
 /**
- * Response from RetrieveAbsoluteAndSiteCollectionUrl function
+ * @deprecated Use `RetrieveAbsoluteAndSiteCollectionUrl_sharepointdocumentlocationFunction`. `RetrieveAbsoluteAndSiteCollectionUrl` has a class per binding (#75);
+ * this name kept the one bound to sharepointdocumentlocation.
  */
-export interface RetrieveAbsoluteAndSiteCollectionUrlResponse {
-  AbsoluteUrl: string;
-  SiteCollectionUrl: string;
-}
-
+export const RetrieveAbsoluteAndSiteCollectionUrlFunction =
+  RetrieveAbsoluteAndSiteCollectionUrl_sharepointdocumentlocationFunction;
 /**
- * RetrieveAbsoluteAndSiteCollectionUrl function
- *
- * Bound function
- * Binding parameter: entity (mscrm.sharepointdocumentlocation)
+ * @deprecated Use `RetrieveAbsoluteAndSiteCollectionUrl_sharepointdocumentlocationFunction`. `RetrieveAbsoluteAndSiteCollectionUrl` has a class per binding (#75);
+ * this name kept the one bound to sharepointdocumentlocation.
  */
-export class RetrieveAbsoluteAndSiteCollectionUrlFunction implements Executable<RetrieveAbsoluteAndSiteCollectionUrlResponse> {
-  constructor(public readonly sharepointdocumentlocationId: string) {}
-
-  toRequestInformation(baseUrl: string): RequestInformation {
-    // Bound function
-    let url = `${baseUrl}/sharepointdocumentlocations(${this.sharepointdocumentlocationId})/Microsoft.Dynamics.CRM.RetrieveAbsoluteAndSiteCollectionUrl`;
-
-    return {
-      method: "GET",
-      url,
-      headers: {
-        Accept: "application/json",
-      },
-    };
-  }
-
-  async parseResponse(response: Response): Promise<RetrieveAbsoluteAndSiteCollectionUrlResponse> {
-    const data = await response.json();
-    return data as RetrieveAbsoluteAndSiteCollectionUrlResponse;
-  }
-}
+export type RetrieveAbsoluteAndSiteCollectionUrlFunction =
+  RetrieveAbsoluteAndSiteCollectionUrl_sharepointdocumentlocationFunction;
+/**
+ * @deprecated Use `RetrieveAbsoluteAndSiteCollectionUrl_sharepointdocumentlocationResponse`. `RetrieveAbsoluteAndSiteCollectionUrl` has a class per binding (#75);
+ * this name kept the one bound to sharepointdocumentlocation.
+ */
+export type RetrieveAbsoluteAndSiteCollectionUrlResponse =
+  RetrieveAbsoluteAndSiteCollectionUrl_sharepointdocumentlocationResponse;

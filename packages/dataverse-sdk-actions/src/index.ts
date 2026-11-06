@@ -88,6 +88,22 @@ export {
 } from "./AddComponentToSolutionAsyncAction.js";
 export { AddItemCampaignAction, type AddItemCampaignResponse } from "./AddItemCampaignAction.js";
 export {
+  AddItemCampaign_campaignAction,
+  type AddItemCampaign_campaignResponse,
+} from "./AddItemCampaign_campaignAction.js";
+export {
+  AddItemCampaign_listAction,
+  type AddItemCampaign_listResponse,
+} from "./AddItemCampaign_listAction.js";
+export {
+  AddItemCampaign_productAction,
+  type AddItemCampaign_productResponse,
+} from "./AddItemCampaign_productAction.js";
+export {
+  AddItemCampaign_salesliteratureAction,
+  type AddItemCampaign_salesliteratureResponse,
+} from "./AddItemCampaign_salesliteratureAction.js";
+export {
   AddItemCampaignActivityAction,
   type AddItemCampaignActivityResponse,
 } from "./AddItemCampaignActivityAction.js";
@@ -649,6 +665,7 @@ export {
   ExportSolutionFromGitAsyncAction,
   type ExportSolutionFromGitAsyncResponse,
 } from "./ExportSolutionFromGitAsyncAction.js";
+export { ExportToExcelAction, type ExportToExcelResponse } from "./ExportToExcelAction.js";
 export {
   ExportTranslationAction,
   type ExportTranslationResponse,

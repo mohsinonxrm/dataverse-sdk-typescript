@@ -1,40 +1,20 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { aipluginoperationparameter } from "./types/index.js";
+import {
+  RetrieveUnpublished_aipluginoperationparameterFunction,
+  type RetrieveUnpublished_aipluginoperationparameterResponse,
+} from "./RetrieveUnpublished_aipluginoperationparameterFunction.js";
 
 /**
- * Response from RetrieveUnpublished function
- *
- * The response is the entity itself, not wrapped in `value`.
+ * @deprecated Use `RetrieveUnpublished_aipluginoperationparameterFunction`. `RetrieveUnpublished` has a class per binding (#75);
+ * this name kept the one bound to aipluginoperationparameter.
  */
-export interface RetrieveUnpublishedResponse extends aipluginoperationparameter {
-  "@odata.context"?: string;
-  "@odata.etag"?: string;
-}
-
+export const RetrieveUnpublishedFunction = RetrieveUnpublished_aipluginoperationparameterFunction;
 /**
- * RetrieveUnpublished function
- *
- * Bound function
- * Binding parameter: entity (mscrm.aipluginoperationparameter)
+ * @deprecated Use `RetrieveUnpublished_aipluginoperationparameterFunction`. `RetrieveUnpublished` has a class per binding (#75);
+ * this name kept the one bound to aipluginoperationparameter.
  */
-export class RetrieveUnpublishedFunction implements Executable<RetrieveUnpublishedResponse> {
-  constructor(public readonly aipluginoperationparameterId: string) {}
-
-  toRequestInformation(baseUrl: string): RequestInformation {
-    // Bound function
-    let url = `${baseUrl}/aipluginoperationparameters(${this.aipluginoperationparameterId})/Microsoft.Dynamics.CRM.RetrieveUnpublished`;
-
-    return {
-      method: "GET",
-      url,
-      headers: {
-        Accept: "application/json",
-      },
-    };
-  }
-
-  async parseResponse(response: Response): Promise<RetrieveUnpublishedResponse> {
-    const data = await response.json();
-    return data as RetrieveUnpublishedResponse;
-  }
-}
+export type RetrieveUnpublishedFunction = RetrieveUnpublished_aipluginoperationparameterFunction;
+/**
+ * @deprecated Use `RetrieveUnpublished_aipluginoperationparameterResponse`. `RetrieveUnpublished` has a class per binding (#75);
+ * this name kept the one bound to aipluginoperationparameter.
+ */
+export type RetrieveUnpublishedResponse = RetrieveUnpublished_aipluginoperationparameterResponse;

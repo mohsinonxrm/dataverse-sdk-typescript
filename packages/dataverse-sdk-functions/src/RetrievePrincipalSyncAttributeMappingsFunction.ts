@@ -1,37 +1,23 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { AttributeMapping } from "./types/index.js";
+import {
+  RetrievePrincipalSyncAttributeMappings_teamFunction,
+  type RetrievePrincipalSyncAttributeMappings_teamResponse,
+} from "./RetrievePrincipalSyncAttributeMappings_teamFunction.js";
 
 /**
- * Response from RetrievePrincipalSyncAttributeMappings function
+ * @deprecated Use `RetrievePrincipalSyncAttributeMappings_teamFunction`. `RetrievePrincipalSyncAttributeMappings` has a class per binding (#75);
+ * this name kept the one bound to team.
  */
-export interface RetrievePrincipalSyncAttributeMappingsResponse {
-  AttributeMappings: AttributeMapping[];
-}
-
+export const RetrievePrincipalSyncAttributeMappingsFunction =
+  RetrievePrincipalSyncAttributeMappings_teamFunction;
 /**
- * RetrievePrincipalSyncAttributeMappings function
- *
- * Bound function
- * Binding parameter: entity (mscrm.team)
+ * @deprecated Use `RetrievePrincipalSyncAttributeMappings_teamFunction`. `RetrievePrincipalSyncAttributeMappings` has a class per binding (#75);
+ * this name kept the one bound to team.
  */
-export class RetrievePrincipalSyncAttributeMappingsFunction implements Executable<RetrievePrincipalSyncAttributeMappingsResponse> {
-  constructor(public readonly teamId: string) {}
-
-  toRequestInformation(baseUrl: string): RequestInformation {
-    // Bound function
-    let url = `${baseUrl}/teams(${this.teamId})/Microsoft.Dynamics.CRM.RetrievePrincipalSyncAttributeMappings`;
-
-    return {
-      method: "GET",
-      url,
-      headers: {
-        Accept: "application/json",
-      },
-    };
-  }
-
-  async parseResponse(response: Response): Promise<RetrievePrincipalSyncAttributeMappingsResponse> {
-    const data = await response.json();
-    return data as RetrievePrincipalSyncAttributeMappingsResponse;
-  }
-}
+export type RetrievePrincipalSyncAttributeMappingsFunction =
+  RetrievePrincipalSyncAttributeMappings_teamFunction;
+/**
+ * @deprecated Use `RetrievePrincipalSyncAttributeMappings_teamResponse`. `RetrievePrincipalSyncAttributeMappings` has a class per binding (#75);
+ * this name kept the one bound to team.
+ */
+export type RetrievePrincipalSyncAttributeMappingsResponse =
+  RetrievePrincipalSyncAttributeMappings_teamResponse;

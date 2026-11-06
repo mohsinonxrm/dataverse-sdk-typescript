@@ -367,6 +367,27 @@ await service.execute(request);
 
 ---
 
+## Overloads (one class per binding)
+
+When `$metadata` declares an operation several times with different bindings, each binding has its
+own class: `<Name>_<table>Request` / `<Name>_<table>Response`, with `_collection` for a collection binding. An unbound
+overload keeps the plain name. A name with no unbound overload is still exported under the plain
+name, as a `@deprecated` alias of the binding it exported before.
+
+```typescript
+import {
+  AddItemCampaign_listRequest,
+  createEntityReference,
+} from "@mohsinonxrm/dataverse-sdk-messages";
+
+await service.execute(
+  new AddItemCampaign_listRequest(listId, createEntityReference("campaign", campaignId))
+);
+```
+
+`ExportToExcelRequest` is generated too, from a supplemental definition (`$metadata` leaves it out);
+see the actions package README.
+
 ## Generic OrganizationRequest
 
 For custom actions, custom APIs, or messages not yet implemented, use the generic `OrganizationRequest`.

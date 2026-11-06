@@ -1,56 +1,20 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatParameterAlias } from "./internal/odataLiteral.js";
+import {
+  RetrievePrincipalAccessInfo_teamFunction,
+  type RetrievePrincipalAccessInfo_teamResponse,
+} from "./RetrievePrincipalAccessInfo_teamFunction.js";
 
 /**
- * Response from RetrievePrincipalAccessInfo function
+ * @deprecated Use `RetrievePrincipalAccessInfo_teamFunction`. `RetrievePrincipalAccessInfo` has a class per binding (#75);
+ * this name kept the one bound to team.
  */
-export interface RetrievePrincipalAccessInfoResponse {
-  AccessInfo: string;
-}
-
+export const RetrievePrincipalAccessInfoFunction = RetrievePrincipalAccessInfo_teamFunction;
 /**
- * RetrievePrincipalAccessInfo function
- *
- * Bound function
- * Binding parameter: entity (mscrm.team)
+ * @deprecated Use `RetrievePrincipalAccessInfo_teamFunction`. `RetrievePrincipalAccessInfo` has a class per binding (#75);
+ * this name kept the one bound to team.
  */
-export class RetrievePrincipalAccessInfoFunction implements Executable<RetrievePrincipalAccessInfoResponse> {
-  constructor(
-    public readonly teamId: string,
-    public readonly objectId: string,
-    public readonly entityName: string
-  ) {}
-
-  toRequestInformation(baseUrl: string): RequestInformation {
-    // Bound function
-    let url = `${baseUrl}/teams(${this.teamId})/Microsoft.Dynamics.CRM.RetrievePrincipalAccessInfo`;
-
-    // Build query parameters using parameter aliases
-    const params = new URLSearchParams();
-    const aliases: string[] = [];
-    if (this.objectId !== undefined) {
-      aliases.push(`ObjectId=@p1`);
-      params.append("@p1", formatParameterAlias(this.objectId, "Edm.Guid"));
-    }
-    if (this.entityName !== undefined) {
-      aliases.push(`EntityName=@p2`);
-      params.append("@p2", formatParameterAlias(this.entityName, "Edm.String"));
-    }
-    if (aliases.length > 0) {
-      url += `(${aliases.join(",")})?${params.toString()}`;
-    }
-
-    return {
-      method: "GET",
-      url,
-      headers: {
-        Accept: "application/json",
-      },
-    };
-  }
-
-  async parseResponse(response: Response): Promise<RetrievePrincipalAccessInfoResponse> {
-    const data = await response.json();
-    return data as RetrievePrincipalAccessInfoResponse;
-  }
-}
+export type RetrievePrincipalAccessInfoFunction = RetrievePrincipalAccessInfo_teamFunction;
+/**
+ * @deprecated Use `RetrievePrincipalAccessInfo_teamResponse`. `RetrievePrincipalAccessInfo` has a class per binding (#75);
+ * this name kept the one bound to team.
+ */
+export type RetrievePrincipalAccessInfoResponse = RetrievePrincipalAccessInfo_teamResponse;
