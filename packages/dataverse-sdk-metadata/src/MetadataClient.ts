@@ -2,7 +2,12 @@
  * Metadata client for managing Dataverse metadata (entities, attributes, relationships)
  */
 
-import { DataverseInvalidRequestError, parseODataError } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  DataverseInvalidRequestError,
+  odataKey,
+  odataLiteral,
+  parseODataError,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import type { DataverseClient, DataverseRequestBuilder } from "@mohsinonxrm/dataverse-sdk-core";
 import type {
   BigIntAttributeMetadata,
@@ -181,7 +186,7 @@ export class MetadataClient {
     options?: Omit<MetadataQueryOptions, "filter">
   ): Promise<EntityMetadata> {
     return await this.query(
-      `/EntityDefinitions(LogicalName=${key(logicalName)})`,
+      `/EntityDefinitions(${odataKey({ LogicalName: logicalName })})`,
       options
     ).get<EntityMetadata>();
   }
@@ -268,7 +273,7 @@ export class MetadataClient {
     options?: MetadataWriteOptions
   ): Promise<void> {
     await this.updateDefinition(
-      `/EntityDefinitions(LogicalName=${key(logicalName)})`,
+      `/EntityDefinitions(${odataKey({ LogicalName: logicalName })})`,
       entity,
       options
     );
@@ -294,7 +299,7 @@ export class MetadataClient {
     changes: EntityMetadataUpdate,
     options?: MetadataWriteOptions
   ): Promise<void> {
-    const path = `/EntityDefinitions(LogicalName=${key(logicalName)})`;
+    const path = `/EntityDefinitions(${odataKey({ LogicalName: logicalName })})`;
     const current = await this.client.api(path).get<Record<string, unknown>>();
     const merged = {
       ...withoutAnnotations(current),
@@ -310,7 +315,7 @@ export class MetadataClient {
    */
   async deleteEntityDefinition(logicalName: string): Promise<void> {
     await this.client
-      .api(`/EntityDefinitions(LogicalName=${key(logicalName)})`)
+      .api(`/EntityDefinitions(${odataKey({ LogicalName: logicalName })})`)
       .delete<undefined>();
   }
 
@@ -350,7 +355,7 @@ export class MetadataClient {
     entityLogicalName: string,
     options?: AttributeQueryOptions
   ): Promise<AttributeMetadata[]> {
-    const path = `/EntityDefinitions(LogicalName=${key(entityLogicalName)})/Attributes${castSegment(options?.cast)}`;
+    const path = `/EntityDefinitions(${odataKey({ LogicalName: entityLogicalName })})/Attributes${castSegment(options?.cast)}`;
     const response = await this.query(path, options).get<{ value: AttributeMetadata[] }>();
     return response.value;
   }
@@ -387,7 +392,7 @@ export class MetadataClient {
     attributeLogicalName: string,
     options?: Omit<AttributeQueryOptions, "filter">
   ): Promise<AttributeMetadata> {
-    const path = `/EntityDefinitions(LogicalName=${key(entityLogicalName)})/Attributes(LogicalName=${key(attributeLogicalName)})${castSegment(options?.cast)}`;
+    const path = `/EntityDefinitions(${odataKey({ LogicalName: entityLogicalName })})/Attributes(${odataKey({ LogicalName: attributeLogicalName })})${castSegment(options?.cast)}`;
     return await this.query(path, options).get<AttributeMetadata>();
   }
 
@@ -404,7 +409,7 @@ export class MetadataClient {
     options?: MetadataWriteOptions
   ): Promise<string> {
     return this.createDefinition(
-      `/EntityDefinitions(LogicalName=${key(entityLogicalName)})/Attributes`,
+      `/EntityDefinitions(${odataKey({ LogicalName: entityLogicalName })})/Attributes`,
       attribute,
       options
     );
@@ -427,7 +432,7 @@ export class MetadataClient {
     options?: MetadataWriteOptions
   ): Promise<void> {
     await this.updateDefinition(
-      `/EntityDefinitions(LogicalName=${key(entityLogicalName)})/Attributes(LogicalName=${key(attributeLogicalName)})`,
+      `/EntityDefinitions(${odataKey({ LogicalName: entityLogicalName })})/Attributes(${odataKey({ LogicalName: attributeLogicalName })})`,
       attribute,
       options
     );
@@ -444,7 +449,7 @@ export class MetadataClient {
   ): Promise<void> {
     await this.client
       .api(
-        `/EntityDefinitions(LogicalName=${key(entityLogicalName)})/Attributes(LogicalName=${key(attributeLogicalName)})`
+        `/EntityDefinitions(${odataKey({ LogicalName: entityLogicalName })})/Attributes(${odataKey({ LogicalName: attributeLogicalName })})`
       )
       .delete<undefined>();
   }
@@ -469,7 +474,9 @@ export class MetadataClient {
    * @param metadataId Relationship metadata ID (GUID)
    */
   async deleteRelationship(metadataId: string): Promise<void> {
-    await this.client.api(`/RelationshipDefinitions(${metadataId})`).delete<undefined>();
+    await this.client
+      .api(`/RelationshipDefinitions(${odataLiteral.guid(metadataId)})`)
+      .delete<undefined>();
   }
 
   /**
@@ -483,7 +490,7 @@ export class MetadataClient {
     options?: MetadataQueryOptions
   ): Promise<OneToManyRelationshipMetadata[]> {
     const response = await this.query(
-      `/EntityDefinitions(LogicalName=${key(entityLogicalName)})/OneToManyRelationships`,
+      `/EntityDefinitions(${odataKey({ LogicalName: entityLogicalName })})/OneToManyRelationships`,
       options
     ).get<{ value: OneToManyRelationshipMetadata[] }>();
     return response.value;
@@ -500,7 +507,7 @@ export class MetadataClient {
     options?: MetadataQueryOptions
   ): Promise<OneToManyRelationshipMetadata[]> {
     const response = await this.query(
-      `/EntityDefinitions(LogicalName=${key(entityLogicalName)})/ManyToOneRelationships`,
+      `/EntityDefinitions(${odataKey({ LogicalName: entityLogicalName })})/ManyToOneRelationships`,
       options
     ).get<{ value: OneToManyRelationshipMetadata[] }>();
     return response.value;
@@ -517,7 +524,7 @@ export class MetadataClient {
     options?: MetadataQueryOptions
   ): Promise<ManyToManyRelationshipMetadata[]> {
     const response = await this.query(
-      `/EntityDefinitions(LogicalName=${key(entityLogicalName)})/ManyToManyRelationships`,
+      `/EntityDefinitions(${odataKey({ LogicalName: entityLogicalName })})/ManyToManyRelationships`,
       options
     ).get<{ value: ManyToManyRelationshipMetadata[] }>();
     return response.value;
@@ -533,9 +540,10 @@ export class MetadataClient {
     schemaName: string,
     options?: Omit<MetadataQueryOptions, "filter">
   ): Promise<OneToManyRelationshipMetadata | ManyToManyRelationshipMetadata> {
-    return await this.query(`/RelationshipDefinitions(SchemaName=${key(schemaName)})`, options).get<
-      OneToManyRelationshipMetadata | ManyToManyRelationshipMetadata
-    >();
+    return await this.query(
+      `/RelationshipDefinitions(${odataKey({ SchemaName: schemaName })})`,
+      options
+    ).get<OneToManyRelationshipMetadata | ManyToManyRelationshipMetadata>();
   }
 
   /**
@@ -548,9 +556,10 @@ export class MetadataClient {
     metadataId: string,
     options?: Omit<MetadataQueryOptions, "filter">
   ): Promise<OneToManyRelationshipMetadata | ManyToManyRelationshipMetadata> {
-    return await this.query(`/RelationshipDefinitions(${metadataId})`, options).get<
-      OneToManyRelationshipMetadata | ManyToManyRelationshipMetadata
-    >();
+    return await this.query(
+      `/RelationshipDefinitions(${odataLiteral.guid(metadataId)})`,
+      options
+    ).get<OneToManyRelationshipMetadata | ManyToManyRelationshipMetadata>();
   }
 
   /**
@@ -589,7 +598,7 @@ export class MetadataClient {
     options?: MetadataWriteOptions
   ): Promise<void> {
     await this.updateDefinition(
-      `/RelationshipDefinitions(SchemaName=${key(schemaName)})`,
+      `/RelationshipDefinitions(${odataKey({ SchemaName: schemaName })})`,
       relationship,
       options
     );
@@ -608,7 +617,7 @@ export class MetadataClient {
     options?: MetadataWriteOptions
   ): Promise<void> {
     await this.updateDefinition(
-      `/RelationshipDefinitions(SchemaName=${key(schemaName)})`,
+      `/RelationshipDefinitions(${odataKey({ SchemaName: schemaName })})`,
       relationship,
       options
     );
@@ -620,7 +629,7 @@ export class MetadataClient {
    */
   async deleteRelationshipBySchemaName(schemaName: string): Promise<void> {
     await this.client
-      .api(`/RelationshipDefinitions(SchemaName=${key(schemaName)})`)
+      .api(`/RelationshipDefinitions(${odataKey({ SchemaName: schemaName })})`)
       .delete<undefined>();
   }
 
@@ -654,7 +663,7 @@ export class MetadataClient {
     );
     const path = isGuid
       ? `/GlobalOptionSetDefinitions(${nameOrMetadataId})`
-      : `/GlobalOptionSetDefinitions(Name=${key(nameOrMetadataId)})`;
+      : `/GlobalOptionSetDefinitions(${odataKey({ Name: nameOrMetadataId })})`;
 
     return await this.query(path, options).get<OptionSetMetadata>();
   }
@@ -705,7 +714,7 @@ export class MetadataClient {
     );
     const path = isGuid
       ? `/GlobalOptionSetDefinitions(${nameOrMetadataId})`
-      : `/GlobalOptionSetDefinitions(Name=${key(nameOrMetadataId)})`;
+      : `/GlobalOptionSetDefinitions(${odataKey({ Name: nameOrMetadataId })})`;
 
     await this.updateDefinition(path, optionSet, options);
   }
@@ -720,7 +729,7 @@ export class MetadataClient {
     );
     const path = isGuid
       ? `/GlobalOptionSetDefinitions(${nameOrMetadataId})`
-      : `/GlobalOptionSetDefinitions(Name=${key(nameOrMetadataId)})`;
+      : `/GlobalOptionSetDefinitions(${odataKey({ Name: nameOrMetadataId })})`;
 
     await this.client.api(path).delete<undefined>();
   }
@@ -876,7 +885,9 @@ export class MetadataClient {
    */
   async getValidReferencingEntities(referencedEntityName: string): Promise<string[]> {
     const response = await this.client
-      .api(`/GetValidReferencingEntities(ReferencedEntityName=${key(referencedEntityName)})`)
+      .api(
+        `/GetValidReferencingEntities(${odataKey({ ReferencedEntityName: referencedEntityName })})`
+      )
       .get<GetValidReferencingEntitiesResponse>();
     return response.EntityNames ?? [];
   }
@@ -888,7 +899,9 @@ export class MetadataClient {
    */
   async getValidReferencedEntities(referencingEntityName: string): Promise<string[]> {
     const response = await this.client
-      .api(`/GetValidReferencedEntities(ReferencingEntityName=${key(referencingEntityName)})`)
+      .api(
+        `/GetValidReferencedEntities(${odataKey({ ReferencingEntityName: referencingEntityName })})`
+      )
       .get<GetValidReferencedEntitiesResponse>();
     return response.EntityNames ?? [];
   }
@@ -955,12 +968,17 @@ export class MetadataClient {
 
     if (clientVersionStamp) {
       aliases.push("ClientVersionStamp=@p2");
-      values.push(`@p2=${encodeURIComponent(stringLiteral(clientVersionStamp))}`);
+      values.push(`@p2=${encodeURIComponent(odataLiteral.string(clientVersionStamp))}`);
     }
 
     if (deletedMetadataFilters !== undefined) {
       aliases.push("DeletedMetadataFilters=@p3");
-      const literal = `Microsoft.Dynamics.CRM.DeletedMetadataFilters'${String(deletedMetadataFilters)}'`;
+      const literal = odataLiteral.enum(
+        "Microsoft.Dynamics.CRM.DeletedMetadataFilters",
+        String(deletedMetadataFilters)
+          .split(",")
+          .map((member) => member.trim())
+      );
       values.push(`@p3=${encodeURIComponent(literal)}`);
     }
 
@@ -1051,14 +1069,6 @@ export class MetadataClient {
   }
 }
 
-/**
- * A string key value as an OData literal for a URL path, e.g. `LogicalName='account'`: embedded
- * `'` doubled, as OData requires, and characters that would end the path (`/ ? # %` …) escaped.
- */
-function key(value: string): string {
-  return `'${encodeURIComponent(value.replace(/'/g, "''"))}'`;
-}
-
 /** The type-cast path segment for an attribute query, or `""`. */
 function castSegment(cast: AttributeMetadataCast | undefined): string {
   return cast ? `/Microsoft.Dynamics.CRM.${cast}` : "";
@@ -1070,11 +1080,6 @@ const GUID_AT_END = /\(([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]
 /** A copy of a retrieved definition without its `@odata.*` annotations (context, etag, …). */
 function withoutAnnotations(definition: Record<string, unknown>): Record<string, unknown> {
   return Object.fromEntries(Object.entries(definition).filter(([key]) => !key.includes("@odata.")));
-}
-
-/** An OData string literal: wrapped in single quotes, with embedded quotes doubled. */
-function stringLiteral(value: string): string {
-  return `'${value.replace(/'/g, "''")}'`;
 }
 
 const LOGICAL_OPERATORS = ["And", "Or"];

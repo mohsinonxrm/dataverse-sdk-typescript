@@ -2,7 +2,7 @@
  * @fileoverview OrganizationService class providing C#-familiar CRUD operations for Dataverse
  */
 
-import { Prefer } from "@mohsinonxrm/dataverse-sdk-core";
+import { odataLiteral, odataKey, Prefer } from "@mohsinonxrm/dataverse-sdk-core";
 import type {
   DataverseClient,
   DataverseRequestBuilder,
@@ -114,7 +114,7 @@ export class OrganizationService {
     if (cached) return cached;
 
     const lookup = this.client
-      .api(`/EntityDefinitions(LogicalName='${key.replace(/'/g, "''")}')`)
+      .api(`/EntityDefinitions(${odataKey({ LogicalName: key })})`)
       .select("EntitySetName")
       .get<{ EntitySetName?: string } | undefined>()
       .then((definition) => {
@@ -482,7 +482,7 @@ export class OrganizationService {
     // For single-valued navigation: DELETE /{entitySetName}({id})/{relationship}/$ref
     let url: string;
 
-    if (relatedId) {
+    if (relatedId !== undefined) {
       const normalizedRelatedId = this.normalizeGuid(relatedId);
       url = `/${entitySetName}(${normalizedId})/${relationship}(${normalizedRelatedId})/$ref`;
     } else {
@@ -694,18 +694,13 @@ export class OrganizationService {
   }
 
   /**
-   * Normalizes a GUID string (removes braces/hyphens if needed)
+   * Validates a GUID (braces optional) and returns it lowercase without braces. A malformed id
+   * throws `DataverseInvalidRequestError` instead of building a broken URL.
    *
    * @param guid - The GUID string to normalize
    * @returns Normalized GUID without braces
    */
   private normalizeGuid(guid: string): string {
-    // Remove braces if present
-    let normalized = guid.replace(/[{}]/g, "");
-
-    // GUIDs should be lowercase for consistency
-    normalized = normalized.toLowerCase();
-
-    return normalized;
+    return odataLiteral.guid(guid).toLowerCase();
   }
 }
