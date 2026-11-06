@@ -63,7 +63,7 @@ We use Changesets for SemVer management and automated changelog generation.
 **Escape Hatches (v1.0):**
 
 ```typescript
-// Generic OrganizationRequest for unsupported messages (not executable yet: #80)
+// Generic OrganizationRequest for unsupported messages (runs as a Web API action)
 await org.execute(new OrganizationRequest("CustomAction", { param1: value }));
 
 // Raw .api() for maximum flexibility. Relative paths resolve against the Web API root

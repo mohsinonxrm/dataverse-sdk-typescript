@@ -475,37 +475,42 @@ For developers familiar with the C# SDK, use the OrganizationService pattern:
 
 ```typescript
 import { OrganizationService } from "@mohsinonxrm/dataverse-sdk-xrm";
-import { ExecuteWorkflowRequest, MergeRequest } from "@mohsinonxrm/dataverse-sdk-messages";
+import { ExecuteWorkflowRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 
 const service = new OrganizationService(client);
 
-// Create
-const accountId = await service.create("account", {
+// CRUD methods take the entity set name ("accounts"), not the logical name ("account").
+
+// Create: returns the new id
+const accountId = await service.create("accounts", {
   name: "Contoso Inc",
   revenue: 5000000,
 });
 
 // Retrieve
-const account = await service.retrieve("account", accountId, ["name", "revenue", "industrycode"]);
+const account = await service.retrieve("accounts", accountId, {
+  select: ["name", "revenue", "industrycode"],
+});
 
-// Update
-await service.update("account", accountId, {
+// Update (sends If-Match: *, so a missing record fails with 404 instead of being created)
+await service.update("accounts", accountId, {
   revenue: 6000000,
 });
 
-// Delete
-await service.delete("account", accountId);
-
 // Execute Message
-const workflowRequest = new ExecuteWorkflowRequest("workflow-id", accountId, {});
+const workflowRequest = new ExecuteWorkflowRequest(workflowId, accountId, {});
 const workflowResponse = await service.execute(workflowRequest);
-console.log("Workflow execution ID:", workflowResponse.result.asyncoperationid);
 
-// Associate
-await service.associate("account", accountId, "contact_customer_accounts", "contact", contactId);
+// Associate: related records are EntityReferences with a logical name
+await service.associate("accounts", accountId, "contact_customer_accounts", [
+  { logicalName: "contact", id: contactId },
+]);
 
-// Disassociate
-await service.disassociate("account", accountId, "contact_customer_accounts", "contact", contactId);
+// Disassociate: the related record's id
+await service.disassociate("accounts", accountId, "contact_customer_accounts", contactId);
+
+// Delete
+await service.delete("accounts", accountId);
 ```
 
 ## Next Steps
@@ -571,10 +576,12 @@ a longer wait is returned to you as a `DataverseThrottleError` with `retryAfterM
 
 ### Type Safety
 
-All operations support TypeScript auto-completion. Use generated types:
+All operations support TypeScript auto-completion. Business entity types such as `Account` are
+generated for your org by `@mohsinonxrm/dataverse-sdk-generator` (the metadata package holds only
+metadata types such as `EntityMetadata`):
 
 ```typescript
-import type { Account } from "@mohsinonxrm/dataverse-sdk-metadata";
+import type { Account } from "./generated/entities/Account.js";
 
 const account: Account = await client.api(`/accounts(${id})`).get();
 //    ^^^^^^^ Full type safety

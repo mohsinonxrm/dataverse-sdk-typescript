@@ -172,13 +172,19 @@ console.log("Async Operation ID:", response.Id);
 ### 5.4 Generic OrganizationRequest
 
 ```typescript
-import { OrganizationRequest } from "@mohsinonxrm/dataverse-sdk-messages";
+import { OrganizationRequest, OrganizationResponse } from "@mohsinonxrm/dataverse-sdk-messages";
 
+// POST /CustomAction with the parameters as the JSON body
 const request = new OrganizationRequest("CustomAction", {
   InputParameter: "value",
 });
-const response = await service.execute(request);
-console.log("Results:", response.Results);
+const response = await service.execute<OrganizationResponse>(request);
+console.log("Results:", response.Results); // response properties, without @odata.* annotations
+
+// Bound: POST /accounts({id})/Microsoft.Dynamics.CRM.new_BoundAction
+await service.execute(
+  new OrganizationRequest("new_BoundAction", {}, { boundTo: { entitySetName: "accounts", id } })
+);
 ```
 
 ---
