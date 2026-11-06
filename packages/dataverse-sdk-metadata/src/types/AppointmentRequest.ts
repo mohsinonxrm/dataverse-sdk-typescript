@@ -8,21 +8,21 @@ import type { SearchDirection } from "./SearchDirection.js";
  * AppointmentRequest
  */
 export interface AppointmentRequest {
-  ServiceId?: string;
   AnchorOffset?: number;
-  UserTimeZoneCode?: number;
+  AppointmentsToIgnore?: AppointmentsToIgnore[];
+  Constraints?: ConstraintRelation[];
+  Direction?: SearchDirection;
+  Duration?: number;
+  NumberOfResults?: number;
+  Objectives?: ObjectiveRelation[];
   RecurrenceDuration?: number;
   RecurrenceTimeZoneCode?: number;
-  AppointmentsToIgnore?: AppointmentsToIgnore[];
   RequiredResources?: RequiredResource[];
-  SearchWindowStart?: string;
-  SearchWindowEnd?: string;
-  SearchRecurrenceStart?: string;
   SearchRecurrenceRule?: string;
-  Duration?: number;
-  Constraints?: ConstraintRelation[];
-  Objectives?: ObjectiveRelation[];
-  Direction?: SearchDirection;
-  NumberOfResults?: number;
+  SearchRecurrenceStart?: string;
+  SearchWindowEnd?: string;
+  SearchWindowStart?: string;
+  ServiceId?: string;
   Sites?: string[];
+  UserTimeZoneCode?: number;
 }

@@ -1,15 +1,18 @@
 # `$metadata` snapshot
 
 `dataverse-metadata.xml` is the Dataverse Web API `$metadata` (CSDL) that
-`@mohsinonxrm/dataverse-sdk-actions`, `-functions` and `-messages` are generated from (#293).
-Regenerating from it needs no org and no credentials:
+`@mohsinonxrm/dataverse-sdk-actions`, `-functions` and `-messages`, the metadata package's types
+and the entity tables of `createEntityReference` (in `-entities-runtime`) are generated from
+(#293, #295). Regenerating from it needs no org and no credentials:
 
 ```bash
 pnpm --filter generate-sdk-types regen
 ```
 
-That rewrites the three packages' `src/` (a purge first, so removed operations disappear),
-formats them with the repository's prettier config, and updates the operation lists and
+That rewrites the actions, functions and messages packages' `src/`, the metadata package's
+`src/types/` and entities-runtime's `src/generated/` (a purge first, so removed operations and
+types disappear), formats them with the repository's prettier config, and updates the operation
+lists and
 `<!-- count:… -->` blocks in the READMEs and `docs/mapping/`. CI runs it and fails on any diff,
 so the committed packages are always what the generator makes from this file. A generator change
 therefore comes with the regenerated packages in the same PR.

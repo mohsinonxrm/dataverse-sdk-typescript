@@ -1,5 +1,12 @@
 /**
- * Source of the generated `types/EntityReference.ts` of the actions and functions packages (#72).
+ * Entity references in the generated packages (#72, #295).
+ *
+ * The SDK has one `EntityReference` type and one `createEntityReference`, hand-written in
+ * `@mohsinonxrm/dataverse-sdk-entities-runtime`. The generated actions, functions and messages
+ * import the type from there and re-export it, so a reference made by any package is accepted by
+ * all of them. What the generator owns is the data `createEntityReference` reads: the primary key
+ * and entity set of every table in the CSDL (`entityTablesSource`), written to entities-runtime's
+ * `src/generated/entity-tables.ts` by the `references` target.
  *
  * The Web API identifies a record in a request body by its entity type and primary key
  * (`{"@odata.type": "Microsoft.Dynamics.CRM.account", "accountid": "…"}`; activities use
@@ -8,8 +15,23 @@
  */
 import type { CsdlSchema } from "../parsers/csdl-types.js";
 
+/** The package that defines `EntityReference` and `createEntityReference`. */
+export const ENTITY_REFERENCE_MODULE = "@mohsinonxrm/dataverse-sdk-entities-runtime";
+
+/** The import of the `EntityReference` type in a generated file. */
+export const ENTITY_REFERENCE_IMPORT = `import type { EntityReference } from '${ENTITY_REFERENCE_MODULE}';\n`;
+
+/**
+ * The re-export in each generated package's `index.ts`, so `import { createEntityReference } from
+ * "@mohsinonxrm/dataverse-sdk-actions"` (or functions, messages) keeps working.
+ */
+export const ENTITY_REFERENCE_EXPORT = `export { type EntityReference, type EntityReferenceOptions, type WebApiEntityReference, createEntityReference, getEntitySetNameFromReference } from '${ENTITY_REFERENCE_MODULE}';\n`;
+
+/** The file the `references` target writes, relative to its output path. */
+export const ENTITY_TABLES_FILE = "entity-tables.ts";
+
 /** Primary key and entity set of every entity type that has an entity set, by logical name. */
-function entityTable(csdl: CsdlSchema): Array<{ name: string; set: string; key: string }> {
+export function entityTable(csdl: CsdlSchema): Array<{ name: string; set: string; key: string }> {
   const types = new Map(
     csdl.entityTypes
       .filter((t) => t.namespace === "Microsoft.Dynamics.CRM")
@@ -33,14 +55,10 @@ function entityTable(csdl: CsdlSchema): Array<{ name: string; set: string; key: 
 }
 
 /**
- * The generated module. `usedIn` changes the doc comment; for messages it also keeps the
- * hand-written module's API: an optional display `name`, passed as the third argument (#74).
+ * `entity-tables.ts` for entities-runtime: the entity sets and the primary keys that aren't
+ * `<name>id`, which `createEntityReference` and `getEntitySetNameFromReference` read.
  */
-export function entityReferenceSource(
-  csdl: CsdlSchema,
-  usedIn: "actions" | "functions" | "messages"
-): string {
-  const messages = usedIn === "messages";
+export function entityTablesSource(csdl: CsdlSchema): string {
   const table = entityTable(csdl);
   // name, or name:set when the set isn't <name>s
   const sets = table.map((r) => (r.set === `${r.name}s` ? r.name : `${r.name}:${r.set}`)).join(",");
@@ -48,170 +66,21 @@ export function entityReferenceSource(
     .filter((r) => r.key !== `${r.name}id`)
     .map((r) => `  ${JSON.stringify(r.name)}: ${JSON.stringify(r.key)},`)
     .join("\n");
-  const use =
-    usedIn === "functions"
-      ? 'Pass it as an entity-typed function parameter; the parameter alias gets\n * `{"@odata.id": "accounts(<id>)"}`.'
-      : `Pass it as an entity-typed ${messages ? "message" : "action"} parameter (Target, Principal, …); the body gets\n * \`{"@odata.type": "Microsoft.Dynamics.CRM.account", "accountid": "<id>"}\`.`;
-  const nameProperty = messages
-    ? "\n  /** Display name, if given (not enumerable). */\n  readonly name?: string;"
-    : "";
-  const nameOption = messages
-    ? "\n  /** Display name, kept on the reference (not sent). */\n  name?: string;"
-    : "";
-  const optionsParam = messages
-    ? `nameOrOptions: string | EntityReferenceOptions = {}
-): EntityReference {
-  const options = typeof nameOrOptions === "string" ? { name: nameOrOptions } : nameOrOptions;`
-    : `options: EntityReferenceOptions = {}
-): EntityReference {`;
-  const optionsDoc = messages
-    ? " * @param nameOrOptions - A display name, or the primary key or entity set for a table the\n *   generated CSDL doesn't know"
-    : " * @param options - Primary key or entity set for a table the generated CSDL doesn't know";
-  const nameDefinition = messages ? "\n    name: { value: options.name, enumerable: false }," : "";
-  // In a request body only the enumerable properties are sent, so a hand-written
-  // `{ "@odata.type", logicalName, id }` would send the wrong shape. The brand keeps such a literal
-  // from type-checking as an EntityReference (#251). Function parameters read `logicalName`, `id`
-  // and `entitySetName` themselves, so a literal works there and stays allowed.
-  const body = usedIn !== "functions";
-  const brandDeclaration = body
-    ? `
-/** Only {@link createEntityReference} makes an {@link EntityReference}. */
-declare const entityReferenceBrand: unique symbol;
-
-/**
- * The JSON of a record reference in a request body: \`@odata.type\` and the primary key, for example
- * \`{ "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "<id>" }\`. Write one by hand when
- * you know the primary key column, or use {@link createEntityReference}. \`logicalName\`, \`id\` and
- * \`entitySetName\` are not part of it: the Web API rejects them.
- */
-export interface WebApiEntityReference {
-  readonly "@odata.type": string;
-  readonly logicalName?: never;
-  readonly id?: never;
-  readonly entitySetName?: never;
-  /** The primary key column, e.g. \`accountid\`. */
-  readonly [primaryKey: string]: string | undefined;
-}
-`
-    : "";
-  const brandProperty = body
-    ? "\n  /** Set by {@link createEntityReference}: a hand-written object isn't an `EntityReference`. */\n  readonly [entityReferenceBrand]: true;"
-    : "";
-  const createOne = body
-    ? `Create one with {@link createEntityReference};
- * to write the JSON by hand, use {@link WebApiEntityReference}.`
-    : "Create one with {@link createEntityReference}.";
   return `/**
- * Entity references for the Dataverse Web API.
- * Generated by tools/generate-sdk-types from the CSDL $metadata. Do not edit by hand.
- */
-import { DataverseInvalidRequestError } from "@mohsinonxrm/dataverse-sdk-core";
-${brandDeclaration}
-/**
- * A reference to one record.
+ * The entity set and primary key of every table in the SDK's \`$metadata\` snapshot, for
+ * \`createEntityReference\` (#72, #295).
  *
- * Its enumerable properties are the Web API shape: \`@odata.type\` and the primary key, for example
- * \`{ "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "<id>" }\` (activities use
- * \`activityid\`). \`logicalName\`, \`id\` and \`entitySetName\` are not enumerable, so they are not sent
- * in a request body. ${createOne}
+ * Generated by tools/generate-sdk-types (\`pnpm --filter generate-sdk-types regen\`) from
+ * tools/generate-sdk-types/metadata/dataverse-metadata.xml. Do not edit by hand.
  */
-export interface EntityReference {${brandProperty}
-  readonly "@odata.type": string;
-  /** Logical name, e.g. \`account\` (not enumerable). */
-  readonly logicalName: string;
-  /** Record id (not enumerable). */
-  readonly id: string;
-  /** Entity set, e.g. \`accounts\`, for \`@odata.id\` (not enumerable). */
-  readonly entitySetName?: string;${nameProperty}
-  /** The primary key column, e.g. \`accountid\`. */
-  readonly [primaryKey: string]: string | undefined;
-}
 
-/** Overrides for tables the generated CSDL doesn't know, such as custom tables created later. */
-export interface EntityReferenceOptions {
-  /** Primary key column. Default: from the CSDL, else \`<logicalName>id\`. */
-  primaryIdAttribute?: string;
-  /** Entity set name. Default: from the CSDL. */
-  entitySetName?: string;${nameOption}
-}
+/** Entity sets: \`name\` when the set is \`<name>s\`, otherwise \`name:set\`. */
+export const ENTITY_SETS =
+  ${JSON.stringify(sets)};
 
-/** Entity sets from the CSDL: \`name\` when the set is \`<name>s\`, otherwise \`name:set\`. */
-const ENTITY_SETS = ${JSON.stringify(sets)};
-
-/** Primary keys from the CSDL that aren't \`<name>id\`. */
-const PRIMARY_KEYS: Record<string, string> = {
+/** Primary keys that aren't \`<name>id\`. */
+export const PRIMARY_KEYS: Readonly<Record<string, string>> = {
 ${keys}
 };
-
-let entitySets: Map<string, string> | undefined;
-
-/**
- * The entity set of a table, from the CSDL the package was generated from, or \`undefined\` for a
- * table it doesn't know.
- */
-export function entitySetNameOf(logicalName: string): string | undefined {
-  if (!entitySets) {
-    entitySets = new Map();
-    for (const entry of ENTITY_SETS.split(",")) {
-      const [name = "", set] = entry.split(":");
-      entitySets.set(name, set ?? \`\${name}s\`);
-    }
-  }
-  return entitySets.get(logicalName);
-}
-
-/** The primary key column of a table: from the CSDL, else \`<logicalName>id\`. */
-export function primaryIdAttributeOf(logicalName: string): string {
-  return PRIMARY_KEYS[logicalName] ?? \`\${logicalName}id\`;
-}
-
-/**
- * Create a reference to a record. ${use}
- *
- * @param logicalName - Table logical name, e.g. \`account\`, \`email\`
- * @param id - Record id
-${optionsDoc}
- *
- * @example
- * const ref = createEntityReference("account", "a1");
- * // JSON: {"@odata.type":"Microsoft.Dynamics.CRM.account","accountid":"a1"}
- */
-export function createEntityReference(
-  logicalName: string,
-  id: string,
-  ${optionsParam}
-  const key = options.primaryIdAttribute ?? primaryIdAttributeOf(logicalName);
-  const reference: Record<string, string> = {
-    "@odata.type": \`Microsoft.Dynamics.CRM.\${logicalName}\`,
-    [key]: id,
-  };
-  Object.defineProperties(reference, {
-    logicalName: { value: logicalName, enumerable: false },
-    id: { value: id, enumerable: false },
-    entitySetName: {
-      value: options.entitySetName ?? entitySetNameOf(logicalName),
-      enumerable: false,
-    },${nameDefinition}
-  });
-  return reference as unknown as EntityReference;
-}
-
-/**
- * The entity set of a reference: its own \`entitySetName\`, else the CSDL's for its table.
- *
- * @throws DataverseInvalidRequestError when neither is known (pass \`entitySetName\`).
- */
-export function getEntitySetNameFromReference(entityRef: EntityReference): string {
-  const logicalName =
-    entityRef.logicalName ?? entityRef["@odata.type"].replace(/^#?Microsoft\\.Dynamics\\.CRM\\./, "");
-  const entitySetName = entityRef.entitySetName ?? entitySetNameOf(logicalName);
-  if (!entitySetName) {
-    throw DataverseInvalidRequestError.invalidParameter(
-      "entityReference",
-      \`the entity set of '\${logicalName}' is unknown; pass entitySetName to createEntityReference\`
-    );
-  }
-  return entitySetName;
-}
 `;
 }

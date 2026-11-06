@@ -12,7 +12,7 @@ import {
   odataError,
 } from "@mohsinonxrm/dataverse-sdk-testing";
 import type { FakeFetch } from "@mohsinonxrm/dataverse-sdk-testing";
-import { OrganizationService } from "../src/index.js";
+import { OrganizationService, createEntityReference } from "../src/index.js";
 
 const ID = "12345678-1234-1234-1234-123456789012";
 const ID2 = "22222222-2222-2222-2222-222222222222";
@@ -129,23 +129,39 @@ describe("#76: OrganizationService resolves entity set names from metadata", () 
     expect(lookups(fake)).toEqual([]);
   });
 
-  it("associate() resolves the related set once for several references", async () => {
+  it("associate() resolves a custom table's set once for several references", async () => {
     const { client, fake } = createTestClient();
-    metadata(fake, { contact: "contacts" });
-    fake.on("POST", `/accounts(${ID})/contact_customer_accounts/$ref`, () => noContent());
+    metadata(fake, { new_widget: "new_widgetset" });
+    fake.on("POST", `/accounts(${ID})/new_account_widgets/$ref`, () => noContent());
     const service = new OrganizationService(client);
 
-    await service.associate("accounts", ID, "contact_customer_accounts", [
-      { logicalName: "contact", id: ID2 },
-      { logicalName: "contact", id: ID },
+    await service.associate("accounts", ID, "new_account_widgets", [
+      createEntityReference("new_widget", ID2),
+      createEntityReference("new_widget", ID),
     ]);
 
     const refs = fake.requests.filter((r) => r.method === "POST");
     expect(refs.map((r) => JSON.parse(r.bodyText ?? "") as unknown)).toEqual([
-      { "@odata.id": `${TEST_API_URL}/contacts(${ID2})` },
-      { "@odata.id": `${TEST_API_URL}/contacts(${ID})` },
+      { "@odata.id": `${TEST_API_URL}/new_widgetset(${ID2})` },
+      { "@odata.id": `${TEST_API_URL}/new_widgetset(${ID})` },
     ]);
     expect(lookups(fake)).toHaveLength(1);
+  });
+
+  it("associate() needs no lookup for a table in the SDK's $metadata snapshot (#295)", async () => {
+    const { client, fake } = createTestClient();
+    metadata(fake, {});
+    fake.on("POST", `/accounts(${ID})/contact_customer_accounts/$ref`, () => noContent());
+    const service = new OrganizationService(client);
+
+    await service.associate("accounts", ID, "contact_customer_accounts", [
+      createEntityReference("contact", ID2),
+    ]);
+
+    expect(JSON.parse(fake.last().bodyText ?? "")).toEqual({
+      "@odata.id": `${TEST_API_URL}/contacts(${ID2})`,
+    });
+    expect(lookups(fake)).toEqual([]);
   });
 
   it("associate() uses EntityReference.entitySetName as is", async () => {
@@ -155,7 +171,7 @@ describe("#76: OrganizationService resolves entity set names from metadata", () 
     const service = new OrganizationService(client);
 
     await service.associate("accounts", ID, "new_account_widgets", [
-      { logicalName: "new_widget", id: ID2, entitySetName: "new_widgetset" },
+      createEntityReference("new_widget", ID2, { entitySetName: "new_widgetset" }),
     ]);
 
     expect(JSON.parse(fake.last().bodyText ?? "")).toEqual({

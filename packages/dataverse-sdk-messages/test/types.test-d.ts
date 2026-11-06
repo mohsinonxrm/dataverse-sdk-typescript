@@ -6,7 +6,7 @@ import { expectAssignable, expectError, expectType } from "tsd";
 import { MergeRequest, type MergeRequestParameters } from "../src/MergeMessage.js";
 import { ExecuteWorkflowRequest } from "../src/ExecuteWorkflowMessage.js";
 import { OrganizationRequest } from "../src/OrganizationRequest.js";
-import { createEntityReference } from "../src/EntityReference.js";
+import { createEntityReference } from "../src/index.js";
 
 const target = createEntityReference("account", "00000000-0000-0000-0000-000000000001");
 const subordinate = createEntityReference("account", "00000000-0000-0000-0000-000000000002");

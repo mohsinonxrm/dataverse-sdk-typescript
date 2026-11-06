@@ -11,6 +11,6 @@ export interface MemoAttributeMetadata extends AttributeMetadata {
   Format?: StringFormat;
   FormatName?: MemoFormatName;
   ImeMode?: ImeMode;
-  MaxLength?: number;
   IsLocalizable?: boolean;
+  MaxLength?: number;
 }

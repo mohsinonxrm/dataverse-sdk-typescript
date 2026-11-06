@@ -2,7 +2,7 @@
  * ServicePlan
  */
 export interface ServicePlan {
-  Name?: string;
   DisplayName?: string;
+  Name?: string;
   ServicePlanId?: string;
 }

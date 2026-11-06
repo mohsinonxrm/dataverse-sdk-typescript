@@ -2,9 +2,9 @@
  * WebResourceInfo
  */
 export interface WebResourceInfo {
-  Path?: string;
-  Name?: string;
   DisplayName?: string;
-  WebResourceType?: number;
   Guid?: string;
+  Name?: string;
+  Path?: string;
+  WebResourceType?: number;
 }

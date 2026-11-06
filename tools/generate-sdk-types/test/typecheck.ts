@@ -10,6 +10,10 @@ import ts from "typescript";
 const CORE_TYPES = fileURLToPath(
   new URL("../../../packages/dataverse-sdk-core/dist/index.d.ts", import.meta.url)
 );
+/** Where the generated packages import `EntityReference` from (#295). */
+const ENTITIES_RUNTIME_TYPES = fileURLToPath(
+  new URL("../../../packages/dataverse-sdk-entities-runtime/dist/index.d.ts", import.meta.url)
+);
 
 /**
  * Write `snippet` to `<dir>/<name>` and type-check it (and everything it imports) under strict
@@ -27,7 +31,10 @@ export async function typecheck(dir: string, name: string, snippet: string): Pro
     lib: ["lib.es2022.d.ts", "lib.dom.d.ts"],
     skipLibCheck: true,
     types: [],
-    paths: { "@mohsinonxrm/dataverse-sdk-core": [CORE_TYPES] },
+    paths: {
+      "@mohsinonxrm/dataverse-sdk-core": [CORE_TYPES],
+      "@mohsinonxrm/dataverse-sdk-entities-runtime": [ENTITIES_RUNTIME_TYPES],
+    },
   });
   return ts.getPreEmitDiagnostics(program).map((d) => {
     const message = ts.flattenDiagnosticMessageText(d.messageText, "\n");

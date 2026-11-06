@@ -14,6 +14,16 @@ Every package moves from 1.0.x to 2.0.0 together. Most of 2.0 fixes code that di
   | `@mohsinonxrm/dataverse-sdk-otel`              | `@opentelemetry/api`                                                               |
   | `@mohsinonxrm/dataverse-sdk-appinsights`       | `@azure/monitor-opentelemetry` and the OpenTelemetry packages listed in its README |
 
+## One `EntityReference` (all packages)
+
+In 1.0 the actions, functions, messages, entities-runtime and xrm packages each defined their own `EntityReference`, and the actions and messages ones were branded with their own `unique symbol`. A reference made by one package's `createEntityReference` didn't type-check where another package wanted one, so mixing actions and messages in one app needed a cast (#295).
+
+- **`EntityReference`, `createEntityReference`, `getEntitySetNameFromReference`, `EntityReferenceOptions` and `WebApiEntityReference` now live in `@mohsinonxrm/dataverse-sdk-entities-runtime`.** The actions, functions, messages and xrm packages depend on it and re-export the same ones, so your imports keep working and a reference from any package is accepted everywhere: action and message parameters, function parameters, `formatEntityForWrite()` lookups and `OrganizationService.associate()`.
+- **One signature:** `createEntityReference(logicalName, id, options?)`, with `options` `{ primaryIdAttribute?, entitySetName?, name? }`. The display name moved into the options: `createEntityReference("contact", id, "Jane")` (messages and entities-runtime in 1.0) is now `createEntityReference("contact", id, { name: "Jane" })`.
+- **Always the Web API shape.** The reference's enumerable properties are `@odata.type` and the primary key from the SDK's `$metadata` snapshot (activities use `activityid`); `logicalName`, `id`, `entitySetName` and `name` are there but not enumerable. The entity set is filled in for every table the snapshot knows, so `associate()` and `formatEntityForWrite()` no longer look up `contact` or `account`; pass `entitySetName` for a custom table.
+- **Only `createEntityReference` makes one.** A hand-written `{ logicalName, id }` no longer type-checks as an xrm `associate()` reference, a function parameter or an entities-runtime lookup. Replace it with `createEntityReference(logicalName, id)`. At run time, `isEntityReference()` and `formatEntityForWrite()` recognise a reference by its `@odata.type`, `logicalName` and `id`, so a plain `{ logicalName, id }` value is sent as it is instead of being bound.
+- **xrm's `EntityReference`** is the same type; `@mohsinonxrm/dataverse-sdk-xrm` also exports `createEntityReference`.
+
 ## core
 
 - **Nothing is logged by default.** Pass `logger: new ConsoleLogger()` to see request logs. URLs in logs and telemetry are redacted unless you set `logging: { fullUrls: true }` or your own `redactUrl`.
@@ -70,12 +80,13 @@ A configured `account` object no longer overrides MSAL's active account. Pass `a
 - **Enums are string member names**, for example `OwnershipTypes.UserOwned === "UserOwned"`, because the Web API rejects numbers in metadata bodies. Replace numeric comparisons such as `OwnershipType === 1` with the enum member.
 - **New create types.** `*AttributeMetadataCreate` types, discriminated on `@odata.type`, model what a create needs.
 - **Ids come from the response header.** `create*` methods return the new `MetadataId` from `OData-EntityId`, and creates and updates take `{ solutionUniqueName }`.
+- **The types follow the 2.0 `$metadata` snapshot** (#295), like the actions, functions and messages packages. The response types of the operations the snapshot doesn't have are removed, for example `QuerySalesforceUnstructuredDataResponse`, `QueryZendeskUnstructuredArticlesResponse` and the Field Service `msdyn_…Response` types, and the types of the operations 2.0 adds are new. Interface members are in name order.
 - **Escaping and validation.** Key values are escaped, and invalid `MetadataId` keys or `DeletedMetadataFilters` values throw `DataverseInvalidRequestError`.
 
 ## xrm
 
 - `create()`, `retrieve()`, `retrieveMultiple()` and `update()` now work: in 1.0 they threw `TypeError`.
-- `assign()`, `setState()` and the `EntityReference`s of `associate()` take logical names. The entity set is read from metadata instead of being guessed as a plural.
+- `assign()`, `setState()` and the `EntityReference`s of `associate()` take logical names. The entity set is read from metadata instead of being guessed as a plural. `associate()` takes references from `createEntityReference`, which carry the entity set of the tables in the SDK's `$metadata` snapshot (see [One `EntityReference`](#one-entityreference-all-packages)).
 - Record ids must be GUIDs. A malformed id throws `DataverseInvalidRequestError` before any request is sent.
 - **Typed results.** `execute(request)` returns the request's response type (`await service.execute(new WhoAmIFunction())` is a `WhoAmIResponse`), and takes only an `Executable<T>`; drop type arguments it can now infer. `retrieve()`, `retrieveMultiple()`, and `create()`/`update()` with `returnRepresentation` return an `EntityRecord` instead of `any` when you pass no type, so a column is `unknown` until you narrow it: pass your record type (`service.retrieve<Account>(…)`) where you read columns. `update()` without `returnRepresentation` returns `Promise<void>`.
 
@@ -121,7 +132,7 @@ These packages are generated by `tools/generate-sdk-types`.
 
 - **Bulk operations take the entity set first.** `CreateMultiple`, `UpdateMultiple`, `UpsertMultiple` and `DeleteMultiple` now take it as their first argument, for example `new CreateMultipleAction("accounts", { Targets: targets })`.
 - **Collection-bound and bound operations call their bound URL.**
-- **Entity references** from `createEntityReference(logicalName, id, options?)` have the Web API shape (`{ "@odata.type", <primary key> }`). The third argument is now an options object.
+- **Entity references** from `createEntityReference(logicalName, id, options?)` have the Web API shape (`{ "@odata.type", <primary key> }`). The third argument is now an options object. The three packages share one `EntityReference`; see [One `EntityReference`](#one-entityreference-all-packages).
 - **Function parameters** are sent as OData literals: strings are quoted with `'` doubled, enums are `Microsoft.Dynamics.CRM.<Enum>'<value>'`, and GUIDs and dates are bare. Nullable parameters are optional.
 - **Return types.**
   - Operations that return one entity are typed as that entity: use `res.asyncoperationid`, not `res.value`.

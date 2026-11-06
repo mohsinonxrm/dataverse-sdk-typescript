@@ -77,7 +77,28 @@ const incidentMetadata: EntityMetadata = {
   },
 };
 
-const metadataCache = { account: accountMetadata, contact: contactMetadata };
+/** A custom table: not in the SDK's `$metadata` snapshot, so its entity set must be given. */
+const widgetId = "99999999-8888-7777-6666-555555555555";
+const widgetMetadata: EntityMetadata = {
+  typeName: "Microsoft.Dynamics.CRM.new_widget",
+  logicalName: "new_widget",
+  collectionName: "new_widgetset",
+  primaryIdAttribute: "new_widgetid",
+  attributeTypes: {},
+  navigation: {},
+};
+accountMetadata.navigation.new_widgetid = {
+  name: "new_WidgetId",
+  targetType: "new_widget",
+  isCollection: false,
+  relationshipName: "new_account_widget",
+};
+
+const metadataCache = {
+  account: accountMetadata,
+  contact: contactMetadata,
+  new_widget: widgetMetadata,
+};
 
 describe("formatEntityForWrite: payload (#79)", () => {
   it("an entity without logicalName is valid, and logicalName is never sent", () => {
@@ -98,11 +119,10 @@ describe("formatEntityForWrite: payload (#79)", () => {
 });
 
 describe("formatEntityForWrite: lookups become @odata.bind (#79)", () => {
-  it("binds a lookup through its navigation property, finding the entity set in metadataCache", () => {
+  it("binds a lookup through its navigation property; a snapshot table needs no options", () => {
     const body = formatEntityForWrite(
-      { name: "Contoso", primarycontactid: createEntityReference("contact", contactId) },
-      accountMetadata,
-      { metadataCache }
+      { name: "Contoso", primarycontactid: createEntityReference("contact", `{${contactId}}`) },
+      accountMetadata
     );
     expect(body).toEqual({
       "@odata.type": "Microsoft.Dynamics.CRM.account",
@@ -111,19 +131,30 @@ describe("formatEntityForWrite: lookups become @odata.bind (#79)", () => {
     });
   });
 
-  it("uses the reference's entitySetName, then entitySetNames", () => {
-    const withSet = formatEntityForWrite(
-      { primarycontactid: { logicalName: "contact", id: contactId, entitySetName: "contacts" } },
+  it("finds a custom table's entity set on the reference, then entitySetNames, then metadataCache", () => {
+    const bind = (reference: unknown, options = {}) =>
+      formatEntityForWrite({ new_widgetid: reference }, accountMetadata, options)[
+        "new_WidgetId@odata.bind"
+      ];
+    const plain = createEntityReference("new_widget", widgetId);
+    const withSet = createEntityReference("new_widget", widgetId, { entitySetName: "given" });
+
+    expect(bind(withSet, { entitySetNames: { new_widget: "mapped" }, metadataCache })).toBe(
+      `/given(${widgetId})`
+    );
+    expect(bind(plain, { entitySetNames: { new_widget: "mapped" }, metadataCache })).toBe(
+      `/mapped(${widgetId})`
+    );
+    expect(bind(plain, { metadataCache })).toBe(`/new_widgetset(${widgetId})`);
+  });
+
+  it("sends a hand-written { logicalName, id } as it is: only createEntityReference makes a reference (#295)", () => {
+    const body = formatEntityForWrite(
+      { primarycontactid: { logicalName: "contact", id: contactId } },
       accountMetadata
     );
-    expect(withSet["primarycontactid@odata.bind"]).toBe(`/contacts(${contactId})`);
-
-    const withMap = formatEntityForWrite(
-      { primarycontactid: createEntityReference("contact", `{${contactId}}`) },
-      accountMetadata,
-      { entitySetNames: { contact: "contacts" } }
-    );
-    expect(withMap["primarycontactid@odata.bind"]).toBe(`/contacts(${contactId})`);
+    expect(body).not.toHaveProperty("primarycontactid@odata.bind");
+    expect(body.primarycontactid).toEqual({ logicalName: "contact", id: contactId });
   });
 
   it("binds a polymorphic lookup through the navigation property for the reference's table", () => {
@@ -183,16 +214,16 @@ describe("formatEntityForWrite: lookups become @odata.bind (#79)", () => {
   it("throws a DataverseInvalidRequestError when the entity set is unknown", () => {
     expect(() =>
       formatEntityForWrite(
-        { primarycontactid: createEntityReference("contact", contactId) },
+        { new_widgetid: createEntityReference("new_widget", widgetId) },
         accountMetadata
       )
     ).toThrow(DataverseInvalidRequestError);
     expect(() =>
       formatEntityForWrite(
-        { primarycontactid: createEntityReference("contact", contactId) },
+        { new_widgetid: createEntityReference("new_widget", widgetId) },
         accountMetadata,
         { entitySetNames: { toString: "x" } as unknown as Record<string, string> }
       )
-    ).toThrow(/no entity set is known for 'contact'/);
+    ).toThrow(/no entity set is known for 'new_widget'/);
   });
 });

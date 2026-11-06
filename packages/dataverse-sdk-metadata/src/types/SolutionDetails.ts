@@ -2,21 +2,22 @@
  * SolutionDetails
  */
 export interface SolutionDetails {
-  SolutionUniqueName?: string;
-  SolutionFriendlyName?: string;
-  SolutionDescription?: string;
-  PublisherUniqueName?: string;
-  PublisherFriendlyName?: string;
-  PreviousSolutionUniqueName?: string;
-  PreviousSolutionFriendlyName?: string;
-  PreviousPublisherUniqueName?: string;
-  PreviousPublisherFriendlyName?: string;
-  IsPatchSolution?: boolean;
-  IsManaged?: boolean;
-  PreviousIsManaged?: boolean;
-  SolutionVersion?: string;
-  PreviousSolutionVersion?: string;
-  PreviousPatchSolutionsNames?: string[];
-  IsPrerequisitesExport?: boolean;
   HasPendingUpgrade?: boolean;
+  IsCabFile?: boolean;
+  IsManaged?: boolean;
+  IsPatchSolution?: boolean;
+  IsPrerequisitesExport?: boolean;
+  PreviousIsManaged?: boolean;
+  PreviousPatchSolutionsNames?: string[];
+  PreviousPublisherFriendlyName?: string;
+  PreviousPublisherUniqueName?: string;
+  PreviousSolutionFriendlyName?: string;
+  PreviousSolutionUniqueName?: string;
+  PreviousSolutionVersion?: string;
+  PublisherFriendlyName?: string;
+  PublisherUniqueName?: string;
+  SolutionDescription?: string;
+  SolutionFriendlyName?: string;
+  SolutionUniqueName?: string;
+  SolutionVersion?: string;
 }

@@ -2,9 +2,9 @@
  * ViewColumn
  */
 export interface ViewColumn {
-  EntityLogicalName?: string;
+  Alias?: string;
   AttributeLogicalName?: string;
   DataType?: string;
+  EntityLogicalName?: string;
   Format?: string;
-  Alias?: string;
 }

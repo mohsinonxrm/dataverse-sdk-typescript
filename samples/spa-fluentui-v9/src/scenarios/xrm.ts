@@ -4,7 +4,7 @@
  */
 import { odataLiteral } from "@mohsinonxrm/dataverse-sdk-core";
 import { WhoAmIFunction } from "@mohsinonxrm/dataverse-sdk-functions";
-import { OrganizationService } from "@mohsinonxrm/dataverse-sdk-xrm";
+import { OrganizationService, createEntityReference } from "@mohsinonxrm/dataverse-sdk-xrm";
 import type { Sdk } from "../sdk/createSdk";
 import type { Account, Contact } from "./types";
 
@@ -19,9 +19,9 @@ export async function organizationServiceCrud({ client }: Sdk) {
     // update() never creates: it sends If-Match: *, so a missing record is a 404.
     await service.update("accounts", accountId, { telephone1: "+1 425 555 0100" });
 
-    // associate() takes logical names; the entity set comes from metadata.
+    // associate() takes the SDK's one EntityReference, from any package's createEntityReference.
     await service.associate("accounts", accountId, "contact_customer_accounts", [
-      { logicalName: "contact", id: contactId },
+      createEntityReference("contact", contactId),
     ]);
 
     const account = await service.retrieve<Account>("accounts", accountId, {

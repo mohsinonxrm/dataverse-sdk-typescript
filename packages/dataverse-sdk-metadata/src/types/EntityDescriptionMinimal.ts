@@ -4,6 +4,6 @@ import type { AttributeDescriptionMinimal } from "./AttributeDescriptionMinimal.
  * EntityDescriptionMinimal
  */
 export interface EntityDescriptionMinimal {
-  EntityName?: string;
   AttributeDescriptions?: AttributeDescriptionMinimal[];
+  EntityName?: string;
 }

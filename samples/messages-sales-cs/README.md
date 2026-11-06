@@ -227,7 +227,6 @@ const targetRecordId = "11111111-1111-1111-1111-111111111111";
 
 const request = new ExecuteWorkflowRequest(workflowId, {
   EntityId: targetRecordId,
-  InputArguments: { Arguments: [] },
 });
 
 const response = await orgService.execute<ExecuteWorkflowResponse>(request);
@@ -237,7 +236,7 @@ console.log(`Async Operation ID: ${response.result.asyncoperationid}`);
 
 **Constructor:** the workflow id, then the parameters by their Web API names.
 
-```typescript
+```text
 new ExecuteWorkflowRequest(workflowId: string, {
   EntityId: string; // the record to run it on
   InputArguments?: InputArgumentCollection;
@@ -321,7 +320,7 @@ await orgService.execute<WinOpportunityResponse>(request);
 
 **Constructor:**
 
-```typescript
+```text
 new WinOpportunityRequest({
   OpportunityClose: EntityReference | EntityPayload<opportunityclose>;
   Caller?: string;
@@ -360,7 +359,7 @@ await orgService.execute<MergeResponse>(request);
 
 **Constructor:**
 
-```typescript
+```text
 new MergeRequest({
   Target: EntityReference | AnyEntityPayload;
   Subordinate: EntityReference | AnyEntityPayload;
@@ -667,7 +666,6 @@ import { ExecuteWorkflowRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 
 const executeWf = new ExecuteWorkflowRequest(workflowId, {
   EntityId: entityId,
-  InputArguments: { Arguments: [] },
 });
 const response = await orgService.execute<ExecuteWorkflowResponse>(executeWf);
 
@@ -850,15 +848,18 @@ async function executeWorkflowWithRetry(
     try {
       const request = new ExecuteWorkflowRequest(workflowId, {
         EntityId: entityId,
-        InputArguments: { Arguments: [] },
       });
 
       const response = await orgService.execute<ExecuteWorkflowResponse>(request);
       return response.result.asyncoperationid ?? ""; // asyncoperationid
-    } catch (error: any) {
+    } catch (error: unknown) {
       attempt++;
 
-      if (error.message?.includes("locked") && attempt < maxRetries) {
+      if (
+        error instanceof DataverseError &&
+        error.message.includes("locked") &&
+        attempt < maxRetries
+      ) {
         console.log(`Attempt ${attempt} failed (locked), retrying...`);
         await new Promise((resolve) => setTimeout(resolve, 1000 * attempt)); // Exponential backoff
       } else {
@@ -891,12 +892,12 @@ async function smartMerge(
   // Fetch both records (the entity set name comes from metadata, not from adding an "s")
   const entitySet = await orgService.getEntitySetName(entityLogicalName);
   const [target, subordinate] = await Promise.all([
-    client.api(`/${entitySet}(${targetId})`).get<Record<string, any>>(),
-    client.api(`/${entitySet}(${subordinateId})`).get<Record<string, any>>(),
+    client.api(`/${entitySet}(${targetId})`).get<Record<string, unknown>>(),
+    client.api(`/${entitySet}(${subordinateId})`).get<Record<string, unknown>>(),
   ]);
 
   // Resolve conflicts
-  const updateContent: any = {};
+  const updateContent: Record<string, unknown> = {};
 
   for (const field of Object.keys(subordinate)) {
     if (field.startsWith("_") || field.startsWith("@")) continue; // Skip metadata
@@ -908,9 +909,17 @@ async function smartMerge(
       if (targetValue === null || targetValue === undefined) {
         // Target missing, use subordinate
         updateContent[field] = subValue;
-      } else if (typeof subValue === "string" && resolver.resolveString) {
+      } else if (
+        typeof subValue === "string" &&
+        typeof targetValue === "string" &&
+        resolver.resolveString
+      ) {
         updateContent[field] = resolver.resolveString(targetValue, subValue);
-      } else if (typeof subValue === "number" && resolver.resolveNumber) {
+      } else if (
+        typeof subValue === "number" &&
+        typeof targetValue === "number" &&
+        resolver.resolveNumber
+      ) {
         updateContent[field] = resolver.resolveNumber(targetValue, subValue);
       }
       // Add more type handlers as needed

@@ -8,8 +8,13 @@
 // Base classes and types
 export { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 export type { OrganizationRequestOptions } from "./OrganizationRequest.js";
-export type { EntityReference, EntityReferenceOptions } from "./EntityReference.js";
-export { createEntityReference, type WebApiEntityReference } from "./EntityReference.js";
+export {
+  type EntityReference,
+  type EntityReferenceOptions,
+  type WebApiEntityReference,
+  createEntityReference,
+  getEntitySetNameFromReference,
+} from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 export type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 export type { MessageRequest, MessageResponse } from "./types.js";
 

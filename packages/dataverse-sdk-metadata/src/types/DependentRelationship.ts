@@ -5,14 +5,14 @@ import type { RelationshipType } from "./RelationshipType.js";
  * DependentRelationship
  */
 export interface DependentRelationship {
-  MetadataId?: string;
-  Name?: string;
   EntityRelationshipType?: RelationshipType;
-  ReferencingAttribute?: string;
-  ReferencedAttribute?: string;
-  RelationshipEntity?: string;
-  IsValidForAdvancedFind?: boolean;
   HasReadPrivilege?: boolean;
   IsHierarchical?: boolean;
+  IsValidForAdvancedFind?: boolean;
   ManyToManyRelationshipMetadata?: DependentManyToManyRelationshipMetadata;
+  MetadataId?: string;
+  Name?: string;
+  ReferencedAttribute?: string;
+  ReferencingAttribute?: string;
+  RelationshipEntity?: string;
 }

@@ -178,7 +178,13 @@ The sample builds one `MetadataClient` over the `DataverseClient`, and also uses
 `client.api(...)` directly where the HTTP call is the point of the demo:
 
 ```typescript
-import { MetadataClient } from "@mohsinonxrm/dataverse-sdk-metadata";
+import {
+  AttributeRequiredLevel,
+  MetadataClient,
+  OptionSetType,
+  OwnershipTypes,
+  type EntityMetadata,
+} from "@mohsinonxrm/dataverse-sdk-metadata";
 
 const metadataClient = new MetadataClient(client);
 ```
@@ -235,13 +241,12 @@ await metadataClient.createAttributeDefinition("sample_milestone", {
 A multi-line text column through `client.api()`, and an integer column through the client:
 
 ```typescript
-// POST /EntityDefinitions(LogicalName='sample_project')/Attributes
-{
+await client.api("/EntityDefinitions(LogicalName='sample_project')/Attributes").post({
   "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
   SchemaName: "sample_Description",
   MaxLength: 500,
   FormatName: { Value: "Text" },
-}
+});
 
 await metadataClient.createAttributeDefinition("sample_project", {
   "@odata.type": "Microsoft.Dynamics.CRM.IntegerAttributeMetadata",

@@ -5,9 +5,9 @@ import type { SubscriptionUpdatedEntityData } from "./SubscriptionUpdatedEntityD
  * SyncOfflineDataResponse
  */
 export interface SyncOfflineDataResponse {
-  Updates?: SubscriptionUpdatedEntityData[];
-  Deletes?: SubscriptionDeletedEntityData[];
   CompletedEntities?: string[];
-  SyncToken?: string;
+  Deletes?: SubscriptionDeletedEntityData[];
   IsFinalPage?: boolean;
+  SyncToken?: string;
+  Updates?: SubscriptionUpdatedEntityData[];
 }

@@ -51,6 +51,7 @@
   },
   "dependencies": {
     "@mohsinonxrm/dataverse-sdk-core": "workspace:*",
+    "@mohsinonxrm/dataverse-sdk-entities-runtime": "workspace:*",
     "@mohsinonxrm/dataverse-sdk-messages": "workspace:*"
   },
   "devDependencies": {

@@ -206,7 +206,7 @@ for await (const account of client.api("/accounts").select("name").iterate()) {
 Familiar API for Dataverse/C# developers:
 
 ```typescript
-import { OrganizationService } from "@mohsinonxrm/dataverse-sdk-xrm";
+import { OrganizationService, createEntityReference } from "@mohsinonxrm/dataverse-sdk-xrm";
 
 const org = new OrganizationService(client);
 
@@ -232,10 +232,10 @@ await org.update(
   { etag: account["@odata.etag"] }
 );
 
-// Associate (EntityReference uses the logical name)
+// Associate: references from createEntityReference (any SDK package's: they are one type)
 await org.associate("accounts", accountId, "contact_customer_accounts", [
-  { logicalName: "contact", id: contactId1 },
-  { logicalName: "contact", id: contactId2 },
+  createEntityReference("contact", contactId1),
+  createEntityReference("contact", contactId2),
 ]);
 
 // Delete

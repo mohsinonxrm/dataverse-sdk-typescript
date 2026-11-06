@@ -1,10 +1,16 @@
 #!/usr/bin/env node
 /**
- * `pnpm --filter generate-sdk-types regen` (#293): regenerate the actions, functions and messages
- * packages and the generated docs from the committed `$metadata` snapshot, then format them.
+ * `pnpm --filter generate-sdk-types regen` (#293): regenerate everything the generator owns from
+ * the committed `$metadata` snapshot, then format it:
+ *
+ * - the actions, functions and messages packages (`src/`);
+ * - the metadata package's types (`packages/dataverse-sdk-metadata/src/types`, #295);
+ * - the entity sets and primary keys of `createEntityReference`
+ *   (`packages/dataverse-sdk-entities-runtime/src/generated`, #295);
+ * - the generated docs.
  *
  * It reads only `metadata/dataverse-metadata.xml`: no org, no credentials, no `.env`, no
- * `sdk-gen.config.json`. CI runs it and fails on any diff, so the committed packages are always
+ * `sdk-gen.config.json`. CI runs it and fails on any diff, so the committed files are always
  * what the generator makes from the committed snapshot. To take a new snapshot, see
  * `metadata/README.md`.
  */
@@ -12,23 +18,34 @@ import { readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import * as prettier from "prettier";
-import { generateTargets, type GenerationTarget } from "./index.js";
+import { ALL_TARGETS, generateTargets } from "./index.js";
 import { OPERATION_DOCS, renderOperationBlocks } from "./docs/operation-docs.js";
 
 const root = fileURLToPath(new URL("../../../", import.meta.url));
 const snapshot = join(root, "tools", "generate-sdk-types", "metadata", "dataverse-metadata.xml");
-const kinds = ["actions", "functions", "messages"] as const satisfies readonly GenerationTarget[];
-const srcDir = (kind: string): string => join(root, "packages", `dataverse-sdk-${kind}`, "src");
+const packageDir = (name: string, ...path: string[]): string =>
+  join(root, "packages", `dataverse-sdk-${name}`, ...path);
+
+/** Where each target writes; `regen` purges and rewrites each of these folders. */
+const outputs = {
+  metadata: packageDir("metadata", "src", "types"),
+  references: packageDir("entities-runtime", "src", "generated"),
+  messages: packageDir("messages", "src"),
+  actions: packageDir("actions", "src"),
+  functions: packageDir("functions", "src"),
+} as const satisfies Record<(typeof ALL_TARGETS)[number], string>;
 
 await generateTargets(
   {
     targets: {
-      actions: { enabled: true, outputPath: srcDir("actions") },
-      functions: { enabled: true, outputPath: srcDir("functions") },
-      messages: { enabled: true, outputPath: srcDir("messages") },
+      metadata: { enabled: true, outputPath: outputs.metadata },
+      references: { enabled: true, outputPath: outputs.references },
+      messages: { enabled: true, outputPath: outputs.messages },
+      actions: { enabled: true, outputPath: outputs.actions },
+      functions: { enabled: true, outputPath: outputs.functions },
     },
   },
-  [...kinds],
+  [...ALL_TARGETS],
   { fromCsdl: snapshot, purge: true }
 );
 
@@ -49,10 +66,10 @@ async function format(path: string): Promise<boolean> {
   return after !== before;
 }
 
-console.log("🎨 Formatting the generated packages...");
+console.log("🎨 Formatting the generated files...");
 let formatted = 0;
-for (const kind of kinds) {
-  for (const path of files(srcDir(kind))) if (await format(path)) formatted++;
+for (const dir of Object.values(outputs)) {
+  for (const path of files(dir)) if (await format(path)) formatted++;
 }
 console.log(`✅ Formatted ${String(formatted)} files\n`);
 

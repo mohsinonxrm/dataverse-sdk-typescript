@@ -7,12 +7,26 @@ import { generateMessages } from "./generators/messages-generator.js";
 import { generateActions } from "./generators/actions-generator.js";
 import { generateFunctions } from "./generators/functions-generator.js";
 import { generateComplexTypes } from "./generators/complex-types-generator.js";
+import { generateEntityTables } from "./generators/references-generator.js";
 import { withSupplementalMetadata } from "./supplemental/supplemental-metadata.js";
 import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
 import { AzureIdentityTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-azure-identity";
 import { ClientSecretCredential } from "@azure/identity";
 
-export type GenerationTarget = "metadata" | "messages" | "actions" | "functions";
+/**
+ * What the generator writes: the metadata package's types, the messages, actions and functions
+ * packages, and (`references`) the entity tables of entities-runtime's `createEntityReference`.
+ */
+export type GenerationTarget = "metadata" | "references" | "messages" | "actions" | "functions";
+
+/** Every target, in the order `generate` with no target list runs them. */
+export const ALL_TARGETS: readonly GenerationTarget[] = [
+  "metadata",
+  "references",
+  "messages",
+  "actions",
+  "functions",
+];
 
 /** Options for {@link generateTargets} and {@link generateFromCsdl}. */
 export interface GenerateOptions {
@@ -36,7 +50,7 @@ export interface GenerateOptions {
  * @param dryRun - If true, preview without writing files
  */
 export async function generateAll(config: SdkGeneratorConfig, dryRun = false): Promise<void> {
-  await generateTargets(config, ["metadata", "messages", "actions", "functions"], { dryRun });
+  await generateTargets(config, [...ALL_TARGETS], { dryRun });
 }
 
 /**
@@ -111,24 +125,29 @@ export async function generateFromCsdl(
 
     switch (target) {
       case "metadata":
-        await generateMetadataTypes(csdl, targetConfig.outputPath, dryRun);
+        await generateMetadataTypes(csdl, targetConfig.outputPath, dryRun, purge);
+        break;
+
+      case "references":
+        // The entity sets and primary keys createEntityReference reads (#295)
+        await generateEntityTables(csdl, targetConfig.outputPath, dryRun);
         break;
 
       case "messages":
         // Generate complex types first
-        await generateComplexTypes(operations, `${targetConfig.outputPath}/types`, purge, target);
+        await generateComplexTypes(operations, `${targetConfig.outputPath}/types`, purge);
         await generateMessages(operations, targetConfig.outputPath, dryRun, purge);
         break;
 
       case "actions":
         // Generate complex types first
-        await generateComplexTypes(operations, `${targetConfig.outputPath}/types`, purge, target);
+        await generateComplexTypes(operations, `${targetConfig.outputPath}/types`, purge);
         await generateActions(operations, targetConfig.outputPath, dryRun, purge);
         break;
 
       case "functions":
         // Generate complex types first
-        await generateComplexTypes(operations, `${targetConfig.outputPath}/types`, purge, target);
+        await generateComplexTypes(operations, `${targetConfig.outputPath}/types`, purge);
         await generateFunctions(operations, targetConfig.outputPath, dryRun, purge);
         break;
     }

@@ -5,7 +5,7 @@
 import { describe, it, expect } from "vitest";
 import { DataverseInvalidRequestError } from "@mohsinonxrm/dataverse-sdk-core";
 import { createTestClient, jsonResponse, noContent } from "@mohsinonxrm/dataverse-sdk-testing";
-import { OrganizationService } from "../src/index.js";
+import { OrganizationService, createEntityReference } from "../src/index.js";
 
 const ID = "12345678-1234-1234-1234-123456789012";
 const BAD = ["not-a-guid", `${ID})/../systemusers(${ID}`, "", `${ID}x`];
@@ -29,13 +29,13 @@ describe("#53: GUID ids are validated", () => {
   for (const bad of BAD) {
     it(`rejects ${JSON.stringify(bad)} everywhere an id is a key`, async () => {
       const { svc, fake } = service();
-      const rel = [{ logicalName: "contact", id: ID }];
+      const rel = [createEntityReference("contact", ID)];
       const calls: Array<() => Promise<unknown>> = [
         () => svc.retrieve("accounts", bad),
         () => svc.update("accounts", bad, { name: "x" }),
         () => svc.delete("accounts", bad),
         () => svc.associate("accounts", bad, "rel", rel),
-        () => svc.associate("accounts", ID, "rel", [{ logicalName: "contact", id: bad }]),
+        () => svc.associate("accounts", ID, "rel", [createEntityReference("contact", bad)]),
         () => svc.disassociate("accounts", bad, "rel"),
         () => svc.disassociate("accounts", ID, "rel", bad),
         () => svc.assign("account", bad, ID),

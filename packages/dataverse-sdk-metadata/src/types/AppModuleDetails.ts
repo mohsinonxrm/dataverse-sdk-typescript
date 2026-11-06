@@ -8,28 +8,28 @@ import type { WebResourceDetails } from "./WebResourceDetails.js";
  * AppModuleDetails
  */
 export interface AppModuleDetails {
-  AppModuleId?: string;
   AppDisplayName?: LocalizedLabelDetails;
+  AppModuleId?: string;
+  AppSettingDetails?: AppSettingDetails[];
   AppUniqueName?: string;
+  AppUri?: string;
   AppVersion?: string;
-  Description?: LocalizedLabelDetails;
-  IconWebResource?: WebResourceDetails;
-  WelcomePageWebResource?: WebResourceDetails;
+  CanvasApps?: CanvasAppsDetails[];
+  ClientType?: number;
   CreatedBy?: UserDetails;
   CreatedOn?: string;
+  Description?: LocalizedLabelDetails;
+  IconWebResource?: WebResourceDetails;
+  IsDefault?: boolean;
+  IsFirstPartyApplication?: boolean;
+  MetadataVersionNumber?: number;
   ModifiedBy?: UserDetails;
   ModifiedOn?: string;
-  AppUri?: string;
-  IsDefault?: boolean;
-  ClientType?: number;
   NavigationType?: number;
   OptimizedFor?: string;
-  PublisherUniqueName?: string;
-  PublisherName?: string;
   PublishedOn?: string;
-  MetadataVersionNumber?: number;
-  IsFirstPartyApplication?: boolean;
-  CanvasApps?: CanvasAppsDetails[];
+  PublisherName?: string;
+  PublisherUniqueName?: string;
   StateCode?: number;
-  AppSettingDetails?: AppSettingDetails[];
+  WelcomePageWebResource?: WebResourceDetails;
 }
