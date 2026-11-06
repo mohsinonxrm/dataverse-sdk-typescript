@@ -413,12 +413,37 @@ client.api(`MyFunction(Name=@p1)?@p1=${encodeURIComponent(odataLiteral.string(in
 | `odataLiteral.bool(true)`                 | `true`                                                |
 | `odataLiteral.datetime(date)`             | `2024-05-01T08:30:00.000Z` (`Edm.DateTimeOffset`)     |
 | `odataLiteral.date(date)`                 | `2024-05-01` (`Edm.Date`)                             |
-| `odataLiteral.enum("NS.Type", ["A","B"])` | `NS.Type'A,B'`                                        |
+| `odataLiteral.enum("NS.Type", ["A","B"])` | `NS.Type'A,B'` (a string `"A, B"` is split on commas) |
+| `odataLiteral.duration("P1D")`            | `duration'P1D'`                                       |
+| `odataLiteral.binary("a+b/c==")`          | `binary'a-b_c'` (base64url, no padding)               |
+| `odataLiteral.json(value)`                | JSON, with record references as `@odata.id`           |
+| `odataLiteral.reference(ref)`             | `{"@odata.id":"accounts(<id>)"}`                      |
+| `odataLiteral.recordPath(ref)`            | `accounts(<id>)` (needs `ref.entitySetName`)          |
 | `odataLiteral.value(v)`                   | picks one of the above from the JavaScript type       |
+| `odataLiteral.parameter(v, "Edm.Guid")`   | picks one from the parameter's OData type (below)     |
 | `odataKey(guid \| { col: value, … })`     | `guid` or `col='…',col2=5`, percent-encoded for paths |
 
 A value that doesn't fit the helper throws `DataverseInvalidRequestError` (`InvalidParameter`)
 instead of producing a broken URL.
+
+`odataLiteral.parameter(value, odataType, kind?)` writes an operation parameter from its OData type
+(`Edm.String`, `Edm.Guid`, `Edm.Int64`, an enum with `kind: "EnumerationType"`, an entity with
+`"EntityType"`, a `"ComplexType"` or a `"Collection"`). It is the one OData literal serializer: the
+generated functions and `formatParameterAlias` in `@mohsinonxrm/dataverse-sdk-entities-runtime`
+call it.
+
+```typescript
+odataLiteral.parameter("O'Brien", "Edm.String"); // 'O''Brien'
+odataLiteral.parameter(9007199254740993n, "Edm.Int64"); // 9007199254740993
+odataLiteral.parameter("Entity, Attributes", "mscrm.EntityFilters", "EnumerationType");
+// Microsoft.Dynamics.CRM.EntityFilters'Entity,Attributes'
+odataLiteral.parameter(
+  { logicalName: "account", id, entitySetName: "accounts" },
+  "mscrm.crmbaseentity",
+  "EntityType"
+);
+// {"@odata.id":"accounts(<id>)"}
+```
 
 #### URL Validation
 
