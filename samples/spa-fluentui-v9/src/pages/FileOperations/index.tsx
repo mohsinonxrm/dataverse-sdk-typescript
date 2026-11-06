@@ -15,17 +15,13 @@ import {
   DocumentRegular,
   ImageRegular,
 } from "@fluentui/react-icons";
+import { FileColumnClient } from "@mohsinonxrm/dataverse-sdk-files";
 import { useDataverse } from "../../context/DataverseContext";
 import { LoadingState } from "../../components/demo/LoadingState";
 import { ErrorDisplay } from "../../components/errors/ErrorDisplay";
 import { ProgressTracker } from "../../components/demo/ProgressTracker";
 import { CodeComparison } from "../../components/demo/CodeComparison";
-import {
-  patchProgress,
-  type ResultView,
-  type ProgressState,
-  type JsonObject,
-} from "../../types/common";
+import { patchProgress, type ResultView, type ProgressState } from "../../types/common";
 
 const useStyles = makeStyles({
   container: {
@@ -85,8 +81,8 @@ export default function FileOperations() {
   // Upload state
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [recordId, setRecordId] = useState("");
-  const [entityName, setEntityName] = useState("annotation");
-  const [columnName, setColumnName] = useState("documentbody");
+  const [entitySetName, setEntitySetName] = useState("contacts");
+  const [columnName, setColumnName] = useState("entityimage");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Download state
@@ -110,7 +106,8 @@ export default function FileOperations() {
     setError(null);
 
     try {
-      const totalChunks = Math.ceil(selectedFile.size / CHUNK_SIZE);
+      const files = new FileColumnClient(client);
+      const totalChunks = Math.max(1, Math.ceil(selectedFile.size / CHUNK_SIZE));
       setProgress({
         total: totalChunks,
         current: 0,
@@ -122,64 +119,16 @@ export default function FileOperations() {
         ],
       });
 
-      // Step 1: Initialize upload
-      const initResponse = await client
-        .api("/InitializeFileBlocksUpload")
-        .post<{ FileContinuationToken: string }>({
-          Target: {
-            "@odata.type": `Microsoft.Dynamics.CRM.${entityName}`,
-            [`${entityName}id`]: recordId,
-          },
-          FileAttributeName: columnName,
-          FileName: selectedFile.name,
-        });
-
-      const fileContinuationToken = initResponse.FileContinuationToken;
-
-      // Step 2: Upload chunks
-      const reader = new FileReader();
-      let offset = 0;
-      let chunkIndex = 0;
-
-      while (offset < selectedFile.size) {
-        const chunk = selectedFile.slice(offset, offset + CHUNK_SIZE);
-        const blockId = btoa(`block-${chunkIndex}`);
-
-        // Read chunk as base64
-        const base64 = await new Promise<string>((resolve, reject) => {
-          reader.onload = () => {
-            const result = reader.result as string;
-            const base64 = result.split(",")[1];
-            resolve(base64);
-          };
-          reader.onerror = reject;
-          reader.readAsDataURL(chunk);
-        });
-
-        // Upload chunk
-        await client.api("/UploadBlock").post<JsonObject>({
-          BlockId: blockId,
-          BlockData: base64,
-          FileContinuationToken: fileContinuationToken,
-        });
-
-        chunkIndex++;
-        offset += CHUNK_SIZE;
-
-        setProgress(patchProgress({ current: chunkIndex, successCount: chunkIndex }));
-      }
-
-      // Step 3: Commit upload
-      const blockList = Array.from({ length: totalChunks }, (_, i) => btoa(`block-${i}`));
-      await client.api("/CommitFileBlocksUpload").post<JsonObject>({
-        FileContinuationToken: fileContinuationToken,
-        BlockList: blockList,
-        FileName: selectedFile.name,
-        MimeType: selectedFile.type,
+      // upload() initializes the upload, sends the blocks and commits them
+      await files.upload(entitySetName, recordId, columnName, selectedFile, selectedFile.name, {
+        chunkSize: CHUNK_SIZE,
+        onProgress: ({ chunkIndex }) => {
+          setProgress(patchProgress({ current: chunkIndex + 1, successCount: chunkIndex + 1 }));
+        },
       });
 
       setResults({
-        operation: "Chunked Upload",
+        operation: "Upload",
         fileName: selectedFile.name,
         fileSize: selectedFile.size,
         chunks: totalChunks,
@@ -194,72 +143,16 @@ export default function FileOperations() {
     }
   };
 
-  const handleSimpleUpload = async () => {
-    if (!client || !selectedFile || !recordId) return;
-    setLoading(true);
-    setError(null);
-
-    try {
-      // For small files, use direct upload
-      const reader = new FileReader();
-      const base64 = await new Promise<string>((resolve, reject) => {
-        reader.onload = () => {
-          const result = reader.result as string;
-          const base64 = result.split(",")[1];
-          resolve(base64);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(selectedFile);
-      });
-
-      await client.api(`/${entityName}s(${recordId})`).patch({
-        [columnName]: base64,
-        filename: selectedFile.name,
-        mimetype: selectedFile.type,
-      });
-
-      setResults({
-        operation: "Simple Upload",
-        fileName: selectedFile.name,
-        fileSize: selectedFile.size,
-        recordId,
-        status: "Success",
-      });
-    } catch (err) {
-      setError(err as Error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleDownload = async () => {
     if (!client || !downloadRecordId) return;
     setLoading(true);
     setError(null);
 
     try {
-      // Download file data
-      const response = await client
-        .api(`/${entityName}s(${downloadRecordId})`)
-        .select()
-        .get<JsonObject>();
-
-      const base64Data = response[columnName];
-      if (typeof base64Data !== "string") {
-        throw new Error(`The ${columnName} column has no file data for this record.`);
-      }
-      const fileName = typeof response.filename === "string" ? response.filename : "download.bin";
-      const mimeType =
-        typeof response.mimetype === "string" ? response.mimetype : "application/octet-stream";
-
-      // Convert base64 to blob and trigger download
-      const byteCharacters = atob(base64Data);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-      }
-      const byteArray = new Uint8Array(byteNumbers);
-      const blob = new Blob([byteArray], { type: mimeType });
+      const files = new FileColumnClient(client);
+      // download() resolves to a Blob
+      const blob = await files.download(entitySetName, downloadRecordId, columnName);
+      const fileName = `${columnName}-${downloadRecordId}`;
 
       // Create download link
       const url = URL.createObjectURL(blob);
@@ -275,7 +168,7 @@ export default function FileOperations() {
         operation: "Download",
         fileName,
         fileSize: blob.size,
-        mimeType,
+        mimeType: blob.type,
         status: "Success",
       });
     } catch (err) {
@@ -297,15 +190,18 @@ export default function FileOperations() {
       <div className={styles.grid}>
         <Card className={styles.card}>
           <Title3>Chunked Upload</Title3>
-          <Text>For large files (&gt;4MB) - uses InitializeFileBlocksUpload action</Text>
+          <Text>
+            For large files (&gt;4MB) - uses FileColumnClient (InitializeFileBlocksUpload,
+            UploadBlock, CommitFileBlocksUpload)
+          </Text>
 
           <div className={styles.form}>
             <div>
-              <Label>Entity Name</Label>
+              <Label>Entity Set Name</Label>
               <Input
-                value={entityName}
-                onChange={(_e, data) => setEntityName(data.value)}
-                placeholder="annotation"
+                value={entitySetName}
+                onChange={(_e, data) => setEntitySetName(data.value)}
+                placeholder="contacts"
               />
             </div>
             <div>
@@ -321,7 +217,7 @@ export default function FileOperations() {
               <Input
                 value={columnName}
                 onChange={(_e, data) => setColumnName(data.value)}
-                placeholder="documentbody"
+                placeholder="entityimage"
               />
             </div>
             <div>
@@ -352,13 +248,6 @@ export default function FileOperations() {
               disabled={loading || !selectedFile || !recordId}
             >
               Upload (Chunked)
-            </Button>
-            <Button
-              icon={<ArrowUploadRegular />}
-              onClick={handleSimpleUpload}
-              disabled={loading || !selectedFile || !recordId}
-            >
-              Upload (Simple)
             </Button>
           </div>
         </Card>
@@ -405,7 +294,7 @@ export default function FileOperations() {
           <Button
             icon={<ImageRegular />}
             onClick={() => {
-              setEntityName("contact");
+              setEntitySetName("contacts");
               setColumnName("entityimage");
             }}
           >
@@ -433,33 +322,13 @@ export default function FileOperations() {
             {
               label: "Operation Result",
               code:
-                results.operation === "Chunked Upload"
-                  ? `// 1. Initialize
-const init = await client.api('/InitializeFileBlocksUpload').post({...});
-
-// 2. Upload chunks (${String(results.chunks)} chunks)
-for (const chunk of chunks) {
-  await client.api('/UploadBlock').post({
-    BlockId: blockId,
-    BlockData: base64Chunk,
-    FileContinuationToken: token
-  });
-}
-
-// 3. Commit
-await client.api('/CommitFileBlocksUpload').post({
-  FileContinuationToken: token,
-  BlockList: blockIds
+                results.operation === "Upload"
+                  ? `const files = new FileColumnClient(client);
+await files.upload('${entitySetName}', '${recordId}', '${columnName}', file, '${String(results.fileName)}', {
+  onProgress: ({ percentage }) => console.log(percentage + '%')
 });`
-                  : results.operation === "Simple Upload"
-                    ? `await client.api('/${entityName}s(${recordId})').patch({
-  ${columnName}: base64Data,
-  filename: '${String(results.fileName)}',
-  mimetype: '${String(results.mimeType)}'
-})`
-                    : `const file = await client.api('/${entityName}s(${downloadRecordId})')
-  .select()
-  .get();`,
+                  : `const files = new FileColumnClient(client);
+const blob = await files.download('${entitySetName}', '${downloadRecordId}', '${columnName}');`,
               result: JSON.stringify(results, null, 2),
             },
           ]}

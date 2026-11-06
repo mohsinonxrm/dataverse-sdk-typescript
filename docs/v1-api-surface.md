@@ -408,8 +408,10 @@ Strict metadata builders (`const Metadata`) are [planned](#16-planned-not-export
 
 ## 14) `@mohsinonxrm/dataverse-sdk-files`
 
-- `class FileColumnClient` (`new FileColumnClient(adapter: RequestAdapter, baseUrl?: string)`; a `DataverseClient` can be passed as the adapter, with `client.getBaseUrl()`)
-  - `upload(entitySetName, recordId, columnName, file, fileName, options?)`, `download(entitySetName, recordId, columnName, options?)`
+- `class FileColumnClient` (`new FileColumnClient(client: DataverseClient)`, or `new FileColumnClient(adapter: RequestAdapter, baseUrl?: string)` for your own adapter; the base URL is `client.getBaseUrl()`)
+  - `upload(entitySetName, recordId, columnName, file: Blob | ArrayBuffer | ArrayBufferView, fileName, options?): Promise<void>`
+  - `download(entitySetName, recordId, columnName, options?): Promise<Blob>`
+  - `delete(entitySetName, recordId, columnName): Promise<void>`
 - `interface FileUploadOptions`, `interface FileDownloadOptions`, `interface UploadProgress`
 
 ---
