@@ -4,7 +4,7 @@
 
 // Main client
 export { MetadataClient } from "./MetadataClient.js";
-export type { MetadataQueryOptions } from "./MetadataClient.js";
+export type { MetadataQueryOptions, MetadataWriteOptions } from "./MetadataClient.js";
 
 // All metadata types
 export * from "./types/index.js";

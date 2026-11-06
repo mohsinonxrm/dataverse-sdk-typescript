@@ -661,18 +661,16 @@ console.log("Metadata changes retrieved", changes.ServerVersionStamp);
 
 ```typescript
 // ========== CREATE ENTITY (Raw HTTP POST) ==========
-const entityResponse = await client
-  .api("/EntityDefinitions")
-  .preferRaw("return=representation")
-  .post({
-    "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
-    SchemaName: "new_Project",
-    DisplayName: {
-      LocalizedLabels: [{ Label: "Project", LanguageCode: 1033 }],
-    },
-    OwnershipType: "UserOwned",
-    HasActivities: true,
-  });
+// Dataverse answers 204 with the new MetadataId in OData-EntityId; createAndGetId() reads it
+const entityMetadataId = await client.api("/EntityDefinitions").createAndGetId({
+  "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
+  SchemaName: "new_Project",
+  DisplayName: {
+    LocalizedLabels: [{ Label: "Project", LanguageCode: 1033 }],
+  },
+  OwnershipType: "UserOwned",
+  HasActivities: true,
+});
 
 // ========== CREATE ATTRIBUTE (Raw HTTP POST) ==========
 await client.api("/EntityDefinitions(LogicalName='new_project')/Attributes").post({
