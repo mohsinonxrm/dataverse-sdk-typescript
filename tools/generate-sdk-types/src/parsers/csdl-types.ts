@@ -62,6 +62,8 @@ export interface CsdlNavigationProperty {
 export interface CsdlEnumType {
   name: string;
   namespace: string;
+  /** `IsFlags="true"`: values combine members, written `"A, B"` in JSON (#232). */
+  isFlags?: boolean;
   members: CsdlEnumMember[];
 }
 

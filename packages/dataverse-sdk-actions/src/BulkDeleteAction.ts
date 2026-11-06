@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { enumBody } from "./internal/enumBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { QueryExpression, activityparty } from "./types/index.js";
 
@@ -32,7 +33,7 @@ export class BulkDeleteAction implements Executable<BulkDeleteResponse> {
     const url = `${baseUrl}/BulkDelete`;
 
     const body: Record<string, unknown> = {
-      QuerySet: this.querySet,
+      QuerySet: enumBody(this.querySet, "QueryExpression"),
       JobName: this.jobName,
       SendEmailNotification: this.sendEmailNotification,
       ToRecipients: this.toRecipients,

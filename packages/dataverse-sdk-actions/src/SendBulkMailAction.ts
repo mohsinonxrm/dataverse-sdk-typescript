@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { enumBody } from "./internal/enumBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { TypedQueryBase } from "./types/index.js";
 
@@ -32,7 +33,7 @@ export class SendBulkMailAction implements Executable<SendBulkMailResponse> {
       TemplateId: this.templateId,
       RegardingType: this.regardingType,
       RegardingId: this.regardingId,
-      Query: this.query,
+      Query: enumBody(this.query, "QueryBase"),
     };
 
     return {

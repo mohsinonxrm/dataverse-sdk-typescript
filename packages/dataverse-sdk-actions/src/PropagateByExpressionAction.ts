@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { enumBody } from "./internal/enumBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { PropagationOwnershipOptions, TypedQueryBase } from "./types/index.js";
 
@@ -33,12 +34,12 @@ export class PropagateByExpressionAction implements Executable<PropagateByExpres
     const url = `${baseUrl}/PropagateByExpression`;
 
     const body: Record<string, unknown> = {
-      QueryExpression: this.queryExpression,
+      QueryExpression: enumBody(this.queryExpression, "QueryBase"),
       FriendlyName: this.friendlyName,
       ExecuteImmediately: this.executeImmediately,
       Activity: this.activity,
       TemplateId: this.templateId,
-      OwnershipOptions: this.ownershipOptions,
+      OwnershipOptions: enumBody(this.ownershipOptions, "PropagationOwnershipOptions"),
       PostWorkflowEvent: this.postWorkflowEvent,
       Owner: this.owner,
       SendEmail: this.sendEmail,

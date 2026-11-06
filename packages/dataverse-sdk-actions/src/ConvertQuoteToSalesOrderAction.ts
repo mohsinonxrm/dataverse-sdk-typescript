@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { enumBody } from "./internal/enumBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { ColumnSet, salesorder } from "./types/index.js";
 
@@ -34,7 +35,7 @@ export class ConvertQuoteToSalesOrderAction implements Executable<ConvertQuoteTo
 
     const body: Record<string, unknown> = {
       QuoteId: this.quoteId,
-      ColumnSet: this.columnSet,
+      ColumnSet: enumBody(this.columnSet, "ColumnSet"),
       QuoteCloseDate: this.quoteCloseDate,
       QuoteCloseStatus: this.quoteCloseStatus,
       QuoteCloseSubject: this.quoteCloseSubject,

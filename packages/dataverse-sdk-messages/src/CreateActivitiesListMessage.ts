@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { enumBody } from "./internal/enumBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type {
   CreateActivitiesListResponse as CreateActivitiesListResponseData,
@@ -41,7 +42,7 @@ export class CreateActivitiesListRequest
       Activity: this.activity,
       TemplateId: this.templateId,
       Propagate: this.propagate,
-      OwnershipOptions: this.ownershipOptions,
+      OwnershipOptions: enumBody(this.ownershipOptions, "PropagationOwnershipOptions"),
       Owner: this.owner,
       sendEmail: this.sendEmail,
       PostWorkflowEvent: this.postWorkflowEvent,

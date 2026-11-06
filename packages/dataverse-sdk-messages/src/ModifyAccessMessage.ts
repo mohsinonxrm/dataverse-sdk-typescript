@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import { enumBody } from "./internal/enumBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { PrincipalAccess } from "./types/index.js";
 
@@ -25,7 +26,7 @@ export class ModifyAccessRequest
 
     const body: Record<string, unknown> = {
       Target: this.target,
-      PrincipalAccess: this.principalAccess,
+      PrincipalAccess: enumBody(this.principalAccess, "PrincipalAccess"),
     };
 
     return {

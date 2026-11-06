@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { enumBody } from "./internal/enumBody.js";
 import type { TypedQueryBase } from "./types/index.js";
 
 /**
@@ -20,7 +21,7 @@ export class BackgroundSendEmailAction implements Executable<BackgroundSendEmail
     const url = `${baseUrl}/BackgroundSendEmail`;
 
     const body: Record<string, unknown> = {
-      Query: this.query,
+      Query: enumBody(this.query, "QueryBase"),
     };
 
     return {

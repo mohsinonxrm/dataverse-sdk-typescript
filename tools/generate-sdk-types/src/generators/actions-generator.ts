@@ -22,6 +22,8 @@ import {
 import { polymorphicParameterType } from "../utils/polymorphism.js";
 import { entityReturn, entityResponseInterface } from "../utils/entity-return.js";
 import { entityReferenceSource } from "../utils/entity-reference.js";
+import { bodyEnumType, ENUM_BODY_MODULE, enumBodySource } from "../utils/enum-body.js";
+import { exportedEnumNames } from "./complex-types-generator.js";
 import { deprecatedAliasSource, operationNames } from "../utils/overloads.js";
 import {
   ENTITY_PAYLOAD_MODULE,
@@ -113,6 +115,11 @@ export async function generateActions(
 
   // Ensure EntityReference.ts exists in types folder
   await ensureEntityReferenceType(absolutePath, csdl);
+  // Enum values in bodies are sent as member names (#232)
+  await writeTypeScriptFile(
+    join(absolutePath, "internal", `${ENUM_BODY_MODULE}.ts`),
+    enumBodySource(csdl)
+  );
 
   const generatedFiles: string[] = [];
 
@@ -139,7 +146,7 @@ export async function generateActions(
   }
 
   // Generate index.ts
-  const indexContent = generateActionsIndex(actions, stems, aliases);
+  const indexContent = generateActionsIndex(actions, stems, aliases, exportedEnumNames(csdl));
   await writeTypeScriptFile(join(absolutePath, "index.ts"), indexContent);
   console.log(`  ✅ Generated index.ts`);
 
@@ -249,6 +256,9 @@ function generateActionClass(csdl: CsdlSchema, action: CsdlAction, stem = action
   if (needsEntityReference) {
     code += `import type { EntityReference } from './types/EntityReference.js';\n`;
   }
+  if (action.parameters.some((p) => bodyEnumType(csdl, p.type))) {
+    code += `import { enumBody } from './internal/${ENUM_BODY_MODULE}.js';\n`;
+  }
   if (payloadTypes.size > 0) {
     code += `import type { ${[...payloadTypes].sort().join(", ")} } from './types/${ENTITY_PAYLOAD_MODULE}.js';\n`;
   }
@@ -296,6 +306,8 @@ function generateActionClass(csdl: CsdlSchema, action: CsdlAction, stem = action
     tsName: string;
     isBinding: boolean;
     optional?: boolean;
+    /** Enum or complex type to pass to `enumBody` (#232). */
+    enumType?: string;
   }> = [];
 
   // Check if binding parameter is a Collection type (e.g., CreateMultiple, UpdateMultiple)
@@ -344,6 +356,7 @@ function generateActionClass(csdl: CsdlSchema, action: CsdlAction, stem = action
       isBinding: false,
       // In CSDL a parameter without Nullable="false" may be left out (#74, as #68 for functions)
       optional: param.nullable !== false,
+      enumType: bodyEnumType(csdl, param.type),
     });
   }
 
@@ -392,7 +405,10 @@ function generateActionClass(csdl: CsdlSchema, action: CsdlAction, stem = action
   if (bodyParams.length > 0) {
     code += `    const body: Record<string, unknown> = {\n`;
     for (const param of bodyParams) {
-      code += `      ${param.tsName}: this.${param.name},\n`;
+      const value = param.enumType
+        ? `enumBody(this.${param.name}, ${JSON.stringify(param.enumType)})`
+        : `this.${param.name}`;
+      code += `      ${param.tsName}: ${value},\n`;
     }
     code += `    };\n\n`;
   }
@@ -485,7 +501,8 @@ function generateResponseInterface(
 function generateActionsIndex(
   operations: CsdlAction[],
   stems: Map<CsdlAction, string>,
-  aliases: ReadonlyArray<{ name: string }>
+  aliases: ReadonlyArray<{ name: string }>,
+  enumNames: string[]
 ): string {
   let code = `/**\n`;
   code += ` * @mohsinonxrm/dataverse-sdk-actions\n`;
@@ -505,6 +522,12 @@ function generateActionsIndex(
   // Export EntityReference type
   code += `\nexport { type EntityReference, type EntityReferenceOptions, type WebApiEntityReference, createEntityReference, getEntitySetNameFromReference } from './types/EntityReference.js';\n`;
   code += `export type { AnyEntityPayload, EntityPayload } from './types/${ENTITY_PAYLOAD_MODULE}.js';\n`;
+
+  // Enum values for parameters (AccessRights.ReadAccess | AccessRights.WriteAccess), as in the
+  // functions package; bodies send them as member names (#232)
+  if (enumNames.length > 0) {
+    code += `\nexport { ${enumNames.join(", ")} } from './types/index.js';\n`;
+  }
 
   return code;
 }

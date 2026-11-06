@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { enumBody } from "./internal/enumBody.js";
 import type { QueryExpression } from "./types/index.js";
 
 /**
@@ -23,7 +24,7 @@ export class SyncBulkOperationAction implements Executable<SyncBulkOperationResp
     const url = `${baseUrl}/SyncBulkOperation`;
 
     const body: Record<string, unknown> = {
-      QuerySet: this.querySet,
+      QuerySet: enumBody(this.querySet, "QueryExpression"),
       OperationType: this.operationType,
     };
 

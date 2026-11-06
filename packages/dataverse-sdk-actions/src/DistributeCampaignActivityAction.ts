@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { enumBody } from "./internal/enumBody.js";
 import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { PropagationOwnershipOptions, bulkoperation, queue, template } from "./types/index.js";
 
@@ -40,7 +41,7 @@ export class DistributeCampaignActivityAction implements Executable<DistributeCa
       Propagate: this.propagate,
       Activity: this.activity,
       Template: this.template,
-      OwnershipOptions: this.ownershipOptions,
+      OwnershipOptions: enumBody(this.ownershipOptions, "PropagationOwnershipOptions"),
       Owner: this.owner,
       SendEmail: this.sendEmail,
       Queue: this.queue,

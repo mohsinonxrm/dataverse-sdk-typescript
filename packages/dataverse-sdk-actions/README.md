@@ -236,6 +236,37 @@ Parameters that `$metadata` doesn't mark `Nullable="false"` are optional: at the
 argument list they can be left out (`new ExecuteWorkflowAction(workflowId, entityId)`), and
 elsewhere they accept `undefined`. Either way they are left out of the request body.
 
+### Enum Values
+
+The Web API reads an enum value in a request body only as a string: a member name, or for a flags
+enum a list such as `"ReadAccess, WriteAccess"`. It rejects a number with 400. The generated enums
+are numeric, so you can combine flags with `|`, and the actions send member names. This applies to
+enum parameters and to enums inside complex-type parameters (`PrincipalAccess.AccessMask`, the
+operators of a `QueryExpression`):
+
+```typescript
+import {
+  ConditionOperator,
+  LogicalOperator,
+  QueryExpressionToFetchXmlAction,
+} from "@mohsinonxrm/dataverse-sdk-actions";
+
+const { FetchXml } = await client.execute(
+  new QueryExpressionToFetchXmlAction({
+    "@odata.type": "Microsoft.Dynamics.CRM.QueryExpression",
+    EntityName: "account",
+    Criteria: {
+      FilterOperator: LogicalOperator.Or, // sent as "Or"
+      Conditions: [{ AttributeName: "name", Operator: ConditionOperator.NotNull }], // "NotNull"
+    },
+  })
+);
+```
+
+A flags value such as `AccessRights.ReadAccess | AccessRights.WriteAccess` is sent as
+`"ReadAccess, WriteAccess"`, and a member name passed as a string is sent as it is. The enums are
+exported from the package root, as in the functions package.
+
 ## Bulk Operations
 
 Bulk operations provide a simpler alternative to `$batch` for common scenarios.

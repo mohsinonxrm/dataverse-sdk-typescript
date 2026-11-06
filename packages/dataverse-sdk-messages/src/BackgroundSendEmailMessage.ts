@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { enumBody } from "./internal/enumBody.js";
 import type {
   BackgroundSendEmailResponse as BackgroundSendEmailResponseData,
   TypedQueryBase,
@@ -23,7 +24,7 @@ export class BackgroundSendEmailRequest
     const url = `${baseUrl}/BackgroundSendEmail`;
 
     const body: Record<string, unknown> = {
-      Query: this.query,
+      Query: enumBody(this.query, "QueryBase"),
     };
 
     return {

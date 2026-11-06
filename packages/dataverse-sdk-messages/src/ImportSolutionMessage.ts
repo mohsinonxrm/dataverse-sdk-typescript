@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { enumBody } from "./internal/enumBody.js";
 import type { LayerDesiredOrder, SolutionParameters } from "./types/index.js";
 
 /**
@@ -45,12 +46,12 @@ export class ImportSolutionRequest
       SkipProductUpdateDependencies: this.skipProductUpdateDependencies,
       HoldingSolution: this.holdingSolution,
       SkipQueueRibbonJob: this.skipQueueRibbonJob,
-      LayerDesiredOrder: this.layerDesiredOrder,
+      LayerDesiredOrder: enumBody(this.layerDesiredOrder, "LayerDesiredOrder"),
       AsyncRibbonProcessing: this.asyncRibbonProcessing,
       ComponentParameters: this.componentParameters,
       IsTemplateMode: this.isTemplateMode,
       TemplateSuffix: this.templateSuffix,
-      SolutionParameters: this.solutionParameters,
+      SolutionParameters: enumBody(this.solutionParameters, "SolutionParameters"),
       TemplateDisplayNamePrefix: this.templateDisplayNamePrefix,
       StageAndUpgrade: this.stageAndUpgrade,
       SchemaUpdatesOnly: this.schemaUpdatesOnly,

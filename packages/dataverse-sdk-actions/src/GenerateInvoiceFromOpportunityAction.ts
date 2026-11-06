@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { enumBody } from "./internal/enumBody.js";
 import type { ColumnSet } from "./types/index.js";
 
 /**
@@ -28,7 +29,7 @@ export class GenerateInvoiceFromOpportunityAction implements Executable<Generate
 
     const body: Record<string, unknown> = {
       OpportunityId: this.opportunityId,
-      ColumnSet: this.columnSet,
+      ColumnSet: enumBody(this.columnSet, "ColumnSet"),
     };
 
     return {

@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { enumBody } from "./internal/enumBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { AccessRights } from "./types/index.js";
 
@@ -26,7 +27,7 @@ export class GenerateSharedLinkAction implements Executable<GenerateSharedLinkRe
 
     const body: Record<string, unknown> = {
       Target: this.target,
-      SharedRights: this.sharedRights,
+      SharedRights: enumBody(this.sharedRights, "AccessRights"),
     };
 
     return {
