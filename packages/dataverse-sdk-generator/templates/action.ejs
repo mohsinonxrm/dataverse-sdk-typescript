@@ -1,24 +1,12 @@
-import { ActionBase } from '@mohsinonxrm/dataverse-sdk-entities-runtime';
-
+<%_ const responseType = action.ReturnType ? formatType(action.ReturnType) : 'void'; _%>
 /**
- * Response type for <%= action.Name %> action
+ * <%- doc(action.Name) %> action
+ * <%- action.IsBound ? 'Bound to: ' + doc(action.BindingType) : 'Unbound action' %>
  */
-export interface <%= action.Name %>Response {
-<%_ if (action.ReturnType) { _%>
-  result: <%= formatType(action.ReturnType) %>;
-<%_ } else { _%>
-  // No return value (204 No Content)
-<%_ } _%>
-}
-
-/**
- * <%= action.Name %> action
- * <%_ if (action.IsBound) { _%>Bound to: <%= action.BindingType %><%_ } else { _%>Unbound action<%_ } _%>
- */
-export class <%= action.Name %>Action extends ActionBase<<%= action.ReturnType ? action.Name + 'Response' : 'void' %>> {
+export class <%- className %> extends ActionBase<<%- responseType %>> {
   constructor(
-<%_ action.Parameters.forEach(function(param, index){ _%>
-    public <%= param.Name %>: <%= formatType(param.TypeScriptType) %><%= param.Nullable ? ' | null' : '' %><%= index < action.Parameters.length - 1 ? ',' : '' %>
+<%_ action.Parameters.forEach(function(param){ _%>
+    public <%- identifier(param.Name) %>: <%- formatType(param.TypeScriptType) %><%- param.Nullable ? ' | null' : '' %>,
 <%_ }) _%>
   ) {
     super();
@@ -28,38 +16,43 @@ export class <%= action.Name %>Action extends ActionBase<<%= action.ReturnType ?
    * Parameter metadata for runtime type checking
    */
   static parameterTypes = {
-<%_ action.Parameters.forEach(function(param, index){ _%>
-    <%= param.Name %>: {
-      type: '<%= param.Type %>',
-      structuralProperty: '<%= getStructuralType(param.Type) %>',
-      nullable: <%= param.Nullable || false %>
-    }<%= index < action.Parameters.length - 1 ? ',' : '' %>
+<%_ action.Parameters.forEach(function(param){ _%>
+    <%- propertyKey(param.Name) %>: {
+      type: <%- literal(param.Type) %>,
+      structuralProperty: <%- literal(getStructuralType(param.Type)) %>,
+      nullable: <%- param.Nullable ? 'true' : 'false' %>,
+    },
 <%_ }) _%>
   };
 
-  toRequestInformation(baseUrl: string) {
+  toRequestInformation(baseUrl: string): RequestInformation {
     return {
-      method: 'POST' as const,
-      url: `${baseUrl}/<%= action.Name %>`,
+      method: "POST",
+      url: `${baseUrl}/<%- action.Name %>`,
       headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json'
+        "content-type": "application/json",
+        accept: "application/json",
       },
       body: {
-<%_ action.Parameters.forEach(function(param, index){ _%>
-        <%= param.Name %>: this.<%= param.Name %><%= index < action.Parameters.length - 1 ? ',' : '' %>
+<%_ action.Parameters.forEach(function(param){ _%>
+        <%- propertyKey(param.Name) %>: this.<%- identifier(param.Name) %>,
 <%_ }) _%>
-      }
+      },
     };
   }
 
-  async parseResponse(response: Response): Promise<<%= action.ReturnType ? action.Name + 'Response' : 'void' %>> {
-<%_ if (action.ReturnType) { _%>
-    const data = await response.json();
-    return { result: data };
-<%_ } else { _%>
+<%_ if (!action.ReturnType) { _%>
+  async parseResponse(_response: Response): Promise<void> {
     // 204 No Content
-    return;
-<%_ } _%>
   }
+<%_ } else if (returnsBody(action.ReturnType)) { _%>
+  async parseResponse(response: Response): Promise<<%- responseType %>> {
+    return (await response.json()) as <%- responseType %>;
+  }
+<%_ } else { _%>
+  async parseResponse(response: Response): Promise<<%- responseType %>> {
+    const data = (await response.json()) as { value: <%- responseType %> };
+    return data.value;
+  }
+<%_ } _%>
 }

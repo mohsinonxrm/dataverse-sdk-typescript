@@ -8,6 +8,12 @@
  * @module
  */
 
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+
+// Generated actions and functions import these from here, so generated code needs only this
+// package (core comes with it).
+export type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+
 /**
  * Base interface for all Dataverse entities.
  * Generated entity interfaces extend this interface.
@@ -49,11 +55,23 @@ export interface AttributeMetadata {
   /** Schema name (PascalCase) */
   schemaName: string;
 
-  /** Dataverse attribute type */
+  /** Dataverse attribute type (e.g. "Lookup", "Picklist"), or the OData type when unknown */
   attributeType: string;
 
   /** TypeScript type representation */
   typescriptType: string;
+
+  /** OData type of the property (e.g. "Edm.String") */
+  odataType?: string;
+
+  /** Is the attribute required (ApplicationRequired)? */
+  isRequired?: boolean;
+
+  /** Calculated or rollup column */
+  sourceType?: "calculated" | "rollup";
+
+  /** Is this a multi-select option set? */
+  isMultiSelect?: boolean;
 
   /** Is this a primary key? */
   isPrimaryKey?: boolean;
@@ -75,8 +93,20 @@ export interface NavigationMetadata {
   /** Name of the navigation property */
   name: string;
 
+  /**
+   * For a polymorphic lookup, the lookup's logical name (e.g. "customerid"). The navigation
+   * property for one target is `<fullName>_<target>` (e.g. "customerid_account").
+   */
+  fullName?: string;
+
   /** Related entity type */
   targetType: string;
+
+  /** Is this a polymorphic lookup (customer, owner, regarding)? */
+  isPolymorphic?: boolean;
+
+  /** For a polymorphic lookup: the logical names of the entities it can point to */
+  targets?: string[];
 
   /** Is this a collection? */
   isCollection: boolean;
@@ -111,7 +141,7 @@ export interface EntityMetadata {
   /** Primary name attribute (if any) */
   primaryNameAttribute?: string;
 
-  /** Map of attribute logical names to their types */
+  /** Map of attribute logical names to their OData types (e.g. "Edm.String") */
   attributeTypes: Record<string, string>;
 
   /** Map of navigation property names to target types and cardinality */
@@ -139,31 +169,21 @@ export interface EntityOperationOptions {
 }
 
 /**
- * Base class for generated action executables.
+ * Base class for generated action executables. It implements core's `Executable`, so an
+ * instance can be passed straight to `DataverseClient.execute()`.
  */
-export abstract class ActionBase<TResponse = void> {
-  abstract toRequestInformation(baseUrl: string): {
-    method: string;
-    url: string;
-    headers: Record<string, string>;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    body?: any;
-  };
+export abstract class ActionBase<TResponse = void> implements Executable<TResponse> {
+  abstract toRequestInformation(baseUrl: string): RequestInformation;
 
   abstract parseResponse(response: Response): Promise<TResponse>;
 }
 
 /**
- * Base class for generated function executables.
+ * Base class for generated function executables. It implements core's `Executable`, so an
+ * instance can be passed straight to `DataverseClient.execute()`.
  */
-export abstract class FunctionBase<TResponse> {
-  abstract toRequestInformation(baseUrl: string): {
-    method: string;
-    url: string;
-    headers: Record<string, string>;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    query?: Record<string, any>;
-  };
+export abstract class FunctionBase<TResponse> implements Executable<TResponse> {
+  abstract toRequestInformation(baseUrl: string): RequestInformation;
 
   abstract parseResponse(response: Response): Promise<TResponse>;
 }

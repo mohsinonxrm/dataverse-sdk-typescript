@@ -1,8 +1,8 @@
 /**
- * <%= complexType.Name %> complex type
+ * <%- doc(complexType.Name) %> complex type
  */
-export interface <%= complexType.Name %> {
+export interface <%- typeName %><%- baseType ? ' extends ' + baseType : '' %> {
 <%_ complexType.Properties.forEach(function(prop){ _%>
-  <%= prop.Name %>?: <%= formatType(prop.TypeScriptType) %><%= prop.Nullable ? ' | null' : '' %>;
+  <%- propertyKey(prop.Name) %>?: <%- formatType(prop.TypeScriptType) %><%- prop.Nullable ? ' | null' : '' %>;
 <%_ }) _%>
 }

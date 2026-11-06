@@ -1,9 +1,8 @@
 /**
- * <%= enum.Name %> enum
- * <%_ if (enum.IsGlobal) { _%>Global Option Set<%_ } else { _%>Local Option Set<%_ } _%>
+ * <%- doc(enumType.Name) %> (<%- enumType.IsGlobal ? 'global' : 'local' %> option set)
  */
-export const enum <%= enum.Name %> {
-<%_ enum.Members.forEach(function(member, index){ _%>
-  <%= member.Name %> = <%= member.Value %><%= index < enum.Members.length - 1 ? ',' : '' %>
+export const enum <%- typeName %> {
+<%_ enumType.Members.forEach(function(member){ _%>
+  <%- propertyKey(member.Name) %> = <%- Number(member.Value) %>,
 <%_ }) _%>
 }
