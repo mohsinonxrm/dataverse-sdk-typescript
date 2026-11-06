@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { resourcegroup } from "./types/index.js";
 
 /**
@@ -25,7 +25,7 @@ export class RetrieveParentGroupsResourceGroupFunction implements Executable<Ret
     const aliases: string[] = [];
     if (this.resourceGroupId !== undefined) {
       aliases.push(`ResourceGroupId=@p1`);
-      params.append("@p1", formatAliasValue(this.resourceGroupId));
+      params.append("@p1", formatParameterAlias(this.resourceGroupId, "Edm.Guid"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

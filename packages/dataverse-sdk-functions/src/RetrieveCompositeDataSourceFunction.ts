@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { EntityReference } from "./types/EntityReference.js";
 import { getEntitySetNameFromReference } from "./types/EntityReference.js";
 
@@ -29,11 +29,11 @@ export class RetrieveCompositeDataSourceFunction implements Executable<RetrieveC
     const aliases: string[] = [];
     if (this.parentSchemaName !== undefined) {
       aliases.push(`ParentSchemaName=@p1`);
-      params.append("@p1", formatAliasValue(this.parentSchemaName));
+      params.append("@p1", formatParameterAlias(this.parentSchemaName, "Edm.String"));
     }
     if (this.childSchemaName !== undefined) {
       aliases.push(`ChildSchemaName=@p2`);
-      params.append("@p2", formatAliasValue(this.childSchemaName));
+      params.append("@p2", formatParameterAlias(this.childSchemaName, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

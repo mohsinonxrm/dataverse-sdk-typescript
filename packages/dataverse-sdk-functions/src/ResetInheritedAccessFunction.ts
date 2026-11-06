@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
  * Response from ResetInheritedAccess function
@@ -24,7 +24,7 @@ export class ResetInheritedAccessFunction implements Executable<ResetInheritedAc
     const aliases: string[] = [];
     if (this.fetchXml !== undefined) {
       aliases.push(`FetchXml=@p1`);
-      params.append("@p1", formatAliasValue(this.fetchXml));
+      params.append("@p1", formatParameterAlias(this.fetchXml, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

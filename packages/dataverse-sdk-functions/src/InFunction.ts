@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
  * Response from In function
@@ -27,7 +27,7 @@ export class InFunction implements Executable<InResponse> {
     const aliases: string[] = [];
     if (this.propertyName !== undefined) {
       aliases.push(`PropertyName=@p1`);
-      params.append("@p1", formatAliasValue(this.propertyName));
+      params.append("@p1", formatParameterAlias(this.propertyName, "Edm.String"));
     }
     if (this.propertyValues !== undefined) {
       aliases.push(`PropertyValues=@p2`);

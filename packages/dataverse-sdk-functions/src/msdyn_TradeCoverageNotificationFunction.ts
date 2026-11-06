@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
  * Response from msdyn_TradeCoverageNotification function
@@ -29,15 +29,18 @@ export class msdyn_TradeCoverageNotificationFunction implements Executable<msdyn
     const aliases: string[] = [];
     if (this.msdyn_WorkOrderServiceAccount !== undefined) {
       aliases.push(`msdyn_WorkOrderServiceAccount=@p1`);
-      params.append("@p1", formatAliasValue(this.msdyn_WorkOrderServiceAccount));
+      params.append("@p1", formatParameterAlias(this.msdyn_WorkOrderServiceAccount, "Edm.String"));
     }
     if (this.msdyn_WorkOrderTrade !== undefined) {
       aliases.push(`msdyn_WorkOrderTrade=@p2`);
-      params.append("@p2", formatAliasValue(this.msdyn_WorkOrderTrade));
+      params.append("@p2", formatParameterAlias(this.msdyn_WorkOrderTrade, "Edm.String"));
     }
     if (this.msdyn_WorkOrderFunctionalLocation !== undefined) {
       aliases.push(`msdyn_WorkOrderFunctionalLocation=@p3`);
-      params.append("@p3", formatAliasValue(this.msdyn_WorkOrderFunctionalLocation));
+      params.append(
+        "@p3",
+        formatParameterAlias(this.msdyn_WorkOrderFunctionalLocation, "Edm.String")
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

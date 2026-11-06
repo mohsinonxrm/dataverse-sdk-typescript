@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
  * Response from UtcTimeFromLocalTime function
@@ -17,7 +17,7 @@ export interface UtcTimeFromLocalTimeResponse {
 export class UtcTimeFromLocalTimeFunction implements Executable<UtcTimeFromLocalTimeResponse> {
   constructor(
     public readonly timeZoneCode: number,
-    public readonly localTime: string
+    public readonly localTime: string | Date
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -29,11 +29,11 @@ export class UtcTimeFromLocalTimeFunction implements Executable<UtcTimeFromLocal
     const aliases: string[] = [];
     if (this.timeZoneCode !== undefined) {
       aliases.push(`TimeZoneCode=@p1`);
-      params.append("@p1", formatAliasValue(this.timeZoneCode));
+      params.append("@p1", formatParameterAlias(this.timeZoneCode, "Edm.Int32"));
     }
     if (this.localTime !== undefined) {
       aliases.push(`LocalTime=@p2`);
-      params.append("@p2", formatAliasValue(this.localTime));
+      params.append("@p2", formatParameterAlias(this.localTime, "Edm.DateTimeOffset"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

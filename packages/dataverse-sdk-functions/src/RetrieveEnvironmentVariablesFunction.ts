@@ -15,7 +15,7 @@ export interface RetrieveEnvironmentVariablesResponse {
  * Unbound function
  */
 export class RetrieveEnvironmentVariablesFunction implements Executable<RetrieveEnvironmentVariablesResponse> {
-  constructor(public readonly schemaNames: string[]) {}
+  constructor(public readonly schemaNames?: string[]) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveEnvironmentVariables`;

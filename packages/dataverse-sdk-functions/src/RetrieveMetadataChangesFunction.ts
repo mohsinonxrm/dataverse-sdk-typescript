@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type {
   ComplexEntityMetadata,
   DeletedMetadataCollection,
@@ -23,11 +23,12 @@ export interface RetrieveMetadataChangesResponse {
  */
 export class RetrieveMetadataChangesFunction implements Executable<RetrieveMetadataChangesResponse> {
   constructor(
-    public readonly query: EntityQueryExpression,
-    public readonly deletedMetadataFilters: DeletedMetadataFilters,
-    public readonly clientVersionStamp: string,
-    public readonly appModuleId: string,
-    public readonly retrieveAllSettings: boolean
+    public readonly query?: EntityQueryExpression,
+    public readonly deletedMetadataFilters?:
+      DeletedMetadataFilters | keyof typeof DeletedMetadataFilters,
+    public readonly clientVersionStamp?: string,
+    public readonly appModuleId?: string,
+    public readonly retrieveAllSettings?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -42,19 +43,26 @@ export class RetrieveMetadataChangesFunction implements Executable<RetrieveMetad
     }
     if (this.deletedMetadataFilters !== undefined) {
       aliases.push(`DeletedMetadataFilters=@p2`);
-      params.append("@p2", formatAliasValue(this.deletedMetadataFilters));
+      params.append(
+        "@p2",
+        formatParameterAlias(
+          this.deletedMetadataFilters,
+          "mscrm.DeletedMetadataFilters",
+          "EnumerationType"
+        )
+      );
     }
     if (this.clientVersionStamp !== undefined) {
       aliases.push(`ClientVersionStamp=@p3`);
-      params.append("@p3", formatAliasValue(this.clientVersionStamp));
+      params.append("@p3", formatParameterAlias(this.clientVersionStamp, "Edm.String"));
     }
     if (this.appModuleId !== undefined) {
       aliases.push(`AppModuleId=@p4`);
-      params.append("@p4", formatAliasValue(this.appModuleId));
+      params.append("@p4", formatParameterAlias(this.appModuleId, "Edm.Guid"));
     }
     if (this.retrieveAllSettings !== undefined) {
       aliases.push(`RetrieveAllSettings=@p5`);
-      params.append("@p5", formatAliasValue(this.retrieveAllSettings));
+      params.append("@p5", formatParameterAlias(this.retrieveAllSettings, "Edm.Boolean"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

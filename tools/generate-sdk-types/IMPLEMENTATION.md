@@ -254,6 +254,19 @@ csdlTypeToTs(csdlType: string): string {
   and entity-type interface properties are optional (`?`) unless the CSDL says `Nullable="false"`.
 - The response interfaces of actions and functions keep the properties of a complex return type
   required: Dataverse always includes them (as `null` when empty).
+- Function parameters without `Nullable="false"` are optional: `?` when every later parameter is
+  optional too, otherwise `T | undefined` in place. An `undefined` parameter is left out of the URL.
+  Action and message parameters are still all required.
+
+### Function parameter literals
+
+Generated functions write each parameter alias with `formatParameterAlias(value, odataType, kind)`
+from `src/internal/odataLiteral.ts`. It behaves exactly like the one in
+`@mohsinonxrm/dataverse-sdk-entities-runtime` (#77), and the functions package tests it with the
+same cases. Strings are quoted with `'` doubled. GUIDs and DateTimeOffsets are bare (a `Date` is
+accepted). Enums are written as `Microsoft.Dynamics.CRM.<Enum>'<value>'`, and enum parameters also
+take a member name. The enums are exported as values from `types/index.ts` and from the functions
+package root.
 
 ### Base types and `@odata.type`
 

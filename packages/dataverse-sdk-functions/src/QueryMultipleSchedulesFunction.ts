@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { TimeCode, TimeInfoCollection, resource } from "./types/index.js";
 
 /**
@@ -17,8 +17,8 @@ export interface QueryMultipleSchedulesResponse {
 export class QueryMultipleSchedulesFunction implements Executable<QueryMultipleSchedulesResponse> {
   constructor(
     public readonly resource: resource[],
-    public readonly start: string,
-    public readonly end: string,
+    public readonly start: string | Date,
+    public readonly end: string | Date,
     public readonly timeCodes: TimeCode[]
   ) {}
 
@@ -34,11 +34,11 @@ export class QueryMultipleSchedulesFunction implements Executable<QueryMultipleS
     }
     if (this.start !== undefined) {
       aliases.push(`Start=@p2`);
-      params.append("@p2", formatAliasValue(this.start));
+      params.append("@p2", formatParameterAlias(this.start, "Edm.DateTimeOffset"));
     }
     if (this.end !== undefined) {
       aliases.push(`End=@p3`);
-      params.append("@p3", formatAliasValue(this.end));
+      params.append("@p3", formatParameterAlias(this.end, "Edm.DateTimeOffset"));
     }
     if (this.timeCodes !== undefined) {
       aliases.push(`TimeCodes=@p4`);

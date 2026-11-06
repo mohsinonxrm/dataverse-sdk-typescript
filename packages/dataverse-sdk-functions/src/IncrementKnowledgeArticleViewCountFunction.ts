@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { EntityReference } from "./types/EntityReference.js";
 import { getEntitySetNameFromReference } from "./types/EntityReference.js";
 
@@ -18,7 +18,7 @@ export interface IncrementKnowledgeArticleViewCountResponse {
 export class IncrementKnowledgeArticleViewCountFunction implements Executable<IncrementKnowledgeArticleViewCountResponse> {
   constructor(
     public readonly source: EntityReference,
-    public readonly viewDate: string,
+    public readonly viewDate: string | Date,
     public readonly location: number,
     public readonly count: number
   ) {}
@@ -40,15 +40,15 @@ export class IncrementKnowledgeArticleViewCountFunction implements Executable<In
     }
     if (this.viewDate !== undefined) {
       aliases.push(`ViewDate=@p2`);
-      params.append("@p2", formatAliasValue(this.viewDate));
+      params.append("@p2", formatParameterAlias(this.viewDate, "Edm.DateTimeOffset"));
     }
     if (this.location !== undefined) {
       aliases.push(`Location=@p3`);
-      params.append("@p3", formatAliasValue(this.location));
+      params.append("@p3", formatParameterAlias(this.location, "Edm.Int32"));
     }
     if (this.count !== undefined) {
       aliases.push(`Count=@p4`);
-      params.append("@p4", formatAliasValue(this.count));
+      params.append("@p4", formatParameterAlias(this.count, "Edm.Int32"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

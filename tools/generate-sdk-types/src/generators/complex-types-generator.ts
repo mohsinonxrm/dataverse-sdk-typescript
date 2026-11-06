@@ -98,7 +98,7 @@ export async function generateComplexTypes(
   const indexContent = generateIndexFile(
     csdl,
     complexTypes.map((ct) => ({ name: ct.name, filename: ct.name })),
-    enumTypes.map((et) => ({ name: et.name, filename: et.name })),
+    enumTypes.map((et) => ({ name: et.name, filename: et.name, isEnum: true })),
     entityTypeMetadata.map((et) => ({ name: et.type.name, filename: et.filename }))
   );
   await writeTypeScriptFile(join(absolutePath, "index.ts"), indexContent);
@@ -107,6 +107,29 @@ export async function generateComplexTypes(
   console.log(`  ✅ Generated ${String(entityTypes.length)} entity type files`);
   console.log(`  ✅ Generated ${String(enumTypes.length)} enum type files`);
   console.log(`  ✅ Generated index.ts`);
+}
+
+/**
+ * The CRM enum types that `types/index.ts` exports (an enum whose name differs only in case from a
+ * complex type is shadowed by it there), sorted like the index.
+ */
+export function exportedEnumNames(csdl: CsdlSchema): string[] {
+  const complexNames = new Set(
+    csdl.complexTypes
+      .filter((ct) => ct.namespace === "Microsoft.Dynamics.CRM" && !ct.name.endsWith("[]"))
+      .map((ct) => ct.name.toLowerCase())
+  );
+  const seen = new Set<string>();
+  const names: string[] = [];
+  for (const et of csdl.enumTypes) {
+    const lower = et.name.toLowerCase();
+    if (et.namespace !== "Microsoft.Dynamics.CRM" || complexNames.has(lower) || seen.has(lower)) {
+      continue;
+    }
+    seen.add(lower);
+    names.push(et.name);
+  }
+  return names.sort((a, b) => a.localeCompare(b));
 }
 
 /**
@@ -348,15 +371,19 @@ function makeCodeSafe(name: string): string {
 function generateIndexFile(
   csdl: CsdlSchema,
   complexTypes: Array<{ name: string; filename: string }>,
-  enumTypes: Array<{ name: string; filename: string }>,
+  enumTypes: Array<{ name: string; filename: string; isEnum: true }>,
   entityTypes: Array<{ name: string; filename: string }>
 ): string {
   // Combine all types
-  const allTypes = [...complexTypes, ...enumTypes, ...entityTypes];
+  const allTypes: Array<{ name: string; filename: string; isEnum?: boolean }> = [
+    ...complexTypes,
+    ...enumTypes,
+    ...entityTypes,
+  ];
 
   // Deduplicate by name (case-insensitive) - keep first occurrence
   // Also filter out array types (names ending with [])
-  const seen = new Map<string, { name: string; filename: string }>();
+  const seen = new Map<string, { name: string; filename: string; isEnum?: boolean }>();
 
   for (const type of allTypes) {
     const lowerName = type.name.toLowerCase();
@@ -383,7 +410,10 @@ function generateIndexFile(
     // The file also exports the Typed<Name> union when other types derive from this one
     const union =
       concreteTypesOf(csdl, type.name).length > 0 ? `, ${typedUnionName(type.name)}` : "";
-    if (safeName !== type.name) {
+    if (type.isEnum) {
+      // Enums are values too: callers need `EntityFilters.Entity` at runtime (#67)
+      code += `export { ${safeName} } from './${type.filename}.js';\n`;
+    } else if (safeName !== type.name) {
       // File exports safeName (escaped), we just export it as-is
       code += `export type { ${safeName}${union} } from './${type.filename}.js';\n`;
     } else {

@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
  * Response from GetDistinctValuesImportFile function
@@ -31,15 +31,15 @@ export class GetDistinctValuesImportFileFunction implements Executable<GetDistin
     const aliases: string[] = [];
     if (this.columnNumber !== undefined) {
       aliases.push(`columnNumber=@p1`);
-      params.append("@p1", formatAliasValue(this.columnNumber));
+      params.append("@p1", formatParameterAlias(this.columnNumber, "Edm.Int32"));
     }
     if (this.pageNumber !== undefined) {
       aliases.push(`pageNumber=@p2`);
-      params.append("@p2", formatAliasValue(this.pageNumber));
+      params.append("@p2", formatParameterAlias(this.pageNumber, "Edm.Int32"));
     }
     if (this.recordsPerPage !== undefined) {
       aliases.push(`recordsPerPage=@p3`);
-      params.append("@p3", formatAliasValue(this.recordsPerPage));
+      params.append("@p3", formatParameterAlias(this.recordsPerPage, "Edm.Int32"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

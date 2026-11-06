@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { ChannelAccessProfileWithPrivileges } from "./types/index.js";
 
 /**
@@ -25,7 +25,7 @@ export class RetrieveChannelAccessProfilePrivilegesFunction implements Executabl
     const aliases: string[] = [];
     if (this.channelAccessProfileId !== undefined) {
       aliases.push(`ChannelAccessProfileId=@p1`);
-      params.append("@p1", formatAliasValue(this.channelAccessProfileId));
+      params.append("@p1", formatParameterAlias(this.channelAccessProfileId, "Edm.Guid"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

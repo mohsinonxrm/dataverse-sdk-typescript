@@ -9,7 +9,7 @@ import { TEST_API_URL, createTestClient, jsonResponse } from "@mohsinonxrm/datav
 import { FetchXmlToQueryExpressionFunction } from "../src/FetchXmlToQueryExpressionFunction.js";
 import { RetrieveUserPrivilegeByPrivilegeNameFunction } from "../src/RetrieveUserPrivilegeByPrivilegeNameFunction.js";
 import { ValidateFetchXmlExpressionFunction } from "../src/ValidateFetchXmlExpressionFunction.js";
-import { formatAliasValue } from "../src/internal/odataLiteral.js";
+import { formatParameterAlias } from "../src/internal/odataLiteral.js";
 
 const FETCH_XML =
   "<fetch top='1'><entity name='account'><attribute name='name'/><filter>" +
@@ -81,17 +81,17 @@ describe("#22: function string parameters are OData string literals", () => {
   });
 });
 
-describe("formatAliasValue", () => {
+describe("formatParameterAlias: strings and other scalars", () => {
   it("quotes strings and doubles embedded quotes", () => {
-    expect(formatAliasValue("")).toBe("''");
-    expect(formatAliasValue("O'Brien")).toBe("'O''Brien'");
-    expect(formatAliasValue("''")).toBe("''''''");
+    expect(formatParameterAlias("", "Edm.String")).toBe("''");
+    expect(formatParameterAlias("O'Brien", "Edm.String")).toBe("'O''Brien'");
+    expect(formatParameterAlias("''", "Edm.String")).toBe("''''''");
   });
 
   it("writes numbers, booleans and null unquoted", () => {
-    expect(formatAliasValue(7)).toBe("7");
-    expect(formatAliasValue(1.5)).toBe("1.5");
-    expect(formatAliasValue(true)).toBe("true");
-    expect(formatAliasValue(null)).toBe("null");
+    expect(formatParameterAlias(7, "Edm.Int32")).toBe("7");
+    expect(formatParameterAlias(1.5, "Edm.Decimal")).toBe("1.5");
+    expect(formatParameterAlias(true, "Edm.Boolean")).toBe("true");
+    expect(formatParameterAlias(null, "Edm.String")).toBe("null");
   });
 });

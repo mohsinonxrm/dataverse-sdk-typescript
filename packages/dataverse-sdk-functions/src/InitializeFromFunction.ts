@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { EntityReference } from "./types/EntityReference.js";
 import { getEntitySetNameFromReference } from "./types/EntityReference.js";
 import type { TargetFieldType } from "./types/index.js";
@@ -19,10 +19,10 @@ export interface InitializeFromResponse {
 export class InitializeFromFunction implements Executable<InitializeFromResponse> {
   constructor(
     public readonly entityMoniker: EntityReference,
-    public readonly skipParentalRelationshipMapping: boolean,
+    public readonly skipParentalRelationshipMapping: boolean | undefined,
     public readonly targetEntityName: string,
-    public readonly targetFieldType: TargetFieldType,
-    public readonly retrieveConsumableRecord: boolean
+    public readonly targetFieldType: TargetFieldType | keyof typeof TargetFieldType,
+    public readonly retrieveConsumableRecord?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -42,19 +42,25 @@ export class InitializeFromFunction implements Executable<InitializeFromResponse
     }
     if (this.skipParentalRelationshipMapping !== undefined) {
       aliases.push(`SkipParentalRelationshipMapping=@p2`);
-      params.append("@p2", formatAliasValue(this.skipParentalRelationshipMapping));
+      params.append(
+        "@p2",
+        formatParameterAlias(this.skipParentalRelationshipMapping, "Edm.Boolean")
+      );
     }
     if (this.targetEntityName !== undefined) {
       aliases.push(`TargetEntityName=@p3`);
-      params.append("@p3", formatAliasValue(this.targetEntityName));
+      params.append("@p3", formatParameterAlias(this.targetEntityName, "Edm.String"));
     }
     if (this.targetFieldType !== undefined) {
       aliases.push(`TargetFieldType=@p4`);
-      params.append("@p4", formatAliasValue(this.targetFieldType));
+      params.append(
+        "@p4",
+        formatParameterAlias(this.targetFieldType, "mscrm.TargetFieldType", "EnumerationType")
+      );
     }
     if (this.retrieveConsumableRecord !== undefined) {
       aliases.push(`RetrieveConsumableRecord=@p5`);
-      params.append("@p5", formatAliasValue(this.retrieveConsumableRecord));
+      params.append("@p5", formatParameterAlias(this.retrieveConsumableRecord, "Edm.Boolean"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

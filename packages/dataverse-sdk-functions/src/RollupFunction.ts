@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { EntityReference } from "./types/EntityReference.js";
 import { getEntitySetNameFromReference } from "./types/EntityReference.js";
 import type { RollupType, TypedQueryBase } from "./types/index.js";
@@ -19,8 +19,8 @@ export interface RollupResponse {
 export class RollupFunction implements Executable<RollupResponse> {
   constructor(
     public readonly target: EntityReference,
-    public readonly query: TypedQueryBase,
-    public readonly rollupType: RollupType
+    public readonly query: TypedQueryBase | undefined,
+    public readonly rollupType: RollupType | keyof typeof RollupType
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -44,7 +44,10 @@ export class RollupFunction implements Executable<RollupResponse> {
     }
     if (this.rollupType !== undefined) {
       aliases.push(`RollupType=@p3`);
-      params.append("@p3", formatAliasValue(this.rollupType));
+      params.append(
+        "@p3",
+        formatParameterAlias(this.rollupType, "mscrm.RollupType", "EnumerationType")
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

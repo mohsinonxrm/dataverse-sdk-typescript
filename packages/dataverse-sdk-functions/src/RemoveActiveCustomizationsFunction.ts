@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
  * Response from RemoveActiveCustomizations function
@@ -27,11 +27,11 @@ export class RemoveActiveCustomizationsFunction implements Executable<RemoveActi
     const aliases: string[] = [];
     if (this.solutionComponentName !== undefined) {
       aliases.push(`SolutionComponentName=@p1`);
-      params.append("@p1", formatAliasValue(this.solutionComponentName));
+      params.append("@p1", formatParameterAlias(this.solutionComponentName, "Edm.String"));
     }
     if (this.componentId !== undefined) {
       aliases.push(`ComponentId=@p2`);
-      params.append("@p2", formatAliasValue(this.componentId));
+      params.append("@p2", formatParameterAlias(this.componentId, "Edm.Guid"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

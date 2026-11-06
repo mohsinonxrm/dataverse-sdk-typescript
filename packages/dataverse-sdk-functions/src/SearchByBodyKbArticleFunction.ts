@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { kbarticle, subject } from "./types/index.js";
 
 /**
@@ -31,7 +31,7 @@ export class SearchByBodyKbArticleFunction implements Executable<SearchByBodyKbA
     const aliases: string[] = [];
     if (this.searchText !== undefined) {
       aliases.push(`SearchText=@p1`);
-      params.append("@p1", formatAliasValue(this.searchText));
+      params.append("@p1", formatParameterAlias(this.searchText, "Edm.String"));
     }
     if (this.subject !== undefined) {
       aliases.push(`Subject=@p2`);
@@ -39,7 +39,7 @@ export class SearchByBodyKbArticleFunction implements Executable<SearchByBodyKbA
     }
     if (this.useInflection !== undefined) {
       aliases.push(`UseInflection=@p3`);
-      params.append("@p3", formatAliasValue(this.useInflection));
+      params.append("@p3", formatParameterAlias(this.useInflection, "Edm.Boolean"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

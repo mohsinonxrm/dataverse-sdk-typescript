@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
  * Response from GetTimeZoneCodeByLocalizedName function
@@ -27,11 +27,11 @@ export class GetTimeZoneCodeByLocalizedNameFunction implements Executable<GetTim
     const aliases: string[] = [];
     if (this.localizedStandardName !== undefined) {
       aliases.push(`LocalizedStandardName=@p1`);
-      params.append("@p1", formatAliasValue(this.localizedStandardName));
+      params.append("@p1", formatParameterAlias(this.localizedStandardName, "Edm.String"));
     }
     if (this.localeId !== undefined) {
       aliases.push(`LocaleId=@p2`);
-      params.append("@p2", formatAliasValue(this.localeId));
+      params.append("@p2", formatParameterAlias(this.localeId, "Edm.Int32"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { queue } from "./types/index.js";
 
 /**
@@ -30,7 +30,7 @@ export class RetrieveUserQueuesFunction implements Executable<RetrieveUserQueues
     const aliases: string[] = [];
     if (this.includePublic !== undefined) {
       aliases.push(`IncludePublic=@p1`);
-      params.append("@p1", formatAliasValue(this.includePublic));
+      params.append("@p1", formatParameterAlias(this.includePublic, "Edm.Boolean"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

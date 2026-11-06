@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { systemform, systemuser } from "./types/index.js";
 
 /**
@@ -31,11 +31,11 @@ export class RetrieveFilteredFormsFunction implements Executable<RetrieveFiltere
     const aliases: string[] = [];
     if (this.entityLogicalName !== undefined) {
       aliases.push(`EntityLogicalName=@p1`);
-      params.append("@p1", formatAliasValue(this.entityLogicalName));
+      params.append("@p1", formatParameterAlias(this.entityLogicalName, "Edm.String"));
     }
     if (this.formType !== undefined) {
       aliases.push(`FormType=@p2`);
-      params.append("@p2", formatAliasValue(this.formType));
+      params.append("@p2", formatParameterAlias(this.formType, "Edm.Int32"));
     }
     if (this.user !== undefined) {
       aliases.push(`User=@p3`);
