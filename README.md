@@ -670,7 +670,7 @@ pnpm --filter @mohsinonxrm/dataverse-sdk-core test:watch
 
 - Audit operations
 - Async operation polling
-- Circuit breaker & bulkhead patterns
+- Circuit breaker & bulkhead middleware ([#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100))
 - FetchXML query builder
 - Relationship operations advanced patterns
 

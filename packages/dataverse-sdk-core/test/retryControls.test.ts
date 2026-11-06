@@ -182,14 +182,6 @@ describe("#17: one RetryOptions type", () => {
     expect(res.status).toBe(500);
     expect(second.calls()).toBe(1);
   });
-
-  it("the deprecated per-request `delay` still sets the base delay", async () => {
-    const { client } = setup([status(503), status(204)], { jitter: false });
-    await send(client, "GET", {
-      middlewareOptions: new MiddlewareRequestOptions([{ type: "retry", delay: 7 }]),
-    });
-    expect(waits).toEqual([7]);
-  });
 });
 
 describe("#17: network errors", () => {

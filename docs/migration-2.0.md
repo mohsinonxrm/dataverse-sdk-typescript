@@ -26,8 +26,12 @@ Every package moves from 1.0.x to 2.0.0 together. Most of 2.0 fixes code that di
   - Every SDK error extends `DataverseError`.
   - Failed `fetch` calls throw `DataverseNetworkError` instead of `TypeError`.
   - Aborts throw `DataverseAbortError`, whose `name` is still `"AbortError"`.
-  - `statusCode` is a deprecated alias of `status`.
+  - `statusCode` is removed: read `status`.
   - With `.detectDuplicates()`, only error `0x80040333` is a `DataverseDuplicateError`. Any other 412, such as a stale `If-Match`, is a plain `DataverseODataError`.
+- **Removed options.** Passing any of these is now a type error.
+  - `retry.delay`: use `baseDelayMs`.
+  - `retry.useExponentialBackoff`: it had no effect, because backoff is always exponential.
+  - `circuitBreaker` and `bulkhead`, with their `CircuitBreakerOptions` and `BulkheadOptions` types: they had no effect. Circuit breaker and bulkhead middleware are planned in [#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100).
 - **Auth.**
   - A token is fetched for every attempt, and a 401 triggers one token refresh and one retry.
   - The token is only attached to requests for the client's own origin.
@@ -52,6 +56,10 @@ A configured `account` object no longer overrides MSAL's active account. Pass `a
 - `download()` returns a `Blob`.
 - `delete()` sends `DELETE`.
 - Every failed step rejects with a typed error.
+
+## otel
+
+`serviceName` is removed from `OpenTelemetryConfig`: it was ignored. `service.name` is a resource attribute, so set it on your OpenTelemetry SDK (`new NodeSDK({ serviceName })` or `OTEL_SERVICE_NAME`).
 
 ## metadata
 

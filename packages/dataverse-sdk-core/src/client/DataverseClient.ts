@@ -52,19 +52,6 @@ export class DataverseClient {
       // Per client, so feature flags from one client never leak into another's telemetry.
       featureTracker: new FeatureUsageTracker(),
     };
-
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- warning about the deprecated option itself
-    if (options.circuitBreaker?.enabled) {
-      options.logger?.warn(
-        "circuitBreaker option is configured but not yet implemented — it has no effect."
-      );
-    }
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- warning about the deprecated option itself
-    if (options.bulkhead?.enabled) {
-      options.logger?.warn(
-        "bulkhead option is configured but not yet implemented — it has no effect."
-      );
-    }
   }
 
   /**
