@@ -185,6 +185,7 @@ function parseEnumTypes(enumTypeElements: any[], namespace: string): CsdlEnumTyp
     return {
       name: et["@_Name"],
       namespace,
+      isFlags: et["@_IsFlags"] === true || et["@_IsFlags"] === "true",
       members,
     };
   });

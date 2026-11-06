@@ -260,6 +260,28 @@ any entity parameter. `WebApiEntityReference` is the JSON shape, for a reference
 The functions package's `EntityReference` has no brand: a function parameter reads `logicalName`,
 `id` and `entitySetName` itself, so a literal works there.
 
+### Enum values in bodies
+
+The Web API reads an enum value in a JSON body only as a string, and answers 400 to a number
+("Cannot read the value '1' as a quoted JSON string value", #232). The generated enums stay numeric,
+because the functions combine flags with `|`. Instead, `src/utils/enum-body.ts` writes
+`internal/enumBody.ts` into the actions and messages packages. It has two tables taken from the CSDL:
+
+- the members of each enum a body can hold, and whether it is a flags enum;
+- for each complex type an action parameter can reach that holds an enum, which properties are
+  enums or such complex types.
+
+A complex type is in the second table when it holds an enum itself, through an inherited or nested
+property, or through a derived type. Recursive types resolve to a fixed point.
+
+Each body parameter whose type (or collection item type) is in a table is written as
+`enumBody(this.x, "<Type>")`. `enumBody` copies the objects and arrays it changes, picks a derived
+type by the value's `@odata.type`, and writes:
+
+- a member name;
+- for a flags enum, the names of its bits joined with `, `;
+- or, when no member matches, the number as a string, which Dataverse also reads.
+
 ### Function parameter literals
 
 Generated functions write each parameter alias with `formatParameterAlias(value, odataType, kind)`

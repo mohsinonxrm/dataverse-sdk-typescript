@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { enumBody } from "./internal/enumBody.js";
 import type { LayerDesiredOrder, SolutionParameters } from "./types/index.js";
 
 /**
@@ -47,10 +48,10 @@ export class ImportSolutionAsyncAction implements Executable<ImportSolutionAsync
       SkipProductUpdateDependencies: this.skipProductUpdateDependencies,
       HoldingSolution: this.holdingSolution,
       SkipQueueRibbonJob: this.skipQueueRibbonJob,
-      LayerDesiredOrder: this.layerDesiredOrder,
+      LayerDesiredOrder: enumBody(this.layerDesiredOrder, "LayerDesiredOrder"),
       AsyncRibbonProcessing: this.asyncRibbonProcessing,
       ComponentParameters: this.componentParameters,
-      SolutionParameters: this.solutionParameters,
+      SolutionParameters: enumBody(this.solutionParameters, "SolutionParameters"),
       IsTemplateMode: this.isTemplateMode,
       TemplateSuffix: this.templateSuffix,
       TemplateDisplayNamePrefix: this.templateDisplayNamePrefix,

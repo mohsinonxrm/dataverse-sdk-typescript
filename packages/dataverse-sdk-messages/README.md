@@ -421,6 +421,14 @@ Parameters that `$metadata` doesn't mark `Nullable="false"` are optional: at the
 argument list they can be left out (`new ExecuteWorkflowRequest(workflowId, entityId)`), and
 elsewhere they accept `undefined`.
 
+### Enum Values
+
+The Web API reads an enum value in a request body only as a string, such as `"ReadAccess"` or
+`"ReadAccess, WriteAccess"` for a flags enum, and rejects a number. The generated enums are
+numeric, so you can combine flags with `|`, and the messages send member names. This covers enum
+parameters and enums inside complex types, such as `PrincipalAccess.AccessMask` and the operators
+of a `QueryExpression`. The enums are exported from the package root.
+
 ---
 
 ## Utilities

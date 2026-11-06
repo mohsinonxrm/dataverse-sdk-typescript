@@ -15,6 +15,8 @@ import {
   constructorParameterList,
 } from "../utils/typescript-writer.js";
 import { writeTypeScriptFile, purgeDirectory } from "../utils/file-writer.js";
+import { bodyEnumType, ENUM_BODY_MODULE, enumBodySource } from "../utils/enum-body.js";
+import { exportedEnumNames } from "./complex-types-generator.js";
 import {
   ENTITY_PAYLOAD_MODULE,
   ENTITY_PAYLOAD_SOURCE,
@@ -187,6 +189,11 @@ export async function generateMessages(
 
   // Runtime helpers the generated response classes use to read the body
   await writeTypeScriptFile(join(absolutePath, `${RESPONSE_DATA_MODULE}.ts`), RESPONSE_DATA_SOURCE);
+  // Enum values in bodies are sent as member names (#232)
+  await writeTypeScriptFile(
+    join(absolutePath, "internal", `${ENUM_BODY_MODULE}.ts`),
+    enumBodySource(csdl)
+  );
 
   // Entity references with the CSDL's primary keys, as in the actions package: a reference in a
   // body is {"@odata.type", <primary key>}; the hand-written one sent "id", which the Web API
@@ -218,7 +225,7 @@ export async function generateMessages(
   }
 
   // Generate index
-  const indexContent = generateMessagesIndex(allActions, stems, aliases);
+  const indexContent = generateMessagesIndex(allActions, stems, aliases, exportedEnumNames(csdl));
   await writeTypeScriptFile(join(absolutePath, "index.ts"), indexContent);
   console.log(`  ✅ Generated index.ts`);
 
@@ -291,6 +298,9 @@ function generateMessageClass(csdl: CsdlSchema, action: CsdlAction, stem = actio
   // Add import for EntityReference if needed
   if (needsEntityReference) {
     code += `import type { EntityReference } from './EntityReference.js';\n`;
+  }
+  if (action.parameters.some((p) => bodyEnumType(csdl, p.type))) {
+    code += `import { enumBody } from './internal/${ENUM_BODY_MODULE}.js';\n`;
   }
   if (payloadTypes.size > 0) {
     code += `import type { ${[...payloadTypes].sort().join(", ")} } from './types/${ENTITY_PAYLOAD_MODULE}.js';\n`;
@@ -489,10 +499,16 @@ function generateToRequestInformation(
   if (bodyParams.length > 0) {
     code += `    const body: Record<string, unknown> = {\n`;
     for (const param of bodyParams) {
+      // Enum values are sent as member names (#232)
+      const csdlType = action.parameters.find((p) => p.name === param.tsName)?.type;
+      const enumType = csdlType ? bodyEnumType(csdl, csdlType) : undefined;
+      const value = enumType
+        ? `enumBody(this.${param.name}, ${JSON.stringify(enumType)})`
+        : `this.${param.name}`;
       if (param.nullable) {
-        code += `      ...(this.${param.name} !== undefined && { ${param.tsName}: this.${param.name} }),\n`;
+        code += `      ...(this.${param.name} !== undefined && { ${param.tsName}: ${value} }),\n`;
       } else {
-        code += `      ${param.tsName}: this.${param.name},\n`;
+        code += `      ${param.tsName}: ${value},\n`;
       }
     }
     code += `    };\n\n`;
@@ -539,7 +555,8 @@ function generateParseResponse(action: CsdlAction, responseClassName: string): s
 function generateMessagesIndex(
   operations: CsdlAction[],
   stems: Map<CsdlAction, string>,
-  aliases: ReadonlyArray<{ name: string }>
+  aliases: ReadonlyArray<{ name: string }>,
+  enumNames: string[]
 ): string {
   let code = `/**\n`;
   code += ` * Web API Action Messages\n`;
@@ -567,6 +584,11 @@ function generateMessagesIndex(
   ].sort((a, b) => a.localeCompare(b));
   for (const stem of entries) {
     code += `export { ${stem}Request, ${stem}Response } from './${stem}Message.js';\n`;
+  }
+
+  // Enum values for parameters, as in the functions package; bodies send member names (#232)
+  if (enumNames.length > 0) {
+    code += `\n// Enums\nexport { ${enumNames.join(", ")} } from './types/index.js';\n`;
   }
 
   return code;

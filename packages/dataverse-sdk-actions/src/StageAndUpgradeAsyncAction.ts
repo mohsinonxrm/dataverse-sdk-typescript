@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { enumBody } from "./internal/enumBody.js";
 import type { LayerDesiredOrder, SolutionParameters } from "./types/index.js";
 
 /**
@@ -43,8 +44,8 @@ export class StageAndUpgradeAsyncAction implements Executable<StageAndUpgradeAsy
       SkipQueueRibbonJob: this.skipQueueRibbonJob,
       AsyncRibbonProcessing: this.asyncRibbonProcessing,
       ComponentParameters: this.componentParameters,
-      SolutionParameters: this.solutionParameters,
-      LayerDesiredOrder: this.layerDesiredOrder,
+      SolutionParameters: enumBody(this.solutionParameters, "SolutionParameters"),
+      LayerDesiredOrder: enumBody(this.layerDesiredOrder, "LayerDesiredOrder"),
       SchemaUpdatesOnly: this.schemaUpdatesOnly,
     };
 

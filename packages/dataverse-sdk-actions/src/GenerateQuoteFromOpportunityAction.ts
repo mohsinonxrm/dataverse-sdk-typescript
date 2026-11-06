@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { enumBody } from "./internal/enumBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { ColumnSet } from "./types/index.js";
 
@@ -31,7 +32,7 @@ export class GenerateQuoteFromOpportunityAction implements Executable<GenerateQu
 
     const body: Record<string, unknown> = {
       OpportunityId: this.opportunityId,
-      ColumnSet: this.columnSet,
+      ColumnSet: enumBody(this.columnSet, "ColumnSet"),
       ProcessInstanceId: this.processInstanceId,
     };
 

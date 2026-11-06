@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { enumBody } from "./internal/enumBody.js";
 import type { ChannelAccessProfilePrivilege } from "./types/index.js";
 
 /**
@@ -23,7 +24,7 @@ export class AddChannelAccessProfilePrivilegesRequest
 
     const body: Record<string, unknown> = {
       ChannelAccessProfileId: this.channelAccessProfileId,
-      Privileges: this.privileges,
+      Privileges: enumBody(this.privileges, "ChannelAccessProfilePrivilege"),
     };
 
     return {

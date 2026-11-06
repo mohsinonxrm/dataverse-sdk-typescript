@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { enumBody } from "./internal/enumBody.js";
 import type {
   ComplexLookupAttributeMetadata,
   ComplexOneToManyRelationshipMetadata,
@@ -28,8 +29,11 @@ export class CreateCustomerRelationshipsAction implements Executable<CreateCusto
     const url = `${baseUrl}/CreateCustomerRelationships`;
 
     const body: Record<string, unknown> = {
-      Lookup: this.lookup,
-      OneToManyRelationships: this.oneToManyRelationships,
+      Lookup: enumBody(this.lookup, "ComplexLookupAttributeMetadata"),
+      OneToManyRelationships: enumBody(
+        this.oneToManyRelationships,
+        "ComplexOneToManyRelationshipMetadata"
+      ),
       SolutionUniqueName: this.solutionUniqueName,
     };
 

@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { enumBody } from "./internal/enumBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { TypedQueryBase, activityparty } from "./types/index.js";
 
@@ -31,7 +32,7 @@ export class BulkDetectDuplicatesAction implements Executable<BulkDetectDuplicat
     const url = `${baseUrl}/BulkDetectDuplicates`;
 
     const body: Record<string, unknown> = {
-      Query: this.query,
+      Query: enumBody(this.query, "QueryBase"),
       JobName: this.jobName,
       SendEmailNotification: this.sendEmailNotification,
       TemplateId: this.templateId,

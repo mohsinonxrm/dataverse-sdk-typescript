@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { enumBody } from "./internal/enumBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type {
   BulkDetectDuplicatesResponse as BulkDetectDuplicatesResponseData,
@@ -35,7 +36,7 @@ export class BulkDetectDuplicatesRequest
     const url = `${baseUrl}/BulkDetectDuplicates`;
 
     const body: Record<string, unknown> = {
-      Query: this.query,
+      Query: enumBody(this.query, "QueryBase"),
       JobName: this.jobName,
       SendEmailNotification: this.sendEmailNotification,
       TemplateId: this.templateId,
