@@ -236,9 +236,10 @@ export interface DataverseClientOptions {
    */
   defaultPrefer?: PreferOption[];
   /**
-   * Customise the middleware pipeline. The defaults run in this order: ODataHeaders,
-   * Concurrency, Retry, Auth (when a token provider is set), Telemetry, Logging; then the request goes
-   * to `fetch`. `replace` receives that list and returns the one to use (for example without
+   * Customise the middleware pipeline. The defaults run in this order: ODataHeaders, Retry,
+   * Concurrency, Auth (when a token provider is set), Telemetry, Logging; then the request goes
+   * to `fetch`. Retry wraps Concurrency, so each attempt takes a concurrency slot and releases it
+   * before a retry wait. `replace` receives that list and returns the one to use (for example without
    * Logging); then `prepend` runs first and `append` runs last, right before `fetch`, so it sees
    * the final headers including `authorization`.
    */
