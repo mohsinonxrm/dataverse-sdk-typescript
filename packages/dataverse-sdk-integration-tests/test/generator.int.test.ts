@@ -25,7 +25,7 @@ describe.skipIf(!live)("live: generator output", () => {
 
   beforeAll(async () => {
     dir = await generateLive({
-      entities: ["account", "contact"],
+      entities: ["account", "contact", "systemuser"],
       actions: ["PublishAllXml", "QualifyLead", "AddMembersTeam"],
       functions: [
         "WhoAmI",
@@ -49,6 +49,7 @@ describe.skipIf(!live)("live: generator output", () => {
       for (const expected of [
         "entities/Account.ts",
         "entities/Contact.ts",
+        "entities/SystemUser.ts",
         "actions/PublishAllXmlAction.ts",
         "actions/QualifyLeadAction.ts",
         "functions/WhoAmIFunction.ts",
