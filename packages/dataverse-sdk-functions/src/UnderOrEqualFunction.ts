@@ -1,5 +1,5 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatParameterAlias } from "./internal/odataLiteral.js";
+import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
+import { formatParameterAlias } from './internal/odataLiteral.js';
 
 /**
  * Response from the UnderOrEqual function.
@@ -23,7 +23,9 @@ export interface UnderOrEqualFunctionParameters {
  * Unbound function
  */
 export class UnderOrEqualFunction implements Executable<UnderOrEqualResponse> {
-  constructor(public readonly parameters: UnderOrEqualFunctionParameters) {}
+  constructor(
+    public readonly parameters: UnderOrEqualFunctionParameters,
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/UnderOrEqual`;
@@ -33,21 +35,21 @@ export class UnderOrEqualFunction implements Executable<UnderOrEqualResponse> {
     const aliases: string[] = [];
     if (this.parameters.PropertyName !== undefined) {
       aliases.push(`PropertyName=@p1`);
-      params.append("@p1", formatParameterAlias(this.parameters.PropertyName, "Edm.String"));
+      params.append('@p1', formatParameterAlias(this.parameters.PropertyName, 'Edm.String'));
     }
     if (this.parameters.PropertyValue !== undefined) {
       aliases.push(`PropertyValue=@p2`);
-      params.append("@p2", formatParameterAlias(this.parameters.PropertyValue, "Edm.String"));
+      params.append('@p2', formatParameterAlias(this.parameters.PropertyValue, 'Edm.String'));
     }
     if (aliases.length > 0) {
-      url += `(${aliases.join(",")})?${params.toString()}`;
+      url += `(${aliases.join(',')})?${params.toString()}`;
     }
 
     return {
-      method: "GET",
+      method: 'GET',
       url,
       headers: {
-        Accept: "application/json",
+        'Accept': 'application/json',
       },
     };
   }

@@ -1,4 +1,4 @@
-import type { CascadeType } from "./CascadeType.js";
+import type { CascadeType } from './CascadeType.js';
 
 /**
  * CascadeConfiguration complex type

@@ -1,5 +1,5 @@
-import type { ComplexAttributeMetadata } from "./ComplexAttributeMetadata.js";
-import type { ComplexBooleanOptionSetMetadata } from "./ComplexBooleanOptionSetMetadata.js";
+import type { ComplexAttributeMetadata } from './ComplexAttributeMetadata.js';
+import type { ComplexBooleanOptionSetMetadata } from './ComplexBooleanOptionSetMetadata.js';
 
 /**
  * ComplexBooleanAttributeMetadata complex type

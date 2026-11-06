@@ -4,13 +4,28 @@ Typed Web API actions for Dataverse. Actions are operations with side effects th
 
 ## Features
 
-- ✅ **<!-- count:actions -->1,556<!-- /count --> typed actions** - Complete CSDL-generated coverage of all Dataverse Web API actions
+- ✅ **<!-- count:actions -->1,072<!-- /count --> typed actions** - The Web API actions of the platform, Sales and Customer Service, generated from `$metadata`
 - ✅ **Business operations** - ExecuteWorkflow, WinOpportunity, Merge, and hundreds more
 - ✅ **Bulk operations** - CreateMultiple, UpdateMultiple, UpsertMultiple, DeleteMultiple
 - ✅ **File operations** - Chunked upload/download with InitializeFileBlocksUpload, UploadBlock, CommitFileBlocksUpload
 - ✅ **Solution operations** - Import, export, publish with ExportSolution, ImportSolution, PublishXml
-- ✅ **Service-specific operations** - Sales, Customer Service, Field Service, Marketing modules
+- ✅ **Sales and Customer Service** - Opportunities, quotes, orders, invoices, leads, campaigns and marketing lists; cases, knowledge, SLAs and entitlements
 - ✅ **Type-safe** - Full TypeScript typing for request and response
+
+## What this package covers
+
+The actions of the **platform** (Dataverse and the Power Platform solutions every environment
+has) and of the two core Dynamics 365 apps of a plain trial, **Sales** and **Customer Service**.
+They are chosen by the solution each action comes from, not by what the org the SDK was generated
+from has installed: the [solution table](../../tools/generate-sdk-types/metadata/README.md#which-operations-are-prebuilt)
+lists every solution and whether its operations are in.
+
+Not in the package: the actions of Contact Center (Omnichannel, unified routing, voice,
+`CCaaS_*`), Field Service, Project Operations, Universal Resource Scheduling, Customer Insights -
+Journeys (`msdynmkt_*`), Customer Voice, Connected Customer Service (IoT), Power Pages and Process
+Mining, and your own custom APIs and custom process actions. Generate those from your org with
+`dataverse-gen`: see
+[Generate the rest with dataverse-gen](../../docs/getting-started.md#generate-the-rest-with-dataverse-gen).
 
 ## Installation
 
@@ -115,9 +130,9 @@ console.log(emails.length, emails[0]?.subject); // email records, not { value }
 
 ## Action Categories
 
-The package has <!-- count:actions -->1,556<!-- /count --> typed actions, including solution-specific ones
-(`msdyn_*`, `msdynmkt_*`, `CCaaS_*`, …) for the solutions installed in the org it was generated
-from. This list is generated from the package source (`pnpm --filter generate-sdk-types docs`);
+The package has <!-- count:actions -->1,072<!-- /count --> typed actions: the platform's, and the Sales and
+Customer Service ones, among them `msdyn_*` actions of the Sales and Customer Service solutions
+(see [What this package covers](#what-this-package-covers)). This list is generated from the package source (`pnpm --filter generate-sdk-types docs`);
 [supported-actions.md](../../docs/mapping/supported-actions.md) has more. There is no `Assign` or
 `SetState` action: assign by updating `ownerid@odata.bind`, and change state by updating
 `statecode` and `statuscode`.
@@ -141,8 +156,7 @@ ConvertQuoteToSalesOrder: Create an order from a quote.
 ConvertSalesOrderToInvoice: Create an invoice from an order.
 CalculatePrice: Recalculate a quote, order or invoice.
 CloseIncident: Resolve a case.
-msdyn_BookRequirementGroup: Book a requirement group (Field Service).
-msdyn_CancelBookings: Cancel bookings (Field Service).
+QualifyLead: Qualify a lead into an account, contact and opportunity.
 InitializeFileBlocksUpload: Start a chunked upload to a file column.
 UploadBlock: Upload one block.
 CommitFileBlocksUpload: Commit the blocks as the file.
@@ -169,8 +183,7 @@ ExportToExcel: Export a view as an .xlsx file.
 - `new ConvertSalesOrderToInvoiceAction({ SalesOrderId, ColumnSet?, ProcessInstanceId? })` (`POST /ConvertSalesOrderToInvoice`): Create an invoice from an order.
 - `new CalculatePriceAction({ Target, ParentId? })` (`POST /CalculatePrice`): Recalculate a quote, order or invoice.
 - `new CloseIncidentAction({ IncidentResolution, Status })` (`POST /CloseIncident`): Resolve a case.
-- `new msdyn_BookRequirementGroupAction(msdyn_requirementgroupId, { Start, Duration, BookingResources })` (`POST /msdyn_requirementgroups({msdyn_requirementgroupId})/Microsoft.Dynamics.CRM.msdyn_BookRequirementGroup`): Book a requirement group (Field Service).
-- `new msdyn_CancelBookingsAction({ BookingIds?, DefaultBookingDetail?, BookingCancelContext?, ConsiderAppointments? })` (`POST /msdyn_CancelBookings`): Cancel bookings (Field Service).
+- `new QualifyLeadAction(leadId, { CreateAccount, CreateContact, CreateOpportunity, OpportunityCurrencyId?, OpportunityCustomerId?, SourceCampaignId?, Status, ProcessInstanceId?, LeadQualificationV2Param? })` (`POST /leads({leadId})/Microsoft.Dynamics.CRM.QualifyLead`): Qualify a lead into an account, contact and opportunity.
 - `new InitializeFileBlocksUploadAction({ Target, FileName, FileAttributeName })` (`POST /InitializeFileBlocksUpload`): Start a chunked upload to a file column.
 - `new UploadBlockAction({ BlockId, BlockData, FileContinuationToken })` (`POST /UploadBlock`): Upload one block.
 - `new CommitFileBlocksUploadAction({ FileName, MimeType, BlockList, FileContinuationToken })` (`POST /CommitFileBlocksUpload`): Commit the blocks as the file.
@@ -585,7 +598,15 @@ const response = await client.execute(action);
 // Returns typed response (e.g., CreateMultipleResponse)
 ```
 
-## Extending with Custom Actions
+## Custom APIs and Other Apps' Actions
+
+Your own custom APIs and custom process actions, and the actions of the apps this package leaves
+out (Contact Center, Field Service, Customer Insights - Journeys, …), aren't here. Generate typed
+classes for them from your org's `$metadata` with `dataverse-gen`: they implement the same
+`Executable` interface, so `client.execute()` runs them like the classes in this package. See
+[Generate the rest with dataverse-gen](../../docs/getting-started.md#generate-the-rest-with-dataverse-gen).
+
+To write one by hand instead, implement `Executable`:
 
 ```typescript
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";

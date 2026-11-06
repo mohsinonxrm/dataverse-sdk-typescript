@@ -1,5 +1,5 @@
-import type { AttributeMetadata } from "./AttributeMetadata.js";
-import type { ImeMode } from "./ImeMode.js";
+import type { AttributeMetadata } from './AttributeMetadata.js';
+import type { ImeMode } from './ImeMode.js';
 
 /**
  * DecimalAttributeMetadata entity type

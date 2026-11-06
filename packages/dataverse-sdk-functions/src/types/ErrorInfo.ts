@@ -1,4 +1,4 @@
-import type { ResourceInfo } from "./ResourceInfo.js";
+import type { ResourceInfo } from './ResourceInfo.js';
 
 /**
  * ErrorInfo complex type

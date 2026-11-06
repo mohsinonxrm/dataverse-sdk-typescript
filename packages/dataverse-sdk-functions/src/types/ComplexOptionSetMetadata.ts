@@ -1,7 +1,7 @@
-import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
-import type { Label } from "./Label.js";
-import type { OptionMetadata } from "./OptionMetadata.js";
-import type { OptionSetType } from "./OptionSetType.js";
+import type { BooleanManagedProperty } from './BooleanManagedProperty.js';
+import type { Label } from './Label.js';
+import type { OptionMetadata } from './OptionMetadata.js';
+import type { OptionSetType } from './OptionSetType.js';
 
 /**
  * ComplexOptionSetMetadata complex type

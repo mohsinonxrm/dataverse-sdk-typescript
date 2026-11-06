@@ -1,5 +1,5 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatParameterAlias } from "./internal/odataLiteral.js";
+import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
+import { formatParameterAlias } from './internal/odataLiteral.js';
 
 /**
  * Response from the RetrieveEnvironmentVariableValue function.
@@ -25,7 +25,9 @@ export interface RetrieveEnvironmentVariableValueFunctionParameters {
  * Unbound function
  */
 export class RetrieveEnvironmentVariableValueFunction implements Executable<RetrieveEnvironmentVariableValueResponse> {
-  constructor(public readonly parameters: RetrieveEnvironmentVariableValueFunctionParameters) {}
+  constructor(
+    public readonly parameters: RetrieveEnvironmentVariableValueFunctionParameters,
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveEnvironmentVariableValue`;
@@ -35,20 +37,17 @@ export class RetrieveEnvironmentVariableValueFunction implements Executable<Retr
     const aliases: string[] = [];
     if (this.parameters.DefinitionSchemaName !== undefined) {
       aliases.push(`DefinitionSchemaName=@p1`);
-      params.append(
-        "@p1",
-        formatParameterAlias(this.parameters.DefinitionSchemaName, "Edm.String")
-      );
+      params.append('@p1', formatParameterAlias(this.parameters.DefinitionSchemaName, 'Edm.String'));
     }
     if (aliases.length > 0) {
-      url += `(${aliases.join(",")})?${params.toString()}`;
+      url += `(${aliases.join(',')})?${params.toString()}`;
     }
 
     return {
-      method: "GET",
+      method: 'GET',
       url,
       headers: {
-        Accept: "application/json",
+        'Accept': 'application/json',
       },
     };
   }

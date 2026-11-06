@@ -1,7 +1,7 @@
-import type { AssociatedMenuConfiguration } from "./AssociatedMenuConfiguration.js";
-import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
-import type { RelationshipType } from "./RelationshipType.js";
-import type { SecurityTypes } from "./SecurityTypes.js";
+import type { AssociatedMenuConfiguration } from './AssociatedMenuConfiguration.js';
+import type { BooleanManagedProperty } from './BooleanManagedProperty.js';
+import type { RelationshipType } from './RelationshipType.js';
+import type { SecurityTypes } from './SecurityTypes.js';
 
 /**
  * ComplexManyToManyRelationshipMetadata complex type

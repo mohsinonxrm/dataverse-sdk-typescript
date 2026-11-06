@@ -1,5 +1,5 @@
-import type { AuditDetail } from "./AuditDetail.js";
-import type { RolePrivilege } from "./RolePrivilege.js";
+import type { AuditDetail } from './AuditDetail.js';
+import type { RolePrivilege } from './RolePrivilege.js';
 
 /**
  * RolePrivilegeAuditDetail complex type

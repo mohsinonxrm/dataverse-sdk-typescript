@@ -1,5 +1,5 @@
-import type { Component } from "./Component.js";
-import type { ErrorType } from "./ErrorType.js";
+import type { Component } from './Component.js';
+import type { ErrorType } from './ErrorType.js';
 
 /**
  * ValidationIssue complex type

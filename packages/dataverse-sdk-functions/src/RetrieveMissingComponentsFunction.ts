@@ -1,6 +1,6 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatParameterAlias } from "./internal/odataLiteral.js";
-import type { MissingComponent } from "./types/index.js";
+import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
+import { formatParameterAlias } from './internal/odataLiteral.js';
+import type { MissingComponent } from './types/index.js';
 
 /**
  * Response from the RetrieveMissingComponents function.
@@ -26,7 +26,9 @@ export interface RetrieveMissingComponentsFunctionParameters {
  * Unbound function
  */
 export class RetrieveMissingComponentsFunction implements Executable<RetrieveMissingComponentsResponse> {
-  constructor(public readonly parameters: RetrieveMissingComponentsFunctionParameters) {}
+  constructor(
+    public readonly parameters: RetrieveMissingComponentsFunctionParameters,
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveMissingComponents`;
@@ -36,17 +38,17 @@ export class RetrieveMissingComponentsFunction implements Executable<RetrieveMis
     const aliases: string[] = [];
     if (this.parameters.CustomizationFile !== undefined) {
       aliases.push(`CustomizationFile=@p1`);
-      params.append("@p1", formatParameterAlias(this.parameters.CustomizationFile, "Edm.Binary"));
+      params.append('@p1', formatParameterAlias(this.parameters.CustomizationFile, 'Edm.Binary'));
     }
     if (aliases.length > 0) {
-      url += `(${aliases.join(",")})?${params.toString()}`;
+      url += `(${aliases.join(',')})?${params.toString()}`;
     }
 
     return {
-      method: "GET",
+      method: 'GET',
       url,
       headers: {
-        Accept: "application/json",
+        'Accept': 'application/json',
       },
     };
   }

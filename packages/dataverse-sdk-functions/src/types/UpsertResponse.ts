@@ -1,4 +1,4 @@
-import type { ParameterCollection } from "./ParameterCollection.js";
+import type { ParameterCollection } from './ParameterCollection.js';
 
 /**
  * UpsertResponse complex type

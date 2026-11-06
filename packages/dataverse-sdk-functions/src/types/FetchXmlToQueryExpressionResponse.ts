@@ -1,4 +1,4 @@
-import type { QueryExpression } from "./QueryExpression.js";
+import type { QueryExpression } from './QueryExpression.js';
 
 /**
  * FetchXmlToQueryExpressionResponse complex type

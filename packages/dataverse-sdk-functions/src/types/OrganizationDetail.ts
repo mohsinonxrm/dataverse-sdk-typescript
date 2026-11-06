@@ -1,6 +1,6 @@
-import type { EndpointCollection } from "./EndpointCollection.js";
-import type { OrganizationState } from "./OrganizationState.js";
-import type { OrganizationType } from "./OrganizationType.js";
+import type { EndpointCollection } from './EndpointCollection.js';
+import type { OrganizationState } from './OrganizationState.js';
+import type { OrganizationType } from './OrganizationType.js';
 
 /**
  * OrganizationDetail complex type

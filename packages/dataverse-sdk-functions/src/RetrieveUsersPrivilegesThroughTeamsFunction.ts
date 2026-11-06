@@ -1,6 +1,6 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatParameterAlias } from "./internal/odataLiteral.js";
-import type { RolePrivilege } from "./types/index.js";
+import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
+import { formatParameterAlias } from './internal/odataLiteral.js';
+import type { RolePrivilege } from './types/index.js';
 
 /**
  * Response from the RetrieveUsersPrivilegesThroughTeams function.
@@ -32,7 +32,7 @@ export interface RetrieveUsersPrivilegesThroughTeamsFunctionParameters {
 export class RetrieveUsersPrivilegesThroughTeamsFunction implements Executable<RetrieveUsersPrivilegesThroughTeamsResponse> {
   constructor(
     public readonly systemuserId: string,
-    public readonly parameters: RetrieveUsersPrivilegesThroughTeamsFunctionParameters
+    public readonly parameters: RetrieveUsersPrivilegesThroughTeamsFunctionParameters,
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -44,27 +44,21 @@ export class RetrieveUsersPrivilegesThroughTeamsFunction implements Executable<R
     const aliases: string[] = [];
     if (this.parameters.ExcludeOrgDisabledPrivileges !== undefined) {
       aliases.push(`ExcludeOrgDisabledPrivileges=@p1`);
-      params.append(
-        "@p1",
-        formatParameterAlias(this.parameters.ExcludeOrgDisabledPrivileges, "Edm.Boolean")
-      );
+      params.append('@p1', formatParameterAlias(this.parameters.ExcludeOrgDisabledPrivileges, 'Edm.Boolean'));
     }
     if (this.parameters.IncludeSetupUserFiltering !== undefined) {
       aliases.push(`IncludeSetupUserFiltering=@p2`);
-      params.append(
-        "@p2",
-        formatParameterAlias(this.parameters.IncludeSetupUserFiltering, "Edm.Boolean")
-      );
+      params.append('@p2', formatParameterAlias(this.parameters.IncludeSetupUserFiltering, 'Edm.Boolean'));
     }
     if (aliases.length > 0) {
-      url += `(${aliases.join(",")})?${params.toString()}`;
+      url += `(${aliases.join(',')})?${params.toString()}`;
     }
 
     return {
-      method: "GET",
+      method: 'GET',
       url,
       headers: {
-        Accept: "application/json",
+        'Accept': 'application/json',
       },
     };
   }

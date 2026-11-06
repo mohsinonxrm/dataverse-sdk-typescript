@@ -1,31 +1,31 @@
-import type { adx_inviteredemption } from "./adx_inviteredemption.js";
-import type { adx_portalcomment } from "./adx_portalcomment.js";
-import type { appointment } from "./appointment.js";
-import type { bulkoperation } from "./bulkoperation.js";
-import type { campaignactivity } from "./campaignactivity.js";
-import type { campaignresponse } from "./campaignresponse.js";
-import type { chat } from "./chat.js";
-import type { email } from "./email.js";
-import type { fax } from "./fax.js";
-import type { incidentresolution } from "./incidentresolution.js";
-import type { letter } from "./letter.js";
-import type { msdyn_bookingalert } from "./msdyn_bookingalert.js";
-import type { msdyn_copilottranscript } from "./msdyn_copilottranscript.js";
-import type { msdyn_ocliveworkitem } from "./msdyn_ocliveworkitem.js";
-import type { msdyn_ocoutboundmessage } from "./msdyn_ocoutboundmessage.js";
-import type { msdyn_ocsession } from "./msdyn_ocsession.js";
-import type { msdyn_ocvoicemail } from "./msdyn_ocvoicemail.js";
-import type { msfp_alert } from "./msfp_alert.js";
-import type { msfp_surveyinvite } from "./msfp_surveyinvite.js";
-import type { msfp_surveyresponse } from "./msfp_surveyresponse.js";
-import type { opportunityclose } from "./opportunityclose.js";
-import type { orderclose } from "./orderclose.js";
-import type { phonecall } from "./phonecall.js";
-import type { quoteclose } from "./quoteclose.js";
-import type { recurringappointmentmaster } from "./recurringappointmentmaster.js";
-import type { serviceappointment } from "./serviceappointment.js";
-import type { socialactivity } from "./socialactivity.js";
-import type { task } from "./task.js";
+import type { adx_inviteredemption } from './adx_inviteredemption.js';
+import type { adx_portalcomment } from './adx_portalcomment.js';
+import type { appointment } from './appointment.js';
+import type { bulkoperation } from './bulkoperation.js';
+import type { campaignactivity } from './campaignactivity.js';
+import type { campaignresponse } from './campaignresponse.js';
+import type { chat } from './chat.js';
+import type { email } from './email.js';
+import type { fax } from './fax.js';
+import type { incidentresolution } from './incidentresolution.js';
+import type { letter } from './letter.js';
+import type { msdyn_bookingalert } from './msdyn_bookingalert.js';
+import type { msdyn_copilottranscript } from './msdyn_copilottranscript.js';
+import type { msdyn_ocliveworkitem } from './msdyn_ocliveworkitem.js';
+import type { msdyn_ocoutboundmessage } from './msdyn_ocoutboundmessage.js';
+import type { msdyn_ocsession } from './msdyn_ocsession.js';
+import type { msdyn_ocvoicemail } from './msdyn_ocvoicemail.js';
+import type { msfp_alert } from './msfp_alert.js';
+import type { msfp_surveyinvite } from './msfp_surveyinvite.js';
+import type { msfp_surveyresponse } from './msfp_surveyresponse.js';
+import type { opportunityclose } from './opportunityclose.js';
+import type { orderclose } from './orderclose.js';
+import type { phonecall } from './phonecall.js';
+import type { quoteclose } from './quoteclose.js';
+import type { recurringappointmentmaster } from './recurringappointmentmaster.js';
+import type { serviceappointment } from './serviceappointment.js';
+import type { socialactivity } from './socialactivity.js';
+import type { task } from './task.js';
 
 /**
  * activitypointer entity type
@@ -120,9 +120,8 @@ export type TypedActivitypointer =
   | (orderclose & { "@odata.type": "Microsoft.Dynamics.CRM.orderclose" })
   | (phonecall & { "@odata.type": "Microsoft.Dynamics.CRM.phonecall" })
   | (quoteclose & { "@odata.type": "Microsoft.Dynamics.CRM.quoteclose" })
-  | (recurringappointmentmaster & {
-      "@odata.type": "Microsoft.Dynamics.CRM.recurringappointmentmaster";
-    })
+  | (recurringappointmentmaster & { "@odata.type": "Microsoft.Dynamics.CRM.recurringappointmentmaster" })
   | (serviceappointment & { "@odata.type": "Microsoft.Dynamics.CRM.serviceappointment" })
   | (socialactivity & { "@odata.type": "Microsoft.Dynamics.CRM.socialactivity" })
-  | (task & { "@odata.type": "Microsoft.Dynamics.CRM.task" });
+  | (task & { "@odata.type": "Microsoft.Dynamics.CRM.task" })
+;

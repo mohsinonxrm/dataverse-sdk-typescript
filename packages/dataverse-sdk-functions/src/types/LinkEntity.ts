@@ -1,7 +1,7 @@
-import type { ColumnSet } from "./ColumnSet.js";
-import type { FilterExpression } from "./FilterExpression.js";
-import type { JoinOperator } from "./JoinOperator.js";
-import type { OrderExpression } from "./OrderExpression.js";
+import type { ColumnSet } from './ColumnSet.js';
+import type { FilterExpression } from './FilterExpression.js';
+import type { JoinOperator } from './JoinOperator.js';
+import type { OrderExpression } from './OrderExpression.js';
 
 /**
  * LinkEntity complex type

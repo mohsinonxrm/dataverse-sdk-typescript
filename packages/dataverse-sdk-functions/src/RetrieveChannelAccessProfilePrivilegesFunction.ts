@@ -1,6 +1,6 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatParameterAlias } from "./internal/odataLiteral.js";
-import type { ChannelAccessProfileWithPrivileges } from "./types/index.js";
+import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
+import { formatParameterAlias } from './internal/odataLiteral.js';
+import type { ChannelAccessProfileWithPrivileges } from './types/index.js';
 
 /**
  * Response from the RetrieveChannelAccessProfilePrivileges function.
@@ -27,7 +27,7 @@ export interface RetrieveChannelAccessProfilePrivilegesFunctionParameters {
  */
 export class RetrieveChannelAccessProfilePrivilegesFunction implements Executable<RetrieveChannelAccessProfilePrivilegesResponse> {
   constructor(
-    public readonly parameters: RetrieveChannelAccessProfilePrivilegesFunctionParameters
+    public readonly parameters: RetrieveChannelAccessProfilePrivilegesFunctionParameters,
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -38,20 +38,17 @@ export class RetrieveChannelAccessProfilePrivilegesFunction implements Executabl
     const aliases: string[] = [];
     if (this.parameters.ChannelAccessProfileId !== undefined) {
       aliases.push(`ChannelAccessProfileId=@p1`);
-      params.append(
-        "@p1",
-        formatParameterAlias(this.parameters.ChannelAccessProfileId, "Edm.Guid")
-      );
+      params.append('@p1', formatParameterAlias(this.parameters.ChannelAccessProfileId, 'Edm.Guid'));
     }
     if (aliases.length > 0) {
-      url += `(${aliases.join(",")})?${params.toString()}`;
+      url += `(${aliases.join(',')})?${params.toString()}`;
     }
 
     return {
-      method: "GET",
+      method: 'GET',
       url,
       headers: {
-        Accept: "application/json",
+        'Accept': 'application/json',
       },
     };
   }

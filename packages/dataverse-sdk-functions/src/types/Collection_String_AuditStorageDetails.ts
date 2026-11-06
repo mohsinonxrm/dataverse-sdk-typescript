@@ -1,4 +1,4 @@
-import type { AuditStorageDetails } from "./AuditStorageDetails.js";
+import type { AuditStorageDetails } from './AuditStorageDetails.js';
 
 /**
  * Collection_String_AuditStorageDetails complex type

@@ -1,6 +1,6 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatParameterAlias } from "./internal/odataLiteral.js";
-import type { ValidateFetchXmlExpressionResult } from "./types/index.js";
+import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
+import { formatParameterAlias } from './internal/odataLiteral.js';
+import type { ValidateFetchXmlExpressionResult } from './types/index.js';
 
 /**
  * Response from the ValidateFetchXmlExpression function.
@@ -26,7 +26,9 @@ export interface ValidateFetchXmlExpressionFunctionParameters {
  * Unbound function
  */
 export class ValidateFetchXmlExpressionFunction implements Executable<ValidateFetchXmlExpressionResponse> {
-  constructor(public readonly parameters: ValidateFetchXmlExpressionFunctionParameters) {}
+  constructor(
+    public readonly parameters: ValidateFetchXmlExpressionFunctionParameters,
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/ValidateFetchXmlExpression`;
@@ -36,17 +38,17 @@ export class ValidateFetchXmlExpressionFunction implements Executable<ValidateFe
     const aliases: string[] = [];
     if (this.parameters.FetchXml !== undefined) {
       aliases.push(`FetchXml=@p1`);
-      params.append("@p1", formatParameterAlias(this.parameters.FetchXml, "Edm.String"));
+      params.append('@p1', formatParameterAlias(this.parameters.FetchXml, 'Edm.String'));
     }
     if (aliases.length > 0) {
-      url += `(${aliases.join(",")})?${params.toString()}`;
+      url += `(${aliases.join(',')})?${params.toString()}`;
     }
 
     return {
-      method: "GET",
+      method: 'GET',
       url,
       headers: {
-        Accept: "application/json",
+        'Accept': 'application/json',
       },
     };
   }

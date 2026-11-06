@@ -1,4 +1,4 @@
-import type { StringCollection } from "./StringCollection.js";
+import type { StringCollection } from './StringCollection.js';
 
 /**
  * RetrieveParsedDataImportFileResponse complex type

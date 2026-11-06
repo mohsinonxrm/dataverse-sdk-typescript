@@ -1,8 +1,8 @@
-import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
-import type { ComplexAttributeMetadata } from "./ComplexAttributeMetadata.js";
-import type { DateTimeBehavior } from "./DateTimeBehavior.js";
-import type { DateTimeFormat } from "./DateTimeFormat.js";
-import type { ImeMode } from "./ImeMode.js";
+import type { BooleanManagedProperty } from './BooleanManagedProperty.js';
+import type { ComplexAttributeMetadata } from './ComplexAttributeMetadata.js';
+import type { DateTimeBehavior } from './DateTimeBehavior.js';
+import type { DateTimeFormat } from './DateTimeFormat.js';
+import type { ImeMode } from './ImeMode.js';
 
 /**
  * ComplexDateTimeAttributeMetadata complex type

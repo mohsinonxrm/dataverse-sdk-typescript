@@ -1,4 +1,4 @@
-import type { activitypointer } from "./activitypointer.js";
+import type { activitypointer } from './activitypointer.js';
 
 /**
  * msdyn_ocoutboundmessage entity type

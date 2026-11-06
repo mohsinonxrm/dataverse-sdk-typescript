@@ -1,4 +1,4 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
 
 /**
  * Response from the RetrieveCascadeDeleteAsyncJobId function.
@@ -25,7 +25,9 @@ export interface RetrieveCascadeDeleteAsyncJobIdFunctionParameters {
  * Unbound function
  */
 export class RetrieveCascadeDeleteAsyncJobIdFunction implements Executable<RetrieveCascadeDeleteAsyncJobIdResponse> {
-  constructor(public readonly parameters: RetrieveCascadeDeleteAsyncJobIdFunctionParameters) {}
+  constructor(
+    public readonly parameters: RetrieveCascadeDeleteAsyncJobIdFunctionParameters,
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveCascadeDeleteAsyncJobId`;
@@ -35,17 +37,17 @@ export class RetrieveCascadeDeleteAsyncJobIdFunction implements Executable<Retri
     const aliases: string[] = [];
     if (this.parameters.ParentEntityIds !== undefined) {
       aliases.push(`ParentEntityIds=@p1`);
-      params.append("@p1", JSON.stringify(this.parameters.ParentEntityIds));
+      params.append('@p1', JSON.stringify(this.parameters.ParentEntityIds));
     }
     if (aliases.length > 0) {
-      url += `(${aliases.join(",")})?${params.toString()}`;
+      url += `(${aliases.join(',')})?${params.toString()}`;
     }
 
     return {
-      method: "GET",
+      method: 'GET',
       url,
       headers: {
-        Accept: "application/json",
+        'Accept': 'application/json',
       },
     };
   }

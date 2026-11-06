@@ -8,7 +8,17 @@ import { generateActions } from "./generators/actions-generator.js";
 import { generateFunctions } from "./generators/functions-generator.js";
 import { generateComplexTypes } from "./generators/complex-types-generator.js";
 import { generateEntityTables } from "./generators/references-generator.js";
-import { withSupplementalMetadata } from "./supplemental/supplemental-metadata.js";
+import {
+  SUPPLEMENTAL_METADATA,
+  withSupplementalMetadata,
+} from "./supplemental/supplemental-metadata.js";
+import { type PrebuiltFilter, selectPrebuilt } from "./prebuilt.js";
+import {
+  type CollectionReader,
+  operationSolutionsFrom,
+  readSolutionData,
+  serializeOperationSolutions,
+} from "./solutions.js";
 import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
 import { AzureIdentityTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-azure-identity";
 import { ClientSecretCredential } from "@azure/identity";
@@ -41,6 +51,16 @@ export interface GenerateOptions {
    * this is how the committed packages are regenerated from `metadata/dataverse-metadata.xml`.
    */
   fromCsdl?: string;
+  /**
+   * With the fetched `$metadata`, also write which solutions each operation comes from to this
+   * path (#304: `metadata/operation-solutions.json`). Read-only queries; needs the org.
+   */
+  saveSolutions?: string;
+  /**
+   * Generate only the prebuilt operations (#304) into the actions, functions and messages
+   * packages, and only the types they reach. `regen` passes the committed filter.
+   */
+  prebuilt?: Omit<PrebuiltFilter, "platform">;
 }
 
 /**
@@ -68,6 +88,10 @@ export async function generateTargets(
   const fs = await import("fs/promises");
   const path = await import("path");
   let metadata: string;
+  let client: DataverseClient | undefined;
+  if (options.saveSolutions && options.fromCsdl) {
+    throw new Error("generateTargets: saveSolutions reads the org; it can't be used with fromCsdl");
+  }
   if (options.fromCsdl) {
     metadata = snapshotCsdl(await fs.readFile(options.fromCsdl, "utf-8"));
     console.log(`📄 Read CSDL from ${path.basename(options.fromCsdl)}\n`);
@@ -77,7 +101,8 @@ export async function generateTargets(
     }
     console.log("📥 Fetching $metadata from Dataverse...");
     // Rewritten as it's committed (#293): sorted, one element per line, no org-specific tables
-    metadata = snapshotCsdl(await fetchMetadata(config as SdkGeneratorConfig));
+    client = createClient(config as SdkGeneratorConfig);
+    metadata = snapshotCsdl(await fetchMetadata(client));
     console.log("✅ $metadata fetched successfully\n");
   }
 
@@ -85,6 +110,24 @@ export async function generateTargets(
     await fs.mkdir(path.dirname(path.resolve(options.saveCsdl)), { recursive: true });
     await fs.writeFile(options.saveCsdl, metadata, "utf-8");
     console.log(`💾 Saved CSDL to ${options.saveCsdl}\n`);
+  }
+
+  if (options.saveSolutions && client) {
+    // The operations as the snapshot has them (org-specific ones are already left out)
+    const csdl = parseEdmx(metadata);
+    const names = [...csdl.actions, ...csdl.functions].map((op) => op.name);
+    console.log(`🧩 Reading the solutions of ${String(new Set(names).size)} operations...`);
+    const data = await readSolutionData(collectionReader(client));
+    const map = operationSolutionsFrom(data, names);
+    await fs.mkdir(path.dirname(path.resolve(options.saveSolutions)), { recursive: true });
+    // Formatted as the repository's prettier config wants it (format:check covers the file)
+    const prettier = await import("prettier");
+    const formatted = await prettier.format(serializeOperationSolutions(map), {
+      ...(await prettier.resolveConfig(path.resolve(options.saveSolutions))),
+      filepath: options.saveSolutions,
+    });
+    await fs.writeFile(options.saveSolutions, formatted, "utf-8");
+    console.log(`💾 Saved operation solutions to ${options.saveSolutions}\n`);
   }
 
   if (targets.length > 0) await generateFromCsdl(metadata, config.targets, targets, options);
@@ -99,9 +142,9 @@ export async function generateFromCsdl(
   metadata: string,
   targetConfigs: SdkGeneratorConfig["targets"],
   targets: GenerationTarget[],
-  options: Pick<GenerateOptions, "dryRun" | "purge"> = {}
+  options: Pick<GenerateOptions, "dryRun" | "purge" | "prebuilt"> = {}
 ): Promise<void> {
-  const { dryRun = false, purge = false } = options;
+  const { dryRun = false, purge = false, prebuilt } = options;
   // 3. Parse CSDL
   console.log("🔍 Parsing CSDL...");
   const csdl = canonicalizeCsdl(parseEdmx(metadata));
@@ -111,7 +154,18 @@ export async function generateFromCsdl(
   console.log(`✅ Parsed ${String(csdl.actions.length)} actions`);
   console.log(`✅ Parsed ${String(csdl.functions.length)} functions\n`);
   // Operations Dataverse runs but leaves out of $metadata, such as ExportToExcel (#75)
-  const operations = withSupplementalMetadata(csdl);
+  let operations = withSupplementalMetadata(csdl);
+  if (prebuilt) {
+    // Platform + Sales + Customer Service only (#304); the supplemental operations are platform
+    const supplemental = parseEdmx(SUPPLEMENTAL_METADATA);
+    const platform = [...supplemental.actions, ...supplemental.functions].map((op) => op.name);
+    const selection = selectPrebuilt(operations, { ...prebuilt, platform });
+    operations = selection.csdl;
+    console.log(
+      `✅ Prebuilt: ${String(selection.included.length)} operations, ` +
+        `${String(selection.excluded.length)} left to dataverse-gen\n`
+    );
+  }
 
   // 4. Generate each target
   for (const target of targets) {
@@ -156,45 +210,59 @@ export async function generateFromCsdl(
   }
 }
 
-/**
- * Fetch $metadata from Dataverse.
- *
- * @param config - Generator configuration
- * @returns Raw $metadata XML
- */
-export async function fetchMetadata(config: SdkGeneratorConfig): Promise<string> {
+/** A client for the configured environment, signed in with client credentials. */
+function createClient(config: SdkGeneratorConfig): DataverseClient {
   // Normalize Dataverse URL (remove trailing slash)
   const dataverseUrl = config.dataverseUrl.replace(/\/$/, "");
-
-  // Create credential
   const credential = new ClientSecretCredential(
     config.authentication.tenantId,
     config.authentication.clientId,
     config.authentication.clientSecret
   );
-
-  // Create scope for Dataverse
   const scope = `${dataverseUrl}/.default`;
   // The scope contains the environment URL, which isn't printed (public CI logs, #90)
   console.log("🔑 Requesting a token for the Dataverse environment");
+  const tokenProvider = new AzureIdentityTokenProvider(credential, { scopes: [scope] });
+  return new DataverseClient({ baseUrl: dataverseUrl, tokenProvider, scopes: [scope] });
+}
 
-  // Create token provider
-  const tokenProvider = new AzureIdentityTokenProvider(credential, {
-    scopes: [scope],
-  });
+/** GET a Web API collection, every page. The errors don't include the URL. */
+function collectionReader(client: DataverseClient): CollectionReader {
+  return async (path) => {
+    const rows: Array<Record<string, unknown>> = [];
+    let url: string | undefined = `${client.getBaseUrl()}/${path}`;
+    while (url) {
+      const response = await client.send({
+        method: "GET",
+        url,
+        headers: { Accept: "application/json", Prefer: "odata.maxpagesize=5000" },
+      });
+      if (!response.ok) {
+        throw new Error(
+          `Failed to read ${path.split("?")[0]} (HTTP ${String(response.status)}): ${await response.text()}`
+        );
+      }
+      const page = (await response.json()) as {
+        value: Array<Record<string, unknown>>;
+        "@odata.nextLink"?: string;
+      };
+      rows.push(...page.value);
+      url = page["@odata.nextLink"];
+    }
+    return rows;
+  };
+}
 
-  // Create client
-  const client = new DataverseClient({
-    baseUrl: dataverseUrl,
-    tokenProvider,
-    scopes: [scope], // Explicitly pass scopes to client
-  });
-
-  // Fetch $metadata (returns XML, not JSON)
-  // We need to make a direct request since $metadata returns XML
-  const baseUrl = client.getBaseUrl();
-  const metadataUrl = `${baseUrl}/$metadata`;
-
+/**
+ * Fetch $metadata from Dataverse.
+ *
+ * @param source - Generator configuration, or a client for the environment
+ * @returns Raw $metadata XML
+ */
+export async function fetchMetadata(source: SdkGeneratorConfig | DataverseClient): Promise<string> {
+  const client = source instanceof DataverseClient ? source : createClient(source);
+  // $metadata returns XML, not JSON, so it's a direct request
+  const metadataUrl = `${client.getBaseUrl()}/$metadata`;
   const response = await client.send({
     method: "GET",
     url: metadataUrl,
@@ -208,12 +276,13 @@ export async function fetchMetadata(config: SdkGeneratorConfig): Promise<string>
     throw new Error(`Failed to fetch $metadata (HTTP ${String(response.status)}): ${errorText}`);
   }
 
-  const text = await response.text();
-  return text;
+  return response.text();
 }
 
 export { canonicalizeCsdl } from "./parsers/canonical.js";
 export { ORG_SPECIFIC_PREFIXES, snapshotCsdl } from "./snapshot.js";
+export * from "./prebuilt.js";
+export * from "./solutions.js";
 export {
   SUPPLEMENTAL_METADATA,
   withSupplementalMetadata,

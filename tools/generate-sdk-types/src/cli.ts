@@ -27,6 +27,10 @@ program
     "--from-csdl <path>",
     "Generate from a saved CSDL/EDMX file instead of the live $metadata (no network, no credentials)"
   )
+  .option(
+    "--save-solutions <path>",
+    "Also save which solutions each operation comes from (read-only queries; not with --from-csdl)"
+  )
   .option("--csdl-only", "Only fetch and save the CSDL (with --save-csdl); generate nothing", false)
   .option("--purge", "Delete existing output files before generating", false)
   .action(async (targets: string[], options) => {
@@ -136,7 +140,11 @@ program
       // Determine what to generate
       if (options.csdlOnly) {
         if (!saveCsdl) throw new Error("--csdl-only needs --save-csdl <path>");
-        await generateTargets(config, [], { saveCsdl, fromCsdl: options.fromCsdl });
+        await generateTargets(config, [], {
+          saveCsdl,
+          saveSolutions: options.saveSolutions,
+          fromCsdl: options.fromCsdl,
+        });
       } else if (targets.length > 0) {
         const validTargets: GenerationTarget[] = [];
         for (const target of targets) {
@@ -152,6 +160,7 @@ program
         await generateTargets(config, validTargets, {
           dryRun: options.dryRun,
           saveCsdl,
+          saveSolutions: options.saveSolutions,
           purge: options.purge,
           fromCsdl: options.fromCsdl,
         });
@@ -160,6 +169,7 @@ program
         await generateTargets(config, [...ALL_TARGETS], {
           dryRun: options.dryRun,
           saveCsdl,
+          saveSolutions: options.saveSolutions,
           purge: options.purge,
           fromCsdl: options.fromCsdl,
         });

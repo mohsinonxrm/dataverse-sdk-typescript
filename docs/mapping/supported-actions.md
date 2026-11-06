@@ -2,7 +2,7 @@
 
 > **Package**: `@mohsinonxrm/dataverse-sdk-actions`
 >
-> **Coverage**: <!-- count:actions -->1,556<!-- /count --> typed Web API actions, generated from a Dataverse `$metadata`. The lists below are generated from the package source by `pnpm --filter generate-sdk-types docs`, so every class, constructor and route shown exists.
+> **Coverage**: <!-- count:actions -->1,072<!-- /count --> typed Web API actions of the platform, Sales and Customer Service, generated from a Dataverse `$metadata`. The lists below are generated from the package source by `pnpm --filter generate-sdk-types docs`, so every class, constructor and route shown exists.
 
 ---
 
@@ -23,8 +23,11 @@ the typed response.
   entity payload with column values, `@odata.type` and `<lookup>@odata.bind` values.
 - An operation declared with several bindings has one class per binding, `<Name>_<table>Action`
   (for example `AddItemCampaign_listAction`).
-- The package also covers solution-specific actions (`msdyn_*`, `msdynmkt_*`, `CCaaS_*`, …) that
-  were installed in the org it was generated from. They only work in an org with the same solution.
+- The package holds the actions of the platform and of the Sales and Customer Service solutions,
+  chosen by solution (the [solution table](../../tools/generate-sdk-types/metadata/README.md#which-operations-are-prebuilt) lists them). Some are `msdyn_*` actions of those
+  solutions, which work only in an org that has the solution. The actions of Contact Center
+  (`CCaaS_*`), Field Service, Customer Insights - Journeys (`msdynmkt_*`) and the other apps, and
+  your own custom APIs, aren't in it: generate them with [dataverse-gen](../getting-started.md#generate-the-rest-with-dataverse-gen).
 
 ---
 

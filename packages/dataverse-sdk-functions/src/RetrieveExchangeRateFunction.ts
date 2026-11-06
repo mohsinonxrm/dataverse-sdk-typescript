@@ -1,5 +1,5 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatParameterAlias } from "./internal/odataLiteral.js";
+import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
+import { formatParameterAlias } from './internal/odataLiteral.js';
 
 /**
  * Response from the RetrieveExchangeRate function.
@@ -25,7 +25,9 @@ export interface RetrieveExchangeRateFunctionParameters {
  * Unbound function
  */
 export class RetrieveExchangeRateFunction implements Executable<RetrieveExchangeRateResponse> {
-  constructor(public readonly parameters: RetrieveExchangeRateFunctionParameters) {}
+  constructor(
+    public readonly parameters: RetrieveExchangeRateFunctionParameters,
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveExchangeRate`;
@@ -35,17 +37,17 @@ export class RetrieveExchangeRateFunction implements Executable<RetrieveExchange
     const aliases: string[] = [];
     if (this.parameters.TransactionCurrencyId !== undefined) {
       aliases.push(`TransactionCurrencyId=@p1`);
-      params.append("@p1", formatParameterAlias(this.parameters.TransactionCurrencyId, "Edm.Guid"));
+      params.append('@p1', formatParameterAlias(this.parameters.TransactionCurrencyId, 'Edm.Guid'));
     }
     if (aliases.length > 0) {
-      url += `(${aliases.join(",")})?${params.toString()}`;
+      url += `(${aliases.join(',')})?${params.toString()}`;
     }
 
     return {
-      method: "GET",
+      method: 'GET',
       url,
       headers: {
-        Accept: "application/json",
+        'Accept': 'application/json',
       },
     };
   }

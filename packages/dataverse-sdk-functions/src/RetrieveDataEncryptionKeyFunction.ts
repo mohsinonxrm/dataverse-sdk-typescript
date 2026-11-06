@@ -1,4 +1,4 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
 
 /**
  * Response from the RetrieveDataEncryptionKey function.
@@ -20,10 +20,10 @@ export class RetrieveDataEncryptionKeyFunction implements Executable<RetrieveDat
     let url = `${baseUrl}/RetrieveDataEncryptionKey`;
 
     return {
-      method: "GET",
+      method: 'GET',
       url,
       headers: {
-        Accept: "application/json",
+        'Accept': 'application/json',
       },
     };
   }

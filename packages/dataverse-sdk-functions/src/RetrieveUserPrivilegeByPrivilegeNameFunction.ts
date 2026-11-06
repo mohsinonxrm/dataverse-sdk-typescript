@@ -1,6 +1,6 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatParameterAlias } from "./internal/odataLiteral.js";
-import type { RolePrivilege } from "./types/index.js";
+import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
+import { formatParameterAlias } from './internal/odataLiteral.js';
+import type { RolePrivilege } from './types/index.js';
 
 /**
  * Response from the RetrieveUserPrivilegeByPrivilegeName function.
@@ -32,7 +32,7 @@ export interface RetrieveUserPrivilegeByPrivilegeNameFunctionParameters {
 export class RetrieveUserPrivilegeByPrivilegeNameFunction implements Executable<RetrieveUserPrivilegeByPrivilegeNameResponse> {
   constructor(
     public readonly systemuserId: string,
-    public readonly parameters: RetrieveUserPrivilegeByPrivilegeNameFunctionParameters
+    public readonly parameters: RetrieveUserPrivilegeByPrivilegeNameFunctionParameters,
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -44,21 +44,21 @@ export class RetrieveUserPrivilegeByPrivilegeNameFunction implements Executable<
     const aliases: string[] = [];
     if (this.parameters.PrivilegeName !== undefined) {
       aliases.push(`PrivilegeName=@p1`);
-      params.append("@p1", formatParameterAlias(this.parameters.PrivilegeName, "Edm.String"));
+      params.append('@p1', formatParameterAlias(this.parameters.PrivilegeName, 'Edm.String'));
     }
     if (this.parameters.ExcludeTeamBasic !== undefined) {
       aliases.push(`ExcludeTeamBasic=@p2`);
-      params.append("@p2", formatParameterAlias(this.parameters.ExcludeTeamBasic, "Edm.Boolean"));
+      params.append('@p2', formatParameterAlias(this.parameters.ExcludeTeamBasic, 'Edm.Boolean'));
     }
     if (aliases.length > 0) {
-      url += `(${aliases.join(",")})?${params.toString()}`;
+      url += `(${aliases.join(',')})?${params.toString()}`;
     }
 
     return {
-      method: "GET",
+      method: 'GET',
       url,
       headers: {
-        Accept: "application/json",
+        'Accept': 'application/json',
       },
     };
   }

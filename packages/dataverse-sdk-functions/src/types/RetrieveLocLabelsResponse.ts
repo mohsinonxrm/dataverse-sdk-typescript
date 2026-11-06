@@ -1,4 +1,4 @@
-import type { Label } from "./Label.js";
+import type { Label } from './Label.js';
 
 /**
  * RetrieveLocLabelsResponse complex type

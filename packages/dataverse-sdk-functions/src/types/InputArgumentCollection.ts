@@ -1,4 +1,4 @@
-import type { InputArgument } from "./InputArgument.js";
+import type { InputArgument } from './InputArgument.js';
 
 /**
  * InputArgumentCollection complex type

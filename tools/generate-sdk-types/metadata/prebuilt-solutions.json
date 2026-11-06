@@ -1,0 +1,507 @@
+{
+  "solutions": {
+    "AccessTeam": { "app": "Platform", "prebuilt": true },
+    "ApiMessagesExtension": { "app": "Platform", "prebuilt": true },
+    "AppModule": { "app": "Platform", "prebuilt": true },
+    "AppModuleMetadataSolution": { "app": "Platform", "prebuilt": true },
+    "AuthorizationCore": { "app": "Platform", "prebuilt": true },
+    "AutoDataCapture": { "app": "Sales", "prebuilt": true, "note": "Borderline: Sales Insights" },
+    "AutomaticRecordCreationExtension": { "app": "Customer Service", "prebuilt": true },
+    "BulkDeleteExtensionSolution": { "app": "Platform", "prebuilt": true },
+    "CanvasAppMetadataExtensionSolution": { "app": "Platform", "prebuilt": true },
+    "DataEngineCascading": { "app": "Platform", "prebuilt": true },
+    "DataEngineCascadingXRM": { "app": "Platform", "prebuilt": true },
+    "datalakeworkspaces": { "app": "Platform", "prebuilt": true },
+    "DecisionEngine": { "app": "Contact Center", "prebuilt": false, "note": "Unified routing" },
+    "DynamicsMKT_AnalyticsUx": { "app": "Customer Insights - Journeys", "prebuilt": false },
+    "DynamicsMKT_BaseSolution": { "app": "Customer Insights - Journeys", "prebuilt": false },
+    "DynamicsMKT_Consent": { "app": "Customer Insights - Journeys", "prebuilt": false },
+    "DynamicsMKT_ConsentProvider": { "app": "Customer Insights - Journeys", "prebuilt": false },
+    "DynamicsMKT_CxpAnalytics": { "app": "Customer Insights - Journeys", "prebuilt": false },
+    "DynamicsMKT_FeatureConfiguration": {
+      "app": "Customer Insights - Journeys",
+      "prebuilt": false
+    },
+    "DynamicsMKT_MetadataStore": { "app": "Customer Insights - Journeys", "prebuilt": false },
+    "DynamicsMKT_PersonalizationUI": { "app": "Customer Insights - Journeys", "prebuilt": false },
+    "DynamicsMKT_SharedChannelExtensions": {
+      "app": "Customer Insights - Journeys",
+      "prebuilt": false
+    },
+    "EnvironmentVariables": { "app": "Platform", "prebuilt": true },
+    "EnvironmentVariablesV2": { "app": "Platform", "prebuilt": true },
+    "ExportSolutionUpload": { "app": "Platform", "prebuilt": true },
+    "FileStoreServiceExtension": { "app": "Platform", "prebuilt": true },
+    "IoTConnector": {
+      "app": "Connected Customer Service (IoT)",
+      "prebuilt": false,
+      "note": "Borderline: Installed with Customer Service, but an IoT add-on"
+    },
+    "IoTProviders": {
+      "app": "Connected Customer Service (IoT)",
+      "prebuilt": false,
+      "note": "Borderline: Installed with Customer Service, but an IoT add-on"
+    },
+    "LicenseEnforcement": { "app": "Platform", "prebuilt": true },
+    "MCPPlatform_Extensions": { "app": "Platform", "prebuilt": true },
+    "MetadataExtension": { "app": "Platform", "prebuilt": true },
+    "MicrosoftDynamics_DigitalAssets": { "app": "Customer Insights - Journeys", "prebuilt": false },
+    "MicrosoftDynamicsScheduling": {
+      "app": "Universal Resource Scheduling",
+      "prebuilt": false,
+      "note": "Borderline: Shared by Field Service and Project Operations"
+    },
+    "MicrosoftDynamicsScheduling3_CumulativePatch": {
+      "app": "Universal Resource Scheduling",
+      "prebuilt": false,
+      "note": "Borderline: Shared by Field Service and Project Operations"
+    },
+    "MicrosoftFlowExtensionsCore": {
+      "app": "Platform",
+      "prebuilt": true,
+      "note": "Power Automate core components"
+    },
+    "MicrosoftFormsPro": {
+      "app": "Customer Voice",
+      "prebuilt": false,
+      "note": "Borderline: Surveys"
+    },
+    "MobileOfflineMembership": { "app": "Platform", "prebuilt": true },
+    "msdyn_acceleratedsales": {
+      "app": "Sales",
+      "prebuilt": true,
+      "note": "Borderline: Sales accelerator"
+    },
+    "msdyn_AgentCoach": { "app": "Contact Center", "prebuilt": false },
+    "msdyn_AgentGroupManager": { "app": "Contact Center", "prebuilt": false },
+    "msdyn_AIPlugins": {
+      "app": "Customer Service",
+      "prebuilt": true,
+      "note": "Borderline: Copilot in Customer Service"
+    },
+    "msdyn_AISolution": { "app": "Platform", "prebuilt": true, "note": "AI Builder" },
+    "msdyn_AISolutionFullAdditions": {
+      "app": "Platform",
+      "prebuilt": true,
+      "note": "Borderline: AI Builder; installed with the platform solutions"
+    },
+    "msdyn_AITestFrameworkSolution": {
+      "app": "Platform",
+      "prebuilt": true,
+      "note": "Borderline: AI test framework; installed with the platform solutions"
+    },
+    "msdyn_AppProfileManager": {
+      "app": "Customer Service",
+      "prebuilt": true,
+      "note": "Customer Service workspace app profiles"
+    },
+    "msdyn_AssetCommon": {
+      "app": "Connected Customer Service (IoT)",
+      "prebuilt": false,
+      "note": "Borderline: Asset hierarchy, shared with Field Service"
+    },
+    "msdyn_AutonomousSQA": {
+      "app": "Sales",
+      "prebuilt": true,
+      "note": "Borderline: Sales agent (qualification)"
+    },
+    "msdyn_BulkManagement": {
+      "app": "Contact Center",
+      "prebuilt": false,
+      "note": "Unified routing"
+    },
+    "msdyn_CaseManagementIntelligence": {
+      "app": "Customer Service",
+      "prebuilt": true,
+      "note": "Borderline: Case management agents"
+    },
+    "msdyn_CDSReportSchemaChanges": { "app": "Platform", "prebuilt": true },
+    "msdyn_cef_core": {
+      "app": "Dynamics 365 (shared)",
+      "prebuilt": true,
+      "note": "Borderline: CE foundation insights, installed with the Sales agents"
+    },
+    "msdyn_CIFrameworkPatch": {
+      "app": "Contact Center",
+      "prebuilt": false,
+      "note": "Borderline: Channel Integration Framework"
+    },
+    "msdyn_Collaboration": {
+      "app": "Dynamics 365 (shared)",
+      "prebuilt": true,
+      "note": "Embedded Teams collaboration (Sales and Customer Service)"
+    },
+    "msdyn_ComponentVersioning": { "app": "Platform", "prebuilt": true },
+    "msdyn_ConnectedCustomerService": {
+      "app": "Connected Customer Service (IoT)",
+      "prebuilt": false,
+      "note": "Borderline: Installed with Customer Service, but an IoT add-on"
+    },
+    "msdyn_connectiongraph": {
+      "app": "Sales",
+      "prebuilt": true,
+      "note": "Borderline: Sales Insights (who knows whom)"
+    },
+    "msdyn_ConnectionInstances": { "app": "Platform", "prebuilt": true },
+    "msdyn_ContactCenterClientSolution": { "app": "Contact Center", "prebuilt": false },
+    "msdyn_ConversationOrchestration": { "app": "Contact Center", "prebuilt": false },
+    "msdyn_Copresence": { "app": "Platform", "prebuilt": true },
+    "msdyn_CSAdminCenterApp": {
+      "app": "Customer Service",
+      "prebuilt": true,
+      "note": "Customer Service admin center"
+    },
+    "msdyn_CSCopilotPlugins": {
+      "app": "Customer Service",
+      "prebuilt": true,
+      "note": "Borderline: Copilot in Customer Service"
+    },
+    "msdyn_CSIntelligence": {
+      "app": "Customer Service",
+      "prebuilt": true,
+      "note": "Borderline: Copilot in Customer Service"
+    },
+    "msdyn_CSSurveyBase": {
+      "app": "Contact Center",
+      "prebuilt": false,
+      "note": "Borderline: Post-conversation surveys"
+    },
+    "msdyn_CustomerServiceHealth": { "app": "Customer Service", "prebuilt": true },
+    "msdyn_D365ChannelDefinitions": {
+      "app": "Contact Center",
+      "prebuilt": false,
+      "note": "Borderline: Messaging channel definitions (Contact Center and Journeys)"
+    },
+    "msdyn_DataInsightsAndAnalytics": {
+      "app": "Dynamics 365 (shared)",
+      "prebuilt": true,
+      "note": "Borderline: Insights and analytics for Dynamics 365"
+    },
+    "msdyn_DataQualityAgent": {
+      "app": "Sales",
+      "prebuilt": true,
+      "note": "Borderline: Sales agent (data quality)"
+    },
+    "msdyn_DealClosingAgent": {
+      "app": "Sales",
+      "prebuilt": true,
+      "note": "Borderline: Sales agent (close)"
+    },
+    "msdyn_EmailIntelligence": {
+      "app": "Dynamics 365 (shared)",
+      "prebuilt": true,
+      "note": "Borderline: Copilot email assist (Sales and Customer Service)"
+    },
+    "msdyn_entityintelligence": {
+      "app": "Sales",
+      "prebuilt": true,
+      "note": "Borderline: Sales Insights (field predictions)"
+    },
+    "msdyn_FeatureControlSettingPlugin": { "app": "Platform", "prebuilt": true },
+    "msdyn_Forecasting": { "app": "Sales", "prebuilt": true },
+    "msdyn_GovernanceAgentIntelligence": {
+      "app": "Dynamics 365 (shared)",
+      "prebuilt": true,
+      "note": "Borderline: Agent guardrails, installed with the Sales agents"
+    },
+    "msdyn_InsightsAppPlatform": { "app": "Platform", "prebuilt": true },
+    "msdyn_IntelligentAgentEnhancer": {
+      "app": "Dynamics 365 (shared)",
+      "prebuilt": true,
+      "note": "Borderline: Agent tuning, installed with the Sales agents"
+    },
+    "msdyn_IntentEngineCore": {
+      "app": "Contact Center",
+      "prebuilt": false,
+      "note": "Borderline: Customer intent agent"
+    },
+    "msdyn_leadhygiene": { "app": "Sales", "prebuilt": true },
+    "msdyn_LinkedInExtensions": { "app": "Sales", "prebuilt": true },
+    "msdyn_MobileAppsSolution": { "app": "Platform", "prebuilt": true },
+    "msdyn_ModernCaseManagement": {
+      "app": "Customer Service",
+      "prebuilt": true,
+      "note": "Enhanced case experience"
+    },
+    "msdyn_NextBestActionAgent": {
+      "app": "Sales",
+      "prebuilt": true,
+      "note": "Borderline: Sales agent (recommended actions)"
+    },
+    "msdyn_OCIER": { "app": "Contact Center", "prebuilt": false },
+    "msdyn_OCIntelligence": { "app": "Contact Center", "prebuilt": false },
+    "msdyn_OmnichannelAuthenticationAntifraudAgent": { "app": "Contact Center", "prebuilt": false },
+    "msdyn_OmnichannelBotEnablerPatch": { "app": "Contact Center", "prebuilt": false },
+    "msdyn_OmnichannelCCaaSAnalytics": { "app": "Contact Center", "prebuilt": false },
+    "msdyn_OmnichannelCCaaSAPI": { "app": "Contact Center", "prebuilt": false },
+    "msdyn_OmnichannelCCaaSPESApi": { "app": "Contact Center", "prebuilt": false },
+    "msdyn_OmnichannelCCaaSVoiceAPI": { "app": "Contact Center", "prebuilt": false },
+    "msdyn_OmnichannelEngagementHubPatch": { "app": "Contact Center", "prebuilt": false },
+    "msdyn_OmnichannelFacebookPatch": { "app": "Contact Center", "prebuilt": false },
+    "msdyn_OmnichannelRealtimeMonitoring": { "app": "Contact Center", "prebuilt": false },
+    "msdyn_OmnichannelSharedBase": { "app": "Contact Center", "prebuilt": false },
+    "msdyn_OmnichannelSMSPatch": { "app": "Contact Center", "prebuilt": false },
+    "msdyn_OmnichannelSocialChannelsPatch": { "app": "Contact Center", "prebuilt": false },
+    "msdyn_OmnichannelTeamsPatch": { "app": "Contact Center", "prebuilt": false },
+    "msdyn_OnboardingAgent": {
+      "app": "Sales",
+      "prebuilt": true,
+      "note": "Borderline: Agent onboarding, added by an update after the Sales agents"
+    },
+    "msdyn_PowerAIExtensionsBase": { "app": "Platform", "prebuilt": true },
+    "msdyn_PowerAppsChecker": { "app": "Platform", "prebuilt": true, "note": "Solution checker" },
+    "msdyn_PredictiveScoringCommon": {
+      "app": "Sales",
+      "prebuilt": true,
+      "note": "Borderline: Sales Insights"
+    },
+    "msdyn_QMS": {
+      "app": "Contact Center",
+      "prebuilt": false,
+      "note": "Borderline: Quality management (quality evaluation agent)"
+    },
+    "msdyn_QMSConversation": {
+      "app": "Contact Center",
+      "prebuilt": false,
+      "note": "Borderline: Quality management"
+    },
+    "msdyn_QMSIntelligence": {
+      "app": "Contact Center",
+      "prebuilt": false,
+      "note": "Borderline: Quality management"
+    },
+    "msdyn_RelevanceSearch": { "app": "Platform", "prebuilt": true, "note": "Dataverse search" },
+    "msdyn_SalesAgentsCommon": {
+      "app": "Sales",
+      "prebuilt": true,
+      "note": "Borderline: Sales agents"
+    },
+    "msdyn_SalesConfigurationAgent": {
+      "app": "Sales",
+      "prebuilt": true,
+      "note": "Borderline: Sales agents"
+    },
+    "msdyn_SalesCopilot": {
+      "app": "Sales",
+      "prebuilt": true,
+      "note": "Borderline: Copilot in Sales"
+    },
+    "msdyn_SalesLeadResearch": {
+      "app": "Sales",
+      "prebuilt": true,
+      "note": "Borderline: Sales agent (lead research)"
+    },
+    "msdyn_SalesOpportunityResearch": {
+      "app": "Sales",
+      "prebuilt": true,
+      "note": "Borderline: Sales agent (opportunity research)"
+    },
+    "msdyn_SalesProfilerAgent": {
+      "app": "Sales",
+      "prebuilt": true,
+      "note": "Borderline: Sales agents"
+    },
+    "msdyn_SalesRouting": { "app": "Sales", "prebuilt": true, "note": "Assignment rules" },
+    "msdyn_SalesSequences": { "app": "Sales", "prebuilt": true },
+    "msdyn_screenrecording_manager": { "app": "Contact Center", "prebuilt": false },
+    "msdyn_segment": { "app": "Sales", "prebuilt": true },
+    "msdyn_Sequence": { "app": "Sales", "prebuilt": true },
+    "msdyn_SimulationAgent": { "app": "Contact Center", "prebuilt": false },
+    "msdyn_SmartDataImportBase": { "app": "Platform", "prebuilt": true },
+    "msdyn_SourceControlIntegration": {
+      "app": "Platform",
+      "prebuilt": true,
+      "note": "Dataverse Git integration"
+    },
+    "msdyn_Swarming": { "app": "Customer Service", "prebuilt": true },
+    "msdyn_SynapseLink": { "app": "Platform", "prebuilt": true },
+    "msdyn_TeamsConfigForSales": { "app": "Sales", "prebuilt": true },
+    "msdyn_TransformationAgentUX": {
+      "app": "Contact Center",
+      "prebuilt": false,
+      "note": "Borderline: Transformation agent, installed with Contact Center"
+    },
+    "msdyn_TransformContactCenter": { "app": "Contact Center", "prebuilt": false },
+    "msdyn_TrustCenterAdoptCore": {
+      "app": "Dynamics 365 (shared)",
+      "prebuilt": true,
+      "note": "Borderline: Feature rollout scheduling"
+    },
+    "msdyn_UCICalendar": { "app": "Platform", "prebuilt": true },
+    "msdyn_UnifiedRoutingFirstPartyIntegration": {
+      "app": "Contact Center",
+      "prebuilt": false,
+      "note": "Unified routing"
+    },
+    "msdyn_UnifiedRoutingForEntity": {
+      "app": "Contact Center",
+      "prebuilt": false,
+      "note": "Unified routing"
+    },
+    "msdyn_UnifiedRoutingRuleTracker": {
+      "app": "Contact Center",
+      "prebuilt": false,
+      "note": "Unified routing"
+    },
+    "msdyn_userrating": { "app": "Platform", "prebuilt": true },
+    "msdynce_ActivitiesPatch": { "app": "Dynamics 365 (shared)", "prebuilt": true },
+    "msdynce_AnyEntityRoutingRule": {
+      "app": "Contact Center",
+      "prebuilt": false,
+      "note": "Borderline: Unified routing for records"
+    },
+    "msdynce_ArcMigration": { "app": "Customer Service", "prebuilt": true },
+    "msdynce_CRMExtensions": { "app": "Dynamics 365 (shared)", "prebuilt": true },
+    "msdynce_EmailTemplateConfigSolution": { "app": "Dynamics 365 (shared)", "prebuilt": true },
+    "msdynce_EntityRouting": {
+      "app": "Contact Center",
+      "prebuilt": false,
+      "note": "Unified routing core"
+    },
+    "msdynce_KnowledgeManagementFeatures": { "app": "Customer Service", "prebuilt": true },
+    "msdynce_KnowledgeManagementHarvestingSolution": {
+      "app": "Customer Service",
+      "prebuilt": true,
+      "note": "Borderline: Knowledge harvesting agent"
+    },
+    "msdynce_KnowledgeManagementOnlineFeatures": { "app": "Customer Service", "prebuilt": true },
+    "msdynce_KnowledgeManagementPatch": { "app": "Customer Service", "prebuilt": true },
+    "msdynce_LeadManagement": { "app": "Sales", "prebuilt": true },
+    "msdynce_LeadManagementPatch": { "app": "Sales", "prebuilt": true },
+    "msdynce_Marketing": {
+      "app": "Sales",
+      "prebuilt": true,
+      "note": "Campaigns and marketing lists, part of Sales (not Customer Insights - Journeys)"
+    },
+    "msdynce_MarketingEntitiesUpdateMetadata": { "app": "Sales", "prebuilt": true },
+    "msdynce_MarketingPatch": { "app": "Sales", "prebuilt": true },
+    "msdynce_MarketingPatch201905": { "app": "Sales", "prebuilt": true },
+    "msdynce_MarketingSales": { "app": "Sales", "prebuilt": true },
+    "msdynce_MarketingSalesPatch": { "app": "Sales", "prebuilt": true },
+    "msdynce_MarketingUpdateListMetadata": { "app": "Sales", "prebuilt": true },
+    "msdynce_Notesanalysis": {
+      "app": "Sales",
+      "prebuilt": true,
+      "note": "Borderline: Sales Insights"
+    },
+    "msdynce_OfficeProductivity": {
+      "app": "Dynamics 365 (shared)",
+      "prebuilt": true,
+      "note": "SharePoint and Teams integration"
+    },
+    "msdynce_ProductManagement": { "app": "Sales", "prebuilt": true },
+    "msdynce_RelationshipAssistantAddOn": {
+      "app": "Sales",
+      "prebuilt": true,
+      "note": "Borderline: Sales Insights"
+    },
+    "msdynce_RoutingRule": {
+      "app": "Customer Service",
+      "prebuilt": true,
+      "note": "Classic routing rule sets (not unified routing)"
+    },
+    "msdynce_Sales": { "app": "Sales", "prebuilt": true },
+    "msdynce_SalesHealth": { "app": "Sales", "prebuilt": true },
+    "msdynce_SalesPatch": { "app": "Sales", "prebuilt": true },
+    "msdynce_SalesPatch201904": { "app": "Sales", "prebuilt": true },
+    "msdynce_SalesPatch202001": { "app": "Sales", "prebuilt": true },
+    "msdynce_Scheduling": {
+      "app": "Dynamics 365 (shared)",
+      "prebuilt": true,
+      "note": "Service scheduling (classic)"
+    },
+    "msdynce_SchedulingUpgrade": { "app": "Dynamics 365 (shared)", "prebuilt": true },
+    "msdynce_Service": { "app": "Customer Service", "prebuilt": true },
+    "msdynce_ServiceLevelAgreementExtension": { "app": "Customer Service", "prebuilt": true },
+    "msdynce_ServiceLevelAgreementMigration": { "app": "Customer Service", "prebuilt": true },
+    "msdynce_ServiceManagementControlsExtension": { "app": "Customer Service", "prebuilt": true },
+    "msdynce_ServicePatch201911": { "app": "Customer Service", "prebuilt": true },
+    "msdynce_ServiceUpgradeScripts": { "app": "Customer Service", "prebuilt": true },
+    "msdynce_SolutionsFrameworkExtensions": { "app": "Platform", "prebuilt": true },
+    "msdynce_SolutionsFrameworkMetadata": { "app": "Platform", "prebuilt": true },
+    "msdynce_Talkingpoints": {
+      "app": "Sales",
+      "prebuilt": true,
+      "note": "Borderline: Sales Insights"
+    },
+    "msft_ActivitiesInfra_Extensions": { "app": "Platform", "prebuilt": true },
+    "msft_authenticationextension": { "app": "Platform", "prebuilt": true },
+    "msft_BackgroundJobs": { "app": "Platform", "prebuilt": true },
+    "msft_ColumnLevelSecurity": { "app": "Platform", "prebuilt": true },
+    "msft_ConnectorProvider": {
+      "app": "Platform",
+      "prebuilt": true,
+      "note": "Virtual connector provider"
+    },
+    "msft_ContactAndAccount_Extensions": { "app": "Platform", "prebuilt": true },
+    "msft_DataArchivalBaseComponents": { "app": "Platform", "prebuilt": true },
+    "msft_DataEngineIndexMgmt": { "app": "Platform", "prebuilt": true },
+    "msft_DelegatedAuthorization": { "app": "Platform", "prebuilt": true },
+    "msft_DVInfoProtectionComponents": { "app": "Platform", "prebuilt": true },
+    "msft_PowerAppsCards": { "app": "Platform", "prebuilt": true },
+    "msft_PowerfxRuleSolutionApi": { "app": "Platform", "prebuilt": true },
+    "msft_powerplatformmanagedidentityextension": { "app": "Platform", "prebuilt": true },
+    "msft_PrivilegeChecker": { "app": "Platform", "prebuilt": true },
+    "msft_RealTimeCollaboration": { "app": "Platform", "prebuilt": true },
+    "msft_RecycleBinBaseComponents": { "app": "Platform", "prebuilt": true },
+    "msft_RuntimeExtensions": { "app": "Platform", "prebuilt": true },
+    "msft_RuntimeIntegration": { "app": "Platform", "prebuilt": true },
+    "msft_StorageAdvisorComponents": { "app": "Platform", "prebuilt": true },
+    "NonRelationalCustomActions": { "app": "Platform", "prebuilt": true },
+    "OCBaseURBase": { "app": "Contact Center", "prebuilt": false, "note": "Unified routing" },
+    "OCISBR": { "app": "Contact Center", "prebuilt": false, "note": "Unified routing" },
+    "OmnichannelBase": { "app": "Contact Center", "prebuilt": false },
+    "OmnichannelBotEnabler": { "app": "Contact Center", "prebuilt": false },
+    "OmnichannelChat": { "app": "Contact Center", "prebuilt": false },
+    "OmnichannelCommunicationBase": { "app": "Contact Center", "prebuilt": false },
+    "OmnichannelOutbound": { "app": "Contact Center", "prebuilt": false },
+    "OmnichannelSMS": { "app": "Contact Center", "prebuilt": false },
+    "OmnichannelSocialChannels": { "app": "Contact Center", "prebuilt": false },
+    "OmnichannelTelephony": { "app": "Contact Center", "prebuilt": false },
+    "PowerPages_RuntimeCore": {
+      "app": "Power Pages",
+      "prebuilt": false,
+      "note": "Borderline: Installed with the platform solutions, but not Dataverse itself"
+    },
+    "PowerPages_RuntimeExtensions": {
+      "app": "Power Pages",
+      "prebuilt": false,
+      "note": "Borderline: Installed with the platform solutions, but not Dataverse itself"
+    },
+    "PowerPlatformConnectionReferences": { "app": "Platform", "prebuilt": true },
+    "PowerVirtualAgents": {
+      "app": "Platform",
+      "prebuilt": true,
+      "note": "Borderline: Copilot Studio; installed with the platform solutions"
+    },
+    "PredictiveLeadScoring": {
+      "app": "Sales",
+      "prebuilt": true,
+      "note": "Borderline: Sales Insights"
+    },
+    "PredictiveOpportunityScoring": {
+      "app": "Sales",
+      "prebuilt": true,
+      "note": "Borderline: Sales Insights"
+    },
+    "ProcessMining": {
+      "app": "Process Mining",
+      "prebuilt": false,
+      "note": "Borderline: Installed with the platform solutions, but a separate product"
+    },
+    "RelationshipAnalytics": {
+      "app": "Sales",
+      "prebuilt": true,
+      "note": "Borderline: Sales Insights"
+    },
+    "Relationshipassistant": {
+      "app": "Sales",
+      "prebuilt": true,
+      "note": "Borderline: Sales Insights"
+    },
+    "SICommon": { "app": "Sales", "prebuilt": true, "note": "Borderline: Sales Insights" },
+    "SolutionComponentConfiguration": { "app": "Platform", "prebuilt": true },
+    "SolutionUpgradeInfrastructure": { "app": "Dynamics 365 (shared)", "prebuilt": true },
+    "System": { "app": "Platform", "prebuilt": true }
+  }
+}

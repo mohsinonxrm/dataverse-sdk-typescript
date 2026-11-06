@@ -1,5 +1,5 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatParameterAlias } from "./internal/odataLiteral.js";
+import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
+import { formatParameterAlias } from './internal/odataLiteral.js';
 
 /**
  * Response from the RetrieveMaskedAttributesForEntity function.
@@ -25,7 +25,9 @@ export interface RetrieveMaskedAttributesForEntityFunctionParameters {
  * Unbound function
  */
 export class RetrieveMaskedAttributesForEntityFunction implements Executable<RetrieveMaskedAttributesForEntityResponse> {
-  constructor(public readonly parameters: RetrieveMaskedAttributesForEntityFunctionParameters) {}
+  constructor(
+    public readonly parameters: RetrieveMaskedAttributesForEntityFunctionParameters,
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveMaskedAttributesForEntity`;
@@ -35,17 +37,17 @@ export class RetrieveMaskedAttributesForEntityFunction implements Executable<Ret
     const aliases: string[] = [];
     if (this.parameters.EntityLogicalName !== undefined) {
       aliases.push(`EntityLogicalName=@p1`);
-      params.append("@p1", formatParameterAlias(this.parameters.EntityLogicalName, "Edm.String"));
+      params.append('@p1', formatParameterAlias(this.parameters.EntityLogicalName, 'Edm.String'));
     }
     if (aliases.length > 0) {
-      url += `(${aliases.join(",")})?${params.toString()}`;
+      url += `(${aliases.join(',')})?${params.toString()}`;
     }
 
     return {
-      method: "GET",
+      method: 'GET',
       url,
       headers: {
-        Accept: "application/json",
+        'Accept': 'application/json',
       },
     };
   }

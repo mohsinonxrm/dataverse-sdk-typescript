@@ -1,5 +1,5 @@
-import type { AttributeMetadata } from "./AttributeMetadata.js";
-import type { LookupFormat } from "./LookupFormat.js";
+import type { AttributeMetadata } from './AttributeMetadata.js';
+import type { LookupFormat } from './LookupFormat.js';
 
 /**
  * LookupAttributeMetadata entity type

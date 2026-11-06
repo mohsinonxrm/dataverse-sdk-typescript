@@ -1,4 +1,4 @@
-import type { AnalyticsStoreDetails } from "./AnalyticsStoreDetails.js";
+import type { AnalyticsStoreDetails } from './AnalyticsStoreDetails.js';
 
 /**
  * RetrieveAnalyticsStoreDetailsResponse complex type

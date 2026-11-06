@@ -1,6 +1,6 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatParameterAlias } from "./internal/odataLiteral.js";
-import type { queue } from "./types/index.js";
+import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
+import { formatParameterAlias } from './internal/odataLiteral.js';
+import type { queue } from './types/index.js';
 
 /**
  * Response from the RetrieveUserQueues function.
@@ -8,9 +8,7 @@ import type { queue } from "./types/index.js";
  * The collection, read from the `value` of the response body.
  * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export type RetrieveUserQueuesResponse = Array<
-  queue & { "@odata.etag"?: string; "@odata.type"?: string }
->;
+export type RetrieveUserQueuesResponse = Array<queue & { "@odata.etag"?: string; "@odata.type"?: string }>;
 
 /**
  * Parameters of the RetrieveUserQueues function, by their CSDL names. A parameter the CSDL declares
@@ -31,7 +29,7 @@ export interface RetrieveUserQueuesFunctionParameters {
 export class RetrieveUserQueuesFunction implements Executable<RetrieveUserQueuesResponse> {
   constructor(
     public readonly systemuserId: string,
-    public readonly parameters: RetrieveUserQueuesFunctionParameters
+    public readonly parameters: RetrieveUserQueuesFunctionParameters,
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -43,17 +41,17 @@ export class RetrieveUserQueuesFunction implements Executable<RetrieveUserQueues
     const aliases: string[] = [];
     if (this.parameters.IncludePublic !== undefined) {
       aliases.push(`IncludePublic=@p1`);
-      params.append("@p1", formatParameterAlias(this.parameters.IncludePublic, "Edm.Boolean"));
+      params.append('@p1', formatParameterAlias(this.parameters.IncludePublic, 'Edm.Boolean'));
     }
     if (aliases.length > 0) {
-      url += `(${aliases.join(",")})?${params.toString()}`;
+      url += `(${aliases.join(',')})?${params.toString()}`;
     }
 
     return {
-      method: "GET",
+      method: 'GET',
       url,
       headers: {
-        Accept: "application/json",
+        'Accept': 'application/json',
       },
     };
   }

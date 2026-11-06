@@ -1,4 +1,4 @@
-import type { AttributePrivilege } from "./AttributePrivilege.js";
+import type { AttributePrivilege } from './AttributePrivilege.js';
 
 /**
  * RetrievePrincipalAttributePrivilegesResponse complex type

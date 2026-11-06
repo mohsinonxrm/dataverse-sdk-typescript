@@ -1,7 +1,7 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatParameterAlias } from "./internal/odataLiteral.js";
-import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
-import type { PagingInfo } from "./types/index.js";
+import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
+import { formatParameterAlias } from './internal/odataLiteral.js';
+import type { EntityReference } from '@mohsinonxrm/dataverse-sdk-entities-runtime';
+import type { PagingInfo } from './types/index.js';
 
 /**
  * Response from the RetrieveDuplicates function.
@@ -9,11 +9,7 @@ import type { PagingInfo } from "./types/index.js";
  * The collection, read from the `value` of the response body.
  * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export type RetrieveDuplicatesResponse = Array<{
-  "@odata.etag"?: string;
-  "@odata.type"?: string;
-  [column: string]: unknown;
-}>;
+export type RetrieveDuplicatesResponse = Array<{ "@odata.etag"?: string; "@odata.type"?: string; [column: string]: unknown }>;
 
 /**
  * Parameters of the RetrieveDuplicates function, by their CSDL names. A parameter the CSDL declares
@@ -31,7 +27,9 @@ export interface RetrieveDuplicatesFunctionParameters {
  * Unbound function
  */
 export class RetrieveDuplicatesFunction implements Executable<RetrieveDuplicatesResponse> {
-  constructor(public readonly parameters: RetrieveDuplicatesFunctionParameters) {}
+  constructor(
+    public readonly parameters: RetrieveDuplicatesFunctionParameters,
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveDuplicates`;
@@ -41,28 +39,25 @@ export class RetrieveDuplicatesFunction implements Executable<RetrieveDuplicates
     const aliases: string[] = [];
     if (this.parameters.BusinessEntity !== undefined) {
       aliases.push(`BusinessEntity=@p1`);
-      params.append(
-        "@p1",
-        formatParameterAlias(this.parameters.BusinessEntity, "mscrm.crmbaseentity", "EntityType")
-      );
+      params.append('@p1', formatParameterAlias(this.parameters.BusinessEntity, 'mscrm.crmbaseentity', 'EntityType'));
     }
     if (this.parameters.MatchingEntityName !== undefined) {
       aliases.push(`MatchingEntityName=@p2`);
-      params.append("@p2", formatParameterAlias(this.parameters.MatchingEntityName, "Edm.String"));
+      params.append('@p2', formatParameterAlias(this.parameters.MatchingEntityName, 'Edm.String'));
     }
     if (this.parameters.PagingInfo !== undefined) {
       aliases.push(`PagingInfo=@p3`);
-      params.append("@p3", JSON.stringify(this.parameters.PagingInfo));
+      params.append('@p3', JSON.stringify(this.parameters.PagingInfo));
     }
     if (aliases.length > 0) {
-      url += `(${aliases.join(",")})?${params.toString()}`;
+      url += `(${aliases.join(',')})?${params.toString()}`;
     }
 
     return {
-      method: "GET",
+      method: 'GET',
       url,
       headers: {
-        Accept: "application/json",
+        'Accept': 'application/json',
       },
     };
   }

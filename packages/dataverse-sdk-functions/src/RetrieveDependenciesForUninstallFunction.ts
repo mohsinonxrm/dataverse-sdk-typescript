@@ -1,6 +1,6 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatParameterAlias } from "./internal/odataLiteral.js";
-import type { dependency } from "./types/index.js";
+import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
+import { formatParameterAlias } from './internal/odataLiteral.js';
+import type { dependency } from './types/index.js';
 
 /**
  * Response from the RetrieveDependenciesForUninstall function.
@@ -8,9 +8,7 @@ import type { dependency } from "./types/index.js";
  * The collection, read from the `value` of the response body.
  * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export type RetrieveDependenciesForUninstallResponse = Array<
-  dependency & { "@odata.etag"?: string; "@odata.type"?: string }
->;
+export type RetrieveDependenciesForUninstallResponse = Array<dependency & { "@odata.etag"?: string; "@odata.type"?: string }>;
 
 /**
  * Parameters of the RetrieveDependenciesForUninstall function, by their CSDL names. A parameter the CSDL declares
@@ -26,7 +24,9 @@ export interface RetrieveDependenciesForUninstallFunctionParameters {
  * Unbound function
  */
 export class RetrieveDependenciesForUninstallFunction implements Executable<RetrieveDependenciesForUninstallResponse> {
-  constructor(public readonly parameters: RetrieveDependenciesForUninstallFunctionParameters) {}
+  constructor(
+    public readonly parameters: RetrieveDependenciesForUninstallFunctionParameters,
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveDependenciesForUninstall`;
@@ -36,17 +36,17 @@ export class RetrieveDependenciesForUninstallFunction implements Executable<Retr
     const aliases: string[] = [];
     if (this.parameters.SolutionUniqueName !== undefined) {
       aliases.push(`SolutionUniqueName=@p1`);
-      params.append("@p1", formatParameterAlias(this.parameters.SolutionUniqueName, "Edm.String"));
+      params.append('@p1', formatParameterAlias(this.parameters.SolutionUniqueName, 'Edm.String'));
     }
     if (aliases.length > 0) {
-      url += `(${aliases.join(",")})?${params.toString()}`;
+      url += `(${aliases.join(',')})?${params.toString()}`;
     }
 
     return {
-      method: "GET",
+      method: 'GET',
       url,
       headers: {
-        Accept: "application/json",
+        'Accept': 'application/json',
       },
     };
   }

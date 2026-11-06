@@ -1,5 +1,5 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { appmodule } from "./types/index.js";
+import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
+import type { appmodule } from './types/index.js';
 
 /**
  * Response from the RetrieveUnpublished function.
@@ -7,9 +7,7 @@ import type { appmodule } from "./types/index.js";
  * The record: the response body itself, with its annotations (not wrapped in `value`).
  * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export type RetrieveUnpublished_appmoduleResponse =
-  | (appmodule & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string })
-  | null;
+export type RetrieveUnpublished_appmoduleResponse = (appmodule & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string }) | null;
 
 /**
  * RetrieveUnpublished function
@@ -20,17 +18,19 @@ export type RetrieveUnpublished_appmoduleResponse =
  * The first argument is the id of the appmodule record to call it on.
  */
 export class RetrieveUnpublished_appmoduleFunction implements Executable<RetrieveUnpublished_appmoduleResponse> {
-  constructor(public readonly appmoduleId: string) {}
+  constructor(
+    public readonly appmoduleId: string,
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function
     let url = `${baseUrl}/appmodules(${this.appmoduleId})/Microsoft.Dynamics.CRM.RetrieveUnpublished`;
 
     return {
-      method: "GET",
+      method: 'GET',
       url,
       headers: {
-        Accept: "application/json",
+        'Accept': 'application/json',
       },
     };
   }

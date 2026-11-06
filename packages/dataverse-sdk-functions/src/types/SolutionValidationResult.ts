@@ -1,4 +1,4 @@
-import type { SolutionValidationResultType } from "./SolutionValidationResultType.js";
+import type { SolutionValidationResultType } from './SolutionValidationResultType.js';
 
 /**
  * SolutionValidationResult complex type

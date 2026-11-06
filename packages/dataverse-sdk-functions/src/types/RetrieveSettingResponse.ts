@@ -1,4 +1,4 @@
-import type { SettingDetail } from "./SettingDetail.js";
+import type { SettingDetail } from './SettingDetail.js';
 
 /**
  * RetrieveSettingResponse complex type

@@ -1,5 +1,5 @@
-import type { DeletedMetadataFilters } from "./DeletedMetadataFilters.js";
-import type { GuidCollection } from "./GuidCollection.js";
+import type { DeletedMetadataFilters } from './DeletedMetadataFilters.js';
+import type { GuidCollection } from './GuidCollection.js';
 
 /**
  * DeletedMetadataCollection complex type

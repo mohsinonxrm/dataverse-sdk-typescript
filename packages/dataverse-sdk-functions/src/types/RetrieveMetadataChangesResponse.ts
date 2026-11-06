@@ -1,5 +1,5 @@
-import type { ComplexEntityMetadata } from "./ComplexEntityMetadata.js";
-import type { DeletedMetadataCollection } from "./DeletedMetadataCollection.js";
+import type { ComplexEntityMetadata } from './ComplexEntityMetadata.js';
+import type { DeletedMetadataCollection } from './DeletedMetadataCollection.js';
 
 /**
  * RetrieveMetadataChangesResponse complex type

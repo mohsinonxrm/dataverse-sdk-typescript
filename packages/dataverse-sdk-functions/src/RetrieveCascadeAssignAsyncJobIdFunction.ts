@@ -1,5 +1,5 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatParameterAlias } from "./internal/odataLiteral.js";
+import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
+import { formatParameterAlias } from './internal/odataLiteral.js';
 
 /**
  * Response from the RetrieveCascadeAssignAsyncJobId function.
@@ -26,7 +26,9 @@ export interface RetrieveCascadeAssignAsyncJobIdFunctionParameters {
  * Unbound function
  */
 export class RetrieveCascadeAssignAsyncJobIdFunction implements Executable<RetrieveCascadeAssignAsyncJobIdResponse> {
-  constructor(public readonly parameters: RetrieveCascadeAssignAsyncJobIdFunctionParameters) {}
+  constructor(
+    public readonly parameters: RetrieveCascadeAssignAsyncJobIdFunctionParameters,
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveCascadeAssignAsyncJobId`;
@@ -36,17 +38,17 @@ export class RetrieveCascadeAssignAsyncJobIdFunction implements Executable<Retri
     const aliases: string[] = [];
     if (this.parameters.ParentEntityId !== undefined) {
       aliases.push(`ParentEntityId=@p1`);
-      params.append("@p1", formatParameterAlias(this.parameters.ParentEntityId, "Edm.Guid"));
+      params.append('@p1', formatParameterAlias(this.parameters.ParentEntityId, 'Edm.Guid'));
     }
     if (aliases.length > 0) {
-      url += `(${aliases.join(",")})?${params.toString()}`;
+      url += `(${aliases.join(',')})?${params.toString()}`;
     }
 
     return {
-      method: "GET",
+      method: 'GET',
       url,
       headers: {
-        Accept: "application/json",
+        'Accept': 'application/json',
       },
     };
   }

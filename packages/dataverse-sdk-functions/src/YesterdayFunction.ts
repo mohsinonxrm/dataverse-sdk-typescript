@@ -1,5 +1,5 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatParameterAlias } from "./internal/odataLiteral.js";
+import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
+import { formatParameterAlias } from './internal/odataLiteral.js';
 
 /**
  * Response from the Yesterday function.
@@ -22,7 +22,9 @@ export interface YesterdayFunctionParameters {
  * Unbound function
  */
 export class YesterdayFunction implements Executable<YesterdayResponse> {
-  constructor(public readonly parameters: YesterdayFunctionParameters) {}
+  constructor(
+    public readonly parameters: YesterdayFunctionParameters,
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/Yesterday`;
@@ -32,17 +34,17 @@ export class YesterdayFunction implements Executable<YesterdayResponse> {
     const aliases: string[] = [];
     if (this.parameters.PropertyName !== undefined) {
       aliases.push(`PropertyName=@p1`);
-      params.append("@p1", formatParameterAlias(this.parameters.PropertyName, "Edm.String"));
+      params.append('@p1', formatParameterAlias(this.parameters.PropertyName, 'Edm.String'));
     }
     if (aliases.length > 0) {
-      url += `(${aliases.join(",")})?${params.toString()}`;
+      url += `(${aliases.join(',')})?${params.toString()}`;
     }
 
     return {
-      method: "GET",
+      method: 'GET',
       url,
       headers: {
-        Accept: "application/json",
+        'Accept': 'application/json',
       },
     };
   }

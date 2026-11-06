@@ -1,10 +1,10 @@
-import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
-import type { EntityClusterMode } from "./EntityClusterMode.js";
-import type { EntitySetting } from "./EntitySetting.js";
-import type { Label } from "./Label.js";
-import type { MetadataBase } from "./MetadataBase.js";
-import type { OwnershipTypes } from "./OwnershipTypes.js";
-import type { SecurityPrivilegeMetadata } from "./SecurityPrivilegeMetadata.js";
+import type { BooleanManagedProperty } from './BooleanManagedProperty.js';
+import type { EntityClusterMode } from './EntityClusterMode.js';
+import type { EntitySetting } from './EntitySetting.js';
+import type { Label } from './Label.js';
+import type { MetadataBase } from './MetadataBase.js';
+import type { OwnershipTypes } from './OwnershipTypes.js';
+import type { SecurityPrivilegeMetadata } from './SecurityPrivilegeMetadata.js';
 
 /**
  * EntityMetadata entity type

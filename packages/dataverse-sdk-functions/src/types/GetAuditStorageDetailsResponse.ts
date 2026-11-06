@@ -1,4 +1,4 @@
-import type { AuditStorageDetailsResult } from "./AuditStorageDetailsResult.js";
+import type { AuditStorageDetailsResult } from './AuditStorageDetailsResult.js';
 
 /**
  * GetAuditStorageDetailsResponse complex type

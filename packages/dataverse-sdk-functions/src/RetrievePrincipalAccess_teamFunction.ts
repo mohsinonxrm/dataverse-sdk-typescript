@@ -1,7 +1,7 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatParameterAlias } from "./internal/odataLiteral.js";
-import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
-import type { AccessRights } from "./types/index.js";
+import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
+import { formatParameterAlias } from './internal/odataLiteral.js';
+import type { EntityReference } from '@mohsinonxrm/dataverse-sdk-entities-runtime';
+import type { AccessRights } from './types/index.js';
 
 /**
  * Response from the RetrievePrincipalAccess function.
@@ -32,7 +32,7 @@ export interface RetrievePrincipalAccess_teamFunctionParameters {
 export class RetrievePrincipalAccess_teamFunction implements Executable<RetrievePrincipalAccess_teamResponse> {
   constructor(
     public readonly teamId: string,
-    public readonly parameters: RetrievePrincipalAccess_teamFunctionParameters
+    public readonly parameters: RetrievePrincipalAccess_teamFunctionParameters,
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -44,20 +44,17 @@ export class RetrievePrincipalAccess_teamFunction implements Executable<Retrieve
     const aliases: string[] = [];
     if (this.parameters.Target !== undefined) {
       aliases.push(`Target=@p1`);
-      params.append(
-        "@p1",
-        formatParameterAlias(this.parameters.Target, "mscrm.crmbaseentity", "EntityType")
-      );
+      params.append('@p1', formatParameterAlias(this.parameters.Target, 'mscrm.crmbaseentity', 'EntityType'));
     }
     if (aliases.length > 0) {
-      url += `(${aliases.join(",")})?${params.toString()}`;
+      url += `(${aliases.join(',')})?${params.toString()}`;
     }
 
     return {
-      method: "GET",
+      method: 'GET',
       url,
       headers: {
-        Accept: "application/json",
+        'Accept': 'application/json',
       },
     };
   }

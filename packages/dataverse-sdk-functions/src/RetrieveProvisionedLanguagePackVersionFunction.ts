@@ -1,5 +1,5 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatParameterAlias } from "./internal/odataLiteral.js";
+import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
+import { formatParameterAlias } from './internal/odataLiteral.js';
 
 /**
  * Response from the RetrieveProvisionedLanguagePackVersion function.
@@ -26,7 +26,7 @@ export interface RetrieveProvisionedLanguagePackVersionFunctionParameters {
  */
 export class RetrieveProvisionedLanguagePackVersionFunction implements Executable<RetrieveProvisionedLanguagePackVersionResponse> {
   constructor(
-    public readonly parameters: RetrieveProvisionedLanguagePackVersionFunctionParameters
+    public readonly parameters: RetrieveProvisionedLanguagePackVersionFunctionParameters,
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -37,17 +37,17 @@ export class RetrieveProvisionedLanguagePackVersionFunction implements Executabl
     const aliases: string[] = [];
     if (this.parameters.Language !== undefined) {
       aliases.push(`Language=@p1`);
-      params.append("@p1", formatParameterAlias(this.parameters.Language, "Edm.Int32"));
+      params.append('@p1', formatParameterAlias(this.parameters.Language, 'Edm.Int32'));
     }
     if (aliases.length > 0) {
-      url += `(${aliases.join(",")})?${params.toString()}`;
+      url += `(${aliases.join(',')})?${params.toString()}`;
     }
 
     return {
-      method: "GET",
+      method: 'GET',
       url,
       headers: {
-        Accept: "application/json",
+        'Accept': 'application/json',
       },
     };
   }

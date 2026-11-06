@@ -1,5 +1,5 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { privilege } from "./types/index.js";
+import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
+import type { privilege } from './types/index.js';
 
 /**
  * Response from the RetrievePrivilegeSet function.
@@ -7,9 +7,7 @@ import type { privilege } from "./types/index.js";
  * The collection, read from the `value` of the response body.
  * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export type RetrievePrivilegeSetResponse = Array<
-  privilege & { "@odata.etag"?: string; "@odata.type"?: string }
->;
+export type RetrievePrivilegeSetResponse = Array<privilege & { "@odata.etag"?: string; "@odata.type"?: string }>;
 
 /**
  * RetrievePrivilegeSet function
@@ -23,10 +21,10 @@ export class RetrievePrivilegeSetFunction implements Executable<RetrievePrivileg
     let url = `${baseUrl}/privileges/Microsoft.Dynamics.CRM.RetrievePrivilegeSet`;
 
     return {
-      method: "GET",
+      method: 'GET',
       url,
       headers: {
-        Accept: "application/json",
+        'Accept': 'application/json',
       },
     };
   }

@@ -1,4 +1,4 @@
-import type { SubstitutionStatus } from "./SubstitutionStatus.js";
+import type { SubstitutionStatus } from './SubstitutionStatus.js';
 
 /**
  * SubstitutionResult complex type

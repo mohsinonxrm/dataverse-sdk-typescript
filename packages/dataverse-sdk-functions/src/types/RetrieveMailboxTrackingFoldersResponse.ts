@@ -1,4 +1,4 @@
-import type { MailboxTrackingFolderMapping } from "./MailboxTrackingFolderMapping.js";
+import type { MailboxTrackingFolderMapping } from './MailboxTrackingFolderMapping.js';
 
 /**
  * RetrieveMailboxTrackingFoldersResponse complex type

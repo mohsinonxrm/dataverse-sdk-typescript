@@ -1,6 +1,6 @@
 # Supported Operations - Complete Reference
 
-This document provides a complete reference of all **<!-- count:operations -->3,412<!-- /count --> typed operations** available in the Dataverse TypeScript SDK.
+This document provides a complete reference of all **<!-- count:operations -->2,424<!-- /count --> typed operations** available in the Dataverse TypeScript SDK.
 
 ## Overview
 
@@ -8,11 +8,11 @@ The SDK provides comprehensive coverage of Dataverse Web API operations through 
 
 | Package                                  | Count                                       | Description                            | HTTP Method |
 | ---------------------------------------- | ------------------------------------------- | -------------------------------------- | ----------- |
-| **@mohsinonxrm/dataverse-sdk-functions** | <!-- count:functions -->300<!-- /count -->  | Read-only operations (query, retrieve) | GET         |
-| **@mohsinonxrm/dataverse-sdk-actions**   | <!-- count:actions -->1,556<!-- /count -->  | Operations with side effects           | POST        |
-| **@mohsinonxrm/dataverse-sdk-messages**  | <!-- count:messages -->1,556<!-- /count --> | Organization Service message pattern   | Varies      |
+| **@mohsinonxrm/dataverse-sdk-functions** | <!-- count:functions -->280<!-- /count -->  | Read-only operations (query, retrieve) | GET         |
+| **@mohsinonxrm/dataverse-sdk-actions**   | <!-- count:actions -->1,072<!-- /count -->  | Operations with side effects           | POST        |
+| **@mohsinonxrm/dataverse-sdk-messages**  | <!-- count:messages -->1,072<!-- /count --> | Organization Service message pattern   | Varies      |
 
-**Total Coverage:** <!-- count:operations -->3,412<!-- /count --> typed operations
+**Total Coverage:** <!-- count:operations -->2,424<!-- /count --> typed operations
 
 ## Two Front Doors
 
@@ -104,38 +104,30 @@ await service.execute(new PublishAllXmlRequest());
 - FullTextSearchKnowledgeArticle
 - CreateKnowledgeArticleVersion
 
-### Universal Resource Scheduling (msdyn\_\*)
+**Marketing lists and campaigns** (part of Sales, not Customer Insights - Journeys):
 
-**Resource Scheduling:**
+- AddMemberList, AddListMembersList, CopyMembersList, QualifyMemberList
+- CopyCampaign, DistributeCampaignActivity
 
-- msdyn_BookRequirementGroup
-- msdyn_SearchResourceAvailability
-- msdyn_CancelBookings
-- msdyn_CascadeCrewBookings
+## What the Packages Cover
 
-The packages are generated from an org without Field Service, so its operations (work orders,
-agreements, `msdyn_CreateWorkOrder`, …) aren't included; see the
-[migration guide](../migration-2.0.md).
+The three packages hold the operations of the **platform** (Dataverse and the Power Platform
+solutions every environment has) and of **Sales** and **Customer Service**, the two core
+Dynamics 365 apps of a plain trial. They are chosen by the solution each operation comes from, not
+by what the org the SDK is generated from has installed; the [solution table](../../tools/generate-sdk-types/metadata/README.md#which-operations-are-prebuilt) lists every solution
+and whether its operations are in.
 
-### Marketing Module (msdynmkt\_\*)
+| Operations                                                                      | In the packages | Works in                              |
+| ------------------------------------------------------------------------------- | --------------- | ------------------------------------- |
+| Platform (no prefix, and `msdyn_*` / `msft_*` platform solutions)               | yes             | every Dataverse environment           |
+| Sales and Customer Service (`WinOpportunity`, `CloseIncident`, their `msdyn_*`) | yes             | an org with Sales or Customer Service |
+| Contact Center: Omnichannel, unified routing, voice (`CCaaS_*`, `msdyn_*`)      | no              | generate with dataverse-gen           |
+| Field Service, Project Operations, Universal Resource Scheduling (`msdyn_*`)    | no              | generate with dataverse-gen           |
+| Customer Insights - Journeys (`msdynmkt_*`), Customer Voice                     | no              | generate with dataverse-gen           |
+| Connected Customer Service (IoT), Power Pages (`adx_*`), Process Mining         | no              | generate with dataverse-gen           |
+| Your custom APIs and custom process actions                                     | no              | generate with dataverse-gen           |
 
-**Campaign & Consent:**
-
-- msdynmkt_checkconsentbatch
-- msdynmkt_consentsubmission
-
-## Solution Dependencies
-
-Many operations require specific Dynamics 365 applications to be installed:
-
-| Prefix       | Solution Required      | Description                                  |
-| ------------ | ---------------------- | -------------------------------------------- |
-| `msdyn_*`    | Dynamics 365 (varies)  | Sales, Customer Service, Resource Scheduling |
-| `msdynmkt_*` | Dynamics 365 Marketing | Marketing automation                         |
-| `CCaaS_*`    | Customer Service       | Omnichannel for Customer Service             |
-| `adx_*`      | Power Pages            | Portal operations                            |
-
-**Note:** Platform operations (no prefix) are available in all Dataverse environments.
+To call one of the others, generate typed classes for it from your org with [dataverse-gen](../getting-started.md#generate-the-rest-with-dataverse-gen).
 
 ## Usage Examples by Scenario
 
@@ -233,9 +225,9 @@ const accounts = await service.retrieveMultiple("accounts", {
 
 ## Detailed References
 
-- [Supported Functions (<!-- count:functions -->300<!-- /count -->)](./supported-functions.md) - Complete list of all GET operations
-- [Supported Actions (<!-- count:actions -->1,556<!-- /count -->)](./supported-actions.md) - Complete list of all POST operations
-- [Supported Messages (<!-- count:messages -->1,556<!-- /count -->)](./supported-messages.md) - Complete list of all Organization Service messages
+- [Supported Functions (<!-- count:functions -->280<!-- /count -->)](./supported-functions.md) - Complete list of all GET operations
+- [Supported Actions (<!-- count:actions -->1,072<!-- /count -->)](./supported-actions.md) - Complete list of all POST operations
+- [Supported Messages (<!-- count:messages -->1,072<!-- /count -->)](./supported-messages.md) - Complete list of all Organization Service messages
 
 ## When to Use Each Approach
 

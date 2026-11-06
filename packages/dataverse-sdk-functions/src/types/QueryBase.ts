@@ -1,6 +1,6 @@
-import type { FetchExpression } from "./FetchExpression.js";
-import type { QueryByAttribute } from "./QueryByAttribute.js";
-import type { QueryExpression } from "./QueryExpression.js";
+import type { FetchExpression } from './FetchExpression.js';
+import type { QueryByAttribute } from './QueryByAttribute.js';
+import type { QueryExpression } from './QueryExpression.js';
 
 /**
  * QueryBase complex type
@@ -16,4 +16,5 @@ export interface QueryBase {
 export type TypedQueryBase =
   | (FetchExpression & { "@odata.type": "Microsoft.Dynamics.CRM.FetchExpression" })
   | (QueryByAttribute & { "@odata.type": "Microsoft.Dynamics.CRM.QueryByAttribute" })
-  | (QueryExpression & { "@odata.type": "Microsoft.Dynamics.CRM.QueryExpression" });
+  | (QueryExpression & { "@odata.type": "Microsoft.Dynamics.CRM.QueryExpression" })
+;

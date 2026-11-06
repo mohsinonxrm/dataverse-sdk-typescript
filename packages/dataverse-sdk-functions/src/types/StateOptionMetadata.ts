@@ -1,4 +1,4 @@
-import type { OptionMetadata } from "./OptionMetadata.js";
+import type { OptionMetadata } from './OptionMetadata.js';
 
 /**
  * StateOptionMetadata complex type

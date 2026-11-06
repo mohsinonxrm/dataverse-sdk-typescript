@@ -1,13 +1,13 @@
-import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
-import type { ComplexAttributeMetadata } from "./ComplexAttributeMetadata.js";
-import type { ComplexEntityKeyMetadata } from "./ComplexEntityKeyMetadata.js";
-import type { ComplexManyToManyRelationshipMetadata } from "./ComplexManyToManyRelationshipMetadata.js";
-import type { ComplexOneToManyRelationshipMetadata } from "./ComplexOneToManyRelationshipMetadata.js";
-import type { EntityClusterMode } from "./EntityClusterMode.js";
-import type { EntitySetting } from "./EntitySetting.js";
-import type { Label } from "./Label.js";
-import type { OwnershipTypes } from "./OwnershipTypes.js";
-import type { SecurityPrivilegeMetadata } from "./SecurityPrivilegeMetadata.js";
+import type { BooleanManagedProperty } from './BooleanManagedProperty.js';
+import type { ComplexAttributeMetadata } from './ComplexAttributeMetadata.js';
+import type { ComplexEntityKeyMetadata } from './ComplexEntityKeyMetadata.js';
+import type { ComplexManyToManyRelationshipMetadata } from './ComplexManyToManyRelationshipMetadata.js';
+import type { ComplexOneToManyRelationshipMetadata } from './ComplexOneToManyRelationshipMetadata.js';
+import type { EntityClusterMode } from './EntityClusterMode.js';
+import type { EntitySetting } from './EntitySetting.js';
+import type { Label } from './Label.js';
+import type { OwnershipTypes } from './OwnershipTypes.js';
+import type { SecurityPrivilegeMetadata } from './SecurityPrivilegeMetadata.js';
 
 /**
  * ComplexEntityMetadata complex type

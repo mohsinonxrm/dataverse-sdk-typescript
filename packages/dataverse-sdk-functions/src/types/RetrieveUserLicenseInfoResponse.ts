@@ -1,4 +1,4 @@
-import type { UserLicenseInfo } from "./UserLicenseInfo.js";
+import type { UserLicenseInfo } from './UserLicenseInfo.js';
 
 /**
  * RetrieveUserLicenseInfoResponse complex type

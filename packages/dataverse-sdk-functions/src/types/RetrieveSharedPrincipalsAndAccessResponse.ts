@@ -1,4 +1,4 @@
-import type { PrincipalAccess } from "./PrincipalAccess.js";
+import type { PrincipalAccess } from './PrincipalAccess.js';
 
 /**
  * RetrieveSharedPrincipalsAndAccessResponse complex type

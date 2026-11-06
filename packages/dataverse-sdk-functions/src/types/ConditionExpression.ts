@@ -1,5 +1,5 @@
-import type { ConditionOperator } from "./ConditionOperator.js";
-import type { Object } from "./Object.js";
+import type { ConditionOperator } from './ConditionOperator.js';
+import type { Object } from './Object.js';
 
 /**
  * ConditionExpression complex type

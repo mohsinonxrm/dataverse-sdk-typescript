@@ -1,4 +1,4 @@
-import type { UpsertResponse } from "./UpsertResponse.js";
+import type { UpsertResponse } from './UpsertResponse.js';
 
 /**
  * UpsertMultipleResponse complex type

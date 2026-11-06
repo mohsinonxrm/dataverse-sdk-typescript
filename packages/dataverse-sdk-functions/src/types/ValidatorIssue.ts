@@ -1,4 +1,4 @@
-import type { Collection_String_String } from "./Collection_String_String.js";
+import type { Collection_String_String } from './Collection_String_String.js';
 
 /**
  * ValidatorIssue complex type

@@ -1,4 +1,4 @@
-import type { TimeInfo } from "./TimeInfo.js";
+import type { TimeInfo } from './TimeInfo.js';
 
 /**
  * TimeInfoCollection complex type

@@ -1,4 +1,4 @@
-import type { EndpointType } from "./EndpointType.js";
+import type { EndpointType } from './EndpointType.js';
 
 /**
  * EndpointCollection complex type

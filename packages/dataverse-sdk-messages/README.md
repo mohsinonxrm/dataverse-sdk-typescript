@@ -4,7 +4,7 @@ Organization Service messages for Dataverse, providing typed request/response pa
 
 ## Features
 
-- ✅ **<!-- count:messages -->1,556<!-- /count --> typed messages** - Complete coverage of all Dataverse Organization Service messages
+- ✅ **<!-- count:messages -->1,072<!-- /count --> typed messages** - The Organization Service messages of the platform, Sales and Customer Service
 - ✅ **Direct exports** - All message classes exported directly (e.g., `ExecuteWorkflowRequest`, `WinOpportunityRequest`)
 - ✅ **Request/response pairs** - Full type safety for all message parameters and returns
 - ✅ **Web API mapping** - Messages map to corresponding Web API actions, functions, or HTTP operations
@@ -19,7 +19,7 @@ pnpm add @mohsinonxrm/dataverse-sdk-messages @mohsinonxrm/dataverse-sdk-xrm
 
 ## Overview
 
-This package provides <!-- count:messages -->1,556<!-- /count --> typed message classes that wrap Web API actions and functions. Each message:
+This package provides <!-- count:messages -->1,072<!-- /count --> typed message classes that wrap Web API actions and functions. Each message:
 
 - Extends `OrganizationRequest` base class
 - Implements `Executable<TResponse>` interface
@@ -28,11 +28,29 @@ This package provides <!-- count:messages -->1,556<!-- /count --> typed message 
 
 Messages execute via `OrganizationService.execute()` from `@mohsinonxrm/dataverse-sdk-xrm` or directly via `DataverseClient.execute()`.
 
+## What this package covers
+
+A message for each Web API action of the **platform** (Dataverse and the Power Platform
+solutions every environment has) and of the two core Dynamics 365 apps of a plain trial,
+**Sales** and **Customer Service**: the same operations as `@mohsinonxrm/dataverse-sdk-actions`.
+They are chosen by the solution each operation comes from, not by what the org the SDK was
+generated from has installed: the
+[solution table](../../tools/generate-sdk-types/metadata/README.md#which-operations-are-prebuilt)
+lists every solution and whether its operations are in.
+
+Not in the package: the messages of Contact Center (Omnichannel, unified routing, voice,
+`CCaaS_*`), Field Service, Project Operations, Universal Resource Scheduling, Customer Insights -
+Journeys (`msdynmkt_*`), Customer Voice, Connected Customer Service (IoT), Power Pages and Process
+Mining, and your own custom APIs. Generate typed classes for those from your org with
+`dataverse-gen` (see
+[Generate the rest with dataverse-gen](../../docs/getting-started.md#generate-the-rest-with-dataverse-gen)),
+or send one with the generic [`OrganizationRequest`](#generic-organizationrequest).
+
 ## Message Categories
 
-The package has <!-- count:messages -->1,556<!-- /count --> typed messages: a `<Name>Request` /
-`<Name>Response` pair for each Web API **action** in the `$metadata` it was generated from,
-including solution-specific ones (`msdyn_*`, `msdynmkt_*`, `CCaaS_*`, …). This list is generated
+The package has <!-- count:messages -->1,072<!-- /count --> typed messages: a `<Name>Request` /
+`<Name>Response` pair for each Web API **action** of the platform, Sales and Customer Service
+(see [What this package covers](#what-this-package-covers)). This list is generated
 from the package source (`pnpm --filter generate-sdk-types docs`);
 [supported-messages.md](../../docs/mapping/supported-messages.md) has more.
 

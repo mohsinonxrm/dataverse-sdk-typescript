@@ -1,5 +1,5 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatParameterAlias } from "./internal/odataLiteral.js";
+import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
+import { formatParameterAlias } from './internal/odataLiteral.js';
 
 /**
  * Response from the RetrievePrincipalAccessInfo function.
@@ -31,7 +31,7 @@ export interface RetrievePrincipalAccessInfo_systemuserFunctionParameters {
 export class RetrievePrincipalAccessInfo_systemuserFunction implements Executable<RetrievePrincipalAccessInfo_systemuserResponse> {
   constructor(
     public readonly systemuserId: string,
-    public readonly parameters: RetrievePrincipalAccessInfo_systemuserFunctionParameters
+    public readonly parameters: RetrievePrincipalAccessInfo_systemuserFunctionParameters,
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -43,21 +43,21 @@ export class RetrievePrincipalAccessInfo_systemuserFunction implements Executabl
     const aliases: string[] = [];
     if (this.parameters.ObjectId !== undefined) {
       aliases.push(`ObjectId=@p1`);
-      params.append("@p1", formatParameterAlias(this.parameters.ObjectId, "Edm.Guid"));
+      params.append('@p1', formatParameterAlias(this.parameters.ObjectId, 'Edm.Guid'));
     }
     if (this.parameters.EntityName !== undefined) {
       aliases.push(`EntityName=@p2`);
-      params.append("@p2", formatParameterAlias(this.parameters.EntityName, "Edm.String"));
+      params.append('@p2', formatParameterAlias(this.parameters.EntityName, 'Edm.String'));
     }
     if (aliases.length > 0) {
-      url += `(${aliases.join(",")})?${params.toString()}`;
+      url += `(${aliases.join(',')})?${params.toString()}`;
     }
 
     return {
-      method: "GET",
+      method: 'GET',
       url,
       headers: {
-        Accept: "application/json",
+        'Accept': 'application/json',
       },
     };
   }

@@ -1,4 +1,4 @@
-import type { ComponentDetail } from "./ComponentDetail.js";
+import type { ComponentDetail } from './ComponentDetail.js';
 
 /**
  * MissingComponent complex type

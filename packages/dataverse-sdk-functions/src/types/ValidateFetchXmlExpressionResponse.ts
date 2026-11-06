@@ -1,4 +1,4 @@
-import type { ValidateFetchXmlExpressionResult } from "./ValidateFetchXmlExpressionResult.js";
+import type { ValidateFetchXmlExpressionResult } from './ValidateFetchXmlExpressionResult.js';
 
 /**
  * ValidateFetchXmlExpressionResponse complex type

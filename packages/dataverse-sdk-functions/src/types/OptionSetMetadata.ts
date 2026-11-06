@@ -1,5 +1,5 @@
-import type { OptionMetadata } from "./OptionMetadata.js";
-import type { OptionSetMetadataBase } from "./OptionSetMetadataBase.js";
+import type { OptionMetadata } from './OptionMetadata.js';
+import type { OptionSetMetadataBase } from './OptionSetMetadataBase.js';
 
 /**
  * OptionSetMetadata entity type

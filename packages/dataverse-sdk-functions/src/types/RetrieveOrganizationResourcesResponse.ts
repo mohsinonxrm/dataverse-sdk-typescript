@@ -1,4 +1,4 @@
-import type { OrganizationResources } from "./OrganizationResources.js";
+import type { OrganizationResources } from './OrganizationResources.js';
 
 /**
  * RetrieveOrganizationResourcesResponse complex type

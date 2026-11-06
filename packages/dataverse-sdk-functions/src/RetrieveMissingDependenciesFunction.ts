@@ -1,5 +1,5 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatParameterAlias } from "./internal/odataLiteral.js";
+import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
+import { formatParameterAlias } from './internal/odataLiteral.js';
 
 /**
  * Response from the RetrieveMissingDependencies function.
@@ -7,11 +7,7 @@ import { formatParameterAlias } from "./internal/odataLiteral.js";
  * The collection, read from the `value` of the response body.
  * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export type RetrieveMissingDependenciesResponse = Array<{
-  "@odata.etag"?: string;
-  "@odata.type"?: string;
-  [column: string]: unknown;
-}>;
+export type RetrieveMissingDependenciesResponse = Array<{ "@odata.etag"?: string; "@odata.type"?: string; [column: string]: unknown }>;
 
 /**
  * Parameters of the RetrieveMissingDependencies function, by their CSDL names. A parameter the CSDL declares
@@ -27,7 +23,9 @@ export interface RetrieveMissingDependenciesFunctionParameters {
  * Unbound function
  */
 export class RetrieveMissingDependenciesFunction implements Executable<RetrieveMissingDependenciesResponse> {
-  constructor(public readonly parameters: RetrieveMissingDependenciesFunctionParameters) {}
+  constructor(
+    public readonly parameters: RetrieveMissingDependenciesFunctionParameters,
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveMissingDependencies`;
@@ -37,17 +35,17 @@ export class RetrieveMissingDependenciesFunction implements Executable<RetrieveM
     const aliases: string[] = [];
     if (this.parameters.SolutionUniqueName !== undefined) {
       aliases.push(`SolutionUniqueName=@p1`);
-      params.append("@p1", formatParameterAlias(this.parameters.SolutionUniqueName, "Edm.String"));
+      params.append('@p1', formatParameterAlias(this.parameters.SolutionUniqueName, 'Edm.String'));
     }
     if (aliases.length > 0) {
-      url += `(${aliases.join(",")})?${params.toString()}`;
+      url += `(${aliases.join(',')})?${params.toString()}`;
     }
 
     return {
-      method: "GET",
+      method: 'GET',
       url,
       headers: {
-        Accept: "application/json",
+        'Accept': 'application/json',
       },
     };
   }

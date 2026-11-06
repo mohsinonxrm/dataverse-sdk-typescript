@@ -1,5 +1,5 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatParameterAlias } from "./internal/odataLiteral.js";
+import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
+import { formatParameterAlias } from './internal/odataLiteral.js';
 
 /**
  * Response from the msdyn_GetEntityLinkChatConfiguration function.
@@ -7,12 +7,7 @@ import { formatParameterAlias } from "./internal/odataLiteral.js";
  * The record: the response body itself, with its annotations (not wrapped in `value`).
  * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export type msdyn_GetEntityLinkChatConfigurationResponse = {
-  "@odata.context"?: string;
-  "@odata.etag"?: string;
-  "@odata.type"?: string;
-  [column: string]: unknown;
-} | null;
+export type msdyn_GetEntityLinkChatConfigurationResponse = { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string; [column: string]: unknown } | null;
 
 /**
  * Parameters of the msdyn_GetEntityLinkChatConfiguration function, by their CSDL names. A parameter the CSDL declares
@@ -28,7 +23,9 @@ export interface msdyn_GetEntityLinkChatConfigurationFunctionParameters {
  * Unbound function
  */
 export class msdyn_GetEntityLinkChatConfigurationFunction implements Executable<msdyn_GetEntityLinkChatConfigurationResponse> {
-  constructor(public readonly parameters: msdyn_GetEntityLinkChatConfigurationFunctionParameters) {}
+  constructor(
+    public readonly parameters: msdyn_GetEntityLinkChatConfigurationFunctionParameters,
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/msdyn_GetEntityLinkChatConfiguration`;
@@ -38,20 +35,17 @@ export class msdyn_GetEntityLinkChatConfigurationFunction implements Executable<
     const aliases: string[] = [];
     if (this.parameters.msdyn_RegardingEntityName !== undefined) {
       aliases.push(`msdyn_RegardingEntityName=@p1`);
-      params.append(
-        "@p1",
-        formatParameterAlias(this.parameters.msdyn_RegardingEntityName, "Edm.String")
-      );
+      params.append('@p1', formatParameterAlias(this.parameters.msdyn_RegardingEntityName, 'Edm.String'));
     }
     if (aliases.length > 0) {
-      url += `(${aliases.join(",")})?${params.toString()}`;
+      url += `(${aliases.join(',')})?${params.toString()}`;
     }
 
     return {
-      method: "GET",
+      method: 'GET',
       url,
       headers: {
-        Accept: "application/json",
+        'Accept': 'application/json',
       },
     };
   }

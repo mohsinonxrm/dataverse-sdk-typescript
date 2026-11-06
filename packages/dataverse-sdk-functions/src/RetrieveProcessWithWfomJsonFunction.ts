@@ -1,4 +1,4 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
 
 /**
  * Response from the RetrieveProcessWithWfomJson function.
@@ -19,17 +19,19 @@ export interface RetrieveProcessWithWfomJsonResponse {
  * The first argument is the id of the workflow record to call it on.
  */
 export class RetrieveProcessWithWfomJsonFunction implements Executable<RetrieveProcessWithWfomJsonResponse> {
-  constructor(public readonly workflowId: string) {}
+  constructor(
+    public readonly workflowId: string,
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function
     let url = `${baseUrl}/workflows(${this.workflowId})/Microsoft.Dynamics.CRM.RetrieveProcessWithWfomJson`;
 
     return {
-      method: "GET",
+      method: 'GET',
       url,
       headers: {
-        Accept: "application/json",
+        'Accept': 'application/json',
       },
     };
   }

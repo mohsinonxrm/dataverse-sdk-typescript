@@ -1,8 +1,8 @@
-import type { AppointmentsToIgnore } from "./AppointmentsToIgnore.js";
-import type { ConstraintRelation } from "./ConstraintRelation.js";
-import type { ObjectiveRelation } from "./ObjectiveRelation.js";
-import type { RequiredResource } from "./RequiredResource.js";
-import type { SearchDirection } from "./SearchDirection.js";
+import type { AppointmentsToIgnore } from './AppointmentsToIgnore.js';
+import type { ConstraintRelation } from './ConstraintRelation.js';
+import type { ObjectiveRelation } from './ObjectiveRelation.js';
+import type { RequiredResource } from './RequiredResource.js';
+import type { SearchDirection } from './SearchDirection.js';
 
 /**
  * AppointmentRequest complex type

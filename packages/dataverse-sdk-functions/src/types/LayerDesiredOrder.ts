@@ -1,5 +1,5 @@
-import type { LayerDesiredOrderType } from "./LayerDesiredOrderType.js";
-import type { SolutionInfo } from "./SolutionInfo.js";
+import type { LayerDesiredOrderType } from './LayerDesiredOrderType.js';
+import type { SolutionInfo } from './SolutionInfo.js';
 
 /**
  * LayerDesiredOrder complex type

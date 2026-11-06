@@ -1,4 +1,4 @@
-import type { SolutionComponentReference } from "./SolutionComponentReference.js";
+import type { SolutionComponentReference } from './SolutionComponentReference.js';
 
 /**
  * BulkRemoveActiveCustomizationsParameters complex type

@@ -1,6 +1,6 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatParameterAlias } from "./internal/odataLiteral.js";
-import type { PagingInfo, StringCollection } from "./types/index.js";
+import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
+import { formatParameterAlias } from './internal/odataLiteral.js';
+import type { PagingInfo, StringCollection } from './types/index.js';
 
 /**
  * Response from the RetrieveParsedDataImportFile function.
@@ -27,7 +27,9 @@ export interface RetrieveParsedDataImportFileFunctionParameters {
  * Unbound function
  */
 export class RetrieveParsedDataImportFileFunction implements Executable<RetrieveParsedDataImportFileResponse> {
-  constructor(public readonly parameters: RetrieveParsedDataImportFileFunctionParameters) {}
+  constructor(
+    public readonly parameters: RetrieveParsedDataImportFileFunctionParameters,
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveParsedDataImportFile`;
@@ -37,21 +39,21 @@ export class RetrieveParsedDataImportFileFunction implements Executable<Retrieve
     const aliases: string[] = [];
     if (this.parameters.ImportFileId !== undefined) {
       aliases.push(`ImportFileId=@p1`);
-      params.append("@p1", formatParameterAlias(this.parameters.ImportFileId, "Edm.Guid"));
+      params.append('@p1', formatParameterAlias(this.parameters.ImportFileId, 'Edm.Guid'));
     }
     if (this.parameters.PagingInfo !== undefined) {
       aliases.push(`PagingInfo=@p2`);
-      params.append("@p2", JSON.stringify(this.parameters.PagingInfo));
+      params.append('@p2', JSON.stringify(this.parameters.PagingInfo));
     }
     if (aliases.length > 0) {
-      url += `(${aliases.join(",")})?${params.toString()}`;
+      url += `(${aliases.join(',')})?${params.toString()}`;
     }
 
     return {
-      method: "GET",
+      method: 'GET',
       url,
       headers: {
-        Accept: "application/json",
+        'Accept': 'application/json',
       },
     };
   }

@@ -1,4 +1,4 @@
-import type { VirtualTableColumnCandidate } from "./VirtualTableColumnCandidate.js";
+import type { VirtualTableColumnCandidate } from './VirtualTableColumnCandidate.js';
 
 /**
  * CreateVirtualConnectorTableMetadata complex type

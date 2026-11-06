@@ -1,5 +1,5 @@
-import type { AttributeMetadata } from "./AttributeMetadata.js";
-import type { AttributeTypeCode } from "./AttributeTypeCode.js";
+import type { AttributeMetadata } from './AttributeMetadata.js';
+import type { AttributeTypeCode } from './AttributeTypeCode.js';
 
 /**
  * ManagedPropertyAttributeMetadata entity type

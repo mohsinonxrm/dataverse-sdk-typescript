@@ -1,5 +1,5 @@
-import type { MetadataFilterExpression } from "./MetadataFilterExpression.js";
-import type { MetadataPropertiesExpression } from "./MetadataPropertiesExpression.js";
+import type { MetadataFilterExpression } from './MetadataFilterExpression.js';
+import type { MetadataPropertiesExpression } from './MetadataPropertiesExpression.js';
 
 /**
  * EntityKeyQueryExpression complex type
