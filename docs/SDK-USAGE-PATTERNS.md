@@ -391,10 +391,7 @@ console.log(`Async operation ID: ${executeResponse.asyncoperationid}`);
 import { OrganizationService } from "@mohsinonxrm/dataverse-sdk-xrm";
 import { WhoAmIFunction } from "@mohsinonxrm/dataverse-sdk-functions";
 import { WinOpportunityAction } from "@mohsinonxrm/dataverse-sdk-actions";
-import {
-  ExecuteWorkflowRequest,
-  type ExecuteWorkflowResponse,
-} from "@mohsinonxrm/dataverse-sdk-messages";
+import { ExecuteWorkflowRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 
 const service = new OrganizationService(client);
 
@@ -408,7 +405,7 @@ await service.execute(winAction);
 
 // ========== Execute Message ==========
 const workflowRequest = new ExecuteWorkflowRequest(workflowId, recordId, {});
-const workflowResponse = await service.execute<ExecuteWorkflowResponse>(workflowRequest);
+const workflowResponse = await service.execute(workflowRequest);
 console.log(`Async operation: ${workflowResponse.result.asyncoperationid}`);
 
 // NOTE: service.execute() works with ANY Executable<T> class:
@@ -474,17 +471,14 @@ The `@mohsinonxrm/dataverse-sdk-messages` package contains 1,356+ generated requ
 
 ```typescript
 // ========== Import message classes directly ==========
-import {
-  ExecuteWorkflowRequest,
-  type ExecuteWorkflowResponse,
-} from "@mohsinonxrm/dataverse-sdk-messages";
+import { ExecuteWorkflowRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 
 // ========== Execute via OrganizationService ==========
 const service = new OrganizationService(client);
 
 // ExecuteWorkflow message
 const workflowRequest = new ExecuteWorkflowRequest(workflowId, recordId, {});
-const workflowResponse = await service.execute<ExecuteWorkflowResponse>(workflowRequest);
+const workflowResponse = await service.execute(workflowRequest);
 console.log(`Async operation: ${workflowResponse.result.asyncoperationid}`);
 
 // Assign and SetState aren't Web API messages: they are record updates, so use the helpers
