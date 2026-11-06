@@ -238,7 +238,7 @@ export default function FileOperations() {
       const response = await client.api(`/${entityName}s(${downloadRecordId})`).select().get();
 
       const base64Data = (response as any)[columnName];
-      const fileName = (response as any).filename || "(download as any).bin";
+      const fileName = (response as any).filename || "download.bin";
       const mimeType = (response as any).mimetype || "application/octet-stream";
 
       // Convert base64 to blob and trigger download

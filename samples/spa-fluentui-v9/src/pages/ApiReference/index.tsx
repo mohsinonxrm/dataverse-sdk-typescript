@@ -65,7 +65,7 @@ export default function ApiReference() {
               <td>
                 <Text weight="semibold">Raw API</Text>
                 <br />
-                <Text size={200}>(client as any).api('/accounts').post()</Text>
+                <Text size={200}>client.api('/accounts').post()</Text>
               </td>
               <td>
                 <Text size={200}>
@@ -101,7 +101,7 @@ export default function ApiReference() {
               <td>
                 <Text weight="semibold">Typed API</Text>
                 <br />
-                <Text size={200}>(client as any).api&lt;Account&gt;().post()</Text>
+                <Text size={200}>client.api&lt;Account&gt;().post()</Text>
               </td>
               <td>
                 <Text size={200}>
@@ -137,7 +137,7 @@ export default function ApiReference() {
               <td>
                 <Text weight="semibold">OrganizationService</Text>
                 <br />
-                <Text size={200}>(orgService as any).create('account', data)</Text>
+                <Text size={200}>orgService.create('accounts', data)</Text>
               </td>
               <td>
                 <Text size={200}>
@@ -345,7 +345,7 @@ export default function ApiReference() {
               <td>Single page (default 5000 records max)</td>
               <td>
                 <Text size={200} style={{ fontFamily: "monospace" }}>
-                  const data = await (builder as any).get();
+                  const data = await builder.get();
                 </Text>
               </td>
             </tr>
@@ -356,9 +356,9 @@ export default function ApiReference() {
               <td>Page-by-page with nextLink tracking</td>
               <td>
                 <Text size={200} style={{ fontFamily: "monospace" }}>
-                  const page = await (builder as any).getPage();
+                  const page = await builder.getPage();
                   <br />
-                  if (page['@(odata as any).nextLink']) {"{...}"}
+                  if (page['@odata.nextLink']) {"{...}"}
                 </Text>
               </td>
             </tr>
@@ -369,7 +369,7 @@ export default function ApiReference() {
               <td>Stream processing, break early</td>
               <td>
                 <Text size={200} style={{ fontFamily: "monospace" }}>
-                  for await (const item of (builder as any).iterate()) {"{...}"}
+                  for await (const item of builder.iterate()) {"{...}"}
                 </Text>
               </td>
             </tr>
@@ -380,7 +380,7 @@ export default function ApiReference() {
               <td>Bounded all-records fetch</td>
               <td>
                 <Text size={200} style={{ fontFamily: "monospace" }}>
-                  const all = await (builder as any).getAll({"{"} maxItems: 1000 {"}"});
+                  const all = await builder.getAll({"{"} maxItems: 1000 {"}"});
                 </Text>
               </td>
             </tr>

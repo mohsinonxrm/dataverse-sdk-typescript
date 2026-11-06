@@ -92,11 +92,11 @@ export default function Messages() {
       // Assign message (can use XrmSdkMessages or raw action)
       await (client as any).api("/Assign").post({
         Target: {
-          "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).account",
+          "@odata.type": "Microsoft.Dynamics.CRM.account",
           accountid: targetEntityId,
         },
         Assignee: {
-          "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).systemuser",
+          "@odata.type": "Microsoft.Dynamics.CRM.systemuser",
           systemuserid: assigneeId,
         },
       });
@@ -123,7 +123,7 @@ export default function Messages() {
       // SetState message
       await (client as any).api("/SetState").post({
         EntityMoniker: {
-          "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).account",
+          "@odata.type": "Microsoft.Dynamics.CRM.account",
           accountid: targetEntityId,
         },
         State: parseInt(stateCode),
@@ -153,7 +153,7 @@ export default function Messages() {
       // Merge message (requires two account GUIDs)
       await (client as any).api("/Merge").post({
         Target: {
-          "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).account",
+          "@odata.type": "Microsoft.Dynamics.CRM.account",
           accountid: "target-guid-here",
         },
         SubordinateId: "subordinate-guid-here",
@@ -380,18 +380,18 @@ export default function Messages() {
                 label: "Message",
                 code:
                   (results as any).message === "Assign"
-                    ? `await (client as any).api('/Assign').post({
-  Target: { '@(odata as any).type': '(Microsoft as any).Dynamics.(CRM as any).account', accountid: '${targetEntityId}' },
-  Assignee: { '@(odata as any).type': '(Microsoft as any).Dynamics.(CRM as any).systemuser', systemuserid: '${assigneeId}' }
+                    ? `await client.api('/Assign').post({
+  Target: { '@odata.type': 'Microsoft.Dynamics.CRM.account', accountid: '${targetEntityId}' },
+  Assignee: { '@odata.type': 'Microsoft.Dynamics.CRM.systemuser', systemuserid: '${assigneeId}' }
 })`
                     : (results as any).message === "SetState"
-                      ? `await (client as any).api('/SetState').post({
-  EntityMoniker: { '@(odata as any).type': '(Microsoft as any).Dynamics.(CRM as any).account', accountid: '${targetEntityId}' },
+                      ? `await client.api('/SetState').post({
+  EntityMoniker: { '@odata.type': 'Microsoft.Dynamics.CRM.account', accountid: '${targetEntityId}' },
   State: ${stateCode},
   Status: ${statusCode}
 })`
-                      : `await (client as any).api('/Merge').post({
-  Target: { '@(odata as any).type': '(Microsoft as any).Dynamics.(CRM as any).account', accountid: 'target-guid' },
+                      : `await client.api('/Merge').post({
+  Target: { '@odata.type': 'Microsoft.Dynamics.CRM.account', accountid: 'target-guid' },
   SubordinateId: 'subordinate-guid',
   UpdateContent: { name: 'Merged Account Name' },
   PerformParentingChecks: false
@@ -494,20 +494,20 @@ export default function Messages() {
                 label: "Message",
                 code:
                   (results as any).message === "ExportSolution"
-                    ? `const response = await (client as any).api('/ExportSolution').post({
+                    ? `const response = await client.api('/ExportSolution').post({
   SolutionName: '${solutionName}',
   Managed: false,
   // ... other settings
 });
-// (response as any).ExportSolutionFile contains base64 zip`
+// response.ExportSolutionFile contains base64 zip`
                     : (results as any).message === "ImportSolution"
-                      ? `const response = await (client as any).api('/ImportSolution').post({
+                      ? `const response = await client.api('/ImportSolution').post({
   CustomizationFile: base64Zip,
   PublishWorkflows: true,
   // ... other settings
 });
-// (response as any).importjobid for tracking`
-                      : `await (client as any).api('/${(results as any).message}').post({
+// response.importjobid for tracking`
+                      : `await client.api('/${(results as any).message}').post({
   ParameterXml: '${(publishXml as any).substring(0, 50)}...'
 })`,
                 result: (JSON as any).stringify(results, null, 2),

@@ -5,6 +5,11 @@ import { useDataverse } from "../../context/DataverseContext";
 import { LoadingState } from "../../components/demo/LoadingState";
 import { ErrorDisplay } from "../../components/errors/ErrorDisplay";
 import { CodeComparison } from "../../components/demo/CodeComparison";
+import {
+  DiscoveryClient,
+  OrganizationState,
+  type OrganizationDetail,
+} from "@mohsinonxrm/dataverse-sdk-discovery";
 
 const useStyles = makeStyles({
   container: {
@@ -54,73 +59,38 @@ const useStyles = makeStyles({
   },
 });
 
-interface Organization {
-  Id: string;
-  UniqueName: string;
-  UrlName: string;
-  FriendlyName: string;
-  Version: string;
-  State: string;
-  Url: string[];
-}
-
 export default function Discovery() {
   const styles = useStyles();
-  const { isReady } = useDataverse();
+  const { isReady, tokenProvider } = useDataverse();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const [organizations, setOrganizations] = useState<OrganizationDetail[]>([]);
+  const [selected, setSelected] = useState<OrganizationDetail | null>(null);
 
   if (!isReady) {
     return <LoadingState label="Initializing Dataverse SDK..." />;
   }
 
   const handleDiscoverOrganizations = async () => {
+    if (!tokenProvider) return;
     setLoading(true);
     setError(null);
 
     try {
-      // Global Discovery Service endpoint for Commercial cloud
-      const discoveryUrl =
-        "https://(globaldisco as any).crm.(dynamics as any).com/api/discovery/(v2 as any).0/Instances";
-
-      // Note: In a real implementation, this would use the Discovery Client from the SDK
-      // For demonstration, showing the API call structure
-
-      const response = await fetch(discoveryUrl, {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${getToken()}`, // Simplified - would use token provider
-        },
-      });
-
-      if (!(response as any).ok) {
-        throw new Error(
-          `Discovery failed: ${(response as any).status} ${(response as any).statusText}`
-        );
-      }
-
-      const data = await (response as any).json();
-      setOrganizations((data as any).value || []);
+      // DiscoveryClient asks the token provider for a Global Discovery token itself.
+      const discoveryClient = new DiscoveryClient(tokenProvider);
+      setOrganizations(await discoveryClient.listOrganizations());
     } catch (err) {
-      setError(err as Error);
+      setError(err instanceof Error ? err : new Error(String(err)));
     } finally {
       setLoading(false);
     }
   };
 
-  const getToken = (): string => {
-    // Simplified - in real implementation, would use the token provider from context
-    return "YOUR_ACCESS_TOKEN";
-  };
-
-  const handleSelectOrganization = (org: Organization) => {
-    // In a real implementation, this would:
-    // 1. Store selected org in context
-    // 2. Reinitialize DataverseClient with new baseUrl
-    // 3. Navigate to dashboard
-    (console as any).log("Selected organization:", org);
+  const handleSelectOrganization = (org: OrganizationDetail) => {
+    // The app talks to the environment configured in VITE_DATAVERSE_URL; selecting an
+    // organization here only records the choice and shows the Web API URL to use.
+    setSelected(org);
   };
 
   return (
@@ -160,6 +130,13 @@ export default function Discovery() {
           />
         )}
 
+        {selected && (
+          <Text>
+            Selected {selected.FriendlyName}: {selected.Url}. Set VITE_DATAVERSE_URL to this URL and
+            restart to work against it.
+          </Text>
+        )}
+
         {(organizations as any).length > 0 && (
           <div className={(styles as any).orgList}>
             <Text weight="semibold">
@@ -174,14 +151,14 @@ export default function Discovery() {
                     <BuildingMultipleRegular fontSize={20} />
                     <Text weight="semibold">{(org as any).FriendlyName}</Text>
                     <Badge appearance="outline" color="informative">
-                      {(org as any).State}
+                      {org.State === OrganizationState.Enabled ? "Enabled" : "Disabled"}
                     </Badge>
                   </div>
                   <Text size={200} style={{ color: (tokens as any).colorNeutralForeground3 }}>
                     {(org as any).UniqueName} • Version {(org as any).Version}
                   </Text>
                   <Text size={200} style={{ color: (tokens as any).colorNeutralForeground3 }}>
-                    {(org as any).Url[0]}
+                    {org.Url}
                   </Text>
                 </div>
                 <Button
@@ -236,23 +213,22 @@ export default function Discovery() {
           <ul style={{ marginTop: "8px", paddingLeft: "20px" }}>
             <li>
               <Text>
-                <strong>Commercial:</strong> https://(globaldisco as any).crm.(dynamics as any).com
+                <strong>Commercial:</strong> https://globaldisco.crm.dynamics.com
               </Text>
             </li>
             <li>
               <Text>
-                <strong>GCC:</strong> https://(globaldisco as any).crm9.(dynamics as any).com
+                <strong>GCC:</strong> https://globaldisco.crm9.dynamics.com
               </Text>
             </li>
             <li>
               <Text>
-                <strong>GCC High:</strong> https://(globaldisco as any).crm.(microsoftdynamics as
-                any).us
+                <strong>GCC High:</strong> https://globaldisco.crm.microsoftdynamics.us
               </Text>
             </li>
             <li>
               <Text>
-                <strong>DoD:</strong> https://(globaldisco as any).crm.(appsplatform as any).us
+                <strong>DoD:</strong> https://globaldisco.crm.appsplatform.us
               </Text>
             </li>
           </ul>
@@ -263,24 +239,21 @@ export default function Discovery() {
         items={[
           {
             label: "Discovery API Call",
-            code: `// Using SDK Discovery Client (simplified)
-const discoveryClient = new GlobalDiscoveryClient({
-  tokenProvider: msalTokenProvider,
-  cloud: 'Commercial'
-});
+            code: `// DiscoveryClient from @mohsinonxrm/dataverse-sdk-discovery
+const discoveryClient = new DiscoveryClient(tokenProvider);
 
-const orgs = await (discoveryClient as any).listOrganizations();
+const orgs = await discoveryClient.listOrganizations();
 
-// Returns array of organizations with:
+// Returns OrganizationDetail[] with:
 // - Id, UniqueName, FriendlyName
-// - Url (array of endpoints)
-// - Version, State`,
+// - Url (application URL) and ApiUrl (use it as the DataverseClient baseUrl)
+// - Version, State (0 = enabled), Region`,
             result: (JSON as any).stringify(
               {
                 discoveryEndpoint:
-                  "https://(globaldisco as any).crm.(dynamics as any).com/api/discovery/(v2 as any).0/Instances",
-                organizationsFound: (organizations as any).length,
-                sampleOrganization: organizations[0] || null,
+                  "https://globaldisco.crm.dynamics.com/api/discovery/v2.0/Instances",
+                organizationsFound: organizations.length,
+                sampleOrganization: organizations[0] ?? null,
               },
               null,
               2

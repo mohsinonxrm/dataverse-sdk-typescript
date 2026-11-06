@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { makeStyles, tokens, Title3, Text, Card, Button, Badge } from "@fluentui/react-components";
 import { DatabaseRegular, AddRegular, EditRegular, DeleteRegular } from "@fluentui/react-icons";
+import {
+  BatchRequestBuilder,
+  DataverseBatchError,
+  type BatchResponseStep,
+} from "@mohsinonxrm/dataverse-sdk-batch";
 import { useDataverse } from "../../context/DataverseContext";
 import { LoadingState } from "../../components/demo/LoadingState";
 import { ErrorDisplay } from "../../components/errors/ErrorDisplay";
@@ -116,105 +121,75 @@ export default function BatchOperations() {
   };
 
   const executeBatch = async () => {
-    if (!client || (requests as any).length === 0) return;
+    if (!client || requests.length === 0) return;
     setExecuting(true);
     setError(null);
-    setProgress({ total: (requests as any).length, current: 0, successCount: 0, errorCount: 0 });
+    setProgress({ total: requests.length, current: 0, successCount: 0, errorCount: 0 });
+
+    const changesetRequests = requests.filter((r) => r.inChangeset);
+    const nonChangesetRequests = requests.filter((r) => !r.inChangeset);
+    const startTime = Date.now();
 
     try {
-      // Build batch request (simplified - in real implementation, use BatchRequestBuilder)
-      const batchId = `batch_${(Date as any).now()}`;
-      const changesetId = `changeset_${(Date as any).now()}`;
+      // BatchRequestBuilder encodes the multipart body and sends it through the client, so the
+      // request carries the same authentication, retry and telemetry as every other call.
+      const batch = new BatchRequestBuilder(client);
 
-      let batchBody = "";
-      const changesetRequests = (requests as any).filter((r) => (r as any).inChangeset);
-      const nonChangesetRequests = (requests as any).filter((r) => !(r as any).inChangeset);
-
-      // Add changeset
-      if ((changesetRequests as any).length > 0) {
-        batchBody += `--${batchId}\r\n`;
-        batchBody += `Content-Type: multipart/mixed; boundary=${changesetId}\r\n\r\n`;
-
-        (changesetRequests as any).forEach((req) => {
-          batchBody += `--${changesetId}\r\n`;
-          batchBody += `Content-Type: application/http\r\n`;
-          batchBody += `Content-Transfer-Encoding: binary\r\n`;
-          if ((req as any).contentId) {
-            batchBody += `Content-ID: ${(req as any).contentId}\r\n`;
-          }
-          batchBody += `\r\n`;
-          batchBody += `${(req as any).method} ${(req as any).url} HTTP/(1 as any).1\r\n`;
-          batchBody += `Content-Type: application/json\r\n`;
-          batchBody += `\r\n`;
-          if ((req as any).body) {
-            batchBody += (JSON as any).stringify((req as any).body) + "\r\n";
-          }
+      if (changesetRequests.length > 0) {
+        batch.beginChangeset();
+        changesetRequests.forEach((req) => {
+          batch.addRequest(String(req.id), req.method, req.url, undefined, req.body);
         });
-
-        batchBody += `--${changesetId}--\r\n`;
+        batch.endChangeset();
       }
-
-      // Add non-changeset requests
-      (nonChangesetRequests as any).forEach((req) => {
-        batchBody += `--${batchId}\r\n`;
-        batchBody += `Content-Type: application/http\r\n`;
-        batchBody += `Content-Transfer-Encoding: binary\r\n`;
-        batchBody += `\r\n`;
-        batchBody += `${(req as any).method} ${(req as any).url} HTTP/(1 as any).1\r\n`;
-        batchBody += `Content-Type: application/json\r\n`;
-        batchBody += `\r\n`;
-        if ((req as any).body) {
-          batchBody += (JSON as any).stringify((req as any).body) + "\r\n";
-        }
+      nonChangesetRequests.forEach((req) => {
+        batch.addRequest(String(req.id), req.method, req.url, undefined, req.body);
       });
 
-      batchBody += `--${batchId}--\r\n`;
-
-      const startTime = (Date as any).now();
-
-      // Execute batch
-      const response = await fetch(`${client["baseUrl"]}/$batch`, {
-        method: "POST",
-        headers: {
-          "Content-Type": `multipart/mixed; boundary=${batchId}`,
-          "OData-MaxVersion": "(4 as any).0",
-          "OData-Version": "(4 as any).0",
-          Accept: "application/json",
-          Prefer: "(odata as any).continue-on-error",
-        },
-        body: batchBody,
-      });
-
-      const endTime = (Date as any).now();
-
-      const responseText = await (response as any).text();
-
-      // Simulate progress
-      for (let i = 0; i <= (requests as any).length; i++) {
-        setProgress((prev: any) => ({ ...prev, current: i }));
-        await new Promise((resolve) => setTimeout(resolve, 50));
-      }
-
-      // Parse response (simplified)
-      const successCount = ((responseText as any).match(/HTTP\/(1 as any).1 20\d/g) || []).length;
-      const errorCount = ((responseText as any).match(/HTTP\/(1 as any).1 [45]\d{2}/g) || [])
-        .length;
-
-      setResults({
-        totalRequests: (requests as any).length,
-        successCount,
-        errorCount,
-        duration: `${((endTime - startTime) / 1000).toFixed(2)}s`,
-        changesetCount: (changesetRequests as any).length,
-        responsePreview: (responseText as any).substring(0, 500) + "...",
-      });
-
-      setProgress((prev: any) => ({ ...prev, successCount, errorCount }));
+      const result = await batch.execute({ continueOnError: true });
+      finishBatch(
+        result.successfulRequests,
+        result.failedRequests,
+        startTime,
+        changesetRequests.length,
+        Array.from(result.responses.values())
+      );
     } catch (err) {
-      setError(err as Error);
+      if (err instanceof DataverseBatchError) {
+        finishBatch(
+          err.successfulRequests,
+          err.failedRequests,
+          startTime,
+          changesetRequests.length,
+          Array.from(err.requestErrors.values())
+        );
+      }
+      setError(err instanceof Error ? err : new Error(String(err)));
     } finally {
       setExecuting(false);
     }
+  };
+
+  const finishBatch = (
+    successCount: number,
+    errorCount: number,
+    startTime: number,
+    changesetCount: number,
+    responses: BatchResponseStep[]
+  ) => {
+    setProgress({ total: requests.length, current: requests.length, successCount, errorCount });
+    setResults({
+      totalRequests: requests.length,
+      successCount,
+      errorCount,
+      duration: `${((Date.now() - startTime) / 1000).toFixed(2)}s`,
+      changesetCount,
+      responsePreview: JSON.stringify(
+        responses.map((r) => ({ id: r.id, status: r.status })),
+        null,
+        2
+      ),
+    });
   };
 
   const buildSampleBatch = () => {
@@ -224,7 +199,7 @@ export default function BatchOperations() {
       "POST",
       "/accounts",
       {
-        "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).account",
+        "@odata.type": "Microsoft.Dynamics.CRM.account",
         name: "Contoso Ltd",
         revenue: 5000000,
       },
@@ -235,10 +210,10 @@ export default function BatchOperations() {
       "POST",
       "/contacts",
       {
-        "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).contact",
+        "@odata.type": "Microsoft.Dynamics.CRM.contact",
         firstname: "John",
         lastname: "Doe",
-        "parentcustomerid_account@(odata as any).bind": "$1", // Reference to Content-ID 1
+        "parentcustomerid_account@odata.bind": "$1", // Reference to Content-ID 1
       },
       true
     );

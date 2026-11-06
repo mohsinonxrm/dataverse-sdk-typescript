@@ -101,7 +101,7 @@ export default function BulkOperations() {
 
       for (let i = 1; i <= count; i++) {
         (targets as any).push({
-          "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).account",
+          "@odata.type": "Microsoft.Dynamics.CRM.account",
           name: `Bulk Account ${(Date as any).now()}-${i}`,
           revenue: (Math as any).floor((Math as any).random() * 10000000),
           numberofemployees: (Math as any).floor((Math as any).random() * 1000),
@@ -161,7 +161,7 @@ export default function BulkOperations() {
       const targets = (accounts as any).map((account: any, i: number) => {
         setProgress((prev: any) => ({ ...prev, current: i + 1 }));
         return {
-          "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).account",
+          "@odata.type": "Microsoft.Dynamics.CRM.account",
           accountid: (account as any).accountid,
           name: `${(account as any).name} (Updated ${(Date as any).now()})`,
           revenue: (Math as any).floor((Math as any).random() * 10000000),
@@ -215,7 +215,7 @@ export default function BulkOperations() {
       // Mix of updates and creates
       for (let i = 0; i < count; i++) {
         const target: any = {
-          "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).account",
+          "@odata.type": "Microsoft.Dynamics.CRM.account",
           name: `Upsert Account ${(Date as any).now()}-${i}`,
           revenue: (Math as any).floor((Math as any).random() * 10000000),
         };
@@ -365,7 +365,7 @@ export default function BulkOperations() {
           items={[
             {
               label: "Operation",
-              code: `await (client as any).api('/${(results as any).operation}').post({
+              code: `await client.api('/${(results as any).operation}').post({
   Targets: [...],
   ConcurrencyBehavior: 'IgnoreErrors'
 })`,
