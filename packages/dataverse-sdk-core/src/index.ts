@@ -22,6 +22,7 @@ export * from "./utils/HeaderUtils.js";
 export { entityIdFromResponse } from "./utils/response.js";
 export { ConsoleLogger, type LogLevel } from "./utils/consoleLogger.js";
 export { defaultRedactUrl } from "./utils/redact.js";
+export { buildUrl } from "./utils/url.js";
 export { SDK_VERSION } from "./version.js";
 export { parseClaimsChallenge } from "./utils/claimsChallenge.js";
 

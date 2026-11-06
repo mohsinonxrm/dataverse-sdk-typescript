@@ -712,6 +712,24 @@ The built-in classes (`AuthMiddleware`, `ODataHeadersMiddleware`, `ConcurrencyMi
 `RetryMiddleware`, `TelemetryMiddleware`, `LoggingMiddleware`), `buildDefaultMiddleware`,
 `Pipeline` and `FetchRequestAdapter` are exported.
 
+`request.url` in middleware does not include the query options the builder set: they are in
+`request.query`. `buildUrl(request)` returns the exact URL `fetch` receives, encoded as described
+in [URL Construction](#url-construction), so a request inspector never has to re-encode the query:
+
+```typescript
+import { buildUrl, type Middleware } from "@mohsinonxrm/dataverse-sdk-core";
+
+const inspector: Middleware = {
+  name: "inspector",
+  execute: async (request, ctx, next) => {
+    const url = buildUrl(request); // read before next(): later middleware may change the request
+    const response = await next(request, ctx);
+    console.log(request.method, url, response.status);
+    return response;
+  },
+};
+```
+
 **Built-in Middleware (Execution Order):**
 
 1. **prepend** middleware (if any)
@@ -1046,6 +1064,9 @@ Query option values are encoded with `encodeURIComponent` (a space is `%20`, not
 `'`, `(`, `)`, `,`, `/`, `:`, `@` and `=` literal as in Microsoft's examples. A query string that is
 already in the path is never re-encoded; only an option the builder sets again (for example
 `$select`) replaces the one there.
+
+`buildUrl(request)` applies these rules to a `RequestInformation` (see
+[Middleware Pipeline](#middleware-pipeline)).
 
 ## Interfaces
 
