@@ -7,8 +7,8 @@ import { requestBody } from "./internal/requestBody.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface RemoveCertificateCredentialRequestParameters {
-  certificateCredentialId?: string;
   entityId: string;
+  certificateCredentialId?: string;
   entityLogicalName: string;
 }
 
@@ -31,8 +31,8 @@ export class RemoveCertificateCredentialRequest
     const url = `${baseUrl}/RemoveCertificateCredential`;
 
     const body = requestBody({
-      certificateCredentialId: this.Parameters.certificateCredentialId,
       entityId: this.Parameters.entityId,
+      certificateCredentialId: this.Parameters.certificateCredentialId,
       entityLogicalName: this.Parameters.entityLogicalName,
     });
 

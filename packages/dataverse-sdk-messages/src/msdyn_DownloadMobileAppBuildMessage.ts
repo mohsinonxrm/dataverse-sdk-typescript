@@ -15,7 +15,9 @@ import type {
  */
 export interface msdyn_DownloadMobileAppBuildRequestParameters {
   BuildId?: string;
+  ArtifactType?: string;
   msdyn_MobileApp: EntityReference | EntityPayload<msdyn_mobileapp>;
+  PipelineId?: string;
 }
 
 /**
@@ -38,7 +40,9 @@ export class msdyn_DownloadMobileAppBuildRequest
 
     const body = requestBody({
       BuildId: this.Parameters.BuildId,
+      ArtifactType: this.Parameters.ArtifactType,
       msdyn_MobileApp: this.Parameters.msdyn_MobileApp,
+      PipelineId: this.Parameters.PipelineId,
     });
 
     return {

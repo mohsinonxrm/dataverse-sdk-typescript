@@ -15,8 +15,8 @@ export interface msdyn_UpdateNBACardStateResponse {
 export interface msdyn_UpdateNBACardStateActionParameters {
   msdyn_SnoozeTill?: string;
   msdyn_OperationType: number;
-  msdyn_NBAEntityLogicalName: string;
   msdyn_NBAEntityIds: string;
+  msdyn_NBAEntityLogicalName: string;
 }
 
 /**
@@ -33,8 +33,8 @@ export class msdyn_UpdateNBACardStateAction implements Executable<msdyn_UpdateNB
     const body = requestBody({
       msdyn_SnoozeTill: this.parameters.msdyn_SnoozeTill,
       msdyn_OperationType: this.parameters.msdyn_OperationType,
-      msdyn_NBAEntityLogicalName: this.parameters.msdyn_NBAEntityLogicalName,
       msdyn_NBAEntityIds: this.parameters.msdyn_NBAEntityIds,
+      msdyn_NBAEntityLogicalName: this.parameters.msdyn_NBAEntityLogicalName,
     });
 
     return {

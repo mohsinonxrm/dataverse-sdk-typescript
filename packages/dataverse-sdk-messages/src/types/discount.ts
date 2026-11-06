@@ -2,27 +2,27 @@
  * discount entity type
  */
 export interface discount {
-  _modifiedby_value?: string;
-  overriddencreatedon?: string;
-  createdon?: string;
-  name?: string;
-  _transactioncurrencyid_value?: string;
-  discountid?: string;
-  isamounttype?: boolean;
-  organizationid?: string;
-  _modifiedonbehalfby_value?: string;
-  highquantity?: number;
-  versionnumber?: number;
-  _discounttypeid_value?: string;
-  _createdonbehalfby_value?: string;
-  timezoneruleversionnumber?: number;
-  percentage?: number;
-  lowquantity?: number;
-  exchangerate?: number;
-  utcconversiontimezonecode?: number;
-  modifiedon?: string;
   _createdby_value?: string;
-  importsequencenumber?: number;
-  amount_base?: number;
+  _createdonbehalfby_value?: string;
+  _discounttypeid_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _transactioncurrencyid_value?: string;
   amount?: number;
+  amount_base?: number;
+  createdon?: string;
+  discountid?: string;
+  exchangerate?: number;
+  highquantity?: number;
+  importsequencenumber?: number;
+  isamounttype?: boolean;
+  lowquantity?: number;
+  modifiedon?: string;
+  name?: string;
+  organizationid?: string;
+  overriddencreatedon?: string;
+  percentage?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

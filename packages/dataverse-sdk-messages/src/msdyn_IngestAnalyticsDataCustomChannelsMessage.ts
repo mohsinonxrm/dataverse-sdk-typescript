@@ -7,9 +7,9 @@ import { requestBody } from "./internal/requestBody.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_IngestAnalyticsDataCustomChannelsRequestParameters {
-  msdyn_linkedactivityid?: string;
   msdyn_eventname: string;
   msdyn_sequencestepid?: string;
+  msdyn_linkedactivityid?: string;
 }
 
 /**
@@ -31,9 +31,9 @@ export class msdyn_IngestAnalyticsDataCustomChannelsRequest
     const url = `${baseUrl}/msdyn_IngestAnalyticsDataCustomChannels`;
 
     const body = requestBody({
-      msdyn_linkedactivityid: this.Parameters.msdyn_linkedactivityid,
       msdyn_eventname: this.Parameters.msdyn_eventname,
       msdyn_sequencestepid: this.Parameters.msdyn_sequencestepid,
+      msdyn_linkedactivityid: this.Parameters.msdyn_linkedactivityid,
     });
 
     return {

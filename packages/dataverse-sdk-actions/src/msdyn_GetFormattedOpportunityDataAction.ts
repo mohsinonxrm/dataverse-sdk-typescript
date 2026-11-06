@@ -5,9 +5,11 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_GetFormattedOpportunityData action
  */
 export interface msdyn_GetFormattedOpportunityDataResponse {
-  FormattedMonetaryValue: string;
+  AdditionalFieldDataJson: string;
   CreatedOn: string;
+  CustomAttributesJson: string;
   FormattedCloseDate: string;
+  FormattedMonetaryValue: string;
 }
 
 /**

@@ -9,10 +9,10 @@ import type { CCaaS_NotifyAgentResponse as CCaaS_NotifyAgentResponseData } from 
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_NotifyAgentRequestParameters {
+  AgentIds: string[];
+  Message: string;
   ApiVersion: string;
   Title: string;
-  Message: string;
-  AgentIds: string[];
 }
 
 /**
@@ -34,10 +34,10 @@ export class CCaaS_NotifyAgentRequest
     const url = `${baseUrl}/CCaaS_NotifyAgent`;
 
     const body = requestBody({
+      AgentIds: this.Parameters.AgentIds,
+      Message: this.Parameters.Message,
       ApiVersion: this.Parameters.ApiVersion,
       Title: this.Parameters.Title,
-      Message: this.Parameters.Message,
-      AgentIds: this.Parameters.AgentIds,
     });
 
     return {

@@ -19,8 +19,8 @@ export interface GetOrCreateSharedWorkspaceResponse extends sharedworkspace {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface GetOrCreateSharedWorkspaceActionParameters {
-  customclaims?: EntityReference | AnyEntityPayload;
   target: EntityReference | EntityPayload<sharedworkspace>;
+  customclaims?: EntityReference | AnyEntityPayload;
 }
 
 /**
@@ -35,8 +35,8 @@ export class GetOrCreateSharedWorkspaceAction implements Executable<GetOrCreateS
     const url = `${baseUrl}/GetOrCreateSharedWorkspace`;
 
     const body = requestBody({
-      customclaims: this.parameters.customclaims,
       target: this.parameters.target,
+      customclaims: this.parameters.customclaims,
     });
 
     return {

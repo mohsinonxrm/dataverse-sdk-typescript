@@ -2,9 +2,9 @@
  * entityrelationship entity type
  */
 export interface entityrelationship {
-  entityrelationshipid?: string;
   componentstate?: number;
+  entityrelationshipid?: string;
+  overwritetime?: string;
   schemaname?: string;
   solutionid?: string;
-  overwritetime?: string;
 }

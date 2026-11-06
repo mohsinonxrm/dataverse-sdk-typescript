@@ -9,13 +9,13 @@ import type { msdyn_CreateEntityResponse as msdyn_CreateEntityResponseData } fro
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_CreateEntityRequestParameters {
-  UseUserSettings?: boolean;
-  ConnectionInfo?: string;
-  FileInfo?: string;
   PreviewData?: string;
   IsToExistingTable?: boolean;
-  SampleData?: string;
+  UseUserSettings?: boolean;
+  ConnectionInfo?: string;
   EntityDefinition: string;
+  SampleData?: string;
+  FileInfo?: string;
 }
 
 /**
@@ -37,13 +37,13 @@ export class msdyn_CreateEntityRequest
     const url = `${baseUrl}/msdyn_CreateEntity`;
 
     const body = requestBody({
-      UseUserSettings: this.Parameters.UseUserSettings,
-      ConnectionInfo: this.Parameters.ConnectionInfo,
-      FileInfo: this.Parameters.FileInfo,
       PreviewData: this.Parameters.PreviewData,
       IsToExistingTable: this.Parameters.IsToExistingTable,
-      SampleData: this.Parameters.SampleData,
+      UseUserSettings: this.Parameters.UseUserSettings,
+      ConnectionInfo: this.Parameters.ConnectionInfo,
       EntityDefinition: this.Parameters.EntityDefinition,
+      SampleData: this.Parameters.SampleData,
+      FileInfo: this.Parameters.FileInfo,
     });
 
     return {

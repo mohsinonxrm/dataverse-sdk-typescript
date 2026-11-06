@@ -10,9 +10,9 @@ import type { OnBackgroundOperationCompleteResponse as OnBackgroundOperationComp
  */
 export interface OnBackgroundOperationCompleteRequestParameters {
   LocationUrl: string;
+  PayloadType: number;
   CallbackUrl?: string;
   BackgroundOperationId: string;
-  PayloadType: number;
 }
 
 /**
@@ -35,9 +35,9 @@ export class OnBackgroundOperationCompleteRequest
 
     const body = requestBody({
       LocationUrl: this.Parameters.LocationUrl,
+      PayloadType: this.Parameters.PayloadType,
       CallbackUrl: this.Parameters.CallbackUrl,
       BackgroundOperationId: this.Parameters.BackgroundOperationId,
-      PayloadType: this.Parameters.PayloadType,
     });
 
     return {

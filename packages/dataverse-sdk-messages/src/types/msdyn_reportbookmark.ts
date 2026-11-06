@@ -2,27 +2,27 @@
  * msdyn_reportbookmark entity type
  */
 export interface msdyn_reportbookmark {
-  _modifiedby_value?: string;
-  utcconversiontimezonecode?: number;
-  msdyn_reportbookmarkid?: string;
-  statuscode?: number;
-  _createdonbehalfby_value?: string;
   _createdby_value?: string;
-  msdyn_relatedreportid?: string;
-  importsequencenumber?: number;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
   _modifiedonbehalfby_value?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
   msdyn_isdefault?: boolean;
-  timezoneruleversionnumber?: number;
-  msdyn_state?: string;
   msdyn_name?: string;
   msdyn_relatedfeatureid?: string;
-  _owningteam_value?: string;
-  statecode?: number;
-  _owningbusinessunit_value?: string;
-  _ownerid_value?: string;
+  msdyn_relatedreportid?: string;
+  msdyn_reportbookmarkid?: string;
+  msdyn_state?: string;
   overriddencreatedon?: string;
-  _owninguser_value?: string;
-  modifiedon?: string;
-  createdon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
   versionnumber?: number;
 }

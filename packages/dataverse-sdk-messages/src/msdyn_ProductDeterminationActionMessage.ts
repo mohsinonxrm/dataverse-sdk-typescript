@@ -9,8 +9,8 @@ import type { msdyn_ProductDeterminationActionResponse as msdyn_ProductDetermina
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_ProductDeterminationActionRequestParameters {
-  RequestPayload: string;
   SearchIteration: string;
+  RequestPayload: string;
 }
 
 /**
@@ -32,8 +32,8 @@ export class msdyn_ProductDeterminationActionRequest
     const url = `${baseUrl}/msdyn_ProductDeterminationAction`;
 
     const body = requestBody({
-      RequestPayload: this.Parameters.RequestPayload,
       SearchIteration: this.Parameters.SearchIteration,
+      RequestPayload: this.Parameters.RequestPayload,
     });
 
     return {

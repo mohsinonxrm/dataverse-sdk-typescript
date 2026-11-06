@@ -2,33 +2,33 @@
  * listoperation entity type
  */
 export interface listoperation {
-  log?: string;
-  _owninguser_value?: string;
-  _owningbusinessunit_value?: string;
-  _createdonbehalfby_value?: string;
-  errorcode?: number;
-  _modifiedonbehalfby_value?: string;
-  timezoneruleversionnumber?: number;
-  batchinput?: string;
-  utcconversiontimezonecode?: number;
-  _listid_value?: string;
-  importsequencenumber?: number;
-  listoperationname?: string;
   _createdby_value?: string;
-  listoperationid?: string;
-  _owningteam_value?: string;
-  input?: string;
-  statecode?: number;
-  errordescription?: string;
-  listoperationprimaryname?: string;
+  _createdonbehalfby_value?: string;
+  _listid_value?: string;
   _modifiedby_value?: string;
-  processed?: number;
-  overriddencreatedon?: string;
+  _modifiedonbehalfby_value?: string;
   _ownerid_value?: string;
-  modifiedon?: string;
-  createdon?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
   added?: number;
-  versionnumber?: number;
+  batchinput?: string;
+  createdon?: string;
+  errorcode?: number;
+  errordescription?: string;
+  importsequencenumber?: number;
+  input?: string;
+  listoperationid?: string;
+  listoperationname?: string;
+  listoperationprimaryname?: string;
+  log?: string;
+  modifiedon?: string;
+  overriddencreatedon?: string;
+  processed?: number;
+  statecode?: number;
   statuscode?: number;
+  timezoneruleversionnumber?: number;
   type?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

@@ -9,12 +9,12 @@ import type { msdyn_SalesAgents_LogMicroagentFlowDataResponse as msdyn_SalesAgen
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesAgents_LogMicroagentFlowDataRequestParameters {
-  msdyn_salesagentrunid: string;
   msdyn_agenttype: number;
   msdyn_salesagenttype?: number;
-  trackingId?: string;
+  msdyn_salesagentrunid: string;
   continueOnError?: boolean;
   data: string;
+  trackingId?: string;
 }
 
 /**
@@ -36,12 +36,12 @@ export class msdyn_SalesAgents_LogMicroagentFlowDataRequest
     const url = `${baseUrl}/msdyn_SalesAgents_LogMicroagentFlowData`;
 
     const body = requestBody({
-      msdyn_salesagentrunid: this.Parameters.msdyn_salesagentrunid,
       msdyn_agenttype: this.Parameters.msdyn_agenttype,
       msdyn_salesagenttype: this.Parameters.msdyn_salesagenttype,
-      trackingId: this.Parameters.trackingId,
+      msdyn_salesagentrunid: this.Parameters.msdyn_salesagentrunid,
       continueOnError: this.Parameters.continueOnError,
       data: this.Parameters.data,
+      trackingId: this.Parameters.trackingId,
     });
 
     return {

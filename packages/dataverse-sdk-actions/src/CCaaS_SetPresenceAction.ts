@@ -13,8 +13,8 @@ export interface CCaaS_SetPresenceResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_SetPresenceActionParameters {
-  ApiVersion: string;
   PresenceId: string;
+  ApiVersion: string;
 }
 
 /**
@@ -29,8 +29,8 @@ export class CCaaS_SetPresenceAction implements Executable<CCaaS_SetPresenceResp
     const url = `${baseUrl}/CCaaS_SetPresence`;
 
     const body = requestBody({
-      ApiVersion: this.parameters.ApiVersion,
       PresenceId: this.parameters.PresenceId,
+      ApiVersion: this.parameters.ApiVersion,
     });
 
     return {

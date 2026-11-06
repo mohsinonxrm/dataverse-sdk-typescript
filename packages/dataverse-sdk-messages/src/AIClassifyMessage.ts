@@ -9,8 +9,8 @@ import type { AIClassifyResponse as AIClassifyResponseData } from "./types/index
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface AIClassifyRequestParameters {
-  Categories: string[];
   Text: string;
+  Categories: string[];
 }
 
 /**
@@ -32,8 +32,8 @@ export class AIClassifyRequest
     const url = `${baseUrl}/AIClassify`;
 
     const body = requestBody({
-      Categories: this.Parameters.Categories,
       Text: this.Parameters.Text,
+      Categories: this.Parameters.Categories,
     });
 
     return {

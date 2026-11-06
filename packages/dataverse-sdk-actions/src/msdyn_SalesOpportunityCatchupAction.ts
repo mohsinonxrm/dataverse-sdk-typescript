@@ -5,10 +5,10 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_SalesOpportunityCatchup action
  */
 export interface msdyn_SalesOpportunityCatchupResponse {
-  msdyn_version: string;
-  msdyn_summary: string;
   msdyn_sales_copilot_output: string;
+  msdyn_summary: string;
   msdyn_summary_raw: string;
+  msdyn_version: string;
 }
 
 /**
@@ -16,13 +16,13 @@ export interface msdyn_SalesOpportunityCatchupResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesOpportunityCatchupActionParameters {
-  msdyn_since?: string;
-  msdyn_responseFormat?: string;
-  msdyn_additionalParams?: string;
-  msdyn_sessionId?: string;
   msdyn_activityId?: string;
-  msdyn_skipHeader?: string;
   msdyn_id: string;
+  msdyn_since?: string;
+  msdyn_additionalParams?: string;
+  msdyn_skipHeader?: string;
+  msdyn_sessionId?: string;
+  msdyn_responseFormat?: string;
 }
 
 /**
@@ -37,13 +37,13 @@ export class msdyn_SalesOpportunityCatchupAction implements Executable<msdyn_Sal
     const url = `${baseUrl}/msdyn_SalesOpportunityCatchup`;
 
     const body = requestBody({
-      msdyn_since: this.parameters.msdyn_since,
-      msdyn_responseFormat: this.parameters.msdyn_responseFormat,
-      msdyn_additionalParams: this.parameters.msdyn_additionalParams,
-      msdyn_sessionId: this.parameters.msdyn_sessionId,
       msdyn_activityId: this.parameters.msdyn_activityId,
-      msdyn_skipHeader: this.parameters.msdyn_skipHeader,
       msdyn_id: this.parameters.msdyn_id,
+      msdyn_since: this.parameters.msdyn_since,
+      msdyn_additionalParams: this.parameters.msdyn_additionalParams,
+      msdyn_skipHeader: this.parameters.msdyn_skipHeader,
+      msdyn_sessionId: this.parameters.msdyn_sessionId,
+      msdyn_responseFormat: this.parameters.msdyn_responseFormat,
     });
 
     return {

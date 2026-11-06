@@ -13,8 +13,8 @@ export interface CCaaS_InitiateQueueTransferResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_InitiateQueueTransferActionParameters {
-  QueueId: string;
   ApiVersion: string;
+  QueueId: string;
 }
 
 /**
@@ -36,8 +36,8 @@ export class CCaaS_InitiateQueueTransferAction implements Executable<CCaaS_Initi
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_InitiateQueueTransfer`;
 
     const body = requestBody({
-      QueueId: this.parameters.QueueId,
       ApiVersion: this.parameters.ApiVersion,
+      QueueId: this.parameters.QueueId,
     });
 
     return {

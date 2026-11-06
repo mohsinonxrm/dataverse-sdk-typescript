@@ -9,8 +9,8 @@ import type { msdyn_SalesAgents_TriggerOutreachAgentResponse as msdyn_SalesAgent
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesAgents_TriggerOutreachAgentRequestParameters {
-  msdyn_TrackingId: string;
   msdyn_SalesAgentRun: string;
+  msdyn_TrackingId: string;
   msdyn_OutreachConfig?: string;
 }
 
@@ -33,8 +33,8 @@ export class msdyn_SalesAgents_TriggerOutreachAgentRequest
     const url = `${baseUrl}/msdyn_SalesAgents_TriggerOutreachAgent`;
 
     const body = requestBody({
-      msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
       msdyn_SalesAgentRun: this.Parameters.msdyn_SalesAgentRun,
+      msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
       msdyn_OutreachConfig: this.Parameters.msdyn_OutreachConfig,
     });
 

@@ -7,8 +7,8 @@ import type { AnyEntityPayload } from "./types/EntityPayload.js";
  * Response from msdyn_RetrieveKPIvaluesfromDCI action
  */
 export interface msdyn_RetrieveKPIvaluesfromDCIResponse {
-  KPIValues: string;
   Errors: string;
+  KPIValues: string;
 }
 
 /**

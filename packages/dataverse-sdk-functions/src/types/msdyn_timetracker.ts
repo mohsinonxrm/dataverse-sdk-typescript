@@ -2,28 +2,28 @@
  * msdyn_timetracker entity type
  */
 export interface msdyn_timetracker {
-  msdyn_name?: string;
-  _msdyn_regardingentity_value?: string;
-  ttlinseconds?: number;
-  msdyn_duration?: number;
-  _createdonbehalfby_value?: string;
-  msdyn_reasonfortimelog?: string;
-  createdon?: string;
-  versionnumber?: number;
-  msdyn_category?: number;
-  _modifiedonbehalfby_value?: string;
-  msdyn_timetrackerid?: string;
-  msdyn_starttime?: string;
-  msdyn_reasoncategoryfortimelog?: number;
-  partitionid?: string;
-  modifiedon?: string;
-  _modifiedby_value?: string;
-  msdyn_timevaluepercategory?: string;
   _createdby_value?: string;
-  overriddencreatedon?: string;
-  _owninguser_value?: string;
-  _owningteam_value?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _msdyn_regardingentity_value?: string;
   _ownerid_value?: string;
   _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  createdon?: string;
   importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_category?: number;
+  msdyn_duration?: number;
+  msdyn_name?: string;
+  msdyn_reasoncategoryfortimelog?: number;
+  msdyn_reasonfortimelog?: string;
+  msdyn_starttime?: string;
+  msdyn_timetrackerid?: string;
+  msdyn_timevaluepercategory?: string;
+  overriddencreatedon?: string;
+  partitionid?: string;
+  ttlinseconds?: number;
+  versionnumber?: number;
 }

@@ -3,6 +3,6 @@
  */
 export interface subscriptionstatisticsoffline {
   fullsyncrequired?: boolean;
-  subscriptionid?: string;
   objecttypecode?: number;
+  subscriptionid?: string;
 }

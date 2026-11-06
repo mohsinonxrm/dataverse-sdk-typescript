@@ -2,27 +2,27 @@
  * translationprocess entity type
  */
 export interface translationprocess {
-  activestagestartedon?: string;
-  traversedpath?: string;
+  _activestageid_value?: string;
+  _createdby_value?: string;
+  _createdonbehalfby_value?: string;
   _knowledgearticleid_value?: string;
-  name?: string;
-  importsequencenumber?: number;
+  _modifiedby_value?: string;
   _modifiedonbehalfby_value?: string;
-  createdon?: string;
-  overriddencreatedon?: string;
+  _organizationid_value?: string;
   _processid_value?: string;
+  _transactioncurrencyid_value?: string;
+  activestagestartedon?: string;
+  businessprocessflowinstanceid?: string;
+  completedon?: string;
+  createdon?: string;
+  duration?: number;
+  exchangerate?: number;
+  importsequencenumber?: number;
   modifiedon?: string;
+  name?: string;
+  overriddencreatedon?: string;
   statecode?: number;
   statuscode?: number;
-  completedon?: string;
-  _createdby_value?: string;
-  duration?: number;
-  _createdonbehalfby_value?: string;
+  traversedpath?: string;
   versionnumber?: number;
-  _transactioncurrencyid_value?: string;
-  businessprocessflowinstanceid?: string;
-  exchangerate?: number;
-  _modifiedby_value?: string;
-  _organizationid_value?: string;
-  _activestageid_value?: string;
 }

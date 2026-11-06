@@ -8,10 +8,10 @@ import type { ImeMode } from "./ImeMode.js";
  * ComplexDateTimeAttributeMetadata complex type
  */
 export interface ComplexDateTimeAttributeMetadata extends ComplexAttributeMetadata {
+  CanChangeDateTimeBehavior?: BooleanManagedProperty;
+  DateTimeBehavior?: DateTimeBehavior;
   Format?: DateTimeFormat;
+  FormulaDefinition?: string;
   ImeMode?: ImeMode;
   SourceTypeMask?: number;
-  FormulaDefinition?: string;
-  DateTimeBehavior?: DateTimeBehavior;
-  CanChangeDateTimeBehavior?: BooleanManagedProperty;
 }

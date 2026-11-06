@@ -4,29 +4,29 @@ import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
  * maskingrule entity type
  */
 export interface maskingrule {
-  createdon?: string;
+  _createdby_value?: string;
   _createdonbehalfby_value?: string;
-  solutionid?: string;
-  timezoneruleversionnumber?: number;
-  maskedcharacter?: string;
-  maskedrichtestdata?: string;
-  modifiedon?: string;
   _modifiedby_value?: string;
-  ismanaged?: boolean;
-  displayname?: string;
-  maskedtestdata?: string;
+  _modifiedonbehalfby_value?: string;
+  _organizationid_value?: string;
   componentidunique?: string;
   componentstate?: number;
-  regularexpression?: string;
+  createdon?: string;
+  description?: string;
+  displayname?: string;
+  iscustomizable?: BooleanManagedProperty;
+  ismanaged?: boolean;
+  maskedcharacter?: string;
+  maskedrichtestdata?: string;
+  maskedtestdata?: string;
+  maskingruleid?: string;
+  modifiedon?: string;
   name?: string;
   overwritetime?: string;
+  regularexpression?: string;
   richtestdata?: string;
-  description?: string;
-  _createdby_value?: string;
-  _modifiedonbehalfby_value?: string;
-  iscustomizable?: BooleanManagedProperty;
+  solutionid?: string;
   testdata?: string;
-  _organizationid_value?: string;
+  timezoneruleversionnumber?: number;
   utcconversiontimezonecode?: number;
-  maskingruleid?: string;
 }

@@ -13,8 +13,8 @@ export interface msdyn_PowerAutomateLoggerResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_PowerAutomateLoggerActionParameters {
-  LogType: string;
   LogMessage: string;
+  LogType: string;
 }
 
 /**
@@ -29,8 +29,8 @@ export class msdyn_PowerAutomateLoggerAction implements Executable<msdyn_PowerAu
     const url = `${baseUrl}/msdyn_PowerAutomateLogger`;
 
     const body = requestBody({
-      LogType: this.parameters.LogType,
       LogMessage: this.parameters.LogMessage,
+      LogType: this.parameters.LogType,
     });
 
     return {

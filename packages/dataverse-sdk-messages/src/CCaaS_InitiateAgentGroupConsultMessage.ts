@@ -8,11 +8,11 @@ import { requestBody } from "./internal/requestBody.js";
  */
 export interface CCaaS_InitiateAgentGroupConsultRequestParameters {
   IntentId: string;
-  IntentGroupId: string;
-  ApiVersion: string;
-  ConversationAccess: string;
   AgentGroupId?: string;
   IntentFamilyId: string;
+  ApiVersion: string;
+  IntentGroupId: string;
+  ConversationAccess: string;
   ConsultType: string;
 }
 
@@ -42,11 +42,11 @@ export class CCaaS_InitiateAgentGroupConsultRequest
 
     const body = requestBody({
       IntentId: this.Parameters.IntentId,
-      IntentGroupId: this.Parameters.IntentGroupId,
-      ApiVersion: this.Parameters.ApiVersion,
-      ConversationAccess: this.Parameters.ConversationAccess,
       AgentGroupId: this.Parameters.AgentGroupId,
       IntentFamilyId: this.Parameters.IntentFamilyId,
+      ApiVersion: this.Parameters.ApiVersion,
+      IntentGroupId: this.Parameters.IntentGroupId,
+      ConversationAccess: this.Parameters.ConversationAccess,
       ConsultType: this.Parameters.ConsultType,
     });
 

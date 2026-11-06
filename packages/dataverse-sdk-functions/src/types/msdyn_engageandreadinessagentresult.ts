@@ -2,32 +2,32 @@
  * msdyn_engageandreadinessagentresult entity type
  */
 export interface msdyn_engageandreadinessagentresult {
-  timezoneruleversionnumber?: number;
-  _ownerid_value?: string;
-  overriddencreatedon?: string;
-  _modifiedonbehalfby_value?: string;
-  modifiedon?: string;
+  _createdby_value?: string;
+  _createdonbehalfby_value?: string;
   _modifiedby_value?: string;
-  msdyn_name?: string;
-  utcconversiontimezonecode?: number;
+  _modifiedonbehalfby_value?: string;
+  _msdyn_regardingid_value?: string;
+  _msdyn_salesagentrun_value?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_bantdata?: string;
+  msdyn_engageandreadinessagentresultid?: string;
+  msdyn_executiondetails?: string;
+  msdyn_lastengageagentresponse?: string;
+  msdyn_lastprocessedactivityid?: string;
   msdyn_lastprocessedactivitytype?: string;
+  msdyn_lastprocessedtimestamp?: string;
+  msdyn_name?: string;
+  msdyn_purchaseintentdata?: string;
+  overriddencreatedon?: string;
   statecode?: number;
   statuscode?: number;
-  importsequencenumber?: number;
-  msdyn_lastengageagentresponse?: string;
-  msdyn_lastprocessedtimestamp?: string;
-  _createdby_value?: string;
-  msdyn_purchaseintentdata?: string;
-  msdyn_bantdata?: string;
-  _owninguser_value?: string;
-  msdyn_engageandreadinessagentresultid?: string;
-  msdyn_lastprocessedactivityid?: string;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
   versionnumber?: number;
-  _owningteam_value?: string;
-  _msdyn_salesagentrun_value?: string;
-  _owningbusinessunit_value?: string;
-  _createdonbehalfby_value?: string;
-  _msdyn_regardingid_value?: string;
-  createdon?: string;
-  msdyn_executiondetails?: string;
 }

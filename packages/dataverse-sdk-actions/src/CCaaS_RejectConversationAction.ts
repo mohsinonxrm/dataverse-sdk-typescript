@@ -13,9 +13,9 @@ export interface CCaaS_RejectConversationResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_RejectConversationActionParameters {
-  ApiVersion: string;
   SessionId: string;
   RejectReason?: string;
+  ApiVersion: string;
 }
 
 /**
@@ -37,9 +37,9 @@ export class CCaaS_RejectConversationAction implements Executable<CCaaS_RejectCo
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_RejectConversation`;
 
     const body = requestBody({
-      ApiVersion: this.parameters.ApiVersion,
       SessionId: this.parameters.SessionId,
       RejectReason: this.parameters.RejectReason,
+      ApiVersion: this.parameters.ApiVersion,
     });
 
     return {

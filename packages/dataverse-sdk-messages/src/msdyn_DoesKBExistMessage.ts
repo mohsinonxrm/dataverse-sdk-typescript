@@ -9,6 +9,7 @@ import type { msdyn_DoesKBExistResponse as msdyn_DoesKBExistResponseData } from 
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_DoesKBExistRequestParameters {
+  HarvestWorkItemResponse: string;
   CSCopilotRequest: string;
 }
 
@@ -31,6 +32,7 @@ export class msdyn_DoesKBExistRequest
     const url = `${baseUrl}/msdyn_DoesKBExist`;
 
     const body = requestBody({
+      HarvestWorkItemResponse: this.Parameters.HarvestWorkItemResponse,
       CSCopilotRequest: this.Parameters.CSCopilotRequest,
     });
 

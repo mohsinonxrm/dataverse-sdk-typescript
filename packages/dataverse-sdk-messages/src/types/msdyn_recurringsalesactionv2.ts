@@ -2,31 +2,31 @@
  * msdyn_recurringsalesactionv2 entity type
  */
 export interface msdyn_recurringsalesactionv2 {
-  _modifiedby_value?: string;
-  statuscode?: number;
-  versionnumber?: number;
-  msdyn_recordstate?: number;
+  _createdby_value?: string;
   _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _organizationid_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_customactionname?: string;
   msdyn_failurecount?: number;
   msdyn_featurename?: number;
-  msdyn_retrycount?: number;
-  modifiedon?: string;
-  msdyn_startdate?: string;
-  _modifiedonbehalfby_value?: string;
-  msdyn_lastexecutioninfo?: string;
-  utcconversiontimezonecode?: number;
-  overriddencreatedon?: string;
-  createdon?: string;
-  msdyn_schedule?: string;
-  msdyn_payload?: string;
-  msdyn_customactionname?: string;
-  msdyn_recurringsalesactionv2id?: string;
-  msdyn_triggername?: string;
-  _organizationid_value?: string;
-  _createdby_value?: string;
-  importsequencenumber?: number;
-  msdyn_workloadname?: string;
-  statecode?: number;
   msdyn_isrecurrencepatternschedule?: boolean;
+  msdyn_lastexecutioninfo?: string;
+  msdyn_payload?: string;
+  msdyn_recordstate?: number;
+  msdyn_recurringsalesactionv2id?: string;
+  msdyn_retrycount?: number;
+  msdyn_schedule?: string;
+  msdyn_startdate?: string;
+  msdyn_triggername?: string;
+  msdyn_workloadname?: string;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
   timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

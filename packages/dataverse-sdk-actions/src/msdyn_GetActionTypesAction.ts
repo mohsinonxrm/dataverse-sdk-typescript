@@ -14,8 +14,8 @@ export interface msdyn_GetActionTypesResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_GetActionTypesActionParameters {
-  workflowId: string;
   correlationId: string;
+  workflowId: string;
 }
 
 /**
@@ -30,8 +30,8 @@ export class msdyn_GetActionTypesAction implements Executable<msdyn_GetActionTyp
     const url = `${baseUrl}/msdyn_GetActionTypes`;
 
     const body = requestBody({
-      workflowId: this.parameters.workflowId,
       correlationId: this.parameters.correlationId,
+      workflowId: this.parameters.workflowId,
     });
 
     return {

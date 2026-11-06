@@ -2,12 +2,12 @@
  * GetConsentLinkResponse complex type
  */
 export interface GetConsentLinkResponse {
-  principalId?: string;
-  customParameters?: string;
-  redirectUrl?: string;
-  firstPartyLoginUri?: string;
   consentLink?: string;
-  tenantId?: string;
-  principalType?: string;
+  customParameters?: string;
+  firstPartyLoginUri?: string;
   parameterConsentLinks?: string;
+  principalId?: string;
+  principalType?: string;
+  redirectUrl?: string;
+  tenantId?: string;
 }

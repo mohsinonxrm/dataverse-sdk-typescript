@@ -2,17 +2,17 @@
  * elasticfileattachment entity type
  */
 export interface elasticfileattachment {
-  partitionid?: string;
-  createdon?: string;
-  ttlinseconds?: number;
-  regardingfieldname?: string;
-  mimetype?: string;
-  filesizeinbytes?: number;
-  elasticfileattachmentid?: string;
-  objecttypecode?: string;
   _objectid_value?: string;
-  versionnumber?: number;
-  importsequencenumber?: number;
-  overriddencreatedon?: string;
+  createdon?: string;
+  elasticfileattachmentid?: string;
   filename?: string;
+  filesizeinbytes?: number;
+  importsequencenumber?: number;
+  mimetype?: string;
+  objecttypecode?: string;
+  overriddencreatedon?: string;
+  partitionid?: string;
+  regardingfieldname?: string;
+  ttlinseconds?: number;
+  versionnumber?: number;
 }

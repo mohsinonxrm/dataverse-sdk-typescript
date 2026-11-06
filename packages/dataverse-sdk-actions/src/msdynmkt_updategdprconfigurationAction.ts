@@ -13,8 +13,8 @@ export interface msdynmkt_updategdprconfigurationResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdynmkt_updategdprconfigurationActionParameters {
-  msdynmkt_updategdprconfigurationisenforced: boolean;
   msdynmkt_updategdprconfigurationischangeloggingenabled: boolean;
+  msdynmkt_updategdprconfigurationisenforced: boolean;
 }
 
 /**
@@ -29,10 +29,10 @@ export class msdynmkt_updategdprconfigurationAction implements Executable<msdynm
     const url = `${baseUrl}/msdynmkt_updategdprconfiguration`;
 
     const body = requestBody({
-      msdynmkt_updategdprconfigurationisenforced:
-        this.parameters.msdynmkt_updategdprconfigurationisenforced,
       msdynmkt_updategdprconfigurationischangeloggingenabled:
         this.parameters.msdynmkt_updategdprconfigurationischangeloggingenabled,
+      msdynmkt_updategdprconfigurationisenforced:
+        this.parameters.msdynmkt_updategdprconfigurationisenforced,
     });
 
     return {

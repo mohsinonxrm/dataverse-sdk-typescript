@@ -9,8 +9,8 @@ import type { msdyn_getSalesSequenceExperimentVersionResponse as msdyn_getSalesS
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_getSalesSequenceExperimentVersionRequestParameters {
-  msdyn_experimentKey: string;
   msdyn_customerId: string;
+  msdyn_experimentKey: string;
   msdyn_versionATraffic: number;
   msdyn_experimentVersionRecordId: string;
 }
@@ -34,8 +34,8 @@ export class msdyn_getSalesSequenceExperimentVersionRequest
     const url = `${baseUrl}/msdyn_getSalesSequenceExperimentVersion`;
 
     const body = requestBody({
-      msdyn_experimentKey: this.Parameters.msdyn_experimentKey,
       msdyn_customerId: this.Parameters.msdyn_customerId,
+      msdyn_experimentKey: this.Parameters.msdyn_experimentKey,
       msdyn_versionATraffic: this.Parameters.msdyn_versionATraffic,
       msdyn_experimentVersionRecordId: this.Parameters.msdyn_experimentVersionRecordId,
     });

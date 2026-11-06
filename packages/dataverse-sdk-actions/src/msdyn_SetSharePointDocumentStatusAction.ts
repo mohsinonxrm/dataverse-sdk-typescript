@@ -5,9 +5,9 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_SetSharePointDocumentStatus action
  */
 export interface msdyn_SetSharePointDocumentStatusResponse {
-  PassedLogicalEntityNames: string;
   FailedLogicalEntityNames: string;
   OperationResult: boolean;
+  PassedLogicalEntityNames: string;
 }
 
 /**

@@ -5,9 +5,9 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from OnBackgroundOperationComplete action
  */
 export interface OnBackgroundOperationCompleteResponse {
+  BackgroundOperationStateCode: number;
   BackgroundOperationStatusCode: number;
   OperationName: string;
-  BackgroundOperationStateCode: number;
 }
 
 /**
@@ -16,9 +16,9 @@ export interface OnBackgroundOperationCompleteResponse {
  */
 export interface OnBackgroundOperationCompleteActionParameters {
   LocationUrl: string;
+  PayloadType: number;
   CallbackUrl?: string;
   BackgroundOperationId: string;
-  PayloadType: number;
 }
 
 /**
@@ -34,9 +34,9 @@ export class OnBackgroundOperationCompleteAction implements Executable<OnBackgro
 
     const body = requestBody({
       LocationUrl: this.parameters.LocationUrl,
+      PayloadType: this.parameters.PayloadType,
       CallbackUrl: this.parameters.CallbackUrl,
       BackgroundOperationId: this.parameters.BackgroundOperationId,
-      PayloadType: this.parameters.PayloadType,
     });
 
     return {

@@ -9,8 +9,8 @@ import type { msdyn_RetrieveEmailNBAResponse as msdyn_RetrieveEmailNBAResponseDa
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_RetrieveEmailNBARequestParameters {
-  msdyn_RegardingEntityIds: string;
   msdyn_RegardingLogicalName: string;
+  msdyn_RegardingEntityIds: string;
 }
 
 /**
@@ -32,8 +32,8 @@ export class msdyn_RetrieveEmailNBARequest
     const url = `${baseUrl}/msdyn_RetrieveEmailNBA`;
 
     const body = requestBody({
-      msdyn_RegardingEntityIds: this.Parameters.msdyn_RegardingEntityIds,
       msdyn_RegardingLogicalName: this.Parameters.msdyn_RegardingLogicalName,
+      msdyn_RegardingEntityIds: this.Parameters.msdyn_RegardingEntityIds,
     });
 
     return {

@@ -7,13 +7,13 @@ import type { StringFormatName } from "./StringFormatName.js";
  * StringAttributeMetadata entity type
  */
 export interface StringAttributeMetadata extends AttributeMetadata {
+  DatabaseLength?: number;
   Format?: StringFormat;
   FormatName?: StringFormatName;
-  ImeMode?: ImeMode;
-  MaxLength?: number;
-  YomiOf?: string;
-  IsLocalizable?: boolean;
-  DatabaseLength?: number;
   FormulaDefinition?: string;
+  ImeMode?: ImeMode;
+  IsLocalizable?: boolean;
+  MaxLength?: number;
   SourceTypeMask?: number;
+  YomiOf?: string;
 }

@@ -7,9 +7,9 @@ import type { AnyEntityPayload } from "./types/EntityPayload.js";
  * Response from msdyn_CSCopilotResolveCase action
  */
 export interface msdyn_CSCopilotResolveCaseResponse {
-  StatusCode: number;
   CaseStatusReason: number;
   Message: string;
+  StatusCode: number;
 }
 
 /**
@@ -17,10 +17,11 @@ export interface msdyn_CSCopilotResolveCaseResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_CSCopilotResolveCaseActionParameters {
-  Incident: EntityReference | AnyEntityPayload;
   ResolutionReason: number;
-  CallerIdentifier: string;
   StatusReason: number;
+  Incident: EntityReference | AnyEntityPayload;
+  CallerIdentifier: string;
+  PredictedValues?: EntityReference | AnyEntityPayload;
 }
 
 /**
@@ -35,10 +36,11 @@ export class msdyn_CSCopilotResolveCaseAction implements Executable<msdyn_CSCopi
     const url = `${baseUrl}/msdyn_CSCopilotResolveCase`;
 
     const body = requestBody({
-      Incident: this.parameters.Incident,
       ResolutionReason: this.parameters.ResolutionReason,
-      CallerIdentifier: this.parameters.CallerIdentifier,
       StatusReason: this.parameters.StatusReason,
+      Incident: this.parameters.Incident,
+      CallerIdentifier: this.parameters.CallerIdentifier,
+      PredictedValues: this.parameters.PredictedValues,
     });
 
     return {

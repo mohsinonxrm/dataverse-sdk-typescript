@@ -11,14 +11,14 @@ import type { OptionSetType } from "./OptionSetType.js";
 export interface OptionSetMetadataBase extends MetadataBase {
   Description?: Label;
   DisplayName?: Label;
+  ExternalTypeName?: string;
+  IntroducedVersion?: string;
   IsCustomOptionSet?: boolean;
+  IsCustomizable?: BooleanManagedProperty;
   IsGlobal?: boolean;
   IsManaged?: boolean;
-  IsCustomizable?: BooleanManagedProperty;
   Name?: string;
-  ExternalTypeName?: string;
   OptionSetType?: OptionSetType;
-  IntroducedVersion?: string;
 }
 
 /**

@@ -13,10 +13,10 @@ export interface AISummarizeRecordResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface AISummarizeRecordActionParameters {
-  Id: string;
-  EntityLogicalName: string;
   RecordContext?: string;
   IsMergedCatchupAndSummary?: boolean;
+  EntityLogicalName: string;
+  Id: string;
 }
 
 /**
@@ -31,10 +31,10 @@ export class AISummarizeRecordAction implements Executable<AISummarizeRecordResp
     const url = `${baseUrl}/AISummarizeRecord`;
 
     const body = requestBody({
-      Id: this.parameters.Id,
-      EntityLogicalName: this.parameters.EntityLogicalName,
       RecordContext: this.parameters.RecordContext,
       IsMergedCatchupAndSummary: this.parameters.IsMergedCatchupAndSummary,
+      EntityLogicalName: this.parameters.EntityLogicalName,
+      Id: this.parameters.Id,
     });
 
     return {

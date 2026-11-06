@@ -3,13 +3,13 @@
  */
 export interface channelaccessprofileentityaccesslevel {
   channelaccessprofileentityaccesslevelid?: string;
-  overwritetime?: string;
-  versionnumber?: number;
-  entityaccesslevelid?: string;
-  channelaccessprofileid?: string;
-  solutionid?: string;
-  ismanaged?: boolean;
   channelaccessprofileentityaccesslevelidunique?: string;
+  channelaccessprofileid?: string;
   componentstate?: number;
   entityaccessleveldepthmask?: number;
+  entityaccesslevelid?: string;
+  ismanaged?: boolean;
+  overwritetime?: string;
+  solutionid?: string;
+  versionnumber?: number;
 }

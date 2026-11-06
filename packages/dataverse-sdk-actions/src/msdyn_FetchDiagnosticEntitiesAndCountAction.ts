@@ -13,8 +13,8 @@ export interface msdyn_FetchDiagnosticEntitiesAndCountResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_FetchDiagnosticEntitiesAndCountActionParameters {
-  msdyn_RunId: string;
   msdyn_Filter: string;
+  msdyn_RunId: string;
 }
 
 /**
@@ -29,8 +29,8 @@ export class msdyn_FetchDiagnosticEntitiesAndCountAction implements Executable<m
     const url = `${baseUrl}/msdyn_FetchDiagnosticEntitiesAndCount`;
 
     const body = requestBody({
-      msdyn_RunId: this.parameters.msdyn_RunId,
       msdyn_Filter: this.parameters.msdyn_Filter,
+      msdyn_RunId: this.parameters.msdyn_RunId,
     });
 
     return {

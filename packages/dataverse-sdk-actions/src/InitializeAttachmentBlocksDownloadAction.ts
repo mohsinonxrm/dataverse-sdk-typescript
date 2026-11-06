@@ -7,9 +7,9 @@ import type { AnyEntityPayload } from "./types/EntityPayload.js";
  * Response from InitializeAttachmentBlocksDownload action
  */
 export interface InitializeAttachmentBlocksDownloadResponse {
+  FileContinuationToken: string;
   FileName: string;
   FileSizeInBytes: number;
-  FileContinuationToken: string;
 }
 
 /**

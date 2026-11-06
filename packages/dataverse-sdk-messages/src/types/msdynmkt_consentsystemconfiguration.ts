@@ -2,24 +2,24 @@
  * msdynmkt_consentsystemconfiguration entity type
  */
 export interface msdynmkt_consentsystemconfiguration {
-  overriddencreatedon?: string;
   _createdby_value?: string;
-  _modifiedby_value?: string;
-  _owninguser_value?: string;
-  modifiedon?: string;
-  utcconversiontimezonecode?: number;
-  _modifiedonbehalfby_value?: string;
-  versionnumber?: number;
-  importsequencenumber?: number;
-  timezoneruleversionnumber?: number;
-  statuscode?: number;
-  _owningteam_value?: string;
-  statecode?: number;
-  _ownerid_value?: string;
-  msdynmkt_usecjoconsentsystemformkt?: number;
-  msdynmkt_consentsystemconfigurationid?: string;
-  _owningbusinessunit_value?: string;
-  createdon?: string;
   _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdynmkt_consentsystemconfigurationid?: string;
   msdynmkt_name?: string;
+  msdynmkt_usecjoconsentsystemformkt?: number;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

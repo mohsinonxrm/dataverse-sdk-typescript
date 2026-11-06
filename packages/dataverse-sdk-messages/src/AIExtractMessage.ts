@@ -9,8 +9,8 @@ import type { AIExtractResponse as AIExtractResponseData } from "./types/index.j
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface AIExtractRequestParameters {
-  Text: string;
   Entity: string;
+  Text: string;
 }
 
 /**
@@ -29,8 +29,8 @@ export class AIExtractRequest extends OrganizationRequest implements Executable<
     const url = `${baseUrl}/AIExtract`;
 
     const body = requestBody({
-      Text: this.Parameters.Text,
       Entity: this.Parameters.Entity,
+      Text: this.Parameters.Text,
     });
 
     return {

@@ -7,9 +7,9 @@ import { requestBody } from "./internal/requestBody.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_RaiseSecondaryChannelEventRequestParameters {
+  ApiVersion: string;
   SecondaryChannelEventType: string;
   SecondaryChannelSessionId: string;
-  ApiVersion: string;
   SecondaryChannelType: string;
 }
 
@@ -38,9 +38,9 @@ export class CCaaS_RaiseSecondaryChannelEventRequest
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_RaiseSecondaryChannelEvent`;
 
     const body = requestBody({
+      ApiVersion: this.Parameters.ApiVersion,
       SecondaryChannelEventType: this.Parameters.SecondaryChannelEventType,
       SecondaryChannelSessionId: this.Parameters.SecondaryChannelSessionId,
-      ApiVersion: this.Parameters.ApiVersion,
       SecondaryChannelType: this.Parameters.SecondaryChannelType,
     });
 

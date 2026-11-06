@@ -5,9 +5,9 @@ import type { DependentOptionMetadataCollection } from "./DependentOptionMetadat
  * DependentOptionSetMetadata complex type
  */
 export interface DependentOptionSetMetadata {
-  Name?: string;
-  Type?: string;
-  TrueOption?: DependentOptionMetadata;
   FalseOption?: DependentOptionMetadata;
+  Name?: string;
   Options?: DependentOptionMetadataCollection;
+  TrueOption?: DependentOptionMetadata;
+  Type?: string;
 }

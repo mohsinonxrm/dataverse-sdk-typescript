@@ -9,8 +9,8 @@ import type { GetRunMapResponse as GetRunMapResponseData } from "./types/index.j
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface GetRunMapRequestParameters {
-  runId: string;
   continuationToken?: string;
+  runId: string;
   max?: number;
 }
 
@@ -36,8 +36,8 @@ export class GetRunMapRequest extends OrganizationRequest implements Executable<
     const url = `${baseUrl}/businessprocesses(${this.businessprocessId})/Microsoft.Dynamics.CRM.GetRunMap`;
 
     const body = requestBody({
-      runId: this.Parameters.runId,
       continuationToken: this.Parameters.continuationToken,
+      runId: this.Parameters.runId,
       max: this.Parameters.max,
     });
 

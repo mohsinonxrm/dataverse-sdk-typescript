@@ -8,13 +8,13 @@ import { requestBody } from "./internal/requestBody.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface AIModelPublishRequestParameters {
-  ModelId: string;
-  ModelName: string;
-  Source?: string;
-  RunConfigurationId: string;
   TemplateId: string;
+  Source?: string;
   RunConfiguration: string;
+  ModelId: string;
   CustomConfiguration: string;
+  RunConfigurationId: string;
+  ModelName: string;
 }
 
 /**
@@ -36,13 +36,13 @@ export class AIModelPublishRequest
     const url = `${baseUrl}/AIModelPublish`;
 
     const body = requestBody({
-      ModelId: this.Parameters.ModelId,
-      ModelName: this.Parameters.ModelName,
-      Source: this.Parameters.Source,
-      RunConfigurationId: this.Parameters.RunConfigurationId,
       TemplateId: this.Parameters.TemplateId,
+      Source: this.Parameters.Source,
       RunConfiguration: this.Parameters.RunConfiguration,
+      ModelId: this.Parameters.ModelId,
       CustomConfiguration: this.Parameters.CustomConfiguration,
+      RunConfigurationId: this.Parameters.RunConfigurationId,
+      ModelName: this.Parameters.ModelName,
     });
 
     return {

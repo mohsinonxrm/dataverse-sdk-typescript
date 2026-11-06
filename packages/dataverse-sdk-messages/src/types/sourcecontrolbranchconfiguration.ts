@@ -2,27 +2,27 @@
  * sourcecontrolbranchconfiguration entity type
  */
 export interface sourcecontrolbranchconfiguration {
-  _modifiedby_value?: string;
-  _sourcecontrolconfigurationid_value?: string;
-  upstreambranchname?: string;
-  ttlinseconds?: number;
-  _createdonbehalfby_value?: string;
-  overriddencreatedon?: string;
-  upstreambranchsyncedcommitid?: string;
-  _modifiedonbehalfby_value?: string;
-  partitionid?: string;
-  sourcecontrolbranchconfigurationid?: string;
-  importsequencenumber?: number;
-  branchsyncedtime?: string;
   _createdby_value?: string;
-  modifiedon?: string;
-  branchsyncedcommitid?: string;
-  upstreambranchsyncedtime?: string;
-  rootfolderpath?: string;
-  sourcecontrolconfigurationidpid?: string;
-  createdon?: string;
-  name?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _sourcecontrolconfigurationid_value?: string;
   branchname?: string;
+  branchsyncedcommitid?: string;
+  branchsyncedtime?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  name?: string;
+  overriddencreatedon?: string;
+  partitionid?: string;
+  rootfolderpath?: string;
+  sourcecontrolbranchconfigurationid?: string;
+  sourcecontrolconfigurationidpid?: string;
   statuscode?: number;
+  ttlinseconds?: number;
+  upstreambranchname?: string;
+  upstreambranchsyncedcommitid?: string;
+  upstreambranchsyncedtime?: string;
   versionnumber?: number;
 }

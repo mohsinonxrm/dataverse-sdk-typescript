@@ -9,9 +9,9 @@ import type { msdyn_ProcessPostProposalFollowupResponse as msdyn_ProcessPostProp
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_ProcessPostProposalFollowupRequestParameters {
-  msdyn_Thread: string;
-  msdyn_SalesAgentRun: string;
   msdyn_TrackingId: string;
+  msdyn_SalesAgentRun: string;
+  msdyn_Thread: string;
 }
 
 /**
@@ -33,9 +33,9 @@ export class msdyn_ProcessPostProposalFollowupRequest
     const url = `${baseUrl}/msdyn_ProcessPostProposalFollowup`;
 
     const body = requestBody({
-      msdyn_Thread: this.Parameters.msdyn_Thread,
-      msdyn_SalesAgentRun: this.Parameters.msdyn_SalesAgentRun,
       msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
+      msdyn_SalesAgentRun: this.Parameters.msdyn_SalesAgentRun,
+      msdyn_Thread: this.Parameters.msdyn_Thread,
     });
 
     return {

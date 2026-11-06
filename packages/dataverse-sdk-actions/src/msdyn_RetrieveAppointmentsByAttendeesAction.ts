@@ -5,9 +5,9 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_RetrieveAppointmentsByAttendees action
  */
 export interface msdyn_RetrieveAppointmentsByAttendeesResponse {
-  Result: string;
-  HasChanges: boolean;
   ExceptionMessage: string;
+  HasChanges: boolean;
+  Result: string;
 }
 
 /**

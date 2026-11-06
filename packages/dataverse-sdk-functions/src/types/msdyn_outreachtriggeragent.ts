@@ -2,25 +2,25 @@
  * msdyn_outreachtriggeragent entity type
  */
 export interface msdyn_outreachtriggeragent {
-  _modifiedby_value?: string;
-  overriddencreatedon?: string;
-  _owninguser_value?: string;
   _createdby_value?: string;
-  _modifiedonbehalfby_value?: string;
-  modifiedon?: string;
-  _owningbusinessunit_value?: string;
-  msdyn_outreachtriggeragentid?: string;
-  timezoneruleversionnumber?: number;
-  msdyn_conversationid?: string;
-  createdon?: string;
-  versionnumber?: number;
-  _owningteam_value?: string;
-  msdyn_retrycount?: number;
-  utcconversiontimezonecode?: number;
-  importsequencenumber?: number;
-  statuscode?: number;
-  _ownerid_value?: string;
   _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_conversationid?: string;
   msdyn_emailpayload?: string;
+  msdyn_outreachtriggeragentid?: string;
+  msdyn_retrycount?: number;
+  overriddencreatedon?: string;
   statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

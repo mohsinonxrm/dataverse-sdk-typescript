@@ -9,13 +9,13 @@ import type { GenerateAutomatedPluginResponse as GenerateAutomatedPluginResponse
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface GenerateAutomatedPluginRequestParameters {
-  Stage: number;
-  Context?: string;
   SolutionUniqueName?: string;
-  Expression: string;
-  EntityLogicalName: string;
-  MessageName: string;
   Name: string;
+  MessageName: string;
+  Stage: number;
+  EntityLogicalName: string;
+  Expression: string;
+  Context?: string;
 }
 
 /**
@@ -37,13 +37,13 @@ export class GenerateAutomatedPluginRequest
     const url = `${baseUrl}/GenerateAutomatedPlugin`;
 
     const body = requestBody({
-      Stage: this.Parameters.Stage,
-      Context: this.Parameters.Context,
       SolutionUniqueName: this.Parameters.SolutionUniqueName,
-      Expression: this.Parameters.Expression,
-      EntityLogicalName: this.Parameters.EntityLogicalName,
-      MessageName: this.Parameters.MessageName,
       Name: this.Parameters.Name,
+      MessageName: this.Parameters.MessageName,
+      Stage: this.Parameters.Stage,
+      EntityLogicalName: this.Parameters.EntityLogicalName,
+      Expression: this.Parameters.Expression,
+      Context: this.Parameters.Context,
     });
 
     return {

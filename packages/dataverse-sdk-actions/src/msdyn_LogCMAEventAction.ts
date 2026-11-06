@@ -16,11 +16,11 @@ export interface msdyn_LogCMAEventResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_LogCMAEventActionParameters {
-  EventType: string;
-  Source: string;
   Component: string;
   EventData?: string;
   Entity?: EntityReference | AnyEntityPayload;
+  EventType: string;
+  Source: string;
 }
 
 /**
@@ -35,11 +35,11 @@ export class msdyn_LogCMAEventAction implements Executable<msdyn_LogCMAEventResp
     const url = `${baseUrl}/msdyn_LogCMAEvent`;
 
     const body = requestBody({
-      EventType: this.parameters.EventType,
-      Source: this.parameters.Source,
       Component: this.parameters.Component,
       EventData: this.parameters.EventData,
       Entity: this.parameters.Entity,
+      EventType: this.parameters.EventType,
+      Source: this.parameters.Source,
     });
 
     return {

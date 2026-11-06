@@ -9,11 +9,11 @@ import type { msdyn_CreateCustomActionDefinitionResponse as msdyn_CreateCustomAc
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_CreateCustomActionDefinitionRequestParameters {
-  workflowId: string;
-  entityName: string;
-  customAction: string;
-  customActionParams: string;
   correlationId: string;
+  workflowId: string;
+  customAction: string;
+  entityName: string;
+  customActionParams: string;
 }
 
 /**
@@ -35,11 +35,11 @@ export class msdyn_CreateCustomActionDefinitionRequest
     const url = `${baseUrl}/msdyn_CreateCustomActionDefinition`;
 
     const body = requestBody({
-      workflowId: this.Parameters.workflowId,
-      entityName: this.Parameters.entityName,
-      customAction: this.Parameters.customAction,
-      customActionParams: this.Parameters.customActionParams,
       correlationId: this.Parameters.correlationId,
+      workflowId: this.Parameters.workflowId,
+      customAction: this.Parameters.customAction,
+      entityName: this.Parameters.entityName,
+      customActionParams: this.Parameters.customActionParams,
     });
 
     return {

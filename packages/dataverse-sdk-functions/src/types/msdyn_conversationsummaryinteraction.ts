@@ -2,29 +2,29 @@
  * msdyn_conversationsummaryinteraction entity type
  */
 export interface msdyn_conversationsummaryinteraction {
-  modifiedon?: string;
-  createdon?: string;
-  _organizationid_value?: string;
-  msdyn_issueinaccurate?: boolean;
-  msdyn_interactioncontext?: string;
-  _msdyn_conversationid_value?: string;
-  importsequencenumber?: number;
-  statuscode?: number;
-  msdyn_issuefeedbackverbatim?: string;
-  versionnumber?: number;
-  timezoneruleversionnumber?: number;
-  msdyn_name?: string;
-  _modifiedby_value?: string;
-  msdyn_resolutioninaccurate?: boolean;
   _createdby_value?: string;
-  msdyn_helpful?: boolean;
-  overriddencreatedon?: string;
-  msdyn_conversationsummaryinteractionid?: string;
-  statecode?: number;
   _createdonbehalfby_value?: string;
-  msdyn_feedbackverbatim?: string;
-  utcconversiontimezonecode?: number;
-  msdyn_resolutionfeedbackverbatim?: string;
-  msdyn_summary?: string;
+  _modifiedby_value?: string;
   _modifiedonbehalfby_value?: string;
+  _msdyn_conversationid_value?: string;
+  _organizationid_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_conversationsummaryinteractionid?: string;
+  msdyn_feedbackverbatim?: string;
+  msdyn_helpful?: boolean;
+  msdyn_interactioncontext?: string;
+  msdyn_issuefeedbackverbatim?: string;
+  msdyn_issueinaccurate?: boolean;
+  msdyn_name?: string;
+  msdyn_resolutionfeedbackverbatim?: string;
+  msdyn_resolutioninaccurate?: boolean;
+  msdyn_summary?: string;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

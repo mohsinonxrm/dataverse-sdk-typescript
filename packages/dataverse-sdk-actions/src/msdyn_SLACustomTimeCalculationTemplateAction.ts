@@ -6,8 +6,8 @@ import { requestBody } from "./internal/requestBody.js";
  */
 export interface msdyn_SLACustomTimeCalculationTemplateResponse {
   firstOutputValue: string;
-  secondOutputValue: string;
   returnCalendarId: string;
+  secondOutputValue: string;
 }
 
 /**

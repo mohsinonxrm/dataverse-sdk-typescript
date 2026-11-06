@@ -11,8 +11,9 @@ import type { msdyn_CreateSuggestedNextActionResponse as msdyn_CreateSuggestedNe
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_CreateSuggestedNextActionRequestParameters {
-  SuggestionSubtype: string;
   Entity?: EntityReference | AnyEntityPayload;
+  SuggestionSubtype: string;
+  RunId?: string;
   DraftEmailId: string;
   SuggestionType: string;
 }
@@ -36,8 +37,9 @@ export class msdyn_CreateSuggestedNextActionRequest
     const url = `${baseUrl}/msdyn_CreateSuggestedNextAction`;
 
     const body = requestBody({
-      SuggestionSubtype: this.Parameters.SuggestionSubtype,
       Entity: this.Parameters.Entity,
+      SuggestionSubtype: this.Parameters.SuggestionSubtype,
+      RunId: this.Parameters.RunId,
       DraftEmailId: this.Parameters.DraftEmailId,
       SuggestionType: this.Parameters.SuggestionType,
     });

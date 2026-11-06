@@ -5,8 +5,8 @@ import { formatParameterAlias } from "./internal/odataLiteral.js";
  * Response from CheckPromoteEmail function
  */
 export interface CheckPromoteEmailResponse {
-  ShouldPromote: boolean;
   ReasonCode: number;
+  ShouldPromote: boolean;
 }
 
 /**

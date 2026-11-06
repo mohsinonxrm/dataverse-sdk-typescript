@@ -5,10 +5,10 @@ import { formatParameterAlias } from "./internal/odataLiteral.js";
  * Response from msdyn_getchannelendpointurl function
  */
 export interface msdyn_getchannelendpointurlResponse {
+  channelbatchendpointurl: string;
   channelendpointurl: string;
   scopes: string[];
   tenant: string;
-  channelbatchendpointurl: string;
 }
 
 /**

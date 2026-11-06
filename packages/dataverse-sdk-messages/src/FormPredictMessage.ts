@@ -8,12 +8,12 @@ import { requestBody } from "./internal/requestBody.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface FormPredictRequestParameters {
-  entityName: string;
-  predictorFields: string[];
-  context?: string;
   requestedFields: string[];
+  predictorFields: string[];
   recordValues: string;
   clientPartnerSource?: string;
+  context?: string;
+  entityName: string;
 }
 
 /**
@@ -35,12 +35,12 @@ export class FormPredictRequest
     const url = `${baseUrl}/FormPredict`;
 
     const body = requestBody({
-      entityName: this.Parameters.entityName,
-      predictorFields: this.Parameters.predictorFields,
-      context: this.Parameters.context,
       requestedFields: this.Parameters.requestedFields,
+      predictorFields: this.Parameters.predictorFields,
       recordValues: this.Parameters.recordValues,
       clientPartnerSource: this.Parameters.clientPartnerSource,
+      context: this.Parameters.context,
+      entityName: this.Parameters.entityName,
     });
 
     return {

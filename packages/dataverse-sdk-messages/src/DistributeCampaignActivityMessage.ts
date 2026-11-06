@@ -20,6 +20,7 @@ export interface DistributeCampaignActivityRequestParameters {
   SendEmail: boolean;
   Queue?: EntityReference | EntityPayload<queue>;
   PostWorkflowEvent: boolean;
+  ExtendedActivityParameters?: string;
 }
 
 /**
@@ -55,6 +56,7 @@ export class DistributeCampaignActivityRequest
       SendEmail: this.Parameters.SendEmail,
       Queue: this.Parameters.Queue,
       PostWorkflowEvent: this.Parameters.PostWorkflowEvent,
+      ExtendedActivityParameters: this.Parameters.ExtendedActivityParameters,
     });
 
     return {

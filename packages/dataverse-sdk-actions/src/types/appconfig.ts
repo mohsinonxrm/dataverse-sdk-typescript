@@ -2,25 +2,25 @@
  * appconfig entity type
  */
 export interface appconfig {
-  componentstate?: number;
-  _createdonbehalfby_value?: string;
-  solutionid?: string;
-  createdon?: string;
-  versionnumber?: number;
-  ismanaged?: boolean;
-  _organizationid_value?: string;
-  appconfigimportxml?: string;
-  introducedversion?: string;
-  modifiedon?: string;
+  _appmoduleid_value?: string;
   _createdby_value?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _organizationid_value?: string;
+  appconfigid?: string;
+  appconfigidunique?: string;
+  appconfigimportxml?: string;
+  componentstate?: number;
+  createdon?: string;
+  importsequencenumber?: number;
+  introducedversion?: string;
+  ismanaged?: boolean;
+  modifiedon?: string;
   overriddencreatedon?: string;
   overwritetime?: string;
-  appconfigidunique?: string;
-  _modifiedby_value?: string;
-  importsequencenumber?: number;
-  _appmoduleid_value?: string;
-  appconfigid?: string;
+  solutionid?: string;
   statecode?: number;
   statuscode?: number;
-  _modifiedonbehalfby_value?: string;
+  versionnumber?: number;
 }

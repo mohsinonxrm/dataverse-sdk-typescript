@@ -10,15 +10,15 @@ import type { searchqueryResponse as searchqueryResponseData } from "./types/ind
  */
 export interface searchqueryRequestParameters {
   options?: string;
-  filter?: string;
-  propertybag?: string;
-  entities?: string;
-  search: string;
-  facets?: string;
-  skip?: number;
-  count?: boolean;
-  top?: number;
   orderby?: string;
+  facets?: string;
+  entities?: string;
+  filter?: string;
+  top?: number;
+  search: string;
+  count?: boolean;
+  propertybag?: string;
+  skip?: number;
   semanticquery?: string;
 }
 
@@ -42,15 +42,15 @@ export class searchqueryRequest
 
     const body = requestBody({
       options: this.Parameters.options,
-      filter: this.Parameters.filter,
-      propertybag: this.Parameters.propertybag,
-      entities: this.Parameters.entities,
-      search: this.Parameters.search,
-      facets: this.Parameters.facets,
-      skip: this.Parameters.skip,
-      count: this.Parameters.count,
-      top: this.Parameters.top,
       orderby: this.Parameters.orderby,
+      facets: this.Parameters.facets,
+      entities: this.Parameters.entities,
+      filter: this.Parameters.filter,
+      top: this.Parameters.top,
+      search: this.Parameters.search,
+      count: this.Parameters.count,
+      propertybag: this.Parameters.propertybag,
+      skip: this.Parameters.skip,
       semanticquery: this.Parameters.semanticquery,
     });
 

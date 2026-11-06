@@ -2,25 +2,25 @@
  * msdyn_assetcategorytemplateassociation entity type
  */
 export interface msdyn_assetcategorytemplateassociation {
-  _owningbusinessunit_value?: string;
-  statecode?: number;
-  _modifiedonbehalfby_value?: string;
-  msdyn_name?: string;
-  createdon?: string;
-  statuscode?: number;
-  _msdyn_propertytemplate_value?: string;
-  versionnumber?: number;
-  msdyn_assetcategorytemplateassociationid?: string;
-  _msdyn_customerassetcategory_value?: string;
   _createdby_value?: string;
   _createdonbehalfby_value?: string;
   _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _msdyn_customerassetcategory_value?: string;
+  _msdyn_propertytemplate_value?: string;
   _ownerid_value?: string;
-  importsequencenumber?: number;
-  _owninguser_value?: string;
-  modifiedon?: string;
-  timezoneruleversionnumber?: number;
+  _owningbusinessunit_value?: string;
   _owningteam_value?: string;
+  _owninguser_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_assetcategorytemplateassociationid?: string;
+  msdyn_name?: string;
   overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
   utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

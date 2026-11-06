@@ -13,8 +13,8 @@ export interface msdyn_LogPlatformSummaryInteractionResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_LogPlatformSummaryInteractionActionParameters {
-  InteractionData?: string;
   Context?: string;
+  InteractionData?: string;
   InteractionType?: string;
 }
 
@@ -32,8 +32,8 @@ export class msdyn_LogPlatformSummaryInteractionAction implements Executable<msd
     const url = `${baseUrl}/msdyn_LogPlatformSummaryInteraction`;
 
     const body = requestBody({
-      InteractionData: this.parameters.InteractionData,
       Context: this.parameters.Context,
+      InteractionData: this.parameters.InteractionData,
       InteractionType: this.parameters.InteractionType,
     });
 

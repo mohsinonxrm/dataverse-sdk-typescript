@@ -9,8 +9,8 @@ import type { msdyn_PowerAutomateLoggerResponse as msdyn_PowerAutomateLoggerResp
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_PowerAutomateLoggerRequestParameters {
-  LogType: string;
   LogMessage: string;
+  LogType: string;
 }
 
 /**
@@ -32,8 +32,8 @@ export class msdyn_PowerAutomateLoggerRequest
     const url = `${baseUrl}/msdyn_PowerAutomateLogger`;
 
     const body = requestBody({
-      LogType: this.Parameters.LogType,
       LogMessage: this.Parameters.LogMessage,
+      LogType: this.Parameters.LogType,
     });
 
     return {

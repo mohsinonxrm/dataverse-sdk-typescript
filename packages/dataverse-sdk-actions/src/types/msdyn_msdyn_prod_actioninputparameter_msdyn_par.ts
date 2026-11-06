@@ -5,13 +5,13 @@ import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
  */
 export interface msdyn_msdyn_prod_actioninputparameter_msdyn_par {
   componentidunique?: string;
-  msdyn_productivityactioninputparameterid?: string;
-  iscustomizable?: BooleanManagedProperty;
-  msdyn_msdyn_prod_actioninputparameter_msdyn_parid?: string;
-  ismanaged?: boolean;
   componentstate?: number;
-  solutionid?: string;
-  versionnumber?: number;
+  iscustomizable?: BooleanManagedProperty;
+  ismanaged?: boolean;
+  msdyn_msdyn_prod_actioninputparameter_msdyn_parid?: string;
+  msdyn_productivityactioninputparameterid?: string;
   msdyn_productivityparameterdefinitionid?: string;
   overwritetime?: string;
+  solutionid?: string;
+  versionnumber?: number;
 }

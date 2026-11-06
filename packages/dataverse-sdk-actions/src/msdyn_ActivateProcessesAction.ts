@@ -7,8 +7,8 @@ import type { AnyEntityPayload } from "./types/EntityPayload.js";
  * Response from msdyn_ActivateProcesses action
  */
 export interface msdyn_ActivateProcessesResponse {
-  ResolvedRecordsCount: number;
   ResolutionState: number;
+  ResolvedRecordsCount: number;
 }
 
 /**

@@ -15,9 +15,9 @@ export interface GeneratePowerFxFormulaResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface GeneratePowerFxFormulaActionParameters {
-  OperationId: string;
-  ParameterValues?: EntityReference | AnyEntityPayload;
   ConnectionReference: EntityReference | AnyEntityPayload;
+  ParameterValues?: EntityReference | AnyEntityPayload;
+  OperationId: string;
 }
 
 /**
@@ -32,9 +32,9 @@ export class GeneratePowerFxFormulaAction implements Executable<GeneratePowerFxF
     const url = `${baseUrl}/GeneratePowerFxFormula`;
 
     const body = requestBody({
-      OperationId: this.parameters.OperationId,
-      ParameterValues: this.parameters.ParameterValues,
       ConnectionReference: this.parameters.ConnectionReference,
+      ParameterValues: this.parameters.ParameterValues,
+      OperationId: this.parameters.OperationId,
     });
 
     return {

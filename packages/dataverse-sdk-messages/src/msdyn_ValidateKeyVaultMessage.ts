@@ -9,11 +9,11 @@ import type { msdyn_ValidateKeyVaultResponse as msdyn_ValidateKeyVaultResponseDa
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_ValidateKeyVaultRequestParameters {
-  KeyVaultUri?: string;
-  PlatformType?: string;
-  IsAppSigningEnabled?: boolean;
   BundleIdentifier?: string;
   StorageTypeForUpload?: string;
+  IsAppSigningEnabled?: boolean;
+  KeyVaultUri?: string;
+  PlatformType?: string;
 }
 
 /**
@@ -35,11 +35,11 @@ export class msdyn_ValidateKeyVaultRequest
     const url = `${baseUrl}/msdyn_ValidateKeyVault`;
 
     const body = requestBody({
-      KeyVaultUri: this.Parameters.KeyVaultUri,
-      PlatformType: this.Parameters.PlatformType,
-      IsAppSigningEnabled: this.Parameters.IsAppSigningEnabled,
       BundleIdentifier: this.Parameters.BundleIdentifier,
       StorageTypeForUpload: this.Parameters.StorageTypeForUpload,
+      IsAppSigningEnabled: this.Parameters.IsAppSigningEnabled,
+      KeyVaultUri: this.Parameters.KeyVaultUri,
+      PlatformType: this.Parameters.PlatformType,
     });
 
     return {

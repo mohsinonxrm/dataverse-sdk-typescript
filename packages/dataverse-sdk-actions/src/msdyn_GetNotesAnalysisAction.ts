@@ -5,8 +5,8 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_GetNotesAnalysis action
  */
 export interface msdyn_GetNotesAnalysisResponse {
-  NotesAnalysisResult: string;
   IsSuccess: boolean;
+  NotesAnalysisResult: string;
 }
 
 /**

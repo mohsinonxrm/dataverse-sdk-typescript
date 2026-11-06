@@ -5,8 +5,8 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from _SaveServiceTreeData action
  */
 export interface _SaveServiceTreeDataResponse {
-  UpdatedRootNode: string;
   Error: string;
+  UpdatedRootNode: string;
 }
 
 /**

@@ -5,8 +5,8 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_ProvisionSharePointDocumentLibraries action
  */
 export interface msdyn_ProvisionSharePointDocumentLibrariesResponse {
-  ProvisioningSummary: string;
   ProvisioningResult: string;
+  ProvisioningSummary: string;
 }
 
 /**

@@ -7,15 +7,15 @@ import { requestBody } from "./internal/requestBody.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_InitiateAgentConsultExternalRequestParameters {
-  ExternalReferenceType?: string;
-  ExternalParticipantChannel: string;
-  ApiVersion: string;
-  QueueId: string;
   ExternalReferenceId?: string;
-  ConsultType: string;
-  ExternalParticipantChannelType: string;
+  ExternalParticipantChannel: string;
   AgentName?: string;
+  ConsultType: string;
+  QueueId: string;
   ConversationAccess: string;
+  ExternalParticipantChannelType: string;
+  ApiVersion: string;
+  ExternalReferenceType?: string;
 }
 
 /**
@@ -43,15 +43,15 @@ export class CCaaS_InitiateAgentConsultExternalRequest
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_InitiateAgentConsultExternal`;
 
     const body = requestBody({
-      ExternalReferenceType: this.Parameters.ExternalReferenceType,
-      ExternalParticipantChannel: this.Parameters.ExternalParticipantChannel,
-      ApiVersion: this.Parameters.ApiVersion,
-      QueueId: this.Parameters.QueueId,
       ExternalReferenceId: this.Parameters.ExternalReferenceId,
-      ConsultType: this.Parameters.ConsultType,
-      ExternalParticipantChannelType: this.Parameters.ExternalParticipantChannelType,
+      ExternalParticipantChannel: this.Parameters.ExternalParticipantChannel,
       AgentName: this.Parameters.AgentName,
+      ConsultType: this.Parameters.ConsultType,
+      QueueId: this.Parameters.QueueId,
       ConversationAccess: this.Parameters.ConversationAccess,
+      ExternalParticipantChannelType: this.Parameters.ExternalParticipantChannelType,
+      ApiVersion: this.Parameters.ApiVersion,
+      ExternalReferenceType: this.Parameters.ExternalReferenceType,
     });
 
     return {

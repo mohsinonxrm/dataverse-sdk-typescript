@@ -6,6 +6,7 @@ import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type {
+  BulkDeleteOptions,
   BulkDeleteResponse as BulkDeleteResponseData,
   QueryExpression,
   activityparty,
@@ -25,6 +26,7 @@ export interface BulkDeleteRequestParameters {
   StartDateTime: string;
   SourceImportId?: string;
   RunNow?: boolean;
+  Options?: BulkDeleteOptions;
 }
 
 /**
@@ -55,6 +57,7 @@ export class BulkDeleteRequest
       StartDateTime: this.Parameters.StartDateTime,
       SourceImportId: this.Parameters.SourceImportId,
       RunNow: this.Parameters.RunNow,
+      Options: this.Parameters.Options,
     });
 
     return {

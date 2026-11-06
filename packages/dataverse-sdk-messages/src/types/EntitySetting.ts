@@ -5,7 +5,7 @@ import type { AnyEntityPayload } from "./EntityPayload.js";
  * EntitySetting complex type
  */
 export interface EntitySetting {
-  Name?: string;
   ChildSettings?: EntitySetting[];
+  Name?: string;
   Value: EntityReference | AnyEntityPayload;
 }

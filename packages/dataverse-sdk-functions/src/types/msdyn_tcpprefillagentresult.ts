@@ -2,27 +2,27 @@
  * msdyn_tcpprefillagentresult entity type
  */
 export interface msdyn_tcpprefillagentresult {
-  createdon?: string;
-  msdyn_name?: string;
-  msdyn_tcpprefillagentresultid?: string;
-  msdyn_suggestedcriteria?: string;
-  importsequencenumber?: number;
+  _createdby_value?: string;
+  _createdonbehalfby_value?: string;
   _modifiedby_value?: string;
-  _owninguser_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _ownerid_value?: string;
   _owningbusinessunit_value?: string;
   _owningteam_value?: string;
-  _ownerid_value?: string;
-  msdyn_agentlastrun?: string;
-  msdyn_progress?: number;
-  _createdonbehalfby_value?: string;
-  utcconversiontimezonecode?: number;
-  statuscode?: number;
-  _modifiedonbehalfby_value?: string;
-  statecode?: number;
-  versionnumber?: number;
-  msdyn_agentinput?: string;
-  timezoneruleversionnumber?: number;
+  _owninguser_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
   modifiedon?: string;
-  _createdby_value?: string;
+  msdyn_agentinput?: string;
+  msdyn_agentlastrun?: string;
+  msdyn_name?: string;
+  msdyn_progress?: number;
+  msdyn_suggestedcriteria?: string;
+  msdyn_tcpprefillagentresultid?: string;
   overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

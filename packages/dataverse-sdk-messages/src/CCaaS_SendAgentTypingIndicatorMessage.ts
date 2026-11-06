@@ -9,9 +9,9 @@ import type { CCaaS_SendAgentTypingIndicatorResponse as CCaaS_SendAgentTypingInd
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_SendAgentTypingIndicatorRequestParameters {
-  AgentChatId: string;
   ApiVersion: string;
   AgentDisplayName: string;
+  AgentChatId: string;
 }
 
 /**
@@ -33,9 +33,9 @@ export class CCaaS_SendAgentTypingIndicatorRequest
     const url = `${baseUrl}/CCaaS_SendAgentTypingIndicator`;
 
     const body = requestBody({
-      AgentChatId: this.Parameters.AgentChatId,
       ApiVersion: this.Parameters.ApiVersion,
       AgentDisplayName: this.Parameters.AgentDisplayName,
+      AgentChatId: this.Parameters.AgentChatId,
     });
 
     return {

@@ -7,9 +7,9 @@ import type { AnyEntityPayload } from "./EntityPayload.js";
  * AttributeAuditDetail complex type
  */
 export interface AttributeAuditDetail extends AuditDetail {
-  InvalidNewValueAttributes?: string[];
   DeletedAttributes?: Collection_Int32_String;
+  InvalidNewValueAttributes?: string[];
   LocLabelLanguageCode?: number;
-  OldValue: EntityReference | AnyEntityPayload;
   NewValue: EntityReference | AnyEntityPayload;
+  OldValue: EntityReference | AnyEntityPayload;
 }

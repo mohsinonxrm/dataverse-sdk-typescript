@@ -13,8 +13,8 @@ export interface msdyn_TableOperationResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_TableOperationActionParameters {
-  EntityNames?: string;
   Scenario: string;
+  EntityNames?: string;
 }
 
 /**
@@ -29,8 +29,8 @@ export class msdyn_TableOperationAction implements Executable<msdyn_TableOperati
     const url = `${baseUrl}/msdyn_TableOperation`;
 
     const body = requestBody({
-      EntityNames: this.parameters.EntityNames,
       Scenario: this.parameters.Scenario,
+      EntityNames: this.parameters.EntityNames,
     });
 
     return {

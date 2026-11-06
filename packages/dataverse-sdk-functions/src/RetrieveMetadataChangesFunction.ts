@@ -11,9 +11,9 @@ import type {
  * Response from RetrieveMetadataChanges function
  */
 export interface RetrieveMetadataChangesResponse {
-  ServerVersionStamp: string;
   DeletedMetadata: DeletedMetadataCollection;
   EntityMetadata: ComplexEntityMetadata[];
+  ServerVersionStamp: string;
 }
 
 /**

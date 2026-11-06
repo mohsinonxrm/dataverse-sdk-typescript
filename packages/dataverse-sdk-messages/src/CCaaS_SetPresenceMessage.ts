@@ -7,8 +7,8 @@ import { requestBody } from "./internal/requestBody.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_SetPresenceRequestParameters {
-  ApiVersion: string;
   PresenceId: string;
+  ApiVersion: string;
 }
 
 /**
@@ -30,8 +30,8 @@ export class CCaaS_SetPresenceRequest
     const url = `${baseUrl}/CCaaS_SetPresence`;
 
     const body = requestBody({
-      ApiVersion: this.Parameters.ApiVersion,
       PresenceId: this.Parameters.PresenceId,
+      ApiVersion: this.Parameters.ApiVersion,
     });
 
     return {

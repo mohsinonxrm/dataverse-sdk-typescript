@@ -4,9 +4,9 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * Response from msdyncrm_GetFileAttributesFromConfiguration action
  */
 export interface msdyncrm_GetFileAttributesFromConfigurationResponse {
-  MaxFileSizeInBytes: string;
   AllowedFileTypesRegularExpression: string;
   MaxAssetSizeInBytesConfig: string;
+  MaxFileSizeInBytes: string;
 }
 
 /**

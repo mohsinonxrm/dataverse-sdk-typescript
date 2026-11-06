@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_AutonomousSQA_ProvisionMCSAgents message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_AutonomousSQA_ProvisionMCSAgentsRequestParameters {
+  RequestJson?: string;
+}
 
 /**
  * msdyn_AutonomousSQA_ProvisionMCSAgents request message
@@ -10,12 +19,18 @@ export class msdyn_AutonomousSQA_ProvisionMCSAgentsRequest
   extends OrganizationRequest
   implements Executable<msdyn_AutonomousSQA_ProvisionMCSAgentsResponse>
 {
-  constructor() {
-    super("msdyn_AutonomousSQA_ProvisionMCSAgents");
+  declare readonly Parameters: Readonly<msdyn_AutonomousSQA_ProvisionMCSAgentsRequestParameters>;
+
+  constructor(parameters: msdyn_AutonomousSQA_ProvisionMCSAgentsRequestParameters = {}) {
+    super("msdyn_AutonomousSQA_ProvisionMCSAgents", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_AutonomousSQA_ProvisionMCSAgents`;
+
+    const body = requestBody({
+      RequestJson: this.Parameters.RequestJson,
+    });
 
     return {
       method: "POST",
@@ -23,6 +38,7 @@ export class msdyn_AutonomousSQA_ProvisionMCSAgentsRequest
       headers: {
         "content-type": "application/json",
       },
+      body,
     };
   }
 

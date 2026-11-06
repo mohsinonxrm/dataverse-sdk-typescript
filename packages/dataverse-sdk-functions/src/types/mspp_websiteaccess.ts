@@ -2,17 +2,17 @@
  * mspp_websiteaccess entity type
  */
 export interface mspp_websiteaccess {
-  mspp_name?: string;
-  mspp_managecontentsnippets?: boolean;
+  _mspp_createdby_value?: string;
+  _mspp_modifiedby_value?: string;
   _mspp_websiteid_value?: string;
   mspp_createdon?: string;
+  mspp_managecontentsnippets?: boolean;
   mspp_managesitemarkers?: boolean;
-  mspp_websiteaccessid?: string;
-  mspp_previewunpublishedentities?: boolean;
   mspp_manageweblinksets?: boolean;
-  _mspp_modifiedby_value?: string;
   mspp_modifiedon?: string;
-  statuscode?: number;
-  _mspp_createdby_value?: string;
+  mspp_name?: string;
+  mspp_previewunpublishedentities?: boolean;
+  mspp_websiteaccessid?: string;
   statecode?: number;
+  statuscode?: number;
 }

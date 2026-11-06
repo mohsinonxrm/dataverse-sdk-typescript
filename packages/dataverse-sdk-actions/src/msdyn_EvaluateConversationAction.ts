@@ -5,8 +5,8 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_EvaluateConversation action
  */
 export interface msdyn_EvaluateConversationResponse {
-  Status: string;
   EnrichedEvaluationInsight: string;
+  Status: string;
 }
 
 /**
@@ -14,12 +14,12 @@ export interface msdyn_EvaluateConversationResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_EvaluateConversationActionParameters {
-  CriteriaId: string;
-  ExtendedContext?: string;
+  AllowCrossGeo?: boolean;
   ConversationPayload?: string;
+  CriteriaId: string;
   LangLocale?: string;
   EvaluationId: string;
-  AllowCrossGeo?: boolean;
+  ExtendedContext?: string;
   RecordId?: string;
 }
 
@@ -35,12 +35,12 @@ export class msdyn_EvaluateConversationAction implements Executable<msdyn_Evalua
     const url = `${baseUrl}/msdyn_EvaluateConversation`;
 
     const body = requestBody({
-      CriteriaId: this.parameters.CriteriaId,
-      ExtendedContext: this.parameters.ExtendedContext,
+      AllowCrossGeo: this.parameters.AllowCrossGeo,
       ConversationPayload: this.parameters.ConversationPayload,
+      CriteriaId: this.parameters.CriteriaId,
       LangLocale: this.parameters.LangLocale,
       EvaluationId: this.parameters.EvaluationId,
-      AllowCrossGeo: this.parameters.AllowCrossGeo,
+      ExtendedContext: this.parameters.ExtendedContext,
       RecordId: this.parameters.RecordId,
     });
 

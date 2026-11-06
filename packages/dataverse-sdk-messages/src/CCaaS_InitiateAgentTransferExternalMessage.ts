@@ -7,12 +7,12 @@ import { requestBody } from "./internal/requestBody.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_InitiateAgentTransferExternalRequestParameters {
-  ExternalParticipantChannel: string;
-  ExternalParticipantChannelType: string;
-  AgentName?: string;
-  ExternalReferenceId?: string;
   ExternalReferenceType?: string;
   ApiVersion: string;
+  ExternalReferenceId?: string;
+  AgentName?: string;
+  ExternalParticipantChannel: string;
+  ExternalParticipantChannelType: string;
 }
 
 /**
@@ -40,12 +40,12 @@ export class CCaaS_InitiateAgentTransferExternalRequest
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_InitiateAgentTransferExternal`;
 
     const body = requestBody({
-      ExternalParticipantChannel: this.Parameters.ExternalParticipantChannel,
-      ExternalParticipantChannelType: this.Parameters.ExternalParticipantChannelType,
-      AgentName: this.Parameters.AgentName,
-      ExternalReferenceId: this.Parameters.ExternalReferenceId,
       ExternalReferenceType: this.Parameters.ExternalReferenceType,
       ApiVersion: this.Parameters.ApiVersion,
+      ExternalReferenceId: this.Parameters.ExternalReferenceId,
+      AgentName: this.Parameters.AgentName,
+      ExternalParticipantChannel: this.Parameters.ExternalParticipantChannel,
+      ExternalParticipantChannelType: this.Parameters.ExternalParticipantChannelType,
     });
 
     return {

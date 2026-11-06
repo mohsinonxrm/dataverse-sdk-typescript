@@ -9,8 +9,8 @@ import { requestBody } from "./internal/requestBody.js";
 export interface msdyn_UpdateNBACardStateRequestParameters {
   msdyn_SnoozeTill?: string;
   msdyn_OperationType: number;
-  msdyn_NBAEntityLogicalName: string;
   msdyn_NBAEntityIds: string;
+  msdyn_NBAEntityLogicalName: string;
 }
 
 /**
@@ -34,8 +34,8 @@ export class msdyn_UpdateNBACardStateRequest
     const body = requestBody({
       msdyn_SnoozeTill: this.Parameters.msdyn_SnoozeTill,
       msdyn_OperationType: this.Parameters.msdyn_OperationType,
-      msdyn_NBAEntityLogicalName: this.Parameters.msdyn_NBAEntityLogicalName,
       msdyn_NBAEntityIds: this.Parameters.msdyn_NBAEntityIds,
+      msdyn_NBAEntityLogicalName: this.Parameters.msdyn_NBAEntityLogicalName,
     });
 
     return {

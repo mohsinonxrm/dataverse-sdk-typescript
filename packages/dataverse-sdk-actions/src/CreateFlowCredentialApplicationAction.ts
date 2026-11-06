@@ -13,11 +13,11 @@ export interface CreateFlowCredentialApplicationResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CreateFlowCredentialApplicationActionParameters {
-  sharingtype?: string;
-  password?: string;
   description?: string;
   certificate: string;
   applicationId: string;
+  password?: string;
+  sharingtype?: string;
 }
 
 /**
@@ -39,11 +39,11 @@ export class CreateFlowCredentialApplicationAction implements Executable<CreateF
     const url = `${baseUrl}/flowmachinegroups(${this.flowmachinegroupId})/Microsoft.Dynamics.CRM.CreateFlowCredentialApplication`;
 
     const body = requestBody({
-      sharingtype: this.parameters.sharingtype,
-      password: this.parameters.password,
       description: this.parameters.description,
       certificate: this.parameters.certificate,
       applicationId: this.parameters.applicationId,
+      password: this.parameters.password,
+      sharingtype: this.parameters.sharingtype,
     });
 
     return {

@@ -5,9 +5,9 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_DraftOutreachEmail action
  */
 export interface msdyn_DraftOutreachEmailResponse {
+  ErrorMessage: string;
   IsSuccess: string;
   Result: string;
-  ErrorMessage: string;
 }
 
 /**

@@ -4,8 +4,8 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * Response from ListConnectionReferences action
  */
 export interface ListConnectionReferencesResponse {
-  connections: string;
   connectionReferences: string;
+  connections: string;
   mappingBetweenLogicalNameAndName: string;
 }
 

@@ -4,14 +4,14 @@ import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
  * bot_botcomponent entity type
  */
 export interface bot_botcomponent {
-  botid?: string;
-  overwritetime?: string;
-  ismanaged?: boolean;
   bot_botcomponentid?: string;
-  versionnumber?: number;
   botcomponentid?: string;
-  iscustomizable?: BooleanManagedProperty;
-  componentstate?: number;
+  botid?: string;
   componentidunique?: string;
+  componentstate?: number;
+  iscustomizable?: BooleanManagedProperty;
+  ismanaged?: boolean;
+  overwritetime?: string;
   solutionid?: string;
+  versionnumber?: number;
 }

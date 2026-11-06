@@ -13,11 +13,11 @@ export interface msdyn_GetWidgetsDataResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_GetWidgetsDataActionParameters {
-  msdyn_request: string;
   msdyn_entityname?: string;
+  msdyn_recordid?: string;
+  msdyn_request: string;
   msdyn_widgettype: string;
   msdyn_widgetid: string;
-  msdyn_recordid?: string;
 }
 
 /**
@@ -32,11 +32,11 @@ export class msdyn_GetWidgetsDataAction implements Executable<msdyn_GetWidgetsDa
     const url = `${baseUrl}/msdyn_GetWidgetsData`;
 
     const body = requestBody({
-      msdyn_request: this.parameters.msdyn_request,
       msdyn_entityname: this.parameters.msdyn_entityname,
+      msdyn_recordid: this.parameters.msdyn_recordid,
+      msdyn_request: this.parameters.msdyn_request,
       msdyn_widgettype: this.parameters.msdyn_widgettype,
       msdyn_widgetid: this.parameters.msdyn_widgetid,
-      msdyn_recordid: this.parameters.msdyn_recordid,
     });
 
     return {

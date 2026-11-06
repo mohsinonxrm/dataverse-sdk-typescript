@@ -13,9 +13,9 @@ export interface AddCertificateCredentialResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface AddCertificateCredentialActionParameters {
-  entityLogicalName: string;
-  entityId: string;
   thumbprint: string;
+  entityId: string;
+  entityLogicalName: string;
 }
 
 /**
@@ -30,9 +30,9 @@ export class AddCertificateCredentialAction implements Executable<AddCertificate
     const url = `${baseUrl}/AddCertificateCredential`;
 
     const body = requestBody({
-      entityLogicalName: this.parameters.entityLogicalName,
-      entityId: this.parameters.entityId,
       thumbprint: this.parameters.thumbprint,
+      entityId: this.parameters.entityId,
+      entityLogicalName: this.parameters.entityLogicalName,
     });
 
     return {

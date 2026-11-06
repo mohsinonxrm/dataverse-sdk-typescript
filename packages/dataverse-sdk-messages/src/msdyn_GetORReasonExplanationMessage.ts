@@ -9,9 +9,9 @@ import type { msdyn_GetORReasonExplanationResponse as msdyn_GetORReasonExplanati
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_GetORReasonExplanationRequestParameters {
-  EntityType: number;
-  ExplanationObject: string;
   EntityId: string;
+  ExplanationObject: string;
+  EntityType: number;
 }
 
 /**
@@ -33,9 +33,9 @@ export class msdyn_GetORReasonExplanationRequest
     const url = `${baseUrl}/msdyn_GetORReasonExplanation`;
 
     const body = requestBody({
-      EntityType: this.Parameters.EntityType,
-      ExplanationObject: this.Parameters.ExplanationObject,
       EntityId: this.Parameters.EntityId,
+      ExplanationObject: this.Parameters.ExplanationObject,
+      EntityType: this.Parameters.EntityType,
     });
 
     return {

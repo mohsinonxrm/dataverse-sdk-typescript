@@ -13,8 +13,8 @@ export interface msdyn_SaveSalesCopilotEmailInsightsResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SaveSalesCopilotEmailInsightsActionParameters {
-  msdyn_extractedquestions?: Record<string, unknown>[];
   msdyn_activityid?: string;
+  msdyn_extractedquestions?: Record<string, unknown>[];
   msdyn_salescopilotemailinsights: Record<string, unknown>[];
 }
 
@@ -30,8 +30,8 @@ export class msdyn_SaveSalesCopilotEmailInsightsAction implements Executable<msd
     const url = `${baseUrl}/msdyn_SaveSalesCopilotEmailInsights`;
 
     const body = requestBody({
-      msdyn_extractedquestions: this.parameters.msdyn_extractedquestions,
       msdyn_activityid: this.parameters.msdyn_activityid,
+      msdyn_extractedquestions: this.parameters.msdyn_extractedquestions,
       msdyn_salescopilotemailinsights: this.parameters.msdyn_salescopilotemailinsights,
     });
 

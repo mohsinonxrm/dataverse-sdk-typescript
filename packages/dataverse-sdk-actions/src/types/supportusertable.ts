@@ -2,26 +2,26 @@
  * supportusertable entity type
  */
 export interface supportusertable {
-  _modifiedby_value?: string;
-  tenantid?: string;
-  importsequencenumber?: number;
-  supportusertableid?: string;
-  upn?: string;
-  versionnumber?: number;
-  timezoneruleversionnumber?: number;
-  expirydatetime?: string;
   _createdby_value?: string;
-  _organizationid_value?: string;
-  enabledforsoftdelete?: number;
-  identityprovider?: string;
   _createdonbehalfby_value?: string;
-  overriddencreatedon?: string;
+  _modifiedby_value?: string;
   _modifiedonbehalfby_value?: string;
+  _organizationid_value?: string;
   aaduserobjectid?: string;
-  utcconversiontimezonecode?: number;
-  statecode?: number;
-  modifiedon?: string;
   createdon?: string;
-  statuscode?: number;
+  enabledforsoftdelete?: number;
+  expirydatetime?: string;
+  identityprovider?: string;
+  importsequencenumber?: number;
   isactive?: number;
+  modifiedon?: string;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  supportusertableid?: string;
+  tenantid?: string;
+  timezoneruleversionnumber?: number;
+  upn?: string;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

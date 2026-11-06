@@ -2,17 +2,17 @@
  * postfollow entity type
  */
 export interface postfollow {
+  _createdby_value?: string;
+  _createdonbehalfby_value?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
   _owningteam_value?: string;
-  postfollowid?: string;
   _owninguser_value?: string;
   _regardingobjectid_value?: string;
-  utcconversiontimezonecode?: number;
-  timezoneruleversionnumber?: number;
-  _ownerid_value?: string;
-  _createdby_value?: string;
   createdon?: string;
-  _owningbusinessunit_value?: string;
-  yammerpoststate?: number;
+  postfollowid?: string;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
   versionnumber?: number;
-  _createdonbehalfby_value?: string;
+  yammerpoststate?: number;
 }

@@ -4,8 +4,8 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * Response from msdyn_IsMSTeamsUserSyncFeatureEnabled action
  */
 export interface msdyn_IsMSTeamsUserSyncFeatureEnabledResponse {
-  IsEnabled: boolean;
   DisabledReason: string;
+  IsEnabled: boolean;
 }
 
 /**

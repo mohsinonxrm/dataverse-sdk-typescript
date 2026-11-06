@@ -2,20 +2,20 @@
  * stagedsourcecontrolcomponent entity type
  */
 export interface stagedsourcecontrolcomponent {
-  ttlinseconds?: number;
-  _modifiedby_value?: string;
-  partitionid?: string;
-  versionnumber?: number;
   _createdby_value?: string;
-  createdon?: string;
-  stagedsourcecontrolcomponentid?: string;
-  name?: string;
-  importsequencenumber?: number;
-  _modifiedonbehalfby_value?: string;
-  componentoperationtype?: number;
   _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
   componentid?: string;
+  componentoperationtype?: number;
   componenttype?: number;
+  createdon?: string;
+  importsequencenumber?: number;
   modifiedon?: string;
+  name?: string;
   overriddencreatedon?: string;
+  partitionid?: string;
+  stagedsourcecontrolcomponentid?: string;
+  ttlinseconds?: number;
+  versionnumber?: number;
 }

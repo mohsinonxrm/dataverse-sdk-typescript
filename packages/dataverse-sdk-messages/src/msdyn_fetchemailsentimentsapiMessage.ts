@@ -9,8 +9,8 @@ import type { msdyn_fetchemailsentimentsapiResponse as msdyn_fetchemailsentiment
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_fetchemailsentimentsapiRequestParameters {
-  entityid?: string;
   entitylogicalname?: string;
+  entityid?: string;
 }
 
 /**
@@ -32,8 +32,8 @@ export class msdyn_fetchemailsentimentsapiRequest
     const url = `${baseUrl}/msdyn_fetchemailsentimentsapi`;
 
     const body = requestBody({
-      entityid: this.Parameters.entityid,
       entitylogicalname: this.Parameters.entitylogicalname,
+      entityid: this.Parameters.entityid,
     });
 
     return {

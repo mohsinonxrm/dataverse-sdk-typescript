@@ -5,14 +5,14 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from CCaaS_GetAvailabilityForConversation action
  */
 export interface CCaaS_GetAvailabilityForConversationResponse {
-  IsQueueAvailable: boolean;
-  QueueId: string;
-  PositionInQueue: number;
-  IsAgentAvailable: boolean;
-  NextTransitionTime: string;
-  StartTimeOfNextOperatingHour: string;
-  EndTimeOfNextOperatingHour: string;
   AverageWaitTime: number;
+  EndTimeOfNextOperatingHour: string;
+  IsAgentAvailable: boolean;
+  IsQueueAvailable: boolean;
+  NextTransitionTime: string;
+  PositionInQueue: number;
+  QueueId: string;
+  StartTimeOfNextOperatingHour: string;
 }
 
 /**
@@ -20,9 +20,9 @@ export interface CCaaS_GetAvailabilityForConversationResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_GetAvailabilityForConversationActionParameters {
-  CustomContextItems?: string;
   ApiVersion: string;
   ConversationId?: string;
+  CustomContextItems?: string;
 }
 
 /**
@@ -37,9 +37,9 @@ export class CCaaS_GetAvailabilityForConversationAction implements Executable<CC
     const url = `${baseUrl}/CCaaS_GetAvailabilityForConversation`;
 
     const body = requestBody({
-      CustomContextItems: this.parameters.CustomContextItems,
       ApiVersion: this.parameters.ApiVersion,
       ConversationId: this.parameters.ConversationId,
+      CustomContextItems: this.parameters.CustomContextItems,
     });
 
     return {

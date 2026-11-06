@@ -8,13 +8,13 @@ import { requestBody } from "./internal/requestBody.js";
  */
 export interface UpdateInstantPluginRequestParameters {
   Description?: string;
-  FxExpressionUniqueName: string;
   Parameters?: string;
-  Context?: string;
-  EntityLogicalName?: string;
-  SolutionUniqueName?: string;
   Expression?: string;
+  SolutionUniqueName?: string;
   Name?: string;
+  EntityLogicalName?: string;
+  Context?: string;
+  FxExpressionUniqueName: string;
 }
 
 /**
@@ -37,13 +37,13 @@ export class UpdateInstantPluginRequest
 
     const body = requestBody({
       Description: this.Parameters.Description,
-      FxExpressionUniqueName: this.Parameters.FxExpressionUniqueName,
       Parameters: this.Parameters.Parameters,
-      Context: this.Parameters.Context,
-      EntityLogicalName: this.Parameters.EntityLogicalName,
-      SolutionUniqueName: this.Parameters.SolutionUniqueName,
       Expression: this.Parameters.Expression,
+      SolutionUniqueName: this.Parameters.SolutionUniqueName,
       Name: this.Parameters.Name,
+      EntityLogicalName: this.Parameters.EntityLogicalName,
+      Context: this.Parameters.Context,
+      FxExpressionUniqueName: this.Parameters.FxExpressionUniqueName,
     });
 
     return {

@@ -13,11 +13,11 @@ export interface msdyn_ProvisionODOSResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_ProvisionODOSActionParameters {
-  Entities: string;
-  FeatureName: string;
-  FeatureDisplayName: string;
-  Roles: string;
   Primitives: string;
+  Roles: string;
+  FeatureName: string;
+  Entities: string;
+  FeatureDisplayName: string;
 }
 
 /**
@@ -32,11 +32,11 @@ export class msdyn_ProvisionODOSAction implements Executable<msdyn_ProvisionODOS
     const url = `${baseUrl}/msdyn_ProvisionODOS`;
 
     const body = requestBody({
-      Entities: this.parameters.Entities,
-      FeatureName: this.parameters.FeatureName,
-      FeatureDisplayName: this.parameters.FeatureDisplayName,
-      Roles: this.parameters.Roles,
       Primitives: this.parameters.Primitives,
+      Roles: this.parameters.Roles,
+      FeatureName: this.parameters.FeatureName,
+      Entities: this.parameters.Entities,
+      FeatureDisplayName: this.parameters.FeatureDisplayName,
     });
 
     return {

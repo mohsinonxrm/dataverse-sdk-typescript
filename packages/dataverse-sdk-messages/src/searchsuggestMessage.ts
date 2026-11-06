@@ -9,14 +9,14 @@ import type { searchsuggestResponse as searchsuggestResponseData } from "./types
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface searchsuggestRequestParameters {
-  entities?: string;
   top?: number;
+  orderby?: string;
+  options?: string;
   search: string;
   filter?: string;
-  options?: string;
-  orderby?: string;
-  fuzzy?: boolean;
   propertybag?: string;
+  fuzzy?: boolean;
+  entities?: string;
 }
 
 /**
@@ -38,14 +38,14 @@ export class searchsuggestRequest
     const url = `${baseUrl}/searchsuggest`;
 
     const body = requestBody({
-      entities: this.Parameters.entities,
       top: this.Parameters.top,
+      orderby: this.Parameters.orderby,
+      options: this.Parameters.options,
       search: this.Parameters.search,
       filter: this.Parameters.filter,
-      options: this.Parameters.options,
-      orderby: this.Parameters.orderby,
-      fuzzy: this.Parameters.fuzzy,
       propertybag: this.Parameters.propertybag,
+      fuzzy: this.Parameters.fuzzy,
+      entities: this.Parameters.entities,
     });
 
     return {

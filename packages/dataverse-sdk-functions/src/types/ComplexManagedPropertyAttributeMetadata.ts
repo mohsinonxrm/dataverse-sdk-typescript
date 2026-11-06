@@ -6,7 +6,7 @@ import type { ComplexAttributeMetadata } from "./ComplexAttributeMetadata.js";
  */
 export interface ComplexManagedPropertyAttributeMetadata extends ComplexAttributeMetadata {
   ManagedPropertyLogicalName?: string;
-  ParentComponentType?: number;
   ParentAttributeName?: string;
+  ParentComponentType?: number;
   ValueAttributeTypeCode?: AttributeTypeCode;
 }

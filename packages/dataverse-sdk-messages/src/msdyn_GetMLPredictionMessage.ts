@@ -9,8 +9,8 @@ import type { msdyn_GetMLPredictionResponse as msdyn_GetMLPredictionResponseData
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_GetMLPredictionRequestParameters {
-  msdyn_predictiontype: number;
   msdyn_input: string;
+  msdyn_predictiontype: number;
 }
 
 /**
@@ -32,8 +32,8 @@ export class msdyn_GetMLPredictionRequest
     const url = `${baseUrl}/msdyn_GetMLPrediction`;
 
     const body = requestBody({
-      msdyn_predictiontype: this.Parameters.msdyn_predictiontype,
       msdyn_input: this.Parameters.msdyn_input,
+      msdyn_predictiontype: this.Parameters.msdyn_predictiontype,
     });
 
     return {

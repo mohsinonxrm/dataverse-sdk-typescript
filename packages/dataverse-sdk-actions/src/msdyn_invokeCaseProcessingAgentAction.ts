@@ -13,8 +13,10 @@ export interface msdyn_invokeCaseProcessingAgentResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_invokeCaseProcessingAgentActionParameters {
-  msdyn_incidentId: string;
   msdyn_actions: string;
+  msdyn_targetEntityContext?: string;
+  msdyn_extraParams?: string;
+  msdyn_incidentId: string;
 }
 
 /**
@@ -29,8 +31,10 @@ export class msdyn_invokeCaseProcessingAgentAction implements Executable<msdyn_i
     const url = `${baseUrl}/msdyn_invokeCaseProcessingAgent`;
 
     const body = requestBody({
-      msdyn_incidentId: this.parameters.msdyn_incidentId,
       msdyn_actions: this.parameters.msdyn_actions,
+      msdyn_targetEntityContext: this.parameters.msdyn_targetEntityContext,
+      msdyn_extraParams: this.parameters.msdyn_extraParams,
+      msdyn_incidentId: this.parameters.msdyn_incidentId,
     });
 
     return {

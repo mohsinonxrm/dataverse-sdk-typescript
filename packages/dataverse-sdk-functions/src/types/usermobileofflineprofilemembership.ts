@@ -2,23 +2,23 @@
  * usermobileofflineprofilemembership entity type
  */
 export interface usermobileofflineprofilemembership {
-  _mobileofflineprofileid_value?: string;
-  _organizationid_value?: string;
-  usermobileofflineprofilemembershipid?: string;
-  _modifiedonbehalfby_value?: string;
-  importsequencenumber?: number;
-  name?: string;
-  statecode?: number;
-  hasmobileofflineprofileidconflict?: boolean;
-  modifiedon?: string;
-  _modifiedby_value?: string;
-  versionnumber?: number;
-  statuscode?: number;
   _createdby_value?: string;
-  overriddencreatedon?: string;
-  _systemuserid_value?: string;
   _createdonbehalfby_value?: string;
-  utcconversiontimezonecode?: number;
-  timezoneruleversionnumber?: number;
+  _mobileofflineprofileid_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _organizationid_value?: string;
+  _systemuserid_value?: string;
   createdon?: string;
+  hasmobileofflineprofileidconflict?: boolean;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  name?: string;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  usermobileofflineprofilemembershipid?: string;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

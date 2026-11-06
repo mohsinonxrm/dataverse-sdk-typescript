@@ -27,6 +27,7 @@ export interface PropagateByExpressionActionParameters {
   Owner: EntityReference | AnyEntityPayload;
   SendEmail: boolean;
   QueueId?: string;
+  ExtendedActivityParameters?: string;
 }
 
 /**
@@ -51,6 +52,7 @@ export class PropagateByExpressionAction implements Executable<PropagateByExpres
       Owner: this.parameters.Owner,
       SendEmail: this.parameters.SendEmail,
       QueueId: this.parameters.QueueId,
+      ExtendedActivityParameters: this.parameters.ExtendedActivityParameters,
     });
 
     return {

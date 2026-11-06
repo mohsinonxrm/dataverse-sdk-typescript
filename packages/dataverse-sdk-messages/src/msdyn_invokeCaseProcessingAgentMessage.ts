@@ -7,8 +7,10 @@ import { requestBody } from "./internal/requestBody.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_invokeCaseProcessingAgentRequestParameters {
-  msdyn_incidentId: string;
   msdyn_actions: string;
+  msdyn_targetEntityContext?: string;
+  msdyn_extraParams?: string;
+  msdyn_incidentId: string;
 }
 
 /**
@@ -30,8 +32,10 @@ export class msdyn_invokeCaseProcessingAgentRequest
     const url = `${baseUrl}/msdyn_invokeCaseProcessingAgent`;
 
     const body = requestBody({
-      msdyn_incidentId: this.Parameters.msdyn_incidentId,
       msdyn_actions: this.Parameters.msdyn_actions,
+      msdyn_targetEntityContext: this.Parameters.msdyn_targetEntityContext,
+      msdyn_extraParams: this.Parameters.msdyn_extraParams,
+      msdyn_incidentId: this.Parameters.msdyn_incidentId,
     });
 
     return {

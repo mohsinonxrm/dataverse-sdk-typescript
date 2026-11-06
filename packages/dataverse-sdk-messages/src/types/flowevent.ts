@@ -2,32 +2,32 @@
  * flowevent entity type
  */
 export interface flowevent {
-  _createdonbehalfby_value?: string;
-  eventduration?: number;
-  utcconversiontimezonecode?: number;
-  expirydate?: string;
-  _ownerid_value?: string;
-  parentobjectlogicalname?: string;
-  importsequencenumber?: number;
-  statecode?: number;
-  _modifiedonbehalfby_value?: string;
   _createdby_value?: string;
-  versionnumber?: number;
-  timezoneruleversionnumber?: number;
-  _owningbusinessunit_value?: string;
-  floweventid?: string;
-  eventcontent?: string;
-  modifiedon?: string;
-  overriddencreatedon?: string;
-  name?: string;
-  _owningteam_value?: string;
-  eventcode?: string;
-  _owninguser_value?: string;
-  createdon?: string;
+  _createdonbehalfby_value?: string;
   _modifiedby_value?: string;
-  completedon?: string;
-  statuscode?: number;
-  level?: string;
-  eventtype?: string;
+  _modifiedonbehalfby_value?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
   _parentobjectid_value?: string;
+  completedon?: string;
+  createdon?: string;
+  eventcode?: string;
+  eventcontent?: string;
+  eventduration?: number;
+  eventtype?: string;
+  expirydate?: string;
+  floweventid?: string;
+  importsequencenumber?: number;
+  level?: string;
+  modifiedon?: string;
+  name?: string;
+  overriddencreatedon?: string;
+  parentobjectlogicalname?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

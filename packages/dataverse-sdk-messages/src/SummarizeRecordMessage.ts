@@ -10,9 +10,9 @@ import type { SummarizeRecordResponse as SummarizeRecordResponseData } from "./t
  */
 export interface SummarizeRecordRequestParameters {
   Id: string;
-  EntityLogicalName: string;
-  RecordContext?: string;
   IsMergedCatchupAndSummary?: boolean;
+  RecordContext?: string;
+  EntityLogicalName: string;
 }
 
 /**
@@ -35,9 +35,9 @@ export class SummarizeRecordRequest
 
     const body = requestBody({
       Id: this.Parameters.Id,
-      EntityLogicalName: this.Parameters.EntityLogicalName,
-      RecordContext: this.Parameters.RecordContext,
       IsMergedCatchupAndSummary: this.Parameters.IsMergedCatchupAndSummary,
+      RecordContext: this.Parameters.RecordContext,
+      EntityLogicalName: this.Parameters.EntityLogicalName,
     });
 
     return {

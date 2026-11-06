@@ -2,28 +2,28 @@
  * activitymimeattachment entity type
  */
 export interface activitymimeattachment {
-  componentstate?: number;
-  filename?: string;
-  _ownerid_value?: string;
-  subject?: string;
-  _owninguser_value?: string;
-  versionnumber?: number;
-  filesize?: number;
-  _owningbusinessunit_value?: string;
-  ismanaged?: boolean;
-  activitymimeattachmentid?: string;
-  attachmentcontentid?: string;
   _attachmentid_value?: string;
-  objecttypecode?: string;
   _objectid_value?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owninguser_value?: string;
+  activitymimeattachmentid?: string;
   activitymimeattachmentidunique?: string;
-  mimetype?: string;
-  solutionid?: string;
   activitysubject?: string;
-  attachmentnumber?: number;
   anonymouslink?: string;
-  isfollowed?: boolean;
+  attachmentcontentid?: string;
+  attachmentnumber?: number;
   body?: string;
   body_binary?: string;
+  componentstate?: number;
+  filename?: string;
+  filesize?: number;
+  isfollowed?: boolean;
+  ismanaged?: boolean;
+  mimetype?: string;
+  objecttypecode?: string;
   overwritetime?: string;
+  solutionid?: string;
+  subject?: string;
+  versionnumber?: number;
 }

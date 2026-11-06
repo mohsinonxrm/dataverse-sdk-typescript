@@ -2,13 +2,13 @@
  * entitlementtemplateproducts entity type
  */
 export interface entitlementtemplateproducts {
-  versionnumber?: number;
-  timezoneruleversionnumber?: number;
   entitlementtemplateid?: string;
   entitlementtemplateproductid?: string;
-  name?: string;
   importsequencenumber?: number;
-  utcconversiontimezonecode?: number;
-  productid?: string;
+  name?: string;
   overriddencreatedon?: string;
+  productid?: string;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

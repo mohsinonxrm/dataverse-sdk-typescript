@@ -14,13 +14,13 @@ export interface UpdateInstantPluginResponse {
  */
 export interface UpdateInstantPluginActionParameters {
   Description?: string;
-  FxExpressionUniqueName: string;
   Parameters?: string;
-  Context?: string;
-  EntityLogicalName?: string;
-  SolutionUniqueName?: string;
   Expression?: string;
+  SolutionUniqueName?: string;
   Name?: string;
+  EntityLogicalName?: string;
+  Context?: string;
+  FxExpressionUniqueName: string;
 }
 
 /**
@@ -36,13 +36,13 @@ export class UpdateInstantPluginAction implements Executable<UpdateInstantPlugin
 
     const body = requestBody({
       Description: this.parameters.Description,
-      FxExpressionUniqueName: this.parameters.FxExpressionUniqueName,
       Parameters: this.parameters.Parameters,
-      Context: this.parameters.Context,
-      EntityLogicalName: this.parameters.EntityLogicalName,
-      SolutionUniqueName: this.parameters.SolutionUniqueName,
       Expression: this.parameters.Expression,
+      SolutionUniqueName: this.parameters.SolutionUniqueName,
       Name: this.parameters.Name,
+      EntityLogicalName: this.parameters.EntityLogicalName,
+      Context: this.parameters.Context,
+      FxExpressionUniqueName: this.parameters.FxExpressionUniqueName,
     });
 
     return {

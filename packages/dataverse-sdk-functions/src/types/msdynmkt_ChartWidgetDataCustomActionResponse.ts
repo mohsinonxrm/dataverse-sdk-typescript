@@ -2,9 +2,9 @@
  * msdynmkt_ChartWidgetDataCustomActionResponse complex type
  */
 export interface msdynmkt_ChartWidgetDataCustomActionResponse {
-  WidgetDefinition?: string;
-  WidgetData?: string;
+  ErrorMessage?: string;
   IsSuccess?: boolean;
   StatusCode?: number;
-  ErrorMessage?: string;
+  WidgetData?: string;
+  WidgetDefinition?: string;
 }

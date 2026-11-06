@@ -9,11 +9,11 @@ import type { msdyn_GetKeywordsResponse as msdyn_GetKeywordsResponseData } from 
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_GetKeywordsRequestParameters {
-  msdyn_entityType?: string;
   msdyn_activityId?: string;
+  msdyn_entityType?: string;
   msdyn_queryLocale?: string;
-  msdyn_userquery: string;
   msdyn_entityName?: string;
+  msdyn_userquery: string;
 }
 
 /**
@@ -35,11 +35,11 @@ export class msdyn_GetKeywordsRequest
     const url = `${baseUrl}/msdyn_GetKeywords`;
 
     const body = requestBody({
-      msdyn_entityType: this.Parameters.msdyn_entityType,
       msdyn_activityId: this.Parameters.msdyn_activityId,
+      msdyn_entityType: this.Parameters.msdyn_entityType,
       msdyn_queryLocale: this.Parameters.msdyn_queryLocale,
-      msdyn_userquery: this.Parameters.msdyn_userquery,
       msdyn_entityName: this.Parameters.msdyn_entityName,
+      msdyn_userquery: this.Parameters.msdyn_userquery,
     });
 
     return {

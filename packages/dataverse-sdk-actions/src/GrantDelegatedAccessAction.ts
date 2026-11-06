@@ -16,8 +16,8 @@ export interface GrantDelegatedAccessResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface GrantDelegatedAccessActionParameters {
-  target: EntityReference | AnyEntityPayload;
   delegatedauthorization: EntityReference | EntityPayload<delegatedauthorization>;
+  target: EntityReference | AnyEntityPayload;
   owneraccess: boolean;
 }
 
@@ -33,8 +33,8 @@ export class GrantDelegatedAccessAction implements Executable<GrantDelegatedAcce
     const url = `${baseUrl}/GrantDelegatedAccess`;
 
     const body = requestBody({
-      target: this.parameters.target,
       delegatedauthorization: this.parameters.delegatedauthorization,
+      target: this.parameters.target,
       owneraccess: this.parameters.owneraccess,
     });
 

@@ -15,8 +15,8 @@ export interface msdynmkt_leadcapturev4submissionResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdynmkt_leadcapturev4submissionActionParameters {
-  msdynmkt_consentversion?: string;
   msdynmkt_marketingformid: EntityReference | AnyEntityPayload;
+  msdynmkt_consentversion?: string;
   msdynmkt_formsubmissionid: EntityReference | AnyEntityPayload;
 }
 
@@ -32,8 +32,8 @@ export class msdynmkt_leadcapturev4submissionAction implements Executable<msdynm
     const url = `${baseUrl}/msdynmkt_leadcapturev4submission`;
 
     const body = requestBody({
-      msdynmkt_consentversion: this.parameters.msdynmkt_consentversion,
       msdynmkt_marketingformid: this.parameters.msdynmkt_marketingformid,
+      msdynmkt_consentversion: this.parameters.msdynmkt_consentversion,
       msdynmkt_formsubmissionid: this.parameters.msdynmkt_formsubmissionid,
     });
 

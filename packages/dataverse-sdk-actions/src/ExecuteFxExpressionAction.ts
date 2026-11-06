@@ -19,11 +19,11 @@ export interface ExecuteFxExpressionResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface ExecuteFxExpressionActionParameters {
-  expression: string;
+  outputparameters?: EntityReference | AnyEntityPayload;
   inputparameters?: EntityReference | AnyEntityPayload;
   context?: string;
   entitylogicalname?: string;
-  outputparameters?: EntityReference | AnyEntityPayload;
+  expression: string;
 }
 
 /**
@@ -38,11 +38,11 @@ export class ExecuteFxExpressionAction implements Executable<ExecuteFxExpression
     const url = `${baseUrl}/ExecuteFxExpression`;
 
     const body = requestBody({
-      expression: this.parameters.expression,
+      outputparameters: this.parameters.outputparameters,
       inputparameters: this.parameters.inputparameters,
       context: this.parameters.context,
       entitylogicalname: this.parameters.entitylogicalname,
-      outputparameters: this.parameters.outputparameters,
+      expression: this.parameters.expression,
     });
 
     return {

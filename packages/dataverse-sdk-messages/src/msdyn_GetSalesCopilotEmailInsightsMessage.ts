@@ -10,10 +10,10 @@ import type { msdyn_GetSalesCopilotEmailInsightsResponse as msdyn_GetSalesCopilo
  */
 export interface msdyn_GetSalesCopilotEmailInsightsRequestParameters {
   msdyn_activityid?: string;
-  msdyn_regardinglogicalname: string;
-  msdyn_internetmessageid: string;
-  msdyn_regardingid: string;
   msdyn_messageid: string;
+  msdyn_internetmessageid: string;
+  msdyn_regardinglogicalname: string;
+  msdyn_regardingid: string;
 }
 
 /**
@@ -36,10 +36,10 @@ export class msdyn_GetSalesCopilotEmailInsightsRequest
 
     const body = requestBody({
       msdyn_activityid: this.Parameters.msdyn_activityid,
-      msdyn_regardinglogicalname: this.Parameters.msdyn_regardinglogicalname,
-      msdyn_internetmessageid: this.Parameters.msdyn_internetmessageid,
-      msdyn_regardingid: this.Parameters.msdyn_regardingid,
       msdyn_messageid: this.Parameters.msdyn_messageid,
+      msdyn_internetmessageid: this.Parameters.msdyn_internetmessageid,
+      msdyn_regardinglogicalname: this.Parameters.msdyn_regardinglogicalname,
+      msdyn_regardingid: this.Parameters.msdyn_regardingid,
     });
 
     return {

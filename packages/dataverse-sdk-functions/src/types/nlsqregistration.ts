@@ -2,31 +2,31 @@
  * nlsqregistration entity type
  */
 export interface nlsqregistration {
-  nlsqregistrationid?: string;
-  _modifiedby_value?: string;
-  objecttypeid?: string;
-  partitionid?: string;
-  allowedentitylist?: string;
-  objectid?: string;
-  createdon?: string;
   _createdby_value?: string;
-  errormessage?: string;
   _createdonbehalfby_value?: string;
-  _owningteam_value?: string;
-  _owningbusinessunit_value?: string;
-  objecttypedisplayname?: string;
-  _ownerid_value?: string;
-  importsequencenumber?: number;
+  _modifiedby_value?: string;
   _modifiedonbehalfby_value?: string;
-  entitylist?: string;
-  modifiedon?: string;
-  overriddencreatedon?: string;
-  _skill_value?: string;
-  registrationstatus?: number;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
   _owninguser_value?: string;
-  objectpartitionid?: string;
-  versionnumber?: number;
+  _skill_value?: string;
+  allowedentitylist?: string;
+  createdon?: string;
+  entitylist?: string;
+  errormessage?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
   name?: string;
-  ttlinseconds?: number;
+  nlsqregistrationid?: string;
+  objectid?: string;
+  objectpartitionid?: string;
   objecttype?: string;
+  objecttypedisplayname?: string;
+  objecttypeid?: string;
+  overriddencreatedon?: string;
+  partitionid?: string;
+  registrationstatus?: number;
+  ttlinseconds?: number;
+  versionnumber?: number;
 }

@@ -2,10 +2,10 @@
  * msdyn_CheckForCustomizedOptionSetResponse complex type
  */
 export interface msdyn_CheckForCustomizedOptionSetResponse {
+  HelpLink?: string;
   Message?: string;
   ResultEntities?: string;
-  ReturnStatus?: number;
-  ReturnSeverity?: number;
   ReturnLevel?: number;
-  HelpLink?: string;
+  ReturnSeverity?: number;
+  ReturnStatus?: number;
 }

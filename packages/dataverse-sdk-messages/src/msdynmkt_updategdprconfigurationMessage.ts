@@ -9,8 +9,8 @@ import type { msdynmkt_updategdprconfigurationResponse as msdynmkt_updategdprcon
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdynmkt_updategdprconfigurationRequestParameters {
-  msdynmkt_updategdprconfigurationisenforced: boolean;
   msdynmkt_updategdprconfigurationischangeloggingenabled: boolean;
+  msdynmkt_updategdprconfigurationisenforced: boolean;
 }
 
 /**
@@ -32,10 +32,10 @@ export class msdynmkt_updategdprconfigurationRequest
     const url = `${baseUrl}/msdynmkt_updategdprconfiguration`;
 
     const body = requestBody({
-      msdynmkt_updategdprconfigurationisenforced:
-        this.Parameters.msdynmkt_updategdprconfigurationisenforced,
       msdynmkt_updategdprconfigurationischangeloggingenabled:
         this.Parameters.msdynmkt_updategdprconfigurationischangeloggingenabled,
+      msdynmkt_updategdprconfigurationisenforced:
+        this.Parameters.msdynmkt_updategdprconfigurationisenforced,
     });
 
     return {

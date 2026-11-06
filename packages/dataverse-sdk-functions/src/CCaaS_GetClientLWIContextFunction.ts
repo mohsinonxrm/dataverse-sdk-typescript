@@ -6,8 +6,8 @@ import { formatParameterAlias } from "./internal/odataLiteral.js";
  */
 export interface CCaaS_GetClientLWIContextResponse {
   contextItems: string;
-  liveWorkStreamId: string;
   liveWorkItemId: string;
+  liveWorkStreamId: string;
 }
 
 /**

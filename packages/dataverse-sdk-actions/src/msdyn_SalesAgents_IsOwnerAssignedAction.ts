@@ -13,9 +13,9 @@ export interface msdyn_SalesAgents_IsOwnerAssignedResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesAgents_IsOwnerAssignedActionParameters {
+  msdyn_TrackingId?: string;
   msdyn_HandoverContext?: string;
   msdyn_SalesAgentRun: string;
-  msdyn_TrackingId?: string;
 }
 
 /**
@@ -30,9 +30,9 @@ export class msdyn_SalesAgents_IsOwnerAssignedAction implements Executable<msdyn
     const url = `${baseUrl}/msdyn_SalesAgents_IsOwnerAssigned`;
 
     const body = requestBody({
+      msdyn_TrackingId: this.parameters.msdyn_TrackingId,
       msdyn_HandoverContext: this.parameters.msdyn_HandoverContext,
       msdyn_SalesAgentRun: this.parameters.msdyn_SalesAgentRun,
-      msdyn_TrackingId: this.parameters.msdyn_TrackingId,
     });
 
     return {

@@ -3,7 +3,7 @@
  */
 export interface principalentitymap {
   objecttypecode?: string;
-  principalid?: string;
   principalentitymapid?: string;
+  principalid?: string;
   versionnumber?: number;
 }

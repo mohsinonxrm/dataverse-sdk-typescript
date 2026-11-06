@@ -7,9 +7,9 @@ import { requestBody } from "./internal/requestBody.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesAgents_CreateSARBasedOnPreviousAgentRequestParameters {
-  msdyn_SalesAgentType: number;
   msdyn_PreviousSarRecordId: string;
   msdyn_TrackingId?: string;
+  msdyn_SalesAgentType: number;
 }
 
 /**
@@ -31,9 +31,9 @@ export class msdyn_SalesAgents_CreateSARBasedOnPreviousAgentRequest
     const url = `${baseUrl}/msdyn_SalesAgents_CreateSARBasedOnPreviousAgent`;
 
     const body = requestBody({
-      msdyn_SalesAgentType: this.Parameters.msdyn_SalesAgentType,
       msdyn_PreviousSarRecordId: this.Parameters.msdyn_PreviousSarRecordId,
       msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
+      msdyn_SalesAgentType: this.Parameters.msdyn_SalesAgentType,
     });
 
     return {

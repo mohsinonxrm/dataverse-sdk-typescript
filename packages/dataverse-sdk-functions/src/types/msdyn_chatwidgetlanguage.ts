@@ -2,24 +2,24 @@
  * msdyn_chatwidgetlanguage entity type
  */
 export interface msdyn_chatwidgetlanguage {
-  statuscode?: number;
-  _owninguser_value?: string;
+  _createdby_value?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _ownerid_value?: string;
   _owningbusinessunit_value?: string;
   _owningteam_value?: string;
-  versionnumber?: number;
-  importsequencenumber?: number;
-  msdyn_chatwidgetlanguageid?: string;
-  _createdby_value?: string;
-  utcconversiontimezonecode?: number;
-  _ownerid_value?: string;
-  timezoneruleversionnumber?: number;
-  msdyn_localeid?: number;
-  msdyn_languagename?: string;
+  _owninguser_value?: string;
   createdon?: string;
-  overriddencreatedon?: string;
-  _modifiedby_value?: string;
-  statecode?: number;
+  importsequencenumber?: number;
   modifiedon?: string;
-  _createdonbehalfby_value?: string;
-  _modifiedonbehalfby_value?: string;
+  msdyn_chatwidgetlanguageid?: string;
+  msdyn_languagename?: string;
+  msdyn_localeid?: number;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

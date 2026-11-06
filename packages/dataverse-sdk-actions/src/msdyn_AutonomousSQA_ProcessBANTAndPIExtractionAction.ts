@@ -14,8 +14,8 @@ export interface msdyn_AutonomousSQA_ProcessBANTAndPIExtractionResponse {
  */
 export interface msdyn_AutonomousSQA_ProcessBANTAndPIExtractionActionParameters {
   msdyn_Thread: string;
-  msdyn_SalesAgentRun: string;
   msdyn_TrackingId: string;
+  msdyn_SalesAgentRun: string;
 }
 
 /**
@@ -33,8 +33,8 @@ export class msdyn_AutonomousSQA_ProcessBANTAndPIExtractionAction implements Exe
 
     const body = requestBody({
       msdyn_Thread: this.parameters.msdyn_Thread,
-      msdyn_SalesAgentRun: this.parameters.msdyn_SalesAgentRun,
       msdyn_TrackingId: this.parameters.msdyn_TrackingId,
+      msdyn_SalesAgentRun: this.parameters.msdyn_SalesAgentRun,
     });
 
     return {

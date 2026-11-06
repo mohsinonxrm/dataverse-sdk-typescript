@@ -1,0 +1,73 @@
+import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
+
+/**
+ * msdyn_proactive_engagement_config entity type
+ */
+export interface msdyn_proactive_engagement_config {
+  _createdby_value?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _msdyn_queue_value?: string;
+  _msdyn_workstream_value?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  componentidunique?: string;
+  componentstate?: number;
+  createdon?: string;
+  importsequencenumber?: number;
+  iscustomizable?: BooleanManagedProperty;
+  ismanaged?: boolean;
+  modifiedon?: string;
+  msdyn_answering_machine_action_type?: number;
+  msdyn_answering_machine_detection_time_seconds?: number;
+  msdyn_answering_machine_message?: string;
+  msdyn_bot_failure_treatment_rate_threshold?: number;
+  msdyn_bot_failure_treatment_type?: number;
+  msdyn_call_delay_enabled?: boolean;
+  msdyn_call_delay_seconds?: number;
+  msdyn_close_existing_conversations?: boolean;
+  msdyn_create_conversation_without_availability_check?: boolean;
+  msdyn_customer_wait_threshold?: number;
+  msdyn_description?: string;
+  msdyn_dialmode_type?: number;
+  msdyn_enable_whatsapp_outbound_messaging?: boolean;
+  msdyn_engagement_type?: number;
+  msdyn_fallback_message?: string;
+  msdyn_fallback_message_enabled?: boolean;
+  msdyn_first_response_timeout_mins?: number;
+  msdyn_ignore_queue_hours?: boolean;
+  msdyn_intentid?: string;
+  msdyn_max_batch_size_without_availability?: number;
+  msdyn_max_calls_per_agent?: number;
+  msdyn_max_concurrent_calls?: number;
+  msdyn_name?: string;
+  msdyn_overdial_threshold_lookback_hours?: number;
+  msdyn_overdial_threshold_percentage?: number;
+  msdyn_priority?: number;
+  msdyn_proactive_engagement_configid?: string;
+  msdyn_processing_order?: number;
+  msdyn_queue_allotment?: number;
+  msdyn_reserve_agent_capacity?: boolean;
+  msdyn_retry_priority_mode?: number;
+  msdyn_suspend_threshold_lookback?: number;
+  msdyn_suspend_threshold_percentage?: number;
+  msdyn_throttle_adjustment_percentage?: number;
+  msdyn_throttle_control_period?: number;
+  msdyn_throttle_control_period_2?: number;
+  msdyn_throttle_metric?: number;
+  msdyn_throttle_metric_2?: number;
+  msdyn_throttle_threshold?: number;
+  msdyn_throttle_threshold_2?: number;
+  msdyn_type?: number;
+  overriddencreatedon?: string;
+  overwritetime?: string;
+  solutionid?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
+}

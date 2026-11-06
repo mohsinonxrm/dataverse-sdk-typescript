@@ -2,25 +2,26 @@
  * mspp_entitypermission entity type
  */
 export interface mspp_entitypermission {
-  mspp_appendto?: boolean;
-  mspp_create?: boolean;
-  _mspp_websiteid_value?: string;
   _mspp_createdby_value?: string;
-  mspp_accountrelationship?: string;
-  mspp_scope?: number;
-  mspp_entitylogicalname?: string;
-  mspp_read?: boolean;
   _mspp_modifiedby_value?: string;
-  statuscode?: number;
-  mspp_entityname?: string;
-  statecode?: number;
   _mspp_parententitypermission_value?: string;
-  mspp_entitypermissionid?: string;
-  mspp_parentrelationship?: string;
-  mspp_write?: boolean;
-  mspp_delete?: boolean;
-  mspp_createdon?: string;
+  _mspp_websiteid_value?: string;
+  mspp_accountrelationship?: string;
   mspp_append?: boolean;
+  mspp_appendto?: boolean;
   mspp_contactrelationship?: string;
+  mspp_create?: boolean;
+  mspp_createdon?: string;
+  mspp_delete?: boolean;
+  mspp_entitylogicalname?: string;
+  mspp_entityname?: string;
+  mspp_entitypermissionid?: string;
   mspp_modifiedon?: string;
+  mspp_parentrelationship?: string;
+  mspp_permissionfetchxml?: string;
+  mspp_read?: boolean;
+  mspp_scope?: number;
+  mspp_write?: boolean;
+  statecode?: number;
+  statuscode?: number;
 }

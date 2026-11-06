@@ -4,30 +4,30 @@ import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
  * msdyn_helppage entity type
  */
 export interface msdyn_helppage {
-  utcconversiontimezonecode?: number;
-  statuscode?: number;
+  _createdby_value?: string;
+  _createdonbehalfby_value?: string;
   _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _organizationid_value?: string;
+  componentidunique?: string;
+  componentstate?: number;
+  createdon?: string;
+  importsequencenumber?: number;
   iscustomizable?: BooleanManagedProperty;
-  overwritetime?: string;
-  overriddencreatedon?: string;
-  msdyn_helppageid?: string;
+  ismanaged?: boolean;
   modifiedon?: string;
-  timezoneruleversionnumber?: number;
-  msdyn_path?: string;
+  msdyn_content?: string;
   msdyn_contenttype?: string;
+  msdyn_displayname?: string;
+  msdyn_helppageid?: string;
   msdyn_locale?: number;
+  msdyn_path?: string;
+  overriddencreatedon?: string;
+  overwritetime?: string;
   solutionid?: string;
   statecode?: number;
-  _createdonbehalfby_value?: string;
-  componentstate?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
   versionnumber?: number;
-  createdon?: string;
-  msdyn_displayname?: string;
-  componentidunique?: string;
-  msdyn_content?: string;
-  ismanaged?: boolean;
-  _modifiedonbehalfby_value?: string;
-  _createdby_value?: string;
-  _organizationid_value?: string;
-  importsequencenumber?: number;
 }

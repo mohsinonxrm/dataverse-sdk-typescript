@@ -2,14 +2,14 @@
  * availabletimes entity type
  */
 export interface availabletimes {
-  scheduledstart?: string;
-  site?: string;
-  scheduledstartlocaltime?: string;
+  availabletimesid?: string;
   name?: string;
+  resources?: string;
   resourcesJson?: string;
   scheduledend?: string;
-  resources?: string;
-  siteid?: string;
-  availabletimesid?: string;
   scheduledendlocaltime?: string;
+  scheduledstart?: string;
+  scheduledstartlocaltime?: string;
+  site?: string;
+  siteid?: string;
 }

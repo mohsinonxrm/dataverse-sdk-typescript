@@ -6,6 +6,7 @@ import { requestBody } from "./internal/requestBody.js";
  */
 export interface msdyn_CreateKBArticleResponse {
   Response2: string;
+  usage: string;
 }
 
 /**

@@ -2,27 +2,27 @@
  * solutionhistorydata entity type
  */
 export interface solutionhistorydata {
-  ismicrosoftpublisher?: boolean;
-  status?: number;
-  description?: string;
-  solutionid?: string;
-  exceptionstack?: string;
-  solutionversion?: string;
+  activityid?: string;
   correlationid?: string;
+  description?: string;
+  endtime?: string;
+  errorcode?: number;
+  exceptionmessage?: string;
+  exceptionstack?: string;
+  ismanaged?: boolean;
+  ismicrosoftpublisher?: boolean;
+  isoverwritecustomizations?: boolean;
+  ispatch?: boolean;
   operation?: number;
   packagename?: string;
-  ismanaged?: boolean;
-  result?: number;
-  exceptionmessage?: string;
-  errorcode?: number;
-  publishername?: string;
-  endtime?: string;
-  solutionname?: string;
-  isoverwritecustomizations?: boolean;
-  suboperation?: number;
   packageversion?: string;
+  publishername?: string;
+  result?: number;
   solutionhistorydataid?: string;
-  ispatch?: boolean;
-  activityid?: string;
+  solutionid?: string;
+  solutionname?: string;
+  solutionversion?: string;
   starttime?: string;
+  status?: number;
+  suboperation?: number;
 }

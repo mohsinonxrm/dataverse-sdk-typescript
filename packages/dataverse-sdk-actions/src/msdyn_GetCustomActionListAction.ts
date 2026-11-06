@@ -14,9 +14,9 @@ export interface msdyn_GetCustomActionListResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_GetCustomActionListActionParameters {
+  correlationId: string;
   workflowId: string;
   entityName: string;
-  correlationId: string;
 }
 
 /**
@@ -31,9 +31,9 @@ export class msdyn_GetCustomActionListAction implements Executable<msdyn_GetCust
     const url = `${baseUrl}/msdyn_GetCustomActionList`;
 
     const body = requestBody({
+      correlationId: this.parameters.correlationId,
       workflowId: this.parameters.workflowId,
       entityName: this.parameters.entityName,
-      correlationId: this.parameters.correlationId,
     });
 
     return {

@@ -9,10 +9,10 @@ import type { msdyn_InitiateCCaaSAPIsAsyncResponse as msdyn_InitiateCCaaSAPIsAsy
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_InitiateCCaaSAPIsAsyncRequestParameters {
-  Payload: string;
-  LiveWorkItemId: string;
   CCaaSAPI: string;
+  LiveWorkItemId: string;
   InitiatingUser: string;
+  Payload: string;
 }
 
 /**
@@ -34,10 +34,10 @@ export class msdyn_InitiateCCaaSAPIsAsyncRequest
     const url = `${baseUrl}/msdyn_InitiateCCaaSAPIsAsync`;
 
     const body = requestBody({
-      Payload: this.Parameters.Payload,
-      LiveWorkItemId: this.Parameters.LiveWorkItemId,
       CCaaSAPI: this.Parameters.CCaaSAPI,
+      LiveWorkItemId: this.Parameters.LiveWorkItemId,
       InitiatingUser: this.Parameters.InitiatingUser,
+      Payload: this.Parameters.Payload,
     });
 
     return {

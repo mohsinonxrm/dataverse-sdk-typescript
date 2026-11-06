@@ -4,9 +4,9 @@ import type { SubscriptionEntityMetadata } from "./SubscriptionEntityMetadata.js
  * SyncSubscriptionMetadataResponse complex type
  */
 export interface SyncSubscriptionMetadataResponse {
-  Metadata?: SubscriptionEntityMetadata[];
-  SyncToken?: string;
   IsFinalPage?: boolean;
+  Metadata?: SubscriptionEntityMetadata[];
   MetadataVersion?: string;
   ProfileVersion?: string;
+  SyncToken?: string;
 }

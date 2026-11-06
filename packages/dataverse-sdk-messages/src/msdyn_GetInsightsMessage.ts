@@ -10,8 +10,8 @@ import type { msdyn_GetInsightsResponse as msdyn_GetInsightsResponseData } from 
  */
 export interface msdyn_GetInsightsRequestParameters {
   msdyn_payload: string;
-  msdyn_insighttype: string;
   msdyn_responseFormat?: string;
+  msdyn_insighttype: string;
 }
 
 /**
@@ -34,8 +34,8 @@ export class msdyn_GetInsightsRequest
 
     const body = requestBody({
       msdyn_payload: this.Parameters.msdyn_payload,
-      msdyn_insighttype: this.Parameters.msdyn_insighttype,
       msdyn_responseFormat: this.Parameters.msdyn_responseFormat,
+      msdyn_insighttype: this.Parameters.msdyn_insighttype,
     });
 
     return {

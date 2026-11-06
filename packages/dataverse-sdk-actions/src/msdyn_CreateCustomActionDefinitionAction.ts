@@ -13,11 +13,11 @@ export interface msdyn_CreateCustomActionDefinitionResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_CreateCustomActionDefinitionActionParameters {
-  workflowId: string;
-  entityName: string;
-  customAction: string;
-  customActionParams: string;
   correlationId: string;
+  workflowId: string;
+  customAction: string;
+  entityName: string;
+  customActionParams: string;
 }
 
 /**
@@ -32,11 +32,11 @@ export class msdyn_CreateCustomActionDefinitionAction implements Executable<msdy
     const url = `${baseUrl}/msdyn_CreateCustomActionDefinition`;
 
     const body = requestBody({
-      workflowId: this.parameters.workflowId,
-      entityName: this.parameters.entityName,
-      customAction: this.parameters.customAction,
-      customActionParams: this.parameters.customActionParams,
       correlationId: this.parameters.correlationId,
+      workflowId: this.parameters.workflowId,
+      customAction: this.parameters.customAction,
+      entityName: this.parameters.entityName,
+      customActionParams: this.parameters.customActionParams,
     });
 
     return {

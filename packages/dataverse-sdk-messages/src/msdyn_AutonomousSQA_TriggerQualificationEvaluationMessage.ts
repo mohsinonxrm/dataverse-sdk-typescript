@@ -8,10 +8,10 @@ import { requestBody } from "./internal/requestBody.js";
  */
 export interface msdyn_AutonomousSQA_TriggerQualificationEvaluationRequestParameters {
   msdyn_IsResearchOnly?: boolean;
-  msdyn_ShouldOverwriteQualificationDecision?: boolean;
   msdyn_QualificationDecision?: number;
-  msdyn_TrackingId: string;
   msdyn_SalesAgentRun: string;
+  msdyn_ShouldOverwriteQualificationDecision?: boolean;
+  msdyn_TrackingId: string;
 }
 
 /**
@@ -34,11 +34,11 @@ export class msdyn_AutonomousSQA_TriggerQualificationEvaluationRequest
 
     const body = requestBody({
       msdyn_IsResearchOnly: this.Parameters.msdyn_IsResearchOnly,
+      msdyn_QualificationDecision: this.Parameters.msdyn_QualificationDecision,
+      msdyn_SalesAgentRun: this.Parameters.msdyn_SalesAgentRun,
       msdyn_ShouldOverwriteQualificationDecision:
         this.Parameters.msdyn_ShouldOverwriteQualificationDecision,
-      msdyn_QualificationDecision: this.Parameters.msdyn_QualificationDecision,
       msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
-      msdyn_SalesAgentRun: this.Parameters.msdyn_SalesAgentRun,
     });
 
     return {

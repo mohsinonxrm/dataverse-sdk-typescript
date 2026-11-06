@@ -2,29 +2,29 @@
  * msdyn_ocapplemessagesforbusinessengagementctx entity type
  */
 export interface msdyn_ocapplemessagesforbusinessengagementctx {
-  _msdyn_liveworkitemid_value?: string;
-  msdyn_ocapplemessagesforbusinessengagementctxid?: string;
-  _createdonbehalfby_value?: string;
   _createdby_value?: string;
-  _modifiedonbehalfby_value?: string;
-  msdyn_name?: string;
-  msdyn_capabilitylist?: string;
-  _owningteam_value?: string;
-  _owningbusinessunit_value?: string;
-  statecode?: number;
-  overriddencreatedon?: string;
-  msdyn_groupid?: string;
+  _createdonbehalfby_value?: string;
   _modifiedby_value?: string;
-  utcconversiontimezonecode?: number;
+  _modifiedonbehalfby_value?: string;
+  _msdyn_liveworkitemid_value?: string;
   _ownerid_value?: string;
-  modifiedon?: string;
-  statuscode?: number;
-  msdyn_intentid?: string;
-  msdyn_sourceid?: string;
-  importsequencenumber?: number;
-  msdyn_locale?: string;
-  versionnumber?: number;
-  timezoneruleversionnumber?: number;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
   _owninguser_value?: string;
   createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_capabilitylist?: string;
+  msdyn_groupid?: string;
+  msdyn_intentid?: string;
+  msdyn_locale?: string;
+  msdyn_name?: string;
+  msdyn_ocapplemessagesforbusinessengagementctxid?: string;
+  msdyn_sourceid?: string;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

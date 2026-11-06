@@ -13,8 +13,8 @@ export interface CCaaS_MonitorConversationResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_MonitorConversationActionParameters {
-  ApiVersion: string;
   ClientId?: string;
+  ApiVersion: string;
 }
 
 /**
@@ -36,8 +36,8 @@ export class CCaaS_MonitorConversationAction implements Executable<CCaaS_Monitor
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_MonitorConversation`;
 
     const body = requestBody({
-      ApiVersion: this.parameters.ApiVersion,
       ClientId: this.parameters.ClientId,
+      ApiVersion: this.parameters.ApiVersion,
     });
 
     return {

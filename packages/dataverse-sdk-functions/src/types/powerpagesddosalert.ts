@@ -2,34 +2,34 @@
  * powerpagesddosalert entity type
  */
 export interface powerpagesddosalert {
-  timegenerated?: string;
-  statecode?: number;
-  firstactivitytime?: string;
-  _owninguser_value?: string;
-  createdon?: string;
+  _createdby_value?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
   _modifiedonbehalfby_value?: string;
+  _ownerid_value?: string;
   _owningbusinessunit_value?: string;
-  modifiedon?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  additionaldata?: string;
+  attacktype?: string;
+  createdon?: string;
   description?: string;
+  firstactivitytime?: string;
+  hostname?: string;
+  importsequencenumber?: number;
+  incidentid?: string;
+  lastactivitytime?: string;
+  modifiedon?: string;
+  overriddencreatedon?: string;
+  portalid?: string;
   powerpagesddosalertid?: string;
   recordtype?: string;
-  hostname?: string;
-  statuscode?: number;
-  title?: string;
-  additionaldata?: string;
-  timezoneruleversionnumber?: number;
-  portalid?: string;
-  importsequencenumber?: number;
-  _ownerid_value?: string;
-  attacktype?: string;
-  lastactivitytime?: string;
   severity?: string;
-  versionnumber?: number;
-  _createdonbehalfby_value?: string;
-  _createdby_value?: string;
-  overriddencreatedon?: string;
-  _modifiedby_value?: string;
-  incidentid?: string;
+  statecode?: number;
+  statuscode?: number;
+  timegenerated?: string;
+  timezoneruleversionnumber?: number;
+  title?: string;
   utcconversiontimezonecode?: number;
-  _owningteam_value?: string;
+  versionnumber?: number;
 }

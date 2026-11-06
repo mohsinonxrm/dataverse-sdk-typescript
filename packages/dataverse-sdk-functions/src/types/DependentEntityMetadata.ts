@@ -5,14 +5,14 @@ import type { DependentRelationshipCollection } from "./DependentRelationshipCol
  * DependentEntityMetadata complex type
  */
 export interface DependentEntityMetadata {
-  EntityId?: string;
-  LogicalName?: string;
-  LogicalCollectionName?: string;
-  ObjectTypeCode?: number;
-  DisplayName?: string;
-  PrimaryNameAttribute?: string;
-  PrimaryIdAttribute?: string;
-  HasHierarchicalRelationship?: boolean;
   Attributes?: DependentAttributeMetadataCollection;
+  DisplayName?: string;
+  EntityId?: string;
+  HasHierarchicalRelationship?: boolean;
+  LogicalCollectionName?: string;
+  LogicalName?: string;
+  ObjectTypeCode?: number;
+  PrimaryIdAttribute?: string;
+  PrimaryNameAttribute?: string;
   Relationships?: DependentRelationshipCollection;
 }

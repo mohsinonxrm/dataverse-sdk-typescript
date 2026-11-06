@@ -15,15 +15,15 @@ export interface SendAppNotificationResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface SendAppNotificationActionParameters {
+  Body?: string;
+  OverrideContent?: EntityReference | AnyEntityPayload;
+  Actions?: EntityReference | AnyEntityPayload;
   Recipient: EntityReference | AnyEntityPayload;
+  IconType?: number;
   Expiry?: number;
   Priority?: number;
-  OverrideContent?: EntityReference | AnyEntityPayload;
-  Title: string;
-  IconType?: number;
-  Body?: string;
-  Actions?: EntityReference | AnyEntityPayload;
   ToastType?: number;
+  Title: string;
 }
 
 /**
@@ -38,15 +38,15 @@ export class SendAppNotificationAction implements Executable<SendAppNotification
     const url = `${baseUrl}/SendAppNotification`;
 
     const body = requestBody({
+      Body: this.parameters.Body,
+      OverrideContent: this.parameters.OverrideContent,
+      Actions: this.parameters.Actions,
       Recipient: this.parameters.Recipient,
+      IconType: this.parameters.IconType,
       Expiry: this.parameters.Expiry,
       Priority: this.parameters.Priority,
-      OverrideContent: this.parameters.OverrideContent,
-      Title: this.parameters.Title,
-      IconType: this.parameters.IconType,
-      Body: this.parameters.Body,
-      Actions: this.parameters.Actions,
       ToastType: this.parameters.ToastType,
+      Title: this.parameters.Title,
     });
 
     return {

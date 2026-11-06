@@ -2,29 +2,29 @@
  * msdyn_ocsessionsentiment entity type
  */
 export interface msdyn_ocsessionsentiment {
-  _modifiedonbehalfby_value?: string;
-  _owninguser_value?: string;
-  importsequencenumber?: number;
   _createdby_value?: string;
-  _owningbusinessunit_value?: string;
-  msdyn_sentimenttransition?: number;
+  _createdonbehalfby_value?: string;
   _modifiedby_value?: string;
-  msdyn_sentimentpulse?: number;
+  _modifiedonbehalfby_value?: string;
+  _msdyn_omnichannelsession_value?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
   createdon?: string;
-  msdyn_sentimentmodelversion?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
   msdyn_name?: string;
-  timezoneruleversionnumber?: number;
+  msdyn_ocsessionsentimentid?: string;
+  msdyn_predictedlanguage?: string;
+  msdyn_sentimentmodelversion?: string;
+  msdyn_sentimentpulse?: number;
+  msdyn_sentimenttransition?: number;
+  msdyn_sentimentzone?: string;
+  overriddencreatedon?: string;
   statecode?: number;
   statuscode?: number;
-  msdyn_sentimentzone?: string;
-  _createdonbehalfby_value?: string;
-  _owningteam_value?: string;
-  modifiedon?: string;
-  overriddencreatedon?: string;
-  msdyn_predictedlanguage?: string;
-  _ownerid_value?: string;
-  versionnumber?: number;
-  msdyn_ocsessionsentimentid?: string;
+  timezoneruleversionnumber?: number;
   utcconversiontimezonecode?: number;
-  _msdyn_omnichannelsession_value?: string;
+  versionnumber?: number;
 }

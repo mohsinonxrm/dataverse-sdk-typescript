@@ -2,13 +2,13 @@
  * contactquotes entity type
  */
 export interface contactquotes {
+  contactid?: string;
+  contactquoteid?: string;
   importsequencenumber?: number;
+  name?: string;
+  overriddencreatedon?: string;
+  quoteid?: string;
   timezoneruleversionnumber?: number;
   utcconversiontimezonecode?: number;
-  quoteid?: string;
-  name?: string;
-  contactquoteid?: string;
   versionnumber?: number;
-  overriddencreatedon?: string;
-  contactid?: string;
 }

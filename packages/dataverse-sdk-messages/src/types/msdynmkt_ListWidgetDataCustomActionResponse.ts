@@ -2,9 +2,9 @@
  * msdynmkt_ListWidgetDataCustomActionResponse complex type
  */
 export interface msdynmkt_ListWidgetDataCustomActionResponse {
-  WidgetDefinition?: string;
-  WidgetData?: string;
+  ErrorMessage?: string;
   IsSuccess?: boolean;
   StatusCode?: number;
-  ErrorMessage?: string;
+  WidgetData?: string;
+  WidgetDefinition?: string;
 }

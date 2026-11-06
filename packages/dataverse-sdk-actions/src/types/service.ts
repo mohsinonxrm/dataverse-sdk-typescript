@@ -2,31 +2,31 @@
  * service entity type
  */
 export interface service {
-  createdon?: string;
   _createdby_value?: string;
-  modifiedon?: string;
-  calendarid?: string;
-  msdyn_SchedulingEngine?: number;
-  isschedulable?: boolean;
-  anchoroffset?: number;
-  versionnumber?: number;
-  utcconversiontimezonecode?: number;
-  name?: string;
-  isvisible?: boolean;
-  _modifiedby_value?: string;
-  serviceid?: string;
-  _strategyid_value?: string;
-  initialstatuscode?: number;
-  _resourcespecid_value?: string;
   _createdonbehalfby_value?: string;
-  showresources?: boolean;
-  overriddencreatedon?: string;
-  timezoneruleversionnumber?: number;
+  _modifiedby_value?: string;
   _modifiedonbehalfby_value?: string;
-  granularity?: string;
-  duration?: number;
-  _organizationid_value?: string;
-  importsequencenumber?: number;
   _msdyn_requirementgroupid_value?: string;
+  _organizationid_value?: string;
+  _resourcespecid_value?: string;
+  _strategyid_value?: string;
+  anchoroffset?: number;
+  calendarid?: string;
+  createdon?: string;
   description?: string;
+  duration?: number;
+  granularity?: string;
+  importsequencenumber?: number;
+  initialstatuscode?: number;
+  isschedulable?: boolean;
+  isvisible?: boolean;
+  modifiedon?: string;
+  msdyn_SchedulingEngine?: number;
+  name?: string;
+  overriddencreatedon?: string;
+  serviceid?: string;
+  showresources?: boolean;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

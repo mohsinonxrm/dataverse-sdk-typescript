@@ -9,13 +9,13 @@ import type { RunDesktopFlowResponse as RunDesktopFlowResponseData } from "./typ
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface RunDesktopFlowRequestParameters {
-  inputs?: string;
-  runMode: string;
-  connectionName: string;
-  runPriority?: string;
-  timeout?: number;
   connectionType?: number;
+  connectionName: string;
+  runMode: string;
+  timeout?: number;
   callbackUrl?: string;
+  runPriority?: string;
+  inputs?: string;
 }
 
 /**
@@ -43,13 +43,13 @@ export class RunDesktopFlowRequest
     const url = `${baseUrl}/workflows(${this.workflowId})/Microsoft.Dynamics.CRM.RunDesktopFlow`;
 
     const body = requestBody({
-      inputs: this.Parameters.inputs,
-      runMode: this.Parameters.runMode,
-      connectionName: this.Parameters.connectionName,
-      runPriority: this.Parameters.runPriority,
-      timeout: this.Parameters.timeout,
       connectionType: this.Parameters.connectionType,
+      connectionName: this.Parameters.connectionName,
+      runMode: this.Parameters.runMode,
+      timeout: this.Parameters.timeout,
       callbackUrl: this.Parameters.callbackUrl,
+      runPriority: this.Parameters.runPriority,
+      inputs: this.Parameters.inputs,
     });
 
     return {

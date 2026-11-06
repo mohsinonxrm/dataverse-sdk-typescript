@@ -5,8 +5,8 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluation action
  */
 export interface msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResponse {
-  msdyn_QualificationDecision: number;
   msdyn_IsEvaluationComplete: boolean;
+  msdyn_QualificationDecision: number;
 }
 
 /**
@@ -14,9 +14,9 @@ export interface msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationRes
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationActionParameters {
-  msdyn_SalesAgentRun: string;
   msdyn_QueueAgentRunRequestTimestamp: string;
   msdyn_TrackingId: string;
+  msdyn_SalesAgentRun: string;
 }
 
 /**
@@ -33,9 +33,9 @@ export class msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationAction 
     const url = `${baseUrl}/msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluation`;
 
     const body = requestBody({
-      msdyn_SalesAgentRun: this.parameters.msdyn_SalesAgentRun,
       msdyn_QueueAgentRunRequestTimestamp: this.parameters.msdyn_QueueAgentRunRequestTimestamp,
       msdyn_TrackingId: this.parameters.msdyn_TrackingId,
+      msdyn_SalesAgentRun: this.parameters.msdyn_SalesAgentRun,
     });
 
     return {

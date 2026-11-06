@@ -13,9 +13,9 @@ export interface msdyn_ConvertDateTimeOnCalendarTimeZoneResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_ConvertDateTimeOnCalendarTimeZoneActionParameters {
-  IsDateTimeTza: boolean;
   CalendarId: string;
   DateTime: string;
+  IsDateTimeTza: boolean;
 }
 
 /**
@@ -32,9 +32,9 @@ export class msdyn_ConvertDateTimeOnCalendarTimeZoneAction implements Executable
     const url = `${baseUrl}/msdyn_ConvertDateTimeOnCalendarTimeZone`;
 
     const body = requestBody({
-      IsDateTimeTza: this.parameters.IsDateTimeTza,
       CalendarId: this.parameters.CalendarId,
       DateTime: this.parameters.DateTime,
+      IsDateTimeTza: this.parameters.IsDateTimeTza,
     });
 
     return {

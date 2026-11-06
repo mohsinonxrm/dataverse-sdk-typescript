@@ -9,10 +9,10 @@ import type { CCaaS_GetRepresentativeAvailabilityBeforeConversationResponse as C
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_GetRepresentativeAvailabilityBeforeConversationRequestParameters {
-  ApiVersion: string;
+  CustomContextItems?: string;
   LiveWorkStreamId?: string;
   ChannelEngagementContext?: string;
-  CustomContextItems?: string;
+  ApiVersion: string;
 }
 
 /**
@@ -34,10 +34,10 @@ export class CCaaS_GetRepresentativeAvailabilityBeforeConversationRequest
     const url = `${baseUrl}/CCaaS_GetRepresentativeAvailabilityBeforeConversation`;
 
     const body = requestBody({
-      ApiVersion: this.Parameters.ApiVersion,
+      CustomContextItems: this.Parameters.CustomContextItems,
       LiveWorkStreamId: this.Parameters.LiveWorkStreamId,
       ChannelEngagementContext: this.Parameters.ChannelEngagementContext,
-      CustomContextItems: this.Parameters.CustomContextItems,
+      ApiVersion: this.Parameters.ApiVersion,
     });
 
     return {

@@ -9,8 +9,8 @@ import type { msdyn_SalesAgents_ProcessOutreachAgentResponseResponse as msdyn_Sa
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesAgents_ProcessOutreachAgentResponseRequestParameters {
-  msdyn_SalesAgentRunId: string;
   msdyn_TrackingId: string;
+  msdyn_SalesAgentRunId: string;
   msdyn_Email: string;
 }
 
@@ -33,8 +33,8 @@ export class msdyn_SalesAgents_ProcessOutreachAgentResponseRequest
     const url = `${baseUrl}/msdyn_SalesAgents_ProcessOutreachAgentResponse`;
 
     const body = requestBody({
-      msdyn_SalesAgentRunId: this.Parameters.msdyn_SalesAgentRunId,
       msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
+      msdyn_SalesAgentRunId: this.Parameters.msdyn_SalesAgentRunId,
       msdyn_Email: this.Parameters.msdyn_Email,
     });
 

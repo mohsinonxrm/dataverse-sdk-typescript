@@ -2,23 +2,23 @@
  * msdyn_forecastinsight entity type
  */
 export interface msdyn_forecastinsight {
-  _modifiedby_value?: string;
-  createdon?: string;
-  _msdyn_forecastconfigurationid_value?: string;
-  ttlinseconds?: number;
   _createdby_value?: string;
-  msdyn_forecastinsightid?: string;
-  modifiedon?: string;
-  importsequencenumber?: number;
-  msdyn_version?: string;
-  msdyn_hierarchyrecordid?: string;
   _createdonbehalfby_value?: string;
-  overriddencreatedon?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _msdyn_forecastconfigurationid_value?: string;
   _msdyn_forecastrecurrenceid_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_forecastinsightid?: string;
+  msdyn_forecastrecurrenceidpid?: string;
+  msdyn_hierarchyrecordid?: string;
   msdyn_insights?: string;
   msdyn_isrollup?: boolean;
-  msdyn_forecastrecurrenceidpid?: string;
-  _modifiedonbehalfby_value?: string;
+  msdyn_version?: string;
+  overriddencreatedon?: string;
   partitionid?: string;
+  ttlinseconds?: number;
   versionnumber?: number;
 }

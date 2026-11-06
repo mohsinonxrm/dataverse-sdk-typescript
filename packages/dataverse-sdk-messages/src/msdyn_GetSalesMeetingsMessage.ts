@@ -9,8 +9,8 @@ import type { msdyn_GetSalesMeetingsResponse as msdyn_GetSalesMeetingsResponseDa
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_GetSalesMeetingsRequestParameters {
-  msdyn_from: string;
   msdyn_to: string;
+  msdyn_from: string;
 }
 
 /**
@@ -32,8 +32,8 @@ export class msdyn_GetSalesMeetingsRequest
     const url = `${baseUrl}/msdyn_GetSalesMeetings`;
 
     const body = requestBody({
-      msdyn_from: this.Parameters.msdyn_from,
       msdyn_to: this.Parameters.msdyn_to,
+      msdyn_from: this.Parameters.msdyn_from,
     });
 
     return {

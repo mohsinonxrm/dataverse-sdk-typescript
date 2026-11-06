@@ -14,8 +14,8 @@ export interface GetRunMapResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface GetRunMapActionParameters {
-  runId: string;
   continuationToken?: string;
+  runId: string;
   max?: number;
 }
 
@@ -38,8 +38,8 @@ export class GetRunMapAction implements Executable<GetRunMapResponse> {
     const url = `${baseUrl}/businessprocesses(${this.businessprocessId})/Microsoft.Dynamics.CRM.GetRunMap`;
 
     const body = requestBody({
-      runId: this.parameters.runId,
       continuationToken: this.parameters.continuationToken,
+      runId: this.parameters.runId,
       max: this.parameters.max,
     });
 

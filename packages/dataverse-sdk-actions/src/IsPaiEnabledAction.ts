@@ -4,11 +4,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * Response from IsPaiEnabled action
  */
 export interface IsPaiEnabledResponse {
-  ispaienabled: boolean;
-  templates: string;
   arePreviewScenarioEnabled: boolean;
-  paigastatus: boolean;
   isdatamodelv2enabled: boolean;
+  ispaienabled: boolean;
+  paigastatus: boolean;
+  templates: string;
 }
 
 /**

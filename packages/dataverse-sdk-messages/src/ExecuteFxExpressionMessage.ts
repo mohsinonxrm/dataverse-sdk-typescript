@@ -10,11 +10,11 @@ import type { AnyEntityPayload } from "./types/EntityPayload.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface ExecuteFxExpressionRequestParameters {
-  expression: string;
+  outputparameters?: EntityReference | AnyEntityPayload;
   inputparameters?: EntityReference | AnyEntityPayload;
   context?: string;
   entitylogicalname?: string;
-  outputparameters?: EntityReference | AnyEntityPayload;
+  expression: string;
 }
 
 /**
@@ -36,11 +36,11 @@ export class ExecuteFxExpressionRequest
     const url = `${baseUrl}/ExecuteFxExpression`;
 
     const body = requestBody({
-      expression: this.Parameters.expression,
+      outputparameters: this.Parameters.outputparameters,
       inputparameters: this.Parameters.inputparameters,
       context: this.Parameters.context,
       entitylogicalname: this.Parameters.entitylogicalname,
-      outputparameters: this.Parameters.outputparameters,
+      expression: this.Parameters.expression,
     });
 
     return {

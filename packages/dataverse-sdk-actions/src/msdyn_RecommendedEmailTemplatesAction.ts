@@ -5,9 +5,9 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_RecommendedEmailTemplates action
  */
 export interface msdyn_RecommendedEmailTemplatesResponse {
+  emailTemplates: string;
   generatedEmailString: string;
   recommendedTemplate: string;
-  emailTemplates: string;
 }
 
 /**
@@ -15,16 +15,16 @@ export interface msdyn_RecommendedEmailTemplatesResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_RecommendedEmailTemplatesActionParameters {
-  isTemplateResponse?: boolean;
-  emailContextData?: string;
-  emailId: string;
-  templateFiltersInString: string;
-  filters?: string;
-  customerIntent: string;
-  transactionId: string;
   emailString: string;
+  emailContextData?: string;
+  isTemplateResponse?: boolean;
+  templateFiltersInString: string;
   multiturnPayload?: string;
+  emailId: string;
   copilotRequestParameters: string;
+  customerIntent: string;
+  filters?: string;
+  transactionId: string;
 }
 
 /**
@@ -39,16 +39,16 @@ export class msdyn_RecommendedEmailTemplatesAction implements Executable<msdyn_R
     const url = `${baseUrl}/msdyn_RecommendedEmailTemplates`;
 
     const body = requestBody({
-      isTemplateResponse: this.parameters.isTemplateResponse,
-      emailContextData: this.parameters.emailContextData,
-      emailId: this.parameters.emailId,
-      templateFiltersInString: this.parameters.templateFiltersInString,
-      filters: this.parameters.filters,
-      customerIntent: this.parameters.customerIntent,
-      transactionId: this.parameters.transactionId,
       emailString: this.parameters.emailString,
+      emailContextData: this.parameters.emailContextData,
+      isTemplateResponse: this.parameters.isTemplateResponse,
+      templateFiltersInString: this.parameters.templateFiltersInString,
       multiturnPayload: this.parameters.multiturnPayload,
+      emailId: this.parameters.emailId,
       copilotRequestParameters: this.parameters.copilotRequestParameters,
+      customerIntent: this.parameters.customerIntent,
+      filters: this.parameters.filters,
+      transactionId: this.parameters.transactionId,
     });
 
     return {

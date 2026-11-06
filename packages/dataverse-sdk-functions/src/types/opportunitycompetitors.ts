@@ -2,13 +2,13 @@
  * opportunitycompetitors entity type
  */
 export interface opportunitycompetitors {
-  timezoneruleversionnumber?: number;
-  name?: string;
   competitorid?: string;
-  overriddencreatedon?: string;
-  opportunityid?: string;
-  utcconversiontimezonecode?: number;
   importsequencenumber?: number;
+  name?: string;
   opportunitycompetitorid?: string;
+  opportunityid?: string;
+  overriddencreatedon?: string;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
   versionnumber?: number;
 }

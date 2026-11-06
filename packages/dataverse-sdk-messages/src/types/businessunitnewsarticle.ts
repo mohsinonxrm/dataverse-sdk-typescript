@@ -2,24 +2,24 @@
  * businessunitnewsarticle entity type
  */
 export interface businessunitnewsarticle {
-  newsarticle?: string;
-  businessunitnewsarticleid?: string;
-  timezoneruleversionnumber?: number;
-  _modifiedby_value?: string;
-  createdon?: string;
-  activeon?: string;
-  articleurl?: string;
-  _organizationid_value?: string;
-  _createdonbehalfby_value?: string;
-  versionnumber?: number;
-  activeuntil?: string;
-  importsequencenumber?: number;
-  articletypecode?: number;
-  overriddencreatedon?: string;
-  articletitle?: string;
   _createdby_value?: string;
-  showonhomepage?: boolean;
-  modifiedon?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
   _modifiedonbehalfby_value?: string;
+  _organizationid_value?: string;
+  activeon?: string;
+  activeuntil?: string;
+  articletitle?: string;
+  articletypecode?: number;
+  articleurl?: string;
+  businessunitnewsarticleid?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  newsarticle?: string;
+  overriddencreatedon?: string;
+  showonhomepage?: boolean;
+  timezoneruleversionnumber?: number;
   utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

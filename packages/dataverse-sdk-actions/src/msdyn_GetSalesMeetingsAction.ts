@@ -5,8 +5,8 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_GetSalesMeetings action
  */
 export interface msdyn_GetSalesMeetingsResponse {
-  msdyn_result: string;
   msdyn_error: string;
+  msdyn_result: string;
   msdyn_status: number;
 }
 
@@ -15,8 +15,8 @@ export interface msdyn_GetSalesMeetingsResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_GetSalesMeetingsActionParameters {
-  msdyn_from: string;
   msdyn_to: string;
+  msdyn_from: string;
 }
 
 /**
@@ -31,8 +31,8 @@ export class msdyn_GetSalesMeetingsAction implements Executable<msdyn_GetSalesMe
     const url = `${baseUrl}/msdyn_GetSalesMeetings`;
 
     const body = requestBody({
-      msdyn_from: this.parameters.msdyn_from,
       msdyn_to: this.parameters.msdyn_to,
+      msdyn_from: this.parameters.msdyn_from,
     });
 
     return {

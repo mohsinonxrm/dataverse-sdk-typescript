@@ -2,29 +2,29 @@
  * msdyn_resourcerequirementdetail entity type
  */
 export interface msdyn_resourcerequirementdetail {
-  msdyn_to?: string;
-  msdyn_name?: string;
-  overriddencreatedon?: string;
-  _owninguser_value?: string;
-  utcconversiontimezonecode?: number;
-  importsequencenumber?: number;
-  statecode?: number;
-  modifiedon?: string;
-  _owningteam_value?: string;
   _createdby_value?: string;
-  msdyn_from?: string;
+  _createdonbehalfby_value?: string;
   _modifiedby_value?: string;
-  timezoneruleversionnumber?: number;
-  msdyn_duration?: number;
-  statuscode?: number;
-  msdyn_tzafrom?: string;
+  _modifiedonbehalfby_value?: string;
+  _msdyn_resourcerequirementid_value?: string;
   _ownerid_value?: string;
   _owningbusinessunit_value?: string;
-  versionnumber?: number;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
   createdon?: string;
-  _msdyn_resourcerequirementid_value?: string;
-  msdyn_tzato?: string;
-  _createdonbehalfby_value?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_duration?: number;
+  msdyn_from?: string;
+  msdyn_name?: string;
   msdyn_resourcerequirementdetailid?: string;
-  _modifiedonbehalfby_value?: string;
+  msdyn_to?: string;
+  msdyn_tzafrom?: string;
+  msdyn_tzato?: string;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

@@ -5,6 +5,6 @@ import type { LookupFormat } from "./LookupFormat.js";
  * LookupAttributeMetadata entity type
  */
 export interface LookupAttributeMetadata extends AttributeMetadata {
-  Targets?: string[];
   Format?: LookupFormat;
+  Targets?: string[];
 }

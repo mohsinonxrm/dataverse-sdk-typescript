@@ -5,9 +5,9 @@ import type { MissingPackageResolutionAction } from "./MissingPackageResolutionA
  */
 export interface MissingPackage {
   AppName?: string;
-  Version?: string;
+  IsFirstParty?: boolean;
   PackageName?: string;
   ResolutionAction?: MissingPackageResolutionAction;
   ResolutionActionValue?: string;
-  IsFirstParty?: boolean;
+  Version?: string;
 }

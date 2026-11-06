@@ -14,8 +14,8 @@ export interface msdyn_GetCustomActionParametersResponse {
  */
 export interface msdyn_GetCustomActionParametersActionParameters {
   workflowId: string;
-  customAction: string;
   correlationId: string;
+  customAction: string;
 }
 
 /**
@@ -31,8 +31,8 @@ export class msdyn_GetCustomActionParametersAction implements Executable<msdyn_G
 
     const body = requestBody({
       workflowId: this.parameters.workflowId,
-      customAction: this.parameters.customAction,
       correlationId: this.parameters.correlationId,
+      customAction: this.parameters.customAction,
     });
 
     return {

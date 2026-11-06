@@ -14,8 +14,8 @@ export interface msdyn_GetEligibleRegardingEntitiesResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_GetEligibleRegardingEntitiesActionParameters {
-  workflowId: string;
   correlationId: string;
+  workflowId: string;
 }
 
 /**
@@ -30,8 +30,8 @@ export class msdyn_GetEligibleRegardingEntitiesAction implements Executable<msdy
     const url = `${baseUrl}/msdyn_GetEligibleRegardingEntities`;
 
     const body = requestBody({
-      workflowId: this.parameters.workflowId,
       correlationId: this.parameters.correlationId,
+      workflowId: this.parameters.workflowId,
     });
 
     return {

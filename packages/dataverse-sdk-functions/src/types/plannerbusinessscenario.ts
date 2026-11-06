@@ -2,21 +2,21 @@
  * plannerbusinessscenario entity type
  */
 export interface plannerbusinessscenario {
-  _owninguser_value?: string;
-  timezoneruleversionnumber?: number;
-  _owningbusinessunit_value?: string;
-  syncenabled?: boolean;
-  versionnumber?: number;
-  statuscode?: number;
-  webresourcename?: string;
-  uniquename?: string;
-  statecode?: number;
   _ownerid_value?: string;
-  importsequencenumber?: number;
-  displayname?: string;
-  plannerbusinessscenarioid?: string;
-  overriddencreatedon?: string;
-  buckets?: string;
-  utcconversiontimezonecode?: number;
+  _owningbusinessunit_value?: string;
   _owningteam_value?: string;
+  _owninguser_value?: string;
+  buckets?: string;
+  displayname?: string;
+  importsequencenumber?: number;
+  overriddencreatedon?: string;
+  plannerbusinessscenarioid?: string;
+  statecode?: number;
+  statuscode?: number;
+  syncenabled?: boolean;
+  timezoneruleversionnumber?: number;
+  uniquename?: string;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
+  webresourcename?: string;
 }

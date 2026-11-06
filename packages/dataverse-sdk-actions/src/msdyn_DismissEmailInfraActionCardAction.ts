@@ -5,8 +5,8 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_DismissEmailInfraActionCard action
  */
 export interface msdyn_DismissEmailInfraActionCardResponse {
-  Result: boolean;
   Error: string;
+  Result: boolean;
 }
 
 /**

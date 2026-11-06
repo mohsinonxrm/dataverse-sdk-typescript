@@ -7,8 +7,8 @@ import type { AnyEntityPayload } from "./types/EntityPayload.js";
  * Response from msdyn_GetSwarmResponseCard action
  */
 export interface msdyn_GetSwarmResponseCardResponse {
-  msdyn_SwarmResponseCardRecipient: string;
   msdyn_SwarmResponseCardJson: string;
+  msdyn_SwarmResponseCardRecipient: string;
 }
 
 /**

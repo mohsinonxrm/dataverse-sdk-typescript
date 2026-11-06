@@ -2,30 +2,31 @@
  * msdyn_accountresearchresult entity type
  */
 export interface msdyn_accountresearchresult {
-  msdyn_accountresearchagentlastrun?: string;
-  statuscode?: number;
-  timezoneruleversionnumber?: number;
+  _createdby_value?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  createdon?: string;
   importsequencenumber?: number;
   modifiedon?: string;
-  msdyn_accountname?: string;
-  msdyn_accountfinances?: string;
-  msdyn_accountnews?: string;
-  _owningteam_value?: string;
-  overriddencreatedon?: string;
-  _createdonbehalfby_value?: string;
-  statecode?: number;
-  createdon?: string;
-  versionnumber?: number;
-  msdyn_customresearchconfigid?: string;
-  msdyn_accountoverview?: string;
-  _createdby_value?: string;
-  msdyn_customresearchresults?: string;
-  msdyn_accountresearchresultid?: string;
-  _ownerid_value?: string;
   msdyn_accountdomainname?: string;
-  _modifiedby_value?: string;
-  _owninguser_value?: string;
-  _owningbusinessunit_value?: string;
+  msdyn_accountfinances?: string;
+  msdyn_accountname?: string;
+  msdyn_accountnews?: string;
+  msdyn_accountoverview?: string;
+  msdyn_accountresearchagentlastrun?: string;
+  msdyn_accountresearchresultid?: string;
+  msdyn_customresearchconfigid?: string;
+  msdyn_customresearchresults?: string;
+  msdyn_salesagentprofileid?: string;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
   utcconversiontimezonecode?: number;
-  _modifiedonbehalfby_value?: string;
+  versionnumber?: number;
 }

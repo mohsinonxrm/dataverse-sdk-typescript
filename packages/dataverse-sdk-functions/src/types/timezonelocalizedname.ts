@@ -2,18 +2,18 @@
  * timezonelocalizedname entity type
  */
 export interface timezonelocalizedname {
-  _timezonedefinitionid_value?: string;
-  daylightname?: string;
-  _modifiedby_value?: string;
-  modifiedon?: string;
-  timezonelocalizednameid?: string;
-  standardname?: string;
-  createdon?: string;
-  userinterfacename?: string;
-  _modifiedonbehalfby_value?: string;
-  cultureid?: number;
-  _createdonbehalfby_value?: string;
-  versionnumber?: number;
-  _organizationid_value?: string;
   _createdby_value?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _organizationid_value?: string;
+  _timezonedefinitionid_value?: string;
+  createdon?: string;
+  cultureid?: number;
+  daylightname?: string;
+  modifiedon?: string;
+  standardname?: string;
+  timezonelocalizednameid?: string;
+  userinterfacename?: string;
+  versionnumber?: number;
 }

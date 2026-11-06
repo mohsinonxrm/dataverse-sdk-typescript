@@ -14,12 +14,12 @@ export interface msdyn_GetExtractsFromContentResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_GetExtractsFromContentActionParameters {
-  msdyn_activityId?: string;
+  msdyn_extractOperationInputParams?: string;
   msdyn_userQuery?: string;
+  msdyn_keywords?: string;
   msdyn_source?: string;
   msdyn_top?: number;
-  msdyn_extractOperationInputParams?: string;
-  msdyn_keywords?: string;
+  msdyn_activityId?: string;
 }
 
 /**
@@ -34,12 +34,12 @@ export class msdyn_GetExtractsFromContentAction implements Executable<msdyn_GetE
     const url = `${baseUrl}/msdyn_GetExtractsFromContent`;
 
     const body = requestBody({
-      msdyn_activityId: this.parameters.msdyn_activityId,
+      msdyn_extractOperationInputParams: this.parameters.msdyn_extractOperationInputParams,
       msdyn_userQuery: this.parameters.msdyn_userQuery,
+      msdyn_keywords: this.parameters.msdyn_keywords,
       msdyn_source: this.parameters.msdyn_source,
       msdyn_top: this.parameters.msdyn_top,
-      msdyn_extractOperationInputParams: this.parameters.msdyn_extractOperationInputParams,
-      msdyn_keywords: this.parameters.msdyn_keywords,
+      msdyn_activityId: this.parameters.msdyn_activityId,
     });
 
     return {

@@ -2,25 +2,25 @@
  * msdyn_aibdataset entity type
  */
 export interface msdyn_aibdataset {
-  overriddencreatedon?: string;
-  createdon?: string;
-  importsequencenumber?: number;
-  _msdyn_aibdatasetscontainerid_value?: string;
-  statecode?: number;
-  utcconversiontimezonecode?: number;
-  statuscode?: number;
+  _createdby_value?: string;
   _createdonbehalfby_value?: string;
   _modifiedby_value?: string;
-  timezoneruleversionnumber?: number;
-  msdyn_name?: string;
-  versionnumber?: number;
-  _createdby_value?: string;
-  modifiedon?: string;
-  _owninguser_value?: string;
-  msdyn_metadata?: string;
   _modifiedonbehalfby_value?: string;
-  msdyn_aibdatasetid?: string;
+  _msdyn_aibdatasetscontainerid_value?: string;
   _ownerid_value?: string;
-  _owningteam_value?: string;
   _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_aibdatasetid?: string;
+  msdyn_metadata?: string;
+  msdyn_name?: string;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

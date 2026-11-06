@@ -2,27 +2,27 @@
  * knowledgearticleviews entity type
  */
 export interface knowledgearticleviews {
-  location?: number;
-  utcconversiontimezonecode?: number;
+  _createdby_value?: string;
+  _createdonbehalfby_value?: string;
+  _knowledgearticleid_value?: string;
   _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
   _ownerid_value?: string;
-  versionnumber?: number;
-  modifiedon?: string;
-  owningbusinessunit?: string;
-  timezoneruleversionnumber?: number;
-  statecode?: number;
-  knowledgearticleviewsid?: string;
+  _transactioncurrencyid_value?: string;
   createdon?: string;
   exchangerate?: number;
-  statuscode?: number;
-  owninguser?: string;
-  knowledgearticleview?: number;
-  _transactioncurrencyid_value?: string;
   importsequencenumber?: number;
-  viewdate?: string;
-  _modifiedonbehalfby_value?: string;
-  _createdonbehalfby_value?: string;
-  _createdby_value?: string;
+  knowledgearticleview?: number;
+  knowledgearticleviewsid?: string;
+  location?: number;
+  modifiedon?: string;
   overriddencreatedon?: string;
-  _knowledgearticleid_value?: string;
+  owningbusinessunit?: string;
+  owninguser?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
+  viewdate?: string;
 }

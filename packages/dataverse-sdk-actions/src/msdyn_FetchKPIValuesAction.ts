@@ -7,9 +7,9 @@ import type { AnyEntityPayload } from "./types/EntityPayload.js";
  * Response from msdyn_FetchKPIValues action
  */
 export interface msdyn_FetchKPIValuesResponse {
-  LastModifiedOn: string;
-  KPIValues: string;
   ErrorList: string;
+  KPIValues: string;
+  LastModifiedOn: string;
 }
 
 /**

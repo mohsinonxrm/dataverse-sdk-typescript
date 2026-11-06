@@ -2,31 +2,31 @@
  * msdyn_odosfeaturemetadata entity type
  */
 export interface msdyn_odosfeaturemetadata {
-  _organizationid_value?: string;
-  msdyn_isfeatureenabled?: boolean;
-  msdyn_odosfeaturemetadataid?: string;
-  _modifiedby_value?: string;
-  msdyn_propertybag?: string;
-  statecode?: number;
-  msdyn_consentrevokedtime?: string;
-  createdon?: string;
-  msdyn_featurename?: string;
-  versionnumber?: number;
-  msdyn_clientid?: string;
-  importsequencenumber?: number;
-  _modifiedonbehalfby_value?: string;
-  msdyn_lastbackfillrunexecutionId?: string;
-  msdyn_provisioningstage?: number;
   _createdby_value?: string;
-  overriddencreatedon?: string;
-  msdyn_lastrunexecutionid?: string;
   _createdonbehalfby_value?: string;
-  utcconversiontimezonecode?: number;
-  msdyn_provisioningexception?: string;
-  statuscode?: number;
-  msdyn_entities?: string;
-  msdyn_primitives?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _organizationid_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
   modifiedon?: string;
-  timezoneruleversionnumber?: number;
+  msdyn_clientid?: string;
+  msdyn_consentrevokedtime?: string;
+  msdyn_entities?: string;
+  msdyn_featurename?: string;
   msdyn_isconsentrevoked?: boolean;
+  msdyn_isfeatureenabled?: boolean;
+  msdyn_lastbackfillrunexecutionId?: string;
+  msdyn_lastrunexecutionid?: string;
+  msdyn_odosfeaturemetadataid?: string;
+  msdyn_primitives?: string;
+  msdyn_propertybag?: string;
+  msdyn_provisioningexception?: string;
+  msdyn_provisioningstage?: number;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

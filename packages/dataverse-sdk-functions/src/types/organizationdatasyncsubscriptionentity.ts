@@ -2,26 +2,26 @@
  * organizationdatasyncsubscriptionentity entity type
  */
 export interface organizationdatasyncsubscriptionentity {
-  _organizationdatasyncsubscriptioid_value?: string;
-  inheritsfromotc?: number;
-  statecode?: number;
-  _organizationid_value?: string;
-  _modifiedby_value?: string;
-  statuscode?: number;
-  versionnumber?: number;
-  importsequencenumber?: number;
-  name?: string;
-  blobpartitionby?: number;
-  timezoneruleversionnumber?: number;
+  _createdby_value?: string;
   _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _organizationdatasyncsubscriptioid_value?: string;
+  _organizationdatasyncsubscription_value?: string;
+  _organizationid_value?: string;
+  blobpartitionby?: number;
   createdon?: string;
-  overriddencreatedon?: string;
+  importsequencenumber?: number;
+  inheritsfromotc?: number;
+  isactivity?: boolean;
+  modifiedon?: string;
+  name?: string;
   objecttypecode?: number;
   organizationdatasyncsubscriptionentityid?: string;
-  _modifiedonbehalfby_value?: string;
-  modifiedon?: string;
-  _organizationdatasyncsubscription_value?: string;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
   utcconversiontimezonecode?: number;
-  _createdby_value?: string;
-  isactivity?: boolean;
+  versionnumber?: number;
 }

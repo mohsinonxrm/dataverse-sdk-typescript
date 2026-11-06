@@ -2,29 +2,29 @@
  * msdyn_ocgooglebusinessmessagesengagementctx entity type
  */
 export interface msdyn_ocgooglebusinessmessagesengagementctx {
-  overriddencreatedon?: string;
-  msdyn_customerid?: string;
-  _modifiedby_value?: string;
-  createdon?: string;
-  _ownerid_value?: string;
-  _msdyn_liveworkitemid_value?: string;
-  importsequencenumber?: number;
-  _owningteam_value?: string;
-  _modifiedonbehalfby_value?: string;
-  versionnumber?: number;
-  msdyn_entrypoint?: string;
-  timezoneruleversionnumber?: number;
   _createdby_value?: string;
-  msdyn_name?: string;
   _createdonbehalfby_value?: string;
-  msdyn_userdevicelocale?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _msdyn_liveworkitemid_value?: string;
+  _ownerid_value?: string;
   _owningbusinessunit_value?: string;
-  utcconversiontimezonecode?: number;
-  msdyn_ocgooglebusinessmessagesengagementctxid?: string;
-  statuscode?: number;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
   modifiedon?: string;
-  statecode?: number;
+  msdyn_customerid?: string;
+  msdyn_entrypoint?: string;
+  msdyn_name?: string;
+  msdyn_ocgooglebusinessmessagesengagementctxid?: string;
   msdyn_placeid?: string;
   msdyn_resolvedlocale?: string;
-  _owninguser_value?: string;
+  msdyn_userdevicelocale?: string;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

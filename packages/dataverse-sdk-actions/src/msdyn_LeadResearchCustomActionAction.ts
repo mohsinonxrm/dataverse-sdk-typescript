@@ -5,10 +5,10 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_LeadResearchCustomAction action
  */
 export interface msdyn_LeadResearchCustomActionResponse {
-  ResearchResponse: string;
-  IsSuccess: boolean;
-  StatusCode: number;
   ErrorMessage: string;
+  IsSuccess: boolean;
+  ResearchResponse: string;
+  StatusCode: number;
 }
 
 /**

@@ -5,13 +5,13 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_get_required_fields action
  */
 export interface msdyn_get_required_fieldsResponse {
-  table_primary_key: string;
-  table_primary_field: string;
+  eligible_primary_fields: string[];
+  eligible_primary_keys: string[];
+  table_display_name: string;
   table_id: string;
   table_plural_name: string;
-  eligible_primary_keys: string[];
-  eligible_primary_fields: string[];
-  table_display_name: string;
+  table_primary_field: string;
+  table_primary_key: string;
   table_schema_name: string;
 }
 
@@ -20,10 +20,10 @@ export interface msdyn_get_required_fieldsResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_get_required_fieldsActionParameters {
-  table_id: string;
-  dataset_value: string;
   connection_id: string;
   connector_id: string;
+  table_id: string;
+  dataset_value: string;
 }
 
 /**
@@ -38,10 +38,10 @@ export class msdyn_get_required_fieldsAction implements Executable<msdyn_get_req
     const url = `${baseUrl}/msdyn_get_required_fields`;
 
     const body = requestBody({
-      table_id: this.parameters.table_id,
-      dataset_value: this.parameters.dataset_value,
       connection_id: this.parameters.connection_id,
       connector_id: this.parameters.connector_id,
+      table_id: this.parameters.table_id,
+      dataset_value: this.parameters.dataset_value,
     });
 
     return {

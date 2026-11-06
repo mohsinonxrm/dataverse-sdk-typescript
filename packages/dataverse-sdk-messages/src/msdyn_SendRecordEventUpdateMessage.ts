@@ -9,11 +9,11 @@ import type { AnyEntityPayload } from "./types/EntityPayload.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SendRecordEventUpdateRequestParameters {
-  msdyn_EventType: string;
-  msdyn_RegardingRecord: EntityReference | AnyEntityPayload;
   msdyn_AttributeDisplayValues?: string[];
-  msdyn_AttributeNames?: string[];
   msdyn_RegardingActivity?: EntityReference | AnyEntityPayload;
+  msdyn_EventType: string;
+  msdyn_AttributeNames?: string[];
+  msdyn_RegardingRecord: EntityReference | AnyEntityPayload;
 }
 
 /**
@@ -35,11 +35,11 @@ export class msdyn_SendRecordEventUpdateRequest
     const url = `${baseUrl}/msdyn_SendRecordEventUpdate`;
 
     const body = requestBody({
-      msdyn_EventType: this.Parameters.msdyn_EventType,
-      msdyn_RegardingRecord: this.Parameters.msdyn_RegardingRecord,
       msdyn_AttributeDisplayValues: this.Parameters.msdyn_AttributeDisplayValues,
-      msdyn_AttributeNames: this.Parameters.msdyn_AttributeNames,
       msdyn_RegardingActivity: this.Parameters.msdyn_RegardingActivity,
+      msdyn_EventType: this.Parameters.msdyn_EventType,
+      msdyn_AttributeNames: this.Parameters.msdyn_AttributeNames,
+      msdyn_RegardingRecord: this.Parameters.msdyn_RegardingRecord,
     });
 
     return {

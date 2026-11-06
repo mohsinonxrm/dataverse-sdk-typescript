@@ -2,22 +2,22 @@
  * marketingformdisplayattributes entity type
  */
 export interface marketingformdisplayattributes {
-  utcconversiontimezonecode?: number;
-  createdon?: string;
-  entitylogicalname?: string;
-  _organizationid_value?: string;
-  _modifiedby_value?: string;
-  modifiedon?: string;
-  versionnumber?: number;
-  _modifiedonbehalfby_value?: string;
-  name?: string;
-  statecode?: number;
-  overriddencreatedon?: string;
-  importsequencenumber?: number;
   _createdby_value?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _organizationid_value?: string;
+  createdon?: string;
+  displayattributelist?: string;
+  entitylogicalname?: string;
+  importsequencenumber?: number;
+  marketingformdisplayattributesid?: string;
+  modifiedon?: string;
+  name?: string;
+  overriddencreatedon?: string;
+  statecode?: number;
   statuscode?: number;
   timezoneruleversionnumber?: number;
-  displayattributelist?: string;
-  _createdonbehalfby_value?: string;
-  marketingformdisplayattributesid?: string;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

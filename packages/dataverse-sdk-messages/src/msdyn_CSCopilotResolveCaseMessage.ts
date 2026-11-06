@@ -11,10 +11,11 @@ import type { msdyn_CSCopilotResolveCaseResponse as msdyn_CSCopilotResolveCaseRe
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_CSCopilotResolveCaseRequestParameters {
-  Incident: EntityReference | AnyEntityPayload;
   ResolutionReason: number;
-  CallerIdentifier: string;
   StatusReason: number;
+  Incident: EntityReference | AnyEntityPayload;
+  CallerIdentifier: string;
+  PredictedValues?: EntityReference | AnyEntityPayload;
 }
 
 /**
@@ -36,10 +37,11 @@ export class msdyn_CSCopilotResolveCaseRequest
     const url = `${baseUrl}/msdyn_CSCopilotResolveCase`;
 
     const body = requestBody({
-      Incident: this.Parameters.Incident,
       ResolutionReason: this.Parameters.ResolutionReason,
-      CallerIdentifier: this.Parameters.CallerIdentifier,
       StatusReason: this.Parameters.StatusReason,
+      Incident: this.Parameters.Incident,
+      CallerIdentifier: this.Parameters.CallerIdentifier,
+      PredictedValues: this.Parameters.PredictedValues,
     });
 
     return {

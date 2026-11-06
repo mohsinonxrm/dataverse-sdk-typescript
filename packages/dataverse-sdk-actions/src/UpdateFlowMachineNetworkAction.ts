@@ -14,8 +14,8 @@ export interface UpdateFlowMachineNetworkResponse {
  */
 export interface UpdateFlowMachineNetworkActionParameters {
   description?: string;
-  extendedproperties?: string;
   name?: string;
+  extendedproperties?: string;
 }
 
 /**
@@ -38,8 +38,8 @@ export class UpdateFlowMachineNetworkAction implements Executable<UpdateFlowMach
 
     const body = requestBody({
       description: this.parameters.description,
-      extendedproperties: this.parameters.extendedproperties,
       name: this.parameters.name,
+      extendedproperties: this.parameters.extendedproperties,
     });
 
     return {

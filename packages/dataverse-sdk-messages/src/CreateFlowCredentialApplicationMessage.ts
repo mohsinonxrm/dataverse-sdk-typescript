@@ -9,11 +9,11 @@ import type { CreateFlowCredentialApplicationResponse as CreateFlowCredentialApp
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CreateFlowCredentialApplicationRequestParameters {
-  sharingtype?: string;
-  password?: string;
   description?: string;
   certificate: string;
   applicationId: string;
+  password?: string;
+  sharingtype?: string;
 }
 
 /**
@@ -41,11 +41,11 @@ export class CreateFlowCredentialApplicationRequest
     const url = `${baseUrl}/flowmachinegroups(${this.flowmachinegroupId})/Microsoft.Dynamics.CRM.CreateFlowCredentialApplication`;
 
     const body = requestBody({
-      sharingtype: this.Parameters.sharingtype,
-      password: this.Parameters.password,
       description: this.Parameters.description,
       certificate: this.Parameters.certificate,
       applicationId: this.Parameters.applicationId,
+      password: this.Parameters.password,
+      sharingtype: this.Parameters.sharingtype,
     });
 
     return {

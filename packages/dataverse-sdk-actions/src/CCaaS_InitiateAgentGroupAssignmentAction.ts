@@ -13,8 +13,8 @@ export interface CCaaS_InitiateAgentGroupAssignmentResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_InitiateAgentGroupAssignmentActionParameters {
-  AgentGroupId: string;
   ApiVersion: string;
+  AgentGroupId: string;
 }
 
 /**
@@ -36,8 +36,8 @@ export class CCaaS_InitiateAgentGroupAssignmentAction implements Executable<CCaa
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_InitiateAgentGroupAssignment`;
 
     const body = requestBody({
-      AgentGroupId: this.parameters.AgentGroupId,
       ApiVersion: this.parameters.ApiVersion,
+      AgentGroupId: this.parameters.AgentGroupId,
     });
 
     return {

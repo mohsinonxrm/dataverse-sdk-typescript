@@ -2,26 +2,26 @@
  * msdyn_entityattachment entity type
  */
 export interface msdyn_entityattachment {
-  msdyn_fileblob_name?: string;
-  importsequencenumber?: number;
-  msdyn_fileblob?: string;
-  modifiedon?: string;
-  statuscode?: number;
+  _createdby_value?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _msdyn_relatedentity_value?: string;
   _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
   _owninguser_value?: string;
   createdon?: string;
-  _msdyn_relatedentity_value?: string;
-  msdyn_name?: string;
-  versionnumber?: number;
-  _modifiedonbehalfby_value?: string;
-  utcconversiontimezonecode?: number;
-  _owningteam_value?: string;
-  _owningbusinessunit_value?: string;
-  statecode?: number;
-  _modifiedby_value?: string;
-  _createdonbehalfby_value?: string;
-  timezoneruleversionnumber?: number;
-  overriddencreatedon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
   msdyn_entityattachmentid?: string;
-  _createdby_value?: string;
+  msdyn_fileblob?: string;
+  msdyn_fileblob_name?: string;
+  msdyn_name?: string;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

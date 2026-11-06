@@ -2,26 +2,26 @@
  * userqueryvisualization entity type
  */
 export interface userqueryvisualization {
-  _webresourceid_value?: string;
-  _owninguser_value?: string;
-  datadescription?: string;
-  isdefault?: boolean;
-  _createdonbehalfby_value?: string;
-  description?: string;
-  _modifiedonbehalfby_value?: string;
-  _owningteam_value?: string;
-  _owningbusinessunit_value?: string;
-  isnlgenerated?: boolean;
-  _ownerid_value?: string;
-  enablecrosspartition?: boolean;
-  primaryentitytypecode?: string;
-  createdon?: string;
-  presentationdescription?: string;
-  modifiedon?: string;
-  userqueryvisualizationid?: string;
-  _modifiedby_value?: string;
   _createdby_value?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  _webresourceid_value?: string;
   charttype?: number;
+  createdon?: string;
+  datadescription?: string;
+  description?: string;
+  enablecrosspartition?: boolean;
+  isdefault?: boolean;
+  isnlgenerated?: boolean;
+  modifiedon?: string;
   name?: string;
+  presentationdescription?: string;
+  primaryentitytypecode?: string;
+  userqueryvisualizationid?: string;
   versionnumber?: number;
 }

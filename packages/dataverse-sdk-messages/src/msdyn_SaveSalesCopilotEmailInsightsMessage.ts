@@ -7,8 +7,8 @@ import { requestBody } from "./internal/requestBody.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SaveSalesCopilotEmailInsightsRequestParameters {
-  msdyn_extractedquestions?: Record<string, unknown>[];
   msdyn_activityid?: string;
+  msdyn_extractedquestions?: Record<string, unknown>[];
   msdyn_salescopilotemailinsights: Record<string, unknown>[];
 }
 
@@ -31,8 +31,8 @@ export class msdyn_SaveSalesCopilotEmailInsightsRequest
     const url = `${baseUrl}/msdyn_SaveSalesCopilotEmailInsights`;
 
     const body = requestBody({
-      msdyn_extractedquestions: this.Parameters.msdyn_extractedquestions,
       msdyn_activityid: this.Parameters.msdyn_activityid,
+      msdyn_extractedquestions: this.Parameters.msdyn_extractedquestions,
       msdyn_salescopilotemailinsights: this.Parameters.msdyn_salescopilotemailinsights,
     });
 

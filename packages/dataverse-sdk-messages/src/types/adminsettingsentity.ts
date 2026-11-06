@@ -2,23 +2,23 @@
  * adminsettingsentity entity type
  */
 export interface adminsettingsentity {
-  _ownerid_value?: string;
-  statecode?: number;
-  importsequencenumber?: number;
-  utcconversiontimezonecode?: number;
-  versionnumber?: number;
   _createdby_value?: string;
-  modifiedon?: string;
-  timezoneruleversionnumber?: number;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
   _owninguser_value?: string;
   adminsettingsentityid?: string;
-  _owningbusinessunit_value?: string;
-  _modifiedonbehalfby_value?: string;
-  new_name?: string;
-  _createdonbehalfby_value?: string;
-  statuscode?: number;
   createdon?: string;
-  _modifiedby_value?: string;
-  _owningteam_value?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  new_name?: string;
   overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

@@ -2,28 +2,28 @@
  * msdyn_octwitterhandleprovisioningstatus entity type
  */
 export interface msdyn_octwitterhandleprovisioningstatus {
-  importsequencenumber?: number;
-  utcconversiontimezonecode?: number;
+  _createdby_value?: string;
   _createdonbehalfby_value?: string;
-  timezoneruleversionnumber?: number;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _msdyn_octwitterapplicationid_value?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_name?: string;
+  msdyn_octwitterhandleid?: string;
+  msdyn_octwitterhandleprovisioningstatusid?: string;
+  msdyn_octwitterscreenname?: string;
   msdyn_octwittersigninerror?: string;
   msdyn_octwittersigninstatus?: number;
-  _modifiedonbehalfby_value?: string;
   overriddencreatedon?: string;
-  createdon?: string;
-  msdyn_octwitterhandleprovisioningstatusid?: string;
-  versionnumber?: number;
-  modifiedon?: string;
-  statuscode?: number;
-  _owninguser_value?: string;
   statecode?: number;
-  msdyn_octwitterhandleid?: string;
-  msdyn_octwitterscreenname?: string;
-  _createdby_value?: string;
-  msdyn_name?: string;
-  _msdyn_octwitterapplicationid_value?: string;
-  _owningteam_value?: string;
-  _owningbusinessunit_value?: string;
-  _modifiedby_value?: string;
-  _ownerid_value?: string;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

@@ -5,15 +5,15 @@ import type { TimeCode } from "./TimeCode.js";
  * TimeInfo complex type
  */
 export interface TimeInfo {
-  Start?: string;
-  End?: string;
-  TimeCode?: TimeCode;
-  SubCode?: SubCode;
-  SourceId?: string;
-  CalendarId?: string;
-  SourceTypeCode?: number;
-  IsActivity?: boolean;
   ActivityStatusCode?: number;
-  Effort?: number;
+  CalendarId?: string;
   DisplayText?: string;
+  Effort?: number;
+  End?: string;
+  IsActivity?: boolean;
+  SourceId?: string;
+  SourceTypeCode?: number;
+  Start?: string;
+  SubCode?: SubCode;
+  TimeCode?: TimeCode;
 }

@@ -2,19 +2,19 @@
  * msdyn_entitydeltachange entity type
  */
 export interface msdyn_entitydeltachange {
-  _createdonbehalfby_value?: string;
-  msdyn_changecount?: number;
-  createdon?: string;
-  _modifiedby_value?: string;
-  versionnumber?: number;
   _createdby_value?: string;
-  msdyn_entitydeltachangeid?: string;
-  importsequencenumber?: number;
-  partitionid?: string;
-  overriddencreatedon?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
   _modifiedonbehalfby_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
   modifiedon?: string;
-  ttlinseconds?: number;
+  msdyn_changecount?: number;
   msdyn_changereceivedtime?: string;
+  msdyn_entitydeltachangeid?: string;
   msdyn_entitytypename?: string;
+  overriddencreatedon?: string;
+  partitionid?: string;
+  ttlinseconds?: number;
+  versionnumber?: number;
 }

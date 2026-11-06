@@ -13,10 +13,10 @@ export interface msdyn_InitiateCCaaSAPIsAsyncResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_InitiateCCaaSAPIsAsyncActionParameters {
-  Payload: string;
-  LiveWorkItemId: string;
   CCaaSAPI: string;
+  LiveWorkItemId: string;
   InitiatingUser: string;
+  Payload: string;
 }
 
 /**
@@ -31,10 +31,10 @@ export class msdyn_InitiateCCaaSAPIsAsyncAction implements Executable<msdyn_Init
     const url = `${baseUrl}/msdyn_InitiateCCaaSAPIsAsync`;
 
     const body = requestBody({
-      Payload: this.parameters.Payload,
-      LiveWorkItemId: this.parameters.LiveWorkItemId,
       CCaaSAPI: this.parameters.CCaaSAPI,
+      LiveWorkItemId: this.parameters.LiveWorkItemId,
       InitiatingUser: this.parameters.InitiatingUser,
+      Payload: this.parameters.Payload,
     });
 
     return {

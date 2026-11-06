@@ -14,11 +14,11 @@ export interface CCaaS_InitiateAgentGroupConsultResponse {
  */
 export interface CCaaS_InitiateAgentGroupConsultActionParameters {
   IntentId: string;
-  IntentGroupId: string;
-  ApiVersion: string;
-  ConversationAccess: string;
   AgentGroupId?: string;
   IntentFamilyId: string;
+  ApiVersion: string;
+  IntentGroupId: string;
+  ConversationAccess: string;
   ConsultType: string;
 }
 
@@ -42,11 +42,11 @@ export class CCaaS_InitiateAgentGroupConsultAction implements Executable<CCaaS_I
 
     const body = requestBody({
       IntentId: this.parameters.IntentId,
-      IntentGroupId: this.parameters.IntentGroupId,
-      ApiVersion: this.parameters.ApiVersion,
-      ConversationAccess: this.parameters.ConversationAccess,
       AgentGroupId: this.parameters.AgentGroupId,
       IntentFamilyId: this.parameters.IntentFamilyId,
+      ApiVersion: this.parameters.ApiVersion,
+      IntentGroupId: this.parameters.IntentGroupId,
+      ConversationAccess: this.parameters.ConversationAccess,
       ConsultType: this.parameters.ConsultType,
     });
 

@@ -44,10 +44,55 @@ export {
   type CCaaS_GetClientLWIContextResponse,
 } from "./CCaaS_GetClientLWIContextFunction.js";
 export {
+  CCaaS_GetDeliveryBatchFunction,
+  type CCaaS_GetDeliveryBatchFunctionParameters,
+  type CCaaS_GetDeliveryBatchResponse,
+} from "./CCaaS_GetDeliveryBatchFunction.js";
+export {
+  CCaaS_GetDeliveryTasksFunction,
+  type CCaaS_GetDeliveryTasksFunctionParameters,
+  type CCaaS_GetDeliveryTasksResponse,
+} from "./CCaaS_GetDeliveryTasksFunction.js";
+export {
+  CCaaS_GetPlatformObservabilityCheckAlertStateFunction,
+  type CCaaS_GetPlatformObservabilityCheckAlertStateFunctionParameters,
+  type CCaaS_GetPlatformObservabilityCheckAlertStateResponse,
+} from "./CCaaS_GetPlatformObservabilityCheckAlertStateFunction.js";
+export {
+  CCaaS_GetPlatformObservabilityCheckAlertStateV2Function,
+  type CCaaS_GetPlatformObservabilityCheckAlertStateV2FunctionParameters,
+  type CCaaS_GetPlatformObservabilityCheckAlertStateV2Response,
+} from "./CCaaS_GetPlatformObservabilityCheckAlertStateV2Function.js";
+export {
+  CCaaS_GetPlatformObservabilityLandingFunction,
+  type CCaaS_GetPlatformObservabilityLandingFunctionParameters,
+  type CCaaS_GetPlatformObservabilityLandingResponse,
+} from "./CCaaS_GetPlatformObservabilityLandingFunction.js";
+export {
+  CCaaS_GetPlatformObservabilityPerformanceDataFunction,
+  type CCaaS_GetPlatformObservabilityPerformanceDataFunctionParameters,
+  type CCaaS_GetPlatformObservabilityPerformanceDataResponse,
+} from "./CCaaS_GetPlatformObservabilityPerformanceDataFunction.js";
+export {
+  CCaaS_GetPlatformObservabilityServiceHealthFunction,
+  type CCaaS_GetPlatformObservabilityServiceHealthFunctionParameters,
+  type CCaaS_GetPlatformObservabilityServiceHealthResponse,
+} from "./CCaaS_GetPlatformObservabilityServiceHealthFunction.js";
+export {
+  CCaaS_GetPluginFixAnalysisStatusFunction,
+  type CCaaS_GetPluginFixAnalysisStatusFunctionParameters,
+  type CCaaS_GetPluginFixAnalysisStatusResponse,
+} from "./CCaaS_GetPluginFixAnalysisStatusFunction.js";
+export {
   CCaaS_GetPresenceFunction,
   type CCaaS_GetPresenceFunctionParameters,
   type CCaaS_GetPresenceResponse,
 } from "./CCaaS_GetPresenceFunction.js";
+export {
+  CCaaS_GetTeamsPresenceSubscriptionConfigFunction,
+  type CCaaS_GetTeamsPresenceSubscriptionConfigFunctionParameters,
+  type CCaaS_GetTeamsPresenceSubscriptionConfigResponse,
+} from "./CCaaS_GetTeamsPresenceSubscriptionConfigFunction.js";
 export {
   CCaaS_GuidedAgentGroupTransferConsultFunction,
   type CCaaS_GuidedAgentGroupTransferConsultFunctionParameters,
@@ -96,6 +141,11 @@ export {
   type EqualRoleBusinessIdFunctionParameters,
   type EqualRoleBusinessIdResponse,
 } from "./EqualRoleBusinessIdFunction.js";
+export {
+  EqualUserAuthContextFunction,
+  type EqualUserAuthContextFunctionParameters,
+  type EqualUserAuthContextResponse,
+} from "./EqualUserAuthContextFunction.js";
 export {
   EqualUserIdFunction,
   type EqualUserIdFunctionParameters,
@@ -181,6 +231,11 @@ export {
   type GetFileSasUrlResponse,
 } from "./GetFileSasUrlFunction.js";
 export {
+  GetFileSasUrlForUploadFunction,
+  type GetFileSasUrlForUploadFunctionParameters,
+  type GetFileSasUrlForUploadResponse,
+} from "./GetFileSasUrlForUploadFunction.js";
+export {
   GetHeaderColumnsImportFileFunction,
   type GetHeaderColumnsImportFileResponse,
 } from "./GetHeaderColumnsImportFileFunction.js";
@@ -188,6 +243,20 @@ export {
   GetHostedRpaCapacityFunction,
   type GetHostedRpaCapacityResponse,
 } from "./GetHostedRpaCapacityFunction.js";
+export {
+  GetNextRunsFunction,
+  type GetNextRunsFunctionParameters,
+  type GetNextRunsResponse,
+} from "./GetNextRunsFunction.js";
+export {
+  GetNextRunsForFlowTriggerFunction,
+  type GetNextRunsForFlowTriggerResponse,
+} from "./GetNextRunsForFlowTriggerFunction.js";
+export {
+  GetPluginCertificateInfoFunction,
+  type GetPluginCertificateInfoFunctionParameters,
+  type GetPluginCertificateInfoResponse,
+} from "./GetPluginCertificateInfoFunction.js";
 export {
   GetPreferredSolutionFunction,
   type GetPreferredSolutionResponse,
@@ -276,6 +345,7 @@ export {
   type InOrBeforeFiscalPeriodAndYearFunctionParameters,
   type InOrBeforeFiscalPeriodAndYearResponse,
 } from "./InOrBeforeFiscalPeriodAndYearFunction.js";
+export { IsCDS3ReadyFunction, type IsCDS3ReadyResponse } from "./IsCDS3ReadyFunction.js";
 export {
   IsComponentCustomizableFunction,
   type IsComponentCustomizableFunctionParameters,
@@ -360,10 +430,19 @@ export {
   type ListCredentialDependenciesResponse,
 } from "./ListCredentialDependenciesFunction.js";
 export {
+  ListFlowsInFlowGroupFunction,
+  type ListFlowsInFlowGroupResponse,
+} from "./ListFlowsInFlowGroupFunction.js";
+export {
   LocalTimeFromUtcTimeFunction,
   type LocalTimeFromUtcTimeFunctionParameters,
   type LocalTimeFromUtcTimeResponse,
 } from "./LocalTimeFromUtcTimeFunction.js";
+export {
+  McpGetGlobalOptionSetFunction,
+  type McpGetGlobalOptionSetFunctionParameters,
+  type McpGetGlobalOptionSetResponse,
+} from "./McpGetGlobalOptionSetFunction.js";
 export {
   msdyn_getchannelendpointurlFunction,
   type msdyn_getchannelendpointurlFunctionParameters,
@@ -385,20 +464,18 @@ export {
   type msdyn_getnotificationurlResponse,
 } from "./msdyn_getnotificationurlFunction.js";
 export {
+  msdyn_getsimulationorgdetailsFunction,
+  type msdyn_getsimulationorgdetailsResponse,
+} from "./msdyn_getsimulationorgdetailsFunction.js";
+export {
   msdyn_GetSwarmParticipantDetailsFunction,
   type msdyn_GetSwarmParticipantDetailsFunctionParameters,
   type msdyn_GetSwarmParticipantDetailsResponse,
 } from "./msdyn_GetSwarmParticipantDetailsFunction.js";
 export {
-  msdyn_SelectNotToExceedFunction,
-  type msdyn_SelectNotToExceedFunctionParameters,
-  type msdyn_SelectNotToExceedResponse,
-} from "./msdyn_SelectNotToExceedFunction.js";
-export {
-  msdyn_TradeCoverageNotificationFunction,
-  type msdyn_TradeCoverageNotificationFunctionParameters,
-  type msdyn_TradeCoverageNotificationResponse,
-} from "./msdyn_TradeCoverageNotificationFunction.js";
+  msdyn_IsCSEnterpriseLicensedUserFunction,
+  type msdyn_IsCSEnterpriseLicensedUserResponse,
+} from "./msdyn_IsCSEnterpriseLicensedUserFunction.js";
 export {
   msdynmkt_retrievegdprconfigurationFunction,
   type msdynmkt_retrievegdprconfigurationResponse,
@@ -539,11 +616,6 @@ export {
   type OnOrBeforeFunctionParameters,
   type OnOrBeforeResponse,
 } from "./OnOrBeforeFunction.js";
-export {
-  pbi_GetEnvironmentWorkspaceAccessForUserFunction,
-  type pbi_GetEnvironmentWorkspaceAccessForUserFunctionParameters,
-  type pbi_GetEnvironmentWorkspaceAccessForUserResponse,
-} from "./pbi_GetEnvironmentWorkspaceAccessForUserFunction.js";
 export {
   PreferredSolutionUsedByFunction,
   type PreferredSolutionUsedByFunctionParameters,
@@ -905,6 +977,10 @@ export {
   type RetrieveProcessInstancesResponse,
 } from "./RetrieveProcessInstancesFunction.js";
 export {
+  RetrieveProcessWithWfomJsonFunction,
+  type RetrieveProcessWithWfomJsonResponse,
+} from "./RetrieveProcessWithWfomJsonFunction.js";
+export {
   RetrieveProductProperties_invoicedetailFunction,
   type RetrieveProductProperties_invoicedetailResponse,
 } from "./RetrieveProductProperties_invoicedetailFunction.js";
@@ -1027,6 +1103,10 @@ export {
   type RetrieveUnpublished_appmoduleResponse,
 } from "./RetrieveUnpublished_appmoduleFunction.js";
 export {
+  RetrieveUnpublished_computeruseagentFunction,
+  type RetrieveUnpublished_computeruseagentResponse,
+} from "./RetrieveUnpublished_computeruseagentFunction.js";
+export {
   RetrieveUnpublished_customcontroldefaultconfigFunction,
   type RetrieveUnpublished_customcontroldefaultconfigResponse,
 } from "./RetrieveUnpublished_customcontroldefaultconfigFunction.js";
@@ -1110,6 +1190,10 @@ export {
   RetrieveUnpublishedMultiple_appmodule_collectionFunction,
   type RetrieveUnpublishedMultiple_appmodule_collectionResponse,
 } from "./RetrieveUnpublishedMultiple_appmodule_collectionFunction.js";
+export {
+  RetrieveUnpublishedMultiple_computeruseagent_collectionFunction,
+  type RetrieveUnpublishedMultiple_computeruseagent_collectionResponse,
+} from "./RetrieveUnpublishedMultiple_computeruseagent_collectionFunction.js";
 export {
   RetrieveUnpublishedMultiple_customcontroldefaultconfig_collectionFunction,
   type RetrieveUnpublishedMultiple_customcontroldefaultconfig_collectionResponse,

@@ -2,19 +2,19 @@
  * fieldpermission entity type
  */
 export interface fieldpermission {
-  solutionid?: string;
   _fieldsecurityprofileid_value?: string;
-  versionnumber?: number;
-  overwritetime?: string;
-  fieldpermissionid?: string;
-  canreadunmasked?: number;
-  ismanaged?: boolean;
-  canupdate?: number;
-  cancreate?: number;
-  componentstate?: number;
   _organizationid_value?: string;
-  entityname?: string;
-  canread?: number;
-  fieldpermissionidunique?: string;
   attributelogicalname?: string;
+  cancreate?: number;
+  canread?: number;
+  canreadunmasked?: number;
+  canupdate?: number;
+  componentstate?: number;
+  entityname?: string;
+  fieldpermissionid?: string;
+  fieldpermissionidunique?: string;
+  ismanaged?: boolean;
+  overwritetime?: string;
+  solutionid?: string;
+  versionnumber?: number;
 }

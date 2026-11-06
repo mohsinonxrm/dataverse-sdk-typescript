@@ -7,9 +7,9 @@ import { requestBody } from "./internal/requestBody.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_ImportAnalyticsReportRequestParameters {
+  msdyn_AnalyticsFeatureId: string;
   msdyn_OverwriteDraft?: boolean;
   msdyn_AnalyticsReportContent: string;
-  msdyn_AnalyticsFeatureId: string;
 }
 
 /**
@@ -31,9 +31,9 @@ export class msdyn_ImportAnalyticsReportRequest
     const url = `${baseUrl}/msdyn_ImportAnalyticsReport`;
 
     const body = requestBody({
+      msdyn_AnalyticsFeatureId: this.Parameters.msdyn_AnalyticsFeatureId,
       msdyn_OverwriteDraft: this.Parameters.msdyn_OverwriteDraft,
       msdyn_AnalyticsReportContent: this.Parameters.msdyn_AnalyticsReportContent,
-      msdyn_AnalyticsFeatureId: this.Parameters.msdyn_AnalyticsFeatureId,
     });
 
     return {

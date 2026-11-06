@@ -2,21 +2,23 @@
  * sourcecontrolconfiguration entity type
  */
 export interface sourcecontrolconfiguration {
-  gitprovider?: number;
   _createdby_value?: string;
-  modifiedon?: string;
-  sourcecontrolconfigurationid?: string;
   _createdonbehalfby_value?: string;
-  createdon?: string;
-  _modifiedonbehalfby_value?: string;
-  name?: string;
-  projectname?: string;
-  partitionid?: string;
-  importsequencenumber?: number;
-  organizationname?: string;
-  ttlinseconds?: number;
-  repositoryname?: string;
+  _githubappconfigid_value?: string;
   _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  createdon?: string;
+  enterprisesubdomain?: string;
+  gitprovider?: number;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  name?: string;
+  organizationname?: string;
   overriddencreatedon?: string;
+  partitionid?: string;
+  projectname?: string;
+  repositoryname?: string;
+  sourcecontrolconfigurationid?: string;
+  ttlinseconds?: number;
   versionnumber?: number;
 }

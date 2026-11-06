@@ -5,22 +5,22 @@ import type { OrgOverridableSettingInfo } from "./OrgOverridableSettingInfo.js";
  * OverridableSettingInfo complex type
  */
 export interface OverridableSettingInfo {
-  UniqueName?: string;
-  DisplayName?: string;
-  Description?: string;
-  ReleaseLevel?: number;
-  DefaultValue?: string;
-  SettingDefinitionId?: string;
+  AppOverridableSettingInfo?: AppOverridableSettingInfo[];
   DataType?: number;
-  OverridableLevel?: number;
+  DefaultValue?: string;
+  Description?: string;
+  DisplayName?: string;
+  HasActiveCustomizations?: boolean;
+  InformationUrl?: string;
   IsCustomizable?: boolean;
   IsHidden?: boolean;
-  IsOverridable?: boolean;
-  PresentInSolution?: boolean;
   IsManaged?: boolean;
+  IsOverridable?: boolean;
   IsPlatform?: boolean;
-  InformationUrl?: string;
-  HasActiveCustomizations?: boolean;
   OrgOverridableSettingInfo?: OrgOverridableSettingInfo;
-  AppOverridableSettingInfo?: AppOverridableSettingInfo[];
+  OverridableLevel?: number;
+  PresentInSolution?: boolean;
+  ReleaseLevel?: number;
+  SettingDefinitionId?: string;
+  UniqueName?: string;
 }

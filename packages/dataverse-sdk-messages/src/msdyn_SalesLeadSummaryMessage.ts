@@ -9,17 +9,17 @@ import type { msdyn_SalesLeadSummaryResponse as msdyn_SalesLeadSummaryResponseDa
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesLeadSummaryRequestParameters {
-  msdyn_additionalParams?: string;
+  msdyn_id: string;
+  msdyn_sessionId?: string;
+  msdyn_skipHeader?: string;
+  msdyn_lastComputationTime?: string;
+  msdyn_responseFormat?: string;
   msdyn_activityId?: string;
+  msdyn_isMergedCatchupAndSummary?: boolean;
+  msdyn_additionalParams?: string;
   msdyn_doSuggestUpdates?: boolean;
   msdyn_parentContactId?: string;
-  msdyn_id: string;
-  msdyn_lastComputationTime?: string;
-  msdyn_isMergedCatchupAndSummary?: boolean;
-  msdyn_skipHeader?: string;
-  msdyn_sessionId?: string;
   msdyn_parentAccountId?: string;
-  msdyn_responseFormat?: string;
 }
 
 /**
@@ -41,17 +41,17 @@ export class msdyn_SalesLeadSummaryRequest
     const url = `${baseUrl}/msdyn_SalesLeadSummary`;
 
     const body = requestBody({
-      msdyn_additionalParams: this.Parameters.msdyn_additionalParams,
+      msdyn_id: this.Parameters.msdyn_id,
+      msdyn_sessionId: this.Parameters.msdyn_sessionId,
+      msdyn_skipHeader: this.Parameters.msdyn_skipHeader,
+      msdyn_lastComputationTime: this.Parameters.msdyn_lastComputationTime,
+      msdyn_responseFormat: this.Parameters.msdyn_responseFormat,
       msdyn_activityId: this.Parameters.msdyn_activityId,
+      msdyn_isMergedCatchupAndSummary: this.Parameters.msdyn_isMergedCatchupAndSummary,
+      msdyn_additionalParams: this.Parameters.msdyn_additionalParams,
       msdyn_doSuggestUpdates: this.Parameters.msdyn_doSuggestUpdates,
       msdyn_parentContactId: this.Parameters.msdyn_parentContactId,
-      msdyn_id: this.Parameters.msdyn_id,
-      msdyn_lastComputationTime: this.Parameters.msdyn_lastComputationTime,
-      msdyn_isMergedCatchupAndSummary: this.Parameters.msdyn_isMergedCatchupAndSummary,
-      msdyn_skipHeader: this.Parameters.msdyn_skipHeader,
-      msdyn_sessionId: this.Parameters.msdyn_sessionId,
       msdyn_parentAccountId: this.Parameters.msdyn_parentAccountId,
-      msdyn_responseFormat: this.Parameters.msdyn_responseFormat,
     });
 
     return {

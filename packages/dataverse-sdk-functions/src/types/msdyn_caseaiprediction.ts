@@ -2,27 +2,27 @@
  * msdyn_caseaiprediction entity type
  */
 export interface msdyn_caseaiprediction {
-  versionnumber?: number;
-  name?: string;
-  msdyn_fieldspredictedbyai?: string;
-  msdyn_channel?: number;
-  ttlinseconds?: number;
-  overriddencreatedon?: string;
-  _createdonbehalfby_value?: string;
-  _ownerid_value?: string;
   _createdby_value?: string;
-  partitionid?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _ownerid_value?: string;
   _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  createdon?: string;
   importsequencenumber?: number;
   modifiedon?: string;
-  msdyn_targetid?: string;
-  _owningteam_value?: string;
-  _modifiedonbehalfby_value?: string;
+  msdyn_caseaipredictionid?: string;
+  msdyn_channel?: number;
+  msdyn_fieldspredictedbyai?: string;
   msdyn_fieldspredictionsbyapiversions?: string;
   msdyn_sourceid?: string;
-  _modifiedby_value?: string;
-  msdyn_caseaipredictionid?: string;
-  createdon?: string;
-  _owninguser_value?: string;
+  msdyn_targetid?: string;
   msdyn_targetlogicalname?: string;
+  name?: string;
+  overriddencreatedon?: string;
+  partitionid?: string;
+  ttlinseconds?: number;
+  versionnumber?: number;
 }

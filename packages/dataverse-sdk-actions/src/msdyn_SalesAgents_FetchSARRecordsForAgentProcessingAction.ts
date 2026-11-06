@@ -13,9 +13,9 @@ export interface msdyn_SalesAgents_FetchSARRecordsForAgentProcessingResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesAgents_FetchSARRecordsForAgentProcessingActionParameters {
-  msdyn_SalesAgentType: number;
-  msdyn_AgentType: number;
   msdyn_TrackingId?: string;
+  msdyn_AgentType: number;
+  msdyn_SalesAgentType: number;
   msdyn_Top?: number;
 }
 
@@ -33,9 +33,9 @@ export class msdyn_SalesAgents_FetchSARRecordsForAgentProcessingAction implement
     const url = `${baseUrl}/msdyn_SalesAgents_FetchSARRecordsForAgentProcessing`;
 
     const body = requestBody({
-      msdyn_SalesAgentType: this.parameters.msdyn_SalesAgentType,
-      msdyn_AgentType: this.parameters.msdyn_AgentType,
       msdyn_TrackingId: this.parameters.msdyn_TrackingId,
+      msdyn_AgentType: this.parameters.msdyn_AgentType,
+      msdyn_SalesAgentType: this.parameters.msdyn_SalesAgentType,
       msdyn_Top: this.parameters.msdyn_Top,
     });
 

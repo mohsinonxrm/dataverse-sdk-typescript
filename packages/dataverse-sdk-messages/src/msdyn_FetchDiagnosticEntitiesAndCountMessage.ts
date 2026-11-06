@@ -9,8 +9,8 @@ import type { msdyn_FetchDiagnosticEntitiesAndCountResponse as msdyn_FetchDiagno
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_FetchDiagnosticEntitiesAndCountRequestParameters {
-  msdyn_RunId: string;
   msdyn_Filter: string;
+  msdyn_RunId: string;
 }
 
 /**
@@ -32,8 +32,8 @@ export class msdyn_FetchDiagnosticEntitiesAndCountRequest
     const url = `${baseUrl}/msdyn_FetchDiagnosticEntitiesAndCount`;
 
     const body = requestBody({
-      msdyn_RunId: this.Parameters.msdyn_RunId,
       msdyn_Filter: this.Parameters.msdyn_Filter,
+      msdyn_RunId: this.Parameters.msdyn_RunId,
     });
 
     return {

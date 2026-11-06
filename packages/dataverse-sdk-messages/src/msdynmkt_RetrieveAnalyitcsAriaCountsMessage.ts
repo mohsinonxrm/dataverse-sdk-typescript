@@ -9,10 +9,10 @@ import type { msdynmkt_RetrieveAnalyitcsAriaCountsResponse as msdynmkt_RetrieveA
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdynmkt_RetrieveAnalyitcsAriaCountsRequestParameters {
+  msdynmkt_primaryrecordentityname: string;
+  msdynmkt_ariacountsrequest: string;
   msdynmkt_appname: string;
   msdynmkt_primaryrecordid: string;
-  msdynmkt_ariacountsrequest: string;
-  msdynmkt_primaryrecordentityname: string;
 }
 
 /**
@@ -34,10 +34,10 @@ export class msdynmkt_RetrieveAnalyitcsAriaCountsRequest
     const url = `${baseUrl}/msdynmkt_RetrieveAnalyitcsAriaCounts`;
 
     const body = requestBody({
+      msdynmkt_primaryrecordentityname: this.Parameters.msdynmkt_primaryrecordentityname,
+      msdynmkt_ariacountsrequest: this.Parameters.msdynmkt_ariacountsrequest,
       msdynmkt_appname: this.Parameters.msdynmkt_appname,
       msdynmkt_primaryrecordid: this.Parameters.msdynmkt_primaryrecordid,
-      msdynmkt_ariacountsrequest: this.Parameters.msdynmkt_ariacountsrequest,
-      msdynmkt_primaryrecordentityname: this.Parameters.msdynmkt_primaryrecordentityname,
     });
 
     return {

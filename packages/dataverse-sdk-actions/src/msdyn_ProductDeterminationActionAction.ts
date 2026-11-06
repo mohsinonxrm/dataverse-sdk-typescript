@@ -13,8 +13,8 @@ export interface msdyn_ProductDeterminationActionResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_ProductDeterminationActionActionParameters {
-  RequestPayload: string;
   SearchIteration: string;
+  RequestPayload: string;
 }
 
 /**
@@ -29,8 +29,8 @@ export class msdyn_ProductDeterminationActionAction implements Executable<msdyn_
     const url = `${baseUrl}/msdyn_ProductDeterminationAction`;
 
     const body = requestBody({
-      RequestPayload: this.parameters.RequestPayload,
       SearchIteration: this.parameters.SearchIteration,
+      RequestPayload: this.parameters.RequestPayload,
     });
 
     return {

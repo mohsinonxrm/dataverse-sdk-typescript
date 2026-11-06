@@ -9,8 +9,8 @@ import type { AnyEntityPayload } from "./types/EntityPayload.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_upsertSalesRoutingDiagnosticRequestParameters {
-  TargetObject: EntityReference | AnyEntityPayload;
   Payload: string;
+  TargetObject: EntityReference | AnyEntityPayload;
   EventType: number;
 }
 
@@ -33,8 +33,8 @@ export class msdyn_upsertSalesRoutingDiagnosticRequest
     const url = `${baseUrl}/msdyn_upsertSalesRoutingDiagnostic`;
 
     const body = requestBody({
-      TargetObject: this.Parameters.TargetObject,
       Payload: this.Parameters.Payload,
+      TargetObject: this.Parameters.TargetObject,
       EventType: this.Parameters.EventType,
     });
 

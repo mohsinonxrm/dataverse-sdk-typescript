@@ -5,14 +5,14 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from CCaaS_CreateConnection action
  */
 export interface CCaaS_CreateConnectionResponse {
-  AllowedChannels: string[];
-  CurrentPresenceStatusInfo: string;
   ActiveBrowserSessions: number;
   AgentId: string;
-  Timestamp: number;
+  AgentName: string;
+  AllowedChannels: string[];
+  CurrentPresenceStatusInfo: string;
   DisabledChannels: string[];
   PresenceId: string;
-  AgentName: string;
+  Timestamp: number;
 }
 
 /**

@@ -7,9 +7,9 @@ import { requestBody } from "./internal/requestBody.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_InitiateAgentTransferRequestParameters {
-  AgentId: string;
   ApiVersion: string;
   QueueId?: string;
+  AgentId: string;
 }
 
 /**
@@ -37,9 +37,9 @@ export class CCaaS_InitiateAgentTransferRequest
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_InitiateAgentTransfer`;
 
     const body = requestBody({
-      AgentId: this.Parameters.AgentId,
       ApiVersion: this.Parameters.ApiVersion,
       QueueId: this.Parameters.QueueId,
+      AgentId: this.Parameters.AgentId,
     });
 
     return {

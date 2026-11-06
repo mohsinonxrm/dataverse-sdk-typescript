@@ -8,12 +8,12 @@ import type { ImeMode } from "./ImeMode.js";
  * DateTimeAttributeMetadata entity type
  */
 export interface DateTimeAttributeMetadata extends AttributeMetadata {
-  MinSupportedValue: string;
-  MaxSupportedValue: string;
-  Format?: DateTimeFormat;
-  ImeMode?: ImeMode;
-  SourceTypeMask?: number;
-  FormulaDefinition?: string;
-  DateTimeBehavior?: DateTimeBehavior;
   CanChangeDateTimeBehavior?: BooleanManagedProperty;
+  DateTimeBehavior?: DateTimeBehavior;
+  Format?: DateTimeFormat;
+  FormulaDefinition?: string;
+  ImeMode?: ImeMode;
+  MaxSupportedValue: string;
+  MinSupportedValue: string;
+  SourceTypeMask?: number;
 }

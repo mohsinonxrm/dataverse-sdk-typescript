@@ -13,9 +13,9 @@ export interface CCaaS_BulkQueueAssignmentResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_BulkQueueAssignmentActionParameters {
-  ApiVersion: string;
   ConversationIds: string[];
   TargetQueueId: string;
+  ApiVersion: string;
 }
 
 /**
@@ -30,9 +30,9 @@ export class CCaaS_BulkQueueAssignmentAction implements Executable<CCaaS_BulkQue
     const url = `${baseUrl}/CCaaS_BulkQueueAssignment`;
 
     const body = requestBody({
-      ApiVersion: this.parameters.ApiVersion,
       ConversationIds: this.parameters.ConversationIds,
       TargetQueueId: this.parameters.TargetQueueId,
+      ApiVersion: this.parameters.ApiVersion,
     });
 
     return {

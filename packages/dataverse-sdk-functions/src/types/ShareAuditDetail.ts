@@ -7,7 +7,7 @@ import type { AnyEntityPayload } from "./EntityPayload.js";
  * ShareAuditDetail complex type
  */
 export interface ShareAuditDetail extends AuditDetail {
-  OldPrivileges?: AccessRights;
   NewPrivileges?: AccessRights;
+  OldPrivileges?: AccessRights;
   Principal: EntityReference | AnyEntityPayload;
 }

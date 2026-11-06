@@ -1,5 +1,8 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./types/EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
+import type { githubappconfig } from "./types/index.js";
 
 /**
  * Response from ConnectToGit action
@@ -13,16 +16,20 @@ export interface ConnectToGitResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface ConnectToGitActionParameters {
-  ConnectionType?: number;
+  UpstreamBranch?: string;
+  GitHubConnectionId?: string;
+  GitHubPAT?: string;
+  EnterpriseSubdomain?: string;
   SolutionUniqueName?: string;
   GitProvider?: number;
-  Branch: string;
-  RootFolder?: string;
-  Organization?: string;
   GitFolder: string;
-  Project?: string;
+  GitHubAppConfigId?: EntityReference | EntityPayload<githubappconfig>;
+  RootFolder?: string;
   Repository?: string;
-  UpstreamBranch?: string;
+  Branch: string;
+  Organization?: string;
+  Project?: string;
+  ConnectionType?: number;
 }
 
 /**
@@ -37,16 +44,20 @@ export class ConnectToGitAction implements Executable<ConnectToGitResponse> {
     const url = `${baseUrl}/ConnectToGit`;
 
     const body = requestBody({
-      ConnectionType: this.parameters.ConnectionType,
+      UpstreamBranch: this.parameters.UpstreamBranch,
+      GitHubConnectionId: this.parameters.GitHubConnectionId,
+      GitHubPAT: this.parameters.GitHubPAT,
+      EnterpriseSubdomain: this.parameters.EnterpriseSubdomain,
       SolutionUniqueName: this.parameters.SolutionUniqueName,
       GitProvider: this.parameters.GitProvider,
-      Branch: this.parameters.Branch,
-      RootFolder: this.parameters.RootFolder,
-      Organization: this.parameters.Organization,
       GitFolder: this.parameters.GitFolder,
-      Project: this.parameters.Project,
+      GitHubAppConfigId: this.parameters.GitHubAppConfigId,
+      RootFolder: this.parameters.RootFolder,
       Repository: this.parameters.Repository,
-      UpstreamBranch: this.parameters.UpstreamBranch,
+      Branch: this.parameters.Branch,
+      Organization: this.parameters.Organization,
+      Project: this.parameters.Project,
+      ConnectionType: this.parameters.ConnectionType,
     });
 
     return {

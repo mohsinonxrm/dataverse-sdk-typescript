@@ -2,23 +2,23 @@
  * msdyn_cannedmessage entity type
  */
 export interface msdyn_cannedmessage {
-  versionnumber?: number;
-  _organizationid_value?: string;
-  importsequencenumber?: number;
-  msdyn_cannedmessageid?: string;
-  _createdonbehalfby_value?: string;
-  msdyn_tagscontrolfield?: string;
   _createdby_value?: string;
-  msdyn_locale_field?: number;
-  modifiedon?: string;
-  statuscode?: number;
-  statecode?: number;
-  msdyn_message?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _organizationid_value?: string;
   createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_cannedmessageid?: string;
+  msdyn_locale_field?: number;
+  msdyn_message?: string;
+  msdyn_tagscontrolfield?: string;
+  msdyn_title?: string;
   overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
   timezoneruleversionnumber?: number;
   utcconversiontimezonecode?: number;
-  _modifiedonbehalfby_value?: string;
-  msdyn_title?: string;
-  _modifiedby_value?: string;
+  versionnumber?: number;
 }

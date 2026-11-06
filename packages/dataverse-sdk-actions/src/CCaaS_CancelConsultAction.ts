@@ -13,8 +13,8 @@ export interface CCaaS_CancelConsultResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_CancelConsultActionParameters {
-  ApiVersion: string;
   SessionId: string;
+  ApiVersion: string;
 }
 
 /**
@@ -36,8 +36,8 @@ export class CCaaS_CancelConsultAction implements Executable<CCaaS_CancelConsult
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_CancelConsult`;
 
     const body = requestBody({
-      ApiVersion: this.parameters.ApiVersion,
       SessionId: this.parameters.SessionId,
+      ApiVersion: this.parameters.ApiVersion,
     });
 
     return {

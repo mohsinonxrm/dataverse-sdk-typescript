@@ -12,6 +12,7 @@ export interface PurgeRetainedContentRequestParameters {
   EntityName?: string;
   PageSize?: number;
   OperationId?: string;
+  IsMVPCalculatedFromRelatedEntities?: boolean;
   MaxVersionToPurge: number;
 }
 
@@ -37,6 +38,7 @@ export class PurgeRetainedContentRequest
       EntityName: this.Parameters.EntityName,
       PageSize: this.Parameters.PageSize,
       OperationId: this.Parameters.OperationId,
+      IsMVPCalculatedFromRelatedEntities: this.Parameters.IsMVPCalculatedFromRelatedEntities,
       MaxVersionToPurge: this.Parameters.MaxVersionToPurge,
     });
 

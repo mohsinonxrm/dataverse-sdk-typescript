@@ -14,9 +14,10 @@ export interface msdyn_SalesAgents_FetchRefreshRecordsForAgentProcessingResponse
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesAgents_FetchRefreshRecordsForAgentProcessingActionParameters {
-  msdyn_Top?: number;
-  msdyn_SalesAgentType: number;
+  msdyn_AgentProfileId?: string;
   msdyn_TrackingId?: string;
+  msdyn_SalesAgentType: number;
+  msdyn_Top?: number;
 }
 
 /**
@@ -33,9 +34,10 @@ export class msdyn_SalesAgents_FetchRefreshRecordsForAgentProcessingAction imple
     const url = `${baseUrl}/msdyn_SalesAgents_FetchRefreshRecordsForAgentProcessing`;
 
     const body = requestBody({
-      msdyn_Top: this.parameters.msdyn_Top,
-      msdyn_SalesAgentType: this.parameters.msdyn_SalesAgentType,
+      msdyn_AgentProfileId: this.parameters.msdyn_AgentProfileId,
       msdyn_TrackingId: this.parameters.msdyn_TrackingId,
+      msdyn_SalesAgentType: this.parameters.msdyn_SalesAgentType,
+      msdyn_Top: this.parameters.msdyn_Top,
     });
 
     return {

@@ -14,10 +14,10 @@ export interface msdyn_SalesAnswerFromDocumentsResponse {
  */
 export interface msdyn_SalesAnswerFromDocumentsActionParameters {
   msdyn_queryLocale?: string;
-  msdyn_responseFormat?: string;
-  msdyn_userQuery: string;
-  msdyn_additionalParameters?: string;
   msdyn_activityId?: string;
+  msdyn_responseFormat?: string;
+  msdyn_additionalParameters?: string;
+  msdyn_userQuery: string;
 }
 
 /**
@@ -33,10 +33,10 @@ export class msdyn_SalesAnswerFromDocumentsAction implements Executable<msdyn_Sa
 
     const body = requestBody({
       msdyn_queryLocale: this.parameters.msdyn_queryLocale,
-      msdyn_responseFormat: this.parameters.msdyn_responseFormat,
-      msdyn_userQuery: this.parameters.msdyn_userQuery,
-      msdyn_additionalParameters: this.parameters.msdyn_additionalParameters,
       msdyn_activityId: this.parameters.msdyn_activityId,
+      msdyn_responseFormat: this.parameters.msdyn_responseFormat,
+      msdyn_additionalParameters: this.parameters.msdyn_additionalParameters,
+      msdyn_userQuery: this.parameters.msdyn_userQuery,
     });
 
     return {

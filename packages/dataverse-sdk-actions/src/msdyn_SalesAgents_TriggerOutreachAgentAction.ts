@@ -13,8 +13,8 @@ export interface msdyn_SalesAgents_TriggerOutreachAgentResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesAgents_TriggerOutreachAgentActionParameters {
-  msdyn_TrackingId: string;
   msdyn_SalesAgentRun: string;
+  msdyn_TrackingId: string;
   msdyn_OutreachConfig?: string;
 }
 
@@ -30,8 +30,8 @@ export class msdyn_SalesAgents_TriggerOutreachAgentAction implements Executable<
     const url = `${baseUrl}/msdyn_SalesAgents_TriggerOutreachAgent`;
 
     const body = requestBody({
-      msdyn_TrackingId: this.parameters.msdyn_TrackingId,
       msdyn_SalesAgentRun: this.parameters.msdyn_SalesAgentRun,
+      msdyn_TrackingId: this.parameters.msdyn_TrackingId,
       msdyn_OutreachConfig: this.parameters.msdyn_OutreachConfig,
     });
 

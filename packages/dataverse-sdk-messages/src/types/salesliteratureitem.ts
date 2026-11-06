@@ -2,31 +2,31 @@
  * salesliteratureitem entity type
  */
 export interface salesliteratureitem {
-  filename?: string;
-  organizationid?: string;
-  filetypecode?: number;
-  iscustomerviewable?: boolean;
-  attacheddocumenturl?: string;
-  createdon?: string;
+  _createdby_value?: string;
   _createdonbehalfby_value?: string;
-  overriddencreatedon?: string;
-  importsequencenumber?: number;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _salesliteratureid_value?: string;
+  abstract?: string;
+  attacheddocumenturl?: string;
+  authorname?: string;
+  createdon?: string;
   documentbody?: string;
   documentbody_binary?: string;
-  abstract?: string;
-  authorname?: string;
+  filename?: string;
   filesize?: number;
-  _modifiedonbehalfby_value?: string;
+  filetypecode?: number;
+  importsequencenumber?: number;
+  iscustomerviewable?: boolean;
+  keywords?: string;
+  mimetype?: string;
+  mode?: string;
+  modifiedon?: string;
+  organizationid?: string;
+  overriddencreatedon?: string;
   salesliteratureitemid?: string;
   timezoneruleversionnumber?: number;
-  _createdby_value?: string;
-  modifiedon?: string;
-  mimetype?: string;
   title?: string;
-  keywords?: string;
-  versionnumber?: number;
-  _modifiedby_value?: string;
   utcconversiontimezonecode?: number;
-  _salesliteratureid_value?: string;
-  mode?: string;
+  versionnumber?: number;
 }

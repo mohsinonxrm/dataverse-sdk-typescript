@@ -2,10 +2,10 @@
  * attributepicklistvalue entity type
  */
 export interface attributepicklistvalue {
-  ishidden?: boolean;
   attributepicklistvalueid?: string;
-  versionnumber?: number;
-  solutionid?: string;
   componentstate?: number;
+  ishidden?: boolean;
   overwritetime?: string;
+  solutionid?: string;
+  versionnumber?: number;
 }

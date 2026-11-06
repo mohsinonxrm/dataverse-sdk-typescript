@@ -2,25 +2,25 @@
  * exchangesyncidmapping entity type
  */
 export interface exchangesyncidmapping {
-  objecttypecode?: number;
-  modifiedon?: string;
-  objectid?: string;
-  _owninguser_value?: string;
-  tocrmchangetype?: number;
-  retries?: number;
-  itemsubject?: string;
-  isdeletedinexchange?: boolean;
-  versionnumber?: number;
-  lastsyncerrorcode?: number;
-  lastsyncerroroccurredon?: string;
-  _owningbusinessunit_value?: string;
   _ownerid_value?: string;
-  isunlinkedincrm?: boolean;
+  _owningbusinessunit_value?: string;
   _owningteam_value?: string;
+  _owninguser_value?: string;
+  createdon?: string;
+  exchangeentryid?: string;
   exchangesyncidmappingid?: string;
   fromcrmchangetype?: number;
-  userdecision?: number;
-  exchangeentryid?: string;
+  isdeletedinexchange?: boolean;
+  isunlinkedincrm?: boolean;
+  itemsubject?: string;
   lastsyncerror?: string;
-  createdon?: string;
+  lastsyncerrorcode?: number;
+  lastsyncerroroccurredon?: string;
+  modifiedon?: string;
+  objectid?: string;
+  objecttypecode?: number;
+  retries?: number;
+  tocrmchangetype?: number;
+  userdecision?: number;
+  versionnumber?: number;
 }

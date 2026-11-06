@@ -7,8 +7,8 @@ import { requestBody } from "./internal/requestBody.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_InitiateQueueAssignmentRequestParameters {
-  ApiVersion: string;
   QueueId: string;
+  ApiVersion: string;
 }
 
 /**
@@ -36,8 +36,8 @@ export class CCaaS_InitiateQueueAssignmentRequest
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_InitiateQueueAssignment`;
 
     const body = requestBody({
-      ApiVersion: this.Parameters.ApiVersion,
       QueueId: this.Parameters.QueueId,
+      ApiVersion: this.Parameters.ApiVersion,
     });
 
     return {

@@ -9,11 +9,11 @@ import type { msdyn_editSalesSequenceExperimentStatusResponse as msdyn_editSales
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_editSalesSequenceExperimentStatusRequestParameters {
-  msdyn_winnerOrDefault: string;
-  msdyn_experimentKey: string;
-  msdyn_expiryTime?: string;
-  msdyn_isDeactivated?: boolean;
   msdyn_experimentVersionRecordId: string;
+  msdyn_isDeactivated?: boolean;
+  msdyn_expiryTime?: string;
+  msdyn_experimentKey: string;
+  msdyn_winnerOrDefault: string;
 }
 
 /**
@@ -35,11 +35,11 @@ export class msdyn_editSalesSequenceExperimentStatusRequest
     const url = `${baseUrl}/msdyn_editSalesSequenceExperimentStatus`;
 
     const body = requestBody({
-      msdyn_winnerOrDefault: this.Parameters.msdyn_winnerOrDefault,
-      msdyn_experimentKey: this.Parameters.msdyn_experimentKey,
-      msdyn_expiryTime: this.Parameters.msdyn_expiryTime,
-      msdyn_isDeactivated: this.Parameters.msdyn_isDeactivated,
       msdyn_experimentVersionRecordId: this.Parameters.msdyn_experimentVersionRecordId,
+      msdyn_isDeactivated: this.Parameters.msdyn_isDeactivated,
+      msdyn_expiryTime: this.Parameters.msdyn_expiryTime,
+      msdyn_experimentKey: this.Parameters.msdyn_experimentKey,
+      msdyn_winnerOrDefault: this.Parameters.msdyn_winnerOrDefault,
     });
 
     return {

@@ -17,13 +17,13 @@ export interface AIModelPublishResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface AIModelPublishActionParameters {
-  ModelId: string;
-  ModelName: string;
-  Source?: string;
-  RunConfigurationId: string;
   TemplateId: string;
+  Source?: string;
   RunConfiguration: string;
+  ModelId: string;
   CustomConfiguration: string;
+  RunConfigurationId: string;
+  ModelName: string;
 }
 
 /**
@@ -38,13 +38,13 @@ export class AIModelPublishAction implements Executable<AIModelPublishResponse> 
     const url = `${baseUrl}/AIModelPublish`;
 
     const body = requestBody({
-      ModelId: this.parameters.ModelId,
-      ModelName: this.parameters.ModelName,
-      Source: this.parameters.Source,
-      RunConfigurationId: this.parameters.RunConfigurationId,
       TemplateId: this.parameters.TemplateId,
+      Source: this.parameters.Source,
       RunConfiguration: this.parameters.RunConfiguration,
+      ModelId: this.parameters.ModelId,
       CustomConfiguration: this.parameters.CustomConfiguration,
+      RunConfigurationId: this.parameters.RunConfigurationId,
+      ModelName: this.parameters.ModelName,
     });
 
     return {

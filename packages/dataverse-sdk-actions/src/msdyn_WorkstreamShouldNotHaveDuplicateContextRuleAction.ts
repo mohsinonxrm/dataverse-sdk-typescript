@@ -4,9 +4,9 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * Response from msdyn_WorkstreamShouldNotHaveDuplicateContextRule action
  */
 export interface msdyn_WorkstreamShouldNotHaveDuplicateContextRuleResponse {
-  ReturnStatus: number;
   Message: string;
   ResultEntities: string;
+  ReturnStatus: number;
 }
 
 /**

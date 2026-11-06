@@ -2,7 +2,7 @@
  * timestampdatemapping entity type
  */
 export interface timestampdatemapping {
-  timestamp?: number;
   date?: string;
+  timestamp?: number;
   timestampdatemappingid?: string;
 }

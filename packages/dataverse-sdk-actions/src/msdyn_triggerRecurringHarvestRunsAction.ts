@@ -1,0 +1,33 @@
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+
+/**
+ * Response from msdyn_triggerRecurringHarvestRuns action
+ */
+export interface msdyn_triggerRecurringHarvestRunsResponse {
+  // No content returned
+}
+
+/**
+ * msdyn_triggerRecurringHarvestRuns action
+ *
+ * Unbound action
+ */
+export class msdyn_triggerRecurringHarvestRunsAction implements Executable<msdyn_triggerRecurringHarvestRunsResponse> {
+  toRequestInformation(baseUrl: string): RequestInformation {
+    const url = `${baseUrl}/msdyn_triggerRecurringHarvestRuns`;
+
+    return {
+      method: "POST",
+      url,
+      headers: {
+        "content-type": "application/json",
+      },
+    };
+  }
+
+  async parseResponse(response: Response): Promise<msdyn_triggerRecurringHarvestRunsResponse> {
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_triggerRecurringHarvestRunsResponse;
+    return (await response.json()) as msdyn_triggerRecurringHarvestRunsResponse;
+  }
+}

@@ -2,27 +2,27 @@
  * msdyn_customizationagenttrigger entity type
  */
 export interface msdyn_customizationagenttrigger {
-  msdyn_name?: string;
-  utcconversiontimezonecode?: number;
-  msdyn_customizationagenttriggerid?: string;
-  _createdonbehalfby_value?: string;
-  msdyn_input?: string;
-  statecode?: number;
-  _ownerid_value?: string;
-  overriddencreatedon?: string;
-  createdon?: string;
-  msdyn_retrycount?: number;
-  msdyn_customaccountinsightsconfigid?: string;
-  _owningteam_value?: string;
-  versionnumber?: number;
-  _owningbusinessunit_value?: string;
-  _owninguser_value?: string;
-  modifiedon?: string;
   _createdby_value?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
   _modifiedonbehalfby_value?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  createdon?: string;
   importsequencenumber?: number;
+  modifiedon?: string;
   msdyn_companyidentifier?: string;
+  msdyn_customaccountinsightsconfigid?: string;
+  msdyn_customizationagenttriggerid?: string;
+  msdyn_input?: string;
+  msdyn_name?: string;
+  msdyn_retrycount?: number;
+  overriddencreatedon?: string;
+  statecode?: number;
   statuscode?: number;
   timezoneruleversionnumber?: number;
-  _modifiedby_value?: string;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

@@ -14,6 +14,7 @@ export interface RefreshChangesFromGitResponse {
  */
 export interface RefreshChangesFromGitActionParameters {
   SolutionUniqueName: string;
+  LastRefreshTime?: string;
 }
 
 /**
@@ -29,6 +30,7 @@ export class RefreshChangesFromGitAction implements Executable<RefreshChangesFro
 
     const body = requestBody({
       SolutionUniqueName: this.parameters.SolutionUniqueName,
+      LastRefreshTime: this.parameters.LastRefreshTime,
     });
 
     return {

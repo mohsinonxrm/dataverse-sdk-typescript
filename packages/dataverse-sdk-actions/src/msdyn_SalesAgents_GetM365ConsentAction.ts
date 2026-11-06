@@ -4,6 +4,7 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * Response from msdyn_SalesAgents_GetM365Consent action
  */
 export interface msdyn_SalesAgents_GetM365ConsentResponse {
+  msdyn_IsTeamsConsentGranted: boolean;
   msdyn_IsTenantConsentGranted: boolean;
   msdyn_SellerConsentStatus: string;
 }

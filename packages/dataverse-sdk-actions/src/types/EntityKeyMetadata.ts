@@ -7,17 +7,17 @@ import type { MetadataBase } from "./MetadataBase.js";
  * EntityKeyMetadata entity type
  */
 export interface EntityKeyMetadata extends MetadataBase {
+  AsyncJob: string;
   DisplayName?: Label;
+  EntityKeyIndexStatus: EntityKeyIndexStatus;
+  EntityLogicalName?: string;
+  IntroducedVersion?: string;
+  IsCustomizable?: BooleanManagedProperty;
+  IsExportKey?: boolean;
+  IsManaged?: boolean;
+  IsSecondaryKey?: boolean;
+  IsSynchronous?: boolean;
+  KeyAttributes?: string[];
   LogicalName?: string;
   SchemaName?: string;
-  EntityLogicalName?: string;
-  KeyAttributes?: string[];
-  IsCustomizable?: BooleanManagedProperty;
-  IsManaged?: boolean;
-  IntroducedVersion?: string;
-  EntityKeyIndexStatus: EntityKeyIndexStatus;
-  AsyncJob: string;
-  IsSynchronous?: boolean;
-  IsExportKey?: boolean;
-  IsSecondaryKey?: boolean;
 }

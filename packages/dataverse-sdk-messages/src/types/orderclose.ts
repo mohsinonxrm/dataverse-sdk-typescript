@@ -4,11 +4,11 @@ import type { activitypointer } from "./activitypointer.js";
  * orderclose entity type
  */
 export interface orderclose extends activitypointer {
+  _salesorderid_value?: string;
   category?: string;
-  subcategory?: string;
   importsequencenumber?: number;
+  ordernumber?: string;
   overriddencreatedon?: string;
   revision?: number;
-  _salesorderid_value?: string;
-  ordernumber?: string;
+  subcategory?: string;
 }

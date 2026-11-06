@@ -2,16 +2,16 @@
  * msgraphresourcetosubscription entity type
  */
 export interface msgraphresourcetosubscription {
-  subscriptionid?: string;
-  overriddencreatedon?: string;
-  msgraphresourcetosubscriptionid?: string;
-  importsequencenumber?: number;
-  resourcetype?: number;
-  statuscode?: number;
-  versionnumber?: number;
   createdingraphon?: string;
+  importsequencenumber?: number;
+  msgraphresourcetosubscriptionid?: string;
+  overriddencreatedon?: string;
   resourceid?: string;
-  utcconversiontimezonecode?: number;
-  timezoneruleversionnumber?: number;
+  resourcetype?: number;
   statecode?: number;
+  statuscode?: number;
+  subscriptionid?: string;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

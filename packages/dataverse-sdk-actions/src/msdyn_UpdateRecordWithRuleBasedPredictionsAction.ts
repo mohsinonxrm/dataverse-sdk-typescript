@@ -15,9 +15,10 @@ export interface msdyn_UpdateRecordWithRuleBasedPredictionsResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_UpdateRecordWithRuleBasedPredictionsActionParameters {
-  msdyn_Target: EntityReference | AnyEntityPayload;
-  msdyn_Context?: EntityReference | AnyEntityPayload;
+  msdyn_MatchingRuleId?: string;
   msdyn_ContextGenerationParameters?: string;
+  msdyn_Context?: EntityReference | AnyEntityPayload;
+  msdyn_Target: EntityReference | AnyEntityPayload;
 }
 
 /**
@@ -34,9 +35,10 @@ export class msdyn_UpdateRecordWithRuleBasedPredictionsAction implements Executa
     const url = `${baseUrl}/msdyn_UpdateRecordWithRuleBasedPredictions`;
 
     const body = requestBody({
-      msdyn_Target: this.parameters.msdyn_Target,
-      msdyn_Context: this.parameters.msdyn_Context,
+      msdyn_MatchingRuleId: this.parameters.msdyn_MatchingRuleId,
       msdyn_ContextGenerationParameters: this.parameters.msdyn_ContextGenerationParameters,
+      msdyn_Context: this.parameters.msdyn_Context,
+      msdyn_Target: this.parameters.msdyn_Target,
     });
 
     return {

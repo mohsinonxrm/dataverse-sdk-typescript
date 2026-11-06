@@ -9,9 +9,9 @@ import type { CCaaS_BulkQueueAssignmentResponse as CCaaS_BulkQueueAssignmentResp
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_BulkQueueAssignmentRequestParameters {
-  ApiVersion: string;
   ConversationIds: string[];
   TargetQueueId: string;
+  ApiVersion: string;
 }
 
 /**
@@ -33,9 +33,9 @@ export class CCaaS_BulkQueueAssignmentRequest
     const url = `${baseUrl}/CCaaS_BulkQueueAssignment`;
 
     const body = requestBody({
-      ApiVersion: this.Parameters.ApiVersion,
       ConversationIds: this.Parameters.ConversationIds,
       TargetQueueId: this.Parameters.TargetQueueId,
+      ApiVersion: this.Parameters.ApiVersion,
     });
 
     return {

@@ -9,9 +9,9 @@ import type { msdyn_getSalesSequenceExperimentSettingsResponse as msdyn_getSales
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_getSalesSequenceExperimentSettingsRequestParameters {
-  msdyn_experimentRecordId?: string;
   msdyn_experimentKey: string;
   msdyn_experimentVersionRecordId: string;
+  msdyn_experimentRecordId?: string;
 }
 
 /**
@@ -33,9 +33,9 @@ export class msdyn_getSalesSequenceExperimentSettingsRequest
     const url = `${baseUrl}/msdyn_getSalesSequenceExperimentSettings`;
 
     const body = requestBody({
-      msdyn_experimentRecordId: this.Parameters.msdyn_experimentRecordId,
       msdyn_experimentKey: this.Parameters.msdyn_experimentKey,
       msdyn_experimentVersionRecordId: this.Parameters.msdyn_experimentVersionRecordId,
+      msdyn_experimentRecordId: this.Parameters.msdyn_experimentRecordId,
     });
 
     return {

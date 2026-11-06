@@ -9,11 +9,11 @@ import type { msdyn_GetWidgetsDataResponse as msdyn_GetWidgetsDataResponseData }
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_GetWidgetsDataRequestParameters {
-  msdyn_request: string;
   msdyn_entityname?: string;
+  msdyn_recordid?: string;
+  msdyn_request: string;
   msdyn_widgettype: string;
   msdyn_widgetid: string;
-  msdyn_recordid?: string;
 }
 
 /**
@@ -35,11 +35,11 @@ export class msdyn_GetWidgetsDataRequest
     const url = `${baseUrl}/msdyn_GetWidgetsData`;
 
     const body = requestBody({
-      msdyn_request: this.Parameters.msdyn_request,
       msdyn_entityname: this.Parameters.msdyn_entityname,
+      msdyn_recordid: this.Parameters.msdyn_recordid,
+      msdyn_request: this.Parameters.msdyn_request,
       msdyn_widgettype: this.Parameters.msdyn_widgettype,
       msdyn_widgetid: this.Parameters.msdyn_widgetid,
-      msdyn_recordid: this.Parameters.msdyn_recordid,
     });
 
     return {

@@ -5,13 +5,13 @@ import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
  */
 export interface powerpagesite_dvtablesearch {
   componentidunique?: string;
-  solutionid?: string;
-  powerpagesiteid?: string;
   componentstate?: number;
-  overwritetime?: string;
-  powerpagesite_dvtablesearchid?: string;
-  versionnumber?: number;
-  ismanaged?: boolean;
   dvtablesearchid?: string;
   iscustomizable?: BooleanManagedProperty;
+  ismanaged?: boolean;
+  overwritetime?: string;
+  powerpagesite_dvtablesearchid?: string;
+  powerpagesiteid?: string;
+  solutionid?: string;
+  versionnumber?: number;
 }

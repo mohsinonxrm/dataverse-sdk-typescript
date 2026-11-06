@@ -9,8 +9,8 @@ import type { msdyn_getCTandEACdisabledEntitiesResponse as msdyn_getCTandEACdisa
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_getCTandEACdisabledEntitiesRequestParameters {
-  msdyn_entityName: string;
   msdyn_entityList: string;
+  msdyn_entityName: string;
 }
 
 /**
@@ -32,8 +32,8 @@ export class msdyn_getCTandEACdisabledEntitiesRequest
     const url = `${baseUrl}/msdyn_getCTandEACdisabledEntities`;
 
     const body = requestBody({
-      msdyn_entityName: this.Parameters.msdyn_entityName,
       msdyn_entityList: this.Parameters.msdyn_entityList,
+      msdyn_entityName: this.Parameters.msdyn_entityName,
     });
 
     return {

@@ -13,12 +13,12 @@ export interface msdyn_DraftFollowupEmailWithTemplateResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_DraftFollowupEmailWithTemplateActionParameters {
-  AgentMonitoringId: string;
-  IncidentEntityName: string;
-  TemplateId: string;
-  IncidentId: string;
   AgentActivityId: string;
+  IncidentId: string;
+  TemplateId: string;
+  AgentMonitoringId: string;
   EmailAssistInput: string;
+  IncidentEntityName: string;
 }
 
 /**
@@ -33,12 +33,12 @@ export class msdyn_DraftFollowupEmailWithTemplateAction implements Executable<ms
     const url = `${baseUrl}/msdyn_DraftFollowupEmailWithTemplate`;
 
     const body = requestBody({
-      AgentMonitoringId: this.parameters.AgentMonitoringId,
-      IncidentEntityName: this.parameters.IncidentEntityName,
-      TemplateId: this.parameters.TemplateId,
-      IncidentId: this.parameters.IncidentId,
       AgentActivityId: this.parameters.AgentActivityId,
+      IncidentId: this.parameters.IncidentId,
+      TemplateId: this.parameters.TemplateId,
+      AgentMonitoringId: this.parameters.AgentMonitoringId,
       EmailAssistInput: this.parameters.EmailAssistInput,
+      IncidentEntityName: this.parameters.IncidentEntityName,
     });
 
     return {

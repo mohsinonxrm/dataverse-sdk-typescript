@@ -12,6 +12,7 @@ export interface msdyn_SalesAgents_IsOrchestrationCompleteRequestParameters {
   msdyn_TrackingId?: string;
   msdyn_AgentType: number;
   msdyn_SalesAgentType: number;
+  msdyn_MacroAgentOrchestrationId?: string;
 }
 
 /**
@@ -36,6 +37,7 @@ export class msdyn_SalesAgents_IsOrchestrationCompleteRequest
       msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
       msdyn_AgentType: this.Parameters.msdyn_AgentType,
       msdyn_SalesAgentType: this.Parameters.msdyn_SalesAgentType,
+      msdyn_MacroAgentOrchestrationId: this.Parameters.msdyn_MacroAgentOrchestrationId,
     });
 
     return {

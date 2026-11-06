@@ -2,8 +2,8 @@
  * teamroles entity type
  */
 export interface teamroles {
-  versionnumber?: number;
+  roleid?: string;
   teamid?: string;
   teamroleid?: string;
-  roleid?: string;
+  versionnumber?: number;
 }

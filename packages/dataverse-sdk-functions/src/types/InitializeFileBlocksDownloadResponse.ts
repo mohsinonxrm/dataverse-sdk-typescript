@@ -2,8 +2,8 @@
  * InitializeFileBlocksDownloadResponse complex type
  */
 export interface InitializeFileBlocksDownloadResponse {
-  FileSizeInBytes?: number;
-  FileName?: string;
   FileContinuationToken?: string;
+  FileName?: string;
+  FileSizeInBytes?: number;
   IsChunkingSupported?: boolean;
 }

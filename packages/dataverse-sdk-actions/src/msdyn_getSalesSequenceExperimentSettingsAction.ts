@@ -13,9 +13,9 @@ export interface msdyn_getSalesSequenceExperimentSettingsResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_getSalesSequenceExperimentSettingsActionParameters {
-  msdyn_experimentRecordId?: string;
   msdyn_experimentKey: string;
   msdyn_experimentVersionRecordId: string;
+  msdyn_experimentRecordId?: string;
 }
 
 /**
@@ -32,9 +32,9 @@ export class msdyn_getSalesSequenceExperimentSettingsAction implements Executabl
     const url = `${baseUrl}/msdyn_getSalesSequenceExperimentSettings`;
 
     const body = requestBody({
-      msdyn_experimentRecordId: this.parameters.msdyn_experimentRecordId,
       msdyn_experimentKey: this.parameters.msdyn_experimentKey,
       msdyn_experimentVersionRecordId: this.parameters.msdyn_experimentVersionRecordId,
+      msdyn_experimentRecordId: this.parameters.msdyn_experimentRecordId,
     });
 
     return {

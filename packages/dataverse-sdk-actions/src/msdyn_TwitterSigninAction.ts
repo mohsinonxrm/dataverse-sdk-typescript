@@ -5,8 +5,8 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_TwitterSignin action
  */
 export interface msdyn_TwitterSigninResponse {
-  StatusCode: number;
   SigninUrl: string;
+  StatusCode: number;
 }
 
 /**

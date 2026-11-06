@@ -11,11 +11,11 @@ import type { msdyn_GetPromoContentFromIrisResponse as msdyn_GetPromoContentFrom
 export interface msdyn_GetPromoContentFromIrisRequestParameters {
   msdyn_country?: string;
   msdyn_placementId?: number;
-  msdyn_irisUrl?: string;
-  msdyn_pageType?: string;
-  msdyn_isAdmin?: boolean;
   msdyn_pageName?: string;
   msdyn_locale?: string;
+  msdyn_pageType?: string;
+  msdyn_isAdmin?: boolean;
+  msdyn_irisUrl?: string;
 }
 
 /**
@@ -39,11 +39,11 @@ export class msdyn_GetPromoContentFromIrisRequest
     const body = requestBody({
       msdyn_country: this.Parameters.msdyn_country,
       msdyn_placementId: this.Parameters.msdyn_placementId,
-      msdyn_irisUrl: this.Parameters.msdyn_irisUrl,
-      msdyn_pageType: this.Parameters.msdyn_pageType,
-      msdyn_isAdmin: this.Parameters.msdyn_isAdmin,
       msdyn_pageName: this.Parameters.msdyn_pageName,
       msdyn_locale: this.Parameters.msdyn_locale,
+      msdyn_pageType: this.Parameters.msdyn_pageType,
+      msdyn_isAdmin: this.Parameters.msdyn_isAdmin,
+      msdyn_irisUrl: this.Parameters.msdyn_irisUrl,
     });
 
     return {

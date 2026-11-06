@@ -5,8 +5,8 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from CommitToGit action
  */
 export interface CommitToGitResponse {
-  Type: number;
   CommitId: string;
+  Type: number;
 }
 
 /**

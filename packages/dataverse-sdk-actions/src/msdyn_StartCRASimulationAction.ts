@@ -1,0 +1,49 @@
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Response from msdyn_StartCRASimulation action
+ */
+export interface msdyn_StartCRASimulationResponse {
+  // No content returned
+}
+
+/**
+ * Parameters of the msdyn_StartCRASimulation action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_StartCRASimulationActionParameters {
+  SimulationResultId: string;
+}
+
+/**
+ * msdyn_StartCRASimulation action
+ *
+ * Unbound action
+ */
+export class msdyn_StartCRASimulationAction implements Executable<msdyn_StartCRASimulationResponse> {
+  constructor(public readonly parameters: msdyn_StartCRASimulationActionParameters) {}
+
+  toRequestInformation(baseUrl: string): RequestInformation {
+    const url = `${baseUrl}/msdyn_StartCRASimulation`;
+
+    const body = requestBody({
+      SimulationResultId: this.parameters.SimulationResultId,
+    });
+
+    return {
+      method: "POST",
+      url,
+      headers: {
+        "content-type": "application/json",
+      },
+      body,
+    };
+  }
+
+  async parseResponse(response: Response): Promise<msdyn_StartCRASimulationResponse> {
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_StartCRASimulationResponse;
+    return (await response.json()) as msdyn_StartCRASimulationResponse;
+  }
+}

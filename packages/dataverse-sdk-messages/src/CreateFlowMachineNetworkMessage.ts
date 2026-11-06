@@ -9,12 +9,12 @@ import type { CreateFlowMachineNetworkResponse as CreateFlowMachineNetworkRespon
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CreateFlowMachineNetworkRequestParameters {
-  subnet: string;
   type: string;
-  extendedproperties?: string;
-  supportedscenario: string;
+  subnet: string;
   name: string;
   description?: string;
+  supportedscenario: string;
+  extendedproperties?: string;
 }
 
 /**
@@ -37,12 +37,12 @@ export class CreateFlowMachineNetworkRequest
     const url = `${baseUrl}/flowmachinenetworks/Microsoft.Dynamics.CRM.CreateFlowMachineNetwork`;
 
     const body = requestBody({
-      subnet: this.Parameters.subnet,
       type: this.Parameters.type,
-      extendedproperties: this.Parameters.extendedproperties,
-      supportedscenario: this.Parameters.supportedscenario,
+      subnet: this.Parameters.subnet,
       name: this.Parameters.name,
       description: this.Parameters.description,
+      supportedscenario: this.Parameters.supportedscenario,
+      extendedproperties: this.Parameters.extendedproperties,
     });
 
     return {

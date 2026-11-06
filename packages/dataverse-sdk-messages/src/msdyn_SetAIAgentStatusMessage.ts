@@ -1,0 +1,93 @@
+import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
+import type { msdyn_aiagentstatus } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_SetAIAgentStatus message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SetAIAgentStatusRequestParameters {
+  FallbackReasonCode?: number;
+  AIAgentExternalActionStatus?: number;
+  Entity: EntityReference | AnyEntityPayload;
+  ShouldOverrideEscalate?: boolean;
+  AIAgentRunStartTime?: string;
+  AgentMode?: number;
+  ErrorForLog?: string;
+  AIAgentStatus: string;
+  RunId?: string;
+  AgentLastAction?: number;
+  SourceForLog?: string;
+  AutomationLevel?: string;
+  LastEmailActivity?: EntityReference | AnyEntityPayload;
+  EmailsSent?: number;
+}
+
+/**
+ * msdyn_SetAIAgentStatus request message
+ *
+ * Web API Action: msdyn_SetAIAgentStatus
+ */
+export class msdyn_SetAIAgentStatusRequest
+  extends OrganizationRequest
+  implements Executable<msdyn_SetAIAgentStatusResponse>
+{
+  declare readonly Parameters: Readonly<msdyn_SetAIAgentStatusRequestParameters>;
+
+  constructor(parameters: msdyn_SetAIAgentStatusRequestParameters) {
+    super("msdyn_SetAIAgentStatus", { ...parameters });
+  }
+
+  toRequestInformation(baseUrl: string): RequestInformation {
+    const url = `${baseUrl}/msdyn_SetAIAgentStatus`;
+
+    const body = requestBody({
+      FallbackReasonCode: this.Parameters.FallbackReasonCode,
+      AIAgentExternalActionStatus: this.Parameters.AIAgentExternalActionStatus,
+      Entity: this.Parameters.Entity,
+      ShouldOverrideEscalate: this.Parameters.ShouldOverrideEscalate,
+      AIAgentRunStartTime: this.Parameters.AIAgentRunStartTime,
+      AgentMode: this.Parameters.AgentMode,
+      ErrorForLog: this.Parameters.ErrorForLog,
+      AIAgentStatus: this.Parameters.AIAgentStatus,
+      RunId: this.Parameters.RunId,
+      AgentLastAction: this.Parameters.AgentLastAction,
+      SourceForLog: this.Parameters.SourceForLog,
+      AutomationLevel: this.Parameters.AutomationLevel,
+      LastEmailActivity: this.Parameters.LastEmailActivity,
+      EmailsSent: this.Parameters.EmailsSent,
+    });
+
+    return {
+      method: "POST",
+      url,
+      headers: {
+        "content-type": "application/json",
+      },
+      body,
+    };
+  }
+
+  async parseResponse(response: Response): Promise<msdyn_SetAIAgentStatusResponse> {
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_SetAIAgentStatusResponse.fromResponse({});
+    return msdyn_SetAIAgentStatusResponse.fromResponse(await response.json());
+  }
+}
+
+/**
+ * msdyn_SetAIAgentStatus response message
+ */
+export class msdyn_SetAIAgentStatusResponse extends OrganizationResponse {
+  constructor(public result: msdyn_aiagentstatus) {
+    super("msdyn_SetAIAgentStatus");
+  }
+
+  static fromResponse(data: unknown): msdyn_SetAIAgentStatusResponse {
+    return new msdyn_SetAIAgentStatusResponse(responseObject<msdyn_aiagentstatus>(data));
+  }
+}

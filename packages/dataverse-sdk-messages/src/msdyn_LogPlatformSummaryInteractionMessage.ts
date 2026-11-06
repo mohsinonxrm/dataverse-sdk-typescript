@@ -9,8 +9,8 @@ import type { msdyn_LogPlatformSummaryInteractionResponse as msdyn_LogPlatformSu
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_LogPlatformSummaryInteractionRequestParameters {
-  InteractionData?: string;
   Context?: string;
+  InteractionData?: string;
   InteractionType?: string;
 }
 
@@ -33,8 +33,8 @@ export class msdyn_LogPlatformSummaryInteractionRequest
     const url = `${baseUrl}/msdyn_LogPlatformSummaryInteraction`;
 
     const body = requestBody({
-      InteractionData: this.Parameters.InteractionData,
       Context: this.Parameters.Context,
+      InteractionData: this.Parameters.InteractionData,
       InteractionType: this.Parameters.InteractionType,
     });
 

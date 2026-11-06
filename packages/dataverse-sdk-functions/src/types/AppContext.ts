@@ -7,11 +7,11 @@ import type { CanvasAppsInfo } from "./CanvasAppsInfo.js";
  * AppContext complex type
  */
 export interface AppContext {
-  appInfo?: AppInfo;
+  CanvasApps?: CanvasAppsInfo[];
   SitemapId?: string;
+  appElements?: AppElementInfo[];
+  appEntityInfo?: AppEntityInfo[];
+  appInfo?: AppInfo;
   bpfIds?: string[];
   dashboardIds?: string[];
-  appEntityInfo?: AppEntityInfo[];
-  CanvasApps?: CanvasAppsInfo[];
-  appElements?: AppElementInfo[];
 }

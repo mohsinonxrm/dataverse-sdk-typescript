@@ -4,9 +4,9 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * Response from msdyn_CustomChannelSettingsShouldHaveAllRequiredFieldsRule action
  */
 export interface msdyn_CustomChannelSettingsShouldHaveAllRequiredFieldsRuleResponse {
-  ReturnStatus: number;
-  ResultEntities: string;
   Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
 }
 
 /**

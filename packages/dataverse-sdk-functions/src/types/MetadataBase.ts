@@ -32,8 +32,8 @@ import type { UniqueIdentifierAttributeMetadata } from "./UniqueIdentifierAttrib
  * MetadataBase entity type
  */
 export interface MetadataBase {
-  MetadataId?: string;
   HasChanged?: boolean;
+  MetadataId?: string;
 }
 
 /**

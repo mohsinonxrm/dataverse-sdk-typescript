@@ -13,9 +13,9 @@ export interface msdyn_JoinLinkedChatConversationResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_JoinLinkedChatConversationActionParameters {
-  msdyn_UserId?: string;
-  msdyn_RegardingEntityId: string;
   msdyn_TeamsConversationId: string;
+  msdyn_RegardingEntityId: string;
+  msdyn_UserId?: string;
 }
 
 /**
@@ -30,9 +30,9 @@ export class msdyn_JoinLinkedChatConversationAction implements Executable<msdyn_
     const url = `${baseUrl}/msdyn_JoinLinkedChatConversation`;
 
     const body = requestBody({
-      msdyn_UserId: this.parameters.msdyn_UserId,
-      msdyn_RegardingEntityId: this.parameters.msdyn_RegardingEntityId,
       msdyn_TeamsConversationId: this.parameters.msdyn_TeamsConversationId,
+      msdyn_RegardingEntityId: this.parameters.msdyn_RegardingEntityId,
+      msdyn_UserId: this.parameters.msdyn_UserId,
     });
 
     return {

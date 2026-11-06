@@ -8,8 +8,8 @@ import { requestBody } from "./internal/requestBody.js";
  */
 export interface UpdateFlowMachineNetworkRequestParameters {
   description?: string;
-  extendedproperties?: string;
   name?: string;
+  extendedproperties?: string;
 }
 
 /**
@@ -38,8 +38,8 @@ export class UpdateFlowMachineNetworkRequest
 
     const body = requestBody({
       description: this.Parameters.description,
-      extendedproperties: this.Parameters.extendedproperties,
       name: this.Parameters.name,
+      extendedproperties: this.Parameters.extendedproperties,
     });
 
     return {

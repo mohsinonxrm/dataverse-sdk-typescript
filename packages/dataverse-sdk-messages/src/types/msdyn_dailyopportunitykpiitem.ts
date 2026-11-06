@@ -2,31 +2,31 @@
  * msdyn_dailyopportunitykpiitem entity type
  */
 export interface msdyn_dailyopportunitykpiitem {
-  modifiedon?: string;
-  msdyn_phonecallsmade?: number;
-  statecode?: number;
-  msdyn_date?: string;
-  overriddencreatedon?: string;
-  msdyn_emailssent?: number;
-  msdyn_liemailssent?: number;
-  _modifiedonbehalfby_value?: string;
-  msdyn_meetingssent?: number;
-  utcconversiontimezonecode?: number;
-  msdyn_opportunityid?: string;
-  _organizationid_value?: string;
-  _msdyn_entityid_value?: string;
-  msdyn_computationaccuracy?: number;
-  msdyn_phonecallsreceived?: number;
-  versionnumber?: number;
+  _createdby_value?: string;
   _createdonbehalfby_value?: string;
-  msdyn_name?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _msdyn_entityid_value?: string;
+  _organizationid_value?: string;
   createdon?: string;
   importsequencenumber?: number;
-  _modifiedby_value?: string;
-  msdyn_meetingsreceived?: number;
-  _createdby_value?: string;
-  statuscode?: number;
+  modifiedon?: string;
+  msdyn_computationaccuracy?: number;
   msdyn_dailyopportunitykpiitemid?: string;
-  timezoneruleversionnumber?: number;
+  msdyn_date?: string;
   msdyn_emailsreceived?: number;
+  msdyn_emailssent?: number;
+  msdyn_liemailssent?: number;
+  msdyn_meetingsreceived?: number;
+  msdyn_meetingssent?: number;
+  msdyn_name?: string;
+  msdyn_opportunityid?: string;
+  msdyn_phonecallsmade?: number;
+  msdyn_phonecallsreceived?: number;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

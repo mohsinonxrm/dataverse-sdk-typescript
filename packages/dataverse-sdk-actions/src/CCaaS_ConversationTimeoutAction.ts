@@ -13,8 +13,8 @@ export interface CCaaS_ConversationTimeoutResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_ConversationTimeoutActionParameters {
-  ApiVersion: string;
   SessionId: string;
+  ApiVersion: string;
 }
 
 /**
@@ -36,8 +36,8 @@ export class CCaaS_ConversationTimeoutAction implements Executable<CCaaS_Convers
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_ConversationTimeout`;
 
     const body = requestBody({
-      ApiVersion: this.parameters.ApiVersion,
       SessionId: this.parameters.SessionId,
+      ApiVersion: this.parameters.ApiVersion,
     });
 
     return {

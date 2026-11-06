@@ -2,23 +2,23 @@
  * msdyn_occhannelapiconversationprivilege entity type
  */
 export interface msdyn_occhannelapiconversationprivilege {
-  statuscode?: number;
-  msdyn_occhannelapiconversationprivilegeid?: string;
-  _createdonbehalfby_value?: string;
-  createdon?: string;
-  _modifiedonbehalfby_value?: string;
-  utcconversiontimezonecode?: number;
   _createdby_value?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _ownerid_value?: string;
   _owningbusinessunit_value?: string;
-  versionnumber?: number;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_name?: string;
+  msdyn_occhannelapiconversationprivilegeid?: string;
   overriddencreatedon?: string;
   statecode?: number;
+  statuscode?: number;
   timezoneruleversionnumber?: number;
-  _owninguser_value?: string;
-  _owningteam_value?: string;
-  modifiedon?: string;
-  importsequencenumber?: number;
-  _ownerid_value?: string;
-  msdyn_name?: string;
-  _modifiedby_value?: string;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

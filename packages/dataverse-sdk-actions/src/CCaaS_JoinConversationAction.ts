@@ -13,10 +13,10 @@ export interface CCaaS_JoinConversationResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_JoinConversationActionParameters {
+  ApiVersion: string;
+  SessionId: string;
   ClientId?: string;
   ConversationAccess?: number;
-  SessionId: string;
-  ApiVersion: string;
 }
 
 /**
@@ -38,10 +38,10 @@ export class CCaaS_JoinConversationAction implements Executable<CCaaS_JoinConver
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_JoinConversation`;
 
     const body = requestBody({
+      ApiVersion: this.parameters.ApiVersion,
+      SessionId: this.parameters.SessionId,
       ClientId: this.parameters.ClientId,
       ConversationAccess: this.parameters.ConversationAccess,
-      SessionId: this.parameters.SessionId,
-      ApiVersion: this.parameters.ApiVersion,
     });
 
     return {

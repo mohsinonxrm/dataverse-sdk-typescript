@@ -6,9 +6,9 @@ import { requestBody } from "./internal/requestBody.js";
  */
 export interface msdyn_EmailValidationCustomActionResponse {
   EmailValidationResponse: string;
+  ErrorMessage: string;
   IsSuccess: boolean;
   StatusCode: number;
-  ErrorMessage: string;
 }
 
 /**

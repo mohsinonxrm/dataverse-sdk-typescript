@@ -4,29 +4,29 @@ import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
  * emailaddressconfiguration entity type
  */
 export interface emailaddressconfiguration {
-  modifiedon?: string;
-  _modifiedby_value?: string;
-  overwritetime?: string;
-  utcconversiontimezonecode?: number;
-  statuscode?: number;
+  _attributeid_value?: string;
   _createdby_value?: string;
+  _createdonbehalfby_value?: string;
+  _entityid_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _organizationid_value?: string;
+  componentidunique?: string;
+  componentstate?: number;
+  createdon?: string;
+  donotresolve?: boolean;
+  emailaddressconfigurationid?: string;
+  importsequencenumber?: number;
   iscustomizable?: BooleanManagedProperty;
   ismanaged?: boolean;
+  modifiedon?: string;
   name?: string;
-  _createdonbehalfby_value?: string;
-  importsequencenumber?: number;
-  createdon?: string;
-  _attributeid_value?: string;
-  solutionid?: string;
-  versionnumber?: number;
   overriddencreatedon?: string;
-  _modifiedonbehalfby_value?: string;
-  donotresolve?: boolean;
-  timezoneruleversionnumber?: number;
-  _organizationid_value?: string;
+  overwritetime?: string;
+  solutionid?: string;
   statecode?: number;
-  emailaddressconfigurationid?: string;
-  componentidunique?: string;
-  _entityid_value?: string;
-  componentstate?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

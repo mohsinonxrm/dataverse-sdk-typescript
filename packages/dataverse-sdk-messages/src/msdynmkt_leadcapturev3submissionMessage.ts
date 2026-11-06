@@ -9,9 +9,9 @@ import type { AnyEntityPayload } from "./types/EntityPayload.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdynmkt_leadcapturev3submissionRequestParameters {
+  msdynmkt_marketingformid: EntityReference | AnyEntityPayload;
   msdynmkt_formsubmissionid: EntityReference | AnyEntityPayload;
   msdynmkt_consentversion?: string;
-  msdynmkt_marketingformid: EntityReference | AnyEntityPayload;
 }
 
 /**
@@ -33,9 +33,9 @@ export class msdynmkt_leadcapturev3submissionRequest
     const url = `${baseUrl}/msdynmkt_leadcapturev3submission`;
 
     const body = requestBody({
+      msdynmkt_marketingformid: this.Parameters.msdynmkt_marketingformid,
       msdynmkt_formsubmissionid: this.Parameters.msdynmkt_formsubmissionid,
       msdynmkt_consentversion: this.Parameters.msdynmkt_consentversion,
-      msdynmkt_marketingformid: this.Parameters.msdynmkt_marketingformid,
     });
 
     return {

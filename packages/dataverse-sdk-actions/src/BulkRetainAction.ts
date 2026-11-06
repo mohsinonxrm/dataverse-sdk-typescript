@@ -6,10 +6,11 @@ import type { EntityRecordCountCollection } from "./types/index.js";
  * Response from BulkRetain action
  */
 export interface BulkRetainResponse {
-  PagingCookie: string;
-  HasMoreRecords: boolean;
-  FailedRecords: number;
   EntityCountCollection: EntityRecordCountCollection;
+  FailedRecords: number;
+  HasMoreRecords: boolean;
+  MaxMarkedVersion: number;
+  PagingCookie: string;
 }
 
 /**

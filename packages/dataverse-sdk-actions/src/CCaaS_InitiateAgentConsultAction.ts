@@ -14,10 +14,11 @@ export interface CCaaS_InitiateAgentConsultResponse {
  */
 export interface CCaaS_InitiateAgentConsultActionParameters {
   ConsultType: string;
-  ConversationAccess: string;
+  ParticipantType?: string;
+  ApiVersion: string;
   QueueId: string;
   AgentId: string;
-  ApiVersion: string;
+  ConversationAccess: string;
 }
 
 /**
@@ -40,10 +41,11 @@ export class CCaaS_InitiateAgentConsultAction implements Executable<CCaaS_Initia
 
     const body = requestBody({
       ConsultType: this.parameters.ConsultType,
-      ConversationAccess: this.parameters.ConversationAccess,
+      ParticipantType: this.parameters.ParticipantType,
+      ApiVersion: this.parameters.ApiVersion,
       QueueId: this.parameters.QueueId,
       AgentId: this.parameters.AgentId,
-      ApiVersion: this.parameters.ApiVersion,
+      ConversationAccess: this.parameters.ConversationAccess,
     });
 
     return {

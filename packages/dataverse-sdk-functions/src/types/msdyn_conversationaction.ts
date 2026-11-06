@@ -2,29 +2,29 @@
  * msdyn_conversationaction entity type
  */
 export interface msdyn_conversationaction {
-  msdyn_webresource?: string;
-  createdon?: string;
+  _createdby_value?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
   _owningteam_value?: string;
   _owninguser_value?: string;
-  _ownerid_value?: string;
-  versionnumber?: number;
-  modifiedon?: string;
-  statecode?: number;
-  timezoneruleversionnumber?: number;
-  msdyn_name?: string;
-  _owningbusinessunit_value?: string;
-  _createdby_value?: string;
-  msdyn_order?: number;
-  msdyn_conversationactionid?: string;
-  _modifiedby_value?: string;
+  createdon?: string;
   importsequencenumber?: number;
-  utcconversiontimezonecode?: number;
-  overriddencreatedon?: string;
-  msdyn_icon?: string;
-  msdyn_eventparameter?: string;
-  _modifiedonbehalfby_value?: string;
-  msdyn_functionname?: string;
+  modifiedon?: string;
+  msdyn_conversationactionid?: string;
   msdyn_eventname?: number;
+  msdyn_eventparameter?: string;
+  msdyn_functionname?: string;
+  msdyn_icon?: string;
+  msdyn_name?: string;
+  msdyn_order?: number;
+  msdyn_webresource?: string;
+  overriddencreatedon?: string;
+  statecode?: number;
   statuscode?: number;
-  _createdonbehalfby_value?: string;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

@@ -5,11 +5,11 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdynmkt_ChartWidgetDataCustomAction action
  */
 export interface msdynmkt_ChartWidgetDataCustomActionResponse {
-  WidgetDefinition: string;
-  WidgetData: string;
+  ErrorMessage: string;
   IsSuccess: boolean;
   StatusCode: number;
-  ErrorMessage: string;
+  WidgetData: string;
+  WidgetDefinition: string;
 }
 
 /**

@@ -6,8 +6,8 @@ import { formatParameterAlias } from "./internal/odataLiteral.js";
  */
 export interface CCaaS_GetAgentsResponse {
   Agents: string;
-  TransactionId: string;
   ContinuationToken: string;
+  TransactionId: string;
 }
 
 /**
@@ -15,14 +15,14 @@ export interface CCaaS_GetAgentsResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_GetAgentsFunctionParameters {
-  AgentIds?: string[];
-  AgentType?: string;
-  Queues?: string[];
-  ApiVersion: string;
-  ContinuationToken?: string;
-  Name?: string;
-  BaseStatus?: string[];
   OrderBy?: string;
+  ApiVersion: string;
+  Queues?: string[];
+  BaseStatus?: string[];
+  AgentType?: string;
+  AgentIds?: string[];
+  Name?: string;
+  ContinuationToken?: string;
 }
 
 /**
@@ -39,37 +39,37 @@ export class CCaaS_GetAgentsFunction implements Executable<CCaaS_GetAgentsRespon
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.parameters.AgentIds !== undefined) {
-      aliases.push(`AgentIds=@p1`);
-      params.append("@p1", JSON.stringify(this.parameters.AgentIds));
+    if (this.parameters.OrderBy !== undefined) {
+      aliases.push(`OrderBy=@p1`);
+      params.append("@p1", formatParameterAlias(this.parameters.OrderBy, "Edm.String"));
     }
-    if (this.parameters.AgentType !== undefined) {
-      aliases.push(`AgentType=@p2`);
-      params.append("@p2", formatParameterAlias(this.parameters.AgentType, "Edm.String"));
+    if (this.parameters.ApiVersion !== undefined) {
+      aliases.push(`ApiVersion=@p2`);
+      params.append("@p2", formatParameterAlias(this.parameters.ApiVersion, "Edm.String"));
     }
     if (this.parameters.Queues !== undefined) {
       aliases.push(`Queues=@p3`);
       params.append("@p3", JSON.stringify(this.parameters.Queues));
     }
-    if (this.parameters.ApiVersion !== undefined) {
-      aliases.push(`ApiVersion=@p4`);
-      params.append("@p4", formatParameterAlias(this.parameters.ApiVersion, "Edm.String"));
+    if (this.parameters.BaseStatus !== undefined) {
+      aliases.push(`BaseStatus=@p4`);
+      params.append("@p4", JSON.stringify(this.parameters.BaseStatus));
     }
-    if (this.parameters.ContinuationToken !== undefined) {
-      aliases.push(`ContinuationToken=@p5`);
-      params.append("@p5", formatParameterAlias(this.parameters.ContinuationToken, "Edm.String"));
+    if (this.parameters.AgentType !== undefined) {
+      aliases.push(`AgentType=@p5`);
+      params.append("@p5", formatParameterAlias(this.parameters.AgentType, "Edm.String"));
+    }
+    if (this.parameters.AgentIds !== undefined) {
+      aliases.push(`AgentIds=@p6`);
+      params.append("@p6", JSON.stringify(this.parameters.AgentIds));
     }
     if (this.parameters.Name !== undefined) {
-      aliases.push(`Name=@p6`);
-      params.append("@p6", formatParameterAlias(this.parameters.Name, "Edm.String"));
+      aliases.push(`Name=@p7`);
+      params.append("@p7", formatParameterAlias(this.parameters.Name, "Edm.String"));
     }
-    if (this.parameters.BaseStatus !== undefined) {
-      aliases.push(`BaseStatus=@p7`);
-      params.append("@p7", JSON.stringify(this.parameters.BaseStatus));
-    }
-    if (this.parameters.OrderBy !== undefined) {
-      aliases.push(`OrderBy=@p8`);
-      params.append("@p8", formatParameterAlias(this.parameters.OrderBy, "Edm.String"));
+    if (this.parameters.ContinuationToken !== undefined) {
+      aliases.push(`ContinuationToken=@p8`);
+      params.append("@p8", formatParameterAlias(this.parameters.ContinuationToken, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

@@ -4,28 +4,28 @@ import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
  * sharedlinksetting entity type
  */
 export interface sharedlinksetting {
-  sharedlinksettingid?: string;
-  _modifiedonbehalfby_value?: string;
-  componentstate?: number;
-  _modifiedby_value?: string;
   _createdby_value?: string;
-  importsequencenumber?: number;
-  utcconversiontimezonecode?: number;
-  overriddencreatedon?: string;
-  componentidunique?: string;
-  ismanaged?: boolean;
-  _extensionofrecordid_value?: string;
-  statecode?: number;
-  createdon?: string;
-  isenabledforsharedlinkcreation?: boolean;
-  solutionid?: string;
-  iscustomizable?: BooleanManagedProperty;
   _createdonbehalfby_value?: string;
-  name?: string;
-  statuscode?: number;
+  _extensionofrecordid_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
   _organizationid_value?: string;
-  timezoneruleversionnumber?: number;
-  versionnumber?: number;
-  overwritetime?: string;
+  componentidunique?: string;
+  componentstate?: number;
+  createdon?: string;
+  importsequencenumber?: number;
+  iscustomizable?: BooleanManagedProperty;
+  isenabledforsharedlinkcreation?: boolean;
+  ismanaged?: boolean;
   modifiedon?: string;
+  name?: string;
+  overriddencreatedon?: string;
+  overwritetime?: string;
+  sharedlinksettingid?: string;
+  solutionid?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

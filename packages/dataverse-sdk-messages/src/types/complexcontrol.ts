@@ -2,18 +2,18 @@
  * complexcontrol entity type
  */
 export interface complexcontrol {
-  componentstate?: number;
-  versionnumber?: number;
   _organizationid_value?: string;
   complexcontrolid?: string;
-  ismanaged?: boolean;
-  version?: number;
-  name?: string;
   complexcontrolidunique?: string;
-  type?: number;
   complexcontrolxml?: string;
-  overwritetime?: string;
-  introducedversion?: string;
-  solutionid?: string;
+  componentstate?: number;
   description?: string;
+  introducedversion?: string;
+  ismanaged?: boolean;
+  name?: string;
+  overwritetime?: string;
+  solutionid?: string;
+  type?: number;
+  version?: number;
+  versionnumber?: number;
 }

@@ -4,29 +4,29 @@ import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
  * msdyn_occarrier entity type
  */
 export interface msdyn_occarrier {
-  utcconversiontimezonecode?: number;
-  _ownerid_value?: string;
   _createdby_value?: string;
-  iscustomizable?: BooleanManagedProperty;
-  msdyn_name?: string;
-  componentstate?: number;
-  statuscode?: number;
-  msdyn_occarrierid?: string;
-  versionnumber?: number;
-  overriddencreatedon?: string;
-  _owningbusinessunit_value?: string;
-  ismanaged?: boolean;
-  componentidunique?: string;
-  timezoneruleversionnumber?: number;
-  overwritetime?: string;
+  _createdonbehalfby_value?: string;
   _modifiedby_value?: string;
   _modifiedonbehalfby_value?: string;
-  _owninguser_value?: string;
-  createdon?: string;
-  solutionid?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
   _owningteam_value?: string;
+  _owninguser_value?: string;
+  componentidunique?: string;
+  componentstate?: number;
+  createdon?: string;
   importsequencenumber?: number;
-  _createdonbehalfby_value?: string;
-  statecode?: number;
+  iscustomizable?: BooleanManagedProperty;
+  ismanaged?: boolean;
   modifiedon?: string;
+  msdyn_name?: string;
+  msdyn_occarrierid?: string;
+  overriddencreatedon?: string;
+  overwritetime?: string;
+  solutionid?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

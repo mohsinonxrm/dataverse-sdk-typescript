@@ -10,8 +10,8 @@ import type { msdyn_markunmarkfavoritearticleResponse as msdyn_markunmarkfavorit
  */
 export interface msdyn_markunmarkfavoritearticleRequestParameters {
   msdyn_knowledgearticleid: string;
-  msdyn_userid: string;
   msdyn_actionname: string;
+  msdyn_userid: string;
 }
 
 /**
@@ -34,8 +34,8 @@ export class msdyn_markunmarkfavoritearticleRequest
 
     const body = requestBody({
       msdyn_knowledgearticleid: this.Parameters.msdyn_knowledgearticleid,
-      msdyn_userid: this.Parameters.msdyn_userid,
       msdyn_actionname: this.Parameters.msdyn_actionname,
+      msdyn_userid: this.Parameters.msdyn_userid,
     });
 
     return {

@@ -5,9 +5,9 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdynmkt_RetrieveAnalyitcsAriaCounts action
  */
 export interface msdynmkt_RetrieveAnalyitcsAriaCountsResponse {
-  msdynmkt_resultcode: number;
   msdynmkt_apiresponsedata: string;
   msdynmkt_error: string;
+  msdynmkt_resultcode: number;
 }
 
 /**
@@ -15,10 +15,10 @@ export interface msdynmkt_RetrieveAnalyitcsAriaCountsResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdynmkt_RetrieveAnalyitcsAriaCountsActionParameters {
+  msdynmkt_primaryrecordentityname: string;
+  msdynmkt_ariacountsrequest: string;
   msdynmkt_appname: string;
   msdynmkt_primaryrecordid: string;
-  msdynmkt_ariacountsrequest: string;
-  msdynmkt_primaryrecordentityname: string;
 }
 
 /**
@@ -33,10 +33,10 @@ export class msdynmkt_RetrieveAnalyitcsAriaCountsAction implements Executable<ms
     const url = `${baseUrl}/msdynmkt_RetrieveAnalyitcsAriaCounts`;
 
     const body = requestBody({
+      msdynmkt_primaryrecordentityname: this.parameters.msdynmkt_primaryrecordentityname,
+      msdynmkt_ariacountsrequest: this.parameters.msdynmkt_ariacountsrequest,
       msdynmkt_appname: this.parameters.msdynmkt_appname,
       msdynmkt_primaryrecordid: this.parameters.msdynmkt_primaryrecordid,
-      msdynmkt_ariacountsrequest: this.parameters.msdynmkt_ariacountsrequest,
-      msdynmkt_primaryrecordentityname: this.parameters.msdynmkt_primaryrecordentityname,
     });
 
     return {

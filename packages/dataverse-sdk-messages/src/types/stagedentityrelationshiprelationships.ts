@@ -2,26 +2,26 @@
  * stagedentityrelationshiprelationships entity type
  */
 export interface stagedentityrelationshiprelationships {
-  _modifiedby_value?: string;
-  schemaname?: string;
-  overwritetime?: string;
-  stagedentityrelationshiprelationshipsid?: string;
   _createdby_value?: string;
-  versionnumber?: number;
-  stagingexecutioncontextid?: string;
-  _modifiedonbehalfby_value?: string;
-  statuscode?: number;
   _createdonbehalfby_value?: string;
-  metadatadescription?: string;
-  relationshipid?: string;
-  statecode?: number;
-  overriddencreatedon?: string;
-  modifiedon?: string;
-  entityrelationshipid?: string;
-  timezoneruleversionnumber?: number;
-  importsequencenumber?: number;
-  solutionid?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
   componentstate?: number;
   createdon?: string;
+  entityrelationshipid?: string;
+  importsequencenumber?: number;
+  metadatadescription?: string;
+  modifiedon?: string;
+  overriddencreatedon?: string;
+  overwritetime?: string;
+  relationshipid?: string;
+  schemaname?: string;
+  solutionid?: string;
+  stagedentityrelationshiprelationshipsid?: string;
+  stagingexecutioncontextid?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
   utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

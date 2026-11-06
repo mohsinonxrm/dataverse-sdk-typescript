@@ -8,8 +8,8 @@ import { requestBody } from "./internal/requestBody.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesAgents_CreateSARRecordsRequestParameters {
-  msdyn_InputPayload: string;
   msdyn_TrackingId?: string;
+  msdyn_InputPayload: string;
 }
 
 /**
@@ -31,8 +31,8 @@ export class msdyn_SalesAgents_CreateSARRecordsRequest
     const url = `${baseUrl}/msdyn_SalesAgents_CreateSARRecords`;
 
     const body = requestBody({
-      msdyn_InputPayload: this.Parameters.msdyn_InputPayload,
       msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
+      msdyn_InputPayload: this.Parameters.msdyn_InputPayload,
     });
 
     return {

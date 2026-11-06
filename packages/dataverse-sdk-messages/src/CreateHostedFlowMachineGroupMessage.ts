@@ -11,16 +11,16 @@ import type { CreateHostedFlowMachineGroupResponse as CreateHostedFlowMachineGro
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CreateHostedFlowMachineGroupRequestParameters {
-  groupImage?: string;
+  groupUsageType?: string;
+  groupName?: string;
   groupCapacityCount?: number;
   groupDomainSetting?: string;
+  groupImage?: string;
+  groupManagedVersion?: string;
   groupDescription?: string;
+  groupCredentials: string;
   groupMachineNetworkId?: EntityReference | AnyEntityPayload;
   groupMaximumMachineCount?: number;
-  groupName?: string;
-  groupCredentials: string;
-  groupUsageType?: string;
-  groupManagedVersion?: string;
 }
 
 /**
@@ -42,16 +42,16 @@ export class CreateHostedFlowMachineGroupRequest
     const url = `${baseUrl}/CreateHostedFlowMachineGroup`;
 
     const body = requestBody({
-      groupImage: this.Parameters.groupImage,
+      groupUsageType: this.Parameters.groupUsageType,
+      groupName: this.Parameters.groupName,
       groupCapacityCount: this.Parameters.groupCapacityCount,
       groupDomainSetting: this.Parameters.groupDomainSetting,
+      groupImage: this.Parameters.groupImage,
+      groupManagedVersion: this.Parameters.groupManagedVersion,
       groupDescription: this.Parameters.groupDescription,
+      groupCredentials: this.Parameters.groupCredentials,
       groupMachineNetworkId: this.Parameters.groupMachineNetworkId,
       groupMaximumMachineCount: this.Parameters.groupMaximumMachineCount,
-      groupName: this.Parameters.groupName,
-      groupCredentials: this.Parameters.groupCredentials,
-      groupUsageType: this.Parameters.groupUsageType,
-      groupManagedVersion: this.Parameters.groupManagedVersion,
     });
 
     return {

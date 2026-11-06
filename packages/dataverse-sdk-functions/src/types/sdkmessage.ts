@@ -2,33 +2,33 @@
  * sdkmessage entity type
  */
 export interface sdkmessage {
-  _organizationid_value?: string;
-  isprivate?: boolean;
-  introducedversion?: string;
-  workflowsdkstepenabled?: boolean;
-  throttlesettings?: string;
-  availability?: number;
-  expand?: boolean;
-  _createdonbehalfby_value?: string;
-  modifiedon?: string;
-  template?: boolean;
-  sdkmessageid?: string;
-  categoryname?: string;
-  autotransact?: boolean;
-  overwritetime?: string;
-  isactive?: boolean;
-  isvalidforexecuteasync?: boolean;
-  executeprivilegename?: string;
   _createdby_value?: string;
-  isreadonly?: boolean;
-  name?: string;
-  _modifiedonbehalfby_value?: string;
-  sdkmessageidunique?: string;
+  _createdonbehalfby_value?: string;
   _modifiedby_value?: string;
-  ismanaged?: boolean;
-  customizationlevel?: number;
-  solutionid?: string;
+  _modifiedonbehalfby_value?: string;
+  _organizationid_value?: string;
+  autotransact?: boolean;
+  availability?: number;
+  categoryname?: string;
   componentstate?: number;
   createdon?: string;
+  customizationlevel?: number;
+  executeprivilegename?: string;
+  expand?: boolean;
+  introducedversion?: string;
+  isactive?: boolean;
+  ismanaged?: boolean;
+  isprivate?: boolean;
+  isreadonly?: boolean;
+  isvalidforexecuteasync?: boolean;
+  modifiedon?: string;
+  name?: string;
+  overwritetime?: string;
+  sdkmessageid?: string;
+  sdkmessageidunique?: string;
+  solutionid?: string;
+  template?: boolean;
+  throttlesettings?: string;
   versionnumber?: number;
+  workflowsdkstepenabled?: boolean;
 }

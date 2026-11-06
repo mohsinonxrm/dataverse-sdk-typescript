@@ -13,14 +13,14 @@ export interface UpdateAutomatedPluginResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface UpdateAutomatedPluginActionParameters {
-  Expression?: string;
   SolutionUniqueName?: string;
+  Expression?: string;
+  FxExpressionUniqueName: string;
+  Stage?: number;
   EntityLogicalName?: string;
   Context?: string;
-  Name?: string;
-  Stage?: number;
-  FxExpressionUniqueName: string;
   MessageName?: string;
+  Name?: string;
 }
 
 /**
@@ -35,14 +35,14 @@ export class UpdateAutomatedPluginAction implements Executable<UpdateAutomatedPl
     const url = `${baseUrl}/UpdateAutomatedPlugin`;
 
     const body = requestBody({
-      Expression: this.parameters.Expression,
       SolutionUniqueName: this.parameters.SolutionUniqueName,
+      Expression: this.parameters.Expression,
+      FxExpressionUniqueName: this.parameters.FxExpressionUniqueName,
+      Stage: this.parameters.Stage,
       EntityLogicalName: this.parameters.EntityLogicalName,
       Context: this.parameters.Context,
-      Name: this.parameters.Name,
-      Stage: this.parameters.Stage,
-      FxExpressionUniqueName: this.parameters.FxExpressionUniqueName,
       MessageName: this.parameters.MessageName,
+      Name: this.parameters.Name,
     });
 
     return {

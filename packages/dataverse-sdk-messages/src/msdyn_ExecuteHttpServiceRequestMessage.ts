@@ -10,10 +10,10 @@ import type { msdyn_ExecuteHttpServiceRequestResponse as msdyn_ExecuteHttpServic
  */
 export interface msdyn_ExecuteHttpServiceRequestRequestParameters {
   msdyn_RequestType: string;
-  msdyn_RequestUrl: string;
+  msdyn_Method: string;
   msdyn_CloudServiceApplicationType: number;
   msdyn_RequestBody?: string;
-  msdyn_Method: string;
+  msdyn_RequestUrl: string;
 }
 
 /**
@@ -36,10 +36,10 @@ export class msdyn_ExecuteHttpServiceRequestRequest
 
     const body = requestBody({
       msdyn_RequestType: this.Parameters.msdyn_RequestType,
-      msdyn_RequestUrl: this.Parameters.msdyn_RequestUrl,
+      msdyn_Method: this.Parameters.msdyn_Method,
       msdyn_CloudServiceApplicationType: this.Parameters.msdyn_CloudServiceApplicationType,
       msdyn_RequestBody: this.Parameters.msdyn_RequestBody,
-      msdyn_Method: this.Parameters.msdyn_Method,
+      msdyn_RequestUrl: this.Parameters.msdyn_RequestUrl,
     });
 
     return {

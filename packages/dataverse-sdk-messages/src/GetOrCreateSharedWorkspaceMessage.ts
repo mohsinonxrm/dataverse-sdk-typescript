@@ -11,8 +11,8 @@ import type { sharedworkspace } from "./types/index.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface GetOrCreateSharedWorkspaceRequestParameters {
-  customclaims?: EntityReference | AnyEntityPayload;
   target: EntityReference | EntityPayload<sharedworkspace>;
+  customclaims?: EntityReference | AnyEntityPayload;
 }
 
 /**
@@ -34,8 +34,8 @@ export class GetOrCreateSharedWorkspaceRequest
     const url = `${baseUrl}/GetOrCreateSharedWorkspace`;
 
     const body = requestBody({
-      customclaims: this.Parameters.customclaims,
       target: this.Parameters.target,
+      customclaims: this.Parameters.customclaims,
     });
 
     return {

@@ -13,8 +13,9 @@ export interface msdyn_invokeCustomAgentForCaseProcessingAgentResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_invokeCustomAgentForCaseProcessingAgentActionParameters {
-  msdyn_caseProcessingAgentDetails: string;
   msdyn_customAgentDetails: string;
+  msdyn_caseProcessingAgentDetails: string;
+  RunId?: string;
 }
 
 /**
@@ -31,8 +32,9 @@ export class msdyn_invokeCustomAgentForCaseProcessingAgentAction implements Exec
     const url = `${baseUrl}/msdyn_invokeCustomAgentForCaseProcessingAgent`;
 
     const body = requestBody({
-      msdyn_caseProcessingAgentDetails: this.parameters.msdyn_caseProcessingAgentDetails,
       msdyn_customAgentDetails: this.parameters.msdyn_customAgentDetails,
+      msdyn_caseProcessingAgentDetails: this.parameters.msdyn_caseProcessingAgentDetails,
+      RunId: this.parameters.RunId,
     });
 
     return {

@@ -2,25 +2,25 @@
  * delegatedauthorization entity type
  */
 export interface delegatedauthorization {
-  _organizationid_value?: string;
-  _modifiedby_value?: string;
-  sharepointsite?: string;
-  timezoneruleversionnumber?: number;
   _createdby_value?: string;
-  providertype?: number;
   _createdonbehalfby_value?: string;
-  sharepointlistid?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _organizationid_value?: string;
   botid?: string;
   createdon?: string;
-  utcconversiontimezonecode?: number;
+  delegatedauthorizationid?: string;
   importsequencenumber?: number;
   modifiedon?: string;
-  versionnumber?: number;
-  roadmapprojectid?: string;
-  _modifiedonbehalfby_value?: string;
-  statuscode?: number;
-  overriddencreatedon?: string;
-  delegatedauthorizationid?: string;
   name?: string;
+  overriddencreatedon?: string;
+  providertype?: number;
+  roadmapprojectid?: string;
+  sharepointlistid?: string;
+  sharepointsite?: string;
   statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

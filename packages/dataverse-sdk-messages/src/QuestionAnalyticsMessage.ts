@@ -9,12 +9,12 @@ import type { QuestionAnalyticsResponse as QuestionAnalyticsResponseData } from 
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface QuestionAnalyticsRequestParameters {
-  botId: string;
-  page?: number;
-  endDateTime: string;
   startDateTime: string;
-  state: string;
   count?: number;
+  botId: string;
+  state: string;
+  endDateTime: string;
+  page?: number;
 }
 
 /**
@@ -36,12 +36,12 @@ export class QuestionAnalyticsRequest
     const url = `${baseUrl}/QuestionAnalytics`;
 
     const body = requestBody({
-      botId: this.Parameters.botId,
-      page: this.Parameters.page,
-      endDateTime: this.Parameters.endDateTime,
       startDateTime: this.Parameters.startDateTime,
-      state: this.Parameters.state,
       count: this.Parameters.count,
+      botId: this.Parameters.botId,
+      state: this.Parameters.state,
+      endDateTime: this.Parameters.endDateTime,
+      page: this.Parameters.page,
     });
 
     return {

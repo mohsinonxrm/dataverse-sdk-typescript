@@ -5,8 +5,8 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_SLATimeCalculation action
  */
 export interface msdyn_SLATimeCalculationResponse {
-  returnValue: string;
   outputLogs: string;
+  returnValue: string;
 }
 
 /**

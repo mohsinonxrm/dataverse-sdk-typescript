@@ -15,8 +15,8 @@ export interface msdyn_GetInsightsResponse {
  */
 export interface msdyn_GetInsightsActionParameters {
   msdyn_payload: string;
-  msdyn_insighttype: string;
   msdyn_responseFormat?: string;
+  msdyn_insighttype: string;
 }
 
 /**
@@ -32,8 +32,8 @@ export class msdyn_GetInsightsAction implements Executable<msdyn_GetInsightsResp
 
     const body = requestBody({
       msdyn_payload: this.parameters.msdyn_payload,
-      msdyn_insighttype: this.parameters.msdyn_insighttype,
       msdyn_responseFormat: this.parameters.msdyn_responseFormat,
+      msdyn_insighttype: this.parameters.msdyn_insighttype,
     });
 
     return {

@@ -13,10 +13,11 @@ export interface msdyn_knowledgeHarvestCreateArticleResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_knowledgeHarvestCreateArticleActionParameters {
-  msdyn_knowledgeHarvestJobId: string;
   msdyn_entityName: string;
   msdyn_entityId: string;
+  msdyn_additionalInformation?: string;
   msdyn_payload: string;
+  msdyn_knowledgeHarvestJobId: string;
 }
 
 /**
@@ -31,10 +32,11 @@ export class msdyn_knowledgeHarvestCreateArticleAction implements Executable<msd
     const url = `${baseUrl}/msdyn_knowledgeHarvestCreateArticle`;
 
     const body = requestBody({
-      msdyn_knowledgeHarvestJobId: this.parameters.msdyn_knowledgeHarvestJobId,
       msdyn_entityName: this.parameters.msdyn_entityName,
       msdyn_entityId: this.parameters.msdyn_entityId,
+      msdyn_additionalInformation: this.parameters.msdyn_additionalInformation,
       msdyn_payload: this.parameters.msdyn_payload,
+      msdyn_knowledgeHarvestJobId: this.parameters.msdyn_knowledgeHarvestJobId,
     });
 
     return {

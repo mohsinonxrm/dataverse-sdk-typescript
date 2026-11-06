@@ -6,17 +6,17 @@ import type { OrganizationType } from "./OrganizationType.js";
  * OrganizationDetail complex type
  */
 export interface OrganizationDetail {
-  OrganizationId?: string;
-  FriendlyName?: string;
-  OrganizationVersion?: string;
-  EnvironmentId?: string;
   DatacenterId?: string;
-  Geo?: string;
-  TenantId?: string;
-  UrlName?: string;
-  UniqueName?: string;
   Endpoints?: EndpointCollection;
-  State?: OrganizationState;
-  SchemaType?: string;
+  EnvironmentId?: string;
+  FriendlyName?: string;
+  Geo?: string;
+  OrganizationId?: string;
   OrganizationType?: OrganizationType;
+  OrganizationVersion?: string;
+  SchemaType?: string;
+  State?: OrganizationState;
+  TenantId?: string;
+  UniqueName?: string;
+  UrlName?: string;
 }

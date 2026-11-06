@@ -7,7 +7,7 @@ import type { AnyEntityPayload } from "./EntityPayload.js";
  * SolutionComponentOption complex type
  */
 export interface SolutionComponentOption {
-  ImportDecision?: ImportDecision;
   ComponentPrincipalAccessItems?: ComponentPrincipalAccess[];
+  ImportDecision?: ImportDecision;
   Component: EntityReference | AnyEntityPayload;
 }

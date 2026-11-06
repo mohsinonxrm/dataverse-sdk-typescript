@@ -12,6 +12,7 @@ import type { msdyn_PerformChecksForEnrichRecordResponse as msdyn_PerformChecksF
  */
 export interface msdyn_PerformChecksForEnrichRecordRequestParameters {
   msdyn_Target: EntityReference | AnyEntityPayload;
+  msdyn_IncludeShadowRule?: boolean;
 }
 
 /**
@@ -34,6 +35,7 @@ export class msdyn_PerformChecksForEnrichRecordRequest
 
     const body = requestBody({
       msdyn_Target: this.Parameters.msdyn_Target,
+      msdyn_IncludeShadowRule: this.Parameters.msdyn_IncludeShadowRule,
     });
 
     return {

@@ -9,13 +9,13 @@ import type { GenerateInstantPluginResponse as GenerateInstantPluginResponseData
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface GenerateInstantPluginRequestParameters {
-  SolutionUniqueName?: string;
-  Expression: string;
-  Context?: string;
-  Description: string;
-  EntityLogicalName?: string;
   Parameters?: string;
+  Expression: string;
+  Description: string;
   Name: string;
+  Context?: string;
+  SolutionUniqueName?: string;
+  EntityLogicalName?: string;
 }
 
 /**
@@ -37,13 +37,13 @@ export class GenerateInstantPluginRequest
     const url = `${baseUrl}/GenerateInstantPlugin`;
 
     const body = requestBody({
-      SolutionUniqueName: this.Parameters.SolutionUniqueName,
-      Expression: this.Parameters.Expression,
-      Context: this.Parameters.Context,
-      Description: this.Parameters.Description,
-      EntityLogicalName: this.Parameters.EntityLogicalName,
       Parameters: this.Parameters.Parameters,
+      Expression: this.Parameters.Expression,
+      Description: this.Parameters.Description,
       Name: this.Parameters.Name,
+      Context: this.Parameters.Context,
+      SolutionUniqueName: this.Parameters.SolutionUniqueName,
+      EntityLogicalName: this.Parameters.EntityLogicalName,
     });
 
     return {

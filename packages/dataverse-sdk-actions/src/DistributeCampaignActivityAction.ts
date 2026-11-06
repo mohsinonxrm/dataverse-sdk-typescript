@@ -28,6 +28,7 @@ export interface DistributeCampaignActivityActionParameters {
   SendEmail: boolean;
   Queue?: EntityReference | EntityPayload<queue>;
   PostWorkflowEvent: boolean;
+  ExtendedActivityParameters?: string;
 }
 
 /**
@@ -57,6 +58,7 @@ export class DistributeCampaignActivityAction implements Executable<DistributeCa
       SendEmail: this.parameters.SendEmail,
       Queue: this.parameters.Queue,
       PostWorkflowEvent: this.parameters.PostWorkflowEvent,
+      ExtendedActivityParameters: this.parameters.ExtendedActivityParameters,
     });
 
     return {

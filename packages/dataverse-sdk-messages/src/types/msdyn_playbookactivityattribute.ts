@@ -2,26 +2,26 @@
  * msdyn_playbookactivityattribute entity type
  */
 export interface msdyn_playbookactivityattribute {
-  statuscode?: number;
-  msdyn_attributeValue?: string;
+  _createdby_value?: string;
+  _createdonbehalfby_value?: string;
   _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _msdyn_playbookactivityid_value?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
   _owninguser_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
   modifiedon?: string;
   msdyn_attributeLogicalName?: string;
-  statecode?: number;
-  _modifiedonbehalfby_value?: string;
-  versionnumber?: number;
-  timezoneruleversionnumber?: number;
-  _createdonbehalfby_value?: string;
-  importsequencenumber?: number;
-  createdon?: string;
-  _owningteam_value?: string;
-  msdyn_playbookactivityattributeid?: string;
   msdyn_attributeType?: number;
-  _ownerid_value?: string;
+  msdyn_attributeValue?: string;
+  msdyn_playbookactivityattributeid?: string;
   overriddencreatedon?: string;
-  _owningbusinessunit_value?: string;
-  _msdyn_playbookactivityid_value?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
   utcconversiontimezonecode?: number;
-  _createdby_value?: string;
+  versionnumber?: number;
 }

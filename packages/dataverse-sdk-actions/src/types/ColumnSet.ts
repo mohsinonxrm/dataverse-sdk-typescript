@@ -5,6 +5,6 @@ import type { XrmAttributeExpression } from "./XrmAttributeExpression.js";
  */
 export interface ColumnSet {
   AllColumns?: boolean;
-  Columns?: string[];
   AttributeExpressions?: XrmAttributeExpression[];
+  Columns?: string[];
 }

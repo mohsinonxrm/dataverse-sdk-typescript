@@ -2,16 +2,16 @@
  * sensitivitylabel entity type
  */
 export interface sensitivitylabel {
-  priority?: number;
-  color?: string;
-  isdefault?: boolean;
   applicableto?: string;
-  sensitivitylabelid?: string;
-  labelactions?: string;
+  color?: string;
   description?: string;
   displayname?: string;
+  isdefault?: boolean;
   isenabled?: boolean;
-  parentsensitivitylabelid?: string;
-  tooltip?: string;
+  labelactions?: string;
   name?: string;
+  parentsensitivitylabelid?: string;
+  priority?: number;
+  sensitivitylabelid?: string;
+  tooltip?: string;
 }

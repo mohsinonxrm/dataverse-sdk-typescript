@@ -2,22 +2,22 @@
  * mobileofflineprofileextension entity type
  */
 export interface mobileofflineprofileextension {
-  overriddencreatedon?: string;
-  _modifiedby_value?: string;
-  _mobileofflineprofileid_value?: string;
-  utcconversiontimezonecode?: number;
-  _organizationid_value?: string;
-  _createdonbehalfby_value?: string;
-  timezoneruleversionnumber?: number;
-  mobileofflineprofileextensionid?: string;
-  name?: string;
   _createdby_value?: string;
-  versionnumber?: number;
-  filterversion?: number;
-  statuscode?: number;
-  importsequencenumber?: number;
-  createdon?: string;
+  _createdonbehalfby_value?: string;
+  _mobileofflineprofileid_value?: string;
+  _modifiedby_value?: string;
   _modifiedonbehalfby_value?: string;
-  statecode?: number;
+  _organizationid_value?: string;
+  createdon?: string;
+  filterversion?: number;
+  importsequencenumber?: number;
+  mobileofflineprofileextensionid?: string;
   modifiedon?: string;
+  name?: string;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

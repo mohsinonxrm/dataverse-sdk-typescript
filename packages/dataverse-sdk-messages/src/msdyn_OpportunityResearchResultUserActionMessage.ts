@@ -10,10 +10,11 @@ import type { msdyn_OpportunityResearchResultUserActionResponse as msdyn_Opportu
  */
 export interface msdyn_OpportunityResearchResultUserActionRequestParameters {
   Id: string;
+  MacroAgentOrchestrationId: string;
   Action: string;
   Topic: string;
-  MacroAgentOrchestrationId: string;
   OpportunityId: string;
+  IsCallFromNba?: boolean;
 }
 
 /**
@@ -36,10 +37,11 @@ export class msdyn_OpportunityResearchResultUserActionRequest
 
     const body = requestBody({
       Id: this.Parameters.Id,
+      MacroAgentOrchestrationId: this.Parameters.MacroAgentOrchestrationId,
       Action: this.Parameters.Action,
       Topic: this.Parameters.Topic,
-      MacroAgentOrchestrationId: this.Parameters.MacroAgentOrchestrationId,
       OpportunityId: this.Parameters.OpportunityId,
+      IsCallFromNba: this.Parameters.IsCallFromNba,
     });
 
     return {

@@ -5,10 +5,10 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_CheckForDeletedProcess action
  */
 export interface msdyn_CheckForDeletedProcessResponse {
+  HelpLink: string;
   Message: string;
   ResultEntities: string;
   ReturnStatus: number;
-  HelpLink: string;
 }
 
 /**

@@ -4,9 +4,9 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * Response from msdyn_SmsChannelConfigurationShouldHaveWorkStreamRule action
  */
 export interface msdyn_SmsChannelConfigurationShouldHaveWorkStreamRuleResponse {
-  ReturnStatus: number;
   Message: string;
   ResultEntities: string;
+  ReturnStatus: number;
 }
 
 /**

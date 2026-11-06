@@ -9,8 +9,8 @@ import type { msdyn_GeneratePlatformSummaryResponse as msdyn_GeneratePlatformSum
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_GeneratePlatformSummaryRequestParameters {
-  ClientContext?: string;
   OtherData?: string;
+  ClientContext?: string;
 }
 
 /**
@@ -32,8 +32,8 @@ export class msdyn_GeneratePlatformSummaryRequest
     const url = `${baseUrl}/msdyn_GeneratePlatformSummary`;
 
     const body = requestBody({
-      ClientContext: this.Parameters.ClientContext,
       OtherData: this.Parameters.OtherData,
+      ClientContext: this.Parameters.ClientContext,
     });
 
     return {

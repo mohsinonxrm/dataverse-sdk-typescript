@@ -2,27 +2,27 @@
  * msdyn_conversationparticipantsentiment entity type
  */
 export interface msdyn_conversationparticipantsentiment {
-  _modifiedonbehalfby_value?: string;
-  _createdonbehalfby_value?: string;
-  versionnumber?: number;
-  msdyn_overallnegativesentiment?: number;
   _createdby_value?: string;
-  modifiedon?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
   _msdyn_conversationparticipantinsights_value?: string;
-  utcconversiontimezonecode?: number;
-  importsequencenumber?: number;
-  _owningteam_value?: string;
-  overriddencreatedon?: string;
+  _ownerid_value?: string;
   _owningbusinessunit_value?: string;
-  msdyn_conversationparticipantsentimentid?: string;
-  statecode?: number;
-  msdyn_overallpositivesentiment?: number;
+  _owningteam_value?: string;
   _owninguser_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_conversationparticipantsentimentid?: string;
+  msdyn_name?: string;
+  msdyn_overallnegativesentiment?: number;
+  msdyn_overallneutralsentiment?: number;
+  msdyn_overallpositivesentiment?: number;
+  overriddencreatedon?: string;
+  statecode?: number;
   statuscode?: number;
   timezoneruleversionnumber?: number;
-  createdon?: string;
-  _ownerid_value?: string;
-  _modifiedby_value?: string;
-  msdyn_overallneutralsentiment?: number;
-  msdyn_name?: string;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

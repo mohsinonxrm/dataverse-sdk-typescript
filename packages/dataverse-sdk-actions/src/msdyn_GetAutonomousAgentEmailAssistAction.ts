@@ -5,8 +5,9 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_GetAutonomousAgentEmailAssist action
  */
 export interface msdyn_GetAutonomousAgentEmailAssistResponse {
-  emailSubject: string;
   emailContent: string;
+  emailSubject: string;
+  isGovernanceAgentGuardrailViolated: boolean;
 }
 
 /**
@@ -14,8 +15,8 @@ export interface msdyn_GetAutonomousAgentEmailAssistResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_GetAutonomousAgentEmailAssistActionParameters {
-  emailAssistAdditionalInformation: string;
   emailAssistRequestPayload: string;
+  emailAssistAdditionalInformation: string;
   emailAssistRequestHeader: string;
 }
 
@@ -31,8 +32,8 @@ export class msdyn_GetAutonomousAgentEmailAssistAction implements Executable<msd
     const url = `${baseUrl}/msdyn_GetAutonomousAgentEmailAssist`;
 
     const body = requestBody({
-      emailAssistAdditionalInformation: this.parameters.emailAssistAdditionalInformation,
       emailAssistRequestPayload: this.parameters.emailAssistRequestPayload,
+      emailAssistAdditionalInformation: this.parameters.emailAssistAdditionalInformation,
       emailAssistRequestHeader: this.parameters.emailAssistRequestHeader,
     });
 

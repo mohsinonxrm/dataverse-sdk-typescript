@@ -13,8 +13,9 @@ export interface msdyn_KnowledgeHarvestFetchDataResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_KnowledgeHarvestFetchDataActionParameters {
-  msdyn_entityId: string;
+  msdyn_additionalInformation?: string;
   msdyn_entityName: string;
+  msdyn_entityId: string;
 }
 
 /**
@@ -29,8 +30,9 @@ export class msdyn_KnowledgeHarvestFetchDataAction implements Executable<msdyn_K
     const url = `${baseUrl}/msdyn_KnowledgeHarvestFetchData`;
 
     const body = requestBody({
-      msdyn_entityId: this.parameters.msdyn_entityId,
+      msdyn_additionalInformation: this.parameters.msdyn_additionalInformation,
       msdyn_entityName: this.parameters.msdyn_entityName,
+      msdyn_entityId: this.parameters.msdyn_entityId,
     });
 
     return {

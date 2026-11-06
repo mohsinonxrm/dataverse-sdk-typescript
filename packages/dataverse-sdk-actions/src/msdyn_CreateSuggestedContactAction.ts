@@ -5,8 +5,8 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_CreateSuggestedContact action
  */
 export interface msdyn_CreateSuggestedContactResponse {
-  id: string;
   failedRecordCount: string;
+  id: string;
 }
 
 /**

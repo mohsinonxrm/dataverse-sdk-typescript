@@ -5,8 +5,8 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_UpsertSellerAssignmentMap action
  */
 export interface msdyn_UpsertSellerAssignmentMapResponse {
-  UpdatedSellerAssignmentMaps: string;
   Error: string;
+  UpdatedSellerAssignmentMaps: string;
 }
 
 /**

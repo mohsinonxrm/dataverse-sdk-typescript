@@ -8,8 +8,8 @@ import type { BusinessNotification, ValidationResult } from "./types/index.js";
  * Response from Reschedule action
  */
 export interface RescheduleResponse {
-  ValidationResult: ValidationResult;
   Notifications: BusinessNotification[];
+  ValidationResult: ValidationResult;
 }
 
 /**

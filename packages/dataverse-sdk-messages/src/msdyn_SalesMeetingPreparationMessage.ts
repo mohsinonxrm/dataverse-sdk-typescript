@@ -9,10 +9,10 @@ import type { msdyn_SalesMeetingPreparationResponse as msdyn_SalesMeetingPrepara
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesMeetingPreparationRequestParameters {
-  msdyn_sessionId?: string;
-  msdyn_activityId?: string;
-  msdyn_id: string;
   msdyn_responseFormat?: string;
+  msdyn_activityId?: string;
+  msdyn_sessionId?: string;
+  msdyn_id: string;
 }
 
 /**
@@ -34,10 +34,10 @@ export class msdyn_SalesMeetingPreparationRequest
     const url = `${baseUrl}/msdyn_SalesMeetingPreparation`;
 
     const body = requestBody({
-      msdyn_sessionId: this.Parameters.msdyn_sessionId,
-      msdyn_activityId: this.Parameters.msdyn_activityId,
-      msdyn_id: this.Parameters.msdyn_id,
       msdyn_responseFormat: this.Parameters.msdyn_responseFormat,
+      msdyn_activityId: this.Parameters.msdyn_activityId,
+      msdyn_sessionId: this.Parameters.msdyn_sessionId,
+      msdyn_id: this.Parameters.msdyn_id,
     });
 
     return {

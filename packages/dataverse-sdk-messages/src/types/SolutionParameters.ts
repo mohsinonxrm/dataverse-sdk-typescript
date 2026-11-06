@@ -6,8 +6,8 @@ import type { AnyEntityPayload } from "./EntityPayload.js";
  * SolutionParameters complex type
  */
 export interface SolutionParameters {
-  StageSolutionUploadId?: string;
-  SolutionComponentOptions?: SolutionComponentOption[];
   DeployMissingPackagesBeforeSolutionImport?: boolean;
+  SolutionComponentOptions?: SolutionComponentOption[];
+  StageSolutionUploadId?: string;
   PackageHistoryReference: EntityReference | AnyEntityPayload;
 }

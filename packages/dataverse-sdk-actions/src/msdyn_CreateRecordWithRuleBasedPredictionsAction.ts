@@ -19,9 +19,9 @@ export interface msdyn_CreateRecordWithRuleBasedPredictionsResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_CreateRecordWithRuleBasedPredictionsActionParameters {
-  msdyn_Context?: EntityReference | AnyEntityPayload;
-  msdyn_ContextGenerationParameters?: string;
   msdyn_Target: EntityReference | AnyEntityPayload;
+  msdyn_ContextGenerationParameters?: string;
+  msdyn_Context?: EntityReference | AnyEntityPayload;
 }
 
 /**
@@ -38,9 +38,9 @@ export class msdyn_CreateRecordWithRuleBasedPredictionsAction implements Executa
     const url = `${baseUrl}/msdyn_CreateRecordWithRuleBasedPredictions`;
 
     const body = requestBody({
-      msdyn_Context: this.parameters.msdyn_Context,
-      msdyn_ContextGenerationParameters: this.parameters.msdyn_ContextGenerationParameters,
       msdyn_Target: this.parameters.msdyn_Target,
+      msdyn_ContextGenerationParameters: this.parameters.msdyn_ContextGenerationParameters,
+      msdyn_Context: this.parameters.msdyn_Context,
     });
 
     return {

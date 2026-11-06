@@ -11,10 +11,10 @@ import type { msdyn_CreateAutonomousEmailWrapperResponse as msdyn_CreateAutonomo
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_CreateAutonomousEmailWrapperRequestParameters {
-  SenderEntity?: EntityReference | AnyEntityPayload;
+  SourceContextEntity?: EntityReference | AnyEntityPayload;
   Entity: EntityReference | AnyEntityPayload;
   NextSuggestion: string;
-  SourceContextEntity?: EntityReference | AnyEntityPayload;
+  SenderEntity?: EntityReference | AnyEntityPayload;
 }
 
 /**
@@ -36,10 +36,10 @@ export class msdyn_CreateAutonomousEmailWrapperRequest
     const url = `${baseUrl}/msdyn_CreateAutonomousEmailWrapper`;
 
     const body = requestBody({
-      SenderEntity: this.Parameters.SenderEntity,
+      SourceContextEntity: this.Parameters.SourceContextEntity,
       Entity: this.Parameters.Entity,
       NextSuggestion: this.Parameters.NextSuggestion,
-      SourceContextEntity: this.Parameters.SourceContextEntity,
+      SenderEntity: this.Parameters.SenderEntity,
     });
 
     return {

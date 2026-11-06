@@ -17,12 +17,12 @@ export interface FormPredictResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface FormPredictActionParameters {
-  entityName: string;
-  predictorFields: string[];
-  context?: string;
   requestedFields: string[];
+  predictorFields: string[];
   recordValues: string;
   clientPartnerSource?: string;
+  context?: string;
+  entityName: string;
 }
 
 /**
@@ -37,12 +37,12 @@ export class FormPredictAction implements Executable<FormPredictResponse> {
     const url = `${baseUrl}/FormPredict`;
 
     const body = requestBody({
-      entityName: this.parameters.entityName,
-      predictorFields: this.parameters.predictorFields,
-      context: this.parameters.context,
       requestedFields: this.parameters.requestedFields,
+      predictorFields: this.parameters.predictorFields,
       recordValues: this.parameters.recordValues,
       clientPartnerSource: this.parameters.clientPartnerSource,
+      context: this.parameters.context,
+      entityName: this.parameters.entityName,
     });
 
     return {

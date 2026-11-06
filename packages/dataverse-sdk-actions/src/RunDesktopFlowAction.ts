@@ -13,13 +13,13 @@ export interface RunDesktopFlowResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface RunDesktopFlowActionParameters {
-  inputs?: string;
-  runMode: string;
-  connectionName: string;
-  runPriority?: string;
-  timeout?: number;
   connectionType?: number;
+  connectionName: string;
+  runMode: string;
+  timeout?: number;
   callbackUrl?: string;
+  runPriority?: string;
+  inputs?: string;
 }
 
 /**
@@ -41,13 +41,13 @@ export class RunDesktopFlowAction implements Executable<RunDesktopFlowResponse> 
     const url = `${baseUrl}/workflows(${this.workflowId})/Microsoft.Dynamics.CRM.RunDesktopFlow`;
 
     const body = requestBody({
-      inputs: this.parameters.inputs,
-      runMode: this.parameters.runMode,
-      connectionName: this.parameters.connectionName,
-      runPriority: this.parameters.runPriority,
-      timeout: this.parameters.timeout,
       connectionType: this.parameters.connectionType,
+      connectionName: this.parameters.connectionName,
+      runMode: this.parameters.runMode,
+      timeout: this.parameters.timeout,
       callbackUrl: this.parameters.callbackUrl,
+      runPriority: this.parameters.runPriority,
+      inputs: this.parameters.inputs,
     });
 
     return {

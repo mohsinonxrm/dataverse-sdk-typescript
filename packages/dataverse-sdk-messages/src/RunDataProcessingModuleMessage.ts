@@ -9,12 +9,12 @@ import type { RunDataProcessingModuleResponse as RunDataProcessingModuleResponse
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface RunDataProcessingModuleRequestParameters {
-  EndPoints?: string[];
-  JobArguments?: string[];
+  UpstreamResults?: string[];
   ScalarInputs?: string[];
   CallbackUri?: string;
+  EndPoints?: string[];
+  JobArguments?: string[];
   DataProcessingConfigurationId: string;
-  UpstreamResults?: string[];
 }
 
 /**
@@ -36,12 +36,12 @@ export class RunDataProcessingModuleRequest
     const url = `${baseUrl}/RunDataProcessingModule`;
 
     const body = requestBody({
-      EndPoints: this.Parameters.EndPoints,
-      JobArguments: this.Parameters.JobArguments,
+      UpstreamResults: this.Parameters.UpstreamResults,
       ScalarInputs: this.Parameters.ScalarInputs,
       CallbackUri: this.Parameters.CallbackUri,
+      EndPoints: this.Parameters.EndPoints,
+      JobArguments: this.Parameters.JobArguments,
       DataProcessingConfigurationId: this.Parameters.DataProcessingConfigurationId,
-      UpstreamResults: this.Parameters.UpstreamResults,
     });
 
     return {

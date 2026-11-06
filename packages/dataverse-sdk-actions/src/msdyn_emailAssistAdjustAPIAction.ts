@@ -14,10 +14,10 @@ export interface msdyn_emailAssistAdjustAPIResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_emailAssistAdjustAPIActionParameters {
-  emailInput: string;
-  caller: string;
   knobsConfigurations: string;
+  emailInput: string;
   requestId: string;
+  caller: string;
   copilotOption: string;
 }
 
@@ -33,10 +33,10 @@ export class msdyn_emailAssistAdjustAPIAction implements Executable<msdyn_emailA
     const url = `${baseUrl}/msdyn_emailAssistAdjustAPI`;
 
     const body = requestBody({
-      emailInput: this.parameters.emailInput,
-      caller: this.parameters.caller,
       knobsConfigurations: this.parameters.knobsConfigurations,
+      emailInput: this.parameters.emailInput,
       requestId: this.parameters.requestId,
+      caller: this.parameters.caller,
       copilotOption: this.parameters.copilotOption,
     });
 

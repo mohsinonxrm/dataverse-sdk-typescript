@@ -4,8 +4,8 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * Response from RetrieveCascadeDeleteAsyncJobId function
  */
 export interface RetrieveCascadeDeleteAsyncJobIdResponse {
-  AsyncJobName: string;
   AsyncJobId: string;
+  AsyncJobName: string;
 }
 
 /**

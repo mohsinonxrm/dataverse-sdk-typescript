@@ -2,29 +2,29 @@
  * msdyn_aiodtrainingboundingbox entity type
  */
 export interface msdyn_aiodtrainingboundingbox {
-  _createdonbehalfby_value?: string;
-  statecode?: number;
-  timezoneruleversionnumber?: number;
-  msdyn_top?: number;
   _createdby_value?: string;
-  createdon?: string;
-  msdyn_name?: string;
-  _ownerid_value?: string;
+  _createdonbehalfby_value?: string;
   _modifiedby_value?: string;
   _modifiedonbehalfby_value?: string;
-  _msdyn_aiodtrainingimageid_value?: string;
-  utcconversiontimezonecode?: number;
-  msdyn_height?: number;
-  importsequencenumber?: number;
   _msdyn_aiodlabelid_value?: string;
-  modifiedon?: string;
-  msdyn_left?: number;
-  statuscode?: number;
-  msdyn_width?: number;
-  versionnumber?: number;
-  msdyn_aiodtrainingboundingboxid?: string;
-  _owninguser_value?: string;
-  _owningteam_value?: string;
-  overriddencreatedon?: string;
+  _msdyn_aiodtrainingimageid_value?: string;
+  _ownerid_value?: string;
   _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_aiodtrainingboundingboxid?: string;
+  msdyn_height?: number;
+  msdyn_left?: number;
+  msdyn_name?: string;
+  msdyn_top?: number;
+  msdyn_width?: number;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

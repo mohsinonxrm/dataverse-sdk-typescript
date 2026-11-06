@@ -2,32 +2,32 @@
  * tracelog entity type
  */
 export interface tracelog {
-  collationlevel?: number;
-  traceparameterxml?: string;
-  level?: number;
-  canbedeleted?: boolean;
-  traceparameterhash?: number;
-  createdon?: string;
-  text?: string;
-  tracelogid?: string;
-  _regardingobjectowningbusinessunit_value?: string;
-  timezoneruleversionnumber?: number;
-  tracedetailxml?: string;
-  utcconversiontimezonecode?: number;
-  machinename?: string;
-  _createdonbehalfby_value?: string;
-  _organizationid_value?: string;
-  tracecode?: number;
   _createdby_value?: string;
-  modifiedon?: string;
-  errortypedisplay?: string;
+  _createdonbehalfby_value?: string;
   _modifiedby_value?: string;
-  traceactionxml?: string;
-  isunique?: boolean;
   _modifiedonbehalfby_value?: string;
-  tracestatus?: boolean;
+  _organizationid_value?: string;
+  _parenttracelogid_value?: string;
   _regardingobjectid_value?: string;
   _regardingobjectownerid_value?: string;
+  _regardingobjectowningbusinessunit_value?: string;
+  canbedeleted?: boolean;
+  collationlevel?: number;
+  createdon?: string;
   errordetails?: string;
-  _parenttracelogid_value?: string;
+  errortypedisplay?: string;
+  isunique?: boolean;
+  level?: number;
+  machinename?: string;
+  modifiedon?: string;
+  text?: string;
+  timezoneruleversionnumber?: number;
+  traceactionxml?: string;
+  tracecode?: number;
+  tracedetailxml?: string;
+  tracelogid?: string;
+  traceparameterhash?: number;
+  traceparameterxml?: string;
+  tracestatus?: boolean;
+  utcconversiontimezonecode?: number;
 }

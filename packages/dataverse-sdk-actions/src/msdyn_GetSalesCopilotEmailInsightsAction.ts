@@ -12,10 +12,10 @@ export interface msdyn_GetSalesCopilotEmailInsightsResponse {}
  */
 export interface msdyn_GetSalesCopilotEmailInsightsActionParameters {
   msdyn_activityid?: string;
-  msdyn_regardinglogicalname: string;
-  msdyn_internetmessageid: string;
-  msdyn_regardingid: string;
   msdyn_messageid: string;
+  msdyn_internetmessageid: string;
+  msdyn_regardinglogicalname: string;
+  msdyn_regardingid: string;
 }
 
 /**
@@ -31,10 +31,10 @@ export class msdyn_GetSalesCopilotEmailInsightsAction implements Executable<msdy
 
     const body = requestBody({
       msdyn_activityid: this.parameters.msdyn_activityid,
-      msdyn_regardinglogicalname: this.parameters.msdyn_regardinglogicalname,
-      msdyn_internetmessageid: this.parameters.msdyn_internetmessageid,
-      msdyn_regardingid: this.parameters.msdyn_regardingid,
       msdyn_messageid: this.parameters.msdyn_messageid,
+      msdyn_internetmessageid: this.parameters.msdyn_internetmessageid,
+      msdyn_regardinglogicalname: this.parameters.msdyn_regardinglogicalname,
+      msdyn_regardingid: this.parameters.msdyn_regardingid,
     });
 
     return {

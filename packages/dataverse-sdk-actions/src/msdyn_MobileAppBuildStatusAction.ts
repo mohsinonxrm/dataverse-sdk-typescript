@@ -16,8 +16,8 @@ export interface msdyn_MobileAppBuildStatusResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_MobileAppBuildStatusActionParameters {
-  OperationId: string;
   msdyn_MobileApp: EntityReference | EntityPayload<msdyn_mobileapp>;
+  OperationId: string;
 }
 
 /**
@@ -32,8 +32,8 @@ export class msdyn_MobileAppBuildStatusAction implements Executable<msdyn_Mobile
     const url = `${baseUrl}/msdyn_MobileAppBuildStatus`;
 
     const body = requestBody({
-      OperationId: this.parameters.OperationId,
       msdyn_MobileApp: this.parameters.msdyn_MobileApp,
+      OperationId: this.parameters.OperationId,
     });
 
     return {

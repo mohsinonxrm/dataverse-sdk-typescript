@@ -5,6 +5,6 @@ import type { ClientEntityMetadata } from "./ClientEntityMetadata.js";
  */
 export interface ClientMetadataResults {
   Entities?: ClientEntityMetadata[];
-  RelationshipNavigationEntities?: ClientEntityMetadata[];
   OtherMetadata?: string;
+  RelationshipNavigationEntities?: ClientEntityMetadata[];
 }

@@ -2,24 +2,24 @@
  * msfp_unsubscribedrecipient entity type
  */
 export interface msfp_unsubscribedrecipient {
-  timezoneruleversionnumber?: number;
-  _owningteam_value?: string;
-  importsequencenumber?: number;
-  statuscode?: number;
-  msfp_emailaddress?: string;
-  _owningbusinessunit_value?: string;
-  _modifiedonbehalfby_value?: string;
-  _owninguser_value?: string;
-  _modifiedby_value?: string;
   _createdby_value?: string;
   _createdonbehalfby_value?: string;
-  msfp_name?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
   _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
   modifiedon?: string;
-  overriddencreatedon?: string;
+  msfp_emailaddress?: string;
+  msfp_name?: string;
   msfp_unsubscribedrecipientid?: string;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
   utcconversiontimezonecode?: number;
   versionnumber?: number;
-  statecode?: number;
-  createdon?: string;
 }

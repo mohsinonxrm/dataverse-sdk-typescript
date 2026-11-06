@@ -10,8 +10,8 @@ import type { msdyn_InvokeEvaluationActionResponse as msdyn_InvokeEvaluationActi
  */
 export interface msdyn_InvokeEvaluationActionRequestParameters {
   AdditionalContext?: string;
-  ActionPayload: string;
   ActionType: string;
+  ActionPayload: string;
 }
 
 /**
@@ -34,8 +34,8 @@ export class msdyn_InvokeEvaluationActionRequest
 
     const body = requestBody({
       AdditionalContext: this.Parameters.AdditionalContext,
-      ActionPayload: this.Parameters.ActionPayload,
       ActionType: this.Parameters.ActionType,
+      ActionPayload: this.Parameters.ActionPayload,
     });
 
     return {

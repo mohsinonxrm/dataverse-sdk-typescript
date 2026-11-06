@@ -14,8 +14,8 @@ export interface msdyn_GetSankeyDataResponse {
  */
 export interface msdyn_GetSankeyDataActionParameters {
   msdyn_sequenceid: string;
-  msdyn_dateto: string;
   msdyn_datefrom: string;
+  msdyn_dateto: string;
 }
 
 /**
@@ -31,8 +31,8 @@ export class msdyn_GetSankeyDataAction implements Executable<msdyn_GetSankeyData
 
     const body = requestBody({
       msdyn_sequenceid: this.parameters.msdyn_sequenceid,
-      msdyn_dateto: this.parameters.msdyn_dateto,
       msdyn_datefrom: this.parameters.msdyn_datefrom,
+      msdyn_dateto: this.parameters.msdyn_dateto,
     });
 
     return {

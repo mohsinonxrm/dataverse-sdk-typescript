@@ -9,24 +9,24 @@ import type { msdyn_create_virtual_table_v2Response as msdyn_create_virtual_tabl
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_create_virtual_table_v2RequestParameters {
-  virtual_table_columns?: Record<string, unknown>[];
-  dataset_value: string;
-  virtual_table_schema_name?: string;
-  virtual_table_name: string;
-  datasource_id?: string;
-  solution_id?: string;
-  connectionreference_id?: string;
-  datasource_name?: string;
-  use_environment_variable_for_dataset?: boolean;
-  primary_field_name: string;
-  virtual_table_plural_name?: string;
-  virtual_table_external_name: string;
   environment_variable_names?: Record<string, unknown>[];
-  environment_id?: string;
-  connection_id: string;
-  primary_key_name: string;
   connectionreference_display_name?: string;
+  use_environment_variable_for_dataset?: boolean;
+  virtual_table_columns?: Record<string, unknown>[];
+  connectionreference_id?: string;
+  virtual_table_name: string;
+  primary_key_name: string;
+  connection_id: string;
+  virtual_table_schema_name?: string;
+  solution_id?: string;
   connectionreference_logical_name?: string;
+  datasource_id?: string;
+  virtual_table_external_name: string;
+  dataset_value: string;
+  virtual_table_plural_name?: string;
+  environment_id?: string;
+  primary_field_name: string;
+  datasource_name?: string;
 }
 
 /**
@@ -48,24 +48,24 @@ export class msdyn_create_virtual_table_v2Request
     const url = `${baseUrl}/msdyn_create_virtual_table_v2`;
 
     const body = requestBody({
-      virtual_table_columns: this.Parameters.virtual_table_columns,
-      dataset_value: this.Parameters.dataset_value,
-      virtual_table_schema_name: this.Parameters.virtual_table_schema_name,
-      virtual_table_name: this.Parameters.virtual_table_name,
-      datasource_id: this.Parameters.datasource_id,
-      solution_id: this.Parameters.solution_id,
-      connectionreference_id: this.Parameters.connectionreference_id,
-      datasource_name: this.Parameters.datasource_name,
-      use_environment_variable_for_dataset: this.Parameters.use_environment_variable_for_dataset,
-      primary_field_name: this.Parameters.primary_field_name,
-      virtual_table_plural_name: this.Parameters.virtual_table_plural_name,
-      virtual_table_external_name: this.Parameters.virtual_table_external_name,
       environment_variable_names: this.Parameters.environment_variable_names,
-      environment_id: this.Parameters.environment_id,
-      connection_id: this.Parameters.connection_id,
-      primary_key_name: this.Parameters.primary_key_name,
       connectionreference_display_name: this.Parameters.connectionreference_display_name,
+      use_environment_variable_for_dataset: this.Parameters.use_environment_variable_for_dataset,
+      virtual_table_columns: this.Parameters.virtual_table_columns,
+      connectionreference_id: this.Parameters.connectionreference_id,
+      virtual_table_name: this.Parameters.virtual_table_name,
+      primary_key_name: this.Parameters.primary_key_name,
+      connection_id: this.Parameters.connection_id,
+      virtual_table_schema_name: this.Parameters.virtual_table_schema_name,
+      solution_id: this.Parameters.solution_id,
       connectionreference_logical_name: this.Parameters.connectionreference_logical_name,
+      datasource_id: this.Parameters.datasource_id,
+      virtual_table_external_name: this.Parameters.virtual_table_external_name,
+      dataset_value: this.Parameters.dataset_value,
+      virtual_table_plural_name: this.Parameters.virtual_table_plural_name,
+      environment_id: this.Parameters.environment_id,
+      primary_field_name: this.Parameters.primary_field_name,
+      datasource_name: this.Parameters.datasource_name,
     });
 
     return {

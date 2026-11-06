@@ -9,12 +9,12 @@ import type { searchautocompleteResponse as searchautocompleteResponseData } fro
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface searchautocompleteRequestParameters {
-  propertybag?: string;
-  filter?: string;
   fuzzy?: boolean;
   options?: string;
   search: string;
   entities?: string;
+  propertybag?: string;
+  filter?: string;
 }
 
 /**
@@ -36,12 +36,12 @@ export class searchautocompleteRequest
     const url = `${baseUrl}/searchautocomplete`;
 
     const body = requestBody({
-      propertybag: this.Parameters.propertybag,
-      filter: this.Parameters.filter,
       fuzzy: this.Parameters.fuzzy,
       options: this.Parameters.options,
       search: this.Parameters.search,
       entities: this.Parameters.entities,
+      propertybag: this.Parameters.propertybag,
+      filter: this.Parameters.filter,
     });
 
     return {

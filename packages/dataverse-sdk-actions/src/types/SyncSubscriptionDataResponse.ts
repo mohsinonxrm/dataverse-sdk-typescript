@@ -5,6 +5,6 @@ import type { SubscriptionData } from "./SubscriptionData.js";
  */
 export interface SyncSubscriptionDataResponse {
   Data?: SubscriptionData;
-  SyncToken?: string;
   IsFinalPage?: boolean;
+  SyncToken?: string;
 }

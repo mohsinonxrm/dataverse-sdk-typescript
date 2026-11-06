@@ -3,7 +3,7 @@
  */
 export interface powerpagecomponent_mspp_webrole_contact {
   contactid?: string;
+  powerpagecomponent_mspp_webrole_contactid?: string;
   powerpagecomponentid?: string;
   versionnumber?: number;
-  powerpagecomponent_mspp_webrole_contactid?: string;
 }

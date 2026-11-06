@@ -4,31 +4,31 @@ import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
  * msdyn_agentgrouplanguage entity type
  */
 export interface msdyn_agentgrouplanguage {
+  _createdby_value?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
   _msdyn_agentgroupid_value?: string;
   _msdyn_languageid_value?: string;
-  versionnumber?: number;
-  _modifiedby_value?: string;
-  iscustomizable?: BooleanManagedProperty;
   _ownerid_value?: string;
   _owningbusinessunit_value?: string;
-  _createdby_value?: string;
-  _modifiedonbehalfby_value?: string;
-  _createdonbehalfby_value?: string;
-  utcconversiontimezonecode?: number;
-  componentstate?: number;
   _owningteam_value?: string;
-  msdyn_agentgrouplanguageid?: string;
-  componentidunique?: string;
   _owninguser_value?: string;
-  importsequencenumber?: number;
-  statecode?: number;
+  componentidunique?: string;
+  componentstate?: number;
   createdon?: string;
-  statuscode?: number;
-  msdyn_name?: string;
-  timezoneruleversionnumber?: number;
+  importsequencenumber?: number;
+  iscustomizable?: BooleanManagedProperty;
+  ismanaged?: boolean;
   modifiedon?: string;
+  msdyn_agentgrouplanguageid?: string;
+  msdyn_name?: string;
+  overriddencreatedon?: string;
   overwritetime?: string;
   solutionid?: string;
-  ismanaged?: boolean;
-  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

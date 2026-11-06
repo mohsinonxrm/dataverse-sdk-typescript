@@ -1,34 +1,26 @@
-import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
-
 /**
  * unstructuredfilesearchentity entity type
  */
 export interface unstructuredfilesearchentity {
-  iscustomizable?: BooleanManagedProperty;
-  solutionid?: string;
-  statecode?: number;
-  _owninguser_value?: string;
   _createdby_value?: string;
-  overriddencreatedon?: string;
   _createdonbehalfby_value?: string;
-  importsequencenumber?: number;
-  unstructuredfilesearchentityid?: string;
-  statuscode?: number;
   _modifiedby_value?: string;
-  timezoneruleversionnumber?: number;
-  componentstate?: number;
+  _modifiedonbehalfby_value?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
   knowledgesource?: number;
   modifiedon?: string;
-  versionnumber?: number;
-  sourceurl?: string;
   name?: string;
-  _owningteam_value?: string;
-  _ownerid_value?: string;
-  componentidunique?: string;
-  createdon?: string;
-  _owningbusinessunit_value?: string;
+  overriddencreatedon?: string;
+  sourceurl?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  unstructuredfilesearchentityid?: string;
   utcconversiontimezonecode?: number;
-  _modifiedonbehalfby_value?: string;
-  overwritetime?: string;
-  ismanaged?: boolean;
+  versionnumber?: number;
 }

@@ -3,19 +3,19 @@
  */
 export interface knowledgebaserecord {
   _createdby_value?: string;
-  exchangerate?: number;
-  publicurl?: string;
-  title?: string;
-  _organizationid_value?: string;
-  _modifiedby_value?: string;
-  privateurl?: string;
-  modifiedon?: string;
-  knowledgebaserecordid?: string;
-  createdon?: string;
-  _modifiedonbehalfby_value?: string;
   _createdonbehalfby_value?: string;
-  versionnumber?: number;
-  uniqueid?: string;
-  timezoneruleversionnumber?: number;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _organizationid_value?: string;
   _transactioncurrencyid_value?: string;
+  createdon?: string;
+  exchangerate?: number;
+  knowledgebaserecordid?: string;
+  modifiedon?: string;
+  privateurl?: string;
+  publicurl?: string;
+  timezoneruleversionnumber?: number;
+  title?: string;
+  uniqueid?: string;
+  versionnumber?: number;
 }

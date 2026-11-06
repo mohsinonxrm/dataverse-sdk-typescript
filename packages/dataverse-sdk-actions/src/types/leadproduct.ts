@@ -2,13 +2,13 @@
  * leadproduct entity type
  */
 export interface leadproduct {
+  importsequencenumber?: number;
+  leadid?: string;
+  leadproductid?: string;
+  name?: string;
   overriddencreatedon?: string;
   productid?: string;
-  utcconversiontimezonecode?: number;
-  importsequencenumber?: number;
-  name?: string;
-  leadproductid?: string;
-  leadid?: string;
   timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
   versionnumber?: number;
 }

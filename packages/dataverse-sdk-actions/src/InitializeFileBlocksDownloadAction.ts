@@ -7,9 +7,9 @@ import type { AnyEntityPayload } from "./types/EntityPayload.js";
  * Response from InitializeFileBlocksDownload action
  */
 export interface InitializeFileBlocksDownloadResponse {
-  FileSizeInBytes: number;
-  FileName: string;
   FileContinuationToken: string;
+  FileName: string;
+  FileSizeInBytes: number;
   IsChunkingSupported: boolean;
 }
 

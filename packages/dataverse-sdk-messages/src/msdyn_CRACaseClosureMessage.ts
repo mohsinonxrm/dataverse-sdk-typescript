@@ -11,12 +11,16 @@ import type { msdyn_CRACaseClosureResponse as msdyn_CRACaseClosureResponseData }
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_CRACaseClosureRequestParameters {
+  msdyn_Entity: EntityReference | AnyEntityPayload;
   msdyn_ShouldResolveCase: boolean;
   msdyn_AutomationLevel: string;
-  msdyn_McsConversationId: string;
-  msdyn_IncomingEmailId: string;
   msdyn_IsMonitoringActive: boolean;
-  msdyn_Entity: EntityReference | AnyEntityPayload;
+  msdyn_SuggestionType?: string;
+  msdyn_IsCRAShadowMode?: boolean;
+  msdyn_IncomingEmailId: string;
+  msdyn_IsCustomAgentClosure?: boolean;
+  msdyn_SuggestionSubtype?: string;
+  msdyn_McsConversationId: string;
 }
 
 /**
@@ -38,12 +42,16 @@ export class msdyn_CRACaseClosureRequest
     const url = `${baseUrl}/msdyn_CRACaseClosure`;
 
     const body = requestBody({
+      msdyn_Entity: this.Parameters.msdyn_Entity,
       msdyn_ShouldResolveCase: this.Parameters.msdyn_ShouldResolveCase,
       msdyn_AutomationLevel: this.Parameters.msdyn_AutomationLevel,
-      msdyn_McsConversationId: this.Parameters.msdyn_McsConversationId,
-      msdyn_IncomingEmailId: this.Parameters.msdyn_IncomingEmailId,
       msdyn_IsMonitoringActive: this.Parameters.msdyn_IsMonitoringActive,
-      msdyn_Entity: this.Parameters.msdyn_Entity,
+      msdyn_SuggestionType: this.Parameters.msdyn_SuggestionType,
+      msdyn_IsCRAShadowMode: this.Parameters.msdyn_IsCRAShadowMode,
+      msdyn_IncomingEmailId: this.Parameters.msdyn_IncomingEmailId,
+      msdyn_IsCustomAgentClosure: this.Parameters.msdyn_IsCustomAgentClosure,
+      msdyn_SuggestionSubtype: this.Parameters.msdyn_SuggestionSubtype,
+      msdyn_McsConversationId: this.Parameters.msdyn_McsConversationId,
     });
 
     return {

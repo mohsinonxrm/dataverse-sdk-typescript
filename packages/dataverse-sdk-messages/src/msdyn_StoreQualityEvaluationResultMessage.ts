@@ -9,11 +9,12 @@ import type { msdyn_StoreQualityEvaluationResultResponse as msdyn_StoreQualityEv
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_StoreQualityEvaluationResultRequestParameters {
+  EvaluationMethod?: number;
+  Status: string;
+  RepresentativeId?: string;
   CriteriaVersionNumber: number;
   EvaluationId: string;
-  EvaluationMethod?: number;
   EvaluationInsight?: string;
-  Status: string;
 }
 
 /**
@@ -35,11 +36,12 @@ export class msdyn_StoreQualityEvaluationResultRequest
     const url = `${baseUrl}/msdyn_StoreQualityEvaluationResult`;
 
     const body = requestBody({
+      EvaluationMethod: this.Parameters.EvaluationMethod,
+      Status: this.Parameters.Status,
+      RepresentativeId: this.Parameters.RepresentativeId,
       CriteriaVersionNumber: this.Parameters.CriteriaVersionNumber,
       EvaluationId: this.Parameters.EvaluationId,
-      EvaluationMethod: this.Parameters.EvaluationMethod,
       EvaluationInsight: this.Parameters.EvaluationInsight,
-      Status: this.Parameters.Status,
     });
 
     return {

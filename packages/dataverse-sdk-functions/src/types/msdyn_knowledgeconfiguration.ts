@@ -2,23 +2,23 @@
  * msdyn_knowledgeconfiguration entity type
  */
 export interface msdyn_knowledgeconfiguration {
-  msdyn_settingname?: string;
   _createdby_value?: string;
-  statecode?: number;
-  msdyn_groupname?: number;
-  msdyn_knowledgeconfigurationid?: string;
-  createdon?: string;
-  msdyn_settingvalue?: string;
-  _organizationid_value?: string;
-  _modifiedonbehalfby_value?: string;
-  _modifiedby_value?: string;
-  overriddencreatedon?: string;
-  utcconversiontimezonecode?: number;
-  msdyn_datatype?: number;
   _createdonbehalfby_value?: string;
-  timezoneruleversionnumber?: number;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _organizationid_value?: string;
+  createdon?: string;
   importsequencenumber?: number;
   modifiedon?: string;
+  msdyn_datatype?: number;
+  msdyn_groupname?: number;
+  msdyn_knowledgeconfigurationid?: string;
+  msdyn_settingname?: string;
+  msdyn_settingvalue?: string;
+  overriddencreatedon?: string;
+  statecode?: number;
   statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
   versionnumber?: number;
 }

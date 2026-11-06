@@ -2,26 +2,26 @@
  * stagedrelationshipextracondition entity type
  */
 export interface stagedrelationshipextracondition {
-  stagedrelationshipextraconditionid?: string;
-  timezoneruleversionnumber?: number;
-  _modifiedonbehalfby_value?: string;
-  overriddencreatedon?: string;
-  relationshipid?: string;
-  stagingexecutioncontextid?: string;
-  overwritetime?: string;
-  _modifiedby_value?: string;
-  importsequencenumber?: number;
-  solutionid?: string;
-  utcconversiontimezonecode?: number;
-  componentstate?: number;
-  statuscode?: number;
-  modifiedon?: string;
-  statecode?: number;
-  _createdonbehalfby_value?: string;
-  name?: string;
   _createdby_value?: string;
-  metadatadescription?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
   attributeid?: string;
-  versionnumber?: number;
+  componentstate?: number;
   createdon?: string;
+  importsequencenumber?: number;
+  metadatadescription?: string;
+  modifiedon?: string;
+  name?: string;
+  overriddencreatedon?: string;
+  overwritetime?: string;
+  relationshipid?: string;
+  solutionid?: string;
+  stagedrelationshipextraconditionid?: string;
+  stagingexecutioncontextid?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

@@ -7,8 +7,8 @@ import type { AnyEntityPayload } from "./types/EntityPayload.js";
  * Response from msdyn_UpdateBookingsStatus action
  */
 export interface msdyn_UpdateBookingsStatusResponse {
-  UpdatedBookingIds: string;
   BookingResult: string;
+  UpdatedBookingIds: string;
 }
 
 /**

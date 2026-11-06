@@ -5,9 +5,9 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_SetTeamsDocumentStatus action
  */
 export interface msdyn_SetTeamsDocumentStatusResponse {
-  PassedLogicalEntityNames: string;
   FailedLogicalEntityNames: string;
   OperationResult: boolean;
+  PassedLogicalEntityNames: string;
 }
 
 /**

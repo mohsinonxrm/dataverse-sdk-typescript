@@ -8,9 +8,10 @@ import { requestBody } from "./internal/requestBody.js";
  */
 export interface CCaaS_InitiateQueueConsultRequestParameters {
   ApiVersion: string;
-  ConversationAccess: string;
-  QueueId: string;
   ConsultType: string;
+  RequestSource?: string;
+  QueueId: string;
+  ConversationAccess: string;
 }
 
 /**
@@ -39,9 +40,10 @@ export class CCaaS_InitiateQueueConsultRequest
 
     const body = requestBody({
       ApiVersion: this.Parameters.ApiVersion,
-      ConversationAccess: this.Parameters.ConversationAccess,
-      QueueId: this.Parameters.QueueId,
       ConsultType: this.Parameters.ConsultType,
+      RequestSource: this.Parameters.RequestSource,
+      QueueId: this.Parameters.QueueId,
+      ConversationAccess: this.Parameters.ConversationAccess,
     });
 
     return {

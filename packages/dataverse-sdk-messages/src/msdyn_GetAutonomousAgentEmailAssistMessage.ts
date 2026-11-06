@@ -9,8 +9,8 @@ import type { msdyn_GetAutonomousAgentEmailAssistResponse as msdyn_GetAutonomous
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_GetAutonomousAgentEmailAssistRequestParameters {
-  emailAssistAdditionalInformation: string;
   emailAssistRequestPayload: string;
+  emailAssistAdditionalInformation: string;
   emailAssistRequestHeader: string;
 }
 
@@ -33,8 +33,8 @@ export class msdyn_GetAutonomousAgentEmailAssistRequest
     const url = `${baseUrl}/msdyn_GetAutonomousAgentEmailAssist`;
 
     const body = requestBody({
-      emailAssistAdditionalInformation: this.Parameters.emailAssistAdditionalInformation,
       emailAssistRequestPayload: this.Parameters.emailAssistRequestPayload,
+      emailAssistAdditionalInformation: this.Parameters.emailAssistAdditionalInformation,
       emailAssistRequestHeader: this.Parameters.emailAssistRequestHeader,
     });
 

@@ -4,14 +4,14 @@ import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
  * powerpagecomponent_powerpagecomponent entity type
  */
 export interface powerpagecomponent_powerpagecomponent {
-  componentstate?: number;
-  powerpagecomponentidone?: string;
-  versionnumber?: number;
-  powerpagecomponent_powerpagecomponentid?: string;
-  ismanaged?: boolean;
-  iscustomizable?: BooleanManagedProperty;
-  solutionid?: string;
-  overwritetime?: string;
   componentidunique?: string;
+  componentstate?: number;
+  iscustomizable?: BooleanManagedProperty;
+  ismanaged?: boolean;
+  overwritetime?: string;
+  powerpagecomponent_powerpagecomponentid?: string;
+  powerpagecomponentidone?: string;
   powerpagecomponentidtwo?: string;
+  solutionid?: string;
+  versionnumber?: number;
 }

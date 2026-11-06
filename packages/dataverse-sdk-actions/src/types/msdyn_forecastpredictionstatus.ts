@@ -2,29 +2,29 @@
  * msdyn_forecastpredictionstatus entity type
  */
 export interface msdyn_forecastpredictionstatus {
-  statuscode?: number;
-  msdyn_orchestrationstate?: number;
-  msdyn_nextscheduledtime?: string;
-  createdon?: string;
-  importsequencenumber?: number;
+  _createdby_value?: string;
+  _createdonbehalfby_value?: string;
   _modifiedby_value?: string;
   _modifiedonbehalfby_value?: string;
   _msdyn_forecastconfigurationid_value?: string;
-  msdyn_predictionon?: string;
-  msdyn_outputgenerationdate?: string;
-  modifiedon?: string;
-  timezoneruleversionnumber?: number;
-  statecode?: number;
-  overriddencreatedon?: string;
-  msdyn_errorcode?: string;
-  msdyn_failurecount?: number;
-  utcconversiontimezonecode?: number;
-  _createdonbehalfby_value?: string;
-  _createdby_value?: string;
-  msdyn_orchestrationstage?: number;
   _organizationid_value?: string;
-  versionnumber?: number;
-  msdyn_forecastpredictionstatusid?: string;
-  msdyn_predictionstatus?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_errorcode?: string;
   msdyn_errordetails?: string;
+  msdyn_failurecount?: number;
+  msdyn_forecastpredictionstatusid?: string;
+  msdyn_nextscheduledtime?: string;
+  msdyn_orchestrationstage?: number;
+  msdyn_orchestrationstate?: number;
+  msdyn_outputgenerationdate?: string;
+  msdyn_predictionon?: string;
+  msdyn_predictionstatus?: string;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

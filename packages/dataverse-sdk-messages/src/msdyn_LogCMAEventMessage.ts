@@ -11,11 +11,11 @@ import type { msdyn_LogCMAEventResponse as msdyn_LogCMAEventResponseData } from 
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_LogCMAEventRequestParameters {
-  EventType: string;
-  Source: string;
   Component: string;
   EventData?: string;
   Entity?: EntityReference | AnyEntityPayload;
+  EventType: string;
+  Source: string;
 }
 
 /**
@@ -37,11 +37,11 @@ export class msdyn_LogCMAEventRequest
     const url = `${baseUrl}/msdyn_LogCMAEvent`;
 
     const body = requestBody({
-      EventType: this.Parameters.EventType,
-      Source: this.Parameters.Source,
       Component: this.Parameters.Component,
       EventData: this.Parameters.EventData,
       Entity: this.Parameters.Entity,
+      EventType: this.Parameters.EventType,
+      Source: this.Parameters.Source,
     });
 
     return {

@@ -9,12 +9,12 @@ import type { msdyn_GetDocumentContentResponse as msdyn_GetDocumentContentRespon
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_GetDocumentContentRequestParameters {
-  msdyn_documents: string;
   msdyn_activityId?: string;
-  msdyn_type: string;
+  msdyn_keywords?: string;
+  msdyn_documents: string;
   msdyn_userQuery?: string;
   msdyn_shouldUpload?: boolean;
-  msdyn_keywords?: string;
+  msdyn_type: string;
 }
 
 /**
@@ -36,12 +36,12 @@ export class msdyn_GetDocumentContentRequest
     const url = `${baseUrl}/msdyn_GetDocumentContent`;
 
     const body = requestBody({
-      msdyn_documents: this.Parameters.msdyn_documents,
       msdyn_activityId: this.Parameters.msdyn_activityId,
-      msdyn_type: this.Parameters.msdyn_type,
+      msdyn_keywords: this.Parameters.msdyn_keywords,
+      msdyn_documents: this.Parameters.msdyn_documents,
       msdyn_userQuery: this.Parameters.msdyn_userQuery,
       msdyn_shouldUpload: this.Parameters.msdyn_shouldUpload,
-      msdyn_keywords: this.Parameters.msdyn_keywords,
+      msdyn_type: this.Parameters.msdyn_type,
     });
 
     return {

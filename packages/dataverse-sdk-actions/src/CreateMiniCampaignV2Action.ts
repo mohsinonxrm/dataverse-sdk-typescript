@@ -27,6 +27,7 @@ export interface CreateMiniCampaignV2ActionParameters {
   OwnerTypeCode: number;
   sendEmail: boolean;
   QueueId?: string;
+  ExtendedActivityParameters?: string;
 }
 
 /**
@@ -55,6 +56,7 @@ export class CreateMiniCampaignV2Action implements Executable<CreateMiniCampaign
       OwnerTypeCode: this.parameters.OwnerTypeCode,
       sendEmail: this.parameters.sendEmail,
       QueueId: this.parameters.QueueId,
+      ExtendedActivityParameters: this.parameters.ExtendedActivityParameters,
     });
 
     return {

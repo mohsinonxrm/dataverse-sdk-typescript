@@ -8,8 +8,8 @@ import type { BusinessNotification, ValidationResult } from "./types/index.js";
  * Response from ImmediateBook action
  */
 export interface ImmediateBookResponse {
-  ValidationResult: ValidationResult;
   Notifications: BusinessNotification[];
+  ValidationResult: ValidationResult;
 }
 
 /**

@@ -9,9 +9,9 @@ import type { msdyn_SalesAdaptiveCardResponseResponse as msdyn_SalesAdaptiveCard
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesAdaptiveCardResponseRequestParameters {
-  msdyn_query?: string;
-  msdyn_id?: string;
   msdyn_scenario: number;
+  msdyn_id?: string;
+  msdyn_query?: string;
 }
 
 /**
@@ -33,9 +33,9 @@ export class msdyn_SalesAdaptiveCardResponseRequest
     const url = `${baseUrl}/msdyn_SalesAdaptiveCardResponse`;
 
     const body = requestBody({
-      msdyn_query: this.Parameters.msdyn_query,
-      msdyn_id: this.Parameters.msdyn_id,
       msdyn_scenario: this.Parameters.msdyn_scenario,
+      msdyn_id: this.Parameters.msdyn_id,
+      msdyn_query: this.Parameters.msdyn_query,
     });
 
     return {

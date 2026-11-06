@@ -2,13 +2,20 @@
  * CCaaS_GetRepresentativeAvailabilityForConversationResponse complex type
  */
 export interface CCaaS_GetRepresentativeAvailabilityForConversationResponse {
-  AverageWaitTimeInSeconds?: number;
-  QueueId?: string;
-  IsAgentAvailable?: boolean;
-  NextTransitionTime?: string;
-  StartTimeOfNextOperatingHour?: string;
-  EndTimeOfNextOperatingHour?: string;
   AverageWaitTime?: number;
-  PositionInQueue?: number;
+  AverageWaitTimeInSeconds?: number;
+  EndTimeOfNextOperatingHour?: string;
+  IsAgentAvailable?: boolean;
+  IsOverflowing?: boolean;
   IsQueueAvailable?: boolean;
+  NextTransitionTime?: string;
+  NumberOfExpertsAvailableInQueue?: number;
+  OverflowAction?: string;
+  OverflowChannel?: string;
+  OverflowCondition?: string;
+  OverflowSourceQueueId?: string;
+  OverflowStage?: string;
+  PositionInQueue?: number;
+  QueueId?: string;
+  StartTimeOfNextOperatingHour?: string;
 }

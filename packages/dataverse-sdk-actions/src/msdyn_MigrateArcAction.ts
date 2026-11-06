@@ -5,8 +5,8 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_MigrateArc action
  */
 export interface msdyn_MigrateArcResponse {
-  OutputString: string;
   Exception: string;
+  OutputString: string;
 }
 
 /**

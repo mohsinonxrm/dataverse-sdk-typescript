@@ -13,14 +13,14 @@ export interface searchsuggestResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface searchsuggestActionParameters {
-  entities?: string;
   top?: number;
+  orderby?: string;
+  options?: string;
   search: string;
   filter?: string;
-  options?: string;
-  orderby?: string;
-  fuzzy?: boolean;
   propertybag?: string;
+  fuzzy?: boolean;
+  entities?: string;
 }
 
 /**
@@ -35,14 +35,14 @@ export class searchsuggestAction implements Executable<searchsuggestResponse> {
     const url = `${baseUrl}/searchsuggest`;
 
     const body = requestBody({
-      entities: this.parameters.entities,
       top: this.parameters.top,
+      orderby: this.parameters.orderby,
+      options: this.parameters.options,
       search: this.parameters.search,
       filter: this.parameters.filter,
-      options: this.parameters.options,
-      orderby: this.parameters.orderby,
-      fuzzy: this.parameters.fuzzy,
       propertybag: this.parameters.propertybag,
+      fuzzy: this.parameters.fuzzy,
+      entities: this.parameters.entities,
     });
 
     return {

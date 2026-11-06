@@ -6,17 +6,17 @@ import type { StatusOptionMetadata } from "./StatusOptionMetadata.js";
  * OptionMetadata complex type
  */
 export interface OptionMetadata {
-  Value?: number;
-  Label?: Label;
-  Description?: Label;
   Color?: string;
-  IsManaged?: boolean;
+  Description?: Label;
   ExternalValue?: string;
+  HasChanged?: boolean;
+  IsHidden?: boolean;
+  IsManaged?: boolean;
+  Label?: Label;
+  MetadataId?: string;
   ParentValues?: number[];
   Tag?: string;
-  IsHidden?: boolean;
-  MetadataId?: string;
-  HasChanged?: boolean;
+  Value?: number;
 }
 
 /**

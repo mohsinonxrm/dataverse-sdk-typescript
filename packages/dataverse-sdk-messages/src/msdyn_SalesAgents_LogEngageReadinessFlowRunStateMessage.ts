@@ -7,10 +7,10 @@ import { requestBody } from "./internal/requestBody.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesAgents_LogEngageReadinessFlowRunStateRequestParameters {
-  msdyn_TrackingId?: string;
-  msdyn_SalesAgentRun?: string;
   msdyn_Thread?: string;
+  msdyn_SalesAgentRun?: string;
   msdyn_FlowRunState?: string;
+  msdyn_TrackingId?: string;
 }
 
 /**
@@ -32,10 +32,10 @@ export class msdyn_SalesAgents_LogEngageReadinessFlowRunStateRequest
     const url = `${baseUrl}/msdyn_SalesAgents_LogEngageReadinessFlowRunState`;
 
     const body = requestBody({
-      msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
-      msdyn_SalesAgentRun: this.Parameters.msdyn_SalesAgentRun,
       msdyn_Thread: this.Parameters.msdyn_Thread,
+      msdyn_SalesAgentRun: this.Parameters.msdyn_SalesAgentRun,
       msdyn_FlowRunState: this.Parameters.msdyn_FlowRunState,
+      msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
     });
 
     return {

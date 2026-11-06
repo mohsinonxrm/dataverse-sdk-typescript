@@ -5,13 +5,13 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_RetrieveActivityAnalyticsConfiguration action
  */
 export interface msdyn_RetrieveActivityAnalyticsConfigurationResponse {
-  RaProvisioningStatus: number;
-  EmailEngagementEnabled: boolean;
-  MarsStatus: number;
   DCIHubUrl: string;
-  OrgTypeSuffix: string;
-  LinkedInStatus: number;
+  EmailEngagementEnabled: boolean;
   HealthFeatureStatus: number;
+  LinkedInStatus: number;
+  MarsStatus: number;
+  OrgTypeSuffix: string;
+  RaProvisioningStatus: number;
 }
 
 /**

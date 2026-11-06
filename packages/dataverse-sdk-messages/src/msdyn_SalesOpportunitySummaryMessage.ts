@@ -9,14 +9,14 @@ import type { msdyn_SalesOpportunitySummaryResponse as msdyn_SalesOpportunitySum
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesOpportunitySummaryRequestParameters {
-  msdyn_skipHeader?: string;
   msdyn_lastComputationTime?: string;
-  msdyn_id: string;
-  msdyn_isMergedCatchupAndSummary?: boolean;
-  msdyn_additionalParams?: string;
   msdyn_sessionId?: string;
-  msdyn_activityId?: string;
+  msdyn_additionalParams?: string;
+  msdyn_isMergedCatchupAndSummary?: boolean;
+  msdyn_id: string;
+  msdyn_skipHeader?: string;
   msdyn_responseFormat?: string;
+  msdyn_activityId?: string;
 }
 
 /**
@@ -38,14 +38,14 @@ export class msdyn_SalesOpportunitySummaryRequest
     const url = `${baseUrl}/msdyn_SalesOpportunitySummary`;
 
     const body = requestBody({
-      msdyn_skipHeader: this.Parameters.msdyn_skipHeader,
       msdyn_lastComputationTime: this.Parameters.msdyn_lastComputationTime,
-      msdyn_id: this.Parameters.msdyn_id,
-      msdyn_isMergedCatchupAndSummary: this.Parameters.msdyn_isMergedCatchupAndSummary,
-      msdyn_additionalParams: this.Parameters.msdyn_additionalParams,
       msdyn_sessionId: this.Parameters.msdyn_sessionId,
-      msdyn_activityId: this.Parameters.msdyn_activityId,
+      msdyn_additionalParams: this.Parameters.msdyn_additionalParams,
+      msdyn_isMergedCatchupAndSummary: this.Parameters.msdyn_isMergedCatchupAndSummary,
+      msdyn_id: this.Parameters.msdyn_id,
+      msdyn_skipHeader: this.Parameters.msdyn_skipHeader,
       msdyn_responseFormat: this.Parameters.msdyn_responseFormat,
+      msdyn_activityId: this.Parameters.msdyn_activityId,
     });
 
     return {

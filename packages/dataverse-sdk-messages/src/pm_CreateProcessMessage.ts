@@ -10,9 +10,9 @@ import type { pm_CreateProcessResponse as pm_CreateProcessResponseData } from ".
  */
 export interface pm_CreateProcessRequestParameters {
   reportData?: string;
-  inputDataBinding: string;
-  name: string;
   description?: string;
+  name: string;
+  inputDataBinding: string;
 }
 
 /**
@@ -35,9 +35,9 @@ export class pm_CreateProcessRequest
 
     const body = requestBody({
       reportData: this.Parameters.reportData,
-      inputDataBinding: this.Parameters.inputDataBinding,
-      name: this.Parameters.name,
       description: this.Parameters.description,
+      name: this.Parameters.name,
+      inputDataBinding: this.Parameters.inputDataBinding,
     });
 
     return {

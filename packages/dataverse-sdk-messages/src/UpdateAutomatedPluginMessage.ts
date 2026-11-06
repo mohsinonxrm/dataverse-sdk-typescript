@@ -7,14 +7,14 @@ import { requestBody } from "./internal/requestBody.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface UpdateAutomatedPluginRequestParameters {
-  Expression?: string;
   SolutionUniqueName?: string;
+  Expression?: string;
+  FxExpressionUniqueName: string;
+  Stage?: number;
   EntityLogicalName?: string;
   Context?: string;
-  Name?: string;
-  Stage?: number;
-  FxExpressionUniqueName: string;
   MessageName?: string;
+  Name?: string;
 }
 
 /**
@@ -36,14 +36,14 @@ export class UpdateAutomatedPluginRequest
     const url = `${baseUrl}/UpdateAutomatedPlugin`;
 
     const body = requestBody({
-      Expression: this.Parameters.Expression,
       SolutionUniqueName: this.Parameters.SolutionUniqueName,
+      Expression: this.Parameters.Expression,
+      FxExpressionUniqueName: this.Parameters.FxExpressionUniqueName,
+      Stage: this.Parameters.Stage,
       EntityLogicalName: this.Parameters.EntityLogicalName,
       Context: this.Parameters.Context,
-      Name: this.Parameters.Name,
-      Stage: this.Parameters.Stage,
-      FxExpressionUniqueName: this.Parameters.FxExpressionUniqueName,
       MessageName: this.Parameters.MessageName,
+      Name: this.Parameters.Name,
     });
 
     return {

@@ -9,16 +9,16 @@ import type { msdyn_RecommendedEmailTemplatesResponse as msdyn_RecommendedEmailT
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_RecommendedEmailTemplatesRequestParameters {
-  isTemplateResponse?: boolean;
-  emailContextData?: string;
-  emailId: string;
-  templateFiltersInString: string;
-  filters?: string;
-  customerIntent: string;
-  transactionId: string;
   emailString: string;
+  emailContextData?: string;
+  isTemplateResponse?: boolean;
+  templateFiltersInString: string;
   multiturnPayload?: string;
+  emailId: string;
   copilotRequestParameters: string;
+  customerIntent: string;
+  filters?: string;
+  transactionId: string;
 }
 
 /**
@@ -40,16 +40,16 @@ export class msdyn_RecommendedEmailTemplatesRequest
     const url = `${baseUrl}/msdyn_RecommendedEmailTemplates`;
 
     const body = requestBody({
-      isTemplateResponse: this.Parameters.isTemplateResponse,
-      emailContextData: this.Parameters.emailContextData,
-      emailId: this.Parameters.emailId,
-      templateFiltersInString: this.Parameters.templateFiltersInString,
-      filters: this.Parameters.filters,
-      customerIntent: this.Parameters.customerIntent,
-      transactionId: this.Parameters.transactionId,
       emailString: this.Parameters.emailString,
+      emailContextData: this.Parameters.emailContextData,
+      isTemplateResponse: this.Parameters.isTemplateResponse,
+      templateFiltersInString: this.Parameters.templateFiltersInString,
       multiturnPayload: this.Parameters.multiturnPayload,
+      emailId: this.Parameters.emailId,
       copilotRequestParameters: this.Parameters.copilotRequestParameters,
+      customerIntent: this.Parameters.customerIntent,
+      filters: this.Parameters.filters,
+      transactionId: this.Parameters.transactionId,
     });
 
     return {

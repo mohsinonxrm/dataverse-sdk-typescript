@@ -7,11 +7,11 @@ import { requestBody } from "./internal/requestBody.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_ProvisionODOSRequestParameters {
-  Entities: string;
-  FeatureName: string;
-  FeatureDisplayName: string;
-  Roles: string;
   Primitives: string;
+  Roles: string;
+  FeatureName: string;
+  Entities: string;
+  FeatureDisplayName: string;
 }
 
 /**
@@ -33,11 +33,11 @@ export class msdyn_ProvisionODOSRequest
     const url = `${baseUrl}/msdyn_ProvisionODOS`;
 
     const body = requestBody({
-      Entities: this.Parameters.Entities,
-      FeatureName: this.Parameters.FeatureName,
-      FeatureDisplayName: this.Parameters.FeatureDisplayName,
-      Roles: this.Parameters.Roles,
       Primitives: this.Parameters.Primitives,
+      Roles: this.Parameters.Roles,
+      FeatureName: this.Parameters.FeatureName,
+      Entities: this.Parameters.Entities,
+      FeatureDisplayName: this.Parameters.FeatureDisplayName,
     });
 
     return {

@@ -9,12 +9,12 @@ import type { msdyn_SalesAgents_HandoverInitiateResponse as msdyn_SalesAgents_Ha
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesAgents_HandoverInitiateRequestParameters {
-  msdyn_AssignTo?: number;
+  msdyn_TrackingId?: string;
   msdyn_HandoverIntent?: number;
-  msdyn_GetHandoverDetailsInfo?: string;
+  msdyn_AssignTo?: number;
   msdyn_SalesAgentRun: string;
   msdyn_HandoverTarget?: number;
-  msdyn_TrackingId?: string;
+  msdyn_GetHandoverDetailsInfo?: string;
 }
 
 /**
@@ -36,12 +36,12 @@ export class msdyn_SalesAgents_HandoverInitiateRequest
     const url = `${baseUrl}/msdyn_SalesAgents_HandoverInitiate`;
 
     const body = requestBody({
-      msdyn_AssignTo: this.Parameters.msdyn_AssignTo,
+      msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
       msdyn_HandoverIntent: this.Parameters.msdyn_HandoverIntent,
-      msdyn_GetHandoverDetailsInfo: this.Parameters.msdyn_GetHandoverDetailsInfo,
+      msdyn_AssignTo: this.Parameters.msdyn_AssignTo,
       msdyn_SalesAgentRun: this.Parameters.msdyn_SalesAgentRun,
       msdyn_HandoverTarget: this.Parameters.msdyn_HandoverTarget,
-      msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
+      msdyn_GetHandoverDetailsInfo: this.Parameters.msdyn_GetHandoverDetailsInfo,
     });
 
     return {

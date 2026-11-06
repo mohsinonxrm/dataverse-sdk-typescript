@@ -10,8 +10,8 @@ import type { msdyn_SalesAgents_HandoverNotifySingleResponse as msdyn_SalesAgent
  */
 export interface msdyn_SalesAgents_HandoverNotifySingleRequestParameters {
   msdyn_SalesAgentRun: string;
-  msdyn_TrackingId?: string;
   msdyn_HandoverContext?: string;
+  msdyn_TrackingId?: string;
 }
 
 /**
@@ -34,8 +34,8 @@ export class msdyn_SalesAgents_HandoverNotifySingleRequest
 
     const body = requestBody({
       msdyn_SalesAgentRun: this.Parameters.msdyn_SalesAgentRun,
-      msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
       msdyn_HandoverContext: this.Parameters.msdyn_HandoverContext,
+      msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
     });
 
     return {

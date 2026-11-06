@@ -13,8 +13,8 @@ export interface DiscoverFabricAISkillsResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface DiscoverFabricAISkillsActionParameters {
-  workspaceId: string;
   fabricEnvironment?: string;
+  workspaceId: string;
 }
 
 /**
@@ -29,8 +29,8 @@ export class DiscoverFabricAISkillsAction implements Executable<DiscoverFabricAI
     const url = `${baseUrl}/DiscoverFabricAISkills`;
 
     const body = requestBody({
-      workspaceId: this.parameters.workspaceId,
       fabricEnvironment: this.parameters.fabricEnvironment,
+      workspaceId: this.parameters.workspaceId,
     });
 
     return {

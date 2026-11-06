@@ -2,21 +2,21 @@
  * processstage entity type
  */
 export interface processstage {
-  versionnumber?: number;
-  connector?: string;
-  _parentprocessstageid_value?: string;
-  operationkind?: number;
-  processstageid?: string;
-  parametervalue?: string;
-  istrigger?: boolean;
-  stagecategory?: number;
-  owningbusinessunit?: string;
-  operationtype?: number;
-  parametername?: string;
-  _processid_value?: string;
   _ownerid_value?: string;
-  primaryentitytypecode?: string;
+  _parentprocessstageid_value?: string;
+  _processid_value?: string;
   clientdata?: string;
-  stagename?: string;
+  connector?: string;
+  istrigger?: boolean;
   operationid?: string;
+  operationkind?: number;
+  operationtype?: number;
+  owningbusinessunit?: string;
+  parametername?: string;
+  parametervalue?: string;
+  primaryentitytypecode?: string;
+  processstageid?: string;
+  stagecategory?: number;
+  stagename?: string;
+  versionnumber?: number;
 }

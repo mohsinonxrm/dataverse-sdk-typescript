@@ -2,29 +2,29 @@
  * msdyn_evaluationnotificationconfiguration entity type
  */
 export interface msdyn_evaluationnotificationconfiguration {
-  msdyn_name?: string;
-  statecode?: number;
+  _createdby_value?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
   _msdyn_evaluationplanid_value?: string;
-  versionnumber?: number;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
   msdyn_criterianotificationenabled?: boolean;
+  msdyn_criteriathresholds?: string;
+  msdyn_evaluationnotificationconfigurationid?: string;
+  msdyn_name?: string;
   msdyn_notificationenabled?: boolean;
   msdyn_sectionnotificationenabled?: boolean;
-  createdon?: string;
-  _modifiedby_value?: string;
-  msdyn_evaluationnotificationconfigurationid?: string;
-  _ownerid_value?: string;
-  _createdby_value?: string;
-  modifiedon?: string;
-  importsequencenumber?: number;
-  _owninguser_value?: string;
-  _modifiedonbehalfby_value?: string;
+  msdyn_sectionthresholds?: string;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
   timezoneruleversionnumber?: number;
   utcconversiontimezonecode?: number;
-  _createdonbehalfby_value?: string;
-  statuscode?: number;
-  overriddencreatedon?: string;
-  msdyn_criteriathresholds?: string;
-  _owningteam_value?: string;
-  msdyn_sectionthresholds?: string;
-  _owningbusinessunit_value?: string;
+  versionnumber?: number;
 }

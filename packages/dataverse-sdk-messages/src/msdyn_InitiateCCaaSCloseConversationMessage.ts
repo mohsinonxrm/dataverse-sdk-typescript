@@ -10,8 +10,8 @@ import type { msdyn_InitiateCCaaSCloseConversationResponse as msdyn_InitiateCCaa
  */
 export interface msdyn_InitiateCCaaSCloseConversationRequestParameters {
   SessionId: string;
-  InitiatingUser: string;
   LiveWorkItemId: string;
+  InitiatingUser: string;
 }
 
 /**
@@ -34,8 +34,8 @@ export class msdyn_InitiateCCaaSCloseConversationRequest
 
     const body = requestBody({
       SessionId: this.Parameters.SessionId,
-      InitiatingUser: this.Parameters.InitiatingUser,
       LiveWorkItemId: this.Parameters.LiveWorkItemId,
+      InitiatingUser: this.Parameters.InitiatingUser,
     });
 
     return {

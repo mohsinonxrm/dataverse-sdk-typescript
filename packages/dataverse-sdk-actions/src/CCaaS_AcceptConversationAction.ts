@@ -13,8 +13,8 @@ export interface CCaaS_AcceptConversationResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_AcceptConversationActionParameters {
-  ApiVersion: string;
   SessionId: string;
+  ApiVersion: string;
 }
 
 /**
@@ -36,8 +36,8 @@ export class CCaaS_AcceptConversationAction implements Executable<CCaaS_AcceptCo
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_AcceptConversation`;
 
     const body = requestBody({
-      ApiVersion: this.parameters.ApiVersion,
       SessionId: this.parameters.SessionId,
+      ApiVersion: this.parameters.ApiVersion,
     });
 
     return {

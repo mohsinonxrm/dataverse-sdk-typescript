@@ -2,24 +2,24 @@
  * msdynmkt_infobipchannelinstance entity type
  */
 export interface msdynmkt_infobipchannelinstance {
-  statuscode?: number;
-  _ownerid_value?: string;
-  createdon?: string;
-  msdynmkt_name?: string;
-  statecode?: number;
   _createdby_value?: string;
-  utcconversiontimezonecode?: number;
-  importsequencenumber?: number;
-  msdynmkt_infobipchannelinstanceid?: string;
-  msdynmkt_type?: number;
-  overriddencreatedon?: string;
-  versionnumber?: number;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _ownerid_value?: string;
   _owningbusinessunit_value?: string;
   _owningteam_value?: string;
   _owninguser_value?: string;
-  _createdonbehalfby_value?: string;
-  _modifiedonbehalfby_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
   modifiedon?: string;
+  msdynmkt_infobipchannelinstanceid?: string;
+  msdynmkt_name?: string;
+  msdynmkt_type?: number;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
   timezoneruleversionnumber?: number;
-  _modifiedby_value?: string;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

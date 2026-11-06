@@ -4,10 +4,10 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * Response from msdyn_CheckIfSLAStaticFlowIsDisabled action
  */
 export interface msdyn_CheckIfSLAStaticFlowIsDisabledResponse {
+  HelpLink: string;
   Message: string;
   ResultEntities: string;
   ReturnStatus: number;
-  HelpLink: string;
 }
 
 /**

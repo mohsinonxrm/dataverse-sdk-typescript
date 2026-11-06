@@ -16,9 +16,9 @@ export interface msdyn_timetrackerapiResponse {
  */
 export interface msdyn_timetrackerapiActionParameters {
   timeTrackerRecordId?: string;
-  entitylogicalname: string;
-  entityid: string;
   timeTrackerRecord?: EntityReference | AnyEntityPayload;
+  entityid: string;
+  entitylogicalname: string;
 }
 
 /**
@@ -34,9 +34,9 @@ export class msdyn_timetrackerapiAction implements Executable<msdyn_timetrackera
 
     const body = requestBody({
       timeTrackerRecordId: this.parameters.timeTrackerRecordId,
-      entitylogicalname: this.parameters.entitylogicalname,
-      entityid: this.parameters.entityid,
       timeTrackerRecord: this.parameters.timeTrackerRecord,
+      entityid: this.parameters.entityid,
+      entitylogicalname: this.parameters.entitylogicalname,
     });
 
     return {

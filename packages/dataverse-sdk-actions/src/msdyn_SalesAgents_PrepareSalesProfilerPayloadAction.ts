@@ -1,0 +1,54 @@
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Response from msdyn_SalesAgents_PrepareSalesProfilerPayload action
+ */
+export interface msdyn_SalesAgents_PrepareSalesProfilerPayloadResponse {
+  msdyn_IsSuccess: boolean;
+  msdyn_Payload: string;
+}
+
+/**
+ * Parameters of the msdyn_SalesAgents_PrepareSalesProfilerPayload action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAgents_PrepareSalesProfilerPayloadActionParameters {
+  msdyn_SalesAgentRunId: string;
+}
+
+/**
+ * msdyn_SalesAgents_PrepareSalesProfilerPayload action
+ *
+ * Unbound action
+ */
+export class msdyn_SalesAgents_PrepareSalesProfilerPayloadAction implements Executable<msdyn_SalesAgents_PrepareSalesProfilerPayloadResponse> {
+  constructor(
+    public readonly parameters: msdyn_SalesAgents_PrepareSalesProfilerPayloadActionParameters
+  ) {}
+
+  toRequestInformation(baseUrl: string): RequestInformation {
+    const url = `${baseUrl}/msdyn_SalesAgents_PrepareSalesProfilerPayload`;
+
+    const body = requestBody({
+      msdyn_SalesAgentRunId: this.parameters.msdyn_SalesAgentRunId,
+    });
+
+    return {
+      method: "POST",
+      url,
+      headers: {
+        "content-type": "application/json",
+      },
+      body,
+    };
+  }
+
+  async parseResponse(
+    response: Response
+  ): Promise<msdyn_SalesAgents_PrepareSalesProfilerPayloadResponse> {
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_SalesAgents_PrepareSalesProfilerPayloadResponse;
+    return (await response.json()) as msdyn_SalesAgents_PrepareSalesProfilerPayloadResponse;
+  }
+}

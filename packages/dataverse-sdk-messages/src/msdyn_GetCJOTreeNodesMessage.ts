@@ -9,8 +9,8 @@ import type { msdyn_GetCJOTreeNodesResponse as msdyn_GetCJOTreeNodesResponseData
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_GetCJOTreeNodesRequestParameters {
-  msdyn_startingnodeid: string;
   msdyn_cjodefinition: string;
+  msdyn_startingnodeid: string;
 }
 
 /**
@@ -32,8 +32,8 @@ export class msdyn_GetCJOTreeNodesRequest
     const url = `${baseUrl}/msdyn_GetCJOTreeNodes`;
 
     const body = requestBody({
-      msdyn_startingnodeid: this.Parameters.msdyn_startingnodeid,
       msdyn_cjodefinition: this.Parameters.msdyn_cjodefinition,
+      msdyn_startingnodeid: this.Parameters.msdyn_startingnodeid,
     });
 
     return {

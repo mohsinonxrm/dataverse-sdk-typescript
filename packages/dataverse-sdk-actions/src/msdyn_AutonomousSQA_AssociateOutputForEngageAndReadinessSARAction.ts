@@ -13,9 +13,9 @@ export interface msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSARResp
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSARActionParameters {
+  msdyn_TrackingId: string;
   msdyn_SalesAgentRun: string;
   msdyn_SalesMacroAgentType: number;
-  msdyn_TrackingId: string;
 }
 
 /**
@@ -32,9 +32,9 @@ export class msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSARAction i
     const url = `${baseUrl}/msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSAR`;
 
     const body = requestBody({
+      msdyn_TrackingId: this.parameters.msdyn_TrackingId,
       msdyn_SalesAgentRun: this.parameters.msdyn_SalesAgentRun,
       msdyn_SalesMacroAgentType: this.parameters.msdyn_SalesMacroAgentType,
-      msdyn_TrackingId: this.parameters.msdyn_TrackingId,
     });
 
     return {

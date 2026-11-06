@@ -9,11 +9,12 @@ import type { msdyn_SalesAgents_FetchOutreachEmailForAgentResponse as msdyn_Sale
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesAgents_FetchOutreachEmailForAgentRequestParameters {
-  msdyn_SalesAgentRunId?: string;
-  msdyn_RegardingEntityName: string;
-  msdyn_TrackingId?: string;
   msdyn_OutreachConfig?: string;
   msdyn_RegardingEntityId: string;
+  msdyn_RegardingEntityName: string;
+  msdyn_SalesAgentRunId?: string;
+  msdyn_TrackingId?: string;
+  msdyn_AgentProfileId?: string;
 }
 
 /**
@@ -35,11 +36,12 @@ export class msdyn_SalesAgents_FetchOutreachEmailForAgentRequest
     const url = `${baseUrl}/msdyn_SalesAgents_FetchOutreachEmailForAgent`;
 
     const body = requestBody({
-      msdyn_SalesAgentRunId: this.Parameters.msdyn_SalesAgentRunId,
-      msdyn_RegardingEntityName: this.Parameters.msdyn_RegardingEntityName,
-      msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
       msdyn_OutreachConfig: this.Parameters.msdyn_OutreachConfig,
       msdyn_RegardingEntityId: this.Parameters.msdyn_RegardingEntityId,
+      msdyn_RegardingEntityName: this.Parameters.msdyn_RegardingEntityName,
+      msdyn_SalesAgentRunId: this.Parameters.msdyn_SalesAgentRunId,
+      msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
+      msdyn_AgentProfileId: this.Parameters.msdyn_AgentProfileId,
     });
 
     return {

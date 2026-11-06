@@ -4,28 +4,28 @@ import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
  * msdyn_adaptivecardconfiguration entity type
  */
 export interface msdyn_adaptivecardconfiguration {
-  msdyn_name?: string;
-  componentstate?: number;
-  msdyn_uniquename?: string;
-  modifiedon?: string;
-  createdon?: string;
-  solutionid?: string;
   _createdby_value?: string;
-  _modifiedby_value?: string;
-  msdyn_adaptivecardconfigurationid?: string;
-  statuscode?: number;
   _createdonbehalfby_value?: string;
-  statecode?: number;
-  iscustomizable?: BooleanManagedProperty;
+  _modifiedby_value?: string;
   _modifiedonbehalfby_value?: string;
-  versionnumber?: number;
-  utcconversiontimezonecode?: number;
+  _organizationid_value?: string;
   componentidunique?: string;
+  componentstate?: number;
+  createdon?: string;
+  importsequencenumber?: number;
+  iscustomizable?: BooleanManagedProperty;
+  ismanaged?: boolean;
+  modifiedon?: string;
+  msdyn_adaptivecardconfigurationid?: string;
   msdyn_adaptivecardtemplate?: string;
-  timezoneruleversionnumber?: number;
+  msdyn_name?: string;
+  msdyn_uniquename?: string;
   overriddencreatedon?: string;
   overwritetime?: string;
-  importsequencenumber?: number;
-  ismanaged?: boolean;
-  _organizationid_value?: string;
+  solutionid?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

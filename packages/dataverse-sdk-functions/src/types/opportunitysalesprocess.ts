@@ -2,31 +2,31 @@
  * opportunitysalesprocess entity type
  */
 export interface opportunitysalesprocess {
-  traversedpath?: string;
-  _organizationid_value?: string;
-  overriddencreatedon?: string;
-  activestagestartedon?: string;
-  utcconversiontimezonecode?: number;
-  importsequencenumber?: number;
   _activestageid_value?: string;
-  name?: string;
-  _createdonbehalfby_value?: string;
   _createdby_value?: string;
-  createdon?: string;
-  exchangerate?: number;
+  _createdonbehalfby_value?: string;
   _modifiedby_value?: string;
-  versionnumber?: number;
-  statecode?: number;
+  _modifiedonbehalfby_value?: string;
+  _opportunityid_value?: string;
+  _organizationid_value?: string;
+  _processid_value?: string;
+  _quoteid_value?: string;
   _salesorderid_value?: string;
-  duration?: number;
+  _transactioncurrencyid_value?: string;
+  activestagestartedon?: string;
   businessprocessflowinstanceid?: string;
   completedon?: string;
-  _processid_value?: string;
-  timezoneruleversionnumber?: number;
-  statuscode?: number;
-  _opportunityid_value?: string;
-  _quoteid_value?: string;
-  _transactioncurrencyid_value?: string;
-  _modifiedonbehalfby_value?: string;
+  createdon?: string;
+  duration?: number;
+  exchangerate?: number;
+  importsequencenumber?: number;
   modifiedon?: string;
+  name?: string;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  traversedpath?: string;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

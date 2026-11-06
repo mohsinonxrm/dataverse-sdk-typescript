@@ -13,9 +13,9 @@ export interface msdyn_GetORReasonExplanationResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_GetORReasonExplanationActionParameters {
-  EntityType: number;
-  ExplanationObject: string;
   EntityId: string;
+  ExplanationObject: string;
+  EntityType: number;
 }
 
 /**
@@ -30,9 +30,9 @@ export class msdyn_GetORReasonExplanationAction implements Executable<msdyn_GetO
     const url = `${baseUrl}/msdyn_GetORReasonExplanation`;
 
     const body = requestBody({
-      EntityType: this.parameters.EntityType,
-      ExplanationObject: this.parameters.ExplanationObject,
       EntityId: this.parameters.EntityId,
+      ExplanationObject: this.parameters.ExplanationObject,
+      EntityType: this.parameters.EntityType,
     });
 
     return {

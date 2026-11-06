@@ -2,27 +2,27 @@
  * msdyn_wkwconfig entity type
  */
 export interface msdyn_wkwconfig {
-  msdyn_currentstatus?: number;
-  msdyn_isfrecomplete?: boolean;
-  modifiedon?: string;
-  _ownerid_value?: string;
-  utcconversiontimezonecode?: number;
-  statuscode?: number;
-  importsequencenumber?: number;
-  msdyn_wkwconfigid?: string;
-  msdyn_name?: string;
-  timezoneruleversionnumber?: number;
+  _createdby_value?: string;
   _createdonbehalfby_value?: string;
-  _owninguser_value?: string;
-  versionnumber?: number;
-  msdyn_emailtemplateid?: string;
   _modifiedby_value?: string;
-  overriddencreatedon?: string;
-  createdon?: string;
+  _modifiedonbehalfby_value?: string;
+  _ownerid_value?: string;
   _owningbusinessunit_value?: string;
   _owningteam_value?: string;
+  _owninguser_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_currentstatus?: number;
+  msdyn_emailtemplateid?: string;
+  msdyn_isfrecomplete?: boolean;
   msdyn_iswkwenabled?: boolean;
-  _modifiedonbehalfby_value?: string;
+  msdyn_name?: string;
+  msdyn_wkwconfigid?: string;
+  overriddencreatedon?: string;
   statecode?: number;
-  _createdby_value?: string;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

@@ -2,26 +2,26 @@
  * msdyn_ocsentimentdailytopictrending entity type
  */
 export interface msdyn_ocsentimentdailytopictrending {
-  msdyn_name?: string;
   _createdby_value?: string;
-  _msdyn_dailytopicid_value?: string;
-  _owninguser_value?: string;
-  overriddencreatedon?: string;
-  _modifiedby_value?: string;
-  utcconversiontimezonecode?: number;
-  msdyn_similarityscore?: number;
   _createdonbehalfby_value?: string;
-  _owningbusinessunit_value?: string;
-  statecode?: number;
-  _owningteam_value?: string;
-  _ownerid_value?: string;
-  _msdyn_basetopicid_value?: string;
-  msdyn_ocsentimentdailytopictrendingid?: string;
-  versionnumber?: number;
-  timezoneruleversionnumber?: number;
+  _modifiedby_value?: string;
   _modifiedonbehalfby_value?: string;
-  statuscode?: number;
+  _msdyn_basetopicid_value?: string;
+  _msdyn_dailytopicid_value?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
   createdon?: string;
   importsequencenumber?: number;
   modifiedon?: string;
+  msdyn_name?: string;
+  msdyn_ocsentimentdailytopictrendingid?: string;
+  msdyn_similarityscore?: number;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

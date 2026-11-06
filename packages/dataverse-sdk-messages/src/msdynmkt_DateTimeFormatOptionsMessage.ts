@@ -9,11 +9,11 @@ import type { msdynmkt_DateTimeFormatOptionsResponse as msdynmkt_DateTimeFormatO
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdynmkt_DateTimeFormatOptionsRequestParameters {
-  msdynmkt_DateTimeRequestDateOnly?: boolean;
-  msdynmkt_DateTimeRequestTimeZoneId?: string;
   msdynmkt_DateTimeRequestTimezoneIndepentent?: boolean;
-  msdynmkt_DateTimeRequestDateOnlyV2?: boolean;
+  msdynmkt_DateTimeRequestTimeZoneId?: string;
   msdynmkt_DateTimeRequestLCID?: number;
+  msdynmkt_DateTimeRequestDateOnly?: boolean;
+  msdynmkt_DateTimeRequestDateOnlyV2?: boolean;
   msdynmkt_DateTimeRequestCultureName?: string;
 }
 
@@ -36,12 +36,12 @@ export class msdynmkt_DateTimeFormatOptionsRequest
     const url = `${baseUrl}/msdynmkt_DateTimeFormatOptions`;
 
     const body = requestBody({
-      msdynmkt_DateTimeRequestDateOnly: this.Parameters.msdynmkt_DateTimeRequestDateOnly,
-      msdynmkt_DateTimeRequestTimeZoneId: this.Parameters.msdynmkt_DateTimeRequestTimeZoneId,
       msdynmkt_DateTimeRequestTimezoneIndepentent:
         this.Parameters.msdynmkt_DateTimeRequestTimezoneIndepentent,
-      msdynmkt_DateTimeRequestDateOnlyV2: this.Parameters.msdynmkt_DateTimeRequestDateOnlyV2,
+      msdynmkt_DateTimeRequestTimeZoneId: this.Parameters.msdynmkt_DateTimeRequestTimeZoneId,
       msdynmkt_DateTimeRequestLCID: this.Parameters.msdynmkt_DateTimeRequestLCID,
+      msdynmkt_DateTimeRequestDateOnly: this.Parameters.msdynmkt_DateTimeRequestDateOnly,
+      msdynmkt_DateTimeRequestDateOnlyV2: this.Parameters.msdynmkt_DateTimeRequestDateOnlyV2,
       msdynmkt_DateTimeRequestCultureName: this.Parameters.msdynmkt_DateTimeRequestCultureName,
     });
 

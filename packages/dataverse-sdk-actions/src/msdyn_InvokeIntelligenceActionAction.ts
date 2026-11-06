@@ -17,8 +17,8 @@ export interface msdyn_InvokeIntelligenceActionResponse {
  */
 export interface msdyn_InvokeIntelligenceActionActionParameters {
   Context?: string;
-  entityReference?: EntityReference | AnyEntityPayload;
   ScenarioType: string;
+  entityReference?: EntityReference | AnyEntityPayload;
   RequestPayload: string;
 }
 
@@ -35,8 +35,8 @@ export class msdyn_InvokeIntelligenceActionAction implements Executable<msdyn_In
 
     const body = requestBody({
       Context: this.parameters.Context,
-      entityReference: this.parameters.entityReference,
       ScenarioType: this.parameters.ScenarioType,
+      entityReference: this.parameters.entityReference,
       RequestPayload: this.parameters.RequestPayload,
     });
 

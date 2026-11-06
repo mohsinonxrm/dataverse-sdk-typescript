@@ -2,24 +2,24 @@
  * sharedworkspacepool entity type
  */
 export interface sharedworkspacepool {
-  discoveryendpoint?: string;
-  ordererendpoint?: string;
-  name?: string;
-  modifiedon?: string;
-  createdon?: string;
-  tenantid?: string;
-  overriddencreatedon?: string;
-  timezoneruleversionnumber?: number;
-  claimed?: boolean;
-  versionnumber?: number;
-  statuscode?: number;
-  utcconversiontimezonecode?: number;
+  _createdby_value?: string;
   _createdonbehalfby_value?: string;
-  _modifiedonbehalfby_value?: string;
   _modifiedby_value?: string;
-  storageendpoint?: string;
+  _modifiedonbehalfby_value?: string;
+  claimed?: boolean;
+  createdon?: string;
+  discoveryendpoint?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  name?: string;
+  ordererendpoint?: string;
+  overriddencreatedon?: string;
   sharedworkspacepoolid?: string;
   statecode?: number;
-  _createdby_value?: string;
-  importsequencenumber?: number;
+  statuscode?: number;
+  storageendpoint?: string;
+  tenantid?: string;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

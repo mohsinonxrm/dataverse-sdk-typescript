@@ -9,17 +9,17 @@ import type { RelationshipMetadataBase } from "./RelationshipMetadataBase.js";
 export interface OneToManyRelationshipMetadata extends RelationshipMetadataBase {
   AssociatedMenuConfiguration?: AssociatedMenuConfiguration;
   CascadeConfiguration?: CascadeConfiguration;
+  DenormalizedAttributeName?: string;
+  EntityKey?: string;
+  IsDenormalizedLookup?: boolean;
+  IsHierarchical?: boolean;
+  IsRelationshipAttributeDenormalized?: boolean;
   ReferencedAttribute?: string;
   ReferencedEntity?: string;
+  ReferencedEntityNavigationPropertyName?: string;
   ReferencingAttribute?: string;
   ReferencingEntity?: string;
-  IsHierarchical?: boolean;
-  EntityKey?: string;
-  RelationshipAttributes?: RelationshipAttribute[];
-  IsRelationshipAttributeDenormalized?: boolean;
-  ReferencedEntityNavigationPropertyName?: string;
   ReferencingEntityNavigationPropertyName?: string;
+  RelationshipAttributes?: RelationshipAttribute[];
   RelationshipBehavior?: number;
-  IsDenormalizedLookup?: boolean;
-  DenormalizedAttributeName?: string;
 }

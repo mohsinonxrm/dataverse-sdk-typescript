@@ -9,9 +9,9 @@ import type { msdyn_ExecuteCopilotServiceJobResponse as msdyn_ExecuteCopilotServ
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_ExecuteCopilotServiceJobRequestParameters {
+  msdyn_AuthFlowType?: number;
   msdyn_JobPayload?: string;
   msdyn_JobType: number;
-  msdyn_AuthFlowType?: number;
 }
 
 /**
@@ -33,9 +33,9 @@ export class msdyn_ExecuteCopilotServiceJobRequest
     const url = `${baseUrl}/msdyn_ExecuteCopilotServiceJob`;
 
     const body = requestBody({
+      msdyn_AuthFlowType: this.Parameters.msdyn_AuthFlowType,
       msdyn_JobPayload: this.Parameters.msdyn_JobPayload,
       msdyn_JobType: this.Parameters.msdyn_JobType,
-      msdyn_AuthFlowType: this.Parameters.msdyn_AuthFlowType,
     });
 
     return {

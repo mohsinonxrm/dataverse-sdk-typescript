@@ -4,29 +4,29 @@ import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
  * aipluginexternalschemaproperty entity type
  */
 export interface aipluginexternalschemaproperty {
-  importsequencenumber?: number;
-  createdon?: string;
-  _owningteam_value?: string;
-  _createdonbehalfby_value?: string;
-  overwritetime?: string;
   _createdby_value?: string;
-  componentidunique?: string;
-  _ownerid_value?: string;
+  _createdonbehalfby_value?: string;
   _modifiedby_value?: string;
-  name?: string;
-  ismanaged?: boolean;
-  utcconversiontimezonecode?: number;
-  versionnumber?: number;
-  timezoneruleversionnumber?: number;
   _modifiedonbehalfby_value?: string;
-  statuscode?: number;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  aipluginexternalschemapropertyid?: string;
+  componentidunique?: string;
+  componentstate?: number;
+  createdon?: string;
+  importsequencenumber?: number;
+  iscustomizable?: BooleanManagedProperty;
+  ismanaged?: boolean;
   modifiedon?: string;
+  name?: string;
+  overriddencreatedon?: string;
+  overwritetime?: string;
   solutionid?: string;
   statecode?: number;
-  _owningbusinessunit_value?: string;
-  componentstate?: number;
-  _owninguser_value?: string;
-  iscustomizable?: BooleanManagedProperty;
-  overriddencreatedon?: string;
-  aipluginexternalschemapropertyid?: string;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

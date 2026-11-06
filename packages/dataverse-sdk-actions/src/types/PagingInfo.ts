@@ -2,9 +2,9 @@
  * PagingInfo complex type
  */
 export interface PagingInfo {
-  PageNumber?: number;
   Count?: number;
-  ReturnTotalRecordCount?: boolean;
-  ReturnRecordCountLessThanMarv?: boolean;
+  PageNumber?: number;
   PagingCookie?: string;
+  ReturnRecordCountLessThanMarv?: boolean;
+  ReturnTotalRecordCount?: boolean;
 }

@@ -5,6 +5,6 @@ import type { AuditDetail } from "./AuditDetail.js";
  */
 export interface ApplicationBasedAccessControlAuditDetail extends AuditDetail {
   ApplicationId?: string;
-  UserID?: string;
   ImpersonatedUserId?: string;
+  UserID?: string;
 }

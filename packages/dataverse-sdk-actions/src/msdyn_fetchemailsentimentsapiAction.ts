@@ -13,8 +13,8 @@ export interface msdyn_fetchemailsentimentsapiResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_fetchemailsentimentsapiActionParameters {
-  entityid?: string;
   entitylogicalname?: string;
+  entityid?: string;
 }
 
 /**
@@ -29,8 +29,8 @@ export class msdyn_fetchemailsentimentsapiAction implements Executable<msdyn_fet
     const url = `${baseUrl}/msdyn_fetchemailsentimentsapi`;
 
     const body = requestBody({
-      entityid: this.parameters.entityid,
       entitylogicalname: this.parameters.entitylogicalname,
+      entityid: this.parameters.entityid,
     });
 
     return {

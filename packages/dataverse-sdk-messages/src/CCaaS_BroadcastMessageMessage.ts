@@ -11,8 +11,8 @@ import type { CCaaS_BroadcastMessageResponse as CCaaS_BroadcastMessageResponseDa
 export interface CCaaS_BroadcastMessageRequestParameters {
   Message: string;
   Title: string;
-  ApiVersion: string;
   ConversationIds: string[];
+  ApiVersion: string;
 }
 
 /**
@@ -36,8 +36,8 @@ export class CCaaS_BroadcastMessageRequest
     const body = requestBody({
       Message: this.Parameters.Message,
       Title: this.Parameters.Title,
-      ApiVersion: this.Parameters.ApiVersion,
       ConversationIds: this.Parameters.ConversationIds,
+      ApiVersion: this.Parameters.ApiVersion,
     });
 
     return {

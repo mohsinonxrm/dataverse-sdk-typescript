@@ -5,8 +5,8 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_GetLeadPreferredOutreachCta action
  */
 export interface msdyn_GetLeadPreferredOutreachCtaResponse {
-  msdyn_leadpreferredoutreachcta: number;
   msdyn_attributesforcta: string;
+  msdyn_leadpreferredoutreachcta: number;
 }
 
 /**

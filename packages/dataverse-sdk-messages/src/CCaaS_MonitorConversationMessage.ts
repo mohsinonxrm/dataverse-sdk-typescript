@@ -7,8 +7,8 @@ import { requestBody } from "./internal/requestBody.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_MonitorConversationRequestParameters {
-  ApiVersion: string;
   ClientId?: string;
+  ApiVersion: string;
 }
 
 /**
@@ -36,8 +36,8 @@ export class CCaaS_MonitorConversationRequest
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_MonitorConversation`;
 
     const body = requestBody({
-      ApiVersion: this.Parameters.ApiVersion,
       ClientId: this.Parameters.ClientId,
+      ApiVersion: this.Parameters.ApiVersion,
     });
 
     return {

@@ -2,32 +2,32 @@
  * annotation entity type
  */
 export interface annotation {
-  modifiedon?: string;
-  importsequencenumber?: number;
-  filesize?: number;
-  overriddencreatedon?: string;
-  objecttypecode?: string;
-  filename?: string;
-  mimetype?: string;
+  _createdby_value?: string;
+  _createdonbehalfby_value?: string;
   _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _objectid_value?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  annotationid?: string;
+  createdon?: string;
   documentbody?: string;
   documentbody_binary?: string;
-  _owningteam_value?: string;
-  prefix?: string;
-  versionnumber?: number;
-  subject?: string;
-  _owninguser_value?: string;
-  createdon?: string;
-  stepid?: string;
-  annotationid?: string;
-  notetext?: string;
-  langid?: string;
+  filename?: string;
+  filesize?: number;
+  importsequencenumber?: number;
   isautonomouslycreated?: boolean;
-  _owningbusinessunit_value?: string;
-  _ownerid_value?: string;
-  _createdonbehalfby_value?: string;
-  _objectid_value?: string;
   isdocument?: boolean;
-  _modifiedonbehalfby_value?: string;
-  _createdby_value?: string;
+  langid?: string;
+  mimetype?: string;
+  modifiedon?: string;
+  notetext?: string;
+  objecttypecode?: string;
+  overriddencreatedon?: string;
+  prefix?: string;
+  stepid?: string;
+  subject?: string;
+  versionnumber?: number;
 }

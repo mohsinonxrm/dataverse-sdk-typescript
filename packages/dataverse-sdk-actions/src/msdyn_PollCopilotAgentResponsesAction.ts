@@ -14,8 +14,8 @@ export interface msdyn_PollCopilotAgentResponsesResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_PollCopilotAgentResponsesActionParameters {
-  StartMarker?: string;
   ConversationId: string;
+  StartMarker?: string;
 }
 
 /**
@@ -30,8 +30,8 @@ export class msdyn_PollCopilotAgentResponsesAction implements Executable<msdyn_P
     const url = `${baseUrl}/msdyn_PollCopilotAgentResponses`;
 
     const body = requestBody({
-      StartMarker: this.parameters.StartMarker,
       ConversationId: this.parameters.ConversationId,
+      StartMarker: this.parameters.StartMarker,
     });
 
     return {
