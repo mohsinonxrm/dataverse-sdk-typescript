@@ -412,9 +412,12 @@ interface BatchResponseStep {
 
 ### DataverseBatchError
 
+This is the same class as `DataverseBatchError` in `@mohsinonxrm/dataverse-sdk-core`, so `instanceof` works whichever package you import it from.
+
 ```typescript
 class DataverseBatchError extends DataverseError {
   result?: BatchExecutionResult; // everything received (set by execute())
+  partErrors?: { index: number; status: number; error: DataverseError }[]; // the failed parts, in order
   requestErrors: Map<string, BatchResponseStep>; // the failed responses only
   totalRequests: number;
   successfulRequests: number;
