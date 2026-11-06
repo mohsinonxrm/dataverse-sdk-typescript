@@ -25,8 +25,8 @@ export interface DataverseBatchErrorInit<TResult = unknown> extends DataverseErr
  * `partErrors` lists the failed parts; `result` holds the whole execution result;
  * `requestErrors` holds the failed responses keyed by request id.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- narrowed by the batch package
-export class DataverseBatchError<TResult = any, TStep = any> extends DataverseError {
+// The batch package narrows TResult/TStep to its own result and step types.
+export class DataverseBatchError<TResult = unknown, TStep = unknown> extends DataverseError {
   /** The failed parts in request order (index, status and typed error). */
   public readonly partErrors?: DataverseBatchPartError[];
   /** The failed requests' responses, keyed by request id. */
