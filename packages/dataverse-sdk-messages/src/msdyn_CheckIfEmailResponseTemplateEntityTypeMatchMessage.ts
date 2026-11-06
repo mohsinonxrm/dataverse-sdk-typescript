@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckIfEmailResponseTemplateEntityTypeMatchResponse as msdyn_CheckIfEmailResponseTemplateEntityTypeMatchResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckIfEmailResponseTemplateEntityTypeMatch request message
@@ -37,23 +39,19 @@ export class msdyn_CheckIfEmailResponseTemplateEntityTypeMatchRequest
     const data = await response.json();
     return msdyn_CheckIfEmailResponseTemplateEntityTypeMatchResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionId: this.solutionId,
-    };
-  }
 }
 
 /**
  * msdyn_CheckIfEmailResponseTemplateEntityTypeMatch response message
  */
 export class msdyn_CheckIfEmailResponseTemplateEntityTypeMatchResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfEmailResponseTemplateEntityTypeMatchResponse) {
+  constructor(public result: msdyn_CheckIfEmailResponseTemplateEntityTypeMatchResponseData) {
     super("msdyn_CheckIfEmailResponseTemplateEntityTypeMatch");
   }
 
   static fromResponse(data: unknown): msdyn_CheckIfEmailResponseTemplateEntityTypeMatchResponse {
-    return new msdyn_CheckIfEmailResponseTemplateEntityTypeMatchResponse((data as any).value);
+    return new msdyn_CheckIfEmailResponseTemplateEntityTypeMatchResponse(
+      responseObject<msdyn_CheckIfEmailResponseTemplateEntityTypeMatchResponseData>(data)
+    );
   }
 }

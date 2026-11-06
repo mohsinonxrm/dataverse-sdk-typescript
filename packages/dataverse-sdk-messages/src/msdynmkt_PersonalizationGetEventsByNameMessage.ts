@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdynmkt_PersonalizationGetEventsByNameResponse as msdynmkt_PersonalizationGetEventsByNameResponseData } from "./types/index.js";
 
 /**
  * msdynmkt_PersonalizationGetEventsByName request message
@@ -37,23 +39,19 @@ export class msdynmkt_PersonalizationGetEventsByNameRequest
     const data = await response.json();
     return msdynmkt_PersonalizationGetEventsByNameResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      GetPersonalizationEventRequest: this.getPersonalizationEventRequest,
-    };
-  }
 }
 
 /**
  * msdynmkt_PersonalizationGetEventsByName response message
  */
 export class msdynmkt_PersonalizationGetEventsByNameResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_PersonalizationGetEventsByNameResponse) {
+  constructor(public result: msdynmkt_PersonalizationGetEventsByNameResponseData) {
     super("msdynmkt_PersonalizationGetEventsByName");
   }
 
   static fromResponse(data: unknown): msdynmkt_PersonalizationGetEventsByNameResponse {
-    return new msdynmkt_PersonalizationGetEventsByNameResponse((data as any).value);
+    return new msdynmkt_PersonalizationGetEventsByNameResponse(
+      responseObject<msdynmkt_PersonalizationGetEventsByNameResponseData>(data)
+    );
   }
 }

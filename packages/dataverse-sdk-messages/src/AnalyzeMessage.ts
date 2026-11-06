@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { AnalyzeResponse as AnalyzeResponseData } from "./types/index.js";
 
 /**
  * Analyze request message
@@ -36,24 +38,17 @@ export class AnalyzeRequest extends OrganizationRequest implements Executable<An
     const data = await response.json();
     return AnalyzeResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_pminferredtaskId,
-      version: this.version,
-    };
-  }
 }
 
 /**
  * Analyze response message
  */
 export class AnalyzeResponse extends OrganizationResponse {
-  constructor(public result: AnalyzeResponse) {
+  constructor(public result: AnalyzeResponseData) {
     super("Analyze");
   }
 
   static fromResponse(data: unknown): AnalyzeResponse {
-    return new AnalyzeResponse((data as any).value);
+    return new AnalyzeResponse(responseObject<AnalyzeResponseData>(data));
   }
 }

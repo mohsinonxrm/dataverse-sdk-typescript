@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckIfAppProfileHasGenericTemplatesResponse as msdyn_CheckIfAppProfileHasGenericTemplatesResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckIfAppProfileHasGenericTemplates request message
@@ -32,21 +34,19 @@ export class msdyn_CheckIfAppProfileHasGenericTemplatesRequest
     const data = await response.json();
     return msdyn_CheckIfAppProfileHasGenericTemplatesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_CheckIfAppProfileHasGenericTemplates response message
  */
 export class msdyn_CheckIfAppProfileHasGenericTemplatesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfAppProfileHasGenericTemplatesResponse) {
+  constructor(public result: msdyn_CheckIfAppProfileHasGenericTemplatesResponseData) {
     super("msdyn_CheckIfAppProfileHasGenericTemplates");
   }
 
   static fromResponse(data: unknown): msdyn_CheckIfAppProfileHasGenericTemplatesResponse {
-    return new msdyn_CheckIfAppProfileHasGenericTemplatesResponse((data as any).value);
+    return new msdyn_CheckIfAppProfileHasGenericTemplatesResponse(
+      responseObject<msdyn_CheckIfAppProfileHasGenericTemplatesResponseData>(data)
+    );
   }
 }

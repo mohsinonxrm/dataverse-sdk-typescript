@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckGeolocationEnabledResponse as msdyn_CheckGeolocationEnabledResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckGeolocationEnabled request message
@@ -39,24 +41,19 @@ export class msdyn_CheckGeolocationEnabledRequest
     const data = await response.json();
     return msdyn_CheckGeolocationEnabledResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Version: this.version,
-      NoCache: this.noCache,
-    };
-  }
 }
 
 /**
  * msdyn_CheckGeolocationEnabled response message
  */
 export class msdyn_CheckGeolocationEnabledResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckGeolocationEnabledResponse) {
+  constructor(public result: msdyn_CheckGeolocationEnabledResponseData) {
     super("msdyn_CheckGeolocationEnabled");
   }
 
   static fromResponse(data: unknown): msdyn_CheckGeolocationEnabledResponse {
-    return new msdyn_CheckGeolocationEnabledResponse((data as any).value);
+    return new msdyn_CheckGeolocationEnabledResponse(
+      responseObject<msdyn_CheckGeolocationEnabledResponseData>(data)
+    );
   }
 }

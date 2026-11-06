@@ -30,10 +30,6 @@ export class UninstallSampleDataRequest
     // No return value (204 No Content)
     return new UninstallSampleDataResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**

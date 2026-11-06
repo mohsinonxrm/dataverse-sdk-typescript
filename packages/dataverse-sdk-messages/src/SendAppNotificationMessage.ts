@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { SendAppNotificationResponse as SendAppNotificationResponseData } from "./types/index.js";
 
 /**
  * SendAppNotification request message
@@ -54,31 +56,17 @@ export class SendAppNotificationRequest
     const data = await response.json();
     return SendAppNotificationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Recipient: this.recipient,
-      Expiry: this.expiry,
-      Priority: this.priority,
-      OverrideContent: this.overrideContent,
-      Title: this.title,
-      IconType: this.iconType,
-      Body: this.body,
-      Actions: this.actions,
-      ToastType: this.toastType,
-    };
-  }
 }
 
 /**
  * SendAppNotification response message
  */
 export class SendAppNotificationResponse extends OrganizationResponse {
-  constructor(public result: SendAppNotificationResponse) {
+  constructor(public result: SendAppNotificationResponseData) {
     super("SendAppNotification");
   }
 
   static fromResponse(data: unknown): SendAppNotificationResponse {
-    return new SendAppNotificationResponse((data as any).value);
+    return new SendAppNotificationResponse(responseObject<SendAppNotificationResponseData>(data));
   }
 }

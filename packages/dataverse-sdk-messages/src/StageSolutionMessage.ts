@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { StageSolutionResponse as StageSolutionResponseData } from "./types/index.js";
 
 /**
  * StageSolution request message
@@ -39,24 +41,17 @@ export class StageSolutionRequest
     const data = await response.json();
     return StageSolutionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      CustomizationFile: this.customizationFile,
-      StageSolutionUploadId: this.stageSolutionUploadId,
-    };
-  }
 }
 
 /**
  * StageSolution response message
  */
 export class StageSolutionResponse extends OrganizationResponse {
-  constructor(public result: StageSolutionResponse) {
+  constructor(public result: StageSolutionResponseData) {
     super("StageSolution");
   }
 
   static fromResponse(data: unknown): StageSolutionResponse {
-    return new StageSolutionResponse((data as any).value);
+    return new StageSolutionResponse(responseObject<StageSolutionResponseData>(data));
   }
 }

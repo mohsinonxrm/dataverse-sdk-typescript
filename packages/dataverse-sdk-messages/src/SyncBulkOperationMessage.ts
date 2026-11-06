@@ -1,6 +1,10 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { QueryExpression } from "./types/index.js";
+import { responseObject } from "./internal/responseData.js";
+import type {
+  QueryExpression,
+  SyncBulkOperationResponse as SyncBulkOperationResponseData,
+} from "./types/index.js";
 
 /**
  * SyncBulkOperation request message
@@ -40,24 +44,17 @@ export class SyncBulkOperationRequest
     const data = await response.json();
     return SyncBulkOperationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      QuerySet: this.querySet,
-      OperationType: this.operationType,
-    };
-  }
 }
 
 /**
  * SyncBulkOperation response message
  */
 export class SyncBulkOperationResponse extends OrganizationResponse {
-  constructor(public result: SyncBulkOperationResponse) {
+  constructor(public result: SyncBulkOperationResponseData) {
     super("SyncBulkOperation");
   }
 
   static fromResponse(data: unknown): SyncBulkOperationResponse {
-    return new SyncBulkOperationResponse((data as any).value);
+    return new SyncBulkOperationResponse(responseObject<SyncBulkOperationResponseData>(data));
   }
 }

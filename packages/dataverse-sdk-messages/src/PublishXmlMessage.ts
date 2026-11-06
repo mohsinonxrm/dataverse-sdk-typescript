@@ -35,12 +35,6 @@ export class PublishXmlRequest
     // No return value (204 No Content)
     return new PublishXmlResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ParameterXml: this.parameterXml,
-    };
-  }
 }
 
 /**

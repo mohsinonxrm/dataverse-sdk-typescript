@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_getAppConfigByContextResponse as msdyn_getAppConfigByContextResponseData } from "./types/index.js";
 
 /**
  * msdyn_getAppConfigByContext request message
@@ -43,26 +45,19 @@ export class msdyn_getAppConfigByContextRequest
     const data = await response.json();
     return msdyn_getAppConfigByContextResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      AppUniqueName: this.appUniqueName,
-      UserId: this.userId,
-      Roles: this.roles,
-      FormFactor: this.formFactor,
-    };
-  }
 }
 
 /**
  * msdyn_getAppConfigByContext response message
  */
 export class msdyn_getAppConfigByContextResponse extends OrganizationResponse {
-  constructor(public result: msdyn_getAppConfigByContextResponse) {
+  constructor(public result: msdyn_getAppConfigByContextResponseData) {
     super("msdyn_getAppConfigByContext");
   }
 
   static fromResponse(data: unknown): msdyn_getAppConfigByContextResponse {
-    return new msdyn_getAppConfigByContextResponse((data as any).value);
+    return new msdyn_getAppConfigByContextResponse(
+      responseObject<msdyn_getAppConfigByContextResponseData>(data)
+    );
   }
 }

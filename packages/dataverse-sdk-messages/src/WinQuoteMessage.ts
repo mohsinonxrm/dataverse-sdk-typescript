@@ -37,13 +37,6 @@ export class WinQuoteRequest extends OrganizationRequest implements Executable<W
     // No return value (204 No Content)
     return new WinQuoteResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      QuoteClose: this.quoteClose,
-      Status: this.status,
-    };
-  }
 }
 
 /**

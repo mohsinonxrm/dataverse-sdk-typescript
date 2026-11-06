@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_RetrieveKPIvaluesfromDCIResponse as msdyn_RetrieveKPIvaluesfromDCIResponseData } from "./types/index.js";
 
 /**
  * msdyn_RetrieveKPIvaluesfromDCI request message
@@ -42,25 +44,19 @@ export class msdyn_RetrieveKPIvaluesfromDCIRequest
     const data = await response.json();
     return msdyn_RetrieveKPIvaluesfromDCIResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      CrmRecord: this.crmRecord,
-      KPINameFilterMap: this.kPINameFilterMap,
-      SimilarEntities: this.similarEntities,
-    };
-  }
 }
 
 /**
  * msdyn_RetrieveKPIvaluesfromDCI response message
  */
 export class msdyn_RetrieveKPIvaluesfromDCIResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrieveKPIvaluesfromDCIResponse) {
+  constructor(public result: msdyn_RetrieveKPIvaluesfromDCIResponseData) {
     super("msdyn_RetrieveKPIvaluesfromDCI");
   }
 
   static fromResponse(data: unknown): msdyn_RetrieveKPIvaluesfromDCIResponse {
-    return new msdyn_RetrieveKPIvaluesfromDCIResponse((data as any).value);
+    return new msdyn_RetrieveKPIvaluesfromDCIResponse(
+      responseObject<msdyn_RetrieveKPIvaluesfromDCIResponseData>(data)
+    );
   }
 }

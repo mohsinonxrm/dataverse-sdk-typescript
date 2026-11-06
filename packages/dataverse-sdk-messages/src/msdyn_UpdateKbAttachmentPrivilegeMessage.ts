@@ -45,15 +45,6 @@ export class msdyn_UpdateKbAttachmentPrivilegeRequest
     // No return value (204 No Content)
     return new msdyn_UpdateKbAttachmentPrivilegeResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      KbAttachmentId: this.kbAttachmentId,
-      ParentKnowledgeArticleId: this.parentKnowledgeArticleId,
-      PrincipalId: this.principalId,
-      AccessMask: this.accessMask,
-    };
-  }
 }
 
 /**

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { PvaCreateContentSnapshotResponse as PvaCreateContentSnapshotResponseData } from "./types/index.js";
 
 /**
  * PvaCreateContentSnapshot request message
@@ -31,23 +33,19 @@ export class PvaCreateContentSnapshotRequest
     const data = await response.json();
     return PvaCreateContentSnapshotResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.botId,
-    };
-  }
 }
 
 /**
  * PvaCreateContentSnapshot response message
  */
 export class PvaCreateContentSnapshotResponse extends OrganizationResponse {
-  constructor(public result: PvaCreateContentSnapshotResponse) {
+  constructor(public result: PvaCreateContentSnapshotResponseData) {
     super("PvaCreateContentSnapshot");
   }
 
   static fromResponse(data: unknown): PvaCreateContentSnapshotResponse {
-    return new PvaCreateContentSnapshotResponse((data as any).value);
+    return new PvaCreateContentSnapshotResponse(
+      responseObject<PvaCreateContentSnapshotResponseData>(data)
+    );
   }
 }

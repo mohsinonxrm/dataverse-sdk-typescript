@@ -30,10 +30,6 @@ export class msdyn_ProvisionIoTSuggestionsMLModelRequest
     // No return value (204 No Content)
     return new msdyn_ProvisionIoTSuggestionsMLModelResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**

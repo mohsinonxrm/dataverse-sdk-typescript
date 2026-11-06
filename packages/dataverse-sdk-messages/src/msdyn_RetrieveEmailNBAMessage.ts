@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_RetrieveEmailNBAResponse as msdyn_RetrieveEmailNBAResponseData } from "./types/index.js";
 
 /**
  * msdyn_RetrieveEmailNBA request message
@@ -39,24 +41,19 @@ export class msdyn_RetrieveEmailNBARequest
     const data = await response.json();
     return msdyn_RetrieveEmailNBAResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_RegardingEntityIds: this.msdyn_RegardingEntityIds,
-      msdyn_RegardingLogicalName: this.msdyn_RegardingLogicalName,
-    };
-  }
 }
 
 /**
  * msdyn_RetrieveEmailNBA response message
  */
 export class msdyn_RetrieveEmailNBAResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrieveEmailNBAResponse) {
+  constructor(public result: msdyn_RetrieveEmailNBAResponseData) {
     super("msdyn_RetrieveEmailNBA");
   }
 
   static fromResponse(data: unknown): msdyn_RetrieveEmailNBAResponse {
-    return new msdyn_RetrieveEmailNBAResponse((data as any).value);
+    return new msdyn_RetrieveEmailNBAResponse(
+      responseObject<msdyn_RetrieveEmailNBAResponseData>(data)
+    );
   }
 }

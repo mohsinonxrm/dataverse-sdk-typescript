@@ -39,13 +39,6 @@ export class SetBusinessEquipmentRequest
     // No return value (204 No Content)
     return new SetBusinessEquipmentResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EquipmentId: this.equipmentId,
-      BusinessUnitId: this.businessUnitId,
-    };
-  }
 }
 
 /**

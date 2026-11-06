@@ -39,13 +39,6 @@ export class msdyn_CloneAttachmentsPluginActionRequest
     // No return value (204 No Content)
     return new msdyn_CloneAttachmentsPluginActionResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SourceArticle: this.sourceArticle,
-      ResultArticle: this.resultArticle,
-    };
-  }
 }
 
 /**

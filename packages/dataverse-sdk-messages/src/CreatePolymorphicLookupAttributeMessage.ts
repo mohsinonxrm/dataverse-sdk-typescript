@@ -1,8 +1,10 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type {
   ComplexLookupAttributeMetadata,
   ComplexOneToManyRelationshipMetadata,
+  CreatePolymorphicLookupAttributeResponse as CreatePolymorphicLookupAttributeResponseData,
 } from "./types/index.js";
 
 /**
@@ -45,25 +47,19 @@ export class CreatePolymorphicLookupAttributeRequest
     const data = await response.json();
     return CreatePolymorphicLookupAttributeResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Lookup: this.lookup,
-      OneToManyRelationships: this.oneToManyRelationships,
-      SolutionUniqueName: this.solutionUniqueName,
-    };
-  }
 }
 
 /**
  * CreatePolymorphicLookupAttribute response message
  */
 export class CreatePolymorphicLookupAttributeResponse extends OrganizationResponse {
-  constructor(public result: CreatePolymorphicLookupAttributeResponse) {
+  constructor(public result: CreatePolymorphicLookupAttributeResponseData) {
     super("CreatePolymorphicLookupAttribute");
   }
 
   static fromResponse(data: unknown): CreatePolymorphicLookupAttributeResponse {
-    return new CreatePolymorphicLookupAttributeResponse((data as any).value);
+    return new CreatePolymorphicLookupAttributeResponse(
+      responseObject<CreatePolymorphicLookupAttributeResponseData>(data)
+    );
   }
 }

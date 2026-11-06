@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_RetrieveConversationPayloadResponse as msdyn_RetrieveConversationPayloadResponseData } from "./types/index.js";
 
 /**
  * msdyn_RetrieveConversationPayload request message
@@ -35,23 +37,19 @@ export class msdyn_RetrieveConversationPayloadRequest
     const data = await response.json();
     return msdyn_RetrieveConversationPayloadResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ConversationId: this.conversationId,
-    };
-  }
 }
 
 /**
  * msdyn_RetrieveConversationPayload response message
  */
 export class msdyn_RetrieveConversationPayloadResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrieveConversationPayloadResponse) {
+  constructor(public result: msdyn_RetrieveConversationPayloadResponseData) {
     super("msdyn_RetrieveConversationPayload");
   }
 
   static fromResponse(data: unknown): msdyn_RetrieveConversationPayloadResponse {
-    return new msdyn_RetrieveConversationPayloadResponse((data as any).value);
+    return new msdyn_RetrieveConversationPayloadResponse(
+      responseObject<msdyn_RetrieveConversationPayloadResponseData>(data)
+    );
   }
 }

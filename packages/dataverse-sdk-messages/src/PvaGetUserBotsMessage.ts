@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { PvaGetUserBotsResponse as PvaGetUserBotsResponseData } from "./types/index.js";
 
 /**
  * PvaGetUserBots request message
@@ -35,23 +37,17 @@ export class PvaGetUserBotsRequest
     const data = await response.json();
     return PvaGetUserBotsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RoleType: this.roleType,
-    };
-  }
 }
 
 /**
  * PvaGetUserBots response message
  */
 export class PvaGetUserBotsResponse extends OrganizationResponse {
-  constructor(public result: PvaGetUserBotsResponse) {
+  constructor(public result: PvaGetUserBotsResponseData) {
     super("PvaGetUserBots");
   }
 
   static fromResponse(data: unknown): PvaGetUserBotsResponse {
-    return new PvaGetUserBotsResponse((data as any).value);
+    return new PvaGetUserBotsResponse(responseObject<PvaGetUserBotsResponseData>(data));
   }
 }

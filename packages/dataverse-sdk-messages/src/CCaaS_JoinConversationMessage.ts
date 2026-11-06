@@ -45,16 +45,6 @@ export class CCaaS_JoinConversationRequest
     // No return value (204 No Content)
     return new CCaaS_JoinConversationResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_ocliveworkitemId,
-      ClientId: this.clientId,
-      ConversationAccess: this.conversationAccess,
-      SessionId: this.sessionId,
-      ApiVersion: this.apiVersion,
-    };
-  }
 }
 
 /**

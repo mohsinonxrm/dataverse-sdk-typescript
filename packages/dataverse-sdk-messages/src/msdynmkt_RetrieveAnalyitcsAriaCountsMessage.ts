@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdynmkt_RetrieveAnalyitcsAriaCountsResponse as msdynmkt_RetrieveAnalyitcsAriaCountsResponseData } from "./types/index.js";
 
 /**
  * msdynmkt_RetrieveAnalyitcsAriaCounts request message
@@ -43,26 +45,19 @@ export class msdynmkt_RetrieveAnalyitcsAriaCountsRequest
     const data = await response.json();
     return msdynmkt_RetrieveAnalyitcsAriaCountsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdynmkt_appname: this.msdynmkt_appname,
-      msdynmkt_primaryrecordid: this.msdynmkt_primaryrecordid,
-      msdynmkt_ariacountsrequest: this.msdynmkt_ariacountsrequest,
-      msdynmkt_primaryrecordentityname: this.msdynmkt_primaryrecordentityname,
-    };
-  }
 }
 
 /**
  * msdynmkt_RetrieveAnalyitcsAriaCounts response message
  */
 export class msdynmkt_RetrieveAnalyitcsAriaCountsResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_RetrieveAnalyitcsAriaCountsResponse) {
+  constructor(public result: msdynmkt_RetrieveAnalyitcsAriaCountsResponseData) {
     super("msdynmkt_RetrieveAnalyitcsAriaCounts");
   }
 
   static fromResponse(data: unknown): msdynmkt_RetrieveAnalyitcsAriaCountsResponse {
-    return new msdynmkt_RetrieveAnalyitcsAriaCountsResponse((data as any).value);
+    return new msdynmkt_RetrieveAnalyitcsAriaCountsResponse(
+      responseObject<msdynmkt_RetrieveAnalyitcsAriaCountsResponseData>(data)
+    );
   }
 }

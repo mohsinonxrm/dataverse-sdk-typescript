@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseValue } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 
 /**
@@ -42,25 +43,17 @@ export class GeneratePowerFxFormulaRequest
     const data = await response.json();
     return GeneratePowerFxFormulaResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      OperationId: this.operationId,
-      ParameterValues: this.parameterValues,
-      ConnectionReference: this.connectionReference,
-    };
-  }
 }
 
 /**
  * GeneratePowerFxFormula response message
  */
 export class GeneratePowerFxFormulaResponse extends OrganizationResponse {
-  constructor(public result: EntityReference[]) {
+  constructor(public result: Record<string, unknown>[]) {
     super("GeneratePowerFxFormula");
   }
 
   static fromResponse(data: unknown): GeneratePowerFxFormulaResponse {
-    return new GeneratePowerFxFormulaResponse((data as any).value);
+    return new GeneratePowerFxFormulaResponse(responseValue<Record<string, unknown>[]>(data));
   }
 }

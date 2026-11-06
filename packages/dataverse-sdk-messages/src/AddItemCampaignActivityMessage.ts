@@ -1,7 +1,11 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
-import type { campaignactivity } from "./types/index.js";
+import type {
+  AddItemCampaignActivityResponse as AddItemCampaignActivityResponseData,
+  campaignactivity,
+} from "./types/index.js";
 
 /**
  * AddItemCampaignActivity request message
@@ -41,24 +45,19 @@ export class AddItemCampaignActivityRequest
     const data = await response.json();
     return AddItemCampaignActivityResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      CampaignActivity: this.campaignActivity,
-      Item: this.item,
-    };
-  }
 }
 
 /**
  * AddItemCampaignActivity response message
  */
 export class AddItemCampaignActivityResponse extends OrganizationResponse {
-  constructor(public result: AddItemCampaignActivityResponse) {
+  constructor(public result: AddItemCampaignActivityResponseData) {
     super("AddItemCampaignActivity");
   }
 
   static fromResponse(data: unknown): AddItemCampaignActivityResponse {
-    return new AddItemCampaignActivityResponse((data as any).value);
+    return new AddItemCampaignActivityResponse(
+      responseObject<AddItemCampaignActivityResponseData>(data)
+    );
   }
 }

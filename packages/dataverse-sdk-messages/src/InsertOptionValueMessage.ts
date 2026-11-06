@@ -1,6 +1,10 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { Label } from "./types/index.js";
+import { responseObject } from "./internal/responseData.js";
+import type {
+  InsertOptionValueResponse as InsertOptionValueResponseData,
+  Label,
+} from "./types/index.js";
 
 /**
  * InsertOptionValue request message
@@ -58,33 +62,17 @@ export class InsertOptionValueRequest
     const data = await response.json();
     return InsertOptionValueResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Color: this.color,
-      OptionSetName: this.optionSetName,
-      AttributeLogicalName: this.attributeLogicalName,
-      ExternalValue: this.externalValue,
-      EntityLogicalName: this.entityLogicalName,
-      IsHidden: this.isHidden,
-      Value: this.value,
-      Label: this.label,
-      Description: this.description,
-      ParentValues: this.parentValues,
-      SolutionUniqueName: this.solutionUniqueName,
-    };
-  }
 }
 
 /**
  * InsertOptionValue response message
  */
 export class InsertOptionValueResponse extends OrganizationResponse {
-  constructor(public result: InsertOptionValueResponse) {
+  constructor(public result: InsertOptionValueResponseData) {
     super("InsertOptionValue");
   }
 
   static fromResponse(data: unknown): InsertOptionValueResponse {
-    return new InsertOptionValueResponse((data as any).value);
+    return new InsertOptionValueResponse(responseObject<InsertOptionValueResponseData>(data));
   }
 }

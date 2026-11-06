@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_UpdatePrivacyTermsResponse as msdyn_UpdatePrivacyTermsResponseData } from "./types/index.js";
 
 /**
  * msdyn_UpdatePrivacyTerms request message
@@ -39,24 +41,19 @@ export class msdyn_UpdatePrivacyTermsRequest
     const data = await response.json();
     return msdyn_UpdatePrivacyTermsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      StreamSource: this.streamSource,
-      IsAccepted: this.isAccepted,
-    };
-  }
 }
 
 /**
  * msdyn_UpdatePrivacyTerms response message
  */
 export class msdyn_UpdatePrivacyTermsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_UpdatePrivacyTermsResponse) {
+  constructor(public result: msdyn_UpdatePrivacyTermsResponseData) {
     super("msdyn_UpdatePrivacyTerms");
   }
 
   static fromResponse(data: unknown): msdyn_UpdatePrivacyTermsResponse {
-    return new msdyn_UpdatePrivacyTermsResponse((data as any).value);
+    return new msdyn_UpdatePrivacyTermsResponse(
+      responseObject<msdyn_UpdatePrivacyTermsResponseData>(data)
+    );
   }
 }

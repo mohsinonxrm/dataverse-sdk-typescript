@@ -1,6 +1,10 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { sitemap } from "./types/index.js";
+import { responseObject } from "./internal/responseData.js";
+import type {
+  msdyn_SiteMapDiagnosisResponse as msdyn_SiteMapDiagnosisResponseData,
+  sitemap,
+} from "./types/index.js";
 
 /**
  * msdyn_SiteMapDiagnosis request message
@@ -40,24 +44,19 @@ export class msdyn_SiteMapDiagnosisRequest
     const data = await response.json();
     return msdyn_SiteMapDiagnosisResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      IssueType: this.issueType,
-      ComponentInstance: this.componentInstance,
-    };
-  }
 }
 
 /**
  * msdyn_SiteMapDiagnosis response message
  */
 export class msdyn_SiteMapDiagnosisResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SiteMapDiagnosisResponse) {
+  constructor(public result: msdyn_SiteMapDiagnosisResponseData) {
     super("msdyn_SiteMapDiagnosis");
   }
 
   static fromResponse(data: unknown): msdyn_SiteMapDiagnosisResponse {
-    return new msdyn_SiteMapDiagnosisResponse((data as any).value);
+    return new msdyn_SiteMapDiagnosisResponse(
+      responseObject<msdyn_SiteMapDiagnosisResponseData>(data)
+    );
   }
 }

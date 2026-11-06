@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetMessageIdsForOpportunityCustomActionResponse as msdyn_GetMessageIdsForOpportunityCustomActionResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetMessageIdsForOpportunityCustomAction request message
@@ -37,23 +39,19 @@ export class msdyn_GetMessageIdsForOpportunityCustomActionRequest
     const data = await response.json();
     return msdyn_GetMessageIdsForOpportunityCustomActionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      OpportunityId: this.opportunityId,
-    };
-  }
 }
 
 /**
  * msdyn_GetMessageIdsForOpportunityCustomAction response message
  */
 export class msdyn_GetMessageIdsForOpportunityCustomActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetMessageIdsForOpportunityCustomActionResponse) {
+  constructor(public result: msdyn_GetMessageIdsForOpportunityCustomActionResponseData) {
     super("msdyn_GetMessageIdsForOpportunityCustomAction");
   }
 
   static fromResponse(data: unknown): msdyn_GetMessageIdsForOpportunityCustomActionResponse {
-    return new msdyn_GetMessageIdsForOpportunityCustomActionResponse((data as any).value);
+    return new msdyn_GetMessageIdsForOpportunityCustomActionResponse(
+      responseObject<msdyn_GetMessageIdsForOpportunityCustomActionResponseData>(data)
+    );
   }
 }

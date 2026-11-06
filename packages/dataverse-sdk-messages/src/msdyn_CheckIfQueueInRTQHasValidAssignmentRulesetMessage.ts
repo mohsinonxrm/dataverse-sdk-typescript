@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckIfQueueInRTQHasValidAssignmentRulesetResponse as msdyn_CheckIfQueueInRTQHasValidAssignmentRulesetResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckIfQueueInRTQHasValidAssignmentRuleset request message
@@ -32,21 +34,19 @@ export class msdyn_CheckIfQueueInRTQHasValidAssignmentRulesetRequest
     const data = await response.json();
     return msdyn_CheckIfQueueInRTQHasValidAssignmentRulesetResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_CheckIfQueueInRTQHasValidAssignmentRuleset response message
  */
 export class msdyn_CheckIfQueueInRTQHasValidAssignmentRulesetResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfQueueInRTQHasValidAssignmentRulesetResponse) {
+  constructor(public result: msdyn_CheckIfQueueInRTQHasValidAssignmentRulesetResponseData) {
     super("msdyn_CheckIfQueueInRTQHasValidAssignmentRuleset");
   }
 
   static fromResponse(data: unknown): msdyn_CheckIfQueueInRTQHasValidAssignmentRulesetResponse {
-    return new msdyn_CheckIfQueueInRTQHasValidAssignmentRulesetResponse((data as any).value);
+    return new msdyn_CheckIfQueueInRTQHasValidAssignmentRulesetResponse(
+      responseObject<msdyn_CheckIfQueueInRTQHasValidAssignmentRulesetResponseData>(data)
+    );
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_PostRetrieveRealTimeSuggestedActivitiesResponse as msdyn_PostRetrieveRealTimeSuggestedActivitiesResponseData } from "./types/index.js";
 
 /**
  * msdyn_PostRetrieveRealTimeSuggestedActivities request message
@@ -41,24 +43,19 @@ export class msdyn_PostRetrieveRealTimeSuggestedActivitiesRequest
     const data = await response.json();
     return msdyn_PostRetrieveRealTimeSuggestedActivitiesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entityId: this.entityId,
-      entityName: this.entityName,
-    };
-  }
 }
 
 /**
  * msdyn_PostRetrieveRealTimeSuggestedActivities response message
  */
 export class msdyn_PostRetrieveRealTimeSuggestedActivitiesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_PostRetrieveRealTimeSuggestedActivitiesResponse) {
+  constructor(public result: msdyn_PostRetrieveRealTimeSuggestedActivitiesResponseData) {
     super("msdyn_PostRetrieveRealTimeSuggestedActivities");
   }
 
   static fromResponse(data: unknown): msdyn_PostRetrieveRealTimeSuggestedActivitiesResponse {
-    return new msdyn_PostRetrieveRealTimeSuggestedActivitiesResponse((data as any).value);
+    return new msdyn_PostRetrieveRealTimeSuggestedActivitiesResponse(
+      responseObject<msdyn_PostRetrieveRealTimeSuggestedActivitiesResponseData>(data)
+    );
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_TriggerSequenceStatsDockerJobResponse as msdyn_TriggerSequenceStatsDockerJobResponseData } from "./types/index.js";
 
 /**
  * msdyn_TriggerSequenceStatsDockerJob request message
@@ -30,21 +32,19 @@ export class msdyn_TriggerSequenceStatsDockerJobRequest
     const data = await response.json();
     return msdyn_TriggerSequenceStatsDockerJobResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_TriggerSequenceStatsDockerJob response message
  */
 export class msdyn_TriggerSequenceStatsDockerJobResponse extends OrganizationResponse {
-  constructor(public result: msdyn_TriggerSequenceStatsDockerJobResponse) {
+  constructor(public result: msdyn_TriggerSequenceStatsDockerJobResponseData) {
     super("msdyn_TriggerSequenceStatsDockerJob");
   }
 
   static fromResponse(data: unknown): msdyn_TriggerSequenceStatsDockerJobResponse {
-    return new msdyn_TriggerSequenceStatsDockerJobResponse((data as any).value);
+    return new msdyn_TriggerSequenceStatsDockerJobResponse(
+      responseObject<msdyn_TriggerSequenceStatsDockerJobResponseData>(data)
+    );
   }
 }

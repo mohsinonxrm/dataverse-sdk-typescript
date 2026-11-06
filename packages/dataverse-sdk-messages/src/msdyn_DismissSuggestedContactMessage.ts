@@ -39,13 +39,6 @@ export class msdyn_DismissSuggestedContactRequest
     // No return value (204 No Content)
     return new msdyn_DismissSuggestedContactResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SuggestedContactId: this.suggestedContactId,
-      DismissContact: this.dismissContact,
-    };
-  }
 }
 
 /**

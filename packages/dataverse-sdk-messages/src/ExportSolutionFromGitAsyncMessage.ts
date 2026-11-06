@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { ExportSolutionFromGitAsyncResponse as ExportSolutionFromGitAsyncResponseData } from "./types/index.js";
 
 /**
  * ExportSolutionFromGitAsync request message
@@ -41,25 +43,19 @@ export class ExportSolutionFromGitAsyncRequest
     const data = await response.json();
     return ExportSolutionFromGitAsyncResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionName: this.solutionName,
-      Managed: this.managed,
-      ReleaseBranch: this.releaseBranch,
-    };
-  }
 }
 
 /**
  * ExportSolutionFromGitAsync response message
  */
 export class ExportSolutionFromGitAsyncResponse extends OrganizationResponse {
-  constructor(public result: ExportSolutionFromGitAsyncResponse) {
+  constructor(public result: ExportSolutionFromGitAsyncResponseData) {
     super("ExportSolutionFromGitAsync");
   }
 
   static fromResponse(data: unknown): ExportSolutionFromGitAsyncResponse {
-    return new ExportSolutionFromGitAsyncResponse((data as any).value);
+    return new ExportSolutionFromGitAsyncResponse(
+      responseObject<ExportSolutionFromGitAsyncResponseData>(data)
+    );
   }
 }

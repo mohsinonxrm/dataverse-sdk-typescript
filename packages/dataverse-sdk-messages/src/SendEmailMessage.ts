@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { SendEmailResponse as SendEmailResponseData } from "./types/index.js";
 
 /**
  * SendEmail request message
@@ -38,25 +40,17 @@ export class SendEmailRequest extends OrganizationRequest implements Executable<
     const data = await response.json();
     return SendEmailResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.emailId,
-      IssueSend: this.issueSend,
-      TrackingToken: this.trackingToken,
-    };
-  }
 }
 
 /**
  * SendEmail response message
  */
 export class SendEmailResponse extends OrganizationResponse {
-  constructor(public result: SendEmailResponse) {
+  constructor(public result: SendEmailResponseData) {
     super("SendEmail");
   }
 
   static fromResponse(data: unknown): SendEmailResponse {
-    return new SendEmailResponse((data as any).value);
+    return new SendEmailResponse(responseObject<SendEmailResponseData>(data));
   }
 }

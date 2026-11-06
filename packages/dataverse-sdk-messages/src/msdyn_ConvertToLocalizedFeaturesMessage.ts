@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_ConvertToLocalizedFeaturesResponse as msdyn_ConvertToLocalizedFeaturesResponseData } from "./types/index.js";
 
 /**
  * msdyn_ConvertToLocalizedFeatures request message
@@ -35,23 +37,19 @@ export class msdyn_ConvertToLocalizedFeaturesRequest
     const data = await response.json();
     return msdyn_ConvertToLocalizedFeaturesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      PredictionFeatures: this.predictionFeatures,
-    };
-  }
 }
 
 /**
  * msdyn_ConvertToLocalizedFeatures response message
  */
 export class msdyn_ConvertToLocalizedFeaturesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ConvertToLocalizedFeaturesResponse) {
+  constructor(public result: msdyn_ConvertToLocalizedFeaturesResponseData) {
     super("msdyn_ConvertToLocalizedFeatures");
   }
 
   static fromResponse(data: unknown): msdyn_ConvertToLocalizedFeaturesResponse {
-    return new msdyn_ConvertToLocalizedFeaturesResponse((data as any).value);
+    return new msdyn_ConvertToLocalizedFeaturesResponse(
+      responseObject<msdyn_ConvertToLocalizedFeaturesResponseData>(data)
+    );
   }
 }

@@ -39,13 +39,6 @@ export class msdyn_SalesAgents_ReEngageEntityRequest
     // No return value (204 No Content)
     return new msdyn_SalesAgents_ReEngageEntityResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_EntityTypeName: this.msdyn_EntityTypeName,
-      msdyn_EntityId: this.msdyn_EntityId,
-    };
-  }
 }
 
 /**

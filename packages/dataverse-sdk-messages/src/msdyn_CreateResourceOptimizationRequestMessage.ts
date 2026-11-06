@@ -49,17 +49,6 @@ export class msdyn_CreateResourceOptimizationRequestRequest
     // No return value (204 No Content)
     return new msdyn_CreateResourceOptimizationRequestResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ResourceIds: this.resourceIds,
-      StartDate: this.startDate,
-      EndDate: this.endDate,
-      GoalId: this.goalId,
-      IsSimulation: this.isSimulation,
-      OptimizationRequestId: this.optimizationRequestId,
-    };
-  }
 }
 
 /**

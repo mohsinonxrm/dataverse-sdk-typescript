@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_LineSettingsShouldHaveAllRequiredFieldsRuleResponse as msdyn_LineSettingsShouldHaveAllRequiredFieldsRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_LineSettingsShouldHaveAllRequiredFieldsRule request message
@@ -32,21 +34,19 @@ export class msdyn_LineSettingsShouldHaveAllRequiredFieldsRuleRequest
     const data = await response.json();
     return msdyn_LineSettingsShouldHaveAllRequiredFieldsRuleResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_LineSettingsShouldHaveAllRequiredFieldsRule response message
  */
 export class msdyn_LineSettingsShouldHaveAllRequiredFieldsRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_LineSettingsShouldHaveAllRequiredFieldsRuleResponse) {
+  constructor(public result: msdyn_LineSettingsShouldHaveAllRequiredFieldsRuleResponseData) {
     super("msdyn_LineSettingsShouldHaveAllRequiredFieldsRule");
   }
 
   static fromResponse(data: unknown): msdyn_LineSettingsShouldHaveAllRequiredFieldsRuleResponse {
-    return new msdyn_LineSettingsShouldHaveAllRequiredFieldsRuleResponse((data as any).value);
+    return new msdyn_LineSettingsShouldHaveAllRequiredFieldsRuleResponse(
+      responseObject<msdyn_LineSettingsShouldHaveAllRequiredFieldsRuleResponseData>(data)
+    );
   }
 }

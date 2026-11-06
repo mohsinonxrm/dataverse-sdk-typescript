@@ -37,12 +37,6 @@ export class msdyn_FixSLARelationshipsOnTargetEntitiesRequest
     // No return value (204 No Content)
     return new msdyn_FixSLARelationshipsOnTargetEntitiesResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SLAEnabledEnitiesToProcess: this.sLAEnabledEnitiesToProcess,
-    };
-  }
 }
 
 /**

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetCustomActionParametersResponse as msdyn_GetCustomActionParametersResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetCustomActionParameters request message
@@ -41,25 +43,19 @@ export class msdyn_GetCustomActionParametersRequest
     const data = await response.json();
     return msdyn_GetCustomActionParametersResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      workflowId: this.workflowId,
-      customAction: this.customAction,
-      correlationId: this.correlationId,
-    };
-  }
 }
 
 /**
  * msdyn_GetCustomActionParameters response message
  */
 export class msdyn_GetCustomActionParametersResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetCustomActionParametersResponse) {
+  constructor(public result: msdyn_GetCustomActionParametersResponseData) {
     super("msdyn_GetCustomActionParameters");
   }
 
   static fromResponse(data: unknown): msdyn_GetCustomActionParametersResponse {
-    return new msdyn_GetCustomActionParametersResponse((data as any).value);
+    return new msdyn_GetCustomActionParametersResponse(
+      responseObject<msdyn_GetCustomActionParametersResponseData>(data)
+    );
   }
 }

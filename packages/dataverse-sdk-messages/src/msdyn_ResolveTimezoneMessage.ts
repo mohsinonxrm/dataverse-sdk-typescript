@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_ResolveTimezoneResponse as msdyn_ResolveTimezoneResponseData } from "./types/index.js";
 
 /**
  * msdyn_ResolveTimezone request message
@@ -39,24 +41,19 @@ export class msdyn_ResolveTimezoneRequest
     const data = await response.json();
     return msdyn_ResolveTimezoneResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RequirementIds: this.requirementIds,
-      UserId: this.userId,
-    };
-  }
 }
 
 /**
  * msdyn_ResolveTimezone response message
  */
 export class msdyn_ResolveTimezoneResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ResolveTimezoneResponse) {
+  constructor(public result: msdyn_ResolveTimezoneResponseData) {
     super("msdyn_ResolveTimezone");
   }
 
   static fromResponse(data: unknown): msdyn_ResolveTimezoneResponse {
-    return new msdyn_ResolveTimezoneResponse((data as any).value);
+    return new msdyn_ResolveTimezoneResponse(
+      responseObject<msdyn_ResolveTimezoneResponseData>(data)
+    );
   }
 }

@@ -39,13 +39,6 @@ export class msdyn_applyworktemplateforresourcesRequest
     // No return value (204 No Content)
     return new msdyn_applyworktemplateforresourcesResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      calendarIds: this.calendarIds,
-      templateCalendarId: this.templateCalendarId,
-    };
-  }
 }
 
 /**

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckBookingCustomControlUsageResponse as msdyn_CheckBookingCustomControlUsageResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckBookingCustomControlUsage request message
@@ -35,23 +37,19 @@ export class msdyn_CheckBookingCustomControlUsageRequest
     const data = await response.json();
     return msdyn_CheckBookingCustomControlUsageResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionId: this.solutionId,
-    };
-  }
 }
 
 /**
  * msdyn_CheckBookingCustomControlUsage response message
  */
 export class msdyn_CheckBookingCustomControlUsageResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckBookingCustomControlUsageResponse) {
+  constructor(public result: msdyn_CheckBookingCustomControlUsageResponseData) {
     super("msdyn_CheckBookingCustomControlUsage");
   }
 
   static fromResponse(data: unknown): msdyn_CheckBookingCustomControlUsageResponse {
-    return new msdyn_CheckBookingCustomControlUsageResponse((data as any).value);
+    return new msdyn_CheckBookingCustomControlUsageResponse(
+      responseObject<msdyn_CheckBookingCustomControlUsageResponseData>(data)
+    );
   }
 }

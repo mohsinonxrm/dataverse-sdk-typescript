@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetIoTAlertAggregationResponse as msdyn_GetIoTAlertAggregationResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetIoTAlertAggregation request message
@@ -41,25 +43,19 @@ export class msdyn_GetIoTAlertAggregationRequest
     const data = await response.json();
     return msdyn_GetIoTAlertAggregationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      DeviceId: this.deviceId,
-      TimeRangeValue: this.timeRangeValue,
-      TimeRangeType: this.timeRangeType,
-    };
-  }
 }
 
 /**
  * msdyn_GetIoTAlertAggregation response message
  */
 export class msdyn_GetIoTAlertAggregationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetIoTAlertAggregationResponse) {
+  constructor(public result: msdyn_GetIoTAlertAggregationResponseData) {
     super("msdyn_GetIoTAlertAggregation");
   }
 
   static fromResponse(data: unknown): msdyn_GetIoTAlertAggregationResponse {
-    return new msdyn_GetIoTAlertAggregationResponse((data as any).value);
+    return new msdyn_GetIoTAlertAggregationResponse(
+      responseObject<msdyn_GetIoTAlertAggregationResponseData>(data)
+    );
   }
 }

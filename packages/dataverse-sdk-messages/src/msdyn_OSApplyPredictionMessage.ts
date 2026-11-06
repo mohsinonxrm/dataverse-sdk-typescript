@@ -35,12 +35,6 @@ export class msdyn_OSApplyPredictionRequest
     // No return value (204 No Content)
     return new msdyn_OSApplyPredictionResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      AutoScheduleTrainingConfig: this.autoScheduleTrainingConfig,
-    };
-  }
 }
 
 /**

@@ -39,13 +39,6 @@ export class _RemoveMarketingListMembersByIdsRequest
     // No return value (204 No Content)
     return new _RemoveMarketingListMembersByIdsResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ListId: this.listId,
-      MemberIds: this.memberIds,
-    };
-  }
 }
 
 /**

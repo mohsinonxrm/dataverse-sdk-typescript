@@ -40,13 +40,6 @@ export class msdyn_InvokeOutboundAPIRequest
     // No return value (204 No Content)
     return new msdyn_InvokeOutboundAPIResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      OutboundSettingsRecord: this.outboundSettingsRecord,
-      ContactList: this.contactList,
-    };
-  }
 }
 
 /**

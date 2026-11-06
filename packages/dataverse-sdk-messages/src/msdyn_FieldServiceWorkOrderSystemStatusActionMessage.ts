@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_FieldServiceWorkOrderSystemStatusActionResponse as msdyn_FieldServiceWorkOrderSystemStatusActionResponseData } from "./types/index.js";
 
 /**
  * msdyn_FieldServiceWorkOrderSystemStatusAction request message
@@ -43,25 +45,19 @@ export class msdyn_FieldServiceWorkOrderSystemStatusActionRequest
     const data = await response.json();
     return msdyn_FieldServiceWorkOrderSystemStatusActionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_workorderId,
-      Type: this.type,
-      InputParameter: this.inputParameter,
-    };
-  }
 }
 
 /**
  * msdyn_FieldServiceWorkOrderSystemStatusAction response message
  */
 export class msdyn_FieldServiceWorkOrderSystemStatusActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_FieldServiceWorkOrderSystemStatusActionResponse) {
+  constructor(public result: msdyn_FieldServiceWorkOrderSystemStatusActionResponseData) {
     super("msdyn_FieldServiceWorkOrderSystemStatusAction");
   }
 
   static fromResponse(data: unknown): msdyn_FieldServiceWorkOrderSystemStatusActionResponse {
-    return new msdyn_FieldServiceWorkOrderSystemStatusActionResponse((data as any).value);
+    return new msdyn_FieldServiceWorkOrderSystemStatusActionResponse(
+      responseObject<msdyn_FieldServiceWorkOrderSystemStatusActionResponseData>(data)
+    );
   }
 }

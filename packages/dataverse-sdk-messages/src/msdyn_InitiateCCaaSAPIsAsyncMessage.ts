@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_InitiateCCaaSAPIsAsyncResponse as msdyn_InitiateCCaaSAPIsAsyncResponseData } from "./types/index.js";
 
 /**
  * msdyn_InitiateCCaaSAPIsAsync request message
@@ -43,26 +45,19 @@ export class msdyn_InitiateCCaaSAPIsAsyncRequest
     const data = await response.json();
     return msdyn_InitiateCCaaSAPIsAsyncResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Payload: this.payload,
-      LiveWorkItemId: this.liveWorkItemId,
-      CCaaSAPI: this.cCaaSAPI,
-      InitiatingUser: this.initiatingUser,
-    };
-  }
 }
 
 /**
  * msdyn_InitiateCCaaSAPIsAsync response message
  */
 export class msdyn_InitiateCCaaSAPIsAsyncResponse extends OrganizationResponse {
-  constructor(public result: msdyn_InitiateCCaaSAPIsAsyncResponse) {
+  constructor(public result: msdyn_InitiateCCaaSAPIsAsyncResponseData) {
     super("msdyn_InitiateCCaaSAPIsAsync");
   }
 
   static fromResponse(data: unknown): msdyn_InitiateCCaaSAPIsAsyncResponse {
-    return new msdyn_InitiateCCaaSAPIsAsyncResponse((data as any).value);
+    return new msdyn_InitiateCCaaSAPIsAsyncResponse(
+      responseObject<msdyn_InitiateCCaaSAPIsAsyncResponseData>(data)
+    );
   }
 }

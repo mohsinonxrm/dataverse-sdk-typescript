@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msft_DataEngineIndexMgmt_CreateIndexResponse as msft_DataEngineIndexMgmt_CreateIndexResponseData } from "./types/index.js";
 
 /**
  * msft_DataEngineIndexMgmt_CreateIndex request message
@@ -41,25 +43,19 @@ export class msft_DataEngineIndexMgmt_CreateIndexRequest
     const data = await response.json();
     return msft_DataEngineIndexMgmt_CreateIndexResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      CreateIndex_QueueAdhocRequest: this.createIndex_QueueAdhocRequest,
-      CreateIndex_KeyColumnsJson: this.createIndex_KeyColumnsJson,
-      CreateIndex_LogicalTableName: this.createIndex_LogicalTableName,
-    };
-  }
 }
 
 /**
  * msft_DataEngineIndexMgmt_CreateIndex response message
  */
 export class msft_DataEngineIndexMgmt_CreateIndexResponse extends OrganizationResponse {
-  constructor(public result: msft_DataEngineIndexMgmt_CreateIndexResponse) {
+  constructor(public result: msft_DataEngineIndexMgmt_CreateIndexResponseData) {
     super("msft_DataEngineIndexMgmt_CreateIndex");
   }
 
   static fromResponse(data: unknown): msft_DataEngineIndexMgmt_CreateIndexResponse {
-    return new msft_DataEngineIndexMgmt_CreateIndexResponse((data as any).value);
+    return new msft_DataEngineIndexMgmt_CreateIndexResponse(
+      responseObject<msft_DataEngineIndexMgmt_CreateIndexResponseData>(data)
+    );
   }
 }

@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { msdyn_analysisjob, msdyn_solutionhealthruleset } from "./types/index.js";
 
 /**
@@ -42,14 +43,6 @@ export class msdyn_CreateNewAnalysisJobForRuleSetRequest
     const data = await response.json();
     return msdyn_CreateNewAnalysisJobForRuleSetResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionHealthRuleSet: this.solutionHealthRuleSet,
-      TriggerType: this.triggerType,
-      InAppNotificationEnabled: this.inAppNotificationEnabled,
-    };
-  }
 }
 
 /**
@@ -61,6 +54,8 @@ export class msdyn_CreateNewAnalysisJobForRuleSetResponse extends OrganizationRe
   }
 
   static fromResponse(data: unknown): msdyn_CreateNewAnalysisJobForRuleSetResponse {
-    return new msdyn_CreateNewAnalysisJobForRuleSetResponse((data as any).value);
+    return new msdyn_CreateNewAnalysisJobForRuleSetResponse(
+      responseObject<msdyn_analysisjob>(data)
+    );
   }
 }

@@ -31,12 +31,6 @@ export class msdyn_TrainModelRequest
     // No return value (204 No Content)
     return new msdyn_TrainModelResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_ocsimltrainingId,
-    };
-  }
 }
 
 /**

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { QueryDvUnstructuredDataResponse as QueryDvUnstructuredDataResponseData } from "./types/index.js";
 
 /**
  * QueryDvUnstructuredData request message
@@ -35,23 +37,19 @@ export class QueryDvUnstructuredDataRequest
     const data = await response.json();
     return QueryDvUnstructuredDataResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      userQueryText: this.userQueryText,
-    };
-  }
 }
 
 /**
  * QueryDvUnstructuredData response message
  */
 export class QueryDvUnstructuredDataResponse extends OrganizationResponse {
-  constructor(public result: QueryDvUnstructuredDataResponse) {
+  constructor(public result: QueryDvUnstructuredDataResponseData) {
     super("QueryDvUnstructuredData");
   }
 
   static fromResponse(data: unknown): QueryDvUnstructuredDataResponse {
-    return new QueryDvUnstructuredDataResponse((data as any).value);
+    return new QueryDvUnstructuredDataResponse(
+      responseObject<QueryDvUnstructuredDataResponseData>(data)
+    );
   }
 }

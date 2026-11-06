@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_ConvertSequenceJsonToCJOJsonResponse as msdyn_ConvertSequenceJsonToCJOJsonResponseData } from "./types/index.js";
 
 /**
  * msdyn_ConvertSequenceJsonToCJOJson request message
@@ -35,23 +37,19 @@ export class msdyn_ConvertSequenceJsonToCJOJsonRequest
     const data = await response.json();
     return msdyn_ConvertSequenceJsonToCJOJsonResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SequenceId: this.sequenceId,
-    };
-  }
 }
 
 /**
  * msdyn_ConvertSequenceJsonToCJOJson response message
  */
 export class msdyn_ConvertSequenceJsonToCJOJsonResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ConvertSequenceJsonToCJOJsonResponse) {
+  constructor(public result: msdyn_ConvertSequenceJsonToCJOJsonResponseData) {
     super("msdyn_ConvertSequenceJsonToCJOJson");
   }
 
   static fromResponse(data: unknown): msdyn_ConvertSequenceJsonToCJOJsonResponse {
-    return new msdyn_ConvertSequenceJsonToCJOJsonResponse((data as any).value);
+    return new msdyn_ConvertSequenceJsonToCJOJsonResponse(
+      responseObject<msdyn_ConvertSequenceJsonToCJOJsonResponseData>(data)
+    );
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckIoTSettingsAndAlertParentingConfigResponse as msdyn_CheckIoTSettingsAndAlertParentingConfigResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckIoTSettingsAndAlertParentingConfig request message
@@ -32,21 +34,19 @@ export class msdyn_CheckIoTSettingsAndAlertParentingConfigRequest
     const data = await response.json();
     return msdyn_CheckIoTSettingsAndAlertParentingConfigResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_CheckIoTSettingsAndAlertParentingConfig response message
  */
 export class msdyn_CheckIoTSettingsAndAlertParentingConfigResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIoTSettingsAndAlertParentingConfigResponse) {
+  constructor(public result: msdyn_CheckIoTSettingsAndAlertParentingConfigResponseData) {
     super("msdyn_CheckIoTSettingsAndAlertParentingConfig");
   }
 
   static fromResponse(data: unknown): msdyn_CheckIoTSettingsAndAlertParentingConfigResponse {
-    return new msdyn_CheckIoTSettingsAndAlertParentingConfigResponse((data as any).value);
+    return new msdyn_CheckIoTSettingsAndAlertParentingConfigResponse(
+      responseObject<msdyn_CheckIoTSettingsAndAlertParentingConfigResponseData>(data)
+    );
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_SalesAgents_ShouldRunAgentOrchestrationResponse as msdyn_SalesAgents_ShouldRunAgentOrchestrationResponseData } from "./types/index.js";
 
 /**
  * msdyn_SalesAgents_ShouldRunAgentOrchestration request message
@@ -41,24 +43,19 @@ export class msdyn_SalesAgents_ShouldRunAgentOrchestrationRequest
     const data = await response.json();
     return msdyn_SalesAgents_ShouldRunAgentOrchestrationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_SalesAgentType: this.msdyn_SalesAgentType,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-    };
-  }
 }
 
 /**
  * msdyn_SalesAgents_ShouldRunAgentOrchestration response message
  */
 export class msdyn_SalesAgents_ShouldRunAgentOrchestrationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgents_ShouldRunAgentOrchestrationResponse) {
+  constructor(public result: msdyn_SalesAgents_ShouldRunAgentOrchestrationResponseData) {
     super("msdyn_SalesAgents_ShouldRunAgentOrchestration");
   }
 
   static fromResponse(data: unknown): msdyn_SalesAgents_ShouldRunAgentOrchestrationResponse {
-    return new msdyn_SalesAgents_ShouldRunAgentOrchestrationResponse((data as any).value);
+    return new msdyn_SalesAgents_ShouldRunAgentOrchestrationResponse(
+      responseObject<msdyn_SalesAgents_ShouldRunAgentOrchestrationResponseData>(data)
+    );
   }
 }

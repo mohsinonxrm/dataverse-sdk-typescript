@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { IngestResponse as IngestResponseData } from "./types/index.js";
 
 /**
  * Ingest request message
@@ -36,24 +38,17 @@ export class IngestRequest extends OrganizationRequest implements Executable<Ing
     const data = await response.json();
     return IngestResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_pmrecordingId,
-      version: this.version,
-    };
-  }
 }
 
 /**
  * Ingest response message
  */
 export class IngestResponse extends OrganizationResponse {
-  constructor(public result: IngestResponse) {
+  constructor(public result: IngestResponseData) {
     super("Ingest");
   }
 
   static fromResponse(data: unknown): IngestResponse {
-    return new IngestResponse((data as any).value);
+    return new IngestResponse(responseObject<IngestResponseData>(data));
   }
 }

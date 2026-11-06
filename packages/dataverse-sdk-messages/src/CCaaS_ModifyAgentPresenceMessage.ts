@@ -41,14 +41,6 @@ export class CCaaS_ModifyAgentPresenceRequest
     // No return value (204 No Content)
     return new CCaaS_ModifyAgentPresenceResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      PresenceId: this.presenceId,
-      AgentId: this.agentId,
-      ApiVersion: this.apiVersion,
-    };
-  }
 }
 
 /**

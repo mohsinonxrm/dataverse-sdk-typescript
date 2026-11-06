@@ -40,13 +40,6 @@ export class AddListMembersListRequest
     // No return value (204 No Content)
     return new AddListMembersListResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      List: this.list,
-      Members: this.members,
-    };
-  }
 }
 
 /**

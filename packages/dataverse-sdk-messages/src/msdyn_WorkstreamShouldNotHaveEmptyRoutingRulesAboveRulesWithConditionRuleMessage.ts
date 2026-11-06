@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_WorkstreamShouldNotHaveEmptyRoutingRulesAboveRulesWithConditionRuleResponse as msdyn_WorkstreamShouldNotHaveEmptyRoutingRulesAboveRulesWithConditionRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_WorkstreamShouldNotHaveEmptyRoutingRulesAboveRulesWithConditionRule request message
@@ -35,10 +37,6 @@ export class msdyn_WorkstreamShouldNotHaveEmptyRoutingRulesAboveRulesWithConditi
       data
     );
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
@@ -46,7 +44,7 @@ export class msdyn_WorkstreamShouldNotHaveEmptyRoutingRulesAboveRulesWithConditi
  */
 export class msdyn_WorkstreamShouldNotHaveEmptyRoutingRulesAboveRulesWithConditionRuleResponse extends OrganizationResponse {
   constructor(
-    public result: msdyn_WorkstreamShouldNotHaveEmptyRoutingRulesAboveRulesWithConditionRuleResponse
+    public result: msdyn_WorkstreamShouldNotHaveEmptyRoutingRulesAboveRulesWithConditionRuleResponseData
   ) {
     super("msdyn_WorkstreamShouldNotHaveEmptyRoutingRulesAboveRulesWithConditionRule");
   }
@@ -55,7 +53,9 @@ export class msdyn_WorkstreamShouldNotHaveEmptyRoutingRulesAboveRulesWithConditi
     data: unknown
   ): msdyn_WorkstreamShouldNotHaveEmptyRoutingRulesAboveRulesWithConditionRuleResponse {
     return new msdyn_WorkstreamShouldNotHaveEmptyRoutingRulesAboveRulesWithConditionRuleResponse(
-      (data as any).value
+      responseObject<msdyn_WorkstreamShouldNotHaveEmptyRoutingRulesAboveRulesWithConditionRuleResponseData>(
+        data
+      )
     );
   }
 }

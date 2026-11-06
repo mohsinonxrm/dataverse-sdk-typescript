@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_RetrieveKnowledgeSearchModifiersResponse as msdyn_RetrieveKnowledgeSearchModifiersResponseData } from "./types/index.js";
 
 /**
  * msdyn_RetrieveKnowledgeSearchModifiers request message
@@ -35,23 +37,19 @@ export class msdyn_RetrieveKnowledgeSearchModifiersRequest
     const data = await response.json();
     return msdyn_RetrieveKnowledgeSearchModifiersResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RuntimeMode: this.runtimeMode,
-    };
-  }
 }
 
 /**
  * msdyn_RetrieveKnowledgeSearchModifiers response message
  */
 export class msdyn_RetrieveKnowledgeSearchModifiersResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrieveKnowledgeSearchModifiersResponse) {
+  constructor(public result: msdyn_RetrieveKnowledgeSearchModifiersResponseData) {
     super("msdyn_RetrieveKnowledgeSearchModifiers");
   }
 
   static fromResponse(data: unknown): msdyn_RetrieveKnowledgeSearchModifiersResponse {
-    return new msdyn_RetrieveKnowledgeSearchModifiersResponse((data as any).value);
+    return new msdyn_RetrieveKnowledgeSearchModifiersResponse(
+      responseObject<msdyn_RetrieveKnowledgeSearchModifiersResponseData>(data)
+    );
   }
 }

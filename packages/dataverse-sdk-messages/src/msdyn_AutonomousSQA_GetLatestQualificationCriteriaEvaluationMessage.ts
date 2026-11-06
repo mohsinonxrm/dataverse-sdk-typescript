@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResponse as msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResponseData } from "./types/index.js";
 
 /**
  * msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluation request message
@@ -43,21 +45,15 @@ export class msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationRequest
     const data = await response.json();
     return msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_SalesAgentRun: this.msdyn_SalesAgentRun,
-      msdyn_QueueAgentRunRequestTimestamp: this.msdyn_QueueAgentRunRequestTimestamp,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-    };
-  }
 }
 
 /**
  * msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluation response message
  */
 export class msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResponse) {
+  constructor(
+    public result: msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResponseData
+  ) {
     super("msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluation");
   }
 
@@ -65,7 +61,7 @@ export class msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationRespons
     data: unknown
   ): msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResponse {
     return new msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResponse(
-      (data as any).value
+      responseObject<msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResponseData>(data)
     );
   }
 }

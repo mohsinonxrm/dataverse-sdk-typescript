@@ -30,10 +30,6 @@ export class msdyn_DeleteFlowRequest
     // No return value (204 No Content)
     return new msdyn_DeleteFlowResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**

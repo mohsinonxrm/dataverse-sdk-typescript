@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_EnableSharePointResponse as msdyn_EnableSharePointResponseData } from "./types/index.js";
 
 /**
  * msdyn_EnableSharePoint request message
@@ -30,21 +32,19 @@ export class msdyn_EnableSharePointRequest
     const data = await response.json();
     return msdyn_EnableSharePointResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_EnableSharePoint response message
  */
 export class msdyn_EnableSharePointResponse extends OrganizationResponse {
-  constructor(public result: msdyn_EnableSharePointResponse) {
+  constructor(public result: msdyn_EnableSharePointResponseData) {
     super("msdyn_EnableSharePoint");
   }
 
   static fromResponse(data: unknown): msdyn_EnableSharePointResponse {
-    return new msdyn_EnableSharePointResponse((data as any).value);
+    return new msdyn_EnableSharePointResponse(
+      responseObject<msdyn_EnableSharePointResponseData>(data)
+    );
   }
 }

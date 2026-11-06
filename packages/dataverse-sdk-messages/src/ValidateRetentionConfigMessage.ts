@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { ValidateRetentionConfigResponse as ValidateRetentionConfigResponseData } from "./types/index.js";
 
 /**
  * ValidateRetentionConfig request message
@@ -44,26 +46,19 @@ export class ValidateRetentionConfigRequest
     const data = await response.json();
     return ValidateRetentionConfigResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-      EntityName: this.entityName,
-      FetchXml: this.fetchXml,
-      RetentionConfigId: this.retentionConfigId,
-    };
-  }
 }
 
 /**
  * ValidateRetentionConfig response message
  */
 export class ValidateRetentionConfigResponse extends OrganizationResponse {
-  constructor(public result: ValidateRetentionConfigResponse) {
+  constructor(public result: ValidateRetentionConfigResponseData) {
     super("ValidateRetentionConfig");
   }
 
   static fromResponse(data: unknown): ValidateRetentionConfigResponse {
-    return new ValidateRetentionConfigResponse((data as any).value);
+    return new ValidateRetentionConfigResponse(
+      responseObject<ValidateRetentionConfigResponseData>(data)
+    );
   }
 }

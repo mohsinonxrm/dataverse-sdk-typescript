@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_GetIoTCommandMetadataResponse as msdyn_GetIoTCommandMetadataResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetIoTCommandMetadata request message
@@ -36,23 +38,19 @@ export class msdyn_GetIoTCommandMetadataRequest
     const data = await response.json();
     return msdyn_GetIoTCommandMetadataResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      IoTCommandDefinition: this.ioTCommandDefinition,
-    };
-  }
 }
 
 /**
  * msdyn_GetIoTCommandMetadata response message
  */
 export class msdyn_GetIoTCommandMetadataResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetIoTCommandMetadataResponse) {
+  constructor(public result: msdyn_GetIoTCommandMetadataResponseData) {
     super("msdyn_GetIoTCommandMetadata");
   }
 
   static fromResponse(data: unknown): msdyn_GetIoTCommandMetadataResponse {
-    return new msdyn_GetIoTCommandMetadataResponse((data as any).value);
+    return new msdyn_GetIoTCommandMetadataResponse(
+      responseObject<msdyn_GetIoTCommandMetadataResponseData>(data)
+    );
   }
 }

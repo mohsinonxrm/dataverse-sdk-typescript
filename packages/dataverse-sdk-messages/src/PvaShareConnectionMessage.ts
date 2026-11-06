@@ -31,12 +31,6 @@ export class PvaShareConnectionRequest
     // No return value (204 No Content)
     return new PvaShareConnectionResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.connectionreferenceId,
-    };
-  }
 }
 
 /**

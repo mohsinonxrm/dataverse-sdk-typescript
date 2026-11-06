@@ -35,12 +35,6 @@ export class msdyn_GeolocationLocationTrackingDataRequest
     // No return value (204 No Content)
     return new msdyn_GeolocationLocationTrackingDataResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Locations: this.locations,
-    };
-  }
 }
 
 /**

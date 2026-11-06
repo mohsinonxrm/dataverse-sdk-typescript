@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_RetrieveSearchProvidersResponse as msdyn_RetrieveSearchProvidersResponseData } from "./types/index.js";
 
 /**
  * msdyn_RetrieveSearchProviders request message
@@ -35,23 +37,19 @@ export class msdyn_RetrieveSearchProvidersRequest
     const data = await response.json();
     return msdyn_RetrieveSearchProvidersResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ApplicationId: this.applicationId,
-    };
-  }
 }
 
 /**
  * msdyn_RetrieveSearchProviders response message
  */
 export class msdyn_RetrieveSearchProvidersResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrieveSearchProvidersResponse) {
+  constructor(public result: msdyn_RetrieveSearchProvidersResponseData) {
     super("msdyn_RetrieveSearchProviders");
   }
 
   static fromResponse(data: unknown): msdyn_RetrieveSearchProvidersResponse {
-    return new msdyn_RetrieveSearchProvidersResponse((data as any).value);
+    return new msdyn_RetrieveSearchProvidersResponse(
+      responseObject<msdyn_RetrieveSearchProvidersResponseData>(data)
+    );
   }
 }

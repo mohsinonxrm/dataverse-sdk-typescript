@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { CCaaS_SendAgentTypingIndicatorResponse as CCaaS_SendAgentTypingIndicatorResponseData } from "./types/index.js";
 
 /**
  * CCaaS_SendAgentTypingIndicator request message
@@ -41,25 +43,19 @@ export class CCaaS_SendAgentTypingIndicatorRequest
     const data = await response.json();
     return CCaaS_SendAgentTypingIndicatorResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      AgentChatId: this.agentChatId,
-      ApiVersion: this.apiVersion,
-      AgentDisplayName: this.agentDisplayName,
-    };
-  }
 }
 
 /**
  * CCaaS_SendAgentTypingIndicator response message
  */
 export class CCaaS_SendAgentTypingIndicatorResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_SendAgentTypingIndicatorResponse) {
+  constructor(public result: CCaaS_SendAgentTypingIndicatorResponseData) {
     super("CCaaS_SendAgentTypingIndicator");
   }
 
   static fromResponse(data: unknown): CCaaS_SendAgentTypingIndicatorResponse {
-    return new CCaaS_SendAgentTypingIndicatorResponse((data as any).value);
+    return new CCaaS_SendAgentTypingIndicatorResponse(
+      responseObject<CCaaS_SendAgentTypingIndicatorResponseData>(data)
+    );
   }
 }

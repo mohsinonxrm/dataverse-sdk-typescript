@@ -42,14 +42,6 @@ export class LoseOpportunityRequest
     // No return value (204 No Content)
     return new LoseOpportunityResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Caller: this.caller,
-      OpportunityClose: this.opportunityClose,
-      Status: this.status,
-    };
-  }
 }
 
 /**

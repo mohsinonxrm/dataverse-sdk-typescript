@@ -51,19 +51,6 @@ export class CCaaS_InitiateAgentGroupConsultRequest
     // No return value (204 No Content)
     return new CCaaS_InitiateAgentGroupConsultResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_ocliveworkitemId,
-      IntentId: this.intentId,
-      IntentGroupId: this.intentGroupId,
-      ApiVersion: this.apiVersion,
-      ConversationAccess: this.conversationAccess,
-      AgentGroupId: this.agentGroupId,
-      IntentFamilyId: this.intentFamilyId,
-      ConsultType: this.consultType,
-    };
-  }
 }
 
 /**

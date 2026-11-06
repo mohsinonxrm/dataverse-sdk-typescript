@@ -40,13 +40,6 @@ export class AddWorkQueueItemProcessingHistoryEntryRequest
     // No return value (204 No Content)
     return new AddWorkQueueItemProcessingHistoryEntryResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.workqueueitemId,
-      item: this.item,
-    };
-  }
 }
 
 /**

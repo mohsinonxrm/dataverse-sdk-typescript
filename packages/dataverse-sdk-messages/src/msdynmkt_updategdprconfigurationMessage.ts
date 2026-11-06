@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdynmkt_updategdprconfigurationResponse as msdynmkt_updategdprconfigurationResponseData } from "./types/index.js";
 
 /**
  * msdynmkt_updategdprconfiguration request message
@@ -40,25 +42,19 @@ export class msdynmkt_updategdprconfigurationRequest
     const data = await response.json();
     return msdynmkt_updategdprconfigurationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdynmkt_updategdprconfigurationisenforced: this.msdynmkt_updategdprconfigurationisenforced,
-      msdynmkt_updategdprconfigurationischangeloggingenabled:
-        this.msdynmkt_updategdprconfigurationischangeloggingenabled,
-    };
-  }
 }
 
 /**
  * msdynmkt_updategdprconfiguration response message
  */
 export class msdynmkt_updategdprconfigurationResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_updategdprconfigurationResponse) {
+  constructor(public result: msdynmkt_updategdprconfigurationResponseData) {
     super("msdynmkt_updategdprconfiguration");
   }
 
   static fromResponse(data: unknown): msdynmkt_updategdprconfigurationResponse {
-    return new msdynmkt_updategdprconfigurationResponse((data as any).value);
+    return new msdynmkt_updategdprconfigurationResponse(
+      responseObject<msdynmkt_updategdprconfigurationResponseData>(data)
+    );
   }
 }

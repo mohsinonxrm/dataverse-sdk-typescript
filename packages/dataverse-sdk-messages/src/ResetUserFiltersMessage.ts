@@ -35,12 +35,6 @@ export class ResetUserFiltersRequest
     // No return value (204 No Content)
     return new ResetUserFiltersResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      QueryType: this.queryType,
-    };
-  }
 }
 
 /**

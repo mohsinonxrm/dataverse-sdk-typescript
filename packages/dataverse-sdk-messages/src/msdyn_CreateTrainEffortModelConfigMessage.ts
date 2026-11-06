@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CreateTrainEffortModelConfigResponse as msdyn_CreateTrainEffortModelConfigResponseData } from "./types/index.js";
 
 /**
  * msdyn_CreateTrainEffortModelConfig request message
@@ -43,26 +45,19 @@ export class msdyn_CreateTrainEffortModelConfigRequest
     const data = await response.json();
     return msdyn_CreateTrainEffortModelConfigResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntityLogicalName: this.entityLogicalName,
-      RecordId: this.recordId,
-      DataBinding: this.dataBinding,
-      CustomConfig: this.customConfig,
-    };
-  }
 }
 
 /**
  * msdyn_CreateTrainEffortModelConfig response message
  */
 export class msdyn_CreateTrainEffortModelConfigResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CreateTrainEffortModelConfigResponse) {
+  constructor(public result: msdyn_CreateTrainEffortModelConfigResponseData) {
     super("msdyn_CreateTrainEffortModelConfig");
   }
 
   static fromResponse(data: unknown): msdyn_CreateTrainEffortModelConfigResponse {
-    return new msdyn_CreateTrainEffortModelConfigResponse((data as any).value);
+    return new msdyn_CreateTrainEffortModelConfigResponse(
+      responseObject<msdyn_CreateTrainEffortModelConfigResponseData>(data)
+    );
   }
 }

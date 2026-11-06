@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { AnalyzeSentimentResponse as AnalyzeSentimentResponseData } from "./types/index.js";
 
 /**
  * AnalyzeSentiment request message
@@ -41,25 +43,17 @@ export class AnalyzeSentimentRequest
     const data = await response.json();
     return AnalyzeSentimentResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      text: this.text,
-      modelId: this.modelId,
-      language: this.language,
-    };
-  }
 }
 
 /**
  * AnalyzeSentiment response message
  */
 export class AnalyzeSentimentResponse extends OrganizationResponse {
-  constructor(public result: AnalyzeSentimentResponse) {
+  constructor(public result: AnalyzeSentimentResponseData) {
     super("AnalyzeSentiment");
   }
 
   static fromResponse(data: unknown): AnalyzeSentimentResponse {
-    return new AnalyzeSentimentResponse((data as any).value);
+    return new AnalyzeSentimentResponse(responseObject<AnalyzeSentimentResponseData>(data));
   }
 }

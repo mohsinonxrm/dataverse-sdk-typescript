@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesResponse as msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueries request message
@@ -37,23 +39,19 @@ export class msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesRequest
     const data = await response.json();
     return msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      IdFetchAndLayoutXmlList: this.idFetchAndLayoutXmlList,
-    };
-  }
 }
 
 /**
  * msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueries response message
  */
 export class msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesResponse) {
+  constructor(public result: msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesResponseData) {
     super("msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueries");
   }
 
   static fromResponse(data: unknown): msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesResponse {
-    return new msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesResponse((data as any).value);
+    return new msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesResponse(
+      responseObject<msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesResponseData>(data)
+    );
   }
 }

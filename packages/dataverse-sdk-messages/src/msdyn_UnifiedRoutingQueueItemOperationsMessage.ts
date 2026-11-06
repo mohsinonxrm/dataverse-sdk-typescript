@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_UnifiedRoutingQueueItemOperationsResponse as msdyn_UnifiedRoutingQueueItemOperationsResponseData } from "./types/index.js";
 
 /**
  * msdyn_UnifiedRoutingQueueItemOperations request message
@@ -38,24 +40,19 @@ export class msdyn_UnifiedRoutingQueueItemOperationsRequest
     const data = await response.json();
     return msdyn_UnifiedRoutingQueueItemOperationsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      UnifiedRoutingQueueItemOperationsRequestParametersJson:
-        this.unifiedRoutingQueueItemOperationsRequestParametersJson,
-    };
-  }
 }
 
 /**
  * msdyn_UnifiedRoutingQueueItemOperations response message
  */
 export class msdyn_UnifiedRoutingQueueItemOperationsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_UnifiedRoutingQueueItemOperationsResponse) {
+  constructor(public result: msdyn_UnifiedRoutingQueueItemOperationsResponseData) {
     super("msdyn_UnifiedRoutingQueueItemOperations");
   }
 
   static fromResponse(data: unknown): msdyn_UnifiedRoutingQueueItemOperationsResponse {
-    return new msdyn_UnifiedRoutingQueueItemOperationsResponse((data as any).value);
+    return new msdyn_UnifiedRoutingQueueItemOperationsResponse(
+      responseObject<msdyn_UnifiedRoutingQueueItemOperationsResponseData>(data)
+    );
   }
 }

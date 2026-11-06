@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { CardCreateCloneResponse as CardCreateCloneResponseData } from "./types/index.js";
 
 /**
  * CardCreateClone request message
@@ -39,24 +41,17 @@ export class CardCreateCloneRequest
     const data = await response.json();
     return CardCreateCloneResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      CardId: this.cardId,
-      CardName: this.cardName,
-    };
-  }
 }
 
 /**
  * CardCreateClone response message
  */
 export class CardCreateCloneResponse extends OrganizationResponse {
-  constructor(public result: CardCreateCloneResponse) {
+  constructor(public result: CardCreateCloneResponseData) {
     super("CardCreateClone");
   }
 
   static fromResponse(data: unknown): CardCreateCloneResponse {
-    return new CardCreateCloneResponse((data as any).value);
+    return new CardCreateCloneResponse(responseObject<CardCreateCloneResponseData>(data));
   }
 }

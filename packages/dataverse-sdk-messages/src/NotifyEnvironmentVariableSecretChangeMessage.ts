@@ -39,13 +39,6 @@ export class NotifyEnvironmentVariableSecretChangeRequest
     // No return value (204 No Content)
     return new NotifyEnvironmentVariableSecretChangeResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      KeyVaultUrl: this.keyVaultUrl,
-      SecretName: this.secretName,
-    };
-  }
 }
 
 /**

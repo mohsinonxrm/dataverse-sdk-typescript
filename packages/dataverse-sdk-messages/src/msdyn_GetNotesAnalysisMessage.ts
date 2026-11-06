@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetNotesAnalysisResponse as msdyn_GetNotesAnalysisResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetNotesAnalysis request message
@@ -39,24 +41,19 @@ export class msdyn_GetNotesAnalysisRequest
     const data = await response.json();
     return msdyn_GetNotesAnalysisResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      NoteText: this.noteText,
-      CrossGeoDataMovementEnabled: this.crossGeoDataMovementEnabled,
-    };
-  }
 }
 
 /**
  * msdyn_GetNotesAnalysis response message
  */
 export class msdyn_GetNotesAnalysisResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetNotesAnalysisResponse) {
+  constructor(public result: msdyn_GetNotesAnalysisResponseData) {
     super("msdyn_GetNotesAnalysis");
   }
 
   static fromResponse(data: unknown): msdyn_GetNotesAnalysisResponse {
-    return new msdyn_GetNotesAnalysisResponse((data as any).value);
+    return new msdyn_GetNotesAnalysisResponse(
+      responseObject<msdyn_GetNotesAnalysisResponseData>(data)
+    );
   }
 }

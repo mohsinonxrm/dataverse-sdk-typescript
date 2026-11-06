@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckForCustomizedSitemapResponse as msdyn_CheckForCustomizedSitemapResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckForCustomizedSitemap request message
@@ -41,25 +43,19 @@ export class msdyn_CheckForCustomizedSitemapRequest
     const data = await response.json();
     return msdyn_CheckForCustomizedSitemapResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntityIds: this.entityIds,
-      SolutionId: this.solutionId,
-      ExcludeSolutionIds: this.excludeSolutionIds,
-    };
-  }
 }
 
 /**
  * msdyn_CheckForCustomizedSitemap response message
  */
 export class msdyn_CheckForCustomizedSitemapResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckForCustomizedSitemapResponse) {
+  constructor(public result: msdyn_CheckForCustomizedSitemapResponseData) {
     super("msdyn_CheckForCustomizedSitemap");
   }
 
   static fromResponse(data: unknown): msdyn_CheckForCustomizedSitemapResponse {
-    return new msdyn_CheckForCustomizedSitemapResponse((data as any).value);
+    return new msdyn_CheckForCustomizedSitemapResponse(
+      responseObject<msdyn_CheckForCustomizedSitemapResponseData>(data)
+    );
   }
 }

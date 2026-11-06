@@ -39,13 +39,6 @@ export class AddAppComponentsRequest
     // No return value (204 No Content)
     return new AddAppComponentsResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      AppId: this.appId,
-      Components: this.components,
-    };
-  }
 }
 
 /**

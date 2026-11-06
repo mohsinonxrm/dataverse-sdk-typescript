@@ -42,14 +42,6 @@ export class SetProcessRequest
     // No return value (204 No Content)
     return new SetProcessResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-      NewProcess: this.newProcess,
-      NewProcessInstance: this.newProcessInstance,
-    };
-  }
 }
 
 /**

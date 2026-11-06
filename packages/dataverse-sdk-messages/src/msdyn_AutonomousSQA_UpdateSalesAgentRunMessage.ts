@@ -55,20 +55,6 @@ export class msdyn_AutonomousSQA_UpdateSalesAgentRunRequest
     // No return value (204 No Content)
     return new msdyn_AutonomousSQA_UpdateSalesAgentRunResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_IsNonRetryableError: this.msdyn_IsNonRetryableError,
-      msdyn_IsSalesAgentRunComplete: this.msdyn_IsSalesAgentRunComplete,
-      msdyn_SalesAgentRun: this.msdyn_SalesAgentRun,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-      msdyn_HasAgentRunFailed: this.msdyn_HasAgentRunFailed,
-      msdyn_IsAgentThrottled: this.msdyn_IsAgentThrottled,
-      msdyn_RetryAfterDate: this.msdyn_RetryAfterDate,
-      msdyn_HasAgentRunStarted: this.msdyn_HasAgentRunStarted,
-      msdyn_SalesMacroAgentType: this.msdyn_SalesMacroAgentType,
-    };
-  }
 }
 
 /**

@@ -40,13 +40,6 @@ export class InstantiateFiltersRequest
     // No return value (204 No Content)
     return new InstantiateFiltersResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.systemuserId,
-      TemplateCollection: this.templateCollection,
-    };
-  }
 }
 
 /**

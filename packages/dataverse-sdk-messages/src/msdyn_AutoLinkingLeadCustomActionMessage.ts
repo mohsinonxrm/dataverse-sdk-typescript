@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_AutoLinkingLeadCustomActionResponse as msdyn_AutoLinkingLeadCustomActionResponseData } from "./types/index.js";
 
 /**
  * msdyn_AutoLinkingLeadCustomAction request message
@@ -35,23 +37,19 @@ export class msdyn_AutoLinkingLeadCustomActionRequest
     const data = await response.json();
     return msdyn_AutoLinkingLeadCustomActionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      AutoLinkRequest: this.autoLinkRequest,
-    };
-  }
 }
 
 /**
  * msdyn_AutoLinkingLeadCustomAction response message
  */
 export class msdyn_AutoLinkingLeadCustomActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_AutoLinkingLeadCustomActionResponse) {
+  constructor(public result: msdyn_AutoLinkingLeadCustomActionResponseData) {
     super("msdyn_AutoLinkingLeadCustomAction");
   }
 
   static fromResponse(data: unknown): msdyn_AutoLinkingLeadCustomActionResponse {
-    return new msdyn_AutoLinkingLeadCustomActionResponse((data as any).value);
+    return new msdyn_AutoLinkingLeadCustomActionResponse(
+      responseObject<msdyn_AutoLinkingLeadCustomActionResponseData>(data)
+    );
   }
 }

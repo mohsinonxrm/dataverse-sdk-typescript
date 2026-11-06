@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_AddBotUserResponse as msdyn_AddBotUserResponseData } from "./types/index.js";
 
 /**
  * msdyn_AddBotUser request message
@@ -49,29 +51,17 @@ export class msdyn_AddBotUserRequest
     const data = await response.json();
     return msdyn_AddBotUserResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      BotApplicationId: this.botApplicationId,
-      ApplicationId: this.applicationId,
-      FirstName: this.firstName,
-      LastName: this.lastName,
-      BotHandle: this.botHandle,
-      OwningEnvironmentId: this.owningEnvironmentId,
-      Properties: this.properties,
-    };
-  }
 }
 
 /**
  * msdyn_AddBotUser response message
  */
 export class msdyn_AddBotUserResponse extends OrganizationResponse {
-  constructor(public result: msdyn_AddBotUserResponse) {
+  constructor(public result: msdyn_AddBotUserResponseData) {
     super("msdyn_AddBotUser");
   }
 
   static fromResponse(data: unknown): msdyn_AddBotUserResponse {
-    return new msdyn_AddBotUserResponse((data as any).value);
+    return new msdyn_AddBotUserResponse(responseObject<msdyn_AddBotUserResponseData>(data));
   }
 }

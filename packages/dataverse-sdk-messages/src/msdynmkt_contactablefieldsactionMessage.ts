@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdynmkt_contactablefieldsactionResponse as msdynmkt_contactablefieldsactionResponseData } from "./types/index.js";
 
 /**
  * msdynmkt_contactablefieldsaction request message
@@ -39,24 +41,19 @@ export class msdynmkt_contactablefieldsactionRequest
     const data = await response.json();
     return msdynmkt_contactablefieldsactionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdynmkt_contactpointtypes: this.msdynmkt_contactpointtypes,
-      msdynmkt_entitytypes: this.msdynmkt_entitytypes,
-    };
-  }
 }
 
 /**
  * msdynmkt_contactablefieldsaction response message
  */
 export class msdynmkt_contactablefieldsactionResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_contactablefieldsactionResponse) {
+  constructor(public result: msdynmkt_contactablefieldsactionResponseData) {
     super("msdynmkt_contactablefieldsaction");
   }
 
   static fromResponse(data: unknown): msdynmkt_contactablefieldsactionResponse {
-    return new msdynmkt_contactablefieldsactionResponse((data as any).value);
+    return new msdynmkt_contactablefieldsactionResponse(
+      responseObject<msdynmkt_contactablefieldsactionResponseData>(data)
+    );
   }
 }

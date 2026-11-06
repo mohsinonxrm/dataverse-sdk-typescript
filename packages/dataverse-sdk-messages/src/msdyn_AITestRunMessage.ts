@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_AITestRunResponse as msdyn_AITestRunResponseData } from "./types/index.js";
 
 /**
  * msdyn_AITestRun request message
@@ -39,24 +41,17 @@ export class msdyn_AITestRunRequest
     const data = await response.json();
     return msdyn_AITestRunResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_aitestcaseId,
-      request: this.request,
-    };
-  }
 }
 
 /**
  * msdyn_AITestRun response message
  */
 export class msdyn_AITestRunResponse extends OrganizationResponse {
-  constructor(public result: msdyn_AITestRunResponse) {
+  constructor(public result: msdyn_AITestRunResponseData) {
     super("msdyn_AITestRun");
   }
 
   static fromResponse(data: unknown): msdyn_AITestRunResponse {
-    return new msdyn_AITestRunResponse((data as any).value);
+    return new msdyn_AITestRunResponse(responseObject<msdyn_AITestRunResponseData>(data));
   }
 }

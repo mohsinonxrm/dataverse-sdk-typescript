@@ -43,15 +43,6 @@ export class msdyn_AddSuggestedCardsRequest
     // No return value (204 No Content)
     return new msdyn_AddSuggestedCardsResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      scope: this.scope,
-      BusinessProcessFlowId: this.businessProcessFlowId,
-      BusinessProcessFlowInstanceId: this.businessProcessFlowInstanceId,
-      ActionStepId: this.actionStepId,
-    };
-  }
 }
 
 /**

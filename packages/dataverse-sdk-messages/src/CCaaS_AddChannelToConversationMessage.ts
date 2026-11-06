@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { CCaaS_AddChannelToConversationResponse as CCaaS_AddChannelToConversationResponseData } from "./types/index.js";
 
 /**
  * CCaaS_AddChannelToConversation request message
@@ -45,27 +47,19 @@ export class CCaaS_AddChannelToConversationRequest
     const data = await response.json();
     return CCaaS_AddChannelToConversationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_ocliveworkitemId,
-      AgentId: this.agentId,
-      ChannelType: this.channelType,
-      DestinationPhoneNumber: this.destinationPhoneNumber,
-      ApiVersion: this.apiVersion,
-    };
-  }
 }
 
 /**
  * CCaaS_AddChannelToConversation response message
  */
 export class CCaaS_AddChannelToConversationResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_AddChannelToConversationResponse) {
+  constructor(public result: CCaaS_AddChannelToConversationResponseData) {
     super("CCaaS_AddChannelToConversation");
   }
 
   static fromResponse(data: unknown): CCaaS_AddChannelToConversationResponse {
-    return new CCaaS_AddChannelToConversationResponse((data as any).value);
+    return new CCaaS_AddChannelToConversationResponse(
+      responseObject<CCaaS_AddChannelToConversationResponseData>(data)
+    );
   }
 }

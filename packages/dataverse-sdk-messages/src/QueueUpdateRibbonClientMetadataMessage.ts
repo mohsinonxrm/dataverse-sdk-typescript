@@ -30,10 +30,6 @@ export class QueueUpdateRibbonClientMetadataRequest
     // No return value (204 No Content)
     return new QueueUpdateRibbonClientMetadataResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**

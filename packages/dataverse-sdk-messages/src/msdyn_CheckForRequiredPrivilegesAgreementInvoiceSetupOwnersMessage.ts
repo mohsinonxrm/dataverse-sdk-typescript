@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckForRequiredPrivilegesAgreementInvoiceSetupOwnersResponse as msdyn_CheckForRequiredPrivilegesAgreementInvoiceSetupOwnersResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckForRequiredPrivilegesAgreementInvoiceSetupOwners request message
@@ -37,19 +39,15 @@ export class msdyn_CheckForRequiredPrivilegesAgreementInvoiceSetupOwnersRequest
     const data = await response.json();
     return msdyn_CheckForRequiredPrivilegesAgreementInvoiceSetupOwnersResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionId: this.solutionId,
-    };
-  }
 }
 
 /**
  * msdyn_CheckForRequiredPrivilegesAgreementInvoiceSetupOwners response message
  */
 export class msdyn_CheckForRequiredPrivilegesAgreementInvoiceSetupOwnersResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckForRequiredPrivilegesAgreementInvoiceSetupOwnersResponse) {
+  constructor(
+    public result: msdyn_CheckForRequiredPrivilegesAgreementInvoiceSetupOwnersResponseData
+  ) {
     super("msdyn_CheckForRequiredPrivilegesAgreementInvoiceSetupOwners");
   }
 
@@ -57,7 +55,7 @@ export class msdyn_CheckForRequiredPrivilegesAgreementInvoiceSetupOwnersResponse
     data: unknown
   ): msdyn_CheckForRequiredPrivilegesAgreementInvoiceSetupOwnersResponse {
     return new msdyn_CheckForRequiredPrivilegesAgreementInvoiceSetupOwnersResponse(
-      (data as any).value
+      responseObject<msdyn_CheckForRequiredPrivilegesAgreementInvoiceSetupOwnersResponseData>(data)
     );
   }
 }

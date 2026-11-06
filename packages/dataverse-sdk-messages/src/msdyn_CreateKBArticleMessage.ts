@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CreateKBArticleResponse as msdyn_CreateKBArticleResponseData } from "./types/index.js";
 
 /**
  * msdyn_CreateKBArticle request message
@@ -35,23 +37,19 @@ export class msdyn_CreateKBArticleRequest
     const data = await response.json();
     return msdyn_CreateKBArticleResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      CSCopilotRequest2: this.cSCopilotRequest2,
-    };
-  }
 }
 
 /**
  * msdyn_CreateKBArticle response message
  */
 export class msdyn_CreateKBArticleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CreateKBArticleResponse) {
+  constructor(public result: msdyn_CreateKBArticleResponseData) {
     super("msdyn_CreateKBArticle");
   }
 
   static fromResponse(data: unknown): msdyn_CreateKBArticleResponse {
-    return new msdyn_CreateKBArticleResponse((data as any).value);
+    return new msdyn_CreateKBArticleResponse(
+      responseObject<msdyn_CreateKBArticleResponseData>(data)
+    );
   }
 }

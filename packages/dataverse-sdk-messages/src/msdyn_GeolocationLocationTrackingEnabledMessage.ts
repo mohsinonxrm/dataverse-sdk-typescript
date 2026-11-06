@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GeolocationLocationTrackingEnabledResponse as msdyn_GeolocationLocationTrackingEnabledResponseData } from "./types/index.js";
 
 /**
  * msdyn_GeolocationLocationTrackingEnabled request message
@@ -32,21 +34,19 @@ export class msdyn_GeolocationLocationTrackingEnabledRequest
     const data = await response.json();
     return msdyn_GeolocationLocationTrackingEnabledResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_GeolocationLocationTrackingEnabled response message
  */
 export class msdyn_GeolocationLocationTrackingEnabledResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GeolocationLocationTrackingEnabledResponse) {
+  constructor(public result: msdyn_GeolocationLocationTrackingEnabledResponseData) {
     super("msdyn_GeolocationLocationTrackingEnabled");
   }
 
   static fromResponse(data: unknown): msdyn_GeolocationLocationTrackingEnabledResponse {
-    return new msdyn_GeolocationLocationTrackingEnabledResponse((data as any).value);
+    return new msdyn_GeolocationLocationTrackingEnabledResponse(
+      responseObject<msdyn_GeolocationLocationTrackingEnabledResponseData>(data)
+    );
   }
 }

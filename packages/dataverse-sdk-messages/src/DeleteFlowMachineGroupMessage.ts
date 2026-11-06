@@ -31,12 +31,6 @@ export class DeleteFlowMachineGroupRequest
     // No return value (204 No Content)
     return new DeleteFlowMachineGroupResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.flowmachinegroupId,
-    };
-  }
 }
 
 /**

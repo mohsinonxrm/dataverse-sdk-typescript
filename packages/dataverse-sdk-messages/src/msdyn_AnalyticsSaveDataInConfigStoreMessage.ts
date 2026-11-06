@@ -41,14 +41,6 @@ export class msdyn_AnalyticsSaveDataInConfigStoreRequest
     // No return value (204 No Content)
     return new msdyn_AnalyticsSaveDataInConfigStoreResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Key: this.key,
-      Value: this.value,
-      ConfigName: this.configName,
-    };
-  }
 }
 
 /**

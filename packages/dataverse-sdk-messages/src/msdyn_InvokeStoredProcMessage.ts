@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_InvokeStoredProcResponse as msdyn_InvokeStoredProcResponseData } from "./types/index.js";
 
 /**
  * msdyn_InvokeStoredProc request message
@@ -45,27 +47,19 @@ export class msdyn_InvokeStoredProcRequest
     const data = await response.json();
     return msdyn_InvokeStoredProcResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ProcId: this.procId,
-      BatchSize: this.batchSize,
-      BatchStart: this.batchStart,
-      AdminUserId: this.adminUserId,
-      StringParam: this.stringParam,
-    };
-  }
 }
 
 /**
  * msdyn_InvokeStoredProc response message
  */
 export class msdyn_InvokeStoredProcResponse extends OrganizationResponse {
-  constructor(public result: msdyn_InvokeStoredProcResponse) {
+  constructor(public result: msdyn_InvokeStoredProcResponseData) {
     super("msdyn_InvokeStoredProc");
   }
 
   static fromResponse(data: unknown): msdyn_InvokeStoredProcResponse {
-    return new msdyn_InvokeStoredProcResponse((data as any).value);
+    return new msdyn_InvokeStoredProcResponse(
+      responseObject<msdyn_InvokeStoredProcResponseData>(data)
+    );
   }
 }

@@ -39,13 +39,6 @@ export class msdyn_invokeCaseProcessingAgentRequest
     // No return value (204 No Content)
     return new msdyn_invokeCaseProcessingAgentResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_incidentId: this.msdyn_incidentId,
-      msdyn_actions: this.msdyn_actions,
-    };
-  }
 }
 
 /**

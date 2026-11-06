@@ -42,14 +42,6 @@ export class OnExternalUpdatedRequest
     // No return value (204 No Content)
     return new OnExternalUpdatedResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-      PreImage: this.preImage,
-      ChangedFields: this.changedFields,
-    };
-  }
 }
 
 /**

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckIfWorkOrderGeneratedFromABSResponse as msdyn_CheckIfWorkOrderGeneratedFromABSResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckIfWorkOrderGeneratedFromABS request message
@@ -35,23 +37,19 @@ export class msdyn_CheckIfWorkOrderGeneratedFromABSRequest
     const data = await response.json();
     return msdyn_CheckIfWorkOrderGeneratedFromABSResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      TimeInterval: this.timeInterval,
-    };
-  }
 }
 
 /**
  * msdyn_CheckIfWorkOrderGeneratedFromABS response message
  */
 export class msdyn_CheckIfWorkOrderGeneratedFromABSResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfWorkOrderGeneratedFromABSResponse) {
+  constructor(public result: msdyn_CheckIfWorkOrderGeneratedFromABSResponseData) {
     super("msdyn_CheckIfWorkOrderGeneratedFromABS");
   }
 
   static fromResponse(data: unknown): msdyn_CheckIfWorkOrderGeneratedFromABSResponse {
-    return new msdyn_CheckIfWorkOrderGeneratedFromABSResponse((data as any).value);
+    return new msdyn_CheckIfWorkOrderGeneratedFromABSResponse(
+      responseObject<msdyn_CheckIfWorkOrderGeneratedFromABSResponseData>(data)
+    );
   }
 }

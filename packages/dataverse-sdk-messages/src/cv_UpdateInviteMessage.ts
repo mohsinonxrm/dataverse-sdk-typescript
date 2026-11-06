@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { msfp_surveyinvite } from "./types/index.js";
 
 /**
@@ -36,12 +37,6 @@ export class cv_UpdateInviteRequest
     const data = await response.json();
     return cv_UpdateInviteResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      inviteentity: this.inviteentity,
-    };
-  }
 }
 
 /**
@@ -53,6 +48,6 @@ export class cv_UpdateInviteResponse extends OrganizationResponse {
   }
 
   static fromResponse(data: unknown): cv_UpdateInviteResponse {
-    return new cv_UpdateInviteResponse((data as any).value);
+    return new cv_UpdateInviteResponse(responseObject<msfp_surveyinvite>(data));
   }
 }

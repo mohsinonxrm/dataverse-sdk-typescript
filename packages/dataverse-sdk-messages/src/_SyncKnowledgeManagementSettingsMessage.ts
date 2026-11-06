@@ -30,10 +30,6 @@ export class _SyncKnowledgeManagementSettingsRequest
     // No return value (204 No Content)
     return new _SyncKnowledgeManagementSettingsResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**

@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_GetKnowledgeSuggestionsResponse as msdyn_GetKnowledgeSuggestionsResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetKnowledgeSuggestions request message
@@ -40,24 +42,19 @@ export class msdyn_GetKnowledgeSuggestionsRequest
     const data = await response.json();
     return msdyn_GetKnowledgeSuggestionsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Count: this.count,
-      Target: this.target,
-    };
-  }
 }
 
 /**
  * msdyn_GetKnowledgeSuggestions response message
  */
 export class msdyn_GetKnowledgeSuggestionsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetKnowledgeSuggestionsResponse) {
+  constructor(public result: msdyn_GetKnowledgeSuggestionsResponseData) {
     super("msdyn_GetKnowledgeSuggestions");
   }
 
   static fromResponse(data: unknown): msdyn_GetKnowledgeSuggestionsResponse {
-    return new msdyn_GetKnowledgeSuggestionsResponse((data as any).value);
+    return new msdyn_GetKnowledgeSuggestionsResponse(
+      responseObject<msdyn_GetKnowledgeSuggestionsResponseData>(data)
+    );
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_fetchAutonomousCaseCreateUpdateRuleResponse as msdyn_fetchAutonomousCaseCreateUpdateRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_fetchAutonomousCaseCreateUpdateRule request message
@@ -37,23 +39,19 @@ export class msdyn_fetchAutonomousCaseCreateUpdateRuleRequest
     const data = await response.json();
     return msdyn_fetchAutonomousCaseCreateUpdateRuleResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      fetchRuleRequest: this.fetchRuleRequest,
-    };
-  }
 }
 
 /**
  * msdyn_fetchAutonomousCaseCreateUpdateRule response message
  */
 export class msdyn_fetchAutonomousCaseCreateUpdateRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_fetchAutonomousCaseCreateUpdateRuleResponse) {
+  constructor(public result: msdyn_fetchAutonomousCaseCreateUpdateRuleResponseData) {
     super("msdyn_fetchAutonomousCaseCreateUpdateRule");
   }
 
   static fromResponse(data: unknown): msdyn_fetchAutonomousCaseCreateUpdateRuleResponse {
-    return new msdyn_fetchAutonomousCaseCreateUpdateRuleResponse((data as any).value);
+    return new msdyn_fetchAutonomousCaseCreateUpdateRuleResponse(
+      responseObject<msdyn_fetchAutonomousCaseCreateUpdateRuleResponseData>(data)
+    );
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetExpandedContractResponse as msdyn_GetExpandedContractResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetExpandedContract request message
@@ -39,24 +41,19 @@ export class msdyn_GetExpandedContractRequest
     const data = await response.json();
     return msdyn_GetExpandedContractResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_RuleSet: this.msdyn_RuleSet,
-      msdyn_OrganizationInfo: this.msdyn_OrganizationInfo,
-    };
-  }
 }
 
 /**
  * msdyn_GetExpandedContract response message
  */
 export class msdyn_GetExpandedContractResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetExpandedContractResponse) {
+  constructor(public result: msdyn_GetExpandedContractResponseData) {
     super("msdyn_GetExpandedContract");
   }
 
   static fromResponse(data: unknown): msdyn_GetExpandedContractResponse {
-    return new msdyn_GetExpandedContractResponse((data as any).value);
+    return new msdyn_GetExpandedContractResponse(
+      responseObject<msdyn_GetExpandedContractResponseData>(data)
+    );
   }
 }

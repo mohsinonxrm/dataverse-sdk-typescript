@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { QuickTestResponse as QuickTestResponseData } from "./types/index.js";
 
 /**
  * QuickTest request message
@@ -43,27 +45,17 @@ export class QuickTestRequest extends OrganizationRequest implements Executable<
     const data = await response.json();
     return QuickTestResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_aiconfigurationId,
-      version: this.version,
-      request: this.request,
-      requestv2: this.requestv2,
-      source: this.source,
-    };
-  }
 }
 
 /**
  * QuickTest response message
  */
 export class QuickTestResponse extends OrganizationResponse {
-  constructor(public result: QuickTestResponse) {
+  constructor(public result: QuickTestResponseData) {
     super("QuickTest");
   }
 
   static fromResponse(data: unknown): QuickTestResponse {
-    return new QuickTestResponse((data as any).value);
+    return new QuickTestResponse(responseObject<QuickTestResponseData>(data));
   }
 }

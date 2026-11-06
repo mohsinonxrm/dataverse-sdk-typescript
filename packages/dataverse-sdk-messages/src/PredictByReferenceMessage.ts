@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { PredictByReferenceResponse as PredictByReferenceResponseData } from "./types/index.js";
 
 /**
  * PredictByReference request message
@@ -41,25 +43,17 @@ export class PredictByReferenceRequest
     const data = await response.json();
     return PredictByReferenceResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_aimodelId,
-      version: this.version,
-      targetRecordId: this.targetRecordId,
-    };
-  }
 }
 
 /**
  * PredictByReference response message
  */
 export class PredictByReferenceResponse extends OrganizationResponse {
-  constructor(public result: PredictByReferenceResponse) {
+  constructor(public result: PredictByReferenceResponseData) {
     super("PredictByReference");
   }
 
   static fromResponse(data: unknown): PredictByReferenceResponse {
-    return new PredictByReferenceResponse((data as any).value);
+    return new PredictByReferenceResponse(responseObject<PredictByReferenceResponseData>(data));
   }
 }

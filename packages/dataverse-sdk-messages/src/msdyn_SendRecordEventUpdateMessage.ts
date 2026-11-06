@@ -46,16 +46,6 @@ export class msdyn_SendRecordEventUpdateRequest
     // No return value (204 No Content)
     return new msdyn_SendRecordEventUpdateResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_EventType: this.msdyn_EventType,
-      msdyn_RegardingRecord: this.msdyn_RegardingRecord,
-      msdyn_AttributeDisplayValues: this.msdyn_AttributeDisplayValues,
-      msdyn_AttributeNames: this.msdyn_AttributeNames,
-      msdyn_RegardingActivity: this.msdyn_RegardingActivity,
-    };
-  }
 }
 
 /**

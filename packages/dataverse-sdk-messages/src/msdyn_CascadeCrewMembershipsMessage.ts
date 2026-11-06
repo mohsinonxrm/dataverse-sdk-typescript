@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CascadeCrewMembershipsResponse as msdyn_CascadeCrewMembershipsResponseData } from "./types/index.js";
 
 /**
  * msdyn_CascadeCrewMemberships request message
@@ -35,23 +37,19 @@ export class msdyn_CascadeCrewMembershipsRequest
     const data = await response.json();
     return msdyn_CascadeCrewMembershipsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Payload: this.payload,
-    };
-  }
 }
 
 /**
  * msdyn_CascadeCrewMemberships response message
  */
 export class msdyn_CascadeCrewMembershipsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CascadeCrewMembershipsResponse) {
+  constructor(public result: msdyn_CascadeCrewMembershipsResponseData) {
     super("msdyn_CascadeCrewMemberships");
   }
 
   static fromResponse(data: unknown): msdyn_CascadeCrewMembershipsResponse {
-    return new msdyn_CascadeCrewMembershipsResponse((data as any).value);
+    return new msdyn_CascadeCrewMembershipsResponse(
+      responseObject<msdyn_CascadeCrewMembershipsResponseData>(data)
+    );
   }
 }

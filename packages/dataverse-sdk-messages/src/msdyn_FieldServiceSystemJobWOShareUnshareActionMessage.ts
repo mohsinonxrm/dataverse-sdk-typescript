@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_FieldServiceSystemJobWOShareUnshareActionResponse as msdyn_FieldServiceSystemJobWOShareUnshareActionResponseData } from "./types/index.js";
 
 /**
  * msdyn_FieldServiceSystemJobWOShareUnshareAction request message
@@ -43,25 +45,19 @@ export class msdyn_FieldServiceSystemJobWOShareUnshareActionRequest
     const data = await response.json();
     return msdyn_FieldServiceSystemJobWOShareUnshareActionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_fieldservicesystemjobId,
-      InputParameter: this.inputParameter,
-      Type: this.type,
-    };
-  }
 }
 
 /**
  * msdyn_FieldServiceSystemJobWOShareUnshareAction response message
  */
 export class msdyn_FieldServiceSystemJobWOShareUnshareActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_FieldServiceSystemJobWOShareUnshareActionResponse) {
+  constructor(public result: msdyn_FieldServiceSystemJobWOShareUnshareActionResponseData) {
     super("msdyn_FieldServiceSystemJobWOShareUnshareAction");
   }
 
   static fromResponse(data: unknown): msdyn_FieldServiceSystemJobWOShareUnshareActionResponse {
-    return new msdyn_FieldServiceSystemJobWOShareUnshareActionResponse((data as any).value);
+    return new msdyn_FieldServiceSystemJobWOShareUnshareActionResponse(
+      responseObject<msdyn_FieldServiceSystemJobWOShareUnshareActionResponseData>(data)
+    );
   }
 }

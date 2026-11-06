@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_getcurrentemailcontentResponse as msdyn_getcurrentemailcontentResponseData } from "./types/index.js";
 
 /**
  * msdyn_getcurrentemailcontent request message
@@ -35,23 +37,19 @@ export class msdyn_getcurrentemailcontentRequest
     const data = await response.json();
     return msdyn_getcurrentemailcontentResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      emailId: this.emailId,
-    };
-  }
 }
 
 /**
  * msdyn_getcurrentemailcontent response message
  */
 export class msdyn_getcurrentemailcontentResponse extends OrganizationResponse {
-  constructor(public result: msdyn_getcurrentemailcontentResponse) {
+  constructor(public result: msdyn_getcurrentemailcontentResponseData) {
     super("msdyn_getcurrentemailcontent");
   }
 
   static fromResponse(data: unknown): msdyn_getcurrentemailcontentResponse {
-    return new msdyn_getcurrentemailcontentResponse((data as any).value);
+    return new msdyn_getcurrentemailcontentResponse(
+      responseObject<msdyn_getcurrentemailcontentResponseData>(data)
+    );
   }
 }

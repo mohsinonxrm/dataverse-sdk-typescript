@@ -39,13 +39,6 @@ export class msdyn_ActivateRoutingRuleRequest
     // No return value (204 No Content)
     return new msdyn_ActivateRoutingRuleResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_ownerId: this.msdyn_ownerId,
-      msdyn_routingRuleId: this.msdyn_routingRuleId,
-    };
-  }
 }
 
 /**

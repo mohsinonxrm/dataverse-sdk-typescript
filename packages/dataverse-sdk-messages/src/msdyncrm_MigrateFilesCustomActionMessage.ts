@@ -30,10 +30,6 @@ export class msdyncrm_MigrateFilesCustomActionRequest
     // No return value (204 No Content)
     return new msdyncrm_MigrateFilesCustomActionResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**

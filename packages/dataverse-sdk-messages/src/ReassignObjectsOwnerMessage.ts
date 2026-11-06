@@ -42,14 +42,6 @@ export class ReassignObjectsOwnerRequest
     // No return value (204 No Content)
     return new ReassignObjectsOwnerResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      FromPrincipal: this.fromPrincipal,
-      ToPrincipal: this.toPrincipal,
-      objectType: this.objectType,
-    };
-  }
 }
 
 /**

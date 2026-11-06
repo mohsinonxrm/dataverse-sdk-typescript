@@ -35,12 +35,6 @@ export class UnlockSalesOrderPricingRequest
     // No return value (204 No Content)
     return new UnlockSalesOrderPricingResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SalesOrderId: this.salesOrderId,
-    };
-  }
 }
 
 /**

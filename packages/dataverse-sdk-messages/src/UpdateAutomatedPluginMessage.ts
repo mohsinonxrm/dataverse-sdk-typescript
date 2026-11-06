@@ -51,19 +51,6 @@ export class UpdateAutomatedPluginRequest
     // No return value (204 No Content)
     return new UpdateAutomatedPluginResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Expression: this.expression,
-      SolutionUniqueName: this.solutionUniqueName,
-      EntityLogicalName: this.entityLogicalName,
-      Context: this.context,
-      Name: this.name,
-      Stage: this.stage,
-      FxExpressionUniqueName: this.fxExpressionUniqueName,
-      MessageName: this.messageName,
-    };
-  }
 }
 
 /**

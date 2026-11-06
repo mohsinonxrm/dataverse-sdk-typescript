@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { SaveAsDesktopFlowModuleResponse as SaveAsDesktopFlowModuleResponseData } from "./types/index.js";
 
 /**
  * SaveAsDesktopFlowModule request message
@@ -39,24 +41,19 @@ export class SaveAsDesktopFlowModuleRequest
     const data = await response.json();
     return SaveAsDesktopFlowModuleResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.desktopflowmoduleId,
-      desktopFlowModuleName: this.desktopFlowModuleName,
-    };
-  }
 }
 
 /**
  * SaveAsDesktopFlowModule response message
  */
 export class SaveAsDesktopFlowModuleResponse extends OrganizationResponse {
-  constructor(public result: SaveAsDesktopFlowModuleResponse) {
+  constructor(public result: SaveAsDesktopFlowModuleResponseData) {
     super("SaveAsDesktopFlowModule");
   }
 
   static fromResponse(data: unknown): SaveAsDesktopFlowModuleResponse {
-    return new SaveAsDesktopFlowModuleResponse((data as any).value);
+    return new SaveAsDesktopFlowModuleResponse(
+      responseObject<SaveAsDesktopFlowModuleResponseData>(data)
+    );
   }
 }

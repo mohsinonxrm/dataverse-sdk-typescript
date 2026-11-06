@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_ActivateProcessesResponse as msdyn_ActivateProcessesResponseData } from "./types/index.js";
 
 /**
  * msdyn_ActivateProcesses request message
@@ -36,23 +38,19 @@ export class msdyn_ActivateProcessesRequest
     const data = await response.json();
     return msdyn_ActivateProcessesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      AnalysisResult: this.analysisResult,
-    };
-  }
 }
 
 /**
  * msdyn_ActivateProcesses response message
  */
 export class msdyn_ActivateProcessesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ActivateProcessesResponse) {
+  constructor(public result: msdyn_ActivateProcessesResponseData) {
     super("msdyn_ActivateProcesses");
   }
 
   static fromResponse(data: unknown): msdyn_ActivateProcessesResponse {
-    return new msdyn_ActivateProcessesResponse((data as any).value);
+    return new msdyn_ActivateProcessesResponse(
+      responseObject<msdyn_ActivateProcessesResponseData>(data)
+    );
   }
 }

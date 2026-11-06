@@ -43,15 +43,6 @@ export class CCaaS_EndSecondaryChannelRequest
     // No return value (204 No Content)
     return new CCaaS_EndSecondaryChannelResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_ocliveworkitemId,
-      SecondaryChannelSessionId: this.secondaryChannelSessionId,
-      ApiVersion: this.apiVersion,
-      SecondaryChannelType: this.secondaryChannelType,
-    };
-  }
 }
 
 /**

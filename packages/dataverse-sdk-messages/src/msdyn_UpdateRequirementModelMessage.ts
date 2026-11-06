@@ -43,15 +43,6 @@ export class msdyn_UpdateRequirementModelRequest
     // No return value (204 No Content)
     return new msdyn_UpdateRequirementModelResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      From: this.from,
-      To: this.to,
-      RequirementGroupId: this.requirementGroupId,
-      Attributes: this.attributes,
-    };
-  }
 }
 
 /**

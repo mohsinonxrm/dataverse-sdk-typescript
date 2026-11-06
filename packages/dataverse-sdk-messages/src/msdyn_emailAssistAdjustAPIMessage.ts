@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_emailAssistAdjustAPIResponse as msdyn_emailAssistAdjustAPIResponseData } from "./types/index.js";
 
 /**
  * msdyn_emailAssistAdjustAPI request message
@@ -45,27 +47,19 @@ export class msdyn_emailAssistAdjustAPIRequest
     const data = await response.json();
     return msdyn_emailAssistAdjustAPIResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      emailInput: this.emailInput,
-      caller: this.caller,
-      knobsConfigurations: this.knobsConfigurations,
-      requestId: this.requestId,
-      copilotOption: this.copilotOption,
-    };
-  }
 }
 
 /**
  * msdyn_emailAssistAdjustAPI response message
  */
 export class msdyn_emailAssistAdjustAPIResponse extends OrganizationResponse {
-  constructor(public result: msdyn_emailAssistAdjustAPIResponse) {
+  constructor(public result: msdyn_emailAssistAdjustAPIResponseData) {
     super("msdyn_emailAssistAdjustAPI");
   }
 
   static fromResponse(data: unknown): msdyn_emailAssistAdjustAPIResponse {
-    return new msdyn_emailAssistAdjustAPIResponse((data as any).value);
+    return new msdyn_emailAssistAdjustAPIResponse(
+      responseObject<msdyn_emailAssistAdjustAPIResponseData>(data)
+    );
   }
 }

@@ -43,14 +43,6 @@ export class msdyn_IngestAnalyticsDataCustomChannelsRequest
     // No return value (204 No Content)
     return new msdyn_IngestAnalyticsDataCustomChannelsResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_linkedactivityid: this.msdyn_linkedactivityid,
-      msdyn_eventname: this.msdyn_eventname,
-      msdyn_sequencestepid: this.msdyn_sequencestepid,
-    };
-  }
 }
 
 /**

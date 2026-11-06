@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleResponse as msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_SmsSettingsShouldHaveAllRequiredFieldsRule request message
@@ -32,21 +34,19 @@ export class msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleRequest
     const data = await response.json();
     return msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_SmsSettingsShouldHaveAllRequiredFieldsRule response message
  */
 export class msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleResponse) {
+  constructor(public result: msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleResponseData) {
     super("msdyn_SmsSettingsShouldHaveAllRequiredFieldsRule");
   }
 
   static fromResponse(data: unknown): msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleResponse {
-    return new msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleResponse((data as any).value);
+    return new msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleResponse(
+      responseObject<msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleResponseData>(data)
+    );
   }
 }

@@ -40,13 +40,6 @@ export class CalculatePriceRequest
     // No return value (204 No Content)
     return new CalculatePriceResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-      ParentId: this.parentId,
-    };
-  }
 }
 
 /**

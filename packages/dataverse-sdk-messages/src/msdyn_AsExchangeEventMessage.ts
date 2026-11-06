@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import { responseValue } from "./internal/responseData.js";
 
 /**
  * msdyn_AsExchangeEvent request message
@@ -37,23 +37,17 @@ export class msdyn_AsExchangeEventRequest
     const data = await response.json();
     return msdyn_AsExchangeEventResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_Bookings: this.msdyn_Bookings,
-    };
-  }
 }
 
 /**
  * msdyn_AsExchangeEvent response message
  */
 export class msdyn_AsExchangeEventResponse extends OrganizationResponse {
-  constructor(public result: EntityReference[]) {
+  constructor(public result: Record<string, unknown>[]) {
     super("msdyn_AsExchangeEvent");
   }
 
   static fromResponse(data: unknown): msdyn_AsExchangeEventResponse {
-    return new msdyn_AsExchangeEventResponse((data as any).value);
+    return new msdyn_AsExchangeEventResponse(responseValue<Record<string, unknown>[]>(data));
   }
 }

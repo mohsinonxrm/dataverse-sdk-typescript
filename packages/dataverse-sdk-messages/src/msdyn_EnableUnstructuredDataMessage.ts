@@ -30,10 +30,6 @@ export class msdyn_EnableUnstructuredDataRequest
     // No return value (204 No Content)
     return new msdyn_EnableUnstructuredDataResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**

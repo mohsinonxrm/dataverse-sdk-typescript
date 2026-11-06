@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_OcBotsShouldHaveCapacityRuleResponse as msdyn_OcBotsShouldHaveCapacityRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_OcBotsShouldHaveCapacityRule request message
@@ -30,21 +32,19 @@ export class msdyn_OcBotsShouldHaveCapacityRuleRequest
     const data = await response.json();
     return msdyn_OcBotsShouldHaveCapacityRuleResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_OcBotsShouldHaveCapacityRule response message
  */
 export class msdyn_OcBotsShouldHaveCapacityRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_OcBotsShouldHaveCapacityRuleResponse) {
+  constructor(public result: msdyn_OcBotsShouldHaveCapacityRuleResponseData) {
     super("msdyn_OcBotsShouldHaveCapacityRule");
   }
 
   static fromResponse(data: unknown): msdyn_OcBotsShouldHaveCapacityRuleResponse {
-    return new msdyn_OcBotsShouldHaveCapacityRuleResponse((data as any).value);
+    return new msdyn_OcBotsShouldHaveCapacityRuleResponse(
+      responseObject<msdyn_OcBotsShouldHaveCapacityRuleResponseData>(data)
+    );
   }
 }

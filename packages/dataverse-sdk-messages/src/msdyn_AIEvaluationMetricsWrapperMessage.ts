@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_AIEvaluationMetricsWrapperResponse as msdyn_AIEvaluationMetricsWrapperResponseData } from "./types/index.js";
 
 /**
  * msdyn_AIEvaluationMetricsWrapper request message
@@ -35,23 +37,19 @@ export class msdyn_AIEvaluationMetricsWrapperRequest
     const data = await response.json();
     return msdyn_AIEvaluationMetricsWrapperResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      request: this.request,
-    };
-  }
 }
 
 /**
  * msdyn_AIEvaluationMetricsWrapper response message
  */
 export class msdyn_AIEvaluationMetricsWrapperResponse extends OrganizationResponse {
-  constructor(public result: msdyn_AIEvaluationMetricsWrapperResponse) {
+  constructor(public result: msdyn_AIEvaluationMetricsWrapperResponseData) {
     super("msdyn_AIEvaluationMetricsWrapper");
   }
 
   static fromResponse(data: unknown): msdyn_AIEvaluationMetricsWrapperResponse {
-    return new msdyn_AIEvaluationMetricsWrapperResponse((data as any).value);
+    return new msdyn_AIEvaluationMetricsWrapperResponse(
+      responseObject<msdyn_AIEvaluationMetricsWrapperResponseData>(data)
+    );
   }
 }

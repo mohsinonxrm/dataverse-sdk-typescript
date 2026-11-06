@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_DoesKBExistResponse as msdyn_DoesKBExistResponseData } from "./types/index.js";
 
 /**
  * msdyn_DoesKBExist request message
@@ -35,23 +37,17 @@ export class msdyn_DoesKBExistRequest
     const data = await response.json();
     return msdyn_DoesKBExistResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      CSCopilotRequest: this.cSCopilotRequest,
-    };
-  }
 }
 
 /**
  * msdyn_DoesKBExist response message
  */
 export class msdyn_DoesKBExistResponse extends OrganizationResponse {
-  constructor(public result: msdyn_DoesKBExistResponse) {
+  constructor(public result: msdyn_DoesKBExistResponseData) {
     super("msdyn_DoesKBExist");
   }
 
   static fromResponse(data: unknown): msdyn_DoesKBExistResponse {
-    return new msdyn_DoesKBExistResponse((data as any).value);
+    return new msdyn_DoesKBExistResponse(responseObject<msdyn_DoesKBExistResponseData>(data));
   }
 }

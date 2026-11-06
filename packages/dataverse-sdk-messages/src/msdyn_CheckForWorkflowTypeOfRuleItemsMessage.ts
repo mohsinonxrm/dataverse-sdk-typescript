@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckForWorkflowTypeOfRuleItemsResponse as msdyn_CheckForWorkflowTypeOfRuleItemsResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckForWorkflowTypeOfRuleItems request message
@@ -35,23 +37,19 @@ export class msdyn_CheckForWorkflowTypeOfRuleItemsRequest
     const data = await response.json();
     return msdyn_CheckForWorkflowTypeOfRuleItemsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionId: this.solutionId,
-    };
-  }
 }
 
 /**
  * msdyn_CheckForWorkflowTypeOfRuleItems response message
  */
 export class msdyn_CheckForWorkflowTypeOfRuleItemsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckForWorkflowTypeOfRuleItemsResponse) {
+  constructor(public result: msdyn_CheckForWorkflowTypeOfRuleItemsResponseData) {
     super("msdyn_CheckForWorkflowTypeOfRuleItems");
   }
 
   static fromResponse(data: unknown): msdyn_CheckForWorkflowTypeOfRuleItemsResponse {
-    return new msdyn_CheckForWorkflowTypeOfRuleItemsResponse((data as any).value);
+    return new msdyn_CheckForWorkflowTypeOfRuleItemsResponse(
+      responseObject<msdyn_CheckForWorkflowTypeOfRuleItemsResponseData>(data)
+    );
   }
 }

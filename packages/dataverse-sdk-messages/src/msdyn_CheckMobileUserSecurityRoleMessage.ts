@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckMobileUserSecurityRoleResponse as msdyn_CheckMobileUserSecurityRoleResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckMobileUserSecurityRole request message
@@ -35,23 +37,19 @@ export class msdyn_CheckMobileUserSecurityRoleRequest
     const data = await response.json();
     return msdyn_CheckMobileUserSecurityRoleResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionId: this.solutionId,
-    };
-  }
 }
 
 /**
  * msdyn_CheckMobileUserSecurityRole response message
  */
 export class msdyn_CheckMobileUserSecurityRoleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckMobileUserSecurityRoleResponse) {
+  constructor(public result: msdyn_CheckMobileUserSecurityRoleResponseData) {
     super("msdyn_CheckMobileUserSecurityRole");
   }
 
   static fromResponse(data: unknown): msdyn_CheckMobileUserSecurityRoleResponse {
-    return new msdyn_CheckMobileUserSecurityRoleResponse((data as any).value);
+    return new msdyn_CheckMobileUserSecurityRoleResponse(
+      responseObject<msdyn_CheckMobileUserSecurityRoleResponseData>(data)
+    );
   }
 }

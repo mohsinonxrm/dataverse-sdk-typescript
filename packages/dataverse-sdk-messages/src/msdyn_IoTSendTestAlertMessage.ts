@@ -35,12 +35,6 @@ export class msdyn_IoTSendTestAlertRequest
     // No return value (204 No Content)
     return new msdyn_IoTSendTestAlertResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      IoTDeviceIds: this.ioTDeviceIds,
-    };
-  }
 }
 
 /**

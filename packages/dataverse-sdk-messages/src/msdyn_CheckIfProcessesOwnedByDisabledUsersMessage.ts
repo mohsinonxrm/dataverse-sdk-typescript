@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckIfProcessesOwnedByDisabledUsersResponse as msdyn_CheckIfProcessesOwnedByDisabledUsersResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckIfProcessesOwnedByDisabledUsers request message
@@ -37,23 +39,19 @@ export class msdyn_CheckIfProcessesOwnedByDisabledUsersRequest
     const data = await response.json();
     return msdyn_CheckIfProcessesOwnedByDisabledUsersResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionId: this.solutionId,
-    };
-  }
 }
 
 /**
  * msdyn_CheckIfProcessesOwnedByDisabledUsers response message
  */
 export class msdyn_CheckIfProcessesOwnedByDisabledUsersResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfProcessesOwnedByDisabledUsersResponse) {
+  constructor(public result: msdyn_CheckIfProcessesOwnedByDisabledUsersResponseData) {
     super("msdyn_CheckIfProcessesOwnedByDisabledUsers");
   }
 
   static fromResponse(data: unknown): msdyn_CheckIfProcessesOwnedByDisabledUsersResponse {
-    return new msdyn_CheckIfProcessesOwnedByDisabledUsersResponse((data as any).value);
+    return new msdyn_CheckIfProcessesOwnedByDisabledUsersResponse(
+      responseObject<msdyn_CheckIfProcessesOwnedByDisabledUsersResponseData>(data)
+    );
   }
 }

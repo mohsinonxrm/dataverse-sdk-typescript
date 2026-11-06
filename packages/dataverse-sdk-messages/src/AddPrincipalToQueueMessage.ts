@@ -40,13 +40,6 @@ export class AddPrincipalToQueueRequest
     // No return value (204 No Content)
     return new AddPrincipalToQueueResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.queueId,
-      Principal: this.principal,
-    };
-  }
 }
 
 /**

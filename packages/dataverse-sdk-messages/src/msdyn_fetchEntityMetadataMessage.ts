@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_fetchEntityMetadataResponse as msdyn_fetchEntityMetadataResponseData } from "./types/index.js";
 
 /**
  * msdyn_fetchEntityMetadata request message
@@ -35,23 +37,19 @@ export class msdyn_fetchEntityMetadataRequest
     const data = await response.json();
     return msdyn_fetchEntityMetadataResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      fetchEntityMetadataRequest: this.fetchEntityMetadataRequest,
-    };
-  }
 }
 
 /**
  * msdyn_fetchEntityMetadata response message
  */
 export class msdyn_fetchEntityMetadataResponse extends OrganizationResponse {
-  constructor(public result: msdyn_fetchEntityMetadataResponse) {
+  constructor(public result: msdyn_fetchEntityMetadataResponseData) {
     super("msdyn_fetchEntityMetadata");
   }
 
   static fromResponse(data: unknown): msdyn_fetchEntityMetadataResponse {
-    return new msdyn_fetchEntityMetadataResponse((data as any).value);
+    return new msdyn_fetchEntityMetadataResponse(
+      responseObject<msdyn_fetchEntityMetadataResponseData>(data)
+    );
   }
 }

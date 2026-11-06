@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_BusinessClosureDeleteResponse as msdyn_BusinessClosureDeleteResponseData } from "./types/index.js";
 
 /**
  * msdyn_BusinessClosureDelete request message
@@ -35,23 +37,19 @@ export class msdyn_BusinessClosureDeleteRequest
     const data = await response.json();
     return msdyn_BusinessClosureDeleteResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Ids: this.ids,
-    };
-  }
 }
 
 /**
  * msdyn_BusinessClosureDelete response message
  */
 export class msdyn_BusinessClosureDeleteResponse extends OrganizationResponse {
-  constructor(public result: msdyn_BusinessClosureDeleteResponse) {
+  constructor(public result: msdyn_BusinessClosureDeleteResponseData) {
     super("msdyn_BusinessClosureDelete");
   }
 
   static fromResponse(data: unknown): msdyn_BusinessClosureDeleteResponse {
-    return new msdyn_BusinessClosureDeleteResponse((data as any).value);
+    return new msdyn_BusinessClosureDeleteResponse(
+      responseObject<msdyn_BusinessClosureDeleteResponseData>(data)
+    );
   }
 }

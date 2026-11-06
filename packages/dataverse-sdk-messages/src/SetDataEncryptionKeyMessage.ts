@@ -39,13 +39,6 @@ export class SetDataEncryptionKeyRequest
     // No return value (204 No Content)
     return new SetDataEncryptionKeyResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EncryptionKey: this.encryptionKey,
-      ChangeEncryptionKey: this.changeEncryptionKey,
-    };
-  }
 }
 
 /**

@@ -30,10 +30,6 @@ export class msdyn_CopyEventBotRegistrationsCleanupRequest
     // No return value (204 No Content)
     return new msdyn_CopyEventBotRegistrationsCleanupResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**

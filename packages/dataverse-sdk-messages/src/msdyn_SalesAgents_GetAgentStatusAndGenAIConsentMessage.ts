@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_SalesAgents_GetAgentStatusAndGenAIConsentResponse as msdyn_SalesAgents_GetAgentStatusAndGenAIConsentResponseData } from "./types/index.js";
 
 /**
  * msdyn_SalesAgents_GetAgentStatusAndGenAIConsent request message
@@ -37,23 +39,19 @@ export class msdyn_SalesAgents_GetAgentStatusAndGenAIConsentRequest
     const data = await response.json();
     return msdyn_SalesAgents_GetAgentStatusAndGenAIConsentResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RequestJson: this.requestJson,
-    };
-  }
 }
 
 /**
  * msdyn_SalesAgents_GetAgentStatusAndGenAIConsent response message
  */
 export class msdyn_SalesAgents_GetAgentStatusAndGenAIConsentResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgents_GetAgentStatusAndGenAIConsentResponse) {
+  constructor(public result: msdyn_SalesAgents_GetAgentStatusAndGenAIConsentResponseData) {
     super("msdyn_SalesAgents_GetAgentStatusAndGenAIConsent");
   }
 
   static fromResponse(data: unknown): msdyn_SalesAgents_GetAgentStatusAndGenAIConsentResponse {
-    return new msdyn_SalesAgents_GetAgentStatusAndGenAIConsentResponse((data as any).value);
+    return new msdyn_SalesAgents_GetAgentStatusAndGenAIConsentResponse(
+      responseObject<msdyn_SalesAgents_GetAgentStatusAndGenAIConsentResponseData>(data)
+    );
   }
 }

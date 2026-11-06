@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { campaign } from "./types/index.js";
 
 /**
@@ -40,13 +41,6 @@ export class CopyCampaignRequest
     const data = await response.json();
     return CopyCampaignResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.campaignId,
-      SaveAsTemplate: this.saveAsTemplate,
-    };
-  }
 }
 
 /**
@@ -58,6 +52,6 @@ export class CopyCampaignResponse extends OrganizationResponse {
   }
 
   static fromResponse(data: unknown): CopyCampaignResponse {
-    return new CopyCampaignResponse((data as any).value);
+    return new CopyCampaignResponse(responseObject<campaign>(data));
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdynmkt_StartMigrationCustomActionResponse as msdynmkt_StartMigrationCustomActionResponseData } from "./types/index.js";
 
 /**
  * msdynmkt_StartMigrationCustomAction request message
@@ -35,23 +37,19 @@ export class msdynmkt_StartMigrationCustomActionRequest
     const data = await response.json();
     return msdynmkt_StartMigrationCustomActionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      WhatIf: this.whatIf,
-    };
-  }
 }
 
 /**
  * msdynmkt_StartMigrationCustomAction response message
  */
 export class msdynmkt_StartMigrationCustomActionResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_StartMigrationCustomActionResponse) {
+  constructor(public result: msdynmkt_StartMigrationCustomActionResponseData) {
     super("msdynmkt_StartMigrationCustomAction");
   }
 
   static fromResponse(data: unknown): msdynmkt_StartMigrationCustomActionResponse {
-    return new msdynmkt_StartMigrationCustomActionResponse((data as any).value);
+    return new msdynmkt_StartMigrationCustomActionResponse(
+      responseObject<msdynmkt_StartMigrationCustomActionResponseData>(data)
+    );
   }
 }

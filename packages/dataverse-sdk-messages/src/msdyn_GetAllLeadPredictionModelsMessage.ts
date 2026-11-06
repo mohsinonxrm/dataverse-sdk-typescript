@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetAllLeadPredictionModelsResponse as msdyn_GetAllLeadPredictionModelsResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetAllLeadPredictionModels request message
@@ -30,21 +32,19 @@ export class msdyn_GetAllLeadPredictionModelsRequest
     const data = await response.json();
     return msdyn_GetAllLeadPredictionModelsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_GetAllLeadPredictionModels response message
  */
 export class msdyn_GetAllLeadPredictionModelsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetAllLeadPredictionModelsResponse) {
+  constructor(public result: msdyn_GetAllLeadPredictionModelsResponseData) {
     super("msdyn_GetAllLeadPredictionModels");
   }
 
   static fromResponse(data: unknown): msdyn_GetAllLeadPredictionModelsResponse {
-    return new msdyn_GetAllLeadPredictionModelsResponse((data as any).value);
+    return new msdyn_GetAllLeadPredictionModelsResponse(
+      responseObject<msdyn_GetAllLeadPredictionModelsResponseData>(data)
+    );
   }
 }

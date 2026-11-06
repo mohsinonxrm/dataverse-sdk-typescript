@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_UpsertEvaluationCriteriaResponse as msdyn_UpsertEvaluationCriteriaResponseData } from "./types/index.js";
 
 /**
  * msdyn_UpsertEvaluationCriteria request message
@@ -35,23 +37,19 @@ export class msdyn_UpsertEvaluationCriteriaRequest
     const data = await response.json();
     return msdyn_UpsertEvaluationCriteriaResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msydn_UpsertEvaluationCriteriaPayload: this.msydn_UpsertEvaluationCriteriaPayload,
-    };
-  }
 }
 
 /**
  * msdyn_UpsertEvaluationCriteria response message
  */
 export class msdyn_UpsertEvaluationCriteriaResponse extends OrganizationResponse {
-  constructor(public result: msdyn_UpsertEvaluationCriteriaResponse) {
+  constructor(public result: msdyn_UpsertEvaluationCriteriaResponseData) {
     super("msdyn_UpsertEvaluationCriteria");
   }
 
   static fromResponse(data: unknown): msdyn_UpsertEvaluationCriteriaResponse {
-    return new msdyn_UpsertEvaluationCriteriaResponse((data as any).value);
+    return new msdyn_UpsertEvaluationCriteriaResponse(
+      responseObject<msdyn_UpsertEvaluationCriteriaResponseData>(data)
+    );
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_URFirstPartyIntegrationApiResponse as msdyn_URFirstPartyIntegrationApiResponseData } from "./types/index.js";
 
 /**
  * msdyn_URFirstPartyIntegrationApi request message
@@ -39,24 +41,19 @@ export class msdyn_URFirstPartyIntegrationApiRequest
     const data = await response.json();
     return msdyn_URFirstPartyIntegrationApiResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      MethodName: this.methodName,
-      InputParameter: this.inputParameter,
-    };
-  }
 }
 
 /**
  * msdyn_URFirstPartyIntegrationApi response message
  */
 export class msdyn_URFirstPartyIntegrationApiResponse extends OrganizationResponse {
-  constructor(public result: msdyn_URFirstPartyIntegrationApiResponse) {
+  constructor(public result: msdyn_URFirstPartyIntegrationApiResponseData) {
     super("msdyn_URFirstPartyIntegrationApi");
   }
 
   static fromResponse(data: unknown): msdyn_URFirstPartyIntegrationApiResponse {
-    return new msdyn_URFirstPartyIntegrationApiResponse((data as any).value);
+    return new msdyn_URFirstPartyIntegrationApiResponse(
+      responseObject<msdyn_URFirstPartyIntegrationApiResponseData>(data)
+    );
   }
 }

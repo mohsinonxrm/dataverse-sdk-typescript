@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_ExecuteSISampleDataRequestResponse as msdyn_ExecuteSISampleDataRequestResponseData } from "./types/index.js";
 
 /**
  * msdyn_ExecuteSISampleDataRequest request message
@@ -41,25 +43,19 @@ export class msdyn_ExecuteSISampleDataRequestRequest
     const data = await response.json();
     return msdyn_ExecuteSISampleDataRequestResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Operation: this.operation,
-      Version: this.version,
-      Lcid: this.lcid,
-    };
-  }
 }
 
 /**
  * msdyn_ExecuteSISampleDataRequest response message
  */
 export class msdyn_ExecuteSISampleDataRequestResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ExecuteSISampleDataRequestResponse) {
+  constructor(public result: msdyn_ExecuteSISampleDataRequestResponseData) {
     super("msdyn_ExecuteSISampleDataRequest");
   }
 
   static fromResponse(data: unknown): msdyn_ExecuteSISampleDataRequestResponse {
-    return new msdyn_ExecuteSISampleDataRequestResponse((data as any).value);
+    return new msdyn_ExecuteSISampleDataRequestResponse(
+      responseObject<msdyn_ExecuteSISampleDataRequestResponseData>(data)
+    );
   }
 }

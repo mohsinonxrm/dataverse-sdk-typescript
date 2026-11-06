@@ -49,18 +49,6 @@ export class CCaaS_InitiateAgentTransferExternalRequest
     // No return value (204 No Content)
     return new CCaaS_InitiateAgentTransferExternalResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_ocliveworkitemId,
-      ExternalParticipantChannel: this.externalParticipantChannel,
-      ExternalParticipantChannelType: this.externalParticipantChannelType,
-      AgentName: this.agentName,
-      ExternalReferenceId: this.externalReferenceId,
-      ExternalReferenceType: this.externalReferenceType,
-      ApiVersion: this.apiVersion,
-    };
-  }
 }
 
 /**

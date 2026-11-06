@@ -30,10 +30,6 @@ export class msdyn_InitializeSessionChannelRequest
     // No return value (204 No Content)
     return new msdyn_InitializeSessionChannelResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**

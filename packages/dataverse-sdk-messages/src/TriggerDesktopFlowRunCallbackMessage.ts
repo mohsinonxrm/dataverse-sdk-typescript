@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { TriggerDesktopFlowRunCallbackResponse as TriggerDesktopFlowRunCallbackResponseData } from "./types/index.js";
 
 /**
  * TriggerDesktopFlowRunCallback request message
@@ -31,23 +33,19 @@ export class TriggerDesktopFlowRunCallbackRequest
     const data = await response.json();
     return TriggerDesktopFlowRunCallbackResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.flowsessionId,
-    };
-  }
 }
 
 /**
  * TriggerDesktopFlowRunCallback response message
  */
 export class TriggerDesktopFlowRunCallbackResponse extends OrganizationResponse {
-  constructor(public result: TriggerDesktopFlowRunCallbackResponse) {
+  constructor(public result: TriggerDesktopFlowRunCallbackResponseData) {
     super("TriggerDesktopFlowRunCallback");
   }
 
   static fromResponse(data: unknown): TriggerDesktopFlowRunCallbackResponse {
-    return new TriggerDesktopFlowRunCallbackResponse((data as any).value);
+    return new TriggerDesktopFlowRunCallbackResponse(
+      responseObject<TriggerDesktopFlowRunCallbackResponseData>(data)
+    );
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_QueueItemCreateOperationResponse as msdyn_QueueItemCreateOperationResponseData } from "./types/index.js";
 
 /**
  * msdyn_QueueItemCreateOperation request message
@@ -35,23 +37,19 @@ export class msdyn_QueueItemCreateOperationRequest
     const data = await response.json();
     return msdyn_QueueItemCreateOperationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      LiveWorkItemId: this.liveWorkItemId,
-    };
-  }
 }
 
 /**
  * msdyn_QueueItemCreateOperation response message
  */
 export class msdyn_QueueItemCreateOperationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_QueueItemCreateOperationResponse) {
+  constructor(public result: msdyn_QueueItemCreateOperationResponseData) {
     super("msdyn_QueueItemCreateOperation");
   }
 
   static fromResponse(data: unknown): msdyn_QueueItemCreateOperationResponse {
-    return new msdyn_QueueItemCreateOperationResponse((data as any).value);
+    return new msdyn_QueueItemCreateOperationResponse(
+      responseObject<msdyn_QueueItemCreateOperationResponseData>(data)
+    );
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdynmkt_getObmDeprecationConfigurationResponse as msdynmkt_getObmDeprecationConfigurationResponseData } from "./types/index.js";
 
 /**
  * msdynmkt_getObmDeprecationConfiguration request message
@@ -32,21 +34,19 @@ export class msdynmkt_getObmDeprecationConfigurationRequest
     const data = await response.json();
     return msdynmkt_getObmDeprecationConfigurationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdynmkt_getObmDeprecationConfiguration response message
  */
 export class msdynmkt_getObmDeprecationConfigurationResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_getObmDeprecationConfigurationResponse) {
+  constructor(public result: msdynmkt_getObmDeprecationConfigurationResponseData) {
     super("msdynmkt_getObmDeprecationConfiguration");
   }
 
   static fromResponse(data: unknown): msdynmkt_getObmDeprecationConfigurationResponse {
-    return new msdynmkt_getObmDeprecationConfigurationResponse((data as any).value);
+    return new msdynmkt_getObmDeprecationConfigurationResponse(
+      responseObject<msdynmkt_getObmDeprecationConfigurationResponseData>(data)
+    );
   }
 }

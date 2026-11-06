@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckIfExecutionContextIsPassedResponse as msdyn_CheckIfExecutionContextIsPassedResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckIfExecutionContextIsPassed request message
@@ -39,24 +41,19 @@ export class msdyn_CheckIfExecutionContextIsPassedRequest
     const data = await response.json();
     return msdyn_CheckIfExecutionContextIsPassedResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionId: this.solutionId,
-      ExcludeFormIds: this.excludeFormIds,
-    };
-  }
 }
 
 /**
  * msdyn_CheckIfExecutionContextIsPassed response message
  */
 export class msdyn_CheckIfExecutionContextIsPassedResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfExecutionContextIsPassedResponse) {
+  constructor(public result: msdyn_CheckIfExecutionContextIsPassedResponseData) {
     super("msdyn_CheckIfExecutionContextIsPassed");
   }
 
   static fromResponse(data: unknown): msdyn_CheckIfExecutionContextIsPassedResponse {
-    return new msdyn_CheckIfExecutionContextIsPassedResponse((data as any).value);
+    return new msdyn_CheckIfExecutionContextIsPassedResponse(
+      responseObject<msdyn_CheckIfExecutionContextIsPassedResponseData>(data)
+    );
   }
 }

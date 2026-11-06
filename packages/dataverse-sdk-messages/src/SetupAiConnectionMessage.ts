@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import { responseObject } from "./internal/responseData.js";
 
 /**
  * SetupAiConnection request message
@@ -40,24 +40,17 @@ export class SetupAiConnectionRequest
     const data = await response.json();
     return SetupAiConnectionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      connectorName: this.connectorName,
-      connectionName: this.connectionName,
-    };
-  }
 }
 
 /**
  * SetupAiConnection response message
  */
 export class SetupAiConnectionResponse extends OrganizationResponse {
-  constructor(public result: EntityReference) {
+  constructor(public result: Record<string, unknown>) {
     super("SetupAiConnection");
   }
 
   static fromResponse(data: unknown): SetupAiConnectionResponse {
-    return new SetupAiConnectionResponse((data as any).value);
+    return new SetupAiConnectionResponse(responseObject<Record<string, unknown>>(data));
   }
 }

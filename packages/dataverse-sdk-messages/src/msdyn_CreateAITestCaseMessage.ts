@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CreateAITestCaseResponse as msdyn_CreateAITestCaseResponseData } from "./types/index.js";
 
 /**
  * msdyn_CreateAITestCase request message
@@ -35,23 +37,19 @@ export class msdyn_CreateAITestCaseRequest
     const data = await response.json();
     return msdyn_CreateAITestCaseResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      request: this.request,
-    };
-  }
 }
 
 /**
  * msdyn_CreateAITestCase response message
  */
 export class msdyn_CreateAITestCaseResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CreateAITestCaseResponse) {
+  constructor(public result: msdyn_CreateAITestCaseResponseData) {
     super("msdyn_CreateAITestCase");
   }
 
   static fromResponse(data: unknown): msdyn_CreateAITestCaseResponse {
-    return new msdyn_CreateAITestCaseResponse((data as any).value);
+    return new msdyn_CreateAITestCaseResponse(
+      responseObject<msdyn_CreateAITestCaseResponseData>(data)
+    );
   }
 }

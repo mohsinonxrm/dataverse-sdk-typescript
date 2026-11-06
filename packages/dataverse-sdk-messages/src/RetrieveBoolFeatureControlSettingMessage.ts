@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { RetrieveBoolFeatureControlSettingResponse as RetrieveBoolFeatureControlSettingResponseData } from "./types/index.js";
 
 /**
  * RetrieveBoolFeatureControlSetting request message
@@ -39,24 +41,19 @@ export class RetrieveBoolFeatureControlSettingRequest
     const data = await response.json();
     return RetrieveBoolFeatureControlSettingResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      NamespaceValue: this.namespaceValue,
-      FeatureControlName: this.featureControlName,
-    };
-  }
 }
 
 /**
  * RetrieveBoolFeatureControlSetting response message
  */
 export class RetrieveBoolFeatureControlSettingResponse extends OrganizationResponse {
-  constructor(public result: RetrieveBoolFeatureControlSettingResponse) {
+  constructor(public result: RetrieveBoolFeatureControlSettingResponseData) {
     super("RetrieveBoolFeatureControlSetting");
   }
 
   static fromResponse(data: unknown): RetrieveBoolFeatureControlSettingResponse {
-    return new RetrieveBoolFeatureControlSettingResponse((data as any).value);
+    return new RetrieveBoolFeatureControlSettingResponse(
+      responseObject<RetrieveBoolFeatureControlSettingResponseData>(data)
+    );
   }
 }

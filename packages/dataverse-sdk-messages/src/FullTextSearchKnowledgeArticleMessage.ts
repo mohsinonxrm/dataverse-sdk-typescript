@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import { responseValue } from "./internal/responseData.js";
 import type { TypedQueryBase } from "./types/index.js";
 
 /**
@@ -47,27 +47,19 @@ export class FullTextSearchKnowledgeArticleRequest
     const data = await response.json();
     return FullTextSearchKnowledgeArticleResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SearchText: this.searchText,
-      UseInflection: this.useInflection,
-      RemoveDuplicates: this.removeDuplicates,
-      StateCode: this.stateCode,
-      QueryExpression: this.queryExpression,
-    };
-  }
 }
 
 /**
  * FullTextSearchKnowledgeArticle response message
  */
 export class FullTextSearchKnowledgeArticleResponse extends OrganizationResponse {
-  constructor(public result: EntityReference[]) {
+  constructor(public result: Record<string, unknown>[]) {
     super("FullTextSearchKnowledgeArticle");
   }
 
   static fromResponse(data: unknown): FullTextSearchKnowledgeArticleResponse {
-    return new FullTextSearchKnowledgeArticleResponse((data as any).value);
+    return new FullTextSearchKnowledgeArticleResponse(
+      responseValue<Record<string, unknown>[]>(data)
+    );
   }
 }

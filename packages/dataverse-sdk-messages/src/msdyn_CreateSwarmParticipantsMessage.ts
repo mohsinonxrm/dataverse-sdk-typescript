@@ -36,12 +36,6 @@ export class msdyn_CreateSwarmParticipantsRequest
     // No return value (204 No Content)
     return new msdyn_CreateSwarmParticipantsResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SwarmEntityReference: this.swarmEntityReference,
-    };
-  }
 }
 
 /**

@@ -43,15 +43,6 @@ export class UpdateFlowMachineNetworkRequest
     // No return value (204 No Content)
     return new UpdateFlowMachineNetworkResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.flowmachinenetworkId,
-      description: this.description,
-      extendedproperties: this.extendedproperties,
-      name: this.name,
-    };
-  }
 }
 
 /**

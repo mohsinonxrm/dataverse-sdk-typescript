@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CreateCustomActionDefinitionResponse as msdyn_CreateCustomActionDefinitionResponseData } from "./types/index.js";
 
 /**
  * msdyn_CreateCustomActionDefinition request message
@@ -45,27 +47,19 @@ export class msdyn_CreateCustomActionDefinitionRequest
     const data = await response.json();
     return msdyn_CreateCustomActionDefinitionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      workflowId: this.workflowId,
-      entityName: this.entityName,
-      customAction: this.customAction,
-      customActionParams: this.customActionParams,
-      correlationId: this.correlationId,
-    };
-  }
 }
 
 /**
  * msdyn_CreateCustomActionDefinition response message
  */
 export class msdyn_CreateCustomActionDefinitionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CreateCustomActionDefinitionResponse) {
+  constructor(public result: msdyn_CreateCustomActionDefinitionResponseData) {
     super("msdyn_CreateCustomActionDefinition");
   }
 
   static fromResponse(data: unknown): msdyn_CreateCustomActionDefinitionResponse {
-    return new msdyn_CreateCustomActionDefinitionResponse((data as any).value);
+    return new msdyn_CreateCustomActionDefinitionResponse(
+      responseObject<msdyn_CreateCustomActionDefinitionResponseData>(data)
+    );
   }
 }

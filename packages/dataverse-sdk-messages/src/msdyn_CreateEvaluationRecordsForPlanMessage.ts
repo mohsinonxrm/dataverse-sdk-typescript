@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CreateEvaluationRecordsForPlanResponse as msdyn_CreateEvaluationRecordsForPlanResponseData } from "./types/index.js";
 
 /**
  * msdyn_CreateEvaluationRecordsForPlan request message
@@ -39,24 +41,19 @@ export class msdyn_CreateEvaluationRecordsForPlanRequest
     const data = await response.json();
     return msdyn_CreateEvaluationRecordsForPlanResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      evaluationPlanId: this.evaluationPlanId,
-      recordIdsForProcessing: this.recordIdsForProcessing,
-    };
-  }
 }
 
 /**
  * msdyn_CreateEvaluationRecordsForPlan response message
  */
 export class msdyn_CreateEvaluationRecordsForPlanResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CreateEvaluationRecordsForPlanResponse) {
+  constructor(public result: msdyn_CreateEvaluationRecordsForPlanResponseData) {
     super("msdyn_CreateEvaluationRecordsForPlan");
   }
 
   static fromResponse(data: unknown): msdyn_CreateEvaluationRecordsForPlanResponse {
-    return new msdyn_CreateEvaluationRecordsForPlanResponse((data as any).value);
+    return new msdyn_CreateEvaluationRecordsForPlanResponse(
+      responseObject<msdyn_CreateEvaluationRecordsForPlanResponseData>(data)
+    );
   }
 }

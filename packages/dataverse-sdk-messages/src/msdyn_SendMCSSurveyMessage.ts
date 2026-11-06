@@ -48,17 +48,6 @@ export class msdyn_SendMCSSurveyRequest
     // No return value (204 No Content)
     return new msdyn_SendMCSSurveyResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      From: this.from,
-      To: this.to,
-      Cc: this.cc,
-      Bcc: this.bcc,
-      Regarding: this.regarding,
-      Template: this.template,
-    };
-  }
 }
 
 /**

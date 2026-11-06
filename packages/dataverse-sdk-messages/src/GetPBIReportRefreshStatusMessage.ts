@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { GetPBIReportRefreshStatusResponse as GetPBIReportRefreshStatusResponseData } from "./types/index.js";
 
 /**
  * GetPBIReportRefreshStatus request message
@@ -35,23 +37,19 @@ export class GetPBIReportRefreshStatusRequest
     const data = await response.json();
     return GetPBIReportRefreshStatusResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ReportId: this.reportId,
-    };
-  }
 }
 
 /**
  * GetPBIReportRefreshStatus response message
  */
 export class GetPBIReportRefreshStatusResponse extends OrganizationResponse {
-  constructor(public result: GetPBIReportRefreshStatusResponse) {
+  constructor(public result: GetPBIReportRefreshStatusResponseData) {
     super("GetPBIReportRefreshStatus");
   }
 
   static fromResponse(data: unknown): GetPBIReportRefreshStatusResponse {
-    return new GetPBIReportRefreshStatusResponse((data as any).value);
+    return new GetPBIReportRefreshStatusResponse(
+      responseObject<GetPBIReportRefreshStatusResponseData>(data)
+    );
   }
 }

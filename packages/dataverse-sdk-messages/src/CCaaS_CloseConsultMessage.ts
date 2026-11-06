@@ -39,13 +39,6 @@ export class CCaaS_CloseConsultRequest
     // No return value (204 No Content)
     return new CCaaS_CloseConsultResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_ocliveworkitemId,
-      ApiVersion: this.apiVersion,
-    };
-  }
 }
 
 /**

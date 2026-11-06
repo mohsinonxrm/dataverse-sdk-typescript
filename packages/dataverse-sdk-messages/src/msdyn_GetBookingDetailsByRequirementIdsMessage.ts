@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetBookingDetailsByRequirementIdsResponse as msdyn_GetBookingDetailsByRequirementIdsResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetBookingDetailsByRequirementIds request message
@@ -41,24 +43,19 @@ export class msdyn_GetBookingDetailsByRequirementIdsRequest
     const data = await response.json();
     return msdyn_GetBookingDetailsByRequirementIdsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RequirementIds: this.requirementIds,
-      Timescale: this.timescale,
-    };
-  }
 }
 
 /**
  * msdyn_GetBookingDetailsByRequirementIds response message
  */
 export class msdyn_GetBookingDetailsByRequirementIdsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetBookingDetailsByRequirementIdsResponse) {
+  constructor(public result: msdyn_GetBookingDetailsByRequirementIdsResponseData) {
     super("msdyn_GetBookingDetailsByRequirementIds");
   }
 
   static fromResponse(data: unknown): msdyn_GetBookingDetailsByRequirementIdsResponse {
-    return new msdyn_GetBookingDetailsByRequirementIdsResponse((data as any).value);
+    return new msdyn_GetBookingDetailsByRequirementIdsResponse(
+      responseObject<msdyn_GetBookingDetailsByRequirementIdsResponseData>(data)
+    );
   }
 }

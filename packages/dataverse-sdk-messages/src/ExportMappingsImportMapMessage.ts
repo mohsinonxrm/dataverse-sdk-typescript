@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { ExportMappingsImportMapResponse as ExportMappingsImportMapResponseData } from "./types/index.js";
 
 /**
  * ExportMappingsImportMap request message
@@ -39,24 +41,19 @@ export class ExportMappingsImportMapRequest
     const data = await response.json();
     return ExportMappingsImportMapResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.importmapId,
-      ExportIds: this.exportIds,
-    };
-  }
 }
 
 /**
  * ExportMappingsImportMap response message
  */
 export class ExportMappingsImportMapResponse extends OrganizationResponse {
-  constructor(public result: ExportMappingsImportMapResponse) {
+  constructor(public result: ExportMappingsImportMapResponseData) {
     super("ExportMappingsImportMap");
   }
 
   static fromResponse(data: unknown): ExportMappingsImportMapResponse {
-    return new ExportMappingsImportMapResponse((data as any).value);
+    return new ExportMappingsImportMapResponse(
+      responseObject<ExportMappingsImportMapResponseData>(data)
+    );
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { SummarizeRecordResponse as SummarizeRecordResponseData } from "./types/index.js";
 
 /**
  * SummarizeRecord request message
@@ -43,26 +45,17 @@ export class SummarizeRecordRequest
     const data = await response.json();
     return SummarizeRecordResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Id: this.id,
-      EntityLogicalName: this.entityLogicalName,
-      RecordContext: this.recordContext,
-      IsMergedCatchupAndSummary: this.isMergedCatchupAndSummary,
-    };
-  }
 }
 
 /**
  * SummarizeRecord response message
  */
 export class SummarizeRecordResponse extends OrganizationResponse {
-  constructor(public result: SummarizeRecordResponse) {
+  constructor(public result: SummarizeRecordResponseData) {
     super("SummarizeRecord");
   }
 
   static fromResponse(data: unknown): SummarizeRecordResponse {
-    return new SummarizeRecordResponse((data as any).value);
+    return new SummarizeRecordResponse(responseObject<SummarizeRecordResponseData>(data));
   }
 }

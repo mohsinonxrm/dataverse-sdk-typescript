@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_getIslandUrlResponse as msdyn_getIslandUrlResponseData } from "./types/index.js";
 
 /**
  * msdyn_getIslandUrl request message
@@ -30,21 +32,17 @@ export class msdyn_getIslandUrlRequest
     const data = await response.json();
     return msdyn_getIslandUrlResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_getIslandUrl response message
  */
 export class msdyn_getIslandUrlResponse extends OrganizationResponse {
-  constructor(public result: msdyn_getIslandUrlResponse) {
+  constructor(public result: msdyn_getIslandUrlResponseData) {
     super("msdyn_getIslandUrl");
   }
 
   static fromResponse(data: unknown): msdyn_getIslandUrlResponse {
-    return new msdyn_getIslandUrlResponse((data as any).value);
+    return new msdyn_getIslandUrlResponse(responseObject<msdyn_getIslandUrlResponseData>(data));
   }
 }

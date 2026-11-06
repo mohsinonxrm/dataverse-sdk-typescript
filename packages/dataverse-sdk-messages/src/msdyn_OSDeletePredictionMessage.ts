@@ -43,15 +43,6 @@ export class msdyn_OSDeletePredictionRequest
     // No return value (204 No Content)
     return new msdyn_OSDeletePredictionResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ModelId: this.modelId,
-      IsCrmDeleteOnly: this.isCrmDeleteOnly,
-      PredictionName: this.predictionName,
-      IsActiveModel: this.isActiveModel,
-    };
-  }
 }
 
 /**

@@ -31,12 +31,6 @@ export class TriggerServiceEndpointCheckRequest
     // No return value (204 No Content)
     return new TriggerServiceEndpointCheckResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.serviceendpointId,
-    };
-  }
 }
 
 /**

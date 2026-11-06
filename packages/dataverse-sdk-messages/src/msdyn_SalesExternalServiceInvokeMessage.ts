@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_SalesExternalServiceInvokeResponse as msdyn_SalesExternalServiceInvokeResponseData } from "./types/index.js";
 
 /**
  * msdyn_SalesExternalServiceInvoke request message
@@ -41,25 +43,19 @@ export class msdyn_SalesExternalServiceInvokeRequest
     const data = await response.json();
     return msdyn_SalesExternalServiceInvokeResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_entityName: this.msdyn_entityName,
-      msdyn_activityId: this.msdyn_activityId,
-      msdyn_id: this.msdyn_id,
-    };
-  }
 }
 
 /**
  * msdyn_SalesExternalServiceInvoke response message
  */
 export class msdyn_SalesExternalServiceInvokeResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesExternalServiceInvokeResponse) {
+  constructor(public result: msdyn_SalesExternalServiceInvokeResponseData) {
     super("msdyn_SalesExternalServiceInvoke");
   }
 
   static fromResponse(data: unknown): msdyn_SalesExternalServiceInvokeResponse {
-    return new msdyn_SalesExternalServiceInvokeResponse((data as any).value);
+    return new msdyn_SalesExternalServiceInvokeResponse(
+      responseObject<msdyn_SalesExternalServiceInvokeResponseData>(data)
+    );
   }
 }

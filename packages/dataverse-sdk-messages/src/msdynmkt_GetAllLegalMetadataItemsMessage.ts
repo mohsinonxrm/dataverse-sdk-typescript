@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import { responseValue } from "./internal/responseData.js";
 
 /**
  * msdynmkt_GetAllLegalMetadataItems request message
@@ -37,24 +37,19 @@ export class msdynmkt_GetAllLegalMetadataItemsRequest
     const data = await response.json();
     return msdynmkt_GetAllLegalMetadataItemsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdynmkt_GetAllLegalMetadataItems_request_LanguageCode:
-        this.msdynmkt_GetAllLegalMetadataItems_request_LanguageCode,
-    };
-  }
 }
 
 /**
  * msdynmkt_GetAllLegalMetadataItems response message
  */
 export class msdynmkt_GetAllLegalMetadataItemsResponse extends OrganizationResponse {
-  constructor(public result: EntityReference[]) {
+  constructor(public result: Record<string, unknown>[]) {
     super("msdynmkt_GetAllLegalMetadataItems");
   }
 
   static fromResponse(data: unknown): msdynmkt_GetAllLegalMetadataItemsResponse {
-    return new msdynmkt_GetAllLegalMetadataItemsResponse((data as any).value);
+    return new msdynmkt_GetAllLegalMetadataItemsResponse(
+      responseValue<Record<string, unknown>[]>(data)
+    );
   }
 }

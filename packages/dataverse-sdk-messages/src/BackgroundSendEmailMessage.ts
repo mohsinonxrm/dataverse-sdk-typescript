@@ -1,6 +1,10 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { TypedQueryBase } from "./types/index.js";
+import { responseObject } from "./internal/responseData.js";
+import type {
+  BackgroundSendEmailResponse as BackgroundSendEmailResponseData,
+  TypedQueryBase,
+} from "./types/index.js";
 
 /**
  * BackgroundSendEmail request message
@@ -36,23 +40,17 @@ export class BackgroundSendEmailRequest
     const data = await response.json();
     return BackgroundSendEmailResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Query: this.query,
-    };
-  }
 }
 
 /**
  * BackgroundSendEmail response message
  */
 export class BackgroundSendEmailResponse extends OrganizationResponse {
-  constructor(public result: BackgroundSendEmailResponse) {
+  constructor(public result: BackgroundSendEmailResponseData) {
     super("BackgroundSendEmail");
   }
 
   static fromResponse(data: unknown): BackgroundSendEmailResponse {
-    return new BackgroundSendEmailResponse((data as any).value);
+    return new BackgroundSendEmailResponse(responseObject<BackgroundSendEmailResponseData>(data));
   }
 }

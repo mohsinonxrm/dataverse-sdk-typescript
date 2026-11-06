@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetSankeyViewKPIsResponse as msdyn_GetSankeyViewKPIsResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetSankeyViewKPIs request message
@@ -41,25 +43,19 @@ export class msdyn_GetSankeyViewKPIsRequest
     const data = await response.json();
     return msdyn_GetSankeyViewKPIsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ActionIds: this.actionIds,
-      SequenceId: this.sequenceId,
-      RegardingEntityName: this.regardingEntityName,
-    };
-  }
 }
 
 /**
  * msdyn_GetSankeyViewKPIs response message
  */
 export class msdyn_GetSankeyViewKPIsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetSankeyViewKPIsResponse) {
+  constructor(public result: msdyn_GetSankeyViewKPIsResponseData) {
     super("msdyn_GetSankeyViewKPIs");
   }
 
   static fromResponse(data: unknown): msdyn_GetSankeyViewKPIsResponse {
-    return new msdyn_GetSankeyViewKPIsResponse((data as any).value);
+    return new msdyn_GetSankeyViewKPIsResponse(
+      responseObject<msdyn_GetSankeyViewKPIsResponseData>(data)
+    );
   }
 }

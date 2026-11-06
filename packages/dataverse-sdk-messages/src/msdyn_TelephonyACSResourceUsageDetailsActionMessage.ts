@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_TelephonyACSResourceUsageDetailsActionResponse as msdyn_TelephonyACSResourceUsageDetailsActionResponseData } from "./types/index.js";
 
 /**
  * msdyn_TelephonyACSResourceUsageDetailsAction request message
@@ -37,23 +39,19 @@ export class msdyn_TelephonyACSResourceUsageDetailsActionRequest
     const data = await response.json();
     return msdyn_TelephonyACSResourceUsageDetailsActionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ActionRequest: this.actionRequest,
-    };
-  }
 }
 
 /**
  * msdyn_TelephonyACSResourceUsageDetailsAction response message
  */
 export class msdyn_TelephonyACSResourceUsageDetailsActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_TelephonyACSResourceUsageDetailsActionResponse) {
+  constructor(public result: msdyn_TelephonyACSResourceUsageDetailsActionResponseData) {
     super("msdyn_TelephonyACSResourceUsageDetailsAction");
   }
 
   static fromResponse(data: unknown): msdyn_TelephonyACSResourceUsageDetailsActionResponse {
-    return new msdyn_TelephonyACSResourceUsageDetailsActionResponse((data as any).value);
+    return new msdyn_TelephonyACSResourceUsageDetailsActionResponse(
+      responseObject<msdyn_TelephonyACSResourceUsageDetailsActionResponseData>(data)
+    );
   }
 }

@@ -39,13 +39,6 @@ export class msdyn_DuplicateDetectionTriggerActionRequest
     // No return value (204 No Content)
     return new msdyn_DuplicateDetectionTriggerActionResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      BaseRecordType: this.baseRecordType,
-      BaseRecordId: this.baseRecordId,
-    };
-  }
 }
 
 /**

@@ -31,12 +31,6 @@ export class msdyn_UpdateSurveyBotTopicsRequest
     // No return value (204 No Content)
     return new msdyn_UpdateSurveyBotTopicsResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.botId,
-    };
-  }
 }
 
 /**

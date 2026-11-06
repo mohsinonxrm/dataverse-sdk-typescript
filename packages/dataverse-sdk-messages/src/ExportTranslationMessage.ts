@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { ExportTranslationResponse as ExportTranslationResponseData } from "./types/index.js";
 
 /**
  * ExportTranslation request message
@@ -36,23 +38,17 @@ export class ExportTranslationRequest
     const data = await response.json();
     return ExportTranslationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionName: this.solutionName,
-    };
-  }
 }
 
 /**
  * ExportTranslation response message
  */
 export class ExportTranslationResponse extends OrganizationResponse {
-  constructor(public result: ExportTranslationResponse) {
+  constructor(public result: ExportTranslationResponseData) {
     super("ExportTranslation");
   }
 
   static fromResponse(data: unknown): ExportTranslationResponse {
-    return new ExportTranslationResponse((data as any).value);
+    return new ExportTranslationResponse(responseObject<ExportTranslationResponseData>(data));
   }
 }

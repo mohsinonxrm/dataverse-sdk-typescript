@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckIfHasLegacySlaRulesResponse as msdyn_CheckIfHasLegacySlaRulesResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckIfHasLegacySlaRules request message
@@ -30,21 +32,19 @@ export class msdyn_CheckIfHasLegacySlaRulesRequest
     const data = await response.json();
     return msdyn_CheckIfHasLegacySlaRulesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_CheckIfHasLegacySlaRules response message
  */
 export class msdyn_CheckIfHasLegacySlaRulesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfHasLegacySlaRulesResponse) {
+  constructor(public result: msdyn_CheckIfHasLegacySlaRulesResponseData) {
     super("msdyn_CheckIfHasLegacySlaRules");
   }
 
   static fromResponse(data: unknown): msdyn_CheckIfHasLegacySlaRulesResponse {
-    return new msdyn_CheckIfHasLegacySlaRulesResponse((data as any).value);
+    return new msdyn_CheckIfHasLegacySlaRulesResponse(
+      responseObject<msdyn_CheckIfHasLegacySlaRulesResponseData>(data)
+    );
   }
 }

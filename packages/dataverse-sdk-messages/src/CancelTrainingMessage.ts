@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { CancelTrainingResponse as CancelTrainingResponseData } from "./types/index.js";
 
 /**
  * CancelTraining request message
@@ -39,24 +41,17 @@ export class CancelTrainingRequest
     const data = await response.json();
     return CancelTrainingResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_aiconfigurationId,
-      version: this.version,
-    };
-  }
 }
 
 /**
  * CancelTraining response message
  */
 export class CancelTrainingResponse extends OrganizationResponse {
-  constructor(public result: CancelTrainingResponse) {
+  constructor(public result: CancelTrainingResponseData) {
     super("CancelTraining");
   }
 
   static fromResponse(data: unknown): CancelTrainingResponse {
-    return new CancelTrainingResponse((data as any).value);
+    return new CancelTrainingResponse(responseObject<CancelTrainingResponseData>(data));
   }
 }

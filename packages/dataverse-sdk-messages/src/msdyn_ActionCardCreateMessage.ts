@@ -35,12 +35,6 @@ export class msdyn_ActionCardCreateRequest
     // No return value (204 No Content)
     return new msdyn_ActionCardCreateResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      actionCardCreateParams: this.actionCardCreateParams,
-    };
-  }
 }
 
 /**

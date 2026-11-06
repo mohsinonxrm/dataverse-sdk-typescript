@@ -1,7 +1,12 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
-import type { PropagationOwnershipOptions, TypedQueryBase } from "./types/index.js";
+import type {
+  PropagateByExpressionResponse as PropagateByExpressionResponseData,
+  PropagationOwnershipOptions,
+  TypedQueryBase,
+} from "./types/index.js";
 
 /**
  * PropagateByExpression request message
@@ -57,32 +62,19 @@ export class PropagateByExpressionRequest
     const data = await response.json();
     return PropagateByExpressionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      QueryExpression: this.queryExpression,
-      FriendlyName: this.friendlyName,
-      ExecuteImmediately: this.executeImmediately,
-      Activity: this.activity,
-      TemplateId: this.templateId,
-      OwnershipOptions: this.ownershipOptions,
-      PostWorkflowEvent: this.postWorkflowEvent,
-      Owner: this.owner,
-      SendEmail: this.sendEmail,
-      QueueId: this.queueId,
-    };
-  }
 }
 
 /**
  * PropagateByExpression response message
  */
 export class PropagateByExpressionResponse extends OrganizationResponse {
-  constructor(public result: PropagateByExpressionResponse) {
+  constructor(public result: PropagateByExpressionResponseData) {
     super("PropagateByExpression");
   }
 
   static fromResponse(data: unknown): PropagateByExpressionResponse {
-    return new PropagateByExpressionResponse((data as any).value);
+    return new PropagateByExpressionResponse(
+      responseObject<PropagateByExpressionResponseData>(data)
+    );
   }
 }

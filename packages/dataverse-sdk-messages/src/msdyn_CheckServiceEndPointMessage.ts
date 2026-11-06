@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckServiceEndPointResponse as msdyn_CheckServiceEndPointResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckServiceEndPoint request message
@@ -30,21 +32,19 @@ export class msdyn_CheckServiceEndPointRequest
     const data = await response.json();
     return msdyn_CheckServiceEndPointResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_CheckServiceEndPoint response message
  */
 export class msdyn_CheckServiceEndPointResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckServiceEndPointResponse) {
+  constructor(public result: msdyn_CheckServiceEndPointResponseData) {
     super("msdyn_CheckServiceEndPoint");
   }
 
   static fromResponse(data: unknown): msdyn_CheckServiceEndPointResponse {
-    return new msdyn_CheckServiceEndPointResponse((data as any).value);
+    return new msdyn_CheckServiceEndPointResponse(
+      responseObject<msdyn_CheckServiceEndPointResponseData>(data)
+    );
   }
 }

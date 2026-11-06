@@ -45,15 +45,6 @@ export class msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentExecutionConfigRequ
     // No return value (204 No Content)
     return new msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentExecutionConfigResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_SalesAgentType: this.msdyn_SalesAgentType,
-      msdyn_AgentExecutionConfigToUpdate: this.msdyn_AgentExecutionConfigToUpdate,
-      msdyn_SARRecordsToCreate: this.msdyn_SARRecordsToCreate,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-    };
-  }
 }
 
 /**

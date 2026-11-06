@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { BeginMachineImageProvisioningResponse as BeginMachineImageProvisioningResponseData } from "./types/index.js";
 
 /**
  * BeginMachineImageProvisioning request message
@@ -44,26 +46,19 @@ export class BeginMachineImageProvisioningRequest
     const data = await response.json();
     return BeginMachineImageProvisioningResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      vmImageDescription: this.vmImageDescription,
-      vmImageName: this.vmImageName,
-      sharedImageGalleryDestination: this.sharedImageGalleryDestination,
-      machineImageSource: this.machineImageSource,
-    };
-  }
 }
 
 /**
  * BeginMachineImageProvisioning response message
  */
 export class BeginMachineImageProvisioningResponse extends OrganizationResponse {
-  constructor(public result: BeginMachineImageProvisioningResponse) {
+  constructor(public result: BeginMachineImageProvisioningResponseData) {
     super("BeginMachineImageProvisioning");
   }
 
   static fromResponse(data: unknown): BeginMachineImageProvisioningResponse {
-    return new BeginMachineImageProvisioningResponse((data as any).value);
+    return new BeginMachineImageProvisioningResponse(
+      responseObject<BeginMachineImageProvisioningResponseData>(data)
+    );
   }
 }

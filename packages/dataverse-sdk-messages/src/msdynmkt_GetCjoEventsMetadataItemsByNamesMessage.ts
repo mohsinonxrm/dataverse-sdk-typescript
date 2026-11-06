@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import { responseValue } from "./internal/responseData.js";
 
 /**
  * msdynmkt_GetCjoEventsMetadataItemsByNames request message
@@ -44,26 +44,19 @@ export class msdynmkt_GetCjoEventsMetadataItemsByNamesRequest
     const data = await response.json();
     return msdynmkt_GetCjoEventsMetadataItemsByNamesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdynmkt_GetCjoEventsMetadataItemsByNames_request_LanguageCode:
-        this.msdynmkt_GetCjoEventsMetadataItemsByNames_request_LanguageCode,
-      msdynmkt_GetCjoEventsMetadataItemsByNames_request_EventNames:
-        this.msdynmkt_GetCjoEventsMetadataItemsByNames_request_EventNames,
-    };
-  }
 }
 
 /**
  * msdynmkt_GetCjoEventsMetadataItemsByNames response message
  */
 export class msdynmkt_GetCjoEventsMetadataItemsByNamesResponse extends OrganizationResponse {
-  constructor(public result: EntityReference[]) {
+  constructor(public result: Record<string, unknown>[]) {
     super("msdynmkt_GetCjoEventsMetadataItemsByNames");
   }
 
   static fromResponse(data: unknown): msdynmkt_GetCjoEventsMetadataItemsByNamesResponse {
-    return new msdynmkt_GetCjoEventsMetadataItemsByNamesResponse((data as any).value);
+    return new msdynmkt_GetCjoEventsMetadataItemsByNamesResponse(
+      responseValue<Record<string, unknown>[]>(data)
+    );
   }
 }

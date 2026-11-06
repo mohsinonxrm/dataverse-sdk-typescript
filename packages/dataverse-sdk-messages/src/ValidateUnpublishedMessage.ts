@@ -36,12 +36,6 @@ export class ValidateUnpublishedRequest
     // No return value (204 No Content)
     return new ValidateUnpublishedResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-    };
-  }
 }
 
 /**

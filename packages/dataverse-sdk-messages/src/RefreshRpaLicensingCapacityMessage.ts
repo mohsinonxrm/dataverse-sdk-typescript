@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { RefreshRpaLicensingCapacityResponse as RefreshRpaLicensingCapacityResponseData } from "./types/index.js";
 
 /**
  * RefreshRpaLicensingCapacity request message
@@ -30,21 +32,19 @@ export class RefreshRpaLicensingCapacityRequest
     const data = await response.json();
     return RefreshRpaLicensingCapacityResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * RefreshRpaLicensingCapacity response message
  */
 export class RefreshRpaLicensingCapacityResponse extends OrganizationResponse {
-  constructor(public result: RefreshRpaLicensingCapacityResponse) {
+  constructor(public result: RefreshRpaLicensingCapacityResponseData) {
     super("RefreshRpaLicensingCapacity");
   }
 
   static fromResponse(data: unknown): RefreshRpaLicensingCapacityResponse {
-    return new RefreshRpaLicensingCapacityResponse((data as any).value);
+    return new RefreshRpaLicensingCapacityResponse(
+      responseObject<RefreshRpaLicensingCapacityResponseData>(data)
+    );
   }
 }

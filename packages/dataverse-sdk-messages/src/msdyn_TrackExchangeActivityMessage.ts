@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_TrackExchangeActivityResponse as msdyn_TrackExchangeActivityResponseData } from "./types/index.js";
 
 /**
  * msdyn_TrackExchangeActivity request message
@@ -42,25 +44,19 @@ export class msdyn_TrackExchangeActivityRequest
     const data = await response.json();
     return msdyn_TrackExchangeActivityResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ExchangeItemId: this.exchangeItemId,
-      Regarding: this.regarding,
-      EntitySetName: this.entitySetName,
-    };
-  }
 }
 
 /**
  * msdyn_TrackExchangeActivity response message
  */
 export class msdyn_TrackExchangeActivityResponse extends OrganizationResponse {
-  constructor(public result: msdyn_TrackExchangeActivityResponse) {
+  constructor(public result: msdyn_TrackExchangeActivityResponseData) {
     super("msdyn_TrackExchangeActivity");
   }
 
   static fromResponse(data: unknown): msdyn_TrackExchangeActivityResponse {
-    return new msdyn_TrackExchangeActivityResponse((data as any).value);
+    return new msdyn_TrackExchangeActivityResponse(
+      responseObject<msdyn_TrackExchangeActivityResponseData>(data)
+    );
   }
 }

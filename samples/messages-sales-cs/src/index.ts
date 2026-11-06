@@ -430,9 +430,8 @@ async function exportSolutionDemo(orgService: OrganizationService): Promise<void
 
     console.log(chalk.green(`✓ Solution exported in ${(duration / 1000).toFixed(2)}s`));
 
-    // Get file size
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const solutionZip = Buffer.from(response.result as any, "base64");
+    // Get file size: the exported solution zip, base64 encoded
+    const solutionZip = Buffer.from(response.result.ExportSolutionFile ?? "", "base64");
     const sizeKB = (solutionZip.length / 1024).toFixed(2);
 
     console.log(`  File size: ${chalk.yellow(sizeKB + " KB")}`);
@@ -440,7 +439,9 @@ async function exportSolutionDemo(orgService: OrganizationService): Promise<void
 
     console.log(chalk.dim("\nℹ️  Save to disk with:"));
     console.log(
-      chalk.dim("  fs.writeFileSync('solution.zip', Buffer.from(response.result, 'base64'))")
+      chalk.dim(
+        "  fs.writeFileSync('solution.zip', Buffer.from(response.result.ExportSolutionFile, 'base64'))"
+      )
     );
   } catch (error: unknown) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

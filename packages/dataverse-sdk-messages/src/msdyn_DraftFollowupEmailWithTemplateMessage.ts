@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_DraftFollowupEmailWithTemplateResponse as msdyn_DraftFollowupEmailWithTemplateResponseData } from "./types/index.js";
 
 /**
  * msdyn_DraftFollowupEmailWithTemplate request message
@@ -47,28 +49,19 @@ export class msdyn_DraftFollowupEmailWithTemplateRequest
     const data = await response.json();
     return msdyn_DraftFollowupEmailWithTemplateResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      AgentMonitoringId: this.agentMonitoringId,
-      IncidentEntityName: this.incidentEntityName,
-      TemplateId: this.templateId,
-      IncidentId: this.incidentId,
-      AgentActivityId: this.agentActivityId,
-      EmailAssistInput: this.emailAssistInput,
-    };
-  }
 }
 
 /**
  * msdyn_DraftFollowupEmailWithTemplate response message
  */
 export class msdyn_DraftFollowupEmailWithTemplateResponse extends OrganizationResponse {
-  constructor(public result: msdyn_DraftFollowupEmailWithTemplateResponse) {
+  constructor(public result: msdyn_DraftFollowupEmailWithTemplateResponseData) {
     super("msdyn_DraftFollowupEmailWithTemplate");
   }
 
   static fromResponse(data: unknown): msdyn_DraftFollowupEmailWithTemplateResponse {
-    return new msdyn_DraftFollowupEmailWithTemplateResponse((data as any).value);
+    return new msdyn_DraftFollowupEmailWithTemplateResponse(
+      responseObject<msdyn_DraftFollowupEmailWithTemplateResponseData>(data)
+    );
   }
 }

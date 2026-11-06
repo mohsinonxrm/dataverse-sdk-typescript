@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { GetFeatureControlStringSettingsForNamespaceWithUserContextResponse as GetFeatureControlStringSettingsForNamespaceWithUserContextResponseData } from "./types/index.js";
 
 /**
  * GetFeatureControlStringSettingsForNamespaceWithUserContext request message
@@ -45,22 +47,15 @@ export class GetFeatureControlStringSettingsForNamespaceWithUserContextRequest
     const data = await response.json();
     return GetFeatureControlStringSettingsForNamespaceWithUserContextResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      NamespaceName: this.namespaceName,
-      FeatureControlSettingNames: this.featureControlSettingNames,
-      AdditionalFilterNames: this.additionalFilterNames,
-      AdditionalFilterValues: this.additionalFilterValues,
-    };
-  }
 }
 
 /**
  * GetFeatureControlStringSettingsForNamespaceWithUserContext response message
  */
 export class GetFeatureControlStringSettingsForNamespaceWithUserContextResponse extends OrganizationResponse {
-  constructor(public result: GetFeatureControlStringSettingsForNamespaceWithUserContextResponse) {
+  constructor(
+    public result: GetFeatureControlStringSettingsForNamespaceWithUserContextResponseData
+  ) {
     super("GetFeatureControlStringSettingsForNamespaceWithUserContext");
   }
 
@@ -68,7 +63,7 @@ export class GetFeatureControlStringSettingsForNamespaceWithUserContextResponse 
     data: unknown
   ): GetFeatureControlStringSettingsForNamespaceWithUserContextResponse {
     return new GetFeatureControlStringSettingsForNamespaceWithUserContextResponse(
-      (data as any).value
+      responseObject<GetFeatureControlStringSettingsForNamespaceWithUserContextResponseData>(data)
     );
   }
 }

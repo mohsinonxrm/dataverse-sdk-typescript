@@ -41,14 +41,6 @@ export class msdyn_ImportAnalyticsReportRequest
     // No return value (204 No Content)
     return new msdyn_ImportAnalyticsReportResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_OverwriteDraft: this.msdyn_OverwriteDraft,
-      msdyn_AnalyticsReportContent: this.msdyn_AnalyticsReportContent,
-      msdyn_AnalyticsFeatureId: this.msdyn_AnalyticsFeatureId,
-    };
-  }
 }
 
 /**

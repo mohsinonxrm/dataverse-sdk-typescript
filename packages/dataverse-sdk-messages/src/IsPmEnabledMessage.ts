@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { IsPmEnabledResponse as IsPmEnabledResponseData } from "./types/index.js";
 
 /**
  * IsPmEnabled request message
@@ -30,21 +32,17 @@ export class IsPmEnabledRequest
     const data = await response.json();
     return IsPmEnabledResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * IsPmEnabled response message
  */
 export class IsPmEnabledResponse extends OrganizationResponse {
-  constructor(public result: IsPmEnabledResponse) {
+  constructor(public result: IsPmEnabledResponseData) {
     super("IsPmEnabled");
   }
 
   static fromResponse(data: unknown): IsPmEnabledResponse {
-    return new IsPmEnabledResponse((data as any).value);
+    return new IsPmEnabledResponse(responseObject<IsPmEnabledResponseData>(data));
   }
 }

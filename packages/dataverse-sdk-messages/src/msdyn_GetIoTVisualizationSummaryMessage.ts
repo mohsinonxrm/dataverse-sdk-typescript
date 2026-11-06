@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetIoTVisualizationSummaryResponse as msdyn_GetIoTVisualizationSummaryResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetIoTVisualizationSummary request message
@@ -39,24 +41,19 @@ export class msdyn_GetIoTVisualizationSummaryRequest
     const data = await response.json();
     return msdyn_GetIoTVisualizationSummaryResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      DeviceId: this.deviceId,
-      ConfigurationTypeId: this.configurationTypeId,
-    };
-  }
 }
 
 /**
  * msdyn_GetIoTVisualizationSummary response message
  */
 export class msdyn_GetIoTVisualizationSummaryResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetIoTVisualizationSummaryResponse) {
+  constructor(public result: msdyn_GetIoTVisualizationSummaryResponseData) {
     super("msdyn_GetIoTVisualizationSummary");
   }
 
   static fromResponse(data: unknown): msdyn_GetIoTVisualizationSummaryResponse {
-    return new msdyn_GetIoTVisualizationSummaryResponse((data as any).value);
+    return new msdyn_GetIoTVisualizationSummaryResponse(
+      responseObject<msdyn_GetIoTVisualizationSummaryResponseData>(data)
+    );
   }
 }

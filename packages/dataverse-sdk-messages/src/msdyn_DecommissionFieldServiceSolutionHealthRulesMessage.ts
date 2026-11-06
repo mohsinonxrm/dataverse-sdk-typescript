@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_DecommissionFieldServiceSolutionHealthRulesResponse as msdyn_DecommissionFieldServiceSolutionHealthRulesResponseData } from "./types/index.js";
 
 /**
  * msdyn_DecommissionFieldServiceSolutionHealthRules request message
@@ -37,23 +39,19 @@ export class msdyn_DecommissionFieldServiceSolutionHealthRulesRequest
     const data = await response.json();
     return msdyn_DecommissionFieldServiceSolutionHealthRulesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionNames: this.solutionNames,
-    };
-  }
 }
 
 /**
  * msdyn_DecommissionFieldServiceSolutionHealthRules response message
  */
 export class msdyn_DecommissionFieldServiceSolutionHealthRulesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_DecommissionFieldServiceSolutionHealthRulesResponse) {
+  constructor(public result: msdyn_DecommissionFieldServiceSolutionHealthRulesResponseData) {
     super("msdyn_DecommissionFieldServiceSolutionHealthRules");
   }
 
   static fromResponse(data: unknown): msdyn_DecommissionFieldServiceSolutionHealthRulesResponse {
-    return new msdyn_DecommissionFieldServiceSolutionHealthRulesResponse((data as any).value);
+    return new msdyn_DecommissionFieldServiceSolutionHealthRulesResponse(
+      responseObject<msdyn_DecommissionFieldServiceSolutionHealthRulesResponseData>(data)
+    );
   }
 }

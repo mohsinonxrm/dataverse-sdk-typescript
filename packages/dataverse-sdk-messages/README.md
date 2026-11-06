@@ -287,13 +287,13 @@ const request = new ExportSolutionRequest(
 const response = await service.execute(request);
 
 // Decode base64 to file
-const solutionFile = Buffer.from(response.exportSolutionFile, "base64");
+const solutionFile = Buffer.from(response.result.ExportSolutionFile ?? "", "base64");
 fs.writeFileSync("solution.zip", solutionFile);
 ```
 
 **Response:**
 
-- `exportSolutionFile: string` - Base64-encoded solution file (zip)
+- `result.ExportSolutionFile: string` - Base64-encoded solution file (zip)
 
 ---
 
@@ -317,13 +317,14 @@ const request = new ImportSolutionRequest(
   false // ConvertToManaged
 );
 
-const response = await service.execute(request);
-console.log("Import Job ID:", response.importJobId);
+// ImportSolution returns no content. To follow the import, pass your own ImportJobId
+// (a new GUID) and read the importjob record with that id.
+await service.execute(request);
 ```
 
 **Response:**
 
-- `importJobId: string` - GUID of the import job
+- No content. `ImportJobId` is an input: the id to give the importjob record.
 
 ---
 

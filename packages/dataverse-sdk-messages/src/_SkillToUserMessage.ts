@@ -39,13 +39,6 @@ export class _SkillToUserRequest
     // No return value (204 No Content)
     return new _SkillToUserResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      UpdatedBRC: this.updatedBRC,
-      DeletedBRC: this.deletedBRC,
-    };
-  }
 }
 
 /**

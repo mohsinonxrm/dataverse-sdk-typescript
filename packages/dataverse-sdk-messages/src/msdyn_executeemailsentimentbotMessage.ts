@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_executeemailsentimentbotResponse as msdyn_executeemailsentimentbotResponseData } from "./types/index.js";
 
 /**
  * msdyn_executeemailsentimentbot request message
@@ -39,24 +41,19 @@ export class msdyn_executeemailsentimentbotRequest
     const data = await response.json();
     return msdyn_executeemailsentimentbotResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      environmentId: this.environmentId,
-      emailId: this.emailId,
-    };
-  }
 }
 
 /**
  * msdyn_executeemailsentimentbot response message
  */
 export class msdyn_executeemailsentimentbotResponse extends OrganizationResponse {
-  constructor(public result: msdyn_executeemailsentimentbotResponse) {
+  constructor(public result: msdyn_executeemailsentimentbotResponseData) {
     super("msdyn_executeemailsentimentbot");
   }
 
   static fromResponse(data: unknown): msdyn_executeemailsentimentbotResponse {
-    return new msdyn_executeemailsentimentbotResponse((data as any).value);
+    return new msdyn_executeemailsentimentbotResponse(
+      responseObject<msdyn_executeemailsentimentbotResponseData>(data)
+    );
   }
 }

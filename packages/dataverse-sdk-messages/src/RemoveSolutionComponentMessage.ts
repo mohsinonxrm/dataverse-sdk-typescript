@@ -1,6 +1,10 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { solutioncomponent } from "./types/index.js";
+import { responseObject } from "./internal/responseData.js";
+import type {
+  RemoveSolutionComponentResponse as RemoveSolutionComponentResponseData,
+  solutioncomponent,
+} from "./types/index.js";
 
 /**
  * RemoveSolutionComponent request message
@@ -42,25 +46,19 @@ export class RemoveSolutionComponentRequest
     const data = await response.json();
     return RemoveSolutionComponentResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionComponent: this.solutionComponent,
-      ComponentType: this.componentType,
-      SolutionUniqueName: this.solutionUniqueName,
-    };
-  }
 }
 
 /**
  * RemoveSolutionComponent response message
  */
 export class RemoveSolutionComponentResponse extends OrganizationResponse {
-  constructor(public result: RemoveSolutionComponentResponse) {
+  constructor(public result: RemoveSolutionComponentResponseData) {
     super("RemoveSolutionComponent");
   }
 
   static fromResponse(data: unknown): RemoveSolutionComponentResponse {
-    return new RemoveSolutionComponentResponse((data as any).value);
+    return new RemoveSolutionComponentResponse(
+      responseObject<RemoveSolutionComponentResponseData>(data)
+    );
   }
 }

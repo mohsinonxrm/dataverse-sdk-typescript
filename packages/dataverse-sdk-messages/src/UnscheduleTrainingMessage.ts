@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { UnscheduleTrainingResponse as UnscheduleTrainingResponseData } from "./types/index.js";
 
 /**
  * UnscheduleTraining request message
@@ -39,24 +41,17 @@ export class UnscheduleTrainingRequest
     const data = await response.json();
     return UnscheduleTrainingResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_aiconfigurationId,
-      version: this.version,
-    };
-  }
 }
 
 /**
  * UnscheduleTraining response message
  */
 export class UnscheduleTrainingResponse extends OrganizationResponse {
-  constructor(public result: UnscheduleTrainingResponse) {
+  constructor(public result: UnscheduleTrainingResponseData) {
     super("UnscheduleTraining");
   }
 
   static fromResponse(data: unknown): UnscheduleTrainingResponse {
-    return new UnscheduleTrainingResponse((data as any).value);
+    return new UnscheduleTrainingResponse(responseObject<UnscheduleTrainingResponseData>(data));
   }
 }

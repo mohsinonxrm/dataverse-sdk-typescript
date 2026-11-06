@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetODOSFeatureProvisioningStatusResponse as msdyn_GetODOSFeatureProvisioningStatusResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetODOSFeatureProvisioningStatus request message
@@ -35,23 +37,19 @@ export class msdyn_GetODOSFeatureProvisioningStatusRequest
     const data = await response.json();
     return msdyn_GetODOSFeatureProvisioningStatusResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      FeatureName: this.featureName,
-    };
-  }
 }
 
 /**
  * msdyn_GetODOSFeatureProvisioningStatus response message
  */
 export class msdyn_GetODOSFeatureProvisioningStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetODOSFeatureProvisioningStatusResponse) {
+  constructor(public result: msdyn_GetODOSFeatureProvisioningStatusResponseData) {
     super("msdyn_GetODOSFeatureProvisioningStatus");
   }
 
   static fromResponse(data: unknown): msdyn_GetODOSFeatureProvisioningStatusResponse {
-    return new msdyn_GetODOSFeatureProvisioningStatusResponse((data as any).value);
+    return new msdyn_GetODOSFeatureProvisioningStatusResponse(
+      responseObject<msdyn_GetODOSFeatureProvisioningStatusResponseData>(data)
+    );
   }
 }

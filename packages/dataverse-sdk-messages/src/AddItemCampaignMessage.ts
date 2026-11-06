@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { campaign, campaignitem } from "./types/index.js";
 
 /**
@@ -40,13 +41,6 @@ export class AddItemCampaignRequest
     const data = await response.json();
     return AddItemCampaignResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.salesliteratureId,
-      Campaign: this.campaign,
-    };
-  }
 }
 
 /**
@@ -58,6 +52,6 @@ export class AddItemCampaignResponse extends OrganizationResponse {
   }
 
   static fromResponse(data: unknown): AddItemCampaignResponse {
-    return new AddItemCampaignResponse((data as any).value);
+    return new AddItemCampaignResponse(responseObject<campaignitem>(data));
   }
 }

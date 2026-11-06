@@ -36,12 +36,6 @@ export class msdyn_IoTNewPrimaryAlertRequest
     // No return value (204 No Content)
     return new msdyn_IoTNewPrimaryAlertResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      PrimaryAlert: this.primaryAlert,
-    };
-  }
 }
 
 /**

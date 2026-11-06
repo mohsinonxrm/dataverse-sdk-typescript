@@ -45,16 +45,6 @@ export class msdyn_StartODOSProvisioningRequest
     // No return value (204 No Content)
     return new msdyn_StartODOSProvisioningResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Entities: this.entities,
-      FeatureName: this.featureName,
-      FeatureDisplayName: this.featureDisplayName,
-      Roles: this.roles,
-      Primitives: this.primitives,
-    };
-  }
 }
 
 /**

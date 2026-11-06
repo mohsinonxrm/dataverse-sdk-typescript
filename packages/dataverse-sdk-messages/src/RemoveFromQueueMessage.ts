@@ -31,12 +31,6 @@ export class RemoveFromQueueRequest
     // No return value (204 No Content)
     return new RemoveFromQueueResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.queueitemId,
-    };
-  }
 }
 
 /**

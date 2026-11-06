@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import { responseValue } from "./internal/responseData.js";
 
 /**
  * _EvaluateSearchRequest request message
@@ -68,38 +68,17 @@ export class _EvaluateSearchRequestRequest
     const data = await response.json();
     return _EvaluateSearchRequestResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ServiceAppointmentId: this.serviceAppointmentId,
-      ServiceId: this.serviceId,
-      DateOptionSet: this.dateOptionSet,
-      TimeOptionSet: this.timeOptionSet,
-      DayList: this.dayList,
-      RequiredResources: this.requiredResources,
-      SearchWindowStart: this.searchWindowStart,
-      SearchWindowEnd: this.searchWindowEnd,
-      SearchRecurrenceStart: this.searchRecurrenceStart,
-      TimeRangeEnd: this.timeRangeEnd,
-      Duration: this.duration,
-      Direction: this.direction,
-      Sites: this.sites,
-      NumberOfResults: this.numberOfResults,
-      _SearchWindowStart: this._SearchWindowStart,
-      _SearchWindowEnd: this._SearchWindowEnd,
-    };
-  }
 }
 
 /**
  * _EvaluateSearchRequest response message
  */
 export class _EvaluateSearchRequestResponse extends OrganizationResponse {
-  constructor(public result: EntityReference[]) {
+  constructor(public result: Record<string, unknown>[]) {
     super("_EvaluateSearchRequest");
   }
 
   static fromResponse(data: unknown): _EvaluateSearchRequestResponse {
-    return new _EvaluateSearchRequestResponse((data as any).value);
+    return new _EvaluateSearchRequestResponse(responseValue<Record<string, unknown>[]>(data));
   }
 }

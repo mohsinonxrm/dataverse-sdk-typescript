@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdynmkt_PersonalizationGetEntityAttributesResponse as msdynmkt_PersonalizationGetEntityAttributesResponseData } from "./types/index.js";
 
 /**
  * msdynmkt_PersonalizationGetEntityAttributes request message
@@ -37,23 +39,19 @@ export class msdynmkt_PersonalizationGetEntityAttributesRequest
     const data = await response.json();
     return msdynmkt_PersonalizationGetEntityAttributesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      GetEntityAttributesRequest: this.getEntityAttributesRequest,
-    };
-  }
 }
 
 /**
  * msdynmkt_PersonalizationGetEntityAttributes response message
  */
 export class msdynmkt_PersonalizationGetEntityAttributesResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_PersonalizationGetEntityAttributesResponse) {
+  constructor(public result: msdynmkt_PersonalizationGetEntityAttributesResponseData) {
     super("msdynmkt_PersonalizationGetEntityAttributes");
   }
 
   static fromResponse(data: unknown): msdynmkt_PersonalizationGetEntityAttributesResponse {
-    return new msdynmkt_PersonalizationGetEntityAttributesResponse((data as any).value);
+    return new msdynmkt_PersonalizationGetEntityAttributesResponse(
+      responseObject<msdynmkt_PersonalizationGetEntityAttributesResponseData>(data)
+    );
   }
 }

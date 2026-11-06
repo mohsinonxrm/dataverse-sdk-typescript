@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { adx_GenerateSharedAccessSignatureResponse as adx_GenerateSharedAccessSignatureResponseData } from "./types/index.js";
 
 /**
  * adx_GenerateSharedAccessSignature request message
@@ -41,25 +43,19 @@ export class adx_GenerateSharedAccessSignatureRequest
     const data = await response.json();
     return adx_GenerateSharedAccessSignatureResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Permissions: this.permissions,
-      ResourceType: this.resourceType,
-      Resource: this.resource,
-    };
-  }
 }
 
 /**
  * adx_GenerateSharedAccessSignature response message
  */
 export class adx_GenerateSharedAccessSignatureResponse extends OrganizationResponse {
-  constructor(public result: adx_GenerateSharedAccessSignatureResponse) {
+  constructor(public result: adx_GenerateSharedAccessSignatureResponseData) {
     super("adx_GenerateSharedAccessSignature");
   }
 
   static fromResponse(data: unknown): adx_GenerateSharedAccessSignatureResponse {
-    return new adx_GenerateSharedAccessSignatureResponse((data as any).value);
+    return new adx_GenerateSharedAccessSignatureResponse(
+      responseObject<adx_GenerateSharedAccessSignatureResponseData>(data)
+    );
   }
 }

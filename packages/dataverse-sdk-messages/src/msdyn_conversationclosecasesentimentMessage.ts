@@ -35,12 +35,6 @@ export class msdyn_conversationclosecasesentimentRequest
     // No return value (204 No Content)
     return new msdyn_conversationclosecasesentimentResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      LiveWorkItemGuid: this.liveWorkItemGuid,
-    };
-  }
 }
 
 /**

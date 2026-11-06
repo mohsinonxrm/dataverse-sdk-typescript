@@ -43,15 +43,6 @@ export class msdyn_ManageSLAInstancesRequest
     // No return value (204 No Content)
     return new msdyn_ManageSLAInstancesResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SLAId: this.sLAId,
-      RegardingId: this.regardingId,
-      EntityLogicalName: this.entityLogicalName,
-      Recalculate: this.recalculate,
-    };
-  }
 }
 
 /**

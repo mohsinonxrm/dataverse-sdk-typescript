@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import type { activitymimeattachment, email } from "./types/index.js";
 
@@ -64,24 +65,6 @@ export class DeliverIncomingEmailRequest
     const data = await response.json();
     return DeliverIncomingEmailResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      MessageId: this.messageId,
-      Subject: this.subject,
-      From: this.from,
-      To: this.to,
-      Cc: this.cc,
-      Bcc: this.bcc,
-      ReceivedOn: this.receivedOn,
-      SubmittedBy: this.submittedBy,
-      Importance: this.importance,
-      Body: this.body,
-      Attachments: this.attachments,
-      ExtraProperties: this.extraProperties,
-      ValidateBeforeCreate: this.validateBeforeCreate,
-    };
-  }
 }
 
 /**
@@ -93,6 +76,6 @@ export class DeliverIncomingEmailResponse extends OrganizationResponse {
   }
 
   static fromResponse(data: unknown): DeliverIncomingEmailResponse {
-    return new DeliverIncomingEmailResponse((data as any).value);
+    return new DeliverIncomingEmailResponse(responseObject<email>(data));
   }
 }

@@ -43,14 +43,6 @@ export class msdyn_UpdateNewEntityAdditionOptedStatusRequest
     // No return value (204 No Content)
     return new msdyn_UpdateNewEntityAdditionOptedStatusResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      PredictionName: this.predictionName,
-      PredictionType: this.predictionType,
-      IsNewEntityAdditionOpted: this.isNewEntityAdditionOpted,
-    };
-  }
 }
 
 /**

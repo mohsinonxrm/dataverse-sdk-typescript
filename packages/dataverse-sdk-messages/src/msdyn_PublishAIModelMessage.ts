@@ -31,12 +31,6 @@ export class msdyn_PublishAIModelRequest
     // No return value (204 No Content)
     return new msdyn_PublishAIModelResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_ocsimltrainingId,
-    };
-  }
 }
 
 /**

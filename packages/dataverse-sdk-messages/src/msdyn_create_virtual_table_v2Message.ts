@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_create_virtual_table_v2Response as msdyn_create_virtual_table_v2ResponseData } from "./types/index.js";
 
 /**
  * msdyn_create_virtual_table_v2 request message
@@ -71,40 +73,19 @@ export class msdyn_create_virtual_table_v2Request
     const data = await response.json();
     return msdyn_create_virtual_table_v2Response.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      virtual_table_columns: this.virtual_table_columns,
-      dataset_value: this.dataset_value,
-      virtual_table_schema_name: this.virtual_table_schema_name,
-      virtual_table_name: this.virtual_table_name,
-      datasource_id: this.datasource_id,
-      solution_id: this.solution_id,
-      connectionreference_id: this.connectionreference_id,
-      datasource_name: this.datasource_name,
-      use_environment_variable_for_dataset: this.use_environment_variable_for_dataset,
-      primary_field_name: this.primary_field_name,
-      virtual_table_plural_name: this.virtual_table_plural_name,
-      virtual_table_external_name: this.virtual_table_external_name,
-      environment_variable_names: this.environment_variable_names,
-      environment_id: this.environment_id,
-      connection_id: this.connection_id,
-      primary_key_name: this.primary_key_name,
-      connectionreference_display_name: this.connectionreference_display_name,
-      connectionreference_logical_name: this.connectionreference_logical_name,
-    };
-  }
 }
 
 /**
  * msdyn_create_virtual_table_v2 response message
  */
 export class msdyn_create_virtual_table_v2Response extends OrganizationResponse {
-  constructor(public result: msdyn_create_virtual_table_v2Response) {
+  constructor(public result: msdyn_create_virtual_table_v2ResponseData) {
     super("msdyn_create_virtual_table_v2");
   }
 
   static fromResponse(data: unknown): msdyn_create_virtual_table_v2Response {
-    return new msdyn_create_virtual_table_v2Response((data as any).value);
+    return new msdyn_create_virtual_table_v2Response(
+      responseObject<msdyn_create_virtual_table_v2ResponseData>(data)
+    );
   }
 }

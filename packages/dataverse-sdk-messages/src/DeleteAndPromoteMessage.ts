@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { DeleteAndPromoteResponse as DeleteAndPromoteResponseData } from "./types/index.js";
 
 /**
  * DeleteAndPromote request message
@@ -35,23 +37,17 @@ export class DeleteAndPromoteRequest
     const data = await response.json();
     return DeleteAndPromoteResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      UniqueName: this.uniqueName,
-    };
-  }
 }
 
 /**
  * DeleteAndPromote response message
  */
 export class DeleteAndPromoteResponse extends OrganizationResponse {
-  constructor(public result: DeleteAndPromoteResponse) {
+  constructor(public result: DeleteAndPromoteResponseData) {
     super("DeleteAndPromote");
   }
 
   static fromResponse(data: unknown): DeleteAndPromoteResponse {
-    return new DeleteAndPromoteResponse((data as any).value);
+    return new DeleteAndPromoteResponse(responseObject<DeleteAndPromoteResponseData>(data));
   }
 }

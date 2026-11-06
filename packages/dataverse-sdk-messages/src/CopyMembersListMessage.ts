@@ -40,13 +40,6 @@ export class CopyMembersListRequest
     // No return value (204 No Content)
     return new CopyMembersListResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.listId,
-      TargetList: this.targetList,
-    };
-  }
 }
 
 /**

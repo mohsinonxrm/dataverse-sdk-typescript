@@ -43,15 +43,6 @@ export class msdyn_HandleTrainingStatusRequest
     // No return value (204 No Content)
     return new msdyn_HandleTrainingStatusResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      CurentModel: this.curentModel,
-      PreviousModel: this.previousModel,
-      PredictionScheduledOperation: this.predictionScheduledOperation,
-      TrainingResult: this.trainingResult,
-    };
-  }
 }
 
 /**

@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import type { sharedworkspace } from "./types/index.js";
 
@@ -41,13 +42,6 @@ export class GetOrCreateSharedWorkspaceRequest
     const data = await response.json();
     return GetOrCreateSharedWorkspaceResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      customclaims: this.customclaims,
-      target: this.target,
-    };
-  }
 }
 
 /**
@@ -59,6 +53,6 @@ export class GetOrCreateSharedWorkspaceResponse extends OrganizationResponse {
   }
 
   static fromResponse(data: unknown): GetOrCreateSharedWorkspaceResponse {
-    return new GetOrCreateSharedWorkspaceResponse((data as any).value);
+    return new GetOrCreateSharedWorkspaceResponse(responseObject<sharedworkspace>(data));
   }
 }

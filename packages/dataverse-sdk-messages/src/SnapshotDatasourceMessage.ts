@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { SnapshotDatasourceResponse as SnapshotDatasourceResponseData } from "./types/index.js";
 
 /**
  * SnapshotDatasource request message
@@ -35,23 +37,17 @@ export class SnapshotDatasourceRequest
     const data = await response.json();
     return SnapshotDatasourceResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SourceDatalakeFolderUniqueName: this.sourceDatalakeFolderUniqueName,
-    };
-  }
 }
 
 /**
  * SnapshotDatasource response message
  */
 export class SnapshotDatasourceResponse extends OrganizationResponse {
-  constructor(public result: SnapshotDatasourceResponse) {
+  constructor(public result: SnapshotDatasourceResponseData) {
     super("SnapshotDatasource");
   }
 
   static fromResponse(data: unknown): SnapshotDatasourceResponse {
-    return new SnapshotDatasourceResponse((data as any).value);
+    return new SnapshotDatasourceResponse(responseObject<SnapshotDatasourceResponseData>(data));
   }
 }

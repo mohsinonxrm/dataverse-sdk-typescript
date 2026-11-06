@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckPredictionModelsResponse as msdyn_CheckPredictionModelsResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckPredictionModels request message
@@ -35,23 +37,19 @@ export class msdyn_CheckPredictionModelsRequest
     const data = await response.json();
     return msdyn_CheckPredictionModelsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      PredictionType: this.predictionType,
-    };
-  }
 }
 
 /**
  * msdyn_CheckPredictionModels response message
  */
 export class msdyn_CheckPredictionModelsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckPredictionModelsResponse) {
+  constructor(public result: msdyn_CheckPredictionModelsResponseData) {
     super("msdyn_CheckPredictionModels");
   }
 
   static fromResponse(data: unknown): msdyn_CheckPredictionModelsResponse {
-    return new msdyn_CheckPredictionModelsResponse((data as any).value);
+    return new msdyn_CheckPredictionModelsResponse(
+      responseObject<msdyn_CheckPredictionModelsResponseData>(data)
+    );
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheckResponse as msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheckResponseData } from "./types/index.js";
 
 /**
  * msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheck request message
@@ -37,23 +39,19 @@ export class msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheckRequest
     const data = await response.json();
     return msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheckResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      HasTimedOut: this.hasTimedOut,
-    };
-  }
 }
 
 /**
  * msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheck response message
  */
 export class msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheckResponse extends OrganizationResponse {
-  constructor(public result: msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheckResponse) {
+  constructor(public result: msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheckResponseData) {
     super("msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheck");
   }
 
   static fromResponse(data: unknown): msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheckResponse {
-    return new msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheckResponse((data as any).value);
+    return new msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheckResponse(
+      responseObject<msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheckResponseData>(data)
+    );
   }
 }

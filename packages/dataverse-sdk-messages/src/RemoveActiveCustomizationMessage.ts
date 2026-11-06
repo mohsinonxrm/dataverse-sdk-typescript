@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { RemoveActiveCustomizationResponse as RemoveActiveCustomizationResponseData } from "./types/index.js";
 
 /**
  * RemoveActiveCustomization request message
@@ -39,24 +41,19 @@ export class RemoveActiveCustomizationRequest
     const data = await response.json();
     return RemoveActiveCustomizationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      LogicalName: this.logicalName,
-      Id: this.id,
-    };
-  }
 }
 
 /**
  * RemoveActiveCustomization response message
  */
 export class RemoveActiveCustomizationResponse extends OrganizationResponse {
-  constructor(public result: RemoveActiveCustomizationResponse) {
+  constructor(public result: RemoveActiveCustomizationResponseData) {
     super("RemoveActiveCustomization");
   }
 
   static fromResponse(data: unknown): RemoveActiveCustomizationResponse {
-    return new RemoveActiveCustomizationResponse((data as any).value);
+    return new RemoveActiveCustomizationResponse(
+      responseObject<RemoveActiveCustomizationResponseData>(data)
+    );
   }
 }

@@ -31,12 +31,6 @@ export class PvaDeleteBotComponentCollectionRequest
     // No return value (204 No Content)
     return new PvaDeleteBotComponentCollectionResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.botcomponentcollectionId,
-    };
-  }
 }
 
 /**

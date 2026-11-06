@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetRelatedIoTDevicesByEntityResponse as msdyn_GetRelatedIoTDevicesByEntityResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetRelatedIoTDevicesByEntity request message
@@ -39,24 +41,19 @@ export class msdyn_GetRelatedIoTDevicesByEntityRequest
     const data = await response.json();
     return msdyn_GetRelatedIoTDevicesByEntityResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntityLogicalName: this.entityLogicalName,
-      EntityId: this.entityId,
-    };
-  }
 }
 
 /**
  * msdyn_GetRelatedIoTDevicesByEntity response message
  */
 export class msdyn_GetRelatedIoTDevicesByEntityResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetRelatedIoTDevicesByEntityResponse) {
+  constructor(public result: msdyn_GetRelatedIoTDevicesByEntityResponseData) {
     super("msdyn_GetRelatedIoTDevicesByEntity");
   }
 
   static fromResponse(data: unknown): msdyn_GetRelatedIoTDevicesByEntityResponse {
-    return new msdyn_GetRelatedIoTDevicesByEntityResponse((data as any).value);
+    return new msdyn_GetRelatedIoTDevicesByEntityResponse(
+      responseObject<msdyn_GetRelatedIoTDevicesByEntityResponseData>(data)
+    );
   }
 }

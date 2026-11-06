@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_IoTGetDeviceEventsResponse as msdyn_IoTGetDeviceEventsResponseData } from "./types/index.js";
 
 /**
  * msdyn_IoTGetDeviceEvents request message
@@ -41,25 +43,19 @@ export class msdyn_IoTGetDeviceEventsRequest
     const data = await response.json();
     return msdyn_IoTGetDeviceEventsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      IotDeviceId: this.iotDeviceId,
-      From: this.from,
-      To: this.to,
-    };
-  }
 }
 
 /**
  * msdyn_IoTGetDeviceEvents response message
  */
 export class msdyn_IoTGetDeviceEventsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_IoTGetDeviceEventsResponse) {
+  constructor(public result: msdyn_IoTGetDeviceEventsResponseData) {
     super("msdyn_IoTGetDeviceEvents");
   }
 
   static fromResponse(data: unknown): msdyn_IoTGetDeviceEventsResponse {
-    return new msdyn_IoTGetDeviceEventsResponse((data as any).value);
+    return new msdyn_IoTGetDeviceEventsResponse(
+      responseObject<msdyn_IoTGetDeviceEventsResponseData>(data)
+    );
   }
 }

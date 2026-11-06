@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_FieldServiceUpdateCustomerAssetonWorkOrderIncidentItemsActionResponse as msdyn_FieldServiceUpdateCustomerAssetonWorkOrderIncidentItemsActionResponseData } from "./types/index.js";
 
 /**
  * msdyn_FieldServiceUpdateCustomerAssetonWorkOrderIncidentItemsAction request message
@@ -45,14 +47,6 @@ export class msdyn_FieldServiceUpdateCustomerAssetonWorkOrderIncidentItemsAction
       data
     );
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_workorderincidentId,
-      Type: this.type,
-      InputParameter: this.inputParameter,
-    };
-  }
 }
 
 /**
@@ -60,7 +54,7 @@ export class msdyn_FieldServiceUpdateCustomerAssetonWorkOrderIncidentItemsAction
  */
 export class msdyn_FieldServiceUpdateCustomerAssetonWorkOrderIncidentItemsActionResponse extends OrganizationResponse {
   constructor(
-    public result: msdyn_FieldServiceUpdateCustomerAssetonWorkOrderIncidentItemsActionResponse
+    public result: msdyn_FieldServiceUpdateCustomerAssetonWorkOrderIncidentItemsActionResponseData
   ) {
     super("msdyn_FieldServiceUpdateCustomerAssetonWorkOrderIncidentItemsAction");
   }
@@ -69,7 +63,9 @@ export class msdyn_FieldServiceUpdateCustomerAssetonWorkOrderIncidentItemsAction
     data: unknown
   ): msdyn_FieldServiceUpdateCustomerAssetonWorkOrderIncidentItemsActionResponse {
     return new msdyn_FieldServiceUpdateCustomerAssetonWorkOrderIncidentItemsActionResponse(
-      (data as any).value
+      responseObject<msdyn_FieldServiceUpdateCustomerAssetonWorkOrderIncidentItemsActionResponseData>(
+        data
+      )
     );
   }
 }

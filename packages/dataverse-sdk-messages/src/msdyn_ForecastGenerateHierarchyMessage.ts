@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import { responseValue } from "./internal/responseData.js";
 import type { msdyn_forecastdefinition } from "./types/index.js";
 
 /**
@@ -43,25 +43,19 @@ export class msdyn_ForecastGenerateHierarchyRequest
     const data = await response.json();
     return msdyn_ForecastGenerateHierarchyResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ForecastDefinition: this.forecastDefinition,
-      IsRefresh: this.isRefresh,
-      RecurrenceIndex: this.recurrenceIndex,
-    };
-  }
 }
 
 /**
  * msdyn_ForecastGenerateHierarchy response message
  */
 export class msdyn_ForecastGenerateHierarchyResponse extends OrganizationResponse {
-  constructor(public result: EntityReference[]) {
+  constructor(public result: Record<string, unknown>[]) {
     super("msdyn_ForecastGenerateHierarchy");
   }
 
   static fromResponse(data: unknown): msdyn_ForecastGenerateHierarchyResponse {
-    return new msdyn_ForecastGenerateHierarchyResponse((data as any).value);
+    return new msdyn_ForecastGenerateHierarchyResponse(
+      responseValue<Record<string, unknown>[]>(data)
+    );
   }
 }

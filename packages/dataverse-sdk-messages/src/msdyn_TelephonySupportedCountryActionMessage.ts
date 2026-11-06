@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_TelephonySupportedCountryActionResponse as msdyn_TelephonySupportedCountryActionResponseData } from "./types/index.js";
 
 /**
  * msdyn_TelephonySupportedCountryAction request message
@@ -35,23 +37,19 @@ export class msdyn_TelephonySupportedCountryActionRequest
     const data = await response.json();
     return msdyn_TelephonySupportedCountryActionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ActionRequest: this.actionRequest,
-    };
-  }
 }
 
 /**
  * msdyn_TelephonySupportedCountryAction response message
  */
 export class msdyn_TelephonySupportedCountryActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_TelephonySupportedCountryActionResponse) {
+  constructor(public result: msdyn_TelephonySupportedCountryActionResponseData) {
     super("msdyn_TelephonySupportedCountryAction");
   }
 
   static fromResponse(data: unknown): msdyn_TelephonySupportedCountryActionResponse {
-    return new msdyn_TelephonySupportedCountryActionResponse((data as any).value);
+    return new msdyn_TelephonySupportedCountryActionResponse(
+      responseObject<msdyn_TelephonySupportedCountryActionResponseData>(data)
+    );
   }
 }

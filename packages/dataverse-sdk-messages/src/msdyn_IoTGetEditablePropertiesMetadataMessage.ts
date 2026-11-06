@@ -1,6 +1,10 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { msdyn_iotdevicecategory } from "./types/index.js";
+import { responseObject } from "./internal/responseData.js";
+import type {
+  msdyn_IoTGetEditablePropertiesMetadataResponse as msdyn_IoTGetEditablePropertiesMetadataResponseData,
+  msdyn_iotdevicecategory,
+} from "./types/index.js";
 
 /**
  * msdyn_IoTGetEditablePropertiesMetadata request message
@@ -36,23 +40,19 @@ export class msdyn_IoTGetEditablePropertiesMetadataRequest
     const data = await response.json();
     return msdyn_IoTGetEditablePropertiesMetadataResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      DeviceCategory: this.deviceCategory,
-    };
-  }
 }
 
 /**
  * msdyn_IoTGetEditablePropertiesMetadata response message
  */
 export class msdyn_IoTGetEditablePropertiesMetadataResponse extends OrganizationResponse {
-  constructor(public result: msdyn_IoTGetEditablePropertiesMetadataResponse) {
+  constructor(public result: msdyn_IoTGetEditablePropertiesMetadataResponseData) {
     super("msdyn_IoTGetEditablePropertiesMetadata");
   }
 
   static fromResponse(data: unknown): msdyn_IoTGetEditablePropertiesMetadataResponse {
-    return new msdyn_IoTGetEditablePropertiesMetadataResponse((data as any).value);
+    return new msdyn_IoTGetEditablePropertiesMetadataResponse(
+      responseObject<msdyn_IoTGetEditablePropertiesMetadataResponseData>(data)
+    );
   }
 }

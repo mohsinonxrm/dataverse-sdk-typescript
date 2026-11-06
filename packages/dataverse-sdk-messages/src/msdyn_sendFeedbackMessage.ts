@@ -35,12 +35,6 @@ export class msdyn_sendFeedbackRequest
     // No return value (204 No Content)
     return new msdyn_sendFeedbackResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      content: this.content,
-    };
-  }
 }
 
 /**

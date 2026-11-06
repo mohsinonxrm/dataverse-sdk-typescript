@@ -43,15 +43,6 @@ export class msdyn_SalesAgents_BatchUpdateSARStatesRequest
     // No return value (204 No Content)
     return new msdyn_SalesAgents_BatchUpdateSARStatesResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_StateCode: this.msdyn_StateCode,
-      msdyn_StatusCode: this.msdyn_StatusCode,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-      msdyn_SalesAgentRunIds: this.msdyn_SalesAgentRunIds,
-    };
-  }
 }
 
 /**

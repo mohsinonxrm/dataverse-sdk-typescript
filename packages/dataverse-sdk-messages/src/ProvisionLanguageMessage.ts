@@ -35,12 +35,6 @@ export class ProvisionLanguageRequest
     // No return value (204 No Content)
     return new ProvisionLanguageResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Language: this.language,
-    };
-  }
 }
 
 /**

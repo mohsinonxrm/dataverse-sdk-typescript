@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { _ValidateAndAllocateBusinessCardReaderCurrencyResponse as _ValidateAndAllocateBusinessCardReaderCurrencyResponseData } from "./types/index.js";
 
 /**
  * _ValidateAndAllocateBusinessCardReaderCurrency request message
@@ -32,21 +34,19 @@ export class _ValidateAndAllocateBusinessCardReaderCurrencyRequest
     const data = await response.json();
     return _ValidateAndAllocateBusinessCardReaderCurrencyResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * _ValidateAndAllocateBusinessCardReaderCurrency response message
  */
 export class _ValidateAndAllocateBusinessCardReaderCurrencyResponse extends OrganizationResponse {
-  constructor(public result: _ValidateAndAllocateBusinessCardReaderCurrencyResponse) {
+  constructor(public result: _ValidateAndAllocateBusinessCardReaderCurrencyResponseData) {
     super("_ValidateAndAllocateBusinessCardReaderCurrency");
   }
 
   static fromResponse(data: unknown): _ValidateAndAllocateBusinessCardReaderCurrencyResponse {
-    return new _ValidateAndAllocateBusinessCardReaderCurrencyResponse((data as any).value);
+    return new _ValidateAndAllocateBusinessCardReaderCurrencyResponse(
+      responseObject<_ValidateAndAllocateBusinessCardReaderCurrencyResponseData>(data)
+    );
   }
 }

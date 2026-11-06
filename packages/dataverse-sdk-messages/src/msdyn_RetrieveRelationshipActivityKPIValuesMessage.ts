@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_RetrieveRelationshipActivityKPIValuesResponse as msdyn_RetrieveRelationshipActivityKPIValuesResponseData } from "./types/index.js";
 
 /**
  * msdyn_RetrieveRelationshipActivityKPIValues request message
@@ -42,24 +44,19 @@ export class msdyn_RetrieveRelationshipActivityKPIValuesRequest
     const data = await response.json();
     return msdyn_RetrieveRelationshipActivityKPIValuesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      CrmRecord: this.crmRecord,
-      GetLinkedInKPI: this.getLinkedInKPI,
-    };
-  }
 }
 
 /**
  * msdyn_RetrieveRelationshipActivityKPIValues response message
  */
 export class msdyn_RetrieveRelationshipActivityKPIValuesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrieveRelationshipActivityKPIValuesResponse) {
+  constructor(public result: msdyn_RetrieveRelationshipActivityKPIValuesResponseData) {
     super("msdyn_RetrieveRelationshipActivityKPIValues");
   }
 
   static fromResponse(data: unknown): msdyn_RetrieveRelationshipActivityKPIValuesResponse {
-    return new msdyn_RetrieveRelationshipActivityKPIValuesResponse((data as any).value);
+    return new msdyn_RetrieveRelationshipActivityKPIValuesResponse(
+      responseObject<msdyn_RetrieveRelationshipActivityKPIValuesResponseData>(data)
+    );
   }
 }

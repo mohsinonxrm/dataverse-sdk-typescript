@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_GetSwarmResponseCardResponse as msdyn_GetSwarmResponseCardResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetSwarmResponseCard request message
@@ -36,23 +38,19 @@ export class msdyn_GetSwarmResponseCardRequest
     const data = await response.json();
     return msdyn_GetSwarmResponseCardResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_SwarmParticipant: this.msdyn_SwarmParticipant,
-    };
-  }
 }
 
 /**
  * msdyn_GetSwarmResponseCard response message
  */
 export class msdyn_GetSwarmResponseCardResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetSwarmResponseCardResponse) {
+  constructor(public result: msdyn_GetSwarmResponseCardResponseData) {
     super("msdyn_GetSwarmResponseCard");
   }
 
   static fromResponse(data: unknown): msdyn_GetSwarmResponseCardResponse {
-    return new msdyn_GetSwarmResponseCardResponse((data as any).value);
+    return new msdyn_GetSwarmResponseCardResponse(
+      responseObject<msdyn_GetSwarmResponseCardResponseData>(data)
+    );
   }
 }

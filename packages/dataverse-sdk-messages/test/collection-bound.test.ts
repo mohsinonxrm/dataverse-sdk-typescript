@@ -94,9 +94,9 @@ describe("#69: collection-bound messages", () => {
     const targets = [{ "@odata.type": "Microsoft.Dynamics.CRM.contact", lastname: "One" }];
     const request = new CreateMultipleRequest("contacts", targets);
 
-    await client.execute(request);
+    const response = await client.execute(request);
 
     expect(JSON.parse(fake.last().bodyText ?? "")).toEqual({ Targets: targets });
-    expect(request.toRequestBody()).toEqual({ Targets: targets });
+    expect(response.result.Ids).toEqual(["c1"]);
   });
 });

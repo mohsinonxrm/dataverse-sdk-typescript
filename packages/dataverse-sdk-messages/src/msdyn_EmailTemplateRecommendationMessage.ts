@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_EmailTemplateRecommendationResponse as msdyn_EmailTemplateRecommendationResponseData } from "./types/index.js";
 
 /**
  * msdyn_EmailTemplateRecommendation request message
@@ -60,34 +62,19 @@ export class msdyn_EmailTemplateRecommendationRequest
     const data = await response.json();
     return msdyn_EmailTemplateRecommendationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Headers: this.headers,
-      customerIntent: this.customerIntent,
-      filters: this.filters,
-      templateFiltersInString: this.templateFiltersInString,
-      emailString: this.emailString,
-      isTemplateResponse: this.isTemplateResponse,
-      transactionId: this.transactionId,
-      multiturnPayload: this.multiturnPayload,
-      emailContextData: this.emailContextData,
-      copilotRequestParameters: this.copilotRequestParameters,
-      emailId: this.emailId,
-      entityReference: this.entityReference,
-    };
-  }
 }
 
 /**
  * msdyn_EmailTemplateRecommendation response message
  */
 export class msdyn_EmailTemplateRecommendationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_EmailTemplateRecommendationResponse) {
+  constructor(public result: msdyn_EmailTemplateRecommendationResponseData) {
     super("msdyn_EmailTemplateRecommendation");
   }
 
   static fromResponse(data: unknown): msdyn_EmailTemplateRecommendationResponse {
-    return new msdyn_EmailTemplateRecommendationResponse((data as any).value);
+    return new msdyn_EmailTemplateRecommendationResponse(
+      responseObject<msdyn_EmailTemplateRecommendationResponseData>(data)
+    );
   }
 }

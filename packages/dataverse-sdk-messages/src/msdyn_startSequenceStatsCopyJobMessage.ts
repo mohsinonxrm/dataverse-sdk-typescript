@@ -35,12 +35,6 @@ export class msdyn_startSequenceStatsCopyJobRequest
     // No return value (204 No Content)
     return new msdyn_startSequenceStatsCopyJobResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      InputData: this.inputData,
-    };
-  }
 }
 
 /**

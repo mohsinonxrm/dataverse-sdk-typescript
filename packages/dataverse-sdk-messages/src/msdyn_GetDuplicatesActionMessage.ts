@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseValue } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 
 /**
@@ -36,23 +37,17 @@ export class msdyn_GetDuplicatesActionRequest
     const data = await response.json();
     return msdyn_GetDuplicatesActionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Record: this.record,
-    };
-  }
 }
 
 /**
  * msdyn_GetDuplicatesAction response message
  */
 export class msdyn_GetDuplicatesActionResponse extends OrganizationResponse {
-  constructor(public result: EntityReference[]) {
+  constructor(public result: Record<string, unknown>[]) {
     super("msdyn_GetDuplicatesAction");
   }
 
   static fromResponse(data: unknown): msdyn_GetDuplicatesActionResponse {
-    return new msdyn_GetDuplicatesActionResponse((data as any).value);
+    return new msdyn_GetDuplicatesActionResponse(responseValue<Record<string, unknown>[]>(data));
   }
 }

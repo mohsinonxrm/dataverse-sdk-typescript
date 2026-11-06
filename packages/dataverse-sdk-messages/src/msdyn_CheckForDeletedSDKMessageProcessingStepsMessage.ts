@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckForDeletedSDKMessageProcessingStepsResponse as msdyn_CheckForDeletedSDKMessageProcessingStepsResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckForDeletedSDKMessageProcessingSteps request message
@@ -41,24 +43,19 @@ export class msdyn_CheckForDeletedSDKMessageProcessingStepsRequest
     const data = await response.json();
     return msdyn_CheckForDeletedSDKMessageProcessingStepsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntityIds: this.entityIds,
-      SolutionId: this.solutionId,
-    };
-  }
 }
 
 /**
  * msdyn_CheckForDeletedSDKMessageProcessingSteps response message
  */
 export class msdyn_CheckForDeletedSDKMessageProcessingStepsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckForDeletedSDKMessageProcessingStepsResponse) {
+  constructor(public result: msdyn_CheckForDeletedSDKMessageProcessingStepsResponseData) {
     super("msdyn_CheckForDeletedSDKMessageProcessingSteps");
   }
 
   static fromResponse(data: unknown): msdyn_CheckForDeletedSDKMessageProcessingStepsResponse {
-    return new msdyn_CheckForDeletedSDKMessageProcessingStepsResponse((data as any).value);
+    return new msdyn_CheckForDeletedSDKMessageProcessingStepsResponse(
+      responseObject<msdyn_CheckForDeletedSDKMessageProcessingStepsResponseData>(data)
+    );
   }
 }

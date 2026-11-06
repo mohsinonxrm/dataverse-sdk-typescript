@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdynmkt_ChartWidgetDataCustomActionResponse as msdynmkt_ChartWidgetDataCustomActionResponseData } from "./types/index.js";
 
 /**
  * msdynmkt_ChartWidgetDataCustomAction request message
@@ -35,23 +37,19 @@ export class msdynmkt_ChartWidgetDataCustomActionRequest
     const data = await response.json();
     return msdynmkt_ChartWidgetDataCustomActionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      WidgetRequest: this.widgetRequest,
-    };
-  }
 }
 
 /**
  * msdynmkt_ChartWidgetDataCustomAction response message
  */
 export class msdynmkt_ChartWidgetDataCustomActionResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_ChartWidgetDataCustomActionResponse) {
+  constructor(public result: msdynmkt_ChartWidgetDataCustomActionResponseData) {
     super("msdynmkt_ChartWidgetDataCustomAction");
   }
 
   static fromResponse(data: unknown): msdynmkt_ChartWidgetDataCustomActionResponse {
-    return new msdynmkt_ChartWidgetDataCustomActionResponse((data as any).value);
+    return new msdynmkt_ChartWidgetDataCustomActionResponse(
+      responseObject<msdynmkt_ChartWidgetDataCustomActionResponseData>(data)
+    );
   }
 }

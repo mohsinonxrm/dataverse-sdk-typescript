@@ -43,15 +43,6 @@ export class msdyn_UpdateCadenceRunStatusRequest
     // No return value (204 No Content)
     return new msdyn_UpdateCadenceRunStatusResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SalesCadenceInstanceId: this.salesCadenceInstanceId,
-      StatusType: this.statusType,
-      OverallStatus: this.overallStatus,
-      FlowRunStatus: this.flowRunStatus,
-    };
-  }
 }
 
 /**

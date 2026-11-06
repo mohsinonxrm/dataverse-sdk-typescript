@@ -35,12 +35,6 @@ export class msdyn_AutoCaseClosureAgentCompleteSnaRequest
     // No return value (204 No Content)
     return new msdyn_AutoCaseClosureAgentCompleteSnaResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_payload: this.msdyn_payload,
-    };
-  }
 }
 
 /**

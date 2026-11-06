@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckAnyUserIsIntegrationUserResponse as msdyn_CheckAnyUserIsIntegrationUserResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckAnyUserIsIntegrationUser request message
@@ -30,21 +32,19 @@ export class msdyn_CheckAnyUserIsIntegrationUserRequest
     const data = await response.json();
     return msdyn_CheckAnyUserIsIntegrationUserResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_CheckAnyUserIsIntegrationUser response message
  */
 export class msdyn_CheckAnyUserIsIntegrationUserResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckAnyUserIsIntegrationUserResponse) {
+  constructor(public result: msdyn_CheckAnyUserIsIntegrationUserResponseData) {
     super("msdyn_CheckAnyUserIsIntegrationUser");
   }
 
   static fromResponse(data: unknown): msdyn_CheckAnyUserIsIntegrationUserResponse {
-    return new msdyn_CheckAnyUserIsIntegrationUserResponse((data as any).value);
+    return new msdyn_CheckAnyUserIsIntegrationUserResponse(
+      responseObject<msdyn_CheckAnyUserIsIntegrationUserResponseData>(data)
+    );
   }
 }

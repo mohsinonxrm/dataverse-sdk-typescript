@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import type { ColumnSet } from "./types/index.js";
 
@@ -43,25 +44,17 @@ export class GenerateQuoteFromOpportunityRequest
     const data = await response.json();
     return GenerateQuoteFromOpportunityResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      OpportunityId: this.opportunityId,
-      ColumnSet: this.columnSet,
-      ProcessInstanceId: this.processInstanceId,
-    };
-  }
 }
 
 /**
  * GenerateQuoteFromOpportunity response message
  */
 export class GenerateQuoteFromOpportunityResponse extends OrganizationResponse {
-  constructor(public result: EntityReference) {
+  constructor(public result: Record<string, unknown>) {
     super("GenerateQuoteFromOpportunity");
   }
 
   static fromResponse(data: unknown): GenerateQuoteFromOpportunityResponse {
-    return new GenerateQuoteFromOpportunityResponse((data as any).value);
+    return new GenerateQuoteFromOpportunityResponse(responseObject<Record<string, unknown>>(data));
   }
 }

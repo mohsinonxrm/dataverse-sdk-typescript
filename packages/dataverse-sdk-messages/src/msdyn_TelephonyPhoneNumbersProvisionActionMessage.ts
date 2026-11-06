@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_TelephonyPhoneNumbersProvisionActionResponse as msdyn_TelephonyPhoneNumbersProvisionActionResponseData } from "./types/index.js";
 
 /**
  * msdyn_TelephonyPhoneNumbersProvisionAction request message
@@ -37,23 +39,19 @@ export class msdyn_TelephonyPhoneNumbersProvisionActionRequest
     const data = await response.json();
     return msdyn_TelephonyPhoneNumbersProvisionActionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ActionRequest: this.actionRequest,
-    };
-  }
 }
 
 /**
  * msdyn_TelephonyPhoneNumbersProvisionAction response message
  */
 export class msdyn_TelephonyPhoneNumbersProvisionActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_TelephonyPhoneNumbersProvisionActionResponse) {
+  constructor(public result: msdyn_TelephonyPhoneNumbersProvisionActionResponseData) {
     super("msdyn_TelephonyPhoneNumbersProvisionAction");
   }
 
   static fromResponse(data: unknown): msdyn_TelephonyPhoneNumbersProvisionActionResponse {
-    return new msdyn_TelephonyPhoneNumbersProvisionActionResponse((data as any).value);
+    return new msdyn_TelephonyPhoneNumbersProvisionActionResponse(
+      responseObject<msdyn_TelephonyPhoneNumbersProvisionActionResponseData>(data)
+    );
   }
 }

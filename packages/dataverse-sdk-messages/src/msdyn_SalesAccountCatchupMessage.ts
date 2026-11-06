@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_SalesAccountCatchupResponse as msdyn_SalesAccountCatchupResponseData } from "./types/index.js";
 
 /**
  * msdyn_SalesAccountCatchup request message
@@ -49,29 +51,19 @@ export class msdyn_SalesAccountCatchupRequest
     const data = await response.json();
     return msdyn_SalesAccountCatchupResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_id: this.msdyn_id,
-      msdyn_sessionId: this.msdyn_sessionId,
-      msdyn_responseFormat: this.msdyn_responseFormat,
-      msdyn_activityId: this.msdyn_activityId,
-      msdyn_since: this.msdyn_since,
-      msdyn_skipHeader: this.msdyn_skipHeader,
-      msdyn_additionalParams: this.msdyn_additionalParams,
-    };
-  }
 }
 
 /**
  * msdyn_SalesAccountCatchup response message
  */
 export class msdyn_SalesAccountCatchupResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAccountCatchupResponse) {
+  constructor(public result: msdyn_SalesAccountCatchupResponseData) {
     super("msdyn_SalesAccountCatchup");
   }
 
   static fromResponse(data: unknown): msdyn_SalesAccountCatchupResponse {
-    return new msdyn_SalesAccountCatchupResponse((data as any).value);
+    return new msdyn_SalesAccountCatchupResponse(
+      responseObject<msdyn_SalesAccountCatchupResponseData>(data)
+    );
   }
 }

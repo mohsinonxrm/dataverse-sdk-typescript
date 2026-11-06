@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_FetchKPIValuesResponse as msdyn_FetchKPIValuesResponseData } from "./types/index.js";
 
 /**
  * msdyn_FetchKPIValues request message
@@ -42,25 +44,17 @@ export class msdyn_FetchKPIValuesRequest
     const data = await response.json();
     return msdyn_FetchKPIValuesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      CrmRecord: this.crmRecord,
-      KPINames: this.kPINames,
-      KPIType: this.kPIType,
-    };
-  }
 }
 
 /**
  * msdyn_FetchKPIValues response message
  */
 export class msdyn_FetchKPIValuesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_FetchKPIValuesResponse) {
+  constructor(public result: msdyn_FetchKPIValuesResponseData) {
     super("msdyn_FetchKPIValues");
   }
 
   static fromResponse(data: unknown): msdyn_FetchKPIValuesResponse {
-    return new msdyn_FetchKPIValuesResponse((data as any).value);
+    return new msdyn_FetchKPIValuesResponse(responseObject<msdyn_FetchKPIValuesResponseData>(data));
   }
 }

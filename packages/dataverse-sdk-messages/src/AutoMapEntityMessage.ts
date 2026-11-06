@@ -35,12 +35,6 @@ export class AutoMapEntityRequest
     // No return value (204 No Content)
     return new AutoMapEntityResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntityMapId: this.entityMapId,
-    };
-  }
 }
 
 /**

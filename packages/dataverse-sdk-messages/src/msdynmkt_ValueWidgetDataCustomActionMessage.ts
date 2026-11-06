@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdynmkt_ValueWidgetDataCustomActionResponse as msdynmkt_ValueWidgetDataCustomActionResponseData } from "./types/index.js";
 
 /**
  * msdynmkt_ValueWidgetDataCustomAction request message
@@ -35,23 +37,19 @@ export class msdynmkt_ValueWidgetDataCustomActionRequest
     const data = await response.json();
     return msdynmkt_ValueWidgetDataCustomActionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      WidgetRequest: this.widgetRequest,
-    };
-  }
 }
 
 /**
  * msdynmkt_ValueWidgetDataCustomAction response message
  */
 export class msdynmkt_ValueWidgetDataCustomActionResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_ValueWidgetDataCustomActionResponse) {
+  constructor(public result: msdynmkt_ValueWidgetDataCustomActionResponseData) {
     super("msdynmkt_ValueWidgetDataCustomAction");
   }
 
   static fromResponse(data: unknown): msdynmkt_ValueWidgetDataCustomActionResponse {
-    return new msdynmkt_ValueWidgetDataCustomActionResponse((data as any).value);
+    return new msdynmkt_ValueWidgetDataCustomActionResponse(
+      responseObject<msdynmkt_ValueWidgetDataCustomActionResponseData>(data)
+    );
   }
 }

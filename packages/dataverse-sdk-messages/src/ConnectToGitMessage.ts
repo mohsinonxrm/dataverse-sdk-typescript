@@ -55,21 +55,6 @@ export class ConnectToGitRequest
     // No return value (204 No Content)
     return new ConnectToGitResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ConnectionType: this.connectionType,
-      SolutionUniqueName: this.solutionUniqueName,
-      GitProvider: this.gitProvider,
-      Branch: this.branch,
-      RootFolder: this.rootFolder,
-      Organization: this.organization,
-      GitFolder: this.gitFolder,
-      Project: this.project,
-      Repository: this.repository,
-      UpstreamBranch: this.upstreamBranch,
-    };
-  }
 }
 
 /**

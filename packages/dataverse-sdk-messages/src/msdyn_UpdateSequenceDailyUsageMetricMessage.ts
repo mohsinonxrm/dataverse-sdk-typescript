@@ -35,12 +35,6 @@ export class msdyn_UpdateSequenceDailyUsageMetricRequest
     // No return value (204 No Content)
     return new msdyn_UpdateSequenceDailyUsageMetricResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      PreviousDaysCount: this.previousDaysCount,
-    };
-  }
 }
 
 /**

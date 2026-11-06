@@ -40,13 +40,6 @@ export class msdyn_ForecastRecalculateRequest
     // No return value (204 No Content)
     return new msdyn_ForecastRecalculateResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ForecastInstance: this.forecastInstance,
-      IsRefreshHierarchy: this.isRefreshHierarchy,
-    };
-  }
 }
 
 /**

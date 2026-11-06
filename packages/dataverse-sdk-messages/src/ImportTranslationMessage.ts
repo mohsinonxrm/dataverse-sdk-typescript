@@ -39,13 +39,6 @@ export class ImportTranslationRequest
     // No return value (204 No Content)
     return new ImportTranslationResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      TranslationFile: this.translationFile,
-      ImportJobId: this.importJobId,
-    };
-  }
 }
 
 /**

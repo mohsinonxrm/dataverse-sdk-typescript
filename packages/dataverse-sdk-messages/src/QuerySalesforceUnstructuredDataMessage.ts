@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { QuerySalesforceUnstructuredDataResponse as QuerySalesforceUnstructuredDataResponseData } from "./types/index.js";
 
 /**
  * QuerySalesforceUnstructuredData request message
@@ -43,26 +45,19 @@ export class QuerySalesforceUnstructuredDataRequest
     const data = await response.json();
     return QuerySalesforceUnstructuredDataResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      filterCriteria: this.filterCriteria,
-      connectionId: this.connectionId,
-      searchResultCount: this.searchResultCount,
-      userQueryText: this.userQueryText,
-    };
-  }
 }
 
 /**
  * QuerySalesforceUnstructuredData response message
  */
 export class QuerySalesforceUnstructuredDataResponse extends OrganizationResponse {
-  constructor(public result: QuerySalesforceUnstructuredDataResponse) {
+  constructor(public result: QuerySalesforceUnstructuredDataResponseData) {
     super("QuerySalesforceUnstructuredData");
   }
 
   static fromResponse(data: unknown): QuerySalesforceUnstructuredDataResponse {
-    return new QuerySalesforceUnstructuredDataResponse((data as any).value);
+    return new QuerySalesforceUnstructuredDataResponse(
+      responseObject<QuerySalesforceUnstructuredDataResponseData>(data)
+    );
   }
 }

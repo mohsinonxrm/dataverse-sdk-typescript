@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_LeadResearchCustomActionResponse as msdyn_LeadResearchCustomActionResponseData } from "./types/index.js";
 
 /**
  * msdyn_LeadResearchCustomAction request message
@@ -35,23 +37,19 @@ export class msdyn_LeadResearchCustomActionRequest
     const data = await response.json();
     return msdyn_LeadResearchCustomActionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ResearchRequest: this.researchRequest,
-    };
-  }
 }
 
 /**
  * msdyn_LeadResearchCustomAction response message
  */
 export class msdyn_LeadResearchCustomActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_LeadResearchCustomActionResponse) {
+  constructor(public result: msdyn_LeadResearchCustomActionResponseData) {
     super("msdyn_LeadResearchCustomAction");
   }
 
   static fromResponse(data: unknown): msdyn_LeadResearchCustomActionResponse {
-    return new msdyn_LeadResearchCustomActionResponse((data as any).value);
+    return new msdyn_LeadResearchCustomActionResponse(
+      responseObject<msdyn_LeadResearchCustomActionResponseData>(data)
+    );
   }
 }

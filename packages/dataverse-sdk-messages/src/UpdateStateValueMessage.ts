@@ -52,19 +52,6 @@ export class UpdateStateValueRequest
     // No return value (204 No Content)
     return new UpdateStateValueResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      OptionSetName: this.optionSetName,
-      AttributeLogicalName: this.attributeLogicalName,
-      EntityLogicalName: this.entityLogicalName,
-      Value: this.value,
-      Label: this.label,
-      Description: this.description,
-      MergeLabels: this.mergeLabels,
-      DefaultStatusCode: this.defaultStatusCode,
-    };
-  }
 }
 
 /**

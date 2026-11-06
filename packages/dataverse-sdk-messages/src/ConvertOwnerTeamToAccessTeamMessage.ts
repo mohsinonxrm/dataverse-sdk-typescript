@@ -31,12 +31,6 @@ export class ConvertOwnerTeamToAccessTeamRequest
     // No return value (204 No Content)
     return new ConvertOwnerTeamToAccessTeamResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.teamId,
-    };
-  }
 }
 
 /**

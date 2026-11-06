@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { BulkRetainResponse as BulkRetainResponseData } from "./types/index.js";
 
 /**
  * BulkRetain request message
@@ -45,27 +47,17 @@ export class BulkRetainRequest
     const data = await response.json();
     return BulkRetainResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntityName: this.entityName,
-      FetchXml: this.fetchXml,
-      PageSize: this.pageSize,
-      OperationId: this.operationId,
-      PagingCookie: this.pagingCookie,
-    };
-  }
 }
 
 /**
  * BulkRetain response message
  */
 export class BulkRetainResponse extends OrganizationResponse {
-  constructor(public result: BulkRetainResponse) {
+  constructor(public result: BulkRetainResponseData) {
     super("BulkRetain");
   }
 
   static fromResponse(data: unknown): BulkRetainResponse {
-    return new BulkRetainResponse((data as any).value);
+    return new BulkRetainResponse(responseObject<BulkRetainResponseData>(data));
   }
 }

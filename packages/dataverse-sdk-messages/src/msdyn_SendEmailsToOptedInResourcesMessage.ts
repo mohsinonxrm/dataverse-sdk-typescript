@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_SendEmailsToOptedInResourcesResponse as msdyn_SendEmailsToOptedInResourcesResponseData } from "./types/index.js";
 
 /**
  * msdyn_SendEmailsToOptedInResources request message
@@ -39,24 +41,19 @@ export class msdyn_SendEmailsToOptedInResourcesRequest
     const data = await response.json();
     return msdyn_SendEmailsToOptedInResourcesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      FromUserId: this.fromUserId,
-      ToResourceIds: this.toResourceIds,
-    };
-  }
 }
 
 /**
  * msdyn_SendEmailsToOptedInResources response message
  */
 export class msdyn_SendEmailsToOptedInResourcesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SendEmailsToOptedInResourcesResponse) {
+  constructor(public result: msdyn_SendEmailsToOptedInResourcesResponseData) {
     super("msdyn_SendEmailsToOptedInResources");
   }
 
   static fromResponse(data: unknown): msdyn_SendEmailsToOptedInResourcesResponse {
-    return new msdyn_SendEmailsToOptedInResourcesResponse((data as any).value);
+    return new msdyn_SendEmailsToOptedInResourcesResponse(
+      responseObject<msdyn_SendEmailsToOptedInResourcesResponseData>(data)
+    );
   }
 }

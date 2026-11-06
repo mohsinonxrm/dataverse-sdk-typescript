@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { OnBackgroundOperationCompleteResponse as OnBackgroundOperationCompleteResponseData } from "./types/index.js";
 
 /**
  * OnBackgroundOperationComplete request message
@@ -43,26 +45,19 @@ export class OnBackgroundOperationCompleteRequest
     const data = await response.json();
     return OnBackgroundOperationCompleteResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      LocationUrl: this.locationUrl,
-      CallbackUrl: this.callbackUrl,
-      BackgroundOperationId: this.backgroundOperationId,
-      PayloadType: this.payloadType,
-    };
-  }
 }
 
 /**
  * OnBackgroundOperationComplete response message
  */
 export class OnBackgroundOperationCompleteResponse extends OrganizationResponse {
-  constructor(public result: OnBackgroundOperationCompleteResponse) {
+  constructor(public result: OnBackgroundOperationCompleteResponseData) {
     super("OnBackgroundOperationComplete");
   }
 
   static fromResponse(data: unknown): OnBackgroundOperationCompleteResponse {
-    return new OnBackgroundOperationCompleteResponse((data as any).value);
+    return new OnBackgroundOperationCompleteResponse(
+      responseObject<OnBackgroundOperationCompleteResponseData>(data)
+    );
   }
 }

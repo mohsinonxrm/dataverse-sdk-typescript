@@ -39,13 +39,6 @@ export class ConfirmConsentCodeRequest
     // No return value (204 No Content)
     return new ConfirmConsentCodeResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.connectioninstanceId,
-      code: this.code,
-    };
-  }
 }
 
 /**

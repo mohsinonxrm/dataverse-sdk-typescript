@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckForWorkOrderTypesResponse as msdyn_CheckForWorkOrderTypesResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckForWorkOrderTypes request message
@@ -30,21 +32,19 @@ export class msdyn_CheckForWorkOrderTypesRequest
     const data = await response.json();
     return msdyn_CheckForWorkOrderTypesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_CheckForWorkOrderTypes response message
  */
 export class msdyn_CheckForWorkOrderTypesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckForWorkOrderTypesResponse) {
+  constructor(public result: msdyn_CheckForWorkOrderTypesResponseData) {
     super("msdyn_CheckForWorkOrderTypes");
   }
 
   static fromResponse(data: unknown): msdyn_CheckForWorkOrderTypesResponse {
-    return new msdyn_CheckForWorkOrderTypesResponse((data as any).value);
+    return new msdyn_CheckForWorkOrderTypesResponse(
+      responseObject<msdyn_CheckForWorkOrderTypesResponseData>(data)
+    );
   }
 }

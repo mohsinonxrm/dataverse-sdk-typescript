@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import type { email } from "./types/index.js";
 
@@ -43,14 +44,6 @@ export class SendEmailFromTemplateRequest
     const data = await response.json();
     return SendEmailFromTemplateResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      TemplateId: this.templateId,
-      Regarding: this.regarding,
-      Target: this.target,
-    };
-  }
 }
 
 /**
@@ -62,6 +55,6 @@ export class SendEmailFromTemplateResponse extends OrganizationResponse {
   }
 
   static fromResponse(data: unknown): SendEmailFromTemplateResponse {
-    return new SendEmailFromTemplateResponse((data as any).value);
+    return new SendEmailFromTemplateResponse(responseObject<email>(data));
   }
 }

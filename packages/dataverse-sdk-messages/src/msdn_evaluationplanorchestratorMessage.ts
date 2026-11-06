@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdn_evaluationplanorchestratorResponse as msdn_evaluationplanorchestratorResponseData } from "./types/index.js";
 
 /**
  * msdn_evaluationplanorchestrator request message
@@ -35,23 +37,19 @@ export class msdn_evaluationplanorchestratorRequest
     const data = await response.json();
     return msdn_evaluationplanorchestratorResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EvalPlanId: this.evalPlanId,
-    };
-  }
 }
 
 /**
  * msdn_evaluationplanorchestrator response message
  */
 export class msdn_evaluationplanorchestratorResponse extends OrganizationResponse {
-  constructor(public result: msdn_evaluationplanorchestratorResponse) {
+  constructor(public result: msdn_evaluationplanorchestratorResponseData) {
     super("msdn_evaluationplanorchestrator");
   }
 
   static fromResponse(data: unknown): msdn_evaluationplanorchestratorResponse {
-    return new msdn_evaluationplanorchestratorResponse((data as any).value);
+    return new msdn_evaluationplanorchestratorResponse(
+      responseObject<msdn_evaluationplanorchestratorResponseData>(data)
+    );
   }
 }

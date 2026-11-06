@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { ImportCardTypeSchemaResponse as ImportCardTypeSchemaResponseData } from "./types/index.js";
 
 /**
  * ImportCardTypeSchema request message
@@ -35,23 +37,17 @@ export class ImportCardTypeSchemaRequest
     const data = await response.json();
     return ImportCardTypeSchemaResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ImportCardTypeSchema: this.importCardTypeSchema,
-    };
-  }
 }
 
 /**
  * ImportCardTypeSchema response message
  */
 export class ImportCardTypeSchemaResponse extends OrganizationResponse {
-  constructor(public result: ImportCardTypeSchemaResponse) {
+  constructor(public result: ImportCardTypeSchemaResponseData) {
     super("ImportCardTypeSchema");
   }
 
   static fromResponse(data: unknown): ImportCardTypeSchemaResponse {
-    return new ImportCardTypeSchemaResponse((data as any).value);
+    return new ImportCardTypeSchemaResponse(responseObject<ImportCardTypeSchemaResponseData>(data));
   }
 }

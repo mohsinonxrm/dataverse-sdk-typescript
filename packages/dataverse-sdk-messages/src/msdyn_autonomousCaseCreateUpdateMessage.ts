@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_autonomousCaseCreateUpdateResponse as msdyn_autonomousCaseCreateUpdateResponseData } from "./types/index.js";
 
 /**
  * msdyn_autonomousCaseCreateUpdate request message
@@ -39,24 +41,19 @@ export class msdyn_autonomousCaseCreateUpdateRequest
     const data = await response.json();
     return msdyn_autonomousCaseCreateUpdateResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      autonomousCaseRequest: this.autonomousCaseRequest,
-      slot__conversation: this.slot__conversation,
-    };
-  }
 }
 
 /**
  * msdyn_autonomousCaseCreateUpdate response message
  */
 export class msdyn_autonomousCaseCreateUpdateResponse extends OrganizationResponse {
-  constructor(public result: msdyn_autonomousCaseCreateUpdateResponse) {
+  constructor(public result: msdyn_autonomousCaseCreateUpdateResponseData) {
     super("msdyn_autonomousCaseCreateUpdate");
   }
 
   static fromResponse(data: unknown): msdyn_autonomousCaseCreateUpdateResponse {
-    return new msdyn_autonomousCaseCreateUpdateResponse((data as any).value);
+    return new msdyn_autonomousCaseCreateUpdateResponse(
+      responseObject<msdyn_autonomousCaseCreateUpdateResponseData>(data)
+    );
   }
 }

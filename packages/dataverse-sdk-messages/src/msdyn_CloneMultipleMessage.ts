@@ -1,6 +1,10 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { msdyn_configuration } from "./types/index.js";
+import { responseObject } from "./internal/responseData.js";
+import type {
+  msdyn_CloneMultipleResponse as msdyn_CloneMultipleResponseData,
+  msdyn_configuration,
+} from "./types/index.js";
 
 /**
  * msdyn_CloneMultiple request message
@@ -46,27 +50,17 @@ export class msdyn_CloneMultipleRequest
     const data = await response.json();
     return msdyn_CloneMultipleResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntityIds: this.entityIds,
-      QueryReference: this.queryReference,
-      UfxQuery: this.ufxQuery,
-      TransformAction: this.transformAction,
-      TransformParams: this.transformParams,
-    };
-  }
 }
 
 /**
  * msdyn_CloneMultiple response message
  */
 export class msdyn_CloneMultipleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CloneMultipleResponse) {
+  constructor(public result: msdyn_CloneMultipleResponseData) {
     super("msdyn_CloneMultiple");
   }
 
   static fromResponse(data: unknown): msdyn_CloneMultipleResponse {
-    return new msdyn_CloneMultipleResponse((data as any).value);
+    return new msdyn_CloneMultipleResponse(responseObject<msdyn_CloneMultipleResponseData>(data));
   }
 }

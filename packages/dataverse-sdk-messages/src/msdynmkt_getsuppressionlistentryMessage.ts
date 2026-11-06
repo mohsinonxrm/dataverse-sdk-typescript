@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdynmkt_getsuppressionlistentryResponse as msdynmkt_getsuppressionlistentryResponseData } from "./types/index.js";
 
 /**
  * msdynmkt_getsuppressionlistentry request message
@@ -35,23 +37,19 @@ export class msdynmkt_getsuppressionlistentryRequest
     const data = await response.json();
     return msdynmkt_getsuppressionlistentryResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdynmkt_emailaddress: this.msdynmkt_emailaddress,
-    };
-  }
 }
 
 /**
  * msdynmkt_getsuppressionlistentry response message
  */
 export class msdynmkt_getsuppressionlistentryResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_getsuppressionlistentryResponse) {
+  constructor(public result: msdynmkt_getsuppressionlistentryResponseData) {
     super("msdynmkt_getsuppressionlistentry");
   }
 
   static fromResponse(data: unknown): msdynmkt_getsuppressionlistentryResponse {
-    return new msdynmkt_getsuppressionlistentryResponse((data as any).value);
+    return new msdynmkt_getsuppressionlistentryResponse(
+      responseObject<msdynmkt_getsuppressionlistentryResponseData>(data)
+    );
   }
 }

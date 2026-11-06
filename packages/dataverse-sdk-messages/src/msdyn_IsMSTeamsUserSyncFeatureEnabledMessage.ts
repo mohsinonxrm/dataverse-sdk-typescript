@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_IsMSTeamsUserSyncFeatureEnabledResponse as msdyn_IsMSTeamsUserSyncFeatureEnabledResponseData } from "./types/index.js";
 
 /**
  * msdyn_IsMSTeamsUserSyncFeatureEnabled request message
@@ -30,21 +32,19 @@ export class msdyn_IsMSTeamsUserSyncFeatureEnabledRequest
     const data = await response.json();
     return msdyn_IsMSTeamsUserSyncFeatureEnabledResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_IsMSTeamsUserSyncFeatureEnabled response message
  */
 export class msdyn_IsMSTeamsUserSyncFeatureEnabledResponse extends OrganizationResponse {
-  constructor(public result: msdyn_IsMSTeamsUserSyncFeatureEnabledResponse) {
+  constructor(public result: msdyn_IsMSTeamsUserSyncFeatureEnabledResponseData) {
     super("msdyn_IsMSTeamsUserSyncFeatureEnabled");
   }
 
   static fromResponse(data: unknown): msdyn_IsMSTeamsUserSyncFeatureEnabledResponse {
-    return new msdyn_IsMSTeamsUserSyncFeatureEnabledResponse((data as any).value);
+    return new msdyn_IsMSTeamsUserSyncFeatureEnabledResponse(
+      responseObject<msdyn_IsMSTeamsUserSyncFeatureEnabledResponseData>(data)
+    );
   }
 }

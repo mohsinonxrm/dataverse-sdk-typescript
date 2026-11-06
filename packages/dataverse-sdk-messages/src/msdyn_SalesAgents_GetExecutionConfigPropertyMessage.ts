@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_SalesAgents_GetExecutionConfigPropertyResponse as msdyn_SalesAgents_GetExecutionConfigPropertyResponseData } from "./types/index.js";
 
 /**
  * msdyn_SalesAgents_GetExecutionConfigProperty request message
@@ -42,24 +44,19 @@ export class msdyn_SalesAgents_GetExecutionConfigPropertyRequest
     const data = await response.json();
     return msdyn_SalesAgents_GetExecutionConfigPropertyResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_salesagentprofileid: this.msdyn_salesagentprofileid,
-      msdyn_config_key: this.msdyn_config_key,
-    };
-  }
 }
 
 /**
  * msdyn_SalesAgents_GetExecutionConfigProperty response message
  */
 export class msdyn_SalesAgents_GetExecutionConfigPropertyResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgents_GetExecutionConfigPropertyResponse) {
+  constructor(public result: msdyn_SalesAgents_GetExecutionConfigPropertyResponseData) {
     super("msdyn_SalesAgents_GetExecutionConfigProperty");
   }
 
   static fromResponse(data: unknown): msdyn_SalesAgents_GetExecutionConfigPropertyResponse {
-    return new msdyn_SalesAgents_GetExecutionConfigPropertyResponse((data as any).value);
+    return new msdyn_SalesAgents_GetExecutionConfigPropertyResponse(
+      responseObject<msdyn_SalesAgents_GetExecutionConfigPropertyResponseData>(data)
+    );
   }
 }

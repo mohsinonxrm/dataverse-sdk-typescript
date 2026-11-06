@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { DownloadBlockResponse as DownloadBlockResponseData } from "./types/index.js";
 
 /**
  * DownloadBlock request message
@@ -41,25 +43,17 @@ export class DownloadBlockRequest
     const data = await response.json();
     return DownloadBlockResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Offset: this.offset,
-      BlockLength: this.blockLength,
-      FileContinuationToken: this.fileContinuationToken,
-    };
-  }
 }
 
 /**
  * DownloadBlock response message
  */
 export class DownloadBlockResponse extends OrganizationResponse {
-  constructor(public result: DownloadBlockResponse) {
+  constructor(public result: DownloadBlockResponseData) {
     super("DownloadBlock");
   }
 
   static fromResponse(data: unknown): DownloadBlockResponse {
-    return new DownloadBlockResponse((data as any).value);
+    return new DownloadBlockResponse(responseObject<DownloadBlockResponseData>(data));
   }
 }

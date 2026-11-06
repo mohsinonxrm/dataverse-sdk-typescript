@@ -35,12 +35,6 @@ export class msdyn_ResetWorkDistributionFlowRequest
     // No return value (204 No Content)
     return new msdyn_ResetWorkDistributionFlowResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ShouldMaintainCustomizations: this.shouldMaintainCustomizations,
-    };
-  }
 }
 
 /**

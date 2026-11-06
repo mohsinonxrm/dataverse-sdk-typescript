@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_SetTeamsDocumentStatusResponse as msdyn_SetTeamsDocumentStatusResponseData } from "./types/index.js";
 
 /**
  * msdyn_SetTeamsDocumentStatus request message
@@ -39,24 +41,19 @@ export class msdyn_SetTeamsDocumentStatusRequest
     const data = await response.json();
     return msdyn_SetTeamsDocumentStatusResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Enable: this.enable,
-      LogicalEntityNames: this.logicalEntityNames,
-    };
-  }
 }
 
 /**
  * msdyn_SetTeamsDocumentStatus response message
  */
 export class msdyn_SetTeamsDocumentStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SetTeamsDocumentStatusResponse) {
+  constructor(public result: msdyn_SetTeamsDocumentStatusResponseData) {
     super("msdyn_SetTeamsDocumentStatus");
   }
 
   static fromResponse(data: unknown): msdyn_SetTeamsDocumentStatusResponse {
-    return new msdyn_SetTeamsDocumentStatusResponse((data as any).value);
+    return new msdyn_SetTeamsDocumentStatusResponse(
+      responseObject<msdyn_SetTeamsDocumentStatusResponseData>(data)
+    );
   }
 }

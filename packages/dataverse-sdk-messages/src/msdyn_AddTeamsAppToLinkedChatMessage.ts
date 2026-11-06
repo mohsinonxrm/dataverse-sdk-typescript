@@ -35,12 +35,6 @@ export class msdyn_AddTeamsAppToLinkedChatRequest
     // No return value (204 No Content)
     return new msdyn_AddTeamsAppToLinkedChatResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_TeamsChatAssociationId: this.msdyn_TeamsChatAssociationId,
-    };
-  }
 }
 
 /**

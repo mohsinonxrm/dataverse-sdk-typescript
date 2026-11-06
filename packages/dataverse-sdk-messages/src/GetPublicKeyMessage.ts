@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { GetPublicKeyResponse as GetPublicKeyResponseData } from "./types/index.js";
 
 /**
  * GetPublicKey request message
@@ -31,23 +33,17 @@ export class GetPublicKeyRequest
     const data = await response.json();
     return GetPublicKeyResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.flowmachinegroupId,
-    };
-  }
 }
 
 /**
  * GetPublicKey response message
  */
 export class GetPublicKeyResponse extends OrganizationResponse {
-  constructor(public result: GetPublicKeyResponse) {
+  constructor(public result: GetPublicKeyResponseData) {
     super("GetPublicKey");
   }
 
   static fromResponse(data: unknown): GetPublicKeyResponse {
-    return new GetPublicKeyResponse((data as any).value);
+    return new GetPublicKeyResponse(responseObject<GetPublicKeyResponseData>(data));
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetLineOfBusinessOptionValueResponse as msdyn_GetLineOfBusinessOptionValueResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetLineOfBusinessOptionValue request message
@@ -35,23 +37,19 @@ export class msdyn_GetLineOfBusinessOptionValueRequest
     const data = await response.json();
     return msdyn_GetLineOfBusinessOptionValueResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RequestPayload: this.requestPayload,
-    };
-  }
 }
 
 /**
  * msdyn_GetLineOfBusinessOptionValue response message
  */
 export class msdyn_GetLineOfBusinessOptionValueResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetLineOfBusinessOptionValueResponse) {
+  constructor(public result: msdyn_GetLineOfBusinessOptionValueResponseData) {
     super("msdyn_GetLineOfBusinessOptionValue");
   }
 
   static fromResponse(data: unknown): msdyn_GetLineOfBusinessOptionValueResponse {
-    return new msdyn_GetLineOfBusinessOptionValueResponse((data as any).value);
+    return new msdyn_GetLineOfBusinessOptionValueResponse(
+      responseObject<msdyn_GetLineOfBusinessOptionValueResponseData>(data)
+    );
   }
 }

@@ -1,6 +1,11 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { TypedQueryBase, activityparty } from "./types/index.js";
+import { responseObject } from "./internal/responseData.js";
+import type {
+  BulkDetectDuplicatesResponse as BulkDetectDuplicatesResponseData,
+  TypedQueryBase,
+  activityparty,
+} from "./types/index.js";
 
 /**
  * BulkDetectDuplicates request message
@@ -52,30 +57,17 @@ export class BulkDetectDuplicatesRequest
     const data = await response.json();
     return BulkDetectDuplicatesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Query: this.query,
-      JobName: this.jobName,
-      SendEmailNotification: this.sendEmailNotification,
-      TemplateId: this.templateId,
-      ToRecipients: this.toRecipients,
-      CCRecipients: this.cCRecipients,
-      RecurrencePattern: this.recurrencePattern,
-      RecurrenceStartTime: this.recurrenceStartTime,
-    };
-  }
 }
 
 /**
  * BulkDetectDuplicates response message
  */
 export class BulkDetectDuplicatesResponse extends OrganizationResponse {
-  constructor(public result: BulkDetectDuplicatesResponse) {
+  constructor(public result: BulkDetectDuplicatesResponseData) {
     super("BulkDetectDuplicates");
   }
 
   static fromResponse(data: unknown): BulkDetectDuplicatesResponse {
-    return new BulkDetectDuplicatesResponse((data as any).value);
+    return new BulkDetectDuplicatesResponse(responseObject<BulkDetectDuplicatesResponseData>(data));
   }
 }

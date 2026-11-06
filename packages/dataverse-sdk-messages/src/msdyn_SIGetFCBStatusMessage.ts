@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_SIGetFCBStatusResponse as msdyn_SIGetFCBStatusResponseData } from "./types/index.js";
 
 /**
  * msdyn_SIGetFCBStatus request message
@@ -35,23 +37,17 @@ export class msdyn_SIGetFCBStatusRequest
     const data = await response.json();
     return msdyn_SIGetFCBStatusResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      FCBName: this.fCBName,
-    };
-  }
 }
 
 /**
  * msdyn_SIGetFCBStatus response message
  */
 export class msdyn_SIGetFCBStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SIGetFCBStatusResponse) {
+  constructor(public result: msdyn_SIGetFCBStatusResponseData) {
     super("msdyn_SIGetFCBStatus");
   }
 
   static fromResponse(data: unknown): msdyn_SIGetFCBStatusResponse {
-    return new msdyn_SIGetFCBStatusResponse((data as any).value);
+    return new msdyn_SIGetFCBStatusResponse(responseObject<msdyn_SIGetFCBStatusResponseData>(data));
   }
 }

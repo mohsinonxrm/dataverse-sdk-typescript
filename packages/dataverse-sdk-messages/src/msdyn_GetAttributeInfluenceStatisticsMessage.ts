@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetAttributeInfluenceStatisticsResponse as msdyn_GetAttributeInfluenceStatisticsResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetAttributeInfluenceStatistics request message
@@ -43,26 +45,19 @@ export class msdyn_GetAttributeInfluenceStatisticsRequest
     const data = await response.json();
     return msdyn_GetAttributeInfluenceStatisticsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      AttributeName: this.attributeName,
-      EntityName: this.entityName,
-      PredictionName: this.predictionName,
-      PredictionType: this.predictionType,
-    };
-  }
 }
 
 /**
  * msdyn_GetAttributeInfluenceStatistics response message
  */
 export class msdyn_GetAttributeInfluenceStatisticsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetAttributeInfluenceStatisticsResponse) {
+  constructor(public result: msdyn_GetAttributeInfluenceStatisticsResponseData) {
     super("msdyn_GetAttributeInfluenceStatistics");
   }
 
   static fromResponse(data: unknown): msdyn_GetAttributeInfluenceStatisticsResponse {
-    return new msdyn_GetAttributeInfluenceStatisticsResponse((data as any).value);
+    return new msdyn_GetAttributeInfluenceStatisticsResponse(
+      responseObject<msdyn_GetAttributeInfluenceStatisticsResponseData>(data)
+    );
   }
 }

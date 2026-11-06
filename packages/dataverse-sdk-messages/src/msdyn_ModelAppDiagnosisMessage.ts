@@ -1,6 +1,10 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { appmodule } from "./types/index.js";
+import { responseObject } from "./internal/responseData.js";
+import type {
+  appmodule,
+  msdyn_ModelAppDiagnosisResponse as msdyn_ModelAppDiagnosisResponseData,
+} from "./types/index.js";
 
 /**
  * msdyn_ModelAppDiagnosis request message
@@ -40,24 +44,19 @@ export class msdyn_ModelAppDiagnosisRequest
     const data = await response.json();
     return msdyn_ModelAppDiagnosisResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      IssueType: this.issueType,
-      ComponentInstance: this.componentInstance,
-    };
-  }
 }
 
 /**
  * msdyn_ModelAppDiagnosis response message
  */
 export class msdyn_ModelAppDiagnosisResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ModelAppDiagnosisResponse) {
+  constructor(public result: msdyn_ModelAppDiagnosisResponseData) {
     super("msdyn_ModelAppDiagnosis");
   }
 
   static fromResponse(data: unknown): msdyn_ModelAppDiagnosisResponse {
-    return new msdyn_ModelAppDiagnosisResponse((data as any).value);
+    return new msdyn_ModelAppDiagnosisResponse(
+      responseObject<msdyn_ModelAppDiagnosisResponseData>(data)
+    );
   }
 }

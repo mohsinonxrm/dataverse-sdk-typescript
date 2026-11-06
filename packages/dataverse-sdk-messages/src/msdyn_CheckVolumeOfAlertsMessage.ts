@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckVolumeOfAlertsResponse as msdyn_CheckVolumeOfAlertsResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckVolumeOfAlerts request message
@@ -30,21 +32,19 @@ export class msdyn_CheckVolumeOfAlertsRequest
     const data = await response.json();
     return msdyn_CheckVolumeOfAlertsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_CheckVolumeOfAlerts response message
  */
 export class msdyn_CheckVolumeOfAlertsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckVolumeOfAlertsResponse) {
+  constructor(public result: msdyn_CheckVolumeOfAlertsResponseData) {
     super("msdyn_CheckVolumeOfAlerts");
   }
 
   static fromResponse(data: unknown): msdyn_CheckVolumeOfAlertsResponse {
-    return new msdyn_CheckVolumeOfAlertsResponse((data as any).value);
+    return new msdyn_CheckVolumeOfAlertsResponse(
+      responseObject<msdyn_CheckVolumeOfAlertsResponseData>(data)
+    );
   }
 }

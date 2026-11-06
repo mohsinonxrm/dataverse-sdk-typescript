@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_UpdateSalesCopilotUserSettingsResponse as msdyn_UpdateSalesCopilotUserSettingsResponseData } from "./types/index.js";
 
 /**
  * msdyn_UpdateSalesCopilotUserSettings request message
@@ -39,24 +41,19 @@ export class msdyn_UpdateSalesCopilotUserSettingsRequest
     const data = await response.json();
     return msdyn_UpdateSalesCopilotUserSettingsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_settingspayload: this.msdyn_settingspayload,
-      msdyn_exchangeconsentgiven: this.msdyn_exchangeconsentgiven,
-    };
-  }
 }
 
 /**
  * msdyn_UpdateSalesCopilotUserSettings response message
  */
 export class msdyn_UpdateSalesCopilotUserSettingsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_UpdateSalesCopilotUserSettingsResponse) {
+  constructor(public result: msdyn_UpdateSalesCopilotUserSettingsResponseData) {
     super("msdyn_UpdateSalesCopilotUserSettings");
   }
 
   static fromResponse(data: unknown): msdyn_UpdateSalesCopilotUserSettingsResponse {
-    return new msdyn_UpdateSalesCopilotUserSettingsResponse((data as any).value);
+    return new msdyn_UpdateSalesCopilotUserSettingsResponse(
+      responseObject<msdyn_UpdateSalesCopilotUserSettingsResponseData>(data)
+    );
   }
 }

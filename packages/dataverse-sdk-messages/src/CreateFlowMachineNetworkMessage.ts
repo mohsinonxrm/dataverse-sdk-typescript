@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { CreateFlowMachineNetworkResponse as CreateFlowMachineNetworkResponseData } from "./types/index.js";
 
 /**
  * CreateFlowMachineNetwork request message
@@ -48,28 +50,19 @@ export class CreateFlowMachineNetworkRequest
     const data = await response.json();
     return CreateFlowMachineNetworkResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      subnet: this.subnet,
-      type: this.type,
-      extendedproperties: this.extendedproperties,
-      supportedscenario: this.supportedscenario,
-      name: this.name,
-      description: this.description,
-    };
-  }
 }
 
 /**
  * CreateFlowMachineNetwork response message
  */
 export class CreateFlowMachineNetworkResponse extends OrganizationResponse {
-  constructor(public result: CreateFlowMachineNetworkResponse) {
+  constructor(public result: CreateFlowMachineNetworkResponseData) {
     super("CreateFlowMachineNetwork");
   }
 
   static fromResponse(data: unknown): CreateFlowMachineNetworkResponse {
-    return new CreateFlowMachineNetworkResponse((data as any).value);
+    return new CreateFlowMachineNetworkResponse(
+      responseObject<CreateFlowMachineNetworkResponseData>(data)
+    );
   }
 }

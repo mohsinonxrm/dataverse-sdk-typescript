@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_DraftOutreachEmailResponse as msdyn_DraftOutreachEmailResponseData } from "./types/index.js";
 
 /**
  * msdyn_DraftOutreachEmail request message
@@ -35,23 +37,19 @@ export class msdyn_DraftOutreachEmailRequest
     const data = await response.json();
     return msdyn_DraftOutreachEmailResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      LeadId: this.leadId,
-    };
-  }
 }
 
 /**
  * msdyn_DraftOutreachEmail response message
  */
 export class msdyn_DraftOutreachEmailResponse extends OrganizationResponse {
-  constructor(public result: msdyn_DraftOutreachEmailResponse) {
+  constructor(public result: msdyn_DraftOutreachEmailResponseData) {
     super("msdyn_DraftOutreachEmail");
   }
 
   static fromResponse(data: unknown): msdyn_DraftOutreachEmailResponse {
-    return new msdyn_DraftOutreachEmailResponse((data as any).value);
+    return new msdyn_DraftOutreachEmailResponse(
+      responseObject<msdyn_DraftOutreachEmailResponseData>(data)
+    );
   }
 }

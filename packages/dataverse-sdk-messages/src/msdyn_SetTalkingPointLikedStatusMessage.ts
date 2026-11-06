@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_SetTalkingPointLikedStatusResponse as msdyn_SetTalkingPointLikedStatusResponseData } from "./types/index.js";
 
 /**
  * msdyn_SetTalkingPointLikedStatus request message
@@ -41,25 +43,19 @@ export class msdyn_SetTalkingPointLikedStatusRequest
     const data = await response.json();
     return msdyn_SetTalkingPointLikedStatusResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      MessageId: this.messageId,
-      InferredMessageId: this.inferredMessageId,
-      IsLiked: this.isLiked,
-    };
-  }
 }
 
 /**
  * msdyn_SetTalkingPointLikedStatus response message
  */
 export class msdyn_SetTalkingPointLikedStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SetTalkingPointLikedStatusResponse) {
+  constructor(public result: msdyn_SetTalkingPointLikedStatusResponseData) {
     super("msdyn_SetTalkingPointLikedStatus");
   }
 
   static fromResponse(data: unknown): msdyn_SetTalkingPointLikedStatusResponse {
-    return new msdyn_SetTalkingPointLikedStatusResponse((data as any).value);
+    return new msdyn_SetTalkingPointLikedStatusResponse(
+      responseObject<msdyn_SetTalkingPointLikedStatusResponseData>(data)
+    );
   }
 }

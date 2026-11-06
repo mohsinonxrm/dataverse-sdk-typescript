@@ -35,12 +35,6 @@ export class msdyn_ODOSMetadataCleanUpRequest
     // No return value (204 No Content)
     return new msdyn_ODOSMetadataCleanUpResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      InputData: this.inputData,
-    };
-  }
 }
 
 /**

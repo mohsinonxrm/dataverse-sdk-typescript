@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { RescheduleResponse as RescheduleResponseData } from "./types/index.js";
 
 /**
  * Reschedule request message
@@ -40,24 +42,17 @@ export class RescheduleRequest
     const data = await response.json();
     return RescheduleResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-      ReturnNotifications: this.returnNotifications,
-    };
-  }
 }
 
 /**
  * Reschedule response message
  */
 export class RescheduleResponse extends OrganizationResponse {
-  constructor(public result: RescheduleResponse) {
+  constructor(public result: RescheduleResponseData) {
     super("Reschedule");
   }
 
   static fromResponse(data: unknown): RescheduleResponse {
-    return new RescheduleResponse((data as any).value);
+    return new RescheduleResponse(responseObject<RescheduleResponseData>(data));
   }
 }

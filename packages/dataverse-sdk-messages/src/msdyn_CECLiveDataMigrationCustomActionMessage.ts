@@ -30,10 +30,6 @@ export class msdyn_CECLiveDataMigrationCustomActionRequest
     // No return value (204 No Content)
     return new msdyn_CECLiveDataMigrationCustomActionResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**

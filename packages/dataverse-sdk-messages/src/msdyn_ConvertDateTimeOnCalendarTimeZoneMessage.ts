@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_ConvertDateTimeOnCalendarTimeZoneResponse as msdyn_ConvertDateTimeOnCalendarTimeZoneResponseData } from "./types/index.js";
 
 /**
  * msdyn_ConvertDateTimeOnCalendarTimeZone request message
@@ -43,25 +45,19 @@ export class msdyn_ConvertDateTimeOnCalendarTimeZoneRequest
     const data = await response.json();
     return msdyn_ConvertDateTimeOnCalendarTimeZoneResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      IsDateTimeTza: this.isDateTimeTza,
-      CalendarId: this.calendarId,
-      DateTime: this.dateTime,
-    };
-  }
 }
 
 /**
  * msdyn_ConvertDateTimeOnCalendarTimeZone response message
  */
 export class msdyn_ConvertDateTimeOnCalendarTimeZoneResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ConvertDateTimeOnCalendarTimeZoneResponse) {
+  constructor(public result: msdyn_ConvertDateTimeOnCalendarTimeZoneResponseData) {
     super("msdyn_ConvertDateTimeOnCalendarTimeZone");
   }
 
   static fromResponse(data: unknown): msdyn_ConvertDateTimeOnCalendarTimeZoneResponse {
-    return new msdyn_ConvertDateTimeOnCalendarTimeZoneResponse((data as any).value);
+    return new msdyn_ConvertDateTimeOnCalendarTimeZoneResponse(
+      responseObject<msdyn_ConvertDateTimeOnCalendarTimeZoneResponseData>(data)
+    );
   }
 }

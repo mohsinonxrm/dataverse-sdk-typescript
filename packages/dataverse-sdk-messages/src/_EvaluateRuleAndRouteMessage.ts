@@ -40,13 +40,6 @@ export class _EvaluateRuleAndRouteRequest
     // No return value (204 No Content)
     return new _EvaluateRuleAndRouteResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-      RoutingRuleSetId: this.routingRuleSetId,
-    };
-  }
 }
 
 /**

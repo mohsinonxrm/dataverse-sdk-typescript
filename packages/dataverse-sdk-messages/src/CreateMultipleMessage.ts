@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { CreateMultipleResponse as CreateMultipleResponseData } from "./types/index.js";
 
 /**
  * CreateMultiple request message
@@ -41,23 +43,17 @@ export class CreateMultipleRequest
     const data = await response.json();
     return CreateMultipleResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Targets: this.targets,
-    };
-  }
 }
 
 /**
  * CreateMultiple response message
  */
 export class CreateMultipleResponse extends OrganizationResponse {
-  constructor(public result: CreateMultipleResponse) {
+  constructor(public result: CreateMultipleResponseData) {
     super("CreateMultiple");
   }
 
   static fromResponse(data: unknown): CreateMultipleResponse {
-    return new CreateMultipleResponse((data as any).value);
+    return new CreateMultipleResponse(responseObject<CreateMultipleResponseData>(data));
   }
 }

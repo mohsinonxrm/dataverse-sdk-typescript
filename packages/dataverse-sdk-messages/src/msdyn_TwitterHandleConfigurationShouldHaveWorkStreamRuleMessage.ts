@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRuleResponse as msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRule request message
@@ -32,17 +34,13 @@ export class msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRuleRequest
     const data = await response.json();
     return msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRuleResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRule response message
  */
 export class msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRuleResponse) {
+  constructor(public result: msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRuleResponseData) {
     super("msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRule");
   }
 
@@ -50,7 +48,7 @@ export class msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRuleResponse ex
     data: unknown
   ): msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRuleResponse {
     return new msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRuleResponse(
-      (data as any).value
+      responseObject<msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRuleResponseData>(data)
     );
   }
 }

@@ -39,13 +39,6 @@ export class DeprovisionLanguageRequest
     // No return value (204 No Content)
     return new DeprovisionLanguageResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Language: this.language,
-      CleanupLanguageRows: this.cleanupLanguageRows,
-    };
-  }
 }
 
 /**

@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 
 /**
@@ -42,25 +43,19 @@ export class msdyn_PredictFieldsBasedOnRulesRequest
     const data = await response.json();
     return msdyn_PredictFieldsBasedOnRulesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_Target: this.msdyn_Target,
-      msdyn_ContextGenerationParameters: this.msdyn_ContextGenerationParameters,
-      msdyn_Context: this.msdyn_Context,
-    };
-  }
 }
 
 /**
  * msdyn_PredictFieldsBasedOnRules response message
  */
 export class msdyn_PredictFieldsBasedOnRulesResponse extends OrganizationResponse {
-  constructor(public result: EntityReference) {
+  constructor(public result: Record<string, unknown>) {
     super("msdyn_PredictFieldsBasedOnRules");
   }
 
   static fromResponse(data: unknown): msdyn_PredictFieldsBasedOnRulesResponse {
-    return new msdyn_PredictFieldsBasedOnRulesResponse((data as any).value);
+    return new msdyn_PredictFieldsBasedOnRulesResponse(
+      responseObject<Record<string, unknown>>(data)
+    );
   }
 }

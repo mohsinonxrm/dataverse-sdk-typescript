@@ -30,10 +30,6 @@ export class msdyn_PostOperationRevokeUsrConsentRequest
     // No return value (204 No Content)
     return new msdyn_PostOperationRevokeUsrConsentResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**

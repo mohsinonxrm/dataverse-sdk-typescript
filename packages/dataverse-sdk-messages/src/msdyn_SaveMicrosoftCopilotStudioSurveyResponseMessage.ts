@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_SaveMicrosoftCopilotStudioSurveyResponseResponse as msdyn_SaveMicrosoftCopilotStudioSurveyResponseResponseData } from "./types/index.js";
 
 /**
  * msdyn_SaveMicrosoftCopilotStudioSurveyResponse request message
@@ -37,23 +39,19 @@ export class msdyn_SaveMicrosoftCopilotStudioSurveyResponseRequest
     const data = await response.json();
     return msdyn_SaveMicrosoftCopilotStudioSurveyResponseResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      InputParams: this.inputParams,
-    };
-  }
 }
 
 /**
  * msdyn_SaveMicrosoftCopilotStudioSurveyResponse response message
  */
 export class msdyn_SaveMicrosoftCopilotStudioSurveyResponseResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SaveMicrosoftCopilotStudioSurveyResponseResponse) {
+  constructor(public result: msdyn_SaveMicrosoftCopilotStudioSurveyResponseResponseData) {
     super("msdyn_SaveMicrosoftCopilotStudioSurveyResponse");
   }
 
   static fromResponse(data: unknown): msdyn_SaveMicrosoftCopilotStudioSurveyResponseResponse {
-    return new msdyn_SaveMicrosoftCopilotStudioSurveyResponseResponse((data as any).value);
+    return new msdyn_SaveMicrosoftCopilotStudioSurveyResponseResponse(
+      responseObject<msdyn_SaveMicrosoftCopilotStudioSurveyResponseResponseData>(data)
+    );
   }
 }

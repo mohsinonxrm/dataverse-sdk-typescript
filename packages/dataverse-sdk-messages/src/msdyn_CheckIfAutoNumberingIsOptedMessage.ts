@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckIfAutoNumberingIsOptedResponse as msdyn_CheckIfAutoNumberingIsOptedResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckIfAutoNumberingIsOpted request message
@@ -35,23 +37,19 @@ export class msdyn_CheckIfAutoNumberingIsOptedRequest
     const data = await response.json();
     return msdyn_CheckIfAutoNumberingIsOptedResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionId: this.solutionId,
-    };
-  }
 }
 
 /**
  * msdyn_CheckIfAutoNumberingIsOpted response message
  */
 export class msdyn_CheckIfAutoNumberingIsOptedResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfAutoNumberingIsOptedResponse) {
+  constructor(public result: msdyn_CheckIfAutoNumberingIsOptedResponseData) {
     super("msdyn_CheckIfAutoNumberingIsOpted");
   }
 
   static fromResponse(data: unknown): msdyn_CheckIfAutoNumberingIsOptedResponse {
-    return new msdyn_CheckIfAutoNumberingIsOptedResponse((data as any).value);
+    return new msdyn_CheckIfAutoNumberingIsOptedResponse(
+      responseObject<msdyn_CheckIfAutoNumberingIsOptedResponseData>(data)
+    );
   }
 }

@@ -31,12 +31,6 @@ export class RestartHostedMachineRequest
     // No return value (204 No Content)
     return new RestartHostedMachineResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.flowmachineId,
-    };
-  }
 }
 
 /**

@@ -35,12 +35,6 @@ export class msdyn_publishScheduledRolloutRequest
     // No return value (204 No Content)
     return new msdyn_publishScheduledRolloutResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RolloutPlanId: this.rolloutPlanId,
-    };
-  }
 }
 
 /**

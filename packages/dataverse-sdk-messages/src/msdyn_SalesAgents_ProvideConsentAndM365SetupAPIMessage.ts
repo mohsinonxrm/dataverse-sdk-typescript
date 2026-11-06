@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_SalesAgents_ProvideConsentAndM365SetupAPIResponse as msdyn_SalesAgents_ProvideConsentAndM365SetupAPIResponseData } from "./types/index.js";
 
 /**
  * msdyn_SalesAgents_ProvideConsentAndM365SetupAPI request message
@@ -32,21 +34,19 @@ export class msdyn_SalesAgents_ProvideConsentAndM365SetupAPIRequest
     const data = await response.json();
     return msdyn_SalesAgents_ProvideConsentAndM365SetupAPIResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_SalesAgents_ProvideConsentAndM365SetupAPI response message
  */
 export class msdyn_SalesAgents_ProvideConsentAndM365SetupAPIResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgents_ProvideConsentAndM365SetupAPIResponse) {
+  constructor(public result: msdyn_SalesAgents_ProvideConsentAndM365SetupAPIResponseData) {
     super("msdyn_SalesAgents_ProvideConsentAndM365SetupAPI");
   }
 
   static fromResponse(data: unknown): msdyn_SalesAgents_ProvideConsentAndM365SetupAPIResponse {
-    return new msdyn_SalesAgents_ProvideConsentAndM365SetupAPIResponse((data as any).value);
+    return new msdyn_SalesAgents_ProvideConsentAndM365SetupAPIResponse(
+      responseObject<msdyn_SalesAgents_ProvideConsentAndM365SetupAPIResponseData>(data)
+    );
   }
 }

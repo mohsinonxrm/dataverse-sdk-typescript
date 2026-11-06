@@ -38,12 +38,6 @@ export class msdyn_EvaluateMasterEntityRoutingConfigurationRequest
     // No return value (204 No Content)
     return new msdyn_EvaluateMasterEntityRoutingConfigurationResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-    };
-  }
 }
 
 /**

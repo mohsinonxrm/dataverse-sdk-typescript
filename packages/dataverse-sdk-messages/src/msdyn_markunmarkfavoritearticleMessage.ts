@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_markunmarkfavoritearticleResponse as msdyn_markunmarkfavoritearticleResponseData } from "./types/index.js";
 
 /**
  * msdyn_markunmarkfavoritearticle request message
@@ -41,25 +43,19 @@ export class msdyn_markunmarkfavoritearticleRequest
     const data = await response.json();
     return msdyn_markunmarkfavoritearticleResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_knowledgearticleid: this.msdyn_knowledgearticleid,
-      msdyn_userid: this.msdyn_userid,
-      msdyn_actionname: this.msdyn_actionname,
-    };
-  }
 }
 
 /**
  * msdyn_markunmarkfavoritearticle response message
  */
 export class msdyn_markunmarkfavoritearticleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_markunmarkfavoritearticleResponse) {
+  constructor(public result: msdyn_markunmarkfavoritearticleResponseData) {
     super("msdyn_markunmarkfavoritearticle");
   }
 
   static fromResponse(data: unknown): msdyn_markunmarkfavoritearticleResponse {
-    return new msdyn_markunmarkfavoritearticleResponse((data as any).value);
+    return new msdyn_markunmarkfavoritearticleResponse(
+      responseObject<msdyn_markunmarkfavoritearticleResponseData>(data)
+    );
   }
 }

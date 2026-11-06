@@ -41,14 +41,6 @@ export class AddCertificateCredentialRequest
     // No return value (204 No Content)
     return new AddCertificateCredentialResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entityLogicalName: this.entityLogicalName,
-      entityId: this.entityId,
-      thumbprint: this.thumbprint,
-    };
-  }
 }
 
 /**

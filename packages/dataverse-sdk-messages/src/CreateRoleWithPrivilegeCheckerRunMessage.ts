@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { CreateRoleWithPrivilegeCheckerRunResponse as CreateRoleWithPrivilegeCheckerRunResponseData } from "./types/index.js";
 
 /**
  * CreateRoleWithPrivilegeCheckerRun request message
@@ -41,25 +43,19 @@ export class CreateRoleWithPrivilegeCheckerRunRequest
     const data = await response.json();
     return CreateRoleWithPrivilegeCheckerRunResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.privilegecheckerrunId,
-      PrivilegeCheckerRunId: this.privilegeCheckerRunId,
-      RoleName: this.roleName,
-    };
-  }
 }
 
 /**
  * CreateRoleWithPrivilegeCheckerRun response message
  */
 export class CreateRoleWithPrivilegeCheckerRunResponse extends OrganizationResponse {
-  constructor(public result: CreateRoleWithPrivilegeCheckerRunResponse) {
+  constructor(public result: CreateRoleWithPrivilegeCheckerRunResponseData) {
     super("CreateRoleWithPrivilegeCheckerRun");
   }
 
   static fromResponse(data: unknown): CreateRoleWithPrivilegeCheckerRunResponse {
-    return new CreateRoleWithPrivilegeCheckerRunResponse((data as any).value);
+    return new CreateRoleWithPrivilegeCheckerRunResponse(
+      responseObject<CreateRoleWithPrivilegeCheckerRunResponseData>(data)
+    );
   }
 }

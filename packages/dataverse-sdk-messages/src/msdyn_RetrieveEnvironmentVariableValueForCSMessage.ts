@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_RetrieveEnvironmentVariableValueForCSResponse as msdyn_RetrieveEnvironmentVariableValueForCSResponseData } from "./types/index.js";
 
 /**
  * msdyn_RetrieveEnvironmentVariableValueForCS request message
@@ -37,23 +39,19 @@ export class msdyn_RetrieveEnvironmentVariableValueForCSRequest
     const data = await response.json();
     return msdyn_RetrieveEnvironmentVariableValueForCSResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_EnvironmentVariableName: this.msdyn_EnvironmentVariableName,
-    };
-  }
 }
 
 /**
  * msdyn_RetrieveEnvironmentVariableValueForCS response message
  */
 export class msdyn_RetrieveEnvironmentVariableValueForCSResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrieveEnvironmentVariableValueForCSResponse) {
+  constructor(public result: msdyn_RetrieveEnvironmentVariableValueForCSResponseData) {
     super("msdyn_RetrieveEnvironmentVariableValueForCS");
   }
 
   static fromResponse(data: unknown): msdyn_RetrieveEnvironmentVariableValueForCSResponse {
-    return new msdyn_RetrieveEnvironmentVariableValueForCSResponse((data as any).value);
+    return new msdyn_RetrieveEnvironmentVariableValueForCSResponse(
+      responseObject<msdyn_RetrieveEnvironmentVariableValueForCSResponseData>(data)
+    );
   }
 }

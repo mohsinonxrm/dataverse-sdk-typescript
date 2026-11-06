@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_FacebookPageConfigurationShouldHaveWorkStreamRuleResponse as msdyn_FacebookPageConfigurationShouldHaveWorkStreamRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_FacebookPageConfigurationShouldHaveWorkStreamRule request message
@@ -32,23 +34,21 @@ export class msdyn_FacebookPageConfigurationShouldHaveWorkStreamRuleRequest
     const data = await response.json();
     return msdyn_FacebookPageConfigurationShouldHaveWorkStreamRuleResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_FacebookPageConfigurationShouldHaveWorkStreamRule response message
  */
 export class msdyn_FacebookPageConfigurationShouldHaveWorkStreamRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_FacebookPageConfigurationShouldHaveWorkStreamRuleResponse) {
+  constructor(public result: msdyn_FacebookPageConfigurationShouldHaveWorkStreamRuleResponseData) {
     super("msdyn_FacebookPageConfigurationShouldHaveWorkStreamRule");
   }
 
   static fromResponse(
     data: unknown
   ): msdyn_FacebookPageConfigurationShouldHaveWorkStreamRuleResponse {
-    return new msdyn_FacebookPageConfigurationShouldHaveWorkStreamRuleResponse((data as any).value);
+    return new msdyn_FacebookPageConfigurationShouldHaveWorkStreamRuleResponse(
+      responseObject<msdyn_FacebookPageConfigurationShouldHaveWorkStreamRuleResponseData>(data)
+    );
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_FetchDiagnosticEntitiesAndCountResponse as msdyn_FetchDiagnosticEntitiesAndCountResponseData } from "./types/index.js";
 
 /**
  * msdyn_FetchDiagnosticEntitiesAndCount request message
@@ -39,24 +41,19 @@ export class msdyn_FetchDiagnosticEntitiesAndCountRequest
     const data = await response.json();
     return msdyn_FetchDiagnosticEntitiesAndCountResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_RunId: this.msdyn_RunId,
-      msdyn_Filter: this.msdyn_Filter,
-    };
-  }
 }
 
 /**
  * msdyn_FetchDiagnosticEntitiesAndCount response message
  */
 export class msdyn_FetchDiagnosticEntitiesAndCountResponse extends OrganizationResponse {
-  constructor(public result: msdyn_FetchDiagnosticEntitiesAndCountResponse) {
+  constructor(public result: msdyn_FetchDiagnosticEntitiesAndCountResponseData) {
     super("msdyn_FetchDiagnosticEntitiesAndCount");
   }
 
   static fromResponse(data: unknown): msdyn_FetchDiagnosticEntitiesAndCountResponse {
-    return new msdyn_FetchDiagnosticEntitiesAndCountResponse((data as any).value);
+    return new msdyn_FetchDiagnosticEntitiesAndCountResponse(
+      responseObject<msdyn_FetchDiagnosticEntitiesAndCountResponseData>(data)
+    );
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetCaseAggregationResponse as msdyn_GetCaseAggregationResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetCaseAggregation request message
@@ -41,25 +43,19 @@ export class msdyn_GetCaseAggregationRequest
     const data = await response.json();
     return msdyn_GetCaseAggregationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      DeviceId: this.deviceId,
-      TimeRangeValue: this.timeRangeValue,
-      TimeRangeType: this.timeRangeType,
-    };
-  }
 }
 
 /**
  * msdyn_GetCaseAggregation response message
  */
 export class msdyn_GetCaseAggregationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetCaseAggregationResponse) {
+  constructor(public result: msdyn_GetCaseAggregationResponseData) {
     super("msdyn_GetCaseAggregation");
   }
 
   static fromResponse(data: unknown): msdyn_GetCaseAggregationResponse {
-    return new msdyn_GetCaseAggregationResponse((data as any).value);
+    return new msdyn_GetCaseAggregationResponse(
+      responseObject<msdyn_GetCaseAggregationResponseData>(data)
+    );
   }
 }

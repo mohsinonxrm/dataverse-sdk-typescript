@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import { responseValue } from "./internal/responseData.js";
 
 /**
  * msdyn_GetRecordUsers request message
@@ -42,25 +42,17 @@ export class msdyn_GetRecordUsersRequest
     const data = await response.json();
     return msdyn_GetRecordUsersResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RecordType: this.recordType,
-      RecordId: this.recordId,
-      RecordTypeName: this.recordTypeName,
-    };
-  }
 }
 
 /**
  * msdyn_GetRecordUsers response message
  */
 export class msdyn_GetRecordUsersResponse extends OrganizationResponse {
-  constructor(public result: EntityReference[]) {
+  constructor(public result: Record<string, unknown>[]) {
     super("msdyn_GetRecordUsers");
   }
 
   static fromResponse(data: unknown): msdyn_GetRecordUsersResponse {
-    return new msdyn_GetRecordUsersResponse((data as any).value);
+    return new msdyn_GetRecordUsersResponse(responseValue<Record<string, unknown>[]>(data));
   }
 }

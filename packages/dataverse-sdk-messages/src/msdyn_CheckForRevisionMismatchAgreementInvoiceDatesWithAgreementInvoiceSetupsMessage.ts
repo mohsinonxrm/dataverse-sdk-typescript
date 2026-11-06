@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckForRevisionMismatchAgreementInvoiceDatesWithAgreementInvoiceSetupsResponse as msdyn_CheckForRevisionMismatchAgreementInvoiceDatesWithAgreementInvoiceSetupsResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckForRevisionMismatchAgreementInvoiceDatesWithAgreementInvoiceSetups request message
@@ -40,12 +42,6 @@ export class msdyn_CheckForRevisionMismatchAgreementInvoiceDatesWithAgreementInv
       data
     );
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      TimeInterval: this.timeInterval,
-    };
-  }
 }
 
 /**
@@ -53,7 +49,7 @@ export class msdyn_CheckForRevisionMismatchAgreementInvoiceDatesWithAgreementInv
  */
 export class msdyn_CheckForRevisionMismatchAgreementInvoiceDatesWithAgreementInvoiceSetupsResponse extends OrganizationResponse {
   constructor(
-    public result: msdyn_CheckForRevisionMismatchAgreementInvoiceDatesWithAgreementInvoiceSetupsResponse
+    public result: msdyn_CheckForRevisionMismatchAgreementInvoiceDatesWithAgreementInvoiceSetupsResponseData
   ) {
     super("msdyn_CheckForRevisionMismatchAgreementInvoiceDatesWithAgreementInvoiceSetups");
   }
@@ -62,7 +58,9 @@ export class msdyn_CheckForRevisionMismatchAgreementInvoiceDatesWithAgreementInv
     data: unknown
   ): msdyn_CheckForRevisionMismatchAgreementInvoiceDatesWithAgreementInvoiceSetupsResponse {
     return new msdyn_CheckForRevisionMismatchAgreementInvoiceDatesWithAgreementInvoiceSetupsResponse(
-      (data as any).value
+      responseObject<msdyn_CheckForRevisionMismatchAgreementInvoiceDatesWithAgreementInvoiceSetupsResponseData>(
+        data
+      )
     );
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetPoPTokenResponse as msdyn_GetPoPTokenResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetPoPToken request message
@@ -45,27 +47,17 @@ export class msdyn_GetPoPTokenRequest
     const data = await response.json();
     return msdyn_GetPoPTokenResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      scope: this.scope,
-      audience: this.audience,
-      aadObjectId: this.aadObjectId,
-      httpMethod: this.httpMethod,
-      secureString: this.secureString,
-    };
-  }
 }
 
 /**
  * msdyn_GetPoPToken response message
  */
 export class msdyn_GetPoPTokenResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetPoPTokenResponse) {
+  constructor(public result: msdyn_GetPoPTokenResponseData) {
     super("msdyn_GetPoPToken");
   }
 
   static fromResponse(data: unknown): msdyn_GetPoPTokenResponse {
-    return new msdyn_GetPoPTokenResponse((data as any).value);
+    return new msdyn_GetPoPTokenResponse(responseObject<msdyn_GetPoPTokenResponseData>(data));
   }
 }

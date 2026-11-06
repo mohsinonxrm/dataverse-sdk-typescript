@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_CheckForDuplicatesActionResponse as msdyn_CheckForDuplicatesActionResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckForDuplicatesAction request message
@@ -36,23 +38,19 @@ export class msdyn_CheckForDuplicatesActionRequest
     const data = await response.json();
     return msdyn_CheckForDuplicatesActionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Record: this.record,
-    };
-  }
 }
 
 /**
  * msdyn_CheckForDuplicatesAction response message
  */
 export class msdyn_CheckForDuplicatesActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckForDuplicatesActionResponse) {
+  constructor(public result: msdyn_CheckForDuplicatesActionResponseData) {
     super("msdyn_CheckForDuplicatesAction");
   }
 
   static fromResponse(data: unknown): msdyn_CheckForDuplicatesActionResponse {
-    return new msdyn_CheckForDuplicatesActionResponse((data as any).value);
+    return new msdyn_CheckForDuplicatesActionResponse(
+      responseObject<msdyn_CheckForDuplicatesActionResponseData>(data)
+    );
   }
 }

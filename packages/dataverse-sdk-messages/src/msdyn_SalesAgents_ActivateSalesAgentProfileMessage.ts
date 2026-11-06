@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_SalesAgents_ActivateSalesAgentProfileResponse as msdyn_SalesAgents_ActivateSalesAgentProfileResponseData } from "./types/index.js";
 
 /**
  * msdyn_SalesAgents_ActivateSalesAgentProfile request message
@@ -37,23 +39,19 @@ export class msdyn_SalesAgents_ActivateSalesAgentProfileRequest
     const data = await response.json();
     return msdyn_SalesAgents_ActivateSalesAgentProfileResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RequestJson: this.requestJson,
-    };
-  }
 }
 
 /**
  * msdyn_SalesAgents_ActivateSalesAgentProfile response message
  */
 export class msdyn_SalesAgents_ActivateSalesAgentProfileResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgents_ActivateSalesAgentProfileResponse) {
+  constructor(public result: msdyn_SalesAgents_ActivateSalesAgentProfileResponseData) {
     super("msdyn_SalesAgents_ActivateSalesAgentProfile");
   }
 
   static fromResponse(data: unknown): msdyn_SalesAgents_ActivateSalesAgentProfileResponse {
-    return new msdyn_SalesAgents_ActivateSalesAgentProfileResponse((data as any).value);
+    return new msdyn_SalesAgents_ActivateSalesAgentProfileResponse(
+      responseObject<msdyn_SalesAgents_ActivateSalesAgentProfileResponseData>(data)
+    );
   }
 }

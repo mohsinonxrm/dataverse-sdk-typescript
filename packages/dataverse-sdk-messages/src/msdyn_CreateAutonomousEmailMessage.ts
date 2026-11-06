@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_CreateAutonomousEmailResponse as msdyn_CreateAutonomousEmailResponseData } from "./types/index.js";
 
 /**
  * msdyn_CreateAutonomousEmail request message
@@ -58,33 +60,19 @@ export class msdyn_CreateAutonomousEmailRequest
     const data = await response.json();
     return msdyn_CreateAutonomousEmailResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SourceContextEntity: this.sourceContextEntity,
-      Entity: this.entity,
-      StandardizedIntent: this.standardizedIntent,
-      IntentFamilyId: this.intentFamilyId,
-      FallbackEmailTemplateId: this.fallbackEmailTemplateId,
-      SuggestionType: this.suggestionType,
-      SenderEntity: this.senderEntity,
-      SuggestionSubtype: this.suggestionSubtype,
-      UseCopilotRecommendedTemplate: this.useCopilotRecommendedTemplate,
-      SuggestionResponse: this.suggestionResponse,
-      AutomationLevel: this.automationLevel,
-    };
-  }
 }
 
 /**
  * msdyn_CreateAutonomousEmail response message
  */
 export class msdyn_CreateAutonomousEmailResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CreateAutonomousEmailResponse) {
+  constructor(public result: msdyn_CreateAutonomousEmailResponseData) {
     super("msdyn_CreateAutonomousEmail");
   }
 
   static fromResponse(data: unknown): msdyn_CreateAutonomousEmailResponse {
-    return new msdyn_CreateAutonomousEmailResponse((data as any).value);
+    return new msdyn_CreateAutonomousEmailResponse(
+      responseObject<msdyn_CreateAutonomousEmailResponseData>(data)
+    );
   }
 }

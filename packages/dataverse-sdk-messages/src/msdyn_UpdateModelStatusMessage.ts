@@ -39,13 +39,6 @@ export class msdyn_UpdateModelStatusRequest
     // No return value (204 No Content)
     return new msdyn_UpdateModelStatusResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_ocsimltrainingId,
-      AIConfig: this.aIConfig,
-    };
-  }
 }
 
 /**

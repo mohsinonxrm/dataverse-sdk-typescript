@@ -39,13 +39,6 @@ export class msdyn_ClassifySegmentsRequest
     // No return value (204 No Content)
     return new msdyn_ClassifySegmentsResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RegardingEntityId: this.regardingEntityId,
-      RegardingEntityName: this.regardingEntityName,
-    };
-  }
 }
 
 /**

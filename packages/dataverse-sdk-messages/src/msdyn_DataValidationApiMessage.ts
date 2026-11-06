@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_DataValidationApiResponse as msdyn_DataValidationApiResponseData } from "./types/index.js";
 
 /**
  * msdyn_DataValidationApi request message
@@ -39,24 +41,19 @@ export class msdyn_DataValidationApiRequest
     const data = await response.json();
     return msdyn_DataValidationApiResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ApiType: this.apiType,
-      ApiPayLoad: this.apiPayLoad,
-    };
-  }
 }
 
 /**
  * msdyn_DataValidationApi response message
  */
 export class msdyn_DataValidationApiResponse extends OrganizationResponse {
-  constructor(public result: msdyn_DataValidationApiResponse) {
+  constructor(public result: msdyn_DataValidationApiResponseData) {
     super("msdyn_DataValidationApi");
   }
 
   static fromResponse(data: unknown): msdyn_DataValidationApiResponse {
-    return new msdyn_DataValidationApiResponse((data as any).value);
+    return new msdyn_DataValidationApiResponse(
+      responseObject<msdyn_DataValidationApiResponseData>(data)
+    );
   }
 }

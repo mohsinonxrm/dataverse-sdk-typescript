@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { PBIAutoRefreshDatasetResponse as PBIAutoRefreshDatasetResponseData } from "./types/index.js";
 
 /**
  * PBIAutoRefreshDataset request message
@@ -39,24 +41,19 @@ export class PBIAutoRefreshDatasetRequest
     const data = await response.json();
     return PBIAutoRefreshDatasetResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ReportId: this.reportId,
-      AutoRefreshParameters: this.autoRefreshParameters,
-    };
-  }
 }
 
 /**
  * PBIAutoRefreshDataset response message
  */
 export class PBIAutoRefreshDatasetResponse extends OrganizationResponse {
-  constructor(public result: PBIAutoRefreshDatasetResponse) {
+  constructor(public result: PBIAutoRefreshDatasetResponseData) {
     super("PBIAutoRefreshDataset");
   }
 
   static fromResponse(data: unknown): PBIAutoRefreshDatasetResponse {
-    return new PBIAutoRefreshDatasetResponse((data as any).value);
+    return new PBIAutoRefreshDatasetResponse(
+      responseObject<PBIAutoRefreshDatasetResponseData>(data)
+    );
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdynmkt_PersonalizationGetEntityProvidersResponse as msdynmkt_PersonalizationGetEntityProvidersResponseData } from "./types/index.js";
 
 /**
  * msdynmkt_PersonalizationGetEntityProviders request message
@@ -37,23 +39,19 @@ export class msdynmkt_PersonalizationGetEntityProvidersRequest
     const data = await response.json();
     return msdynmkt_PersonalizationGetEntityProvidersResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      GetProvidersRequest: this.getProvidersRequest,
-    };
-  }
 }
 
 /**
  * msdynmkt_PersonalizationGetEntityProviders response message
  */
 export class msdynmkt_PersonalizationGetEntityProvidersResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_PersonalizationGetEntityProvidersResponse) {
+  constructor(public result: msdynmkt_PersonalizationGetEntityProvidersResponseData) {
     super("msdynmkt_PersonalizationGetEntityProviders");
   }
 
   static fromResponse(data: unknown): msdynmkt_PersonalizationGetEntityProvidersResponse {
-    return new msdynmkt_PersonalizationGetEntityProvidersResponse((data as any).value);
+    return new msdynmkt_PersonalizationGetEntityProvidersResponse(
+      responseObject<msdynmkt_PersonalizationGetEntityProvidersResponseData>(data)
+    );
   }
 }

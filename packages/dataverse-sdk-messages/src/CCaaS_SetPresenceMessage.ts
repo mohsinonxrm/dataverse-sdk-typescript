@@ -39,13 +39,6 @@ export class CCaaS_SetPresenceRequest
     // No return value (204 No Content)
     return new CCaaS_SetPresenceResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ApiVersion: this.apiVersion,
-      PresenceId: this.presenceId,
-    };
-  }
 }
 
 /**

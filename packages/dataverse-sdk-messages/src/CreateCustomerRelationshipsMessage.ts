@@ -1,8 +1,10 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type {
   ComplexLookupAttributeMetadata,
   ComplexOneToManyRelationshipMetadata,
+  CreateCustomerRelationshipsResponse as CreateCustomerRelationshipsResponseData,
 } from "./types/index.js";
 
 /**
@@ -45,25 +47,19 @@ export class CreateCustomerRelationshipsRequest
     const data = await response.json();
     return CreateCustomerRelationshipsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Lookup: this.lookup,
-      OneToManyRelationships: this.oneToManyRelationships,
-      SolutionUniqueName: this.solutionUniqueName,
-    };
-  }
 }
 
 /**
  * CreateCustomerRelationships response message
  */
 export class CreateCustomerRelationshipsResponse extends OrganizationResponse {
-  constructor(public result: CreateCustomerRelationshipsResponse) {
+  constructor(public result: CreateCustomerRelationshipsResponseData) {
     super("CreateCustomerRelationships");
   }
 
   static fromResponse(data: unknown): CreateCustomerRelationshipsResponse {
-    return new CreateCustomerRelationshipsResponse((data as any).value);
+    return new CreateCustomerRelationshipsResponse(
+      responseObject<CreateCustomerRelationshipsResponseData>(data)
+    );
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationResponse as msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationResponseData } from "./types/index.js";
 
 /**
  * msdyn_CSAdminCenterAppSolutionHealthRulesRegistration request message
@@ -37,25 +39,21 @@ export class msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationRequest
     const data = await response.json();
     return msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionNames: this.solutionNames,
-    };
-  }
 }
 
 /**
  * msdyn_CSAdminCenterAppSolutionHealthRulesRegistration response message
  */
 export class msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationResponse) {
+  constructor(public result: msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationResponseData) {
     super("msdyn_CSAdminCenterAppSolutionHealthRulesRegistration");
   }
 
   static fromResponse(
     data: unknown
   ): msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationResponse {
-    return new msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationResponse((data as any).value);
+    return new msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationResponse(
+      responseObject<msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationResponseData>(data)
+    );
   }
 }

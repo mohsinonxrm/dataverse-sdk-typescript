@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { ScheduleRetrainResponse as ScheduleRetrainResponseData } from "./types/index.js";
 
 /**
  * ScheduleRetrain request message
@@ -41,25 +43,17 @@ export class ScheduleRetrainRequest
     const data = await response.json();
     return ScheduleRetrainResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_aimodelId,
-      recurrence: this.recurrence,
-      version: this.version,
-    };
-  }
 }
 
 /**
  * ScheduleRetrain response message
  */
 export class ScheduleRetrainResponse extends OrganizationResponse {
-  constructor(public result: ScheduleRetrainResponse) {
+  constructor(public result: ScheduleRetrainResponseData) {
     super("ScheduleRetrain");
   }
 
   static fromResponse(data: unknown): ScheduleRetrainResponse {
-    return new ScheduleRetrainResponse((data as any).value);
+    return new ScheduleRetrainResponse(responseObject<ScheduleRetrainResponseData>(data));
   }
 }

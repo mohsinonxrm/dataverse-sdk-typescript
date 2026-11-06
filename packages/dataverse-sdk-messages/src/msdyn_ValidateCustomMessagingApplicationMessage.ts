@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_ValidateCustomMessagingApplicationResponse as msdyn_ValidateCustomMessagingApplicationResponseData } from "./types/index.js";
 
 /**
  * msdyn_ValidateCustomMessagingApplication request message
@@ -43,25 +45,19 @@ export class msdyn_ValidateCustomMessagingApplicationRequest
     const data = await response.json();
     return msdyn_ValidateCustomMessagingApplicationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      CustomMessagingBCRMSAppId: this.customMessagingBCRMSAppId,
-      CustomMessagingBCRRecordId: this.customMessagingBCRRecordId,
-      CustomMessagingBCRMSAppSecret: this.customMessagingBCRMSAppSecret,
-    };
-  }
 }
 
 /**
  * msdyn_ValidateCustomMessagingApplication response message
  */
 export class msdyn_ValidateCustomMessagingApplicationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ValidateCustomMessagingApplicationResponse) {
+  constructor(public result: msdyn_ValidateCustomMessagingApplicationResponseData) {
     super("msdyn_ValidateCustomMessagingApplication");
   }
 
   static fromResponse(data: unknown): msdyn_ValidateCustomMessagingApplicationResponse {
-    return new msdyn_ValidateCustomMessagingApplicationResponse((data as any).value);
+    return new msdyn_ValidateCustomMessagingApplicationResponse(
+      responseObject<msdyn_ValidateCustomMessagingApplicationResponseData>(data)
+    );
   }
 }

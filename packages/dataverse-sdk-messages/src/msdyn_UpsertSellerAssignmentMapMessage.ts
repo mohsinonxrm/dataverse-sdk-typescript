@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_UpsertSellerAssignmentMapResponse as msdyn_UpsertSellerAssignmentMapResponseData } from "./types/index.js";
 
 /**
  * msdyn_UpsertSellerAssignmentMap request message
@@ -35,23 +37,19 @@ export class msdyn_UpsertSellerAssignmentMapRequest
     const data = await response.json();
     return msdyn_UpsertSellerAssignmentMapResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SellerAssignmentMapArray: this.sellerAssignmentMapArray,
-    };
-  }
 }
 
 /**
  * msdyn_UpsertSellerAssignmentMap response message
  */
 export class msdyn_UpsertSellerAssignmentMapResponse extends OrganizationResponse {
-  constructor(public result: msdyn_UpsertSellerAssignmentMapResponse) {
+  constructor(public result: msdyn_UpsertSellerAssignmentMapResponseData) {
     super("msdyn_UpsertSellerAssignmentMap");
   }
 
   static fromResponse(data: unknown): msdyn_UpsertSellerAssignmentMapResponse {
-    return new msdyn_UpsertSellerAssignmentMapResponse((data as any).value);
+    return new msdyn_UpsertSellerAssignmentMapResponse(
+      responseObject<msdyn_UpsertSellerAssignmentMapResponseData>(data)
+    );
   }
 }

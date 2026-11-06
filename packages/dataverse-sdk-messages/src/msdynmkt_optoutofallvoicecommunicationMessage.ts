@@ -39,13 +39,6 @@ export class msdynmkt_optoutofallvoicecommunicationRequest
     // No return value (204 No Content)
     return new msdynmkt_optoutofallvoicecommunicationResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdynmkt_contactpointvalue: this.msdynmkt_contactpointvalue,
-      msdynmkt_correlationid: this.msdynmkt_correlationid,
-    };
-  }
 }
 
 /**

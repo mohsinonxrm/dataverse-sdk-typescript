@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_ForecastInstanceActionsResponse as msdyn_ForecastInstanceActionsResponseData } from "./types/index.js";
 
 /**
  * msdyn_ForecastInstanceActions request message
@@ -41,25 +43,19 @@ export class msdyn_ForecastInstanceActionsRequest
     const data = await response.json();
     return msdyn_ForecastInstanceActionsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ServiceName: this.serviceName,
-      WebApiName: this.webApiName,
-      RequestJson: this.requestJson,
-    };
-  }
 }
 
 /**
  * msdyn_ForecastInstanceActions response message
  */
 export class msdyn_ForecastInstanceActionsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ForecastInstanceActionsResponse) {
+  constructor(public result: msdyn_ForecastInstanceActionsResponseData) {
     super("msdyn_ForecastInstanceActions");
   }
 
   static fromResponse(data: unknown): msdyn_ForecastInstanceActionsResponse {
-    return new msdyn_ForecastInstanceActionsResponse((data as any).value);
+    return new msdyn_ForecastInstanceActionsResponse(
+      responseObject<msdyn_ForecastInstanceActionsResponseData>(data)
+    );
   }
 }

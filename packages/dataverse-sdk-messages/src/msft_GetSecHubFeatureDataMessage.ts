@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import { responseValue } from "./internal/responseData.js";
 
 /**
  * msft_GetSecHubFeatureData request message
@@ -31,21 +31,17 @@ export class msft_GetSecHubFeatureDataRequest
     const data = await response.json();
     return msft_GetSecHubFeatureDataResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msft_GetSecHubFeatureData response message
  */
 export class msft_GetSecHubFeatureDataResponse extends OrganizationResponse {
-  constructor(public result: EntityReference[]) {
+  constructor(public result: Record<string, unknown>[]) {
     super("msft_GetSecHubFeatureData");
   }
 
   static fromResponse(data: unknown): msft_GetSecHubFeatureDataResponse {
-    return new msft_GetSecHubFeatureDataResponse((data as any).value);
+    return new msft_GetSecHubFeatureDataResponse(responseValue<Record<string, unknown>[]>(data));
   }
 }

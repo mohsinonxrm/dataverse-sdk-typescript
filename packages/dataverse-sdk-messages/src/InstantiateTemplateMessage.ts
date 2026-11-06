@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import { responseValue } from "./internal/responseData.js";
 
 /**
  * InstantiateTemplate request message
@@ -42,25 +42,17 @@ export class InstantiateTemplateRequest
     const data = await response.json();
     return InstantiateTemplateResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      TemplateId: this.templateId,
-      ObjectType: this.objectType,
-      ObjectId: this.objectId,
-    };
-  }
 }
 
 /**
  * InstantiateTemplate response message
  */
 export class InstantiateTemplateResponse extends OrganizationResponse {
-  constructor(public result: EntityReference[]) {
+  constructor(public result: Record<string, unknown>[]) {
     super("InstantiateTemplate");
   }
 
   static fromResponse(data: unknown): InstantiateTemplateResponse {
-    return new InstantiateTemplateResponse((data as any).value);
+    return new InstantiateTemplateResponse(responseValue<Record<string, unknown>[]>(data));
   }
 }

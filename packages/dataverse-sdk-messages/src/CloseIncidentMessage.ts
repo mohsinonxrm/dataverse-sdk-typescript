@@ -40,13 +40,6 @@ export class CloseIncidentRequest
     // No return value (204 No Content)
     return new CloseIncidentResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      IncidentResolution: this.incidentResolution,
-      Status: this.status,
-    };
-  }
 }
 
 /**

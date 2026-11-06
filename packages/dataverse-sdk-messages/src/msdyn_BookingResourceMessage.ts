@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_BookingResourceResponse as msdyn_BookingResourceResponseData } from "./types/index.js";
 
 /**
  * msdyn_BookingResource request message
@@ -102,55 +104,19 @@ export class msdyn_BookingResourceRequest
     const data = await response.json();
     return msdyn_BookingResourceResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SubcontractLineId: this.subcontractLineId,
-      SubcontractId: this.subcontractId,
-      DistributeEvenlyBehavior: this.distributeEvenlyBehavior,
-      NewStartDateTime: this.newStartDateTime,
-      NewResourceId: this.newResourceId,
-      NewTravelTime: this.newTravelTime,
-      NewDistance: this.newDistance,
-      ResourceId: this.resourceId,
-      RequirementId: this.requirementId,
-      Work: this.work,
-      BookingStatusId: this.bookingStatusId,
-      BookingMethod: this.bookingMethod,
-      BookingType: this.bookingType,
-      Schedules: this.schedules,
-      Timeframe: this.timeframe,
-      Hours: this.hours,
-      Percentage: this.percentage,
-      DistributeMethod: this.distributeMethod,
-      BookingIds: this.bookingIds,
-      DefaultBookingHeader: this.defaultBookingHeader,
-      DefaultBookingDetail: this.defaultBookingDetail,
-      ReloadStartDate: this.reloadStartDate,
-      ReloadEndDate: this.reloadEndDate,
-      ReloadDetailBookings: this.reloadDetailBookings,
-      TimeZoneCode: this.timeZoneCode,
-      SchedulerSettings: this.schedulerSettings,
-      PreventPartialFulfillment: this.preventPartialFulfillment,
-      AllowDoubleBooking: this.allowDoubleBooking,
-      CancelExistingBooking: this.cancelExistingBooking,
-      URSInternalFlags: this.uRSInternalFlags,
-      ConsiderAppointments: this.considerAppointments,
-      IgnoreTimeZone: this.ignoreTimeZone,
-      BookingDetails: this.bookingDetails,
-    };
-  }
 }
 
 /**
  * msdyn_BookingResource response message
  */
 export class msdyn_BookingResourceResponse extends OrganizationResponse {
-  constructor(public result: msdyn_BookingResourceResponse) {
+  constructor(public result: msdyn_BookingResourceResponseData) {
     super("msdyn_BookingResource");
   }
 
   static fromResponse(data: unknown): msdyn_BookingResourceResponse {
-    return new msdyn_BookingResourceResponse((data as any).value);
+    return new msdyn_BookingResourceResponse(
+      responseObject<msdyn_BookingResourceResponseData>(data)
+    );
   }
 }

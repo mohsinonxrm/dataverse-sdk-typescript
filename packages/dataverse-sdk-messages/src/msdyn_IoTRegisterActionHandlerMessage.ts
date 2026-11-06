@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_IoTRegisterActionHandlerResponse as msdyn_IoTRegisterActionHandlerResponseData } from "./types/index.js";
 
 /**
  * msdyn_IoTRegisterActionHandler request message
@@ -35,23 +37,19 @@ export class msdyn_IoTRegisterActionHandlerRequest
     const data = await response.json();
     return msdyn_IoTRegisterActionHandlerResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntityCollection: this.entityCollection,
-    };
-  }
 }
 
 /**
  * msdyn_IoTRegisterActionHandler response message
  */
 export class msdyn_IoTRegisterActionHandlerResponse extends OrganizationResponse {
-  constructor(public result: msdyn_IoTRegisterActionHandlerResponse) {
+  constructor(public result: msdyn_IoTRegisterActionHandlerResponseData) {
     super("msdyn_IoTRegisterActionHandler");
   }
 
   static fromResponse(data: unknown): msdyn_IoTRegisterActionHandlerResponse {
-    return new msdyn_IoTRegisterActionHandlerResponse((data as any).value);
+    return new msdyn_IoTRegisterActionHandlerResponse(
+      responseObject<msdyn_IoTRegisterActionHandlerResponseData>(data)
+    );
   }
 }

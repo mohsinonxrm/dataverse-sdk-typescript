@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { RetrieveFeatureControlStringSettingsResponse as RetrieveFeatureControlStringSettingsResponseData } from "./types/index.js";
 
 /**
  * RetrieveFeatureControlStringSettings request message
@@ -30,21 +32,19 @@ export class RetrieveFeatureControlStringSettingsRequest
     const data = await response.json();
     return RetrieveFeatureControlStringSettingsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * RetrieveFeatureControlStringSettings response message
  */
 export class RetrieveFeatureControlStringSettingsResponse extends OrganizationResponse {
-  constructor(public result: RetrieveFeatureControlStringSettingsResponse) {
+  constructor(public result: RetrieveFeatureControlStringSettingsResponseData) {
     super("RetrieveFeatureControlStringSettings");
   }
 
   static fromResponse(data: unknown): RetrieveFeatureControlStringSettingsResponse {
-    return new RetrieveFeatureControlStringSettingsResponse((data as any).value);
+    return new RetrieveFeatureControlStringSettingsResponse(
+      responseObject<RetrieveFeatureControlStringSettingsResponseData>(data)
+    );
   }
 }

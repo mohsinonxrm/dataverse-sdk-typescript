@@ -41,14 +41,6 @@ export class CCaaS_AcceptConversationRequest
     // No return value (204 No Content)
     return new CCaaS_AcceptConversationResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_ocliveworkitemId,
-      ApiVersion: this.apiVersion,
-      SessionId: this.sessionId,
-    };
-  }
 }
 
 /**

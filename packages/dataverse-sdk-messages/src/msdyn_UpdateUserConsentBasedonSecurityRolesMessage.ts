@@ -37,12 +37,6 @@ export class msdyn_UpdateUserConsentBasedonSecurityRolesRequest
     // No return value (204 No Content)
     return new msdyn_UpdateUserConsentBasedonSecurityRolesResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SecurityRolesList: this.securityRolesList,
-    };
-  }
 }
 
 /**

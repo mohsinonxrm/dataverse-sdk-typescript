@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_GetOrganizationalUnitsWithinRadiusResponse as msdyn_GetOrganizationalUnitsWithinRadiusResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetOrganizationalUnitsWithinRadius request message
@@ -52,29 +54,19 @@ export class msdyn_GetOrganizationalUnitsWithinRadiusRequest
     const data = await response.json();
     return msdyn_GetOrganizationalUnitsWithinRadiusResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Version: this.version,
-      Latitude: this.latitude,
-      Longitude: this.longitude,
-      Radius: this.radius,
-      Unit: this.unit,
-      EligibleOrganizationlUnitIds: this.eligibleOrganizationlUnitIds,
-      AdditionalCustomInput: this.additionalCustomInput,
-    };
-  }
 }
 
 /**
  * msdyn_GetOrganizationalUnitsWithinRadius response message
  */
 export class msdyn_GetOrganizationalUnitsWithinRadiusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetOrganizationalUnitsWithinRadiusResponse) {
+  constructor(public result: msdyn_GetOrganizationalUnitsWithinRadiusResponseData) {
     super("msdyn_GetOrganizationalUnitsWithinRadius");
   }
 
   static fromResponse(data: unknown): msdyn_GetOrganizationalUnitsWithinRadiusResponse {
-    return new msdyn_GetOrganizationalUnitsWithinRadiusResponse((data as any).value);
+    return new msdyn_GetOrganizationalUnitsWithinRadiusResponse(
+      responseObject<msdyn_GetOrganizationalUnitsWithinRadiusResponseData>(data)
+    );
   }
 }

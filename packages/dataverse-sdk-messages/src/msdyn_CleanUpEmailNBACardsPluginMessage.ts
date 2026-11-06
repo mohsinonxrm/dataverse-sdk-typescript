@@ -35,12 +35,6 @@ export class msdyn_CleanUpEmailNBACardsPluginRequest
     // No return value (204 No Content)
     return new msdyn_CleanUpEmailNBACardsPluginResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      InputData: this.inputData,
-    };
-  }
 }
 
 /**

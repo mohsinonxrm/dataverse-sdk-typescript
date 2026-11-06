@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_SignalRInstanceActionsResponse as msdyn_SignalRInstanceActionsResponseData } from "./types/index.js";
 
 /**
  * msdyn_SignalRInstanceActions request message
@@ -41,25 +43,19 @@ export class msdyn_SignalRInstanceActionsRequest
     const data = await response.json();
     return msdyn_SignalRInstanceActionsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ServiceName: this.serviceName,
-      WebApiName: this.webApiName,
-      RequestJson: this.requestJson,
-    };
-  }
 }
 
 /**
  * msdyn_SignalRInstanceActions response message
  */
 export class msdyn_SignalRInstanceActionsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SignalRInstanceActionsResponse) {
+  constructor(public result: msdyn_SignalRInstanceActionsResponseData) {
     super("msdyn_SignalRInstanceActions");
   }
 
   static fromResponse(data: unknown): msdyn_SignalRInstanceActionsResponse {
-    return new msdyn_SignalRInstanceActionsResponse((data as any).value);
+    return new msdyn_SignalRInstanceActionsResponse(
+      responseObject<msdyn_SignalRInstanceActionsResponseData>(data)
+    );
   }
 }

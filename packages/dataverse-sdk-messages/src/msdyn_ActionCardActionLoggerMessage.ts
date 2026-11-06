@@ -53,20 +53,6 @@ export class msdyn_ActionCardActionLoggerRequest
     // No return value (204 No Content)
     return new msdyn_ActionCardActionLoggerResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      cardType: this.cardType,
-      userId: this.userId,
-      cardTypeId: this.cardTypeId,
-      actionType: this.actionType,
-      totalActions: this.totalActions,
-      actionCardId: this.actionCardId,
-      regardingObjectId: this.regardingObjectId,
-      regardingObjectLogicalName: this.regardingObjectLogicalName,
-      regardingObjectTypeCode: this.regardingObjectTypeCode,
-    };
-  }
 }
 
 /**

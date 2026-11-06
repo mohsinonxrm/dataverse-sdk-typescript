@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseValue } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import type { campaign, transactioncurrency } from "./types/index.js";
 
@@ -57,32 +58,17 @@ export class QualifyLeadRequest
     const data = await response.json();
     return QualifyLeadResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.leadId,
-      CreateAccount: this.createAccount,
-      CreateContact: this.createContact,
-      CreateOpportunity: this.createOpportunity,
-      OpportunityCurrencyId: this.opportunityCurrencyId,
-      OpportunityCustomerId: this.opportunityCustomerId,
-      SourceCampaignId: this.sourceCampaignId,
-      Status: this.status,
-      ProcessInstanceId: this.processInstanceId,
-      LeadQualificationV2Param: this.leadQualificationV2Param,
-    };
-  }
 }
 
 /**
  * QualifyLead response message
  */
 export class QualifyLeadResponse extends OrganizationResponse {
-  constructor(public result: EntityReference[]) {
+  constructor(public result: Record<string, unknown>[]) {
     super("QualifyLead");
   }
 
   static fromResponse(data: unknown): QualifyLeadResponse {
-    return new QualifyLeadResponse((data as any).value);
+    return new QualifyLeadResponse(responseValue<Record<string, unknown>[]>(data));
   }
 }

@@ -36,12 +36,6 @@ export class ApplyRoutingRuleRequest
     // No return value (204 No Content)
     return new ApplyRoutingRuleResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-    };
-  }
 }
 
 /**

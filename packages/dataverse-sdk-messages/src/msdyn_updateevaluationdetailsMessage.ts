@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_updateevaluationdetailsResponse as msdyn_updateevaluationdetailsResponseData } from "./types/index.js";
 
 /**
  * msdyn_updateevaluationdetails request message
@@ -35,23 +37,19 @@ export class msdyn_updateevaluationdetailsRequest
     const data = await response.json();
     return msdyn_updateevaluationdetailsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_evaluationdetails: this.msdyn_evaluationdetails,
-    };
-  }
 }
 
 /**
  * msdyn_updateevaluationdetails response message
  */
 export class msdyn_updateevaluationdetailsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_updateevaluationdetailsResponse) {
+  constructor(public result: msdyn_updateevaluationdetailsResponseData) {
     super("msdyn_updateevaluationdetails");
   }
 
   static fromResponse(data: unknown): msdyn_updateevaluationdetailsResponse {
-    return new msdyn_updateevaluationdetailsResponse((data as any).value);
+    return new msdyn_updateevaluationdetailsResponse(
+      responseObject<msdyn_updateevaluationdetailsResponseData>(data)
+    );
   }
 }

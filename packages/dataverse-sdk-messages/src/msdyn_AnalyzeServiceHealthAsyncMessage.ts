@@ -30,10 +30,6 @@ export class msdyn_AnalyzeServiceHealthAsyncRequest
     // No return value (204 No Content)
     return new msdyn_AnalyzeServiceHealthAsyncResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**

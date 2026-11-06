@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetWorkOrderAggregationResponse as msdyn_GetWorkOrderAggregationResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetWorkOrderAggregation request message
@@ -41,25 +43,19 @@ export class msdyn_GetWorkOrderAggregationRequest
     const data = await response.json();
     return msdyn_GetWorkOrderAggregationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      DeviceId: this.deviceId,
-      TimeRangeValue: this.timeRangeValue,
-      TimeRangeType: this.timeRangeType,
-    };
-  }
 }
 
 /**
  * msdyn_GetWorkOrderAggregation response message
  */
 export class msdyn_GetWorkOrderAggregationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetWorkOrderAggregationResponse) {
+  constructor(public result: msdyn_GetWorkOrderAggregationResponseData) {
     super("msdyn_GetWorkOrderAggregation");
   }
 
   static fromResponse(data: unknown): msdyn_GetWorkOrderAggregationResponse {
-    return new msdyn_GetWorkOrderAggregationResponse((data as any).value);
+    return new msdyn_GetWorkOrderAggregationResponse(
+      responseObject<msdyn_GetWorkOrderAggregationResponseData>(data)
+    );
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { UpsertMultipleResponse as UpsertMultipleResponseData } from "./types/index.js";
 
 /**
  * UpsertMultiple request message
@@ -41,23 +43,17 @@ export class UpsertMultipleRequest
     const data = await response.json();
     return UpsertMultipleResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Targets: this.targets,
-    };
-  }
 }
 
 /**
  * UpsertMultiple response message
  */
 export class UpsertMultipleResponse extends OrganizationResponse {
-  constructor(public result: UpsertMultipleResponse) {
+  constructor(public result: UpsertMultipleResponseData) {
     super("UpsertMultiple");
   }
 
   static fromResponse(data: unknown): UpsertMultipleResponse {
-    return new UpsertMultipleResponse((data as any).value);
+    return new UpsertMultipleResponse(responseObject<UpsertMultipleResponseData>(data));
   }
 }

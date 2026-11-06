@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import { responseValue } from "./internal/responseData.js";
 
 /**
  * RetrieveConnectorSettings request message
@@ -31,21 +31,17 @@ export class RetrieveConnectorSettingsRequest
     const data = await response.json();
     return RetrieveConnectorSettingsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * RetrieveConnectorSettings response message
  */
 export class RetrieveConnectorSettingsResponse extends OrganizationResponse {
-  constructor(public result: EntityReference[]) {
+  constructor(public result: Record<string, unknown>[]) {
     super("RetrieveConnectorSettings");
   }
 
   static fromResponse(data: unknown): RetrieveConnectorSettingsResponse {
-    return new RetrieveConnectorSettingsResponse((data as any).value);
+    return new RetrieveConnectorSettingsResponse(responseValue<Record<string, unknown>[]>(data));
   }
 }

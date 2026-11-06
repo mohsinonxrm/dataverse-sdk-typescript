@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { recurringappointmentmaster } from "./types/index.js";
 
 /**
@@ -40,13 +41,6 @@ export class AddRecurrenceRequest
     const data = await response.json();
     return AddRecurrenceResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.appointmentId,
-      Target: this.target,
-    };
-  }
 }
 
 /**
@@ -58,6 +52,6 @@ export class AddRecurrenceResponse extends OrganizationResponse {
   }
 
   static fromResponse(data: unknown): AddRecurrenceResponse {
-    return new AddRecurrenceResponse((data as any).value);
+    return new AddRecurrenceResponse(responseObject<recurringappointmentmaster>(data));
   }
 }

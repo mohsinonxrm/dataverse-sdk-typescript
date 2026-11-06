@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_FieldServiceAgreementBookingIncidentStatusActionResponse as msdyn_FieldServiceAgreementBookingIncidentStatusActionResponseData } from "./types/index.js";
 
 /**
  * msdyn_FieldServiceAgreementBookingIncidentStatusAction request message
@@ -43,27 +45,21 @@ export class msdyn_FieldServiceAgreementBookingIncidentStatusActionRequest
     const data = await response.json();
     return msdyn_FieldServiceAgreementBookingIncidentStatusActionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_agreementbookingincidentId,
-      Type: this.type,
-      InputParameter: this.inputParameter,
-    };
-  }
 }
 
 /**
  * msdyn_FieldServiceAgreementBookingIncidentStatusAction response message
  */
 export class msdyn_FieldServiceAgreementBookingIncidentStatusActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_FieldServiceAgreementBookingIncidentStatusActionResponse) {
+  constructor(public result: msdyn_FieldServiceAgreementBookingIncidentStatusActionResponseData) {
     super("msdyn_FieldServiceAgreementBookingIncidentStatusAction");
   }
 
   static fromResponse(
     data: unknown
   ): msdyn_FieldServiceAgreementBookingIncidentStatusActionResponse {
-    return new msdyn_FieldServiceAgreementBookingIncidentStatusActionResponse((data as any).value);
+    return new msdyn_FieldServiceAgreementBookingIncidentStatusActionResponse(
+      responseObject<msdyn_FieldServiceAgreementBookingIncidentStatusActionResponseData>(data)
+    );
   }
 }

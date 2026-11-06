@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { RetrieveFeatureControlStringSettingsForNamespaceResponse as RetrieveFeatureControlStringSettingsForNamespaceResponseData } from "./types/index.js";
 
 /**
  * RetrieveFeatureControlStringSettingsForNamespace request message
@@ -37,23 +39,19 @@ export class RetrieveFeatureControlStringSettingsForNamespaceRequest
     const data = await response.json();
     return RetrieveFeatureControlStringSettingsForNamespaceResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      NamespaceName: this.namespaceName,
-    };
-  }
 }
 
 /**
  * RetrieveFeatureControlStringSettingsForNamespace response message
  */
 export class RetrieveFeatureControlStringSettingsForNamespaceResponse extends OrganizationResponse {
-  constructor(public result: RetrieveFeatureControlStringSettingsForNamespaceResponse) {
+  constructor(public result: RetrieveFeatureControlStringSettingsForNamespaceResponseData) {
     super("RetrieveFeatureControlStringSettingsForNamespace");
   }
 
   static fromResponse(data: unknown): RetrieveFeatureControlStringSettingsForNamespaceResponse {
-    return new RetrieveFeatureControlStringSettingsForNamespaceResponse((data as any).value);
+    return new RetrieveFeatureControlStringSettingsForNamespaceResponse(
+      responseObject<RetrieveFeatureControlStringSettingsForNamespaceResponseData>(data)
+    );
   }
 }

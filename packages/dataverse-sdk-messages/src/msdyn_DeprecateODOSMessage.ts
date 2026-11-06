@@ -35,12 +35,6 @@ export class msdyn_DeprecateODOSRequest
     // No return value (204 No Content)
     return new msdyn_DeprecateODOSResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      InputData: this.inputData,
-    };
-  }
 }
 
 /**

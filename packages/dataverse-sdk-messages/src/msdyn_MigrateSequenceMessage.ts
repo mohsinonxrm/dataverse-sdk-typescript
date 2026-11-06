@@ -35,12 +35,6 @@ export class msdyn_MigrateSequenceRequest
     // No return value (204 No Content)
     return new msdyn_MigrateSequenceResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      MigrationId: this.migrationId,
-    };
-  }
 }
 
 /**

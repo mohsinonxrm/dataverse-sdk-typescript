@@ -35,12 +35,6 @@ export class msdynmkt_PredefinedPlaceholderAddCountRequest
     // No return value (204 No Content)
     return new msdynmkt_PredefinedPlaceholderAddCountResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      PredefinedPlaceholderAddCountRequest: this.predefinedPlaceholderAddCountRequest,
-    };
-  }
 }
 
 /**

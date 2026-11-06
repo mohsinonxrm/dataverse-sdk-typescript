@@ -35,12 +35,6 @@ export class msdyn_SalesInsightsTpsPackageRequest
     // No return value (204 No Content)
     return new msdyn_SalesInsightsTpsPackageResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      skipInstall: this.skipInstall,
-    };
-  }
 }
 
 /**

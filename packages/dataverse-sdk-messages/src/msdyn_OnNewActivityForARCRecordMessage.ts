@@ -40,13 +40,6 @@ export class msdyn_OnNewActivityForARCRecordRequest
     // No return value (204 No Content)
     return new msdyn_OnNewActivityForARCRecordResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_primaryEntityReference: this.msdyn_primaryEntityReference,
-      msdyn_sourceEntityReference: this.msdyn_sourceEntityReference,
-    };
-  }
 }
 
 /**

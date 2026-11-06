@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_FpsActionResponse as msdyn_FpsActionResponseData } from "./types/index.js";
 
 /**
  * msdyn_FpsAction request message
@@ -39,24 +41,17 @@ export class msdyn_FpsActionRequest
     const data = await response.json();
     return msdyn_FpsActionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Type: this.type,
-      InputParameter: this.inputParameter,
-    };
-  }
 }
 
 /**
  * msdyn_FpsAction response message
  */
 export class msdyn_FpsActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_FpsActionResponse) {
+  constructor(public result: msdyn_FpsActionResponseData) {
     super("msdyn_FpsAction");
   }
 
   static fromResponse(data: unknown): msdyn_FpsActionResponse {
-    return new msdyn_FpsActionResponse((data as any).value);
+    return new msdyn_FpsActionResponse(responseObject<msdyn_FpsActionResponseData>(data));
   }
 }

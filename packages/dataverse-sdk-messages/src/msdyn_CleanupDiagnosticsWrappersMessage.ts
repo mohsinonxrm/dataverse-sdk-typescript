@@ -41,14 +41,6 @@ export class msdyn_CleanupDiagnosticsWrappersRequest
     // No return value (204 No Content)
     return new msdyn_CleanupDiagnosticsWrappersResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      WorkItemId: this.workItemId,
-      TargetId: this.targetId,
-      RunNumber: this.runNumber,
-    };
-  }
 }
 
 /**

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { CCaaS_BroadcastMessageResponse as CCaaS_BroadcastMessageResponseData } from "./types/index.js";
 
 /**
  * CCaaS_BroadcastMessage request message
@@ -43,26 +45,19 @@ export class CCaaS_BroadcastMessageRequest
     const data = await response.json();
     return CCaaS_BroadcastMessageResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Message: this.message,
-      Title: this.title,
-      ApiVersion: this.apiVersion,
-      ConversationIds: this.conversationIds,
-    };
-  }
 }
 
 /**
  * CCaaS_BroadcastMessage response message
  */
 export class CCaaS_BroadcastMessageResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_BroadcastMessageResponse) {
+  constructor(public result: CCaaS_BroadcastMessageResponseData) {
     super("CCaaS_BroadcastMessage");
   }
 
   static fromResponse(data: unknown): CCaaS_BroadcastMessageResponse {
-    return new CCaaS_BroadcastMessageResponse((data as any).value);
+    return new CCaaS_BroadcastMessageResponse(
+      responseObject<CCaaS_BroadcastMessageResponseData>(data)
+    );
   }
 }

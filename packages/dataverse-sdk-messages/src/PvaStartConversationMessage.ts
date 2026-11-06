@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 
 /**
@@ -40,24 +41,17 @@ export class PvaStartConversationRequest
     const data = await response.json();
     return PvaStartConversationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Version: this.version,
-      Request: this.request,
-    };
-  }
 }
 
 /**
  * PvaStartConversation response message
  */
 export class PvaStartConversationResponse extends OrganizationResponse {
-  constructor(public result: EntityReference) {
+  constructor(public result: Record<string, unknown>) {
     super("PvaStartConversation");
   }
 
   static fromResponse(data: unknown): PvaStartConversationResponse {
-    return new PvaStartConversationResponse((data as any).value);
+    return new PvaStartConversationResponse(responseObject<Record<string, unknown>>(data));
   }
 }

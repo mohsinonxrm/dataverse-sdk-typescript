@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { asyncoperation } from "./types/index.js";
 
 /**
@@ -32,12 +33,6 @@ export class ParseImportRequest
     const data = await response.json();
     return ParseImportResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.importId,
-    };
-  }
 }
 
 /**
@@ -49,6 +44,6 @@ export class ParseImportResponse extends OrganizationResponse {
   }
 
   static fromResponse(data: unknown): ParseImportResponse {
-    return new ParseImportResponse((data as any).value);
+    return new ParseImportResponse(responseObject<asyncoperation>(data));
   }
 }

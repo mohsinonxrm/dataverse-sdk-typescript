@@ -45,16 +45,6 @@ export class CCaaS_InitiateQueueConsultRequest
     // No return value (204 No Content)
     return new CCaaS_InitiateQueueConsultResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_ocliveworkitemId,
-      ApiVersion: this.apiVersion,
-      ConversationAccess: this.conversationAccess,
-      QueueId: this.queueId,
-      ConsultType: this.consultType,
-    };
-  }
 }
 
 /**

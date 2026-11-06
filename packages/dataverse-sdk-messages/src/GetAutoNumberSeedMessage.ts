@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { GetAutoNumberSeedResponse as GetAutoNumberSeedResponseData } from "./types/index.js";
 
 /**
  * GetAutoNumberSeed request message
@@ -39,24 +41,17 @@ export class GetAutoNumberSeedRequest
     const data = await response.json();
     return GetAutoNumberSeedResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntityName: this.entityName,
-      AttributeName: this.attributeName,
-    };
-  }
 }
 
 /**
  * GetAutoNumberSeed response message
  */
 export class GetAutoNumberSeedResponse extends OrganizationResponse {
-  constructor(public result: GetAutoNumberSeedResponse) {
+  constructor(public result: GetAutoNumberSeedResponseData) {
     super("GetAutoNumberSeed");
   }
 
   static fromResponse(data: unknown): GetAutoNumberSeedResponse {
-    return new GetAutoNumberSeedResponse((data as any).value);
+    return new GetAutoNumberSeedResponse(responseObject<GetAutoNumberSeedResponseData>(data));
   }
 }

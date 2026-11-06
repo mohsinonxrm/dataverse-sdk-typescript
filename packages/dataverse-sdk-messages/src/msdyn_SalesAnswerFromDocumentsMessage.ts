@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_SalesAnswerFromDocumentsResponse as msdyn_SalesAnswerFromDocumentsResponseData } from "./types/index.js";
 
 /**
  * msdyn_SalesAnswerFromDocuments request message
@@ -45,27 +47,19 @@ export class msdyn_SalesAnswerFromDocumentsRequest
     const data = await response.json();
     return msdyn_SalesAnswerFromDocumentsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_queryLocale: this.msdyn_queryLocale,
-      msdyn_responseFormat: this.msdyn_responseFormat,
-      msdyn_userQuery: this.msdyn_userQuery,
-      msdyn_additionalParameters: this.msdyn_additionalParameters,
-      msdyn_activityId: this.msdyn_activityId,
-    };
-  }
 }
 
 /**
  * msdyn_SalesAnswerFromDocuments response message
  */
 export class msdyn_SalesAnswerFromDocumentsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAnswerFromDocumentsResponse) {
+  constructor(public result: msdyn_SalesAnswerFromDocumentsResponseData) {
     super("msdyn_SalesAnswerFromDocuments");
   }
 
   static fromResponse(data: unknown): msdyn_SalesAnswerFromDocumentsResponse {
-    return new msdyn_SalesAnswerFromDocumentsResponse((data as any).value);
+    return new msdyn_SalesAnswerFromDocumentsResponse(
+      responseObject<msdyn_SalesAnswerFromDocumentsResponseData>(data)
+    );
   }
 }

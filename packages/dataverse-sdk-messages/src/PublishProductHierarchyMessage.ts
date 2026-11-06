@@ -31,12 +31,6 @@ export class PublishProductHierarchyRequest
     // No return value (204 No Content)
     return new PublishProductHierarchyResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.productId,
-    };
-  }
 }
 
 /**

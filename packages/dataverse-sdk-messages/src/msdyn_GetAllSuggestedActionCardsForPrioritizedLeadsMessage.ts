@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetAllSuggestedActionCardsForPrioritizedLeadsResponse as msdyn_GetAllSuggestedActionCardsForPrioritizedLeadsResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetAllSuggestedActionCardsForPrioritizedLeads request message
@@ -41,24 +43,19 @@ export class msdyn_GetAllSuggestedActionCardsForPrioritizedLeadsRequest
     const data = await response.json();
     return msdyn_GetAllSuggestedActionCardsForPrioritizedLeadsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ClientContext: this.clientContext,
-      OtherData: this.otherData,
-    };
-  }
 }
 
 /**
  * msdyn_GetAllSuggestedActionCardsForPrioritizedLeads response message
  */
 export class msdyn_GetAllSuggestedActionCardsForPrioritizedLeadsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetAllSuggestedActionCardsForPrioritizedLeadsResponse) {
+  constructor(public result: msdyn_GetAllSuggestedActionCardsForPrioritizedLeadsResponseData) {
     super("msdyn_GetAllSuggestedActionCardsForPrioritizedLeads");
   }
 
   static fromResponse(data: unknown): msdyn_GetAllSuggestedActionCardsForPrioritizedLeadsResponse {
-    return new msdyn_GetAllSuggestedActionCardsForPrioritizedLeadsResponse((data as any).value);
+    return new msdyn_GetAllSuggestedActionCardsForPrioritizedLeadsResponse(
+      responseObject<msdyn_GetAllSuggestedActionCardsForPrioritizedLeadsResponseData>(data)
+    );
   }
 }

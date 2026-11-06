@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { IsPaiEnabledResponse as IsPaiEnabledResponseData } from "./types/index.js";
 
 /**
  * IsPaiEnabled request message
@@ -30,21 +32,17 @@ export class IsPaiEnabledRequest
     const data = await response.json();
     return IsPaiEnabledResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * IsPaiEnabled response message
  */
 export class IsPaiEnabledResponse extends OrganizationResponse {
-  constructor(public result: IsPaiEnabledResponse) {
+  constructor(public result: IsPaiEnabledResponseData) {
     super("IsPaiEnabled");
   }
 
   static fromResponse(data: unknown): IsPaiEnabledResponse {
-    return new IsPaiEnabledResponse((data as any).value);
+    return new IsPaiEnabledResponse(responseObject<IsPaiEnabledResponseData>(data));
   }
 }

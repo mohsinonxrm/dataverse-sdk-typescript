@@ -39,13 +39,6 @@ export class CCaaS_PickConversationRequest
     // No return value (204 No Content)
     return new CCaaS_PickConversationResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_ocliveworkitemId,
-      ApiVersion: this.apiVersion,
-    };
-  }
 }
 
 /**

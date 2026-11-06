@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetFCSValueResponse as msdyn_GetFCSValueResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetFCSValue request message
@@ -39,24 +41,17 @@ export class msdyn_GetFCSValueRequest
     const data = await response.json();
     return msdyn_GetFCSValueResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Key: this.key,
-      Namespace: this.namespace,
-    };
-  }
 }
 
 /**
  * msdyn_GetFCSValue response message
  */
 export class msdyn_GetFCSValueResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetFCSValueResponse) {
+  constructor(public result: msdyn_GetFCSValueResponseData) {
     super("msdyn_GetFCSValue");
   }
 
   static fromResponse(data: unknown): msdyn_GetFCSValueResponse {
-    return new msdyn_GetFCSValueResponse((data as any).value);
+    return new msdyn_GetFCSValueResponse(responseObject<msdyn_GetFCSValueResponseData>(data));
   }
 }

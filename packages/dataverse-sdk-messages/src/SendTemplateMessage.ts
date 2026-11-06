@@ -46,16 +46,6 @@ export class SendTemplateRequest
     // No return value (204 No Content)
     return new SendTemplateResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      TemplateId: this.templateId,
-      Sender: this.sender,
-      Recipients: this.recipients,
-      Regarding: this.regarding,
-      DeliveryPriorityCode: this.deliveryPriorityCode,
-    };
-  }
 }
 
 /**

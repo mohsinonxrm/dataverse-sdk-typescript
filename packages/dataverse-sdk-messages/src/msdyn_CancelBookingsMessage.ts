@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_CancelBookingsResponse as msdyn_CancelBookingsResponseData } from "./types/index.js";
 
 /**
  * msdyn_CancelBookings request message
@@ -44,26 +46,17 @@ export class msdyn_CancelBookingsRequest
     const data = await response.json();
     return msdyn_CancelBookingsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      BookingIds: this.bookingIds,
-      DefaultBookingDetail: this.defaultBookingDetail,
-      BookingCancelContext: this.bookingCancelContext,
-      ConsiderAppointments: this.considerAppointments,
-    };
-  }
 }
 
 /**
  * msdyn_CancelBookings response message
  */
 export class msdyn_CancelBookingsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CancelBookingsResponse) {
+  constructor(public result: msdyn_CancelBookingsResponseData) {
     super("msdyn_CancelBookings");
   }
 
   static fromResponse(data: unknown): msdyn_CancelBookingsResponse {
-    return new msdyn_CancelBookingsResponse((data as any).value);
+    return new msdyn_CancelBookingsResponse(responseObject<msdyn_CancelBookingsResponseData>(data));
   }
 }

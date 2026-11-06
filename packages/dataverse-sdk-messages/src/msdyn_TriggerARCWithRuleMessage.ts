@@ -41,14 +41,6 @@ export class msdyn_TriggerARCWithRuleRequest
     // No return value (204 No Content)
     return new msdyn_TriggerARCWithRuleResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.queueitemId,
-      msdyn_ruleid: this.msdyn_ruleid,
-      msdyn_queueitemid: this.msdyn_queueitemid,
-    };
-  }
 }
 
 /**

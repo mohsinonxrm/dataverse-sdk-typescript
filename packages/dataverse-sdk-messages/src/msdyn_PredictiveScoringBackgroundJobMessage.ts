@@ -35,12 +35,6 @@ export class msdyn_PredictiveScoringBackgroundJobRequest
     // No return value (204 No Content)
     return new msdyn_PredictiveScoringBackgroundJobResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      InputData: this.inputData,
-    };
-  }
 }
 
 /**

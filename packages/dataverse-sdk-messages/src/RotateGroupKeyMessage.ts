@@ -31,12 +31,6 @@ export class RotateGroupKeyRequest
     // No return value (204 No Content)
     return new RotateGroupKeyResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.flowmachinegroupId,
-    };
-  }
 }
 
 /**

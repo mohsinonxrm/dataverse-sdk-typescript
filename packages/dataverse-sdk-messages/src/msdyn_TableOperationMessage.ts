@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_TableOperationResponse as msdyn_TableOperationResponseData } from "./types/index.js";
 
 /**
  * msdyn_TableOperation request message
@@ -39,24 +41,17 @@ export class msdyn_TableOperationRequest
     const data = await response.json();
     return msdyn_TableOperationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntityNames: this.entityNames,
-      Scenario: this.scenario,
-    };
-  }
 }
 
 /**
  * msdyn_TableOperation response message
  */
 export class msdyn_TableOperationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_TableOperationResponse) {
+  constructor(public result: msdyn_TableOperationResponseData) {
     super("msdyn_TableOperation");
   }
 
   static fromResponse(data: unknown): msdyn_TableOperationResponse {
-    return new msdyn_TableOperationResponse((data as any).value);
+    return new msdyn_TableOperationResponse(responseObject<msdyn_TableOperationResponseData>(data));
   }
 }

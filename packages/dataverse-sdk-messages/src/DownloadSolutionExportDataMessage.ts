@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { DownloadSolutionExportDataResponse as DownloadSolutionExportDataResponseData } from "./types/index.js";
 
 /**
  * DownloadSolutionExportData request message
@@ -35,23 +37,19 @@ export class DownloadSolutionExportDataRequest
     const data = await response.json();
     return DownloadSolutionExportDataResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ExportJobId: this.exportJobId,
-    };
-  }
 }
 
 /**
  * DownloadSolutionExportData response message
  */
 export class DownloadSolutionExportDataResponse extends OrganizationResponse {
-  constructor(public result: DownloadSolutionExportDataResponse) {
+  constructor(public result: DownloadSolutionExportDataResponseData) {
     super("DownloadSolutionExportData");
   }
 
   static fromResponse(data: unknown): DownloadSolutionExportDataResponse {
-    return new DownloadSolutionExportDataResponse((data as any).value);
+    return new DownloadSolutionExportDataResponse(
+      responseObject<DownloadSolutionExportDataResponseData>(data)
+    );
   }
 }

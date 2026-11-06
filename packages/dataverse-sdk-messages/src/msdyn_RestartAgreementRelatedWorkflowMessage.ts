@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_RestartAgreementRelatedWorkflowResponse as msdyn_RestartAgreementRelatedWorkflowResponseData } from "./types/index.js";
 
 /**
  * msdyn_RestartAgreementRelatedWorkflow request message
@@ -36,23 +38,19 @@ export class msdyn_RestartAgreementRelatedWorkflowRequest
     const data = await response.json();
     return msdyn_RestartAgreementRelatedWorkflowResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      AnalysisResult: this.analysisResult,
-    };
-  }
 }
 
 /**
  * msdyn_RestartAgreementRelatedWorkflow response message
  */
 export class msdyn_RestartAgreementRelatedWorkflowResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RestartAgreementRelatedWorkflowResponse) {
+  constructor(public result: msdyn_RestartAgreementRelatedWorkflowResponseData) {
     super("msdyn_RestartAgreementRelatedWorkflow");
   }
 
   static fromResponse(data: unknown): msdyn_RestartAgreementRelatedWorkflowResponse {
-    return new msdyn_RestartAgreementRelatedWorkflowResponse((data as any).value);
+    return new msdyn_RestartAgreementRelatedWorkflowResponse(
+      responseObject<msdyn_RestartAgreementRelatedWorkflowResponseData>(data)
+    );
   }
 }

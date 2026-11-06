@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_WorkstreamCapacityShouldBeLessThanAgentsRuleResponse as msdyn_WorkstreamCapacityShouldBeLessThanAgentsRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_WorkstreamCapacityShouldBeLessThanAgentsRule request message
@@ -32,21 +34,19 @@ export class msdyn_WorkstreamCapacityShouldBeLessThanAgentsRuleRequest
     const data = await response.json();
     return msdyn_WorkstreamCapacityShouldBeLessThanAgentsRuleResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_WorkstreamCapacityShouldBeLessThanAgentsRule response message
  */
 export class msdyn_WorkstreamCapacityShouldBeLessThanAgentsRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_WorkstreamCapacityShouldBeLessThanAgentsRuleResponse) {
+  constructor(public result: msdyn_WorkstreamCapacityShouldBeLessThanAgentsRuleResponseData) {
     super("msdyn_WorkstreamCapacityShouldBeLessThanAgentsRule");
   }
 
   static fromResponse(data: unknown): msdyn_WorkstreamCapacityShouldBeLessThanAgentsRuleResponse {
-    return new msdyn_WorkstreamCapacityShouldBeLessThanAgentsRuleResponse((data as any).value);
+    return new msdyn_WorkstreamCapacityShouldBeLessThanAgentsRuleResponse(
+      responseObject<msdyn_WorkstreamCapacityShouldBeLessThanAgentsRuleResponseData>(data)
+    );
   }
 }

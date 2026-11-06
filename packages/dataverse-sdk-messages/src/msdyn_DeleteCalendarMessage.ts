@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_DeleteCalendarResponse as msdyn_DeleteCalendarResponseData } from "./types/index.js";
 
 /**
  * msdyn_DeleteCalendar request message
@@ -35,23 +37,17 @@ export class msdyn_DeleteCalendarRequest
     const data = await response.json();
     return msdyn_DeleteCalendarResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      CalendarEventInfo: this.calendarEventInfo,
-    };
-  }
 }
 
 /**
  * msdyn_DeleteCalendar response message
  */
 export class msdyn_DeleteCalendarResponse extends OrganizationResponse {
-  constructor(public result: msdyn_DeleteCalendarResponse) {
+  constructor(public result: msdyn_DeleteCalendarResponseData) {
     super("msdyn_DeleteCalendar");
   }
 
   static fromResponse(data: unknown): msdyn_DeleteCalendarResponse {
-    return new msdyn_DeleteCalendarResponse((data as any).value);
+    return new msdyn_DeleteCalendarResponse(responseObject<msdyn_DeleteCalendarResponseData>(data));
   }
 }

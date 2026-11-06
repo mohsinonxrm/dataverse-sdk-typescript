@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import { responseValue } from "./internal/responseData.js";
 
 /**
  * msdyn_GetEligibleRegardingEntities request message
@@ -40,24 +40,19 @@ export class msdyn_GetEligibleRegardingEntitiesRequest
     const data = await response.json();
     return msdyn_GetEligibleRegardingEntitiesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      workflowId: this.workflowId,
-      correlationId: this.correlationId,
-    };
-  }
 }
 
 /**
  * msdyn_GetEligibleRegardingEntities response message
  */
 export class msdyn_GetEligibleRegardingEntitiesResponse extends OrganizationResponse {
-  constructor(public result: EntityReference[]) {
+  constructor(public result: Record<string, unknown>[]) {
     super("msdyn_GetEligibleRegardingEntities");
   }
 
   static fromResponse(data: unknown): msdyn_GetEligibleRegardingEntitiesResponse {
-    return new msdyn_GetEligibleRegardingEntitiesResponse((data as any).value);
+    return new msdyn_GetEligibleRegardingEntitiesResponse(
+      responseValue<Record<string, unknown>[]>(data)
+    );
   }
 }

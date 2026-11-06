@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import type { email } from "./types/index.js";
 
@@ -67,26 +68,6 @@ export class DeliverImmediatePromoteEmailRequest
     const data = await response.json();
     return DeliverImmediatePromoteEmailResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.emailId,
-      MessageId: this.messageId,
-      Subject: this.subject,
-      From: this.from,
-      To: this.to,
-      Cc: this.cc,
-      Bcc: this.bcc,
-      ReceivedOn: this.receivedOn,
-      SubmittedBy: this.submittedBy,
-      Importance: this.importance,
-      Body: this.body,
-      AttachmentIds: this.attachmentIds,
-      EWSUrl: this.eWSUrl,
-      AttachmentToken: this.attachmentToken,
-      ExtraProperties: this.extraProperties,
-    };
-  }
 }
 
 /**
@@ -98,6 +79,6 @@ export class DeliverImmediatePromoteEmailResponse extends OrganizationResponse {
   }
 
   static fromResponse(data: unknown): DeliverImmediatePromoteEmailResponse {
-    return new DeliverImmediatePromoteEmailResponse((data as any).value);
+    return new DeliverImmediatePromoteEmailResponse(responseObject<email>(data));
   }
 }

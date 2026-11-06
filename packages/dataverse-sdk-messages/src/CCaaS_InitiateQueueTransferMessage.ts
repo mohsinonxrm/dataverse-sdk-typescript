@@ -41,14 +41,6 @@ export class CCaaS_InitiateQueueTransferRequest
     // No return value (204 No Content)
     return new CCaaS_InitiateQueueTransferResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_ocliveworkitemId,
-      QueueId: this.queueId,
-      ApiVersion: this.apiVersion,
-    };
-  }
 }
 
 /**

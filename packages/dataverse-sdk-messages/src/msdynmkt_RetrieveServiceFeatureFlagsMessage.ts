@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdynmkt_RetrieveServiceFeatureFlagsResponse as msdynmkt_RetrieveServiceFeatureFlagsResponseData } from "./types/index.js";
 
 /**
  * msdynmkt_RetrieveServiceFeatureFlags request message
@@ -35,23 +37,19 @@ export class msdynmkt_RetrieveServiceFeatureFlagsRequest
     const data = await response.json();
     return msdynmkt_RetrieveServiceFeatureFlagsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ServiceName: this.serviceName,
-    };
-  }
 }
 
 /**
  * msdynmkt_RetrieveServiceFeatureFlags response message
  */
 export class msdynmkt_RetrieveServiceFeatureFlagsResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_RetrieveServiceFeatureFlagsResponse) {
+  constructor(public result: msdynmkt_RetrieveServiceFeatureFlagsResponseData) {
     super("msdynmkt_RetrieveServiceFeatureFlags");
   }
 
   static fromResponse(data: unknown): msdynmkt_RetrieveServiceFeatureFlagsResponse {
-    return new msdynmkt_RetrieveServiceFeatureFlagsResponse((data as any).value);
+    return new msdynmkt_RetrieveServiceFeatureFlagsResponse(
+      responseObject<msdynmkt_RetrieveServiceFeatureFlagsResponseData>(data)
+    );
   }
 }

@@ -53,20 +53,6 @@ export class UpsertCompositeDataSourceRequest
     // No return value (204 No Content)
     return new UpsertCompositeDataSourceResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ParentDisplayName: this.parentDisplayName,
-      ParentSchemaName: this.parentSchemaName,
-      ParentParameterKey: this.parentParameterKey,
-      ParentApiId: this.parentApiId,
-      ParentValue: this.parentValue,
-      ChildDisplayName: this.childDisplayName,
-      ChildSchemaName: this.childSchemaName,
-      ChildParameterKey: this.childParameterKey,
-      ChildValue: this.childValue,
-    };
-  }
 }
 
 /**

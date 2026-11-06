@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_ExecuteAggregateAndUpdateIntentMetricsResponse as msdyn_ExecuteAggregateAndUpdateIntentMetricsResponseData } from "./types/index.js";
 
 /**
  * msdyn_ExecuteAggregateAndUpdateIntentMetrics request message
@@ -51,29 +53,19 @@ export class msdyn_ExecuteAggregateAndUpdateIntentMetricsRequest
     const data = await response.json();
     return msdyn_ExecuteAggregateAndUpdateIntentMetricsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_trackingdate: this.msdyn_trackingdate,
-      msdyn_shouldupdateintents: this.msdyn_shouldupdateintents,
-      msdyn_pagenumber: this.msdyn_pagenumber,
-      msdyn_batchsize: this.msdyn_batchsize,
-      msdyn_parallelexecutions: this.msdyn_parallelexecutions,
-      msdyn_pagingcookie: this.msdyn_pagingcookie,
-      msdyn_trackingid: this.msdyn_trackingid,
-    };
-  }
 }
 
 /**
  * msdyn_ExecuteAggregateAndUpdateIntentMetrics response message
  */
 export class msdyn_ExecuteAggregateAndUpdateIntentMetricsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ExecuteAggregateAndUpdateIntentMetricsResponse) {
+  constructor(public result: msdyn_ExecuteAggregateAndUpdateIntentMetricsResponseData) {
     super("msdyn_ExecuteAggregateAndUpdateIntentMetrics");
   }
 
   static fromResponse(data: unknown): msdyn_ExecuteAggregateAndUpdateIntentMetricsResponse {
-    return new msdyn_ExecuteAggregateAndUpdateIntentMetricsResponse((data as any).value);
+    return new msdyn_ExecuteAggregateAndUpdateIntentMetricsResponse(
+      responseObject<msdyn_ExecuteAggregateAndUpdateIntentMetricsResponseData>(data)
+    );
   }
 }

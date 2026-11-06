@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_IoTCheckIfRecordExistsInEntityResponse as msdyn_IoTCheckIfRecordExistsInEntityResponseData } from "./types/index.js";
 
 /**
  * msdyn_IoTCheckIfRecordExistsInEntity request message
@@ -35,23 +37,19 @@ export class msdyn_IoTCheckIfRecordExistsInEntityRequest
     const data = await response.json();
     return msdyn_IoTCheckIfRecordExistsInEntityResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntitiesLogicalNames: this.entitiesLogicalNames,
-    };
-  }
 }
 
 /**
  * msdyn_IoTCheckIfRecordExistsInEntity response message
  */
 export class msdyn_IoTCheckIfRecordExistsInEntityResponse extends OrganizationResponse {
-  constructor(public result: msdyn_IoTCheckIfRecordExistsInEntityResponse) {
+  constructor(public result: msdyn_IoTCheckIfRecordExistsInEntityResponseData) {
     super("msdyn_IoTCheckIfRecordExistsInEntity");
   }
 
   static fromResponse(data: unknown): msdyn_IoTCheckIfRecordExistsInEntityResponse {
-    return new msdyn_IoTCheckIfRecordExistsInEntityResponse((data as any).value);
+    return new msdyn_IoTCheckIfRecordExistsInEntityResponse(
+      responseObject<msdyn_IoTCheckIfRecordExistsInEntityResponseData>(data)
+    );
   }
 }

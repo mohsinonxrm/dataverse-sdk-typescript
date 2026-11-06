@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdynmkt_getunsubscribelinkResponse as msdynmkt_getunsubscribelinkResponseData } from "./types/index.js";
 
 /**
  * msdynmkt_getunsubscribelink request message
@@ -57,33 +59,19 @@ export class msdynmkt_getunsubscribelinkRequest
     const data = await response.json();
     return msdynmkt_getunsubscribelinkResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdynmkt_purposeid: this.msdynmkt_purposeid,
-      msdynmkt_sourcemessageentityname: this.msdynmkt_sourcemessageentityname,
-      msdynmkt_messagetemplateid: this.msdynmkt_messagetemplateid,
-      msdynmkt_owningbusinessunitid: this.msdynmkt_owningbusinessunitid,
-      msdynmkt_entitytype: this.msdynmkt_entitytype,
-      msdynmkt_entityid: this.msdynmkt_entityid,
-      msdynmkt_contactpoint: this.msdynmkt_contactpoint,
-      msdynmkt_oneclickunsubscribelink: this.msdynmkt_oneclickunsubscribelink,
-      msdynmkt_compliancesettingsid: this.msdynmkt_compliancesettingsid,
-      msdynmkt_topicid: this.msdynmkt_topicid,
-      msdynmkt_sourceapplication: this.msdynmkt_sourceapplication,
-    };
-  }
 }
 
 /**
  * msdynmkt_getunsubscribelink response message
  */
 export class msdynmkt_getunsubscribelinkResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_getunsubscribelinkResponse) {
+  constructor(public result: msdynmkt_getunsubscribelinkResponseData) {
     super("msdynmkt_getunsubscribelink");
   }
 
   static fromResponse(data: unknown): msdynmkt_getunsubscribelinkResponse {
-    return new msdynmkt_getunsubscribelinkResponse((data as any).value);
+    return new msdynmkt_getunsubscribelinkResponse(
+      responseObject<msdynmkt_getunsubscribelinkResponseData>(data)
+    );
   }
 }

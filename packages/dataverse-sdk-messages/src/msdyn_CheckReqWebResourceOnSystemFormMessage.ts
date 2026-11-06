@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckReqWebResourceOnSystemFormResponse as msdyn_CheckReqWebResourceOnSystemFormResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckReqWebResourceOnSystemForm request message
@@ -35,23 +37,19 @@ export class msdyn_CheckReqWebResourceOnSystemFormRequest
     const data = await response.json();
     return msdyn_CheckReqWebResourceOnSystemFormResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntityAndWebResourceList: this.entityAndWebResourceList,
-    };
-  }
 }
 
 /**
  * msdyn_CheckReqWebResourceOnSystemForm response message
  */
 export class msdyn_CheckReqWebResourceOnSystemFormResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckReqWebResourceOnSystemFormResponse) {
+  constructor(public result: msdyn_CheckReqWebResourceOnSystemFormResponseData) {
     super("msdyn_CheckReqWebResourceOnSystemForm");
   }
 
   static fromResponse(data: unknown): msdyn_CheckReqWebResourceOnSystemFormResponse {
-    return new msdyn_CheckReqWebResourceOnSystemFormResponse((data as any).value);
+    return new msdyn_CheckReqWebResourceOnSystemFormResponse(
+      responseObject<msdyn_CheckReqWebResourceOnSystemFormResponseData>(data)
+    );
   }
 }

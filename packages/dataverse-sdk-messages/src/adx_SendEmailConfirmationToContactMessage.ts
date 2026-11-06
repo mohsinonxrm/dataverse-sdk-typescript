@@ -51,19 +51,6 @@ export class adx_SendEmailConfirmationToContactRequest
     // No return value (204 No Content)
     return new adx_SendEmailConfirmationToContactResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.contactId,
-      CallbackUrl: this.callbackUrl,
-      Code: this.code,
-      UrlCode: this.urlCode,
-      UserId: this.userId,
-      BusinessProcessFlowId: this.businessProcessFlowId,
-      BusinessProcessFlowInstanceId: this.businessProcessFlowInstanceId,
-      ActionStepId: this.actionStepId,
-    };
-  }
 }
 
 /**

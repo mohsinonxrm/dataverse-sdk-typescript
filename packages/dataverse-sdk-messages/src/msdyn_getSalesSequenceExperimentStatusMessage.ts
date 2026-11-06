@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_getSalesSequenceExperimentStatusResponse as msdyn_getSalesSequenceExperimentStatusResponseData } from "./types/index.js";
 
 /**
  * msdyn_getSalesSequenceExperimentStatus request message
@@ -39,24 +41,19 @@ export class msdyn_getSalesSequenceExperimentStatusRequest
     const data = await response.json();
     return msdyn_getSalesSequenceExperimentStatusResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_experimentKey: this.msdyn_experimentKey,
-      msdyn_experimentVersionRecordId: this.msdyn_experimentVersionRecordId,
-    };
-  }
 }
 
 /**
  * msdyn_getSalesSequenceExperimentStatus response message
  */
 export class msdyn_getSalesSequenceExperimentStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_getSalesSequenceExperimentStatusResponse) {
+  constructor(public result: msdyn_getSalesSequenceExperimentStatusResponseData) {
     super("msdyn_getSalesSequenceExperimentStatus");
   }
 
   static fromResponse(data: unknown): msdyn_getSalesSequenceExperimentStatusResponse {
-    return new msdyn_getSalesSequenceExperimentStatusResponse((data as any).value);
+    return new msdyn_getSalesSequenceExperimentStatusResponse(
+      responseObject<msdyn_getSalesSequenceExperimentStatusResponseData>(data)
+    );
   }
 }

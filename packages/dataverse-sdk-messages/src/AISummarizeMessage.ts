@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { AISummarizeResponse as AISummarizeResponseData } from "./types/index.js";
 
 /**
  * AISummarize request message
@@ -35,23 +37,17 @@ export class AISummarizeRequest
     const data = await response.json();
     return AISummarizeResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Text: this.text,
-    };
-  }
 }
 
 /**
  * AISummarize response message
  */
 export class AISummarizeResponse extends OrganizationResponse {
-  constructor(public result: AISummarizeResponse) {
+  constructor(public result: AISummarizeResponseData) {
     super("AISummarize");
   }
 
   static fromResponse(data: unknown): AISummarizeResponse {
-    return new AISummarizeResponse((data as any).value);
+    return new AISummarizeResponse(responseObject<AISummarizeResponseData>(data));
   }
 }

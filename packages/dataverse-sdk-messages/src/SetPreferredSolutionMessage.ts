@@ -35,12 +35,6 @@ export class SetPreferredSolutionRequest
     // No return value (204 No Content)
     return new SetPreferredSolutionResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionId: this.solutionId,
-    };
-  }
 }
 
 /**

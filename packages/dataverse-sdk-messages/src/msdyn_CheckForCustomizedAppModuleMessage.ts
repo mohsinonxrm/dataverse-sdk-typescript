@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckForCustomizedAppModuleResponse as msdyn_CheckForCustomizedAppModuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckForCustomizedAppModule request message
@@ -41,25 +43,19 @@ export class msdyn_CheckForCustomizedAppModuleRequest
     const data = await response.json();
     return msdyn_CheckForCustomizedAppModuleResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntityIds: this.entityIds,
-      SolutionId: this.solutionId,
-      ExcludeSolutionIds: this.excludeSolutionIds,
-    };
-  }
 }
 
 /**
  * msdyn_CheckForCustomizedAppModule response message
  */
 export class msdyn_CheckForCustomizedAppModuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckForCustomizedAppModuleResponse) {
+  constructor(public result: msdyn_CheckForCustomizedAppModuleResponseData) {
     super("msdyn_CheckForCustomizedAppModule");
   }
 
   static fromResponse(data: unknown): msdyn_CheckForCustomizedAppModuleResponse {
-    return new msdyn_CheckForCustomizedAppModuleResponse((data as any).value);
+    return new msdyn_CheckForCustomizedAppModuleResponse(
+      responseObject<msdyn_CheckForCustomizedAppModuleResponseData>(data)
+    );
   }
 }

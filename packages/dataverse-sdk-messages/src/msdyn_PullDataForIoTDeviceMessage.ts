@@ -39,13 +39,6 @@ export class msdyn_PullDataForIoTDeviceRequest
     // No return value (204 No Content)
     return new msdyn_PullDataForIoTDeviceResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      IsScheduledDataPull: this.isScheduledDataPull,
-      IoTDeviceIds: this.ioTDeviceIds,
-    };
-  }
 }
 
 /**

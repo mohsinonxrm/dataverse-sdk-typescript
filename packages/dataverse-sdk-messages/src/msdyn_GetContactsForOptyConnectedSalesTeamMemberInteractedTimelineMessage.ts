@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineResponse as msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimeline request message
@@ -45,14 +47,6 @@ export class msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineR
       data
     );
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntityLogicalName: this.entityLogicalName,
-      RecordId: this.recordId,
-      CustomActionInputs: this.customActionInputs,
-    };
-  }
 }
 
 /**
@@ -60,7 +54,7 @@ export class msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineR
  */
 export class msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineResponse extends OrganizationResponse {
   constructor(
-    public result: msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineResponse
+    public result: msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineResponseData
   ) {
     super("msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimeline");
   }
@@ -69,7 +63,9 @@ export class msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineR
     data: unknown
   ): msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineResponse {
     return new msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineResponse(
-      (data as any).value
+      responseObject<msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineResponseData>(
+        data
+      )
     );
   }
 }

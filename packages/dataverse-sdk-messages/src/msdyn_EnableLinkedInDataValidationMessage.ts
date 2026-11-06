@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_EnableLinkedInDataValidationResponse as msdyn_EnableLinkedInDataValidationResponseData } from "./types/index.js";
 
 /**
  * msdyn_EnableLinkedInDataValidation request message
@@ -30,21 +32,19 @@ export class msdyn_EnableLinkedInDataValidationRequest
     const data = await response.json();
     return msdyn_EnableLinkedInDataValidationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_EnableLinkedInDataValidation response message
  */
 export class msdyn_EnableLinkedInDataValidationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_EnableLinkedInDataValidationResponse) {
+  constructor(public result: msdyn_EnableLinkedInDataValidationResponseData) {
     super("msdyn_EnableLinkedInDataValidation");
   }
 
   static fromResponse(data: unknown): msdyn_EnableLinkedInDataValidationResponse {
-    return new msdyn_EnableLinkedInDataValidationResponse((data as any).value);
+    return new msdyn_EnableLinkedInDataValidationResponse(
+      responseObject<msdyn_EnableLinkedInDataValidationResponseData>(data)
+    );
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetSuggestedContactsResponse as msdyn_GetSuggestedContactsResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetSuggestedContacts request message
@@ -39,24 +41,19 @@ export class msdyn_GetSuggestedContactsRequest
     const data = await response.json();
     return msdyn_GetSuggestedContactsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntityLogicalName: this.entityLogicalName,
-      RecordId: this.recordId,
-    };
-  }
 }
 
 /**
  * msdyn_GetSuggestedContacts response message
  */
 export class msdyn_GetSuggestedContactsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetSuggestedContactsResponse) {
+  constructor(public result: msdyn_GetSuggestedContactsResponseData) {
     super("msdyn_GetSuggestedContacts");
   }
 
   static fromResponse(data: unknown): msdyn_GetSuggestedContactsResponse {
-    return new msdyn_GetSuggestedContactsResponse((data as any).value);
+    return new msdyn_GetSuggestedContactsResponse(
+      responseObject<msdyn_GetSuggestedContactsResponseData>(data)
+    );
   }
 }

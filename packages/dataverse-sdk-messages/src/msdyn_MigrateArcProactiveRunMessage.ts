@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_MigrateArcProactiveRunResponse as msdyn_MigrateArcProactiveRunResponseData } from "./types/index.js";
 
 /**
  * msdyn_MigrateArcProactiveRun request message
@@ -30,21 +32,19 @@ export class msdyn_MigrateArcProactiveRunRequest
     const data = await response.json();
     return msdyn_MigrateArcProactiveRunResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_MigrateArcProactiveRun response message
  */
 export class msdyn_MigrateArcProactiveRunResponse extends OrganizationResponse {
-  constructor(public result: msdyn_MigrateArcProactiveRunResponse) {
+  constructor(public result: msdyn_MigrateArcProactiveRunResponseData) {
     super("msdyn_MigrateArcProactiveRun");
   }
 
   static fromResponse(data: unknown): msdyn_MigrateArcProactiveRunResponse {
-    return new msdyn_MigrateArcProactiveRunResponse((data as any).value);
+    return new msdyn_MigrateArcProactiveRunResponse(
+      responseObject<msdyn_MigrateArcProactiveRunResponseData>(data)
+    );
   }
 }

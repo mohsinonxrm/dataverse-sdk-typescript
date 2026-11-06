@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetSIPackageStatusResponse as msdyn_GetSIPackageStatusResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetSIPackageStatus request message
@@ -35,23 +37,19 @@ export class msdyn_GetSIPackageStatusRequest
     const data = await response.json();
     return msdyn_GetSIPackageStatusResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ApiVersion: this.apiVersion,
-    };
-  }
 }
 
 /**
  * msdyn_GetSIPackageStatus response message
  */
 export class msdyn_GetSIPackageStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetSIPackageStatusResponse) {
+  constructor(public result: msdyn_GetSIPackageStatusResponseData) {
     super("msdyn_GetSIPackageStatus");
   }
 
   static fromResponse(data: unknown): msdyn_GetSIPackageStatusResponse {
-    return new msdyn_GetSIPackageStatusResponse((data as any).value);
+    return new msdyn_GetSIPackageStatusResponse(
+      responseObject<msdyn_GetSIPackageStatusResponseData>(data)
+    );
   }
 }

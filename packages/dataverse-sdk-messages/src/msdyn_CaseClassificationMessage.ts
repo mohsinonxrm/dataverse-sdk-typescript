@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CaseClassificationResponse as msdyn_CaseClassificationResponseData } from "./types/index.js";
 
 /**
  * msdyn_CaseClassification request message
@@ -35,23 +37,19 @@ export class msdyn_CaseClassificationRequest
     const data = await response.json();
     return msdyn_CaseClassificationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      CSCopilotRequest4: this.cSCopilotRequest4,
-    };
-  }
 }
 
 /**
  * msdyn_CaseClassification response message
  */
 export class msdyn_CaseClassificationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CaseClassificationResponse) {
+  constructor(public result: msdyn_CaseClassificationResponseData) {
     super("msdyn_CaseClassification");
   }
 
   static fromResponse(data: unknown): msdyn_CaseClassificationResponse {
-    return new msdyn_CaseClassificationResponse((data as any).value);
+    return new msdyn_CaseClassificationResponse(
+      responseObject<msdyn_CaseClassificationResponseData>(data)
+    );
   }
 }

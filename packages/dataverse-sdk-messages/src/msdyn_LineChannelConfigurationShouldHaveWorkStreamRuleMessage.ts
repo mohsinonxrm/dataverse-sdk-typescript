@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_LineChannelConfigurationShouldHaveWorkStreamRuleResponse as msdyn_LineChannelConfigurationShouldHaveWorkStreamRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_LineChannelConfigurationShouldHaveWorkStreamRule request message
@@ -32,23 +34,21 @@ export class msdyn_LineChannelConfigurationShouldHaveWorkStreamRuleRequest
     const data = await response.json();
     return msdyn_LineChannelConfigurationShouldHaveWorkStreamRuleResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_LineChannelConfigurationShouldHaveWorkStreamRule response message
  */
 export class msdyn_LineChannelConfigurationShouldHaveWorkStreamRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_LineChannelConfigurationShouldHaveWorkStreamRuleResponse) {
+  constructor(public result: msdyn_LineChannelConfigurationShouldHaveWorkStreamRuleResponseData) {
     super("msdyn_LineChannelConfigurationShouldHaveWorkStreamRule");
   }
 
   static fromResponse(
     data: unknown
   ): msdyn_LineChannelConfigurationShouldHaveWorkStreamRuleResponse {
-    return new msdyn_LineChannelConfigurationShouldHaveWorkStreamRuleResponse((data as any).value);
+    return new msdyn_LineChannelConfigurationShouldHaveWorkStreamRuleResponse(
+      responseObject<msdyn_LineChannelConfigurationShouldHaveWorkStreamRuleResponseData>(data)
+    );
   }
 }

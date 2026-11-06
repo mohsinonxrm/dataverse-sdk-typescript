@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetOrCreateBookableResourcesResponse as msdyn_GetOrCreateBookableResourcesResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetOrCreateBookableResources request message
@@ -35,23 +37,19 @@ export class msdyn_GetOrCreateBookableResourcesRequest
     const data = await response.json();
     return msdyn_GetOrCreateBookableResourcesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Resources: this.resources,
-    };
-  }
 }
 
 /**
  * msdyn_GetOrCreateBookableResources response message
  */
 export class msdyn_GetOrCreateBookableResourcesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetOrCreateBookableResourcesResponse) {
+  constructor(public result: msdyn_GetOrCreateBookableResourcesResponseData) {
     super("msdyn_GetOrCreateBookableResources");
   }
 
   static fromResponse(data: unknown): msdyn_GetOrCreateBookableResourcesResponse {
-    return new msdyn_GetOrCreateBookableResourcesResponse((data as any).value);
+    return new msdyn_GetOrCreateBookableResourcesResponse(
+      responseObject<msdyn_GetOrCreateBookableResourcesResponseData>(data)
+    );
   }
 }

@@ -32,10 +32,6 @@ export class msdyn_AgentscriptDataMigrationCustomActionRequest
     // No return value (204 No Content)
     return new msdyn_AgentscriptDataMigrationCustomActionResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_SalesAgents_IsTenantAdminResponse as msdyn_SalesAgents_IsTenantAdminResponseData } from "./types/index.js";
 
 /**
  * msdyn_SalesAgents_IsTenantAdmin request message
@@ -30,21 +32,19 @@ export class msdyn_SalesAgents_IsTenantAdminRequest
     const data = await response.json();
     return msdyn_SalesAgents_IsTenantAdminResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_SalesAgents_IsTenantAdmin response message
  */
 export class msdyn_SalesAgents_IsTenantAdminResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgents_IsTenantAdminResponse) {
+  constructor(public result: msdyn_SalesAgents_IsTenantAdminResponseData) {
     super("msdyn_SalesAgents_IsTenantAdmin");
   }
 
   static fromResponse(data: unknown): msdyn_SalesAgents_IsTenantAdminResponse {
-    return new msdyn_SalesAgents_IsTenantAdminResponse((data as any).value);
+    return new msdyn_SalesAgents_IsTenantAdminResponse(
+      responseObject<msdyn_SalesAgents_IsTenantAdminResponseData>(data)
+    );
   }
 }

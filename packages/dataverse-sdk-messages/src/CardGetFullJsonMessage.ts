@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { CardGetFullJsonResponse as CardGetFullJsonResponseData } from "./types/index.js";
 
 /**
  * CardGetFullJson request message
@@ -35,23 +37,17 @@ export class CardGetFullJsonRequest
     const data = await response.json();
     return CardGetFullJsonResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      CardId: this.cardId,
-    };
-  }
 }
 
 /**
  * CardGetFullJson response message
  */
 export class CardGetFullJsonResponse extends OrganizationResponse {
-  constructor(public result: CardGetFullJsonResponse) {
+  constructor(public result: CardGetFullJsonResponseData) {
     super("CardGetFullJson");
   }
 
   static fromResponse(data: unknown): CardGetFullJsonResponse {
-    return new CardGetFullJsonResponse((data as any).value);
+    return new CardGetFullJsonResponse(responseObject<CardGetFullJsonResponseData>(data));
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_OpportunityResearchResultUserActionResponse as msdyn_OpportunityResearchResultUserActionResponseData } from "./types/index.js";
 
 /**
  * msdyn_OpportunityResearchResultUserAction request message
@@ -47,27 +49,19 @@ export class msdyn_OpportunityResearchResultUserActionRequest
     const data = await response.json();
     return msdyn_OpportunityResearchResultUserActionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Id: this.id,
-      Action: this.action,
-      Topic: this.topic,
-      MacroAgentOrchestrationId: this.macroAgentOrchestrationId,
-      OpportunityId: this.opportunityId,
-    };
-  }
 }
 
 /**
  * msdyn_OpportunityResearchResultUserAction response message
  */
 export class msdyn_OpportunityResearchResultUserActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_OpportunityResearchResultUserActionResponse) {
+  constructor(public result: msdyn_OpportunityResearchResultUserActionResponseData) {
     super("msdyn_OpportunityResearchResultUserAction");
   }
 
   static fromResponse(data: unknown): msdyn_OpportunityResearchResultUserActionResponse {
-    return new msdyn_OpportunityResearchResultUserActionResponse((data as any).value);
+    return new msdyn_OpportunityResearchResultUserActionResponse(
+      responseObject<msdyn_OpportunityResearchResultUserActionResponseData>(data)
+    );
   }
 }

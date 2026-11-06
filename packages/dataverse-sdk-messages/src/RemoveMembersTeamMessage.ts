@@ -40,13 +40,6 @@ export class RemoveMembersTeamRequest
     // No return value (204 No Content)
     return new RemoveMembersTeamResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.teamId,
-      Members: this.members,
-    };
-  }
 }
 
 /**

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_IoTGetModelStatusInternalResponse as msdyn_IoTGetModelStatusInternalResponseData } from "./types/index.js";
 
 /**
  * msdyn_IoTGetModelStatusInternal request message
@@ -35,23 +37,19 @@ export class msdyn_IoTGetModelStatusInternalRequest
     const data = await response.json();
     return msdyn_IoTGetModelStatusInternalResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ScenarioId: this.scenarioId,
-    };
-  }
 }
 
 /**
  * msdyn_IoTGetModelStatusInternal response message
  */
 export class msdyn_IoTGetModelStatusInternalResponse extends OrganizationResponse {
-  constructor(public result: msdyn_IoTGetModelStatusInternalResponse) {
+  constructor(public result: msdyn_IoTGetModelStatusInternalResponseData) {
     super("msdyn_IoTGetModelStatusInternal");
   }
 
   static fromResponse(data: unknown): msdyn_IoTGetModelStatusInternalResponse {
-    return new msdyn_IoTGetModelStatusInternalResponse((data as any).value);
+    return new msdyn_IoTGetModelStatusInternalResponse(
+      responseObject<msdyn_IoTGetModelStatusInternalResponseData>(data)
+    );
   }
 }

@@ -35,12 +35,6 @@ export class RefreshChangesFromGitRequest
     // No return value (204 No Content)
     return new RefreshChangesFromGitResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionUniqueName: this.solutionUniqueName,
-    };
-  }
 }
 
 /**

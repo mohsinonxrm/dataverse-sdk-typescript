@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetContactsFromTimelineResponse as msdyn_GetContactsFromTimelineResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetContactsFromTimeline request message
@@ -41,25 +43,19 @@ export class msdyn_GetContactsFromTimelineRequest
     const data = await response.json();
     return msdyn_GetContactsFromTimelineResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntityLogicalName: this.entityLogicalName,
-      RecordId: this.recordId,
-      CustomActionInputs: this.customActionInputs,
-    };
-  }
 }
 
 /**
  * msdyn_GetContactsFromTimeline response message
  */
 export class msdyn_GetContactsFromTimelineResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetContactsFromTimelineResponse) {
+  constructor(public result: msdyn_GetContactsFromTimelineResponseData) {
     super("msdyn_GetContactsFromTimeline");
   }
 
   static fromResponse(data: unknown): msdyn_GetContactsFromTimelineResponse {
-    return new msdyn_GetContactsFromTimelineResponse((data as any).value);
+    return new msdyn_GetContactsFromTimelineResponse(
+      responseObject<msdyn_GetContactsFromTimelineResponseData>(data)
+    );
   }
 }

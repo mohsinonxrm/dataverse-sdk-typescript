@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { workflow } from "./types/index.js";
 
 /**
@@ -40,13 +41,6 @@ export class CreateWorkflowFromTemplateRequest
     const data = await response.json();
     return CreateWorkflowFromTemplateResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.workflowId,
-      WorkflowName: this.workflowName,
-    };
-  }
 }
 
 /**
@@ -58,6 +52,6 @@ export class CreateWorkflowFromTemplateResponse extends OrganizationResponse {
   }
 
   static fromResponse(data: unknown): CreateWorkflowFromTemplateResponse {
-    return new CreateWorkflowFromTemplateResponse((data as any).value);
+    return new CreateWorkflowFromTemplateResponse(responseObject<workflow>(data));
   }
 }

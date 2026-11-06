@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_CRACaseClosureResponse as msdyn_CRACaseClosureResponseData } from "./types/index.js";
 
 /**
  * msdyn_CRACaseClosure request message
@@ -48,28 +50,17 @@ export class msdyn_CRACaseClosureRequest
     const data = await response.json();
     return msdyn_CRACaseClosureResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_ShouldResolveCase: this.msdyn_ShouldResolveCase,
-      msdyn_AutomationLevel: this.msdyn_AutomationLevel,
-      msdyn_McsConversationId: this.msdyn_McsConversationId,
-      msdyn_IncomingEmailId: this.msdyn_IncomingEmailId,
-      msdyn_IsMonitoringActive: this.msdyn_IsMonitoringActive,
-      msdyn_Entity: this.msdyn_Entity,
-    };
-  }
 }
 
 /**
  * msdyn_CRACaseClosure response message
  */
 export class msdyn_CRACaseClosureResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CRACaseClosureResponse) {
+  constructor(public result: msdyn_CRACaseClosureResponseData) {
     super("msdyn_CRACaseClosure");
   }
 
   static fromResponse(data: unknown): msdyn_CRACaseClosureResponse {
-    return new msdyn_CRACaseClosureResponse((data as any).value);
+    return new msdyn_CRACaseClosureResponse(responseObject<msdyn_CRACaseClosureResponseData>(data));
   }
 }

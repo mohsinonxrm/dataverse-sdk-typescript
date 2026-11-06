@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetSalesCopilotConsentAndInfraStatusResponse as msdyn_GetSalesCopilotConsentAndInfraStatusResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetSalesCopilotConsentAndInfraStatus request message
@@ -37,23 +39,19 @@ export class msdyn_GetSalesCopilotConsentAndInfraStatusRequest
     const data = await response.json();
     return msdyn_GetSalesCopilotConsentAndInfraStatusResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_payload: this.msdyn_payload,
-    };
-  }
 }
 
 /**
  * msdyn_GetSalesCopilotConsentAndInfraStatus response message
  */
 export class msdyn_GetSalesCopilotConsentAndInfraStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetSalesCopilotConsentAndInfraStatusResponse) {
+  constructor(public result: msdyn_GetSalesCopilotConsentAndInfraStatusResponseData) {
     super("msdyn_GetSalesCopilotConsentAndInfraStatus");
   }
 
   static fromResponse(data: unknown): msdyn_GetSalesCopilotConsentAndInfraStatusResponse {
-    return new msdyn_GetSalesCopilotConsentAndInfraStatusResponse((data as any).value);
+    return new msdyn_GetSalesCopilotConsentAndInfraStatusResponse(
+      responseObject<msdyn_GetSalesCopilotConsentAndInfraStatusResponseData>(data)
+    );
   }
 }

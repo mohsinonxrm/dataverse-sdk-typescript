@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { importjob } from "./types/index.js";
 
 /**
@@ -36,12 +37,6 @@ export class ImportFieldTranslationRequest
     const data = await response.json();
     return ImportFieldTranslationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      TranslationFile: this.translationFile,
-    };
-  }
 }
 
 /**
@@ -53,6 +48,6 @@ export class ImportFieldTranslationResponse extends OrganizationResponse {
   }
 
   static fromResponse(data: unknown): ImportFieldTranslationResponse {
-    return new ImportFieldTranslationResponse((data as any).value);
+    return new ImportFieldTranslationResponse(responseObject<importjob>(data));
   }
 }

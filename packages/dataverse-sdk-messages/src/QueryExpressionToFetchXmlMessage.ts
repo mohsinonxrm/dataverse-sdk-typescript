@@ -1,6 +1,10 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { TypedQueryBase } from "./types/index.js";
+import { responseObject } from "./internal/responseData.js";
+import type {
+  QueryExpressionToFetchXmlResponse as QueryExpressionToFetchXmlResponseData,
+  TypedQueryBase,
+} from "./types/index.js";
 
 /**
  * QueryExpressionToFetchXml request message
@@ -36,23 +40,19 @@ export class QueryExpressionToFetchXmlRequest
     const data = await response.json();
     return QueryExpressionToFetchXmlResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Query: this.query,
-    };
-  }
 }
 
 /**
  * QueryExpressionToFetchXml response message
  */
 export class QueryExpressionToFetchXmlResponse extends OrganizationResponse {
-  constructor(public result: QueryExpressionToFetchXmlResponse) {
+  constructor(public result: QueryExpressionToFetchXmlResponseData) {
     super("QueryExpressionToFetchXml");
   }
 
   static fromResponse(data: unknown): QueryExpressionToFetchXmlResponse {
-    return new QueryExpressionToFetchXmlResponse((data as any).value);
+    return new QueryExpressionToFetchXmlResponse(
+      responseObject<QueryExpressionToFetchXmlResponseData>(data)
+    );
   }
 }

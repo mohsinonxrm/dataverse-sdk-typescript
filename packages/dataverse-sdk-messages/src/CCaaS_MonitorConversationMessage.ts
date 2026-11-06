@@ -41,14 +41,6 @@ export class CCaaS_MonitorConversationRequest
     // No return value (204 No Content)
     return new CCaaS_MonitorConversationResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_ocliveworkitemId,
-      ApiVersion: this.apiVersion,
-      ClientId: this.clientId,
-    };
-  }
 }
 
 /**

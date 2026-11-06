@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_DraftEmailForCaseResponse as msdyn_DraftEmailForCaseResponseData } from "./types/index.js";
 
 /**
  * msdyn_DraftEmailForCase request message
@@ -47,28 +49,19 @@ export class msdyn_DraftEmailForCaseRequest
     const data = await response.json();
     return msdyn_DraftEmailForCaseResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      additionalInstructions: this.additionalInstructions,
-      context_CaseNotes: this.context_CaseNotes,
-      context_CaseTitle: this.context_CaseTitle,
-      context_CaseId: this.context_CaseId,
-      recipientName: this.recipientName,
-      senderName: this.senderName,
-    };
-  }
 }
 
 /**
  * msdyn_DraftEmailForCase response message
  */
 export class msdyn_DraftEmailForCaseResponse extends OrganizationResponse {
-  constructor(public result: msdyn_DraftEmailForCaseResponse) {
+  constructor(public result: msdyn_DraftEmailForCaseResponseData) {
     super("msdyn_DraftEmailForCase");
   }
 
   static fromResponse(data: unknown): msdyn_DraftEmailForCaseResponse {
-    return new msdyn_DraftEmailForCaseResponse((data as any).value);
+    return new msdyn_DraftEmailForCaseResponse(
+      responseObject<msdyn_DraftEmailForCaseResponseData>(data)
+    );
   }
 }

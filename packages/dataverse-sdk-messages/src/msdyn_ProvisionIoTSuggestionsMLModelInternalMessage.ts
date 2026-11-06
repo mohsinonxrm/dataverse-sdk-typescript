@@ -37,12 +37,6 @@ export class msdyn_ProvisionIoTSuggestionsMLModelInternalRequest
     // No return value (204 No Content)
     return new msdyn_ProvisionIoTSuggestionsMLModelInternalResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      TenantId: this.tenantId,
-    };
-  }
 }
 
 /**

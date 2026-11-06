@@ -43,15 +43,6 @@ export class msdyn_ExecuteRecurringSalesOperationRequest
     // No return value (204 No Content)
     return new msdyn_ExecuteRecurringSalesOperationResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      InputData: this.inputData,
-      IsRSAV2Entity: this.isRSAV2Entity,
-      CustomActionName: this.customActionName,
-      TriggerName: this.triggerName,
-    };
-  }
 }
 
 /**

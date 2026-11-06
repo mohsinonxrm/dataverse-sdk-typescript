@@ -36,12 +36,6 @@ export class msdyn_SetAutoBlockedFlagRequest
     // No return value (204 No Content)
     return new msdyn_SetAutoBlockedFlagResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      FlaggedSpamEntity: this.flaggedSpamEntity,
-    };
-  }
 }
 
 /**

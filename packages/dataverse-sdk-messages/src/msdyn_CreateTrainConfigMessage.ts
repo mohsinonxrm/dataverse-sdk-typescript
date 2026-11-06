@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { msdyn_ocsimltraining } from "./types/index.js";
 
 /**
@@ -32,12 +33,6 @@ export class msdyn_CreateTrainConfigRequest
     const data = await response.json();
     return msdyn_CreateTrainConfigResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_ocskillidentmlmodelId,
-    };
-  }
 }
 
 /**
@@ -49,6 +44,6 @@ export class msdyn_CreateTrainConfigResponse extends OrganizationResponse {
   }
 
   static fromResponse(data: unknown): msdyn_CreateTrainConfigResponse {
-    return new msdyn_CreateTrainConfigResponse((data as any).value);
+    return new msdyn_CreateTrainConfigResponse(responseObject<msdyn_ocsimltraining>(data));
   }
 }

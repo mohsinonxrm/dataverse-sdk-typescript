@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckForWaitingWorkflowWithMessagesRelatedToAgreementResponse as msdyn_CheckForWaitingWorkflowWithMessagesRelatedToAgreementResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckForWaitingWorkflowWithMessagesRelatedToAgreement request message
@@ -37,19 +39,15 @@ export class msdyn_CheckForWaitingWorkflowWithMessagesRelatedToAgreementRequest
     const data = await response.json();
     return msdyn_CheckForWaitingWorkflowWithMessagesRelatedToAgreementResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionId: this.solutionId,
-    };
-  }
 }
 
 /**
  * msdyn_CheckForWaitingWorkflowWithMessagesRelatedToAgreement response message
  */
 export class msdyn_CheckForWaitingWorkflowWithMessagesRelatedToAgreementResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckForWaitingWorkflowWithMessagesRelatedToAgreementResponse) {
+  constructor(
+    public result: msdyn_CheckForWaitingWorkflowWithMessagesRelatedToAgreementResponseData
+  ) {
     super("msdyn_CheckForWaitingWorkflowWithMessagesRelatedToAgreement");
   }
 
@@ -57,7 +55,7 @@ export class msdyn_CheckForWaitingWorkflowWithMessagesRelatedToAgreementResponse
     data: unknown
   ): msdyn_CheckForWaitingWorkflowWithMessagesRelatedToAgreementResponse {
     return new msdyn_CheckForWaitingWorkflowWithMessagesRelatedToAgreementResponse(
-      (data as any).value
+      responseObject<msdyn_CheckForWaitingWorkflowWithMessagesRelatedToAgreementResponseData>(data)
     );
   }
 }

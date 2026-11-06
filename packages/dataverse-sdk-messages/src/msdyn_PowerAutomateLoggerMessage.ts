@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_PowerAutomateLoggerResponse as msdyn_PowerAutomateLoggerResponseData } from "./types/index.js";
 
 /**
  * msdyn_PowerAutomateLogger request message
@@ -39,24 +41,19 @@ export class msdyn_PowerAutomateLoggerRequest
     const data = await response.json();
     return msdyn_PowerAutomateLoggerResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      LogType: this.logType,
-      LogMessage: this.logMessage,
-    };
-  }
 }
 
 /**
  * msdyn_PowerAutomateLogger response message
  */
 export class msdyn_PowerAutomateLoggerResponse extends OrganizationResponse {
-  constructor(public result: msdyn_PowerAutomateLoggerResponse) {
+  constructor(public result: msdyn_PowerAutomateLoggerResponseData) {
     super("msdyn_PowerAutomateLogger");
   }
 
   static fromResponse(data: unknown): msdyn_PowerAutomateLoggerResponse {
-    return new msdyn_PowerAutomateLoggerResponse((data as any).value);
+    return new msdyn_PowerAutomateLoggerResponse(
+      responseObject<msdyn_PowerAutomateLoggerResponseData>(data)
+    );
   }
 }

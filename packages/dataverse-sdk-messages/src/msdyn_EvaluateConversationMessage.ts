@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_EvaluateConversationResponse as msdyn_EvaluateConversationResponseData } from "./types/index.js";
 
 /**
  * msdyn_EvaluateConversation request message
@@ -49,29 +51,19 @@ export class msdyn_EvaluateConversationRequest
     const data = await response.json();
     return msdyn_EvaluateConversationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      CriteriaId: this.criteriaId,
-      ExtendedContext: this.extendedContext,
-      ConversationPayload: this.conversationPayload,
-      LangLocale: this.langLocale,
-      EvaluationId: this.evaluationId,
-      AllowCrossGeo: this.allowCrossGeo,
-      RecordId: this.recordId,
-    };
-  }
 }
 
 /**
  * msdyn_EvaluateConversation response message
  */
 export class msdyn_EvaluateConversationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_EvaluateConversationResponse) {
+  constructor(public result: msdyn_EvaluateConversationResponseData) {
     super("msdyn_EvaluateConversation");
   }
 
   static fromResponse(data: unknown): msdyn_EvaluateConversationResponse {
-    return new msdyn_EvaluateConversationResponse((data as any).value);
+    return new msdyn_EvaluateConversationResponse(
+      responseObject<msdyn_EvaluateConversationResponseData>(data)
+    );
   }
 }

@@ -42,14 +42,6 @@ export class JoinLinkedChatRequest
     // No return value (204 No Content)
     return new JoinLinkedChatResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      TeamsChatId: this.teamsChatId,
-      UserId: this.userId,
-      RegardingEntity: this.regardingEntity,
-    };
-  }
 }
 
 /**

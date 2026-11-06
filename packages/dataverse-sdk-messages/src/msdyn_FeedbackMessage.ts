@@ -43,15 +43,6 @@ export class msdyn_FeedbackRequest
     // No return value (204 No Content)
     return new msdyn_FeedbackResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      FeatureName: this.featureName,
-      Value: this.value,
-      Description: this.description,
-      Properties: this.properties,
-    };
-  }
 }
 
 /**

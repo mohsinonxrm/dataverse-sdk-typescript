@@ -39,13 +39,6 @@ export class msdyn_GetEmailAssistStreamRequest
     // No return value (204 No Content)
     return new msdyn_GetEmailAssistStreamResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Context: this.context,
-      RequestPayload: this.requestPayload,
-    };
-  }
 }
 
 /**

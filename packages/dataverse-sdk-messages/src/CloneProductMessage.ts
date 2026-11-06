@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { product } from "./types/index.js";
 
 /**
@@ -32,12 +33,6 @@ export class CloneProductRequest
     const data = await response.json();
     return CloneProductResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.productId,
-    };
-  }
 }
 
 /**
@@ -49,6 +44,6 @@ export class CloneProductResponse extends OrganizationResponse {
   }
 
   static fromResponse(data: unknown): CloneProductResponse {
-    return new CloneProductResponse((data as any).value);
+    return new CloneProductResponse(responseObject<product>(data));
   }
 }

@@ -39,13 +39,6 @@ export class PvaCreateBotComponentsRequest
     // No return value (204 No Content)
     return new PvaCreateBotComponentsResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.botId,
-      BotComponents: this.botComponents,
-    };
-  }
 }
 
 /**

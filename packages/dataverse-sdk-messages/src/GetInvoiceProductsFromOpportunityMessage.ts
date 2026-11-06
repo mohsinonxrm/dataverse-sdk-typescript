@@ -40,13 +40,6 @@ export class GetInvoiceProductsFromOpportunityRequest
     // No return value (204 No Content)
     return new GetInvoiceProductsFromOpportunityResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.invoiceId,
-      Opportunity: this.opportunity,
-    };
-  }
 }
 
 /**

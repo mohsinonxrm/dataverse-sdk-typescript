@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetFavoriteArticlesResponse as msdyn_GetFavoriteArticlesResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetFavoriteArticles request message
@@ -35,23 +37,19 @@ export class msdyn_GetFavoriteArticlesRequest
     const data = await response.json();
     return msdyn_GetFavoriteArticlesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_userid: this.msdyn_userid,
-    };
-  }
 }
 
 /**
  * msdyn_GetFavoriteArticles response message
  */
 export class msdyn_GetFavoriteArticlesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetFavoriteArticlesResponse) {
+  constructor(public result: msdyn_GetFavoriteArticlesResponseData) {
     super("msdyn_GetFavoriteArticles");
   }
 
   static fromResponse(data: unknown): msdyn_GetFavoriteArticlesResponse {
-    return new msdyn_GetFavoriteArticlesResponse((data as any).value);
+    return new msdyn_GetFavoriteArticlesResponse(
+      responseObject<msdyn_GetFavoriteArticlesResponseData>(data)
+    );
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckIfRecurrenceSettingIsPresentAndValidForABSResponse as msdyn_CheckIfRecurrenceSettingIsPresentAndValidForABSResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckIfRecurrenceSettingIsPresentAndValidForABS request message
@@ -32,23 +34,21 @@ export class msdyn_CheckIfRecurrenceSettingIsPresentAndValidForABSRequest
     const data = await response.json();
     return msdyn_CheckIfRecurrenceSettingIsPresentAndValidForABSResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_CheckIfRecurrenceSettingIsPresentAndValidForABS response message
  */
 export class msdyn_CheckIfRecurrenceSettingIsPresentAndValidForABSResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfRecurrenceSettingIsPresentAndValidForABSResponse) {
+  constructor(public result: msdyn_CheckIfRecurrenceSettingIsPresentAndValidForABSResponseData) {
     super("msdyn_CheckIfRecurrenceSettingIsPresentAndValidForABS");
   }
 
   static fromResponse(
     data: unknown
   ): msdyn_CheckIfRecurrenceSettingIsPresentAndValidForABSResponse {
-    return new msdyn_CheckIfRecurrenceSettingIsPresentAndValidForABSResponse((data as any).value);
+    return new msdyn_CheckIfRecurrenceSettingIsPresentAndValidForABSResponse(
+      responseObject<msdyn_CheckIfRecurrenceSettingIsPresentAndValidForABSResponseData>(data)
+    );
   }
 }

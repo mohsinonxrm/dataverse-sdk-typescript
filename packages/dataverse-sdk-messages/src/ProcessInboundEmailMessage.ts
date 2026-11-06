@@ -31,12 +31,6 @@ export class ProcessInboundEmailRequest
     // No return value (204 No Content)
     return new ProcessInboundEmailResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.emailId,
-    };
-  }
 }
 
 /**

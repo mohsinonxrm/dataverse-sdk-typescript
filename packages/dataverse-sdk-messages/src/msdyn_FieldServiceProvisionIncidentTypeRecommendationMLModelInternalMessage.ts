@@ -38,12 +38,6 @@ export class msdyn_FieldServiceProvisionIncidentTypeRecommendationMLModelInterna
     // No return value (204 No Content)
     return new msdyn_FieldServiceProvisionIncidentTypeRecommendationMLModelInternalResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      TenantId: this.tenantId,
-    };
-  }
 }
 
 /**

@@ -35,12 +35,6 @@ export class cascadeAsync_SuccessAPIRequest
     // No return value (204 No Content)
     return new cascadeAsync_SuccessAPIResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      casadeAsync_JobName: this.casadeAsync_JobName,
-    };
-  }
 }
 
 /**

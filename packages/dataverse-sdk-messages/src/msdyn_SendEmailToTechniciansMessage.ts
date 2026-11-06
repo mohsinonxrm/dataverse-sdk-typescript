@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_SendEmailToTechniciansResponse as msdyn_SendEmailToTechniciansResponseData } from "./types/index.js";
 
 /**
  * msdyn_SendEmailToTechnicians request message
@@ -35,23 +37,19 @@ export class msdyn_SendEmailToTechniciansRequest
     const data = await response.json();
     return msdyn_SendEmailToTechniciansResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      input: this.input,
-    };
-  }
 }
 
 /**
  * msdyn_SendEmailToTechnicians response message
  */
 export class msdyn_SendEmailToTechniciansResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SendEmailToTechniciansResponse) {
+  constructor(public result: msdyn_SendEmailToTechniciansResponseData) {
     super("msdyn_SendEmailToTechnicians");
   }
 
   static fromResponse(data: unknown): msdyn_SendEmailToTechniciansResponse {
-    return new msdyn_SendEmailToTechniciansResponse((data as any).value);
+    return new msdyn_SendEmailToTechniciansResponse(
+      responseObject<msdyn_SendEmailToTechniciansResponseData>(data)
+    );
   }
 }

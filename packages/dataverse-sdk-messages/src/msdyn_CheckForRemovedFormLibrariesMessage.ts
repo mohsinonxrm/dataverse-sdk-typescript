@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckForRemovedFormLibrariesResponse as msdyn_CheckForRemovedFormLibrariesResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckForRemovedFormLibraries request message
@@ -39,24 +41,19 @@ export class msdyn_CheckForRemovedFormLibrariesRequest
     const data = await response.json();
     return msdyn_CheckForRemovedFormLibrariesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionId: this.solutionId,
-      ExcludeFormIds: this.excludeFormIds,
-    };
-  }
 }
 
 /**
  * msdyn_CheckForRemovedFormLibraries response message
  */
 export class msdyn_CheckForRemovedFormLibrariesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckForRemovedFormLibrariesResponse) {
+  constructor(public result: msdyn_CheckForRemovedFormLibrariesResponseData) {
     super("msdyn_CheckForRemovedFormLibraries");
   }
 
   static fromResponse(data: unknown): msdyn_CheckForRemovedFormLibrariesResponse {
-    return new msdyn_CheckForRemovedFormLibrariesResponse((data as any).value);
+    return new msdyn_CheckForRemovedFormLibrariesResponse(
+      responseObject<msdyn_CheckForRemovedFormLibrariesResponseData>(data)
+    );
   }
 }

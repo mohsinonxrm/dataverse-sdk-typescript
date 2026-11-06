@@ -39,13 +39,6 @@ export class msdyn_IoTSetConfigurationRequest
     // No return value (204 No Content)
     return new msdyn_IoTSetConfigurationResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Key: this.key,
-      Value: this.value,
-    };
-  }
 }
 
 /**

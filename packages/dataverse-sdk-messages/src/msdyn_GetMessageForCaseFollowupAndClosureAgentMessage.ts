@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetMessageForCaseFollowupAndClosureAgentResponse as msdyn_GetMessageForCaseFollowupAndClosureAgentResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetMessageForCaseFollowupAndClosureAgent request message
@@ -37,23 +39,19 @@ export class msdyn_GetMessageForCaseFollowupAndClosureAgentRequest
     const data = await response.json();
     return msdyn_GetMessageForCaseFollowupAndClosureAgentResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_payload: this.msdyn_payload,
-    };
-  }
 }
 
 /**
  * msdyn_GetMessageForCaseFollowupAndClosureAgent response message
  */
 export class msdyn_GetMessageForCaseFollowupAndClosureAgentResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetMessageForCaseFollowupAndClosureAgentResponse) {
+  constructor(public result: msdyn_GetMessageForCaseFollowupAndClosureAgentResponseData) {
     super("msdyn_GetMessageForCaseFollowupAndClosureAgent");
   }
 
   static fromResponse(data: unknown): msdyn_GetMessageForCaseFollowupAndClosureAgentResponse {
-    return new msdyn_GetMessageForCaseFollowupAndClosureAgentResponse((data as any).value);
+    return new msdyn_GetMessageForCaseFollowupAndClosureAgentResponse(
+      responseObject<msdyn_GetMessageForCaseFollowupAndClosureAgentResponseData>(data)
+    );
   }
 }

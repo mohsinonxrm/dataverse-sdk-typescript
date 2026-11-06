@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { msdyn_UpdateRecordWithRuleBasedPredictionsResponse as msdyn_UpdateRecordWithRuleBasedPredictionsResponseData } from "./types/index.js";
 
 /**
  * msdyn_UpdateRecordWithRuleBasedPredictions request message
@@ -44,25 +46,19 @@ export class msdyn_UpdateRecordWithRuleBasedPredictionsRequest
     const data = await response.json();
     return msdyn_UpdateRecordWithRuleBasedPredictionsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_Target: this.msdyn_Target,
-      msdyn_Context: this.msdyn_Context,
-      msdyn_ContextGenerationParameters: this.msdyn_ContextGenerationParameters,
-    };
-  }
 }
 
 /**
  * msdyn_UpdateRecordWithRuleBasedPredictions response message
  */
 export class msdyn_UpdateRecordWithRuleBasedPredictionsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_UpdateRecordWithRuleBasedPredictionsResponse) {
+  constructor(public result: msdyn_UpdateRecordWithRuleBasedPredictionsResponseData) {
     super("msdyn_UpdateRecordWithRuleBasedPredictions");
   }
 
   static fromResponse(data: unknown): msdyn_UpdateRecordWithRuleBasedPredictionsResponse {
-    return new msdyn_UpdateRecordWithRuleBasedPredictionsResponse((data as any).value);
+    return new msdyn_UpdateRecordWithRuleBasedPredictionsResponse(
+      responseObject<msdyn_UpdateRecordWithRuleBasedPredictionsResponseData>(data)
+    );
   }
 }

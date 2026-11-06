@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckForPendingProcessesResponse as msdyn_CheckForPendingProcessesResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckForPendingProcesses request message
@@ -35,23 +37,19 @@ export class msdyn_CheckForPendingProcessesRequest
     const data = await response.json();
     return msdyn_CheckForPendingProcessesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionId: this.solutionId,
-    };
-  }
 }
 
 /**
  * msdyn_CheckForPendingProcesses response message
  */
 export class msdyn_CheckForPendingProcessesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckForPendingProcessesResponse) {
+  constructor(public result: msdyn_CheckForPendingProcessesResponseData) {
     super("msdyn_CheckForPendingProcesses");
   }
 
   static fromResponse(data: unknown): msdyn_CheckForPendingProcessesResponse {
-    return new msdyn_CheckForPendingProcessesResponse((data as any).value);
+    return new msdyn_CheckForPendingProcessesResponse(
+      responseObject<msdyn_CheckForPendingProcessesResponseData>(data)
+    );
   }
 }

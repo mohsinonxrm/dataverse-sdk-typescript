@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_get_required_fieldsResponse as msdyn_get_required_fieldsResponseData } from "./types/index.js";
 
 /**
  * msdyn_get_required_fields request message
@@ -43,26 +45,19 @@ export class msdyn_get_required_fieldsRequest
     const data = await response.json();
     return msdyn_get_required_fieldsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      table_id: this.table_id,
-      dataset_value: this.dataset_value,
-      connection_id: this.connection_id,
-      connector_id: this.connector_id,
-    };
-  }
 }
 
 /**
  * msdyn_get_required_fields response message
  */
 export class msdyn_get_required_fieldsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_get_required_fieldsResponse) {
+  constructor(public result: msdyn_get_required_fieldsResponseData) {
     super("msdyn_get_required_fields");
   }
 
   static fromResponse(data: unknown): msdyn_get_required_fieldsResponse {
-    return new msdyn_get_required_fieldsResponse((data as any).value);
+    return new msdyn_get_required_fieldsResponse(
+      responseObject<msdyn_get_required_fieldsResponseData>(data)
+    );
   }
 }

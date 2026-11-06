@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckDefaultValueForLineStatusResponse as msdyn_CheckDefaultValueForLineStatusResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckDefaultValueForLineStatus request message
@@ -30,21 +32,19 @@ export class msdyn_CheckDefaultValueForLineStatusRequest
     const data = await response.json();
     return msdyn_CheckDefaultValueForLineStatusResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_CheckDefaultValueForLineStatus response message
  */
 export class msdyn_CheckDefaultValueForLineStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckDefaultValueForLineStatusResponse) {
+  constructor(public result: msdyn_CheckDefaultValueForLineStatusResponseData) {
     super("msdyn_CheckDefaultValueForLineStatus");
   }
 
   static fromResponse(data: unknown): msdyn_CheckDefaultValueForLineStatusResponse {
-    return new msdyn_CheckDefaultValueForLineStatusResponse((data as any).value);
+    return new msdyn_CheckDefaultValueForLineStatusResponse(
+      responseObject<msdyn_CheckDefaultValueForLineStatusResponseData>(data)
+    );
   }
 }

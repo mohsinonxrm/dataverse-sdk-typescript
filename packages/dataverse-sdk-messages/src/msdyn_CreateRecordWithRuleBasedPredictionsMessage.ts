@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 
 /**
@@ -44,25 +45,19 @@ export class msdyn_CreateRecordWithRuleBasedPredictionsRequest
     const data = await response.json();
     return msdyn_CreateRecordWithRuleBasedPredictionsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_Context: this.msdyn_Context,
-      msdyn_ContextGenerationParameters: this.msdyn_ContextGenerationParameters,
-      msdyn_Target: this.msdyn_Target,
-    };
-  }
 }
 
 /**
  * msdyn_CreateRecordWithRuleBasedPredictions response message
  */
 export class msdyn_CreateRecordWithRuleBasedPredictionsResponse extends OrganizationResponse {
-  constructor(public result: EntityReference) {
+  constructor(public result: Record<string, unknown>) {
     super("msdyn_CreateRecordWithRuleBasedPredictions");
   }
 
   static fromResponse(data: unknown): msdyn_CreateRecordWithRuleBasedPredictionsResponse {
-    return new msdyn_CreateRecordWithRuleBasedPredictionsResponse((data as any).value);
+    return new msdyn_CreateRecordWithRuleBasedPredictionsResponse(
+      responseObject<Record<string, unknown>>(data)
+    );
   }
 }

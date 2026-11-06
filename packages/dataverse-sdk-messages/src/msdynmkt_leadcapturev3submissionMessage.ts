@@ -42,14 +42,6 @@ export class msdynmkt_leadcapturev3submissionRequest
     // No return value (204 No Content)
     return new msdynmkt_leadcapturev3submissionResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdynmkt_formsubmissionid: this.msdynmkt_formsubmissionid,
-      msdynmkt_consentversion: this.msdynmkt_consentversion,
-      msdynmkt_marketingformid: this.msdynmkt_marketingformid,
-    };
-  }
 }
 
 /**

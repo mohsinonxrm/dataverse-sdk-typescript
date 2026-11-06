@@ -35,12 +35,6 @@ export class msdyn_IoTHubPullDeviceDataRequest
     // No return value (204 No Content)
     return new msdyn_IoTHubPullDeviceDataResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntityCollection: this.entityCollection,
-    };
-  }
 }
 
 /**

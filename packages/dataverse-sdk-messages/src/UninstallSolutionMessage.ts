@@ -35,12 +35,6 @@ export class UninstallSolutionRequest
     // No return value (204 No Content)
     return new UninstallSolutionResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionUniqueName: this.solutionUniqueName,
-    };
-  }
 }
 
 /**

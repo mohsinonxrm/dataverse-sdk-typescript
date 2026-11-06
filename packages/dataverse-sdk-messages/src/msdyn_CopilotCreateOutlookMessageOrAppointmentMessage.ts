@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CopilotCreateOutlookMessageOrAppointmentResponse as msdyn_CopilotCreateOutlookMessageOrAppointmentResponseData } from "./types/index.js";
 
 /**
  * msdyn_CopilotCreateOutlookMessageOrAppointment request message
@@ -45,26 +47,19 @@ export class msdyn_CopilotCreateOutlookMessageOrAppointmentRequest
     const data = await response.json();
     return msdyn_CopilotCreateOutlookMessageOrAppointmentResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_messageId: this.msdyn_messageId,
-      msdyn_correlationId: this.msdyn_correlationId,
-      msdyn_outlookItemType: this.msdyn_outlookItemType,
-      msdyn_outlookPayload: this.msdyn_outlookPayload,
-    };
-  }
 }
 
 /**
  * msdyn_CopilotCreateOutlookMessageOrAppointment response message
  */
 export class msdyn_CopilotCreateOutlookMessageOrAppointmentResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CopilotCreateOutlookMessageOrAppointmentResponse) {
+  constructor(public result: msdyn_CopilotCreateOutlookMessageOrAppointmentResponseData) {
     super("msdyn_CopilotCreateOutlookMessageOrAppointment");
   }
 
   static fromResponse(data: unknown): msdyn_CopilotCreateOutlookMessageOrAppointmentResponse {
-    return new msdyn_CopilotCreateOutlookMessageOrAppointmentResponse((data as any).value);
+    return new msdyn_CopilotCreateOutlookMessageOrAppointmentResponse(
+      responseObject<msdyn_CopilotCreateOutlookMessageOrAppointmentResponseData>(data)
+    );
   }
 }

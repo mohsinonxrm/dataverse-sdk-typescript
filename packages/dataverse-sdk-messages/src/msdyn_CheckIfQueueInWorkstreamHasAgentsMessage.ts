@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckIfQueueInWorkstreamHasAgentsResponse as msdyn_CheckIfQueueInWorkstreamHasAgentsResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckIfQueueInWorkstreamHasAgents request message
@@ -32,21 +34,19 @@ export class msdyn_CheckIfQueueInWorkstreamHasAgentsRequest
     const data = await response.json();
     return msdyn_CheckIfQueueInWorkstreamHasAgentsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_CheckIfQueueInWorkstreamHasAgents response message
  */
 export class msdyn_CheckIfQueueInWorkstreamHasAgentsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfQueueInWorkstreamHasAgentsResponse) {
+  constructor(public result: msdyn_CheckIfQueueInWorkstreamHasAgentsResponseData) {
     super("msdyn_CheckIfQueueInWorkstreamHasAgents");
   }
 
   static fromResponse(data: unknown): msdyn_CheckIfQueueInWorkstreamHasAgentsResponse {
-    return new msdyn_CheckIfQueueInWorkstreamHasAgentsResponse((data as any).value);
+    return new msdyn_CheckIfQueueInWorkstreamHasAgentsResponse(
+      responseObject<msdyn_CheckIfQueueInWorkstreamHasAgentsResponseData>(data)
+    );
   }
 }

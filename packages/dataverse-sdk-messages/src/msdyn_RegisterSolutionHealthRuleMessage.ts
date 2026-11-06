@@ -1,7 +1,12 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
-import type { msdyn_solutionhealthruleset, workflow } from "./types/index.js";
+import type {
+  msdyn_RegisterSolutionHealthRuleResponse as msdyn_RegisterSolutionHealthRuleResponseData,
+  msdyn_solutionhealthruleset,
+  workflow,
+} from "./types/index.js";
 
 /**
  * msdyn_RegisterSolutionHealthRule request message
@@ -55,31 +60,19 @@ export class msdyn_RegisterSolutionHealthRuleRequest
     const data = await response.json();
     return msdyn_RegisterSolutionHealthRuleResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RuleDescription: this.ruleDescription,
-      OwningSolutionId: this.owningSolutionId,
-      UniqueName: this.uniqueName,
-      ResolutionAction: this.resolutionAction,
-      RuleSetId: this.ruleSetId,
-      RuleArguments: this.ruleArguments,
-      RuleName: this.ruleName,
-      WorkflowReference: this.workflowReference,
-      ResolutionMessage: this.resolutionMessage,
-    };
-  }
 }
 
 /**
  * msdyn_RegisterSolutionHealthRule response message
  */
 export class msdyn_RegisterSolutionHealthRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RegisterSolutionHealthRuleResponse) {
+  constructor(public result: msdyn_RegisterSolutionHealthRuleResponseData) {
     super("msdyn_RegisterSolutionHealthRule");
   }
 
   static fromResponse(data: unknown): msdyn_RegisterSolutionHealthRuleResponse {
-    return new msdyn_RegisterSolutionHealthRuleResponse((data as any).value);
+    return new msdyn_RegisterSolutionHealthRuleResponse(
+      responseObject<msdyn_RegisterSolutionHealthRuleResponseData>(data)
+    );
   }
 }

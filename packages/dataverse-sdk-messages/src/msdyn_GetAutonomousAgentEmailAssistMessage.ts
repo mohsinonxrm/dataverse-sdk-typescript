@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetAutonomousAgentEmailAssistResponse as msdyn_GetAutonomousAgentEmailAssistResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetAutonomousAgentEmailAssist request message
@@ -41,25 +43,19 @@ export class msdyn_GetAutonomousAgentEmailAssistRequest
     const data = await response.json();
     return msdyn_GetAutonomousAgentEmailAssistResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      emailAssistAdditionalInformation: this.emailAssistAdditionalInformation,
-      emailAssistRequestPayload: this.emailAssistRequestPayload,
-      emailAssistRequestHeader: this.emailAssistRequestHeader,
-    };
-  }
 }
 
 /**
  * msdyn_GetAutonomousAgentEmailAssist response message
  */
 export class msdyn_GetAutonomousAgentEmailAssistResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetAutonomousAgentEmailAssistResponse) {
+  constructor(public result: msdyn_GetAutonomousAgentEmailAssistResponseData) {
     super("msdyn_GetAutonomousAgentEmailAssist");
   }
 
   static fromResponse(data: unknown): msdyn_GetAutonomousAgentEmailAssistResponse {
-    return new msdyn_GetAutonomousAgentEmailAssistResponse((data as any).value);
+    return new msdyn_GetAutonomousAgentEmailAssistResponse(
+      responseObject<msdyn_GetAutonomousAgentEmailAssistResponseData>(data)
+    );
   }
 }

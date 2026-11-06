@@ -40,13 +40,6 @@ export class ReplacePrivilegesRoleRequest
     // No return value (204 No Content)
     return new ReplacePrivilegesRoleResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.roleId,
-      Privileges: this.privileges,
-    };
-  }
 }
 
 /**

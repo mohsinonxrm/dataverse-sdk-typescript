@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CustomChannelConfigurationShouldHaveWorkStreamRuleResponse as msdyn_CustomChannelConfigurationShouldHaveWorkStreamRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_CustomChannelConfigurationShouldHaveWorkStreamRule request message
@@ -32,17 +34,13 @@ export class msdyn_CustomChannelConfigurationShouldHaveWorkStreamRuleRequest
     const data = await response.json();
     return msdyn_CustomChannelConfigurationShouldHaveWorkStreamRuleResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_CustomChannelConfigurationShouldHaveWorkStreamRule response message
  */
 export class msdyn_CustomChannelConfigurationShouldHaveWorkStreamRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CustomChannelConfigurationShouldHaveWorkStreamRuleResponse) {
+  constructor(public result: msdyn_CustomChannelConfigurationShouldHaveWorkStreamRuleResponseData) {
     super("msdyn_CustomChannelConfigurationShouldHaveWorkStreamRule");
   }
 
@@ -50,7 +48,7 @@ export class msdyn_CustomChannelConfigurationShouldHaveWorkStreamRuleResponse ex
     data: unknown
   ): msdyn_CustomChannelConfigurationShouldHaveWorkStreamRuleResponse {
     return new msdyn_CustomChannelConfigurationShouldHaveWorkStreamRuleResponse(
-      (data as any).value
+      responseObject<msdyn_CustomChannelConfigurationShouldHaveWorkStreamRuleResponseData>(data)
     );
   }
 }

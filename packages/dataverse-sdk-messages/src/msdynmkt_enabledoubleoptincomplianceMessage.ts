@@ -35,12 +35,6 @@ export class msdynmkt_enabledoubleoptincomplianceRequest
     // No return value (204 No Content)
     return new msdynmkt_enabledoubleoptincomplianceResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdynmkt_complianceid: this.msdynmkt_complianceid,
-    };
-  }
 }
 
 /**

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GeneratePlatformSummaryConfigRecordsResponse as msdyn_GeneratePlatformSummaryConfigRecordsResponseData } from "./types/index.js";
 
 /**
  * msdyn_GeneratePlatformSummaryConfigRecords request message
@@ -37,23 +39,19 @@ export class msdyn_GeneratePlatformSummaryConfigRecordsRequest
     const data = await response.json();
     return msdyn_GeneratePlatformSummaryConfigRecordsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntityLogicalName: this.entityLogicalName,
-    };
-  }
 }
 
 /**
  * msdyn_GeneratePlatformSummaryConfigRecords response message
  */
 export class msdyn_GeneratePlatformSummaryConfigRecordsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GeneratePlatformSummaryConfigRecordsResponse) {
+  constructor(public result: msdyn_GeneratePlatformSummaryConfigRecordsResponseData) {
     super("msdyn_GeneratePlatformSummaryConfigRecords");
   }
 
   static fromResponse(data: unknown): msdyn_GeneratePlatformSummaryConfigRecordsResponse {
-    return new msdyn_GeneratePlatformSummaryConfigRecordsResponse((data as any).value);
+    return new msdyn_GeneratePlatformSummaryConfigRecordsResponse(
+      responseObject<msdyn_GeneratePlatformSummaryConfigRecordsResponseData>(data)
+    );
   }
 }

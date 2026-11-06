@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { CreateMiniCampaignV2Response as CreateMiniCampaignV2ResponseData } from "./types/index.js";
 
 /**
  * CreateMiniCampaignV2 request message
@@ -63,36 +65,17 @@ export class CreateMiniCampaignV2Request
     const data = await response.json();
     return CreateMiniCampaignV2Response.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      MiniCampaignForTypeCode: this.miniCampaignForTypeCode,
-      TemplateId: this.templateId,
-      TargetOption: this.targetOption,
-      TargetIds: this.targetIds,
-      FetchXml: this.fetchXml,
-      MiniCampaignType: this.miniCampaignType,
-      ActivitiesOwnerOption: this.activitiesOwnerOption,
-      ActivityXml: this.activityXml,
-      MiniCampaignName: this.miniCampaignName,
-      PostWorkflowEvent: this.postWorkflowEvent,
-      OwnerId: this.ownerId,
-      OwnerTypeCode: this.ownerTypeCode,
-      sendEmail: this.sendEmail,
-      QueueId: this.queueId,
-    };
-  }
 }
 
 /**
  * CreateMiniCampaignV2 response message
  */
 export class CreateMiniCampaignV2Response extends OrganizationResponse {
-  constructor(public result: CreateMiniCampaignV2Response) {
+  constructor(public result: CreateMiniCampaignV2ResponseData) {
     super("CreateMiniCampaignV2");
   }
 
   static fromResponse(data: unknown): CreateMiniCampaignV2Response {
-    return new CreateMiniCampaignV2Response((data as any).value);
+    return new CreateMiniCampaignV2Response(responseObject<CreateMiniCampaignV2ResponseData>(data));
   }
 }

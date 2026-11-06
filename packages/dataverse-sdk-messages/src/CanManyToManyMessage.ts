@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { CanManyToManyResponse as CanManyToManyResponseData } from "./types/index.js";
 
 /**
  * CanManyToMany request message
@@ -35,23 +37,17 @@ export class CanManyToManyRequest
     const data = await response.json();
     return CanManyToManyResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntityName: this.entityName,
-    };
-  }
 }
 
 /**
  * CanManyToMany response message
  */
 export class CanManyToManyResponse extends OrganizationResponse {
-  constructor(public result: CanManyToManyResponse) {
+  constructor(public result: CanManyToManyResponseData) {
     super("CanManyToMany");
   }
 
   static fromResponse(data: unknown): CanManyToManyResponse {
-    return new CanManyToManyResponse((data as any).value);
+    return new CanManyToManyResponse(responseObject<CanManyToManyResponseData>(data));
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_IoTPullDeviceDataActionHandlerResponse as msdyn_IoTPullDeviceDataActionHandlerResponseData } from "./types/index.js";
 
 /**
  * msdyn_IoTPullDeviceDataActionHandler request message
@@ -35,23 +37,19 @@ export class msdyn_IoTPullDeviceDataActionHandlerRequest
     const data = await response.json();
     return msdyn_IoTPullDeviceDataActionHandlerResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntityCollection: this.entityCollection,
-    };
-  }
 }
 
 /**
  * msdyn_IoTPullDeviceDataActionHandler response message
  */
 export class msdyn_IoTPullDeviceDataActionHandlerResponse extends OrganizationResponse {
-  constructor(public result: msdyn_IoTPullDeviceDataActionHandlerResponse) {
+  constructor(public result: msdyn_IoTPullDeviceDataActionHandlerResponseData) {
     super("msdyn_IoTPullDeviceDataActionHandler");
   }
 
   static fromResponse(data: unknown): msdyn_IoTPullDeviceDataActionHandlerResponse {
-    return new msdyn_IoTPullDeviceDataActionHandlerResponse((data as any).value);
+    return new msdyn_IoTPullDeviceDataActionHandlerResponse(
+      responseObject<msdyn_IoTPullDeviceDataActionHandlerResponseData>(data)
+    );
   }
 }

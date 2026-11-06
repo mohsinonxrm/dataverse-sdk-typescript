@@ -35,12 +35,6 @@ export class msdyn_UpdateCopilotSettingsRequest
     // No return value (204 No Content)
     return new msdyn_UpdateCopilotSettingsResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_input: this.msdyn_input,
-    };
-  }
 }
 
 /**

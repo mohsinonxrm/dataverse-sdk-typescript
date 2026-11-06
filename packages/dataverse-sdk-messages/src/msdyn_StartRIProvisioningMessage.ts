@@ -39,13 +39,6 @@ export class msdyn_StartRIProvisioningRequest
     // No return value (204 No Content)
     return new msdyn_StartRIProvisioningResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      HubName: this.hubName,
-      PrimaryKey: this.primaryKey,
-    };
-  }
 }
 
 /**

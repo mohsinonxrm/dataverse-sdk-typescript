@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import { responseObject } from "./internal/responseData.js";
 
 /**
  * FormPredict request message
@@ -48,28 +48,17 @@ export class FormPredictRequest
     const data = await response.json();
     return FormPredictResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entityName: this.entityName,
-      predictorFields: this.predictorFields,
-      context: this.context,
-      requestedFields: this.requestedFields,
-      recordValues: this.recordValues,
-      clientPartnerSource: this.clientPartnerSource,
-    };
-  }
 }
 
 /**
  * FormPredict response message
  */
 export class FormPredictResponse extends OrganizationResponse {
-  constructor(public result: EntityReference) {
+  constructor(public result: Record<string, unknown>) {
     super("FormPredict");
   }
 
   static fromResponse(data: unknown): FormPredictResponse {
-    return new FormPredictResponse((data as any).value);
+    return new FormPredictResponse(responseObject<Record<string, unknown>>(data));
   }
 }

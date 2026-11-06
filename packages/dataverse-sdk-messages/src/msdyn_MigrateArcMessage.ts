@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_MigrateArcResponse as msdyn_MigrateArcResponseData } from "./types/index.js";
 
 /**
  * msdyn_MigrateArc request message
@@ -35,23 +37,17 @@ export class msdyn_MigrateArcRequest
     const data = await response.json();
     return msdyn_MigrateArcResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ArcMigrationRequest: this.arcMigrationRequest,
-    };
-  }
 }
 
 /**
  * msdyn_MigrateArc response message
  */
 export class msdyn_MigrateArcResponse extends OrganizationResponse {
-  constructor(public result: msdyn_MigrateArcResponse) {
+  constructor(public result: msdyn_MigrateArcResponseData) {
     super("msdyn_MigrateArc");
   }
 
   static fromResponse(data: unknown): msdyn_MigrateArcResponse {
-    return new msdyn_MigrateArcResponse((data as any).value);
+    return new msdyn_MigrateArcResponse(responseObject<msdyn_MigrateArcResponseData>(data));
   }
 }

@@ -39,13 +39,6 @@ export class msdyn_StartODOSDeprovisioningRequest
     // No return value (204 No Content)
     return new msdyn_StartODOSDeprovisioningResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      FeatureName: this.featureName,
-      IsDeprecationDeprovisioning: this.isDeprecationDeprovisioning,
-    };
-  }
 }
 
 /**

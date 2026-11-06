@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckForSolutionVersionResponse as msdyn_CheckForSolutionVersionResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckForSolutionVersion request message
@@ -30,21 +32,19 @@ export class msdyn_CheckForSolutionVersionRequest
     const data = await response.json();
     return msdyn_CheckForSolutionVersionResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_CheckForSolutionVersion response message
  */
 export class msdyn_CheckForSolutionVersionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckForSolutionVersionResponse) {
+  constructor(public result: msdyn_CheckForSolutionVersionResponseData) {
     super("msdyn_CheckForSolutionVersion");
   }
 
   static fromResponse(data: unknown): msdyn_CheckForSolutionVersionResponse {
-    return new msdyn_CheckForSolutionVersionResponse((data as any).value);
+    return new msdyn_CheckForSolutionVersionResponse(
+      responseObject<msdyn_CheckForSolutionVersionResponseData>(data)
+    );
   }
 }

@@ -41,14 +41,6 @@ export class UploadBlockRequest
     // No return value (204 No Content)
     return new UploadBlockResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      BlockId: this.blockId,
-      BlockData: this.blockData,
-      FileContinuationToken: this.fileContinuationToken,
-    };
-  }
 }
 
 /**

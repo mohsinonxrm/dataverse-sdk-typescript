@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_TriggerSummarySynthesizerResponse as msdyn_TriggerSummarySynthesizerResponseData } from "./types/index.js";
 
 /**
  * msdyn_TriggerSummarySynthesizer request message
@@ -35,23 +37,19 @@ export class msdyn_TriggerSummarySynthesizerRequest
     const data = await response.json();
     return msdyn_TriggerSummarySynthesizerResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      TriggerSummarySynthesizerRequest: this.triggerSummarySynthesizerRequest,
-    };
-  }
 }
 
 /**
  * msdyn_TriggerSummarySynthesizer response message
  */
 export class msdyn_TriggerSummarySynthesizerResponse extends OrganizationResponse {
-  constructor(public result: msdyn_TriggerSummarySynthesizerResponse) {
+  constructor(public result: msdyn_TriggerSummarySynthesizerResponseData) {
     super("msdyn_TriggerSummarySynthesizer");
   }
 
   static fromResponse(data: unknown): msdyn_TriggerSummarySynthesizerResponse {
-    return new msdyn_TriggerSummarySynthesizerResponse((data as any).value);
+    return new msdyn_TriggerSummarySynthesizerResponse(
+      responseObject<msdyn_TriggerSummarySynthesizerResponseData>(data)
+    );
   }
 }

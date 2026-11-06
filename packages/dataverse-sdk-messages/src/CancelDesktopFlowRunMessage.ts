@@ -31,12 +31,6 @@ export class CancelDesktopFlowRunRequest
     // No return value (204 No Content)
     return new CancelDesktopFlowRunResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.flowsessionId,
-    };
-  }
 }
 
 /**

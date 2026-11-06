@@ -30,10 +30,6 @@ export class msdyn_getAppConfigRequest
     // No return value (204 No Content)
     return new msdyn_getAppConfigResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**

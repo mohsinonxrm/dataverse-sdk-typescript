@@ -460,6 +460,9 @@ importers:
       '@mohsinonxrm/dataverse-sdk-functions':
         specifier: workspace:*
         version: link:../dataverse-sdk-functions
+      '@mohsinonxrm/dataverse-sdk-messages':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-messages
       '@mohsinonxrm/dataverse-sdk-metadata':
         specifier: workspace:*
         version: link:../dataverse-sdk-metadata

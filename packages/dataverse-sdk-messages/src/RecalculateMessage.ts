@@ -31,12 +31,6 @@ export class RecalculateRequest
     // No return value (204 No Content)
     return new RecalculateResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.goalId,
-    };
-  }
 }
 
 /**

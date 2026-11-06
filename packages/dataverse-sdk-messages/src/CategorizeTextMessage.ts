@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { CategorizeTextResponse as CategorizeTextResponseData } from "./types/index.js";
 
 /**
  * CategorizeText request message
@@ -41,25 +43,17 @@ export class CategorizeTextRequest
     const data = await response.json();
     return CategorizeTextResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      text: this.text,
-      modelId: this.modelId,
-      language: this.language,
-    };
-  }
 }
 
 /**
  * CategorizeText response message
  */
 export class CategorizeTextResponse extends OrganizationResponse {
-  constructor(public result: CategorizeTextResponse) {
+  constructor(public result: CategorizeTextResponseData) {
     super("CategorizeText");
   }
 
   static fromResponse(data: unknown): CategorizeTextResponse {
-    return new CategorizeTextResponse((data as any).value);
+    return new CategorizeTextResponse(responseObject<CategorizeTextResponseData>(data));
   }
 }

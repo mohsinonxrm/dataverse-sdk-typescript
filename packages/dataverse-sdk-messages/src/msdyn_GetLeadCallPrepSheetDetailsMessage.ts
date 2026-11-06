@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetLeadCallPrepSheetDetailsResponse as msdyn_GetLeadCallPrepSheetDetailsResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetLeadCallPrepSheetDetails request message
@@ -35,23 +37,19 @@ export class msdyn_GetLeadCallPrepSheetDetailsRequest
     const data = await response.json();
     return msdyn_GetLeadCallPrepSheetDetailsResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_leadid: this.msdyn_leadid,
-    };
-  }
 }
 
 /**
  * msdyn_GetLeadCallPrepSheetDetails response message
  */
 export class msdyn_GetLeadCallPrepSheetDetailsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetLeadCallPrepSheetDetailsResponse) {
+  constructor(public result: msdyn_GetLeadCallPrepSheetDetailsResponseData) {
     super("msdyn_GetLeadCallPrepSheetDetails");
   }
 
   static fromResponse(data: unknown): msdyn_GetLeadCallPrepSheetDetailsResponse {
-    return new msdyn_GetLeadCallPrepSheetDetailsResponse((data as any).value);
+    return new msdyn_GetLeadCallPrepSheetDetailsResponse(
+      responseObject<msdyn_GetLeadCallPrepSheetDetailsResponseData>(data)
+    );
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { ProvisionLanguageAsyncResponse as ProvisionLanguageAsyncResponseData } from "./types/index.js";
 
 /**
  * ProvisionLanguageAsync request message
@@ -35,23 +37,19 @@ export class ProvisionLanguageAsyncRequest
     const data = await response.json();
     return ProvisionLanguageAsyncResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Language: this.language,
-    };
-  }
 }
 
 /**
  * ProvisionLanguageAsync response message
  */
 export class ProvisionLanguageAsyncResponse extends OrganizationResponse {
-  constructor(public result: ProvisionLanguageAsyncResponse) {
+  constructor(public result: ProvisionLanguageAsyncResponseData) {
     super("ProvisionLanguageAsync");
   }
 
   static fromResponse(data: unknown): ProvisionLanguageAsyncResponse {
-    return new ProvisionLanguageAsyncResponse((data as any).value);
+    return new ProvisionLanguageAsyncResponse(
+      responseObject<ProvisionLanguageAsyncResponseData>(data)
+    );
   }
 }

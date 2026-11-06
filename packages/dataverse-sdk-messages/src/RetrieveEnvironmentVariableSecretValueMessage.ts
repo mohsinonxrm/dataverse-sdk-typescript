@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { RetrieveEnvironmentVariableSecretValueResponse as RetrieveEnvironmentVariableSecretValueResponseData } from "./types/index.js";
 
 /**
  * RetrieveEnvironmentVariableSecretValue request message
@@ -35,23 +37,19 @@ export class RetrieveEnvironmentVariableSecretValueRequest
     const data = await response.json();
     return RetrieveEnvironmentVariableSecretValueResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EnvironmentVariableName: this.environmentVariableName,
-    };
-  }
 }
 
 /**
  * RetrieveEnvironmentVariableSecretValue response message
  */
 export class RetrieveEnvironmentVariableSecretValueResponse extends OrganizationResponse {
-  constructor(public result: RetrieveEnvironmentVariableSecretValueResponse) {
+  constructor(public result: RetrieveEnvironmentVariableSecretValueResponseData) {
     super("RetrieveEnvironmentVariableSecretValue");
   }
 
   static fromResponse(data: unknown): RetrieveEnvironmentVariableSecretValueResponse {
-    return new RetrieveEnvironmentVariableSecretValueResponse((data as any).value);
+    return new RetrieveEnvironmentVariableSecretValueResponse(
+      responseObject<RetrieveEnvironmentVariableSecretValueResponseData>(data)
+    );
   }
 }

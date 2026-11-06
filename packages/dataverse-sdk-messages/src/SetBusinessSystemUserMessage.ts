@@ -45,15 +45,6 @@ export class SetBusinessSystemUserRequest
     // No return value (204 No Content)
     return new SetBusinessSystemUserResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.systemuserId,
-      BusinessUnit: this.businessUnit,
-      ReassignPrincipal: this.reassignPrincipal,
-      DoNotMoveAllRecords: this.doNotMoveAllRecords,
-    };
-  }
 }
 
 /**

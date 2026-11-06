@@ -39,13 +39,6 @@ export class msdyn_updatesequencetargetstepdataRequest
     // No return value (204 No Content)
     return new msdyn_updatesequencetargetstepdataResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_sequencetargetstepid: this.msdyn_sequencetargetstepid,
-      msdyn_linkedactivityid: this.msdyn_linkedactivityid,
-    };
-  }
 }
 
 /**

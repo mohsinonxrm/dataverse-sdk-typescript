@@ -43,15 +43,6 @@ export class msdyn_SetFeatureStatusRequest
     // No return value (204 No Content)
     return new msdyn_SetFeatureStatusResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      FeatureType: this.featureType,
-      Status: this.status,
-      IsSolutionUninstall: this.isSolutionUninstall,
-      ConfigurationData: this.configurationData,
-    };
-  }
 }
 
 /**

@@ -42,14 +42,6 @@ export class PickFromQueueRequest
     // No return value (204 No Content)
     return new PickFromQueueResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.queueitemId,
-      SystemUser: this.systemUser,
-      RemoveQueueItem: this.removeQueueItem,
-    };
-  }
 }
 
 /**

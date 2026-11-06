@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckIfSalesFormsFromUnmanagedLayerResponse as msdyn_CheckIfSalesFormsFromUnmanagedLayerResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckIfSalesFormsFromUnmanagedLayer request message
@@ -32,21 +34,19 @@ export class msdyn_CheckIfSalesFormsFromUnmanagedLayerRequest
     const data = await response.json();
     return msdyn_CheckIfSalesFormsFromUnmanagedLayerResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_CheckIfSalesFormsFromUnmanagedLayer response message
  */
 export class msdyn_CheckIfSalesFormsFromUnmanagedLayerResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfSalesFormsFromUnmanagedLayerResponse) {
+  constructor(public result: msdyn_CheckIfSalesFormsFromUnmanagedLayerResponseData) {
     super("msdyn_CheckIfSalesFormsFromUnmanagedLayer");
   }
 
   static fromResponse(data: unknown): msdyn_CheckIfSalesFormsFromUnmanagedLayerResponse {
-    return new msdyn_CheckIfSalesFormsFromUnmanagedLayerResponse((data as any).value);
+    return new msdyn_CheckIfSalesFormsFromUnmanagedLayerResponse(
+      responseObject<msdyn_CheckIfSalesFormsFromUnmanagedLayerResponseData>(data)
+    );
   }
 }

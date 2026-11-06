@@ -54,20 +54,6 @@ export class msdynmkt_purposecreationandassociationRequest
     // No return value (204 No Content)
     return new msdynmkt_purposecreationandassociationResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdynmkt_customenforcementmodel: this.msdynmkt_customenforcementmodel,
-      msdynmkt_purposeid: this.msdynmkt_purposeid,
-      msdynmkt_enforcementmodel: this.msdynmkt_enforcementmodel,
-      msdynmkt_name: this.msdynmkt_name,
-      msdynmkt_compliancesettings4: this.msdynmkt_compliancesettings4,
-      msdynmkt_purpose_id: this.msdynmkt_purpose_id,
-      msdynmkt_smsenforcementmodel: this.msdynmkt_smsenforcementmodel,
-      msdynmkt_voiceenforcementmodel: this.msdynmkt_voiceenforcementmodel,
-      msdynmkt_type: this.msdynmkt_type,
-    };
-  }
 }
 
 /**

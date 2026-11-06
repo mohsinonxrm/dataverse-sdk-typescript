@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_AcquireTokenResponse as msdyn_AcquireTokenResponseData } from "./types/index.js";
 
 /**
  * msdyn_AcquireToken request message
@@ -35,23 +37,17 @@ export class msdyn_AcquireTokenRequest
     const data = await response.json();
     return msdyn_AcquireTokenResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      InputParameter: this.inputParameter,
-    };
-  }
 }
 
 /**
  * msdyn_AcquireToken response message
  */
 export class msdyn_AcquireTokenResponse extends OrganizationResponse {
-  constructor(public result: msdyn_AcquireTokenResponse) {
+  constructor(public result: msdyn_AcquireTokenResponseData) {
     super("msdyn_AcquireToken");
   }
 
   static fromResponse(data: unknown): msdyn_AcquireTokenResponse {
-    return new msdyn_AcquireTokenResponse((data as any).value);
+    return new msdyn_AcquireTokenResponse(responseObject<msdyn_AcquireTokenResponseData>(data));
   }
 }

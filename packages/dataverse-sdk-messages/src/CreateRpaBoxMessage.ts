@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { CreateRpaBoxResponse as CreateRpaBoxResponseData } from "./types/index.js";
 
 /**
  * CreateRpaBox request message
@@ -44,26 +46,17 @@ export class CreateRpaBoxRequest
     const data = await response.json();
     return CreateRpaBoxResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      machineDescription: this.machineDescription,
-      machineNetworkId: this.machineNetworkId,
-      machineName: this.machineName,
-      machineImageVersionId: this.machineImageVersionId,
-    };
-  }
 }
 
 /**
  * CreateRpaBox response message
  */
 export class CreateRpaBoxResponse extends OrganizationResponse {
-  constructor(public result: CreateRpaBoxResponse) {
+  constructor(public result: CreateRpaBoxResponseData) {
     super("CreateRpaBox");
   }
 
   static fromResponse(data: unknown): CreateRpaBoxResponse {
-    return new CreateRpaBoxResponse((data as any).value);
+    return new CreateRpaBoxResponse(responseObject<CreateRpaBoxResponseData>(data));
   }
 }

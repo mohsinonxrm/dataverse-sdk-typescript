@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_CheckIfSLAStaticFlowIsDisabledResponse as msdyn_CheckIfSLAStaticFlowIsDisabledResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckIfSLAStaticFlowIsDisabled request message
@@ -30,21 +32,19 @@ export class msdyn_CheckIfSLAStaticFlowIsDisabledRequest
     const data = await response.json();
     return msdyn_CheckIfSLAStaticFlowIsDisabledResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_CheckIfSLAStaticFlowIsDisabled response message
  */
 export class msdyn_CheckIfSLAStaticFlowIsDisabledResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfSLAStaticFlowIsDisabledResponse) {
+  constructor(public result: msdyn_CheckIfSLAStaticFlowIsDisabledResponseData) {
     super("msdyn_CheckIfSLAStaticFlowIsDisabled");
   }
 
   static fromResponse(data: unknown): msdyn_CheckIfSLAStaticFlowIsDisabledResponse {
-    return new msdyn_CheckIfSLAStaticFlowIsDisabledResponse((data as any).value);
+    return new msdyn_CheckIfSLAStaticFlowIsDisabledResponse(
+      responseObject<msdyn_CheckIfSLAStaticFlowIsDisabledResponseData>(data)
+    );
   }
 }

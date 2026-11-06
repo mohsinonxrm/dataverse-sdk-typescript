@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { _RoutingRuleSetValidationResponse as _RoutingRuleSetValidationResponseData } from "./types/index.js";
 
 /**
  * _RoutingRuleSetValidation request message
@@ -36,23 +38,19 @@ export class _RoutingRuleSetValidationRequest
     const data = await response.json();
     return _RoutingRuleSetValidationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RoutingRuleSet: this.routingRuleSet,
-    };
-  }
 }
 
 /**
  * _RoutingRuleSetValidation response message
  */
 export class _RoutingRuleSetValidationResponse extends OrganizationResponse {
-  constructor(public result: _RoutingRuleSetValidationResponse) {
+  constructor(public result: _RoutingRuleSetValidationResponseData) {
     super("_RoutingRuleSetValidation");
   }
 
   static fromResponse(data: unknown): _RoutingRuleSetValidationResponse {
-    return new _RoutingRuleSetValidationResponse((data as any).value);
+    return new _RoutingRuleSetValidationResponse(
+      responseObject<_RoutingRuleSetValidationResponseData>(data)
+    );
   }
 }

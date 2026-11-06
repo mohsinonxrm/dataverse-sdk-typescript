@@ -41,14 +41,6 @@ export class RemoveCertificateCredentialRequest
     // No return value (204 No Content)
     return new RemoveCertificateCredentialResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      certificateCredentialId: this.certificateCredentialId,
-      entityId: this.entityId,
-      entityLogicalName: this.entityLogicalName,
-    };
-  }
 }
 
 /**

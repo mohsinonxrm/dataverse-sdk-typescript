@@ -1,5 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { mobileofflineprofile } from "./types/index.js";
 
 /**
@@ -32,12 +33,6 @@ export class CloneMobileOfflineProfileRequest
     const data = await response.json();
     return CloneMobileOfflineProfileResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.mobileofflineprofileId,
-    };
-  }
 }
 
 /**
@@ -49,6 +44,6 @@ export class CloneMobileOfflineProfileResponse extends OrganizationResponse {
   }
 
   static fromResponse(data: unknown): CloneMobileOfflineProfileResponse {
-    return new CloneMobileOfflineProfileResponse((data as any).value);
+    return new CloneMobileOfflineProfileResponse(responseObject<mobileofflineprofile>(data));
   }
 }

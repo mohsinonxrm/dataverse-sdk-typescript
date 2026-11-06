@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_SaveCalendarResponse as msdyn_SaveCalendarResponseData } from "./types/index.js";
 
 /**
  * msdyn_SaveCalendar request message
@@ -35,23 +37,17 @@ export class msdyn_SaveCalendarRequest
     const data = await response.json();
     return msdyn_SaveCalendarResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      CalendarEventInfo: this.calendarEventInfo,
-    };
-  }
 }
 
 /**
  * msdyn_SaveCalendar response message
  */
 export class msdyn_SaveCalendarResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SaveCalendarResponse) {
+  constructor(public result: msdyn_SaveCalendarResponseData) {
     super("msdyn_SaveCalendar");
   }
 
   static fromResponse(data: unknown): msdyn_SaveCalendarResponse {
-    return new msdyn_SaveCalendarResponse((data as any).value);
+    return new msdyn_SaveCalendarResponse(responseObject<msdyn_SaveCalendarResponseData>(data));
   }
 }

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_SalesOutlookMeetingPreparationResponse as msdyn_SalesOutlookMeetingPreparationResponseData } from "./types/index.js";
 
 /**
  * msdyn_SalesOutlookMeetingPreparation request message
@@ -39,24 +41,19 @@ export class msdyn_SalesOutlookMeetingPreparationRequest
     const data = await response.json();
     return msdyn_SalesOutlookMeetingPreparationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_type: this.msdyn_type,
-      msdyn_id: this.msdyn_id,
-    };
-  }
 }
 
 /**
  * msdyn_SalesOutlookMeetingPreparation response message
  */
 export class msdyn_SalesOutlookMeetingPreparationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesOutlookMeetingPreparationResponse) {
+  constructor(public result: msdyn_SalesOutlookMeetingPreparationResponseData) {
     super("msdyn_SalesOutlookMeetingPreparation");
   }
 
   static fromResponse(data: unknown): msdyn_SalesOutlookMeetingPreparationResponse {
-    return new msdyn_SalesOutlookMeetingPreparationResponse((data as any).value);
+    return new msdyn_SalesOutlookMeetingPreparationResponse(
+      responseObject<msdyn_SalesOutlookMeetingPreparationResponseData>(data)
+    );
   }
 }

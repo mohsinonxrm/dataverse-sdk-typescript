@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_QueryExchangeResponse as msdyn_QueryExchangeResponseData } from "./types/index.js";
 
 /**
  * msdyn_QueryExchange request message
@@ -41,25 +43,17 @@ export class msdyn_QueryExchangeRequest
     const data = await response.json();
     return msdyn_QueryExchangeResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      method: this.method,
-      body: this.body,
-      requesturl: this.requesturl,
-    };
-  }
 }
 
 /**
  * msdyn_QueryExchange response message
  */
 export class msdyn_QueryExchangeResponse extends OrganizationResponse {
-  constructor(public result: msdyn_QueryExchangeResponse) {
+  constructor(public result: msdyn_QueryExchangeResponseData) {
     super("msdyn_QueryExchange");
   }
 
   static fromResponse(data: unknown): msdyn_QueryExchangeResponse {
-    return new msdyn_QueryExchangeResponse((data as any).value);
+    return new msdyn_QueryExchangeResponse(responseObject<msdyn_QueryExchangeResponseData>(data));
   }
 }

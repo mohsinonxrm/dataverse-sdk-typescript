@@ -36,13 +36,6 @@ export class SendFaxRequest extends OrganizationRequest implements Executable<Se
     // No return value (204 No Content)
     return new SendFaxResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      FaxId: this.faxId,
-      IssueSend: this.issueSend,
-    };
-  }
 }
 
 /**

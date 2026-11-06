@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetBotConfigurationResponse as msdyn_GetBotConfigurationResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetBotConfiguration request message
@@ -35,23 +37,19 @@ export class msdyn_GetBotConfigurationRequest
     const data = await response.json();
     return msdyn_GetBotConfigurationResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      BotApplicationId: this.botApplicationId,
-    };
-  }
 }
 
 /**
  * msdyn_GetBotConfiguration response message
  */
 export class msdyn_GetBotConfigurationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetBotConfigurationResponse) {
+  constructor(public result: msdyn_GetBotConfigurationResponseData) {
     super("msdyn_GetBotConfiguration");
   }
 
   static fromResponse(data: unknown): msdyn_GetBotConfigurationResponse {
-    return new msdyn_GetBotConfigurationResponse((data as any).value);
+    return new msdyn_GetBotConfigurationResponse(
+      responseObject<msdyn_GetBotConfigurationResponseData>(data)
+    );
   }
 }

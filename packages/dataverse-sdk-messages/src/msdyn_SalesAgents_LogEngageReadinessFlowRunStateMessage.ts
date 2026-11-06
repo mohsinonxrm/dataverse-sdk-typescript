@@ -45,15 +45,6 @@ export class msdyn_SalesAgents_LogEngageReadinessFlowRunStateRequest
     // No return value (204 No Content)
     return new msdyn_SalesAgents_LogEngageReadinessFlowRunStateResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_TrackingId: this.msdyn_TrackingId,
-      msdyn_SalesAgentRun: this.msdyn_SalesAgentRun,
-      msdyn_Thread: this.msdyn_Thread,
-      msdyn_FlowRunState: this.msdyn_FlowRunState,
-    };
-  }
 }
 
 /**

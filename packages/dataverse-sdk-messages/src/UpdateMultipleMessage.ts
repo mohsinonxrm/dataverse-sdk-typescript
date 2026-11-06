@@ -41,12 +41,6 @@ export class UpdateMultipleRequest
     // No return value (204 No Content)
     return new UpdateMultipleResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Targets: this.targets,
-    };
-  }
 }
 
 /**

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdynmkt_checkconsentbatchResponse as msdynmkt_checkconsentbatchResponseData } from "./types/index.js";
 
 /**
  * msdynmkt_checkconsentbatch request message
@@ -47,28 +49,19 @@ export class msdynmkt_checkconsentbatchRequest
     const data = await response.json();
     return msdynmkt_checkconsentbatchResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdynmkt_owningbusinessunitid: this.msdynmkt_owningbusinessunitid,
-      msdynmkt_channeltype: this.msdynmkt_channeltype,
-      msdynmkt_contactpoints: this.msdynmkt_contactpoints,
-      msdynmkt_compliancesettingsid: this.msdynmkt_compliancesettingsid,
-      msdynmkt_topicid: this.msdynmkt_topicid,
-      msdynmkt_purposeid: this.msdynmkt_purposeid,
-    };
-  }
 }
 
 /**
  * msdynmkt_checkconsentbatch response message
  */
 export class msdynmkt_checkconsentbatchResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_checkconsentbatchResponse) {
+  constructor(public result: msdynmkt_checkconsentbatchResponseData) {
     super("msdynmkt_checkconsentbatch");
   }
 
   static fromResponse(data: unknown): msdynmkt_checkconsentbatchResponse {
-    return new msdynmkt_checkconsentbatchResponse((data as any).value);
+    return new msdynmkt_checkconsentbatchResponse(
+      responseObject<msdynmkt_checkconsentbatchResponseData>(data)
+    );
   }
 }

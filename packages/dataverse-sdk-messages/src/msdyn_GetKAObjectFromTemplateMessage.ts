@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import { responseObject } from "./internal/responseData.js";
 
 /**
  * msdyn_GetKAObjectFromTemplate request message
@@ -36,23 +36,17 @@ export class msdyn_GetKAObjectFromTemplateRequest
     const data = await response.json();
     return msdyn_GetKAObjectFromTemplateResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      TemplateId: this.templateId,
-    };
-  }
 }
 
 /**
  * msdyn_GetKAObjectFromTemplate response message
  */
 export class msdyn_GetKAObjectFromTemplateResponse extends OrganizationResponse {
-  constructor(public result: EntityReference) {
+  constructor(public result: Record<string, unknown>) {
     super("msdyn_GetKAObjectFromTemplate");
   }
 
   static fromResponse(data: unknown): msdyn_GetKAObjectFromTemplateResponse {
-    return new msdyn_GetKAObjectFromTemplateResponse((data as any).value);
+    return new msdyn_GetKAObjectFromTemplateResponse(responseObject<Record<string, unknown>>(data));
   }
 }

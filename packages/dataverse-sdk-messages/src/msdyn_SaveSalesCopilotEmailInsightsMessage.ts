@@ -41,14 +41,6 @@ export class msdyn_SaveSalesCopilotEmailInsightsRequest
     // No return value (204 No Content)
     return new msdyn_SaveSalesCopilotEmailInsightsResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_extractedquestions: this.msdyn_extractedquestions,
-      msdyn_activityid: this.msdyn_activityid,
-      msdyn_salescopilotemailinsights: this.msdyn_salescopilotemailinsights,
-    };
-  }
 }
 
 /**

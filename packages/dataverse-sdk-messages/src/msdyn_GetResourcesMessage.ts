@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_GetResourcesResponse as msdyn_GetResourcesResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetResources request message
@@ -41,25 +43,17 @@ export class msdyn_GetResourcesRequest
     const data = await response.json();
     return msdyn_GetResourcesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Page: this.page,
-      PageSize: this.pageSize,
-      QueryString: this.queryString,
-    };
-  }
 }
 
 /**
  * msdyn_GetResources response message
  */
 export class msdyn_GetResourcesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetResourcesResponse) {
+  constructor(public result: msdyn_GetResourcesResponseData) {
     super("msdyn_GetResources");
   }
 
   static fromResponse(data: unknown): msdyn_GetResourcesResponse {
-    return new msdyn_GetResourcesResponse((data as any).value);
+    return new msdyn_GetResourcesResponse(responseObject<msdyn_GetResourcesResponseData>(data));
   }
 }

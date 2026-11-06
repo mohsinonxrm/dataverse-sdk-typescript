@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRuleResponse as msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRule request message
@@ -32,21 +34,19 @@ export class msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRuleRequest
     const data = await response.json();
     return msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRuleResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
-  }
 }
 
 /**
  * msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRule response message
  */
 export class msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRuleResponse) {
+  constructor(public result: msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRuleResponseData) {
     super("msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRule");
   }
 
   static fromResponse(data: unknown): msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRuleResponse {
-    return new msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRuleResponse((data as any).value);
+    return new msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRuleResponse(
+      responseObject<msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRuleResponseData>(data)
+    );
   }
 }

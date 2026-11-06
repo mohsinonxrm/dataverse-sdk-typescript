@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { ExtractKeyPhrasesResponse as ExtractKeyPhrasesResponseData } from "./types/index.js";
 
 /**
  * ExtractKeyPhrases request message
@@ -41,25 +43,17 @@ export class ExtractKeyPhrasesRequest
     const data = await response.json();
     return ExtractKeyPhrasesResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      text: this.text,
-      modelId: this.modelId,
-      language: this.language,
-    };
-  }
 }
 
 /**
  * ExtractKeyPhrases response message
  */
 export class ExtractKeyPhrasesResponse extends OrganizationResponse {
-  constructor(public result: ExtractKeyPhrasesResponse) {
+  constructor(public result: ExtractKeyPhrasesResponseData) {
     super("ExtractKeyPhrases");
   }
 
   static fromResponse(data: unknown): ExtractKeyPhrasesResponse {
-    return new ExtractKeyPhrasesResponse((data as any).value);
+    return new ExtractKeyPhrasesResponse(responseObject<ExtractKeyPhrasesResponseData>(data));
   }
 }

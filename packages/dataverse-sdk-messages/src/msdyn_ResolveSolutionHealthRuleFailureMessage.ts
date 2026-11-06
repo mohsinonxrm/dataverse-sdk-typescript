@@ -36,12 +36,6 @@ export class msdyn_ResolveSolutionHealthRuleFailureRequest
     // No return value (204 No Content)
     return new msdyn_ResolveSolutionHealthRuleFailureResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      AnalysisResult: this.analysisResult,
-    };
-  }
 }
 
 /**

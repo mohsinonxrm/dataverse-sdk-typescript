@@ -40,13 +40,6 @@ export class AddMembersTeamRequest
     // No return value (204 No Content)
     return new AddMembersTeamResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.teamId,
-      Members: this.members,
-    };
-  }
 }
 
 /**

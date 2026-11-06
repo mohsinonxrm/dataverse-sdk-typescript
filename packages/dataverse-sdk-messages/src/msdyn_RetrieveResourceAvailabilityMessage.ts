@@ -1,7 +1,11 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
-import type { msdyn_timegroup } from "./types/index.js";
+import type {
+  msdyn_RetrieveResourceAvailabilityResponse as msdyn_RetrieveResourceAvailabilityResponseData,
+  msdyn_timegroup,
+} from "./types/index.js";
 
 /**
  * msdyn_RetrieveResourceAvailability request message
@@ -83,45 +87,19 @@ export class msdyn_RetrieveResourceAvailabilityRequest
     const data = await response.json();
     return msdyn_RetrieveResourceAvailabilityResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      WorkOrder: this.workOrder,
-      RealTimeMode: this.realTimeMode,
-      Duration: this.duration,
-      ForceDateRange: this.forceDateRange,
-      IgnoreDuration: this.ignoreDuration,
-      IgnoreTravelTime: this.ignoreTravelTime,
-      AllowOverlapping: this.allowOverlapping,
-      Radius: this.radius,
-      StartTime: this.startTime,
-      EndTime: this.endTime,
-      TimeGroup: this.timeGroup,
-      Calendar: this.calendar,
-      Characteristics: this.characteristics,
-      Territories: this.territories,
-      ResourceTypes: this.resourceTypes,
-      Resources: this.resources,
-      RestrictedResources: this.restrictedResources,
-      Latitude: this.latitude,
-      Longitude: this.longitude,
-      Categories: this.categories,
-      OrganizationalUnits: this.organizationalUnits,
-      Teams: this.teams,
-      BusinessUnits: this.businessUnits,
-    };
-  }
 }
 
 /**
  * msdyn_RetrieveResourceAvailability response message
  */
 export class msdyn_RetrieveResourceAvailabilityResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrieveResourceAvailabilityResponse) {
+  constructor(public result: msdyn_RetrieveResourceAvailabilityResponseData) {
     super("msdyn_RetrieveResourceAvailability");
   }
 
   static fromResponse(data: unknown): msdyn_RetrieveResourceAvailabilityResponse {
-    return new msdyn_RetrieveResourceAvailabilityResponse((data as any).value);
+    return new msdyn_RetrieveResourceAvailabilityResponse(
+      responseObject<msdyn_RetrieveResourceAvailabilityResponseData>(data)
+    );
   }
 }

@@ -35,12 +35,6 @@ export class msdyn_RemoveRequirementModelRequest
     // No return value (204 No Content)
     return new msdyn_RemoveRequirementModelResponse();
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Attributes: this.attributes,
-    };
-  }
 }
 
 /**

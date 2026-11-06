@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
+import type { RunDesktopFlowResponse as RunDesktopFlowResponseData } from "./types/index.js";
 
 /**
  * RunDesktopFlow request message
@@ -51,30 +53,17 @@ export class RunDesktopFlowRequest
     const data = await response.json();
     return RunDesktopFlowResponse.fromResponse(data);
   }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.workflowId,
-      inputs: this.inputs,
-      runMode: this.runMode,
-      connectionName: this.connectionName,
-      runPriority: this.runPriority,
-      timeout: this.timeout,
-      connectionType: this.connectionType,
-      callbackUrl: this.callbackUrl,
-    };
-  }
 }
 
 /**
  * RunDesktopFlow response message
  */
 export class RunDesktopFlowResponse extends OrganizationResponse {
-  constructor(public result: RunDesktopFlowResponse) {
+  constructor(public result: RunDesktopFlowResponseData) {
     super("RunDesktopFlow");
   }
 
   static fromResponse(data: unknown): RunDesktopFlowResponse {
-    return new RunDesktopFlowResponse((data as any).value);
+    return new RunDesktopFlowResponse(responseObject<RunDesktopFlowResponseData>(data));
   }
 }
