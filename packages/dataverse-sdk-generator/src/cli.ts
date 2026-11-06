@@ -5,6 +5,7 @@ import chalk from "chalk";
 import ora from "ora";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
+import { acquireCliToken } from "./auth.js";
 import { generateCode } from "./index.js";
 import type { DataverseGenConfig } from "./types.js";
 import { DEFAULT_CONFIG } from "./types.js";
@@ -61,8 +62,8 @@ program
   .command("generate")
   .description("Generate TypeScript code from $metadata")
   .option("-c, --config <path>", "Path to configuration file", ".dataverse-gen.json")
-  .option("--token <token>", "Access token (if not using auth flow)")
-  .action(async (options) => {
+  .option("--token <token>", "Access token to use instead of the configured auth flow")
+  .action(async (options: { config: string; token?: string }) => {
     const spinner = ora("Loading configuration...").start();
 
     try {
@@ -79,15 +80,17 @@ program
         process.exit(1);
       }
 
-      // Get access token
-      const accessToken = options.token;
-
-      if (!accessToken && config.auth) {
-        spinner.text = "Authenticating...";
-        // TODO: Implement MSAL authentication flows
-        spinner.warn("Authentication not implemented yet. Please provide --token manually.");
-        process.exit(1);
-      }
+      // Get access token: --token, or the configured auth flow (device code or client
+      // credentials). It is acquired once, so device code asks for one sign-in per run.
+      if (!options.token) spinner.text = "Authenticating...";
+      const accessToken = await acquireCliToken(config, options.token, {
+        log: (message) => {
+          // Device code: stop the spinner so it doesn't overwrite the instructions.
+          spinner.stop();
+          console.error(chalk.yellow(message));
+          spinner.start("Waiting for sign-in...");
+        },
+      });
 
       // Generate code
       spinner.text = "Fetching $metadata...";
@@ -147,6 +150,33 @@ program
 
       if (config.functions && !Array.isArray(config.functions)) {
         errors.push("functions must be an array");
+      }
+
+      if (config.auth) {
+        const flow = config.auth.flow;
+        if (flow !== "deviceCode" && flow !== "clientCredentials" && flow !== "clientSecret") {
+          errors.push(`auth.flow must be "deviceCode" or "clientCredentials" (got "${flow}")`);
+        }
+        if (!config.auth.tenantId && !process.env.DATAVERSE_TENANT_ID) {
+          errors.push("Missing auth.tenantId (or DATAVERSE_TENANT_ID)");
+        }
+        if (!config.auth.clientId && !process.env.DATAVERSE_CLIENT_ID) {
+          errors.push("Missing auth.clientId (or DATAVERSE_CLIENT_ID)");
+        }
+        if (
+          (flow === "clientCredentials" || flow === "clientSecret") &&
+          !config.auth.clientSecret &&
+          !process.env.DATAVERSE_CLIENT_SECRET
+        ) {
+          errors.push("Missing auth.clientSecret (or DATAVERSE_CLIENT_SECRET)");
+        }
+        if (config.auth.clientSecret) {
+          console.log(
+            chalk.yellow(
+              "⚠ auth.clientSecret is in the configuration file; prefer the DATAVERSE_CLIENT_SECRET environment variable"
+            )
+          );
+        }
       }
 
       if (errors.length > 0) {

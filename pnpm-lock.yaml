@@ -381,6 +381,12 @@ importers:
 
   packages/dataverse-sdk-generator:
     dependencies:
+      '@azure/msal-node':
+        specifier: ^2.16.3
+        version: 2.16.3
+      '@mohsinonxrm/dataverse-sdk-auth-msal-node':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-auth-msal-node
       '@mohsinonxrm/dataverse-sdk-core':
         specifier: workspace:*
         version: link:../dataverse-sdk-core
