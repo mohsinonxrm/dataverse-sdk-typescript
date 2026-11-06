@@ -150,7 +150,9 @@ client
   .api("accounts")
   .select("name", "accountnumber", "revenue") // $select (comma-separated)
   .filter("revenue gt 1000000 and statecode eq 0") // $filter (OData expression)
-  .expand("primarycontactid($select=fullname,emailaddress1)") // $expand (strings; nested options inline)
+  .expand("primarycontactid", { select: ["fullname", "emailaddress1"] }) // $expand with options
+  .expand("contact_customer_accounts", { select: ["fullname"], orderBy: "fullname", top: 5 }) // calls add up
+  // or inline: .expand("primarycontactid($select=fullname,emailaddress1)")
   .orderBy("name asc", "revenue desc") // $orderby (multiple fields)
   .top(50) // $top
   .skip(100) // $skip
@@ -210,14 +212,21 @@ await client
 // Method 2: Raw string, for a preference without a helper
 await client.api("/accounts").preferRaw("odata.maxpagesize=50").get();
 
-// Method 3: Fluent PreferBuilder. prefer() with no arguments returns a PreferBuilder, which has
-// no terminal methods (get/post/...), so keep a reference to the request builder:
-const request = client.api("/accounts");
-request
+// Method 3: Fluent PreferBuilder. prefer() with no arguments returns a PreferBuilder; done()
+// returns the request builder, so the chain goes on:
+const page = await client
+  .api("/accounts")
   .prefer() // Returns a PreferBuilder
   .formattedValues() // odata.include-annotations="OData.Community.Display.V1.FormattedValue"
-  .maxPageSize(50); // odata.maxpagesize=50
-const page = await request.get();
+  .maxPageSize(50) // odata.maxpagesize=50
+  .done() // Back to the request builder
+  .get();
+
+// Or configure it in a callback, which returns the request builder:
+await client
+  .api("/accounts")
+  .prefer((p) => p.allAnnotations().maxPageSize(50))
+  .get();
 // PreferBuilder also has returnRepresentation(), allAnnotations() (odata.include-annotations="*"),
 // continueOnError() and trackChanges() (odata.track-changes, for change tracking queries).
 
