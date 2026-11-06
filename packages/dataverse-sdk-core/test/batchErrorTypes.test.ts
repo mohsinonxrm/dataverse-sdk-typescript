@@ -8,7 +8,9 @@ describe("#294: DataverseBatchError has no any defaults", () => {
   });
 
   it("keeps explicit type arguments", () => {
-    type Step = { status: number };
+    interface Step {
+      status: number;
+    }
     expectTypeOf<DataverseBatchError<{ ok: boolean }, Step>["requestErrors"]>().toEqualTypeOf<
       Map<string, Step>
     >();
