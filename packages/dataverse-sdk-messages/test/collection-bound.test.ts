@@ -17,7 +17,6 @@ import {
   UpdateMultipleRequest,
   UpsertMultipleRequest,
   ValidateSavedQueryRequest,
-  msdyn_AsExchangeEventRequest,
 } from "../src/index.js";
 
 type RequestClass = new (...args: never[]) => {
@@ -34,7 +33,6 @@ describe("#69: collection-bound messages", () => {
       FulfillSalesOrder: FulfillSalesOrderRequest,
       GenerateSocialProfile: GenerateSocialProfileRequest,
       ValidateSavedQuery: ValidateSavedQueryRequest,
-      msdyn_AsExchangeEvent: msdyn_AsExchangeEventRequest,
     };
     const urls: Record<string, string> = {};
     for (const [name, Request] of Object.entries(concrete)) {
@@ -63,8 +61,6 @@ describe("#69: collection-bound messages", () => {
       FulfillSalesOrder: "/salesorders/Microsoft.Dynamics.CRM.FulfillSalesOrder",
       GenerateSocialProfile: "/socialprofiles/Microsoft.Dynamics.CRM.GenerateSocialProfile",
       ValidateSavedQuery: "/savedqueries/Microsoft.Dynamics.CRM.ValidateSavedQuery",
-      msdyn_AsExchangeEvent:
-        "/bookableresourcebookings/Microsoft.Dynamics.CRM.msdyn_AsExchangeEvent",
       CreateMultiple: "/accounts/Microsoft.Dynamics.CRM.CreateMultiple",
       UpdateMultiple: "/accounts/Microsoft.Dynamics.CRM.UpdateMultiple",
       UpsertMultiple: "/accounts/Microsoft.Dynamics.CRM.UpsertMultiple",

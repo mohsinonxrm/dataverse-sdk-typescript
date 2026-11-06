@@ -104,18 +104,18 @@ await service.execute(new PublishAllXmlRequest());
 - FullTextSearchKnowledgeArticle
 - CreateKnowledgeArticleVersion
 
-### Field Service Module (msdyn\_\*)
+### Universal Resource Scheduling (msdyn\_\*)
 
 **Resource Scheduling:**
 
 - msdyn_BookRequirementGroup
 - msdyn_SearchResourceAvailability
 - msdyn_CancelBookings
-
-**Work Orders:**
-
-- msdyn_CreateWorkOrder
 - msdyn_CascadeCrewBookings
+
+The packages are generated from an org without Field Service, so its operations (work orders,
+agreements, `msdyn_CreateWorkOrder`, …) aren't included; see the
+[migration guide](../migration-2.0.md).
 
 ### Marketing Module (msdynmkt\_\*)
 
@@ -128,12 +128,12 @@ await service.execute(new PublishAllXmlRequest());
 
 Many operations require specific Dynamics 365 applications to be installed:
 
-| Prefix       | Solution Required      | Description                                      |
-| ------------ | ---------------------- | ------------------------------------------------ |
-| `msdyn_*`    | Dynamics 365 (varies)  | Field Service, Project Service Automation, Sales |
-| `msdynmkt_*` | Dynamics 365 Marketing | Marketing automation                             |
-| `CCaaS_*`    | Customer Service       | Omnichannel for Customer Service                 |
-| `adx_*`      | Power Pages            | Portal operations                                |
+| Prefix       | Solution Required      | Description                                  |
+| ------------ | ---------------------- | -------------------------------------------- |
+| `msdyn_*`    | Dynamics 365 (varies)  | Sales, Customer Service, Resource Scheduling |
+| `msdynmkt_*` | Dynamics 365 Marketing | Marketing automation                         |
+| `CCaaS_*`    | Customer Service       | Omnichannel for Customer Service             |
+| `adx_*`      | Power Pages            | Portal operations                            |
 
 **Note:** Platform operations (no prefix) are available in all Dataverse environments.
 

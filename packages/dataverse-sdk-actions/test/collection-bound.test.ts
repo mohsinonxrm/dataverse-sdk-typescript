@@ -53,8 +53,6 @@ describe("#69: collection-bound actions", () => {
       UpdateMultipleAction: "/accounts/Microsoft.Dynamics.CRM.UpdateMultiple",
       UpsertMultipleAction: "/accounts/Microsoft.Dynamics.CRM.UpsertMultiple",
       ValidateSavedQueryAction: "/savedqueries/Microsoft.Dynamics.CRM.ValidateSavedQuery",
-      msdyn_AsExchangeEventAction:
-        "/bookableresourcebookings/Microsoft.Dynamics.CRM.msdyn_AsExchangeEvent",
     });
   });
 
