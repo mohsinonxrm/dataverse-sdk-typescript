@@ -10,7 +10,7 @@ import {
   Button,
 } from "@fluentui/react-components";
 import { Code24Regular, Document24Regular, Box24Regular } from "@fluentui/react-icons";
-import type { JsonObject } from "../../types/common";
+import type { Account } from "../../types/Account";
 import { useDataverse } from "../../context/DataverseContext";
 import { LoadingState } from "../../components/demo/LoadingState";
 import { ErrorDisplay } from "../../components/errors/ErrorDisplay";
@@ -50,7 +50,7 @@ type TabValue = "raw" | "typed" | "orgservice";
  *
  * Demonstrates three approaches to CRUD operations:
  * 1. Raw API - client.api('/accounts')
- * 2. Typed API - client.api<Account>('/accounts')
+ * 2. Typed API - client.api('/accounts').post<Account>()
  * 3. OrgService - orgService.create(), retrieve(), etc.
  *
  * Shows side-by-side comparisons with identical operations.
@@ -61,7 +61,7 @@ export default function CrudOperations() {
   const [selectedTab, setSelectedTab] = useState<TabValue>("raw");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const [result, setResult] = useState<JsonObject | null>(null);
+  const [result, setResult] = useState<unknown>(null);
 
   if (!isReady) {
     return <LoadingState label="Initializing SDK..." />;
@@ -74,7 +74,7 @@ export default function CrudOperations() {
 
     try {
       const accountName = `Test Account ${Date.now()}`;
-      let response: JsonObject;
+      let response: unknown;
 
       switch (selectedTab) {
         case "raw":
@@ -86,7 +86,7 @@ export default function CrudOperations() {
           break;
 
         case "typed":
-          response = await client!.api("/accounts").post({
+          response = await client!.api("/accounts").post<Account>({
             name: accountName,
             revenue: 1000000,
             numberofemployees: 250,
@@ -125,8 +125,8 @@ export default function CrudOperations() {
       result: selectedTab === "raw" && result ? <pre>{JSON.stringify(result, null, 2)}</pre> : null,
     },
     {
-      label: "Typed API (client.api<T>)",
-      code: `const response = await client.api<Account>('/accounts').post({
+      label: "Typed API (post<T>, get<T>)",
+      code: `const response = await client.api('/accounts').post<Account>({
   name: 'Contoso Ltd',
   revenue: 1000000,
   numberofemployees: 250

@@ -119,9 +119,9 @@ const account: AccountCreate = {
               className={styles.codeBlock}
             >{`import { AccountRead } from '@mohsinonxrm/dataverse-sdk-metadata';
 
-const account: AccountRead = await client
-  .api<AccountRead>('/accounts(id)')
-  .get();
+const account = await client
+  .api('/accounts(id)')
+  .get<AccountRead>();
 
 // All fields available:
 console.log(account.accountid);      // Read-only
