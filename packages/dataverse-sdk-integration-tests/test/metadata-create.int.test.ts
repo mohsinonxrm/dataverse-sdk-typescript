@@ -10,6 +10,7 @@
  */
 import { afterAll, describe, expect, it } from "vitest";
 import { MetadataClient } from "@mohsinonxrm/dataverse-sdk-metadata";
+import type { Label } from "@mohsinonxrm/dataverse-sdk-metadata";
 import { live, liveClient, runId } from "./env.js";
 
 const GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -20,7 +21,7 @@ const tag = (runId.split("-").at(-1) ?? "x").toLowerCase();
 const table = `new_sdkit${tag}`;
 const relationship = `new_account_sdkit${tag}`;
 
-const label = (text: string) => ({
+const label = (text: string): Label => ({
   "@odata.type": "Microsoft.Dynamics.CRM.Label",
   LocalizedLabels: [
     { "@odata.type": "Microsoft.Dynamics.CRM.LocalizedLabel", Label: text, LanguageCode: 1033 },
@@ -95,7 +96,7 @@ describe.skipIf(!live)("live: metadata creates (#64)", () => {
           },
         ],
         // The create types gain `@odata.type` and string enum members with #66 / #171.
-      } as never);
+      });
 
       expect(tableId).toMatch(GUID);
       const id = tableId;
@@ -122,7 +123,7 @@ describe.skipIf(!live)("live: metadata creates (#64)", () => {
           MaxLength: 200,
           FormatName: { Value: "Text" },
           DisplayName: label("Note"),
-        } as never)
+        })
       );
 
       expect(id).toMatch(GUID);
@@ -153,7 +154,7 @@ describe.skipIf(!live)("live: metadata creates (#64)", () => {
             RequiredLevel: { Value: "None" },
             DisplayName: label("Account"),
           },
-        } as never)
+        })
       );
 
       expect(id).toMatch(GUID);
