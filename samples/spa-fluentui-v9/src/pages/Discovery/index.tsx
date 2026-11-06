@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { makeStyles, tokens, Title3, Text, Card, Button, Badge } from "@fluentui/react-components";
-import { GlobeRegular, BuildingMultipleRegular, CloudRegular } from "@fluentui/react-icons";
+import { GlobeRegular, BuildingMultipleRegular } from "@fluentui/react-icons";
 import { useDataverse } from "../../context/DataverseContext";
 import { LoadingState } from "../../components/demo/LoadingState";
 import { ErrorDisplay } from "../../components/errors/ErrorDisplay";
@@ -21,7 +21,7 @@ const useStyles = makeStyles({
     marginBottom: "24px",
   },
   description: {
-    color: (tokens as any).colorNeutralForeground2,
+    color: tokens.colorNeutralForeground2,
     marginTop: "8px",
   },
   card: {
@@ -40,8 +40,8 @@ const useStyles = makeStyles({
   },
   orgCard: {
     padding: "16px",
-    backgroundColor: (tokens as any).colorNeutralBackground2,
-    borderRadius: (tokens as any).borderRadiusMedium,
+    backgroundColor: tokens.colorNeutralBackground2,
+    borderRadius: tokens.borderRadiusMedium,
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
@@ -54,8 +54,8 @@ const useStyles = makeStyles({
   info: {
     marginTop: "24px",
     padding: "16px",
-    backgroundColor: (tokens as any).colorNeutralBackground3,
-    borderRadius: (tokens as any).borderRadiusMedium,
+    backgroundColor: tokens.colorNeutralBackground3,
+    borderRadius: tokens.borderRadiusMedium,
   },
 });
 
@@ -94,22 +94,22 @@ export default function Discovery() {
   };
 
   return (
-    <div className={(styles as any).container}>
-      <div className={(styles as any).header}>
+    <div className={styles.container}>
+      <div className={styles.header}>
         <Title3>Global Discovery Service</Title3>
-        <Text className={(styles as any).description}>
+        <Text className={styles.description}>
           Discover and connect to Dataverse organizations across the Commercial cloud
         </Text>
       </div>
 
-      <Card className={(styles as any).card}>
+      <Card className={styles.card}>
         <Title3>Discover Organizations</Title3>
         <Text>
           The Global Discovery Service returns all Dataverse organizations the authenticated user
           has access to within the cloud region.
         </Text>
 
-        <div className={(styles as any).actions}>
+        <div className={styles.actions}>
           <Button
             appearance="primary"
             icon={<GlobeRegular />}
@@ -137,27 +137,27 @@ export default function Discovery() {
           </Text>
         )}
 
-        {(organizations as any).length > 0 && (
-          <div className={(styles as any).orgList}>
+        {organizations.length > 0 && (
+          <div className={styles.orgList}>
             <Text weight="semibold">
-              Found {(organizations as any).length} organization
-              {(organizations as any).length !== 1 ? "s" : ""}
+              Found {organizations.length} organization
+              {organizations.length !== 1 ? "s" : ""}
             </Text>
 
-            {(organizations as any).map((org) => (
-              <div key={(org as any).Id} className={(styles as any).orgCard}>
-                <div className={(styles as any).orgInfo}>
+            {organizations.map((org) => (
+              <div key={org.Id} className={styles.orgCard}>
+                <div className={styles.orgInfo}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     <BuildingMultipleRegular fontSize={20} />
-                    <Text weight="semibold">{(org as any).FriendlyName}</Text>
+                    <Text weight="semibold">{org.FriendlyName}</Text>
                     <Badge appearance="outline" color="informative">
                       {org.State === OrganizationState.Enabled ? "Enabled" : "Disabled"}
                     </Badge>
                   </div>
-                  <Text size={200} style={{ color: (tokens as any).colorNeutralForeground3 }}>
-                    {(org as any).UniqueName} • Version {(org as any).Version}
+                  <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
+                    {org.UniqueName} • Version {org.Version}
                   </Text>
-                  <Text size={200} style={{ color: (tokens as any).colorNeutralForeground3 }}>
+                  <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
                     {org.Url}
                   </Text>
                 </div>
@@ -174,11 +174,11 @@ export default function Discovery() {
         )}
       </Card>
 
-      <Card className={(styles as any).card}>
+      <Card className={styles.card}>
         <Title3>Multi-Organization Scenarios</Title3>
         <Text>Common use cases for the Discovery Service</Text>
 
-        <div className={(styles as any).info}>
+        <div className={styles.info}>
           <Text weight="semibold">When to Use Discovery Service:</Text>
           <ul style={{ marginTop: "8px", paddingLeft: "20px" }}>
             <li>
@@ -208,7 +208,7 @@ export default function Discovery() {
           </ul>
         </div>
 
-        <div className={(styles as any).info} style={{ marginTop: "16px" }}>
+        <div className={styles.info} style={{ marginTop: "16px" }}>
           <Text weight="semibold">Cloud-Specific Endpoints:</Text>
           <ul style={{ marginTop: "8px", paddingLeft: "20px" }}>
             <li>
@@ -248,7 +248,7 @@ const orgs = await discoveryClient.listOrganizations();
 // - Id, UniqueName, FriendlyName
 // - Url (application URL) and ApiUrl (use it as the DataverseClient baseUrl)
 // - Version, State (0 = enabled), Region`,
-            result: (JSON as any).stringify(
+            result: JSON.stringify(
               {
                 discoveryEndpoint:
                   "https://globaldisco.crm.dynamics.com/api/discovery/v2.0/Instances",

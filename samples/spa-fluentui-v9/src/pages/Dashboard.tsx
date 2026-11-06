@@ -34,7 +34,7 @@ const useStyles = makeStyles({
   container: {
     flex: 1,
     padding: "32px",
-    backgroundColor: (tokens as any).colorNeutralBackground3,
+    backgroundColor: tokens.colorNeutralBackground3,
   },
   header: {
     marginBottom: "32px",
@@ -51,7 +51,7 @@ const useStyles = makeStyles({
     transition: "all 0.2s",
     ":hover": {
       transform: "translateY(-4px)",
-      boxShadow: (tokens as any).shadow16,
+      boxShadow: tokens.shadow16,
     },
   },
   cardHeader: {
@@ -62,12 +62,12 @@ const useStyles = makeStyles({
   },
   cardIcon: {
     fontSize: "32px",
-    color: (tokens as any).colorBrandForeground1,
+    color: tokens.colorBrandForeground1,
   },
   cardValue: {
     fontSize: "36px",
     fontWeight: 700,
-    color: (tokens as any).colorBrandForeground1,
+    color: tokens.colorBrandForeground1,
     marginBottom: "8px",
   },
   recentSection: {
@@ -85,7 +85,7 @@ const useStyles = makeStyles({
     padding: "16px",
     cursor: "pointer",
     ":hover": {
-      backgroundColor: (tokens as any).colorNeutralBackground1Hover,
+      backgroundColor: tokens.colorNeutralBackground1Hover,
     },
   },
 });
@@ -101,11 +101,11 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { instance, accounts } = useMsal();
   const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [recentAccounts, setRecentAccounts] = useState<any[]>([]);
+  const [recentAccounts, setRecentAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadDashboardData();
+    void loadDashboardData();
   }, []);
 
   const loadDashboardData = async () => {
@@ -114,7 +114,7 @@ export default function Dashboard() {
 
       const tokenProvider = new MsalBrowserTokenProvider(instance, {
         account: accounts[0],
-        scopes: (loginRequest as any).scopes,
+        scopes: loginRequest.scopes,
       });
 
       const client = new DataverseClient({
@@ -127,19 +127,16 @@ export default function Dashboard() {
       const allAccounts = await client
         .api("/accounts")
         .select("accountid", "statecode", "revenue")
-        .getAll({ maxItems: 1000 });
+        .getAll<Pick<Account, "accountid" | "revenue"> & { statecode: number }>({ maxItems: 1000 });
 
-      const total = (allAccounts as any).length;
-      const active = (allAccounts as any).filter((a: any) => (a as any).statecode === 0).length;
-      const revenue = (allAccounts as any).reduce(
-        (sum: number, a: any) => sum + ((a as any).revenue || 0),
-        0
-      );
+      const total = allAccounts.length;
+      const active = allAccounts.filter((a) => a.statecode === 0).length;
+      const revenue = allAccounts.reduce((sum, a) => sum + (a.revenue ?? 0), 0);
 
       setStats({
         totalAccounts: total,
         activeAccounts: active,
-        totalRevenue: revenue as number,
+        totalRevenue: revenue,
       });
 
       // Fetch recent accounts
@@ -150,9 +147,9 @@ export default function Dashboard() {
         .top(5)
         .get<{ value: Account[] }>();
 
-      setRecentAccounts((recent as any).value || []);
+      setRecentAccounts(recent.value || []);
     } catch (error) {
-      (console as any).error("Failed to load dashboard:", error);
+      console.error("Failed to load dashboard:", error);
     } finally {
       setLoading(false);
     }
@@ -161,7 +158,7 @@ export default function Dashboard() {
   if (loading) {
     return (
       <div
-        className={(styles as any).container}
+        className={styles.container}
         style={{ display: "flex", justifyContent: "center", alignItems: "center" }}
       >
         <Spinner size="large" label="Loading dashboard..." />
@@ -170,44 +167,44 @@ export default function Dashboard() {
   }
 
   return (
-    <div className={(styles as any).container}>
-      <div className={(styles as any).header}>
+    <div className={styles.container}>
+      <div className={styles.header}>
         <Title1>Dashboard</Title1>
         <Body1>Welcome back! Here's an overview of your accounts.</Body1>
       </div>
 
-      <div className={(styles as any).grid}>
-        <Card className={(styles as any).card} onClick={() => navigate("/accounts")}>
-          <div className={(styles as any).cardHeader}>
-            <BuildingRegular className={(styles as any).cardIcon} />
+      <div className={styles.grid}>
+        <Card className={styles.card} onClick={() => navigate("/accounts")}>
+          <div className={styles.cardHeader}>
+            <BuildingRegular className={styles.cardIcon} />
             <Title2>Total Accounts</Title2>
           </div>
-          <div className={(styles as any).cardValue}>{stats?.totalAccounts || 0}</div>
+          <div className={styles.cardValue}>{stats?.totalAccounts || 0}</div>
           <Body1>All accounts in the system</Body1>
         </Card>
 
-        <Card className={(styles as any).card} onClick={() => navigate("/accounts")}>
-          <div className={(styles as any).cardHeader}>
-            <PeopleRegular className={(styles as any).cardIcon} />
+        <Card className={styles.card} onClick={() => navigate("/accounts")}>
+          <div className={styles.cardHeader}>
+            <PeopleRegular className={styles.cardIcon} />
             <Title2>Active Accounts</Title2>
           </div>
-          <div className={(styles as any).cardValue}>{stats?.activeAccounts || 0}</div>
+          <div className={styles.cardValue}>{stats?.activeAccounts || 0}</div>
           <Body1>Currently active accounts</Body1>
         </Card>
 
-        <Card className={(styles as any).card}>
-          <div className={(styles as any).cardHeader}>
-            <MoneyRegular className={(styles as any).cardIcon} />
+        <Card className={styles.card}>
+          <div className={styles.cardHeader}>
+            <MoneyRegular className={styles.cardIcon} />
             <Title2>Total Revenue</Title2>
           </div>
-          <div className={(styles as any).cardValue}>
+          <div className={styles.cardValue}>
             ${((stats?.totalRevenue || 0) / 1000000).toFixed(1)}M
           </div>
           <Body1>Aggregate account revenue</Body1>
         </Card>
       </div>
 
-      <div className={(styles as any).recentSection}>
+      <div className={styles.recentSection}>
         <div
           style={{
             display: "flex",
@@ -227,13 +224,13 @@ export default function Dashboard() {
         </div>
 
         <Card>
-          <div className={(styles as any).accountsList}>
-            {(recentAccounts as any).length === 0 ? (
+          <div className={styles.accountsList}>
+            {recentAccounts.length === 0 ? (
               <Body1
                 style={{
                   padding: "24px",
                   textAlign: "center",
-                  color: (tokens as any).colorNeutralForeground3,
+                  color: tokens.colorNeutralForeground3,
                 }}
               >
                 No accounts yet.{" "}
@@ -242,23 +239,22 @@ export default function Dashboard() {
                 </Button>
               </Body1>
             ) : (
-              (recentAccounts as any).map((account) => (
+              recentAccounts.map((account) => (
                 <div
-                  key={(account as any).accountid}
-                  className={(styles as any).accountItem}
-                  onClick={() => navigate(`/accounts/${(account as any).accountid}`)}
+                  key={account.accountid}
+                  className={styles.accountItem}
+                  onClick={() => navigate(`/accounts/${account.accountid}`)}
                 >
                   <div>
-                    <Title2 as="h3">{(account as any).name}</Title2>
-                    <Body1 style={{ color: (tokens as any).colorNeutralForeground3 }}>
-                      Created {new Date((account as any).createdon).toLocaleDateString()}
+                    <Title2 as="h3">{account.name}</Title2>
+                    <Body1 style={{ color: tokens.colorNeutralForeground3 }}>
+                      Created{" "}
+                      {account.createdon
+                        ? new Date(account.createdon).toLocaleDateString()
+                        : "unknown"}
                     </Body1>
                   </div>
-                  <Body1>
-                    {(account as any).revenue
-                      ? `$${(account as any).revenue.toLocaleString()}`
-                      : "N/A"}
-                  </Body1>
+                  <Body1>{account.revenue ? `$${account.revenue.toLocaleString()}` : "N/A"}</Body1>
                 </div>
               ))
             )}
@@ -268,14 +264,14 @@ export default function Dashboard() {
 
       <div style={{ marginTop: "48px" }}>
         <Title2 style={{ marginBottom: "16px" }}>SDK Scenarios</Title2>
-        <Body1 style={{ color: (tokens as any).colorNeutralForeground3, marginBottom: "24px" }}>
+        <Body1 style={{ color: tokens.colorNeutralForeground3, marginBottom: "24px" }}>
           Explore comprehensive examples demonstrating all capabilities of the Dataverse SDK
         </Body1>
 
-        <div className={(styles as any).grid}>
-          <Card className={(styles as any).card} onClick={() => navigate("/scenarios/crud")}>
-            <div className={(styles as any).cardHeader}>
-              <CodeRegular className={(styles as any).cardIcon} />
+        <div className={styles.grid}>
+          <Card className={styles.card} onClick={() => navigate("/scenarios/crud")}>
+            <div className={styles.cardHeader}>
+              <CodeRegular className={styles.cardIcon} />
               <div>
                 <Title3>CRUD Operations</Title3>
                 <Body1>3 API approaches</Body1>
@@ -283,9 +279,9 @@ export default function Dashboard() {
             </div>
           </Card>
 
-          <Card className={(styles as any).card} onClick={() => navigate("/scenarios/querying")}>
-            <div className={(styles as any).cardHeader}>
-              <DatabaseRegular className={(styles as any).cardIcon} />
+          <Card className={styles.card} onClick={() => navigate("/scenarios/querying")}>
+            <div className={styles.cardHeader}>
+              <DatabaseRegular className={styles.cardIcon} />
               <div>
                 <Title3>Advanced Querying</Title3>
                 <Body1>Filters, pagination, FetchXML</Body1>
@@ -293,9 +289,9 @@ export default function Dashboard() {
             </div>
           </Card>
 
-          <Card className={(styles as any).card} onClick={() => navigate("/scenarios/bulk")}>
-            <div className={(styles as any).cardHeader}>
-              <DatabaseRegular className={(styles as any).cardIcon} />
+          <Card className={styles.card} onClick={() => navigate("/scenarios/bulk")}>
+            <div className={styles.cardHeader}>
+              <DatabaseRegular className={styles.cardIcon} />
               <div>
                 <Title3>Bulk Operations</Title3>
                 <Body1>CreateMultiple, UpdateMultiple</Body1>
@@ -303,9 +299,9 @@ export default function Dashboard() {
             </div>
           </Card>
 
-          <Card className={(styles as any).card} onClick={() => navigate("/scenarios/batch")}>
-            <div className={(styles as any).cardHeader}>
-              <DatabaseRegular className={(styles as any).cardIcon} />
+          <Card className={styles.card} onClick={() => navigate("/scenarios/batch")}>
+            <div className={styles.cardHeader}>
+              <DatabaseRegular className={styles.cardIcon} />
               <div>
                 <Title3>Batch Operations</Title3>
                 <Body1>$batch with changesets</Body1>
@@ -313,12 +309,9 @@ export default function Dashboard() {
             </div>
           </Card>
 
-          <Card
-            className={(styles as any).card}
-            onClick={() => navigate("/scenarios/relationships")}
-          >
-            <div className={(styles as any).cardHeader}>
-              <DatabaseRegular className={(styles as any).cardIcon} />
+          <Card className={styles.card} onClick={() => navigate("/scenarios/relationships")}>
+            <div className={styles.cardHeader}>
+              <DatabaseRegular className={styles.cardIcon} />
               <div>
                 <Title3>Relationships</Title3>
                 <Body1>Associate, disassociate, bind</Body1>
@@ -326,9 +319,9 @@ export default function Dashboard() {
             </div>
           </Card>
 
-          <Card className={(styles as any).card} onClick={() => navigate("/scenarios/metadata")}>
-            <div className={(styles as any).cardHeader}>
-              <DatabaseRegular className={(styles as any).cardIcon} />
+          <Card className={styles.card} onClick={() => navigate("/scenarios/metadata")}>
+            <div className={styles.cardHeader}>
+              <DatabaseRegular className={styles.cardIcon} />
               <div>
                 <Title3>Metadata Explorer</Title3>
                 <Body1>Entity/attribute CRUD, delta queries</Body1>
@@ -336,9 +329,9 @@ export default function Dashboard() {
             </div>
           </Card>
 
-          <Card className={(styles as any).card} onClick={() => navigate("/scenarios/files")}>
-            <div className={(styles as any).cardHeader}>
-              <DatabaseRegular className={(styles as any).cardIcon} />
+          <Card className={styles.card} onClick={() => navigate("/scenarios/files")}>
+            <div className={styles.cardHeader}>
+              <DatabaseRegular className={styles.cardIcon} />
               <div>
                 <Title3>File Operations</Title3>
                 <Body1>Chunked upload/download (4MB)</Body1>
@@ -346,9 +339,9 @@ export default function Dashboard() {
             </div>
           </Card>
 
-          <Card className={(styles as any).card} onClick={() => navigate("/scenarios/actions")}>
-            <div className={(styles as any).cardHeader}>
-              <CodeRegular className={(styles as any).cardIcon} />
+          <Card className={styles.card} onClick={() => navigate("/scenarios/actions")}>
+            <div className={styles.cardHeader}>
+              <CodeRegular className={styles.cardIcon} />
               <div>
                 <Title3>Actions & Functions</Title3>
                 <Body1>Typed Web API calls</Body1>
@@ -356,9 +349,9 @@ export default function Dashboard() {
             </div>
           </Card>
 
-          <Card className={(styles as any).card} onClick={() => navigate("/scenarios/messages")}>
-            <div className={(styles as any).cardHeader}>
-              <CodeRegular className={(styles as any).cardIcon} />
+          <Card className={styles.card} onClick={() => navigate("/scenarios/messages")}>
+            <div className={styles.cardHeader}>
+              <CodeRegular className={styles.cardIcon} />
               <div>
                 <Title3>SDK Messages</Title3>
                 <Body1>1000+ typed messages</Body1>
@@ -366,9 +359,9 @@ export default function Dashboard() {
             </div>
           </Card>
 
-          <Card className={(styles as any).card} onClick={() => navigate("/scenarios/discovery")}>
-            <div className={(styles as any).cardHeader}>
-              <CloudRegular className={(styles as any).cardIcon} />
+          <Card className={styles.card} onClick={() => navigate("/scenarios/discovery")}>
+            <div className={styles.cardHeader}>
+              <CloudRegular className={styles.cardIcon} />
               <div>
                 <Title3>Discovery Service</Title3>
                 <Body1>Multi-org scenarios</Body1>
@@ -376,12 +369,9 @@ export default function Dashboard() {
             </div>
           </Card>
 
-          <Card
-            className={(styles as any).card}
-            onClick={() => navigate("/scenarios/observability")}
-          >
-            <div className={(styles as any).cardHeader}>
-              <GaugeRegular className={(styles as any).cardIcon} />
+          <Card className={styles.card} onClick={() => navigate("/scenarios/observability")}>
+            <div className={styles.cardHeader}>
+              <GaugeRegular className={styles.cardIcon} />
               <div>
                 <Title3>Observability</Title3>
                 <Body1>Retry, throttling, telemetry</Body1>
@@ -389,9 +379,9 @@ export default function Dashboard() {
             </div>
           </Card>
 
-          <Card className={(styles as any).card} onClick={() => navigate("/scenarios/typesafety")}>
-            <div className={(styles as any).cardHeader}>
-              <ShieldCheckmarkRegular className={(styles as any).cardIcon} />
+          <Card className={styles.card} onClick={() => navigate("/scenarios/typesafety")}>
+            <div className={styles.cardHeader}>
+              <ShieldCheckmarkRegular className={styles.cardIcon} />
               <div>
                 <Title3>Type Safety</Title3>
                 <Body1>Compile-time checks</Body1>
@@ -399,9 +389,9 @@ export default function Dashboard() {
             </div>
           </Card>
 
-          <Card className={(styles as any).card} onClick={() => navigate("/scenarios/reference")}>
-            <div className={(styles as any).cardHeader}>
-              <BookRegular className={(styles as any).cardIcon} />
+          <Card className={styles.card} onClick={() => navigate("/scenarios/reference")}>
+            <div className={styles.cardHeader}>
+              <BookRegular className={styles.cardIcon} />
               <div>
                 <Title3>API Reference</Title3>
                 <Body1>Decision matrices, guidance</Body1>
