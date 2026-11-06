@@ -4,11 +4,22 @@
  */
 
 export { BatchRequestBuilder } from "./BatchRequestBuilder.js";
-export { DataverseBatchError } from "./errors.js";
+export { DataverseBatchError, type DataverseBatchErrorInit } from "./errors.js";
 export type {
   BatchRequestStep,
+  BatchChangeset,
+  BatchItem,
+  BatchResponsePart,
   BatchResponseStep,
   BatchExecutionOptions,
   BatchExecutionResult,
 } from "./types.js";
+export {
+  encodeBatchRequest,
+  generateBoundary,
+  generateChangesetBoundary,
+  JSON_PART_CONTENT_TYPE,
+  type EncodeBatchOptions,
+} from "./encoding.js";
+export { decodeBatchResponse, extractBoundary } from "./decoding.js";
 export { createBindManyExecutor } from "./bindManyExecutor.js";

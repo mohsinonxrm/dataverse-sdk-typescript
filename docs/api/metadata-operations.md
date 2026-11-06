@@ -1,6 +1,6 @@
 # Metadata Operations - Complete API Reference
 
-Complete documentation for `@mohsinonxrm/dataverse-sdk-metadata` - all 45 methods for managing Dataverse metadata.
+Complete documentation for `@mohsinonxrm/dataverse-sdk-metadata`: the `MetadataClient` methods for managing Dataverse metadata.
 
 ## Table of Contents
 
@@ -46,15 +46,27 @@ const metadataId = await metadataClient.createEntityDefinition({
 
 ### Update Entity
 
-**Important**: Uses HTTP PUT (not PATCH) - must send complete definition.
+**Important**: Uses HTTP PUT (not PATCH), which replaces the definition. A property you leave
+out is reset to its default, so send the complete definition.
 
 ```typescript
-await metadataClient.updateEntityDefinition("new_project", {
-  // Send complete entity definition with changes
+// Retrieve the current definition, apply the change and PUT the result
+await metadataClient.mergeAndUpdateEntityDefinition("new_project", {
   DisplayName: {
     LocalizedLabels: [{ Label: "Updated Project", LanguageCode: 1033 }],
   },
-  // ... all other properties
+});
+```
+
+### Created IDs and Solutions
+
+Every `create*` method returns the new component's `MetadataId`, read from the `OData-EntityId`
+header of Dataverse's `204 No Content` response. Every create and update takes an optional last
+argument `{ solutionUniqueName }`, sent as `MSCRM.SolutionUniqueName`:
+
+```typescript
+const id = await metadataClient.createEntityDefinition(definition, {
+  solutionUniqueName: "ContosoProjects",
 });
 ```
 
@@ -304,71 +316,92 @@ const response = await metadataClient.createPolymorphicLookup({
 
 ## Relationship Eligibility
 
+`canBeReferenced`, `canBeReferencing` and `canManyToMany` send Web API actions
+(`POST /CanBeReferenced` with `{ "EntityName": "…" }`) and return a `boolean`. The `getValid*`
+methods send functions (`GET`) and return `string[]`.
+
 ### Check if Entity Can Be Primary (1) in 1:N
 
 ```typescript
-const response = await metadataClient.canBeReferenced("new_project");
-console.log("Can be referenced:", response.CanBeReferenced);
+const canBeReferenced: boolean = await metadataClient.canBeReferenced("new_project");
 ```
 
 ### Check if Entity Can Be Related (Many) in 1:N
 
 ```typescript
-const response = await metadataClient.canBeReferencing("new_project");
-console.log("Can be referencing:", response.CanBeReferencing);
+const canBeReferencing: boolean = await metadataClient.canBeReferencing("new_project");
 ```
 
 ### Check N:N Support
 
 ```typescript
-const response = await metadataClient.canManyToMany("new_project");
-console.log("Supports N:N:", response.CanManyToMany);
+const canManyToMany: boolean = await metadataClient.canManyToMany("new_project");
 ```
 
-### Get Valid Referencing Entities
+### Get Valid Referencing and Referenced Entities
 
 ```typescript
-const response = await metadataClient.getValidReferencingEntities("account");
-console.log("Entities that can reference account:", response.EntityNames);
+// Tables that can reference account (be the "many" side)
+const referencing: string[] = await metadataClient.getValidReferencingEntities("account");
+// Tables that contact can reference (be the "one" side)
+const referenced: string[] = await metadataClient.getValidReferencedEntities("contact");
+// Every table that can take part in an N:N relationship; takes no argument
+const manyToMany: string[] = await metadataClient.getValidManyToMany();
 ```
 
 ## Metadata Change Tracking
 
 ### RetrieveMetadataChanges
 
+`retrieveMetadataChanges(query, clientVersionStamp?, deletedMetadataFilters?)` takes positional
+arguments. `RetrieveMetadataChanges` is a function, so the SDK sends
+`GET /RetrieveMetadataChanges(Query=@p1,ClientVersionStamp=@p2,DeletedMetadataFilters=@p3)?@p1=<json>…`.
+
 ```typescript
-const response = await metadataClient.retrieveMetadataChanges({
-  Query: {
-    "@odata.type": "Microsoft.Dynamics.CRM.EntityQueryExpression",
-    Criteria: {
-      Conditions: [
-        {
-          PropertyName: "SchemaName",
-          ConditionOperator: "Equals",
-          Value: { Value: "new_project" },
-        },
-      ],
-    },
-    Properties: {
-      PropertyNames: ["DisplayName", "SchemaName", "Attributes"],
-    },
+import {
+  LogicalOperator,
+  MetadataConditionOperator,
+  type EntityQueryExpression,
+} from "@mohsinonxrm/dataverse-sdk-metadata";
+
+const query: EntityQueryExpression = {
+  Criteria: {
+    FilterOperator: LogicalOperator.And,
+    Conditions: [
+      {
+        PropertyName: "SchemaName",
+        ConditionOperator: MetadataConditionOperator.Equals,
+        Value: { Type: "System.String", Value: "new_project" },
+      },
+    ],
   },
-  ClientVersionStamp: previousVersionStamp, // From previous call
-  DeletedMetadataFilters: "Entity",
-});
+  Properties: { AllProperties: false, PropertyNames: ["DisplayName", "SchemaName"] },
+};
+
+const first = await metadataClient.retrieveMetadataChanges(query);
+
+// Later: only what changed since the first call, including deleted tables
+const response = await metadataClient.retrieveMetadataChanges(
+  query,
+  first.ServerVersionStamp,
+  "Default" // DeletedMetadataFilters member name(s), e.g. "Default", "Attribute", "All"
+);
 
 console.log("Server version:", response.ServerVersionStamp);
 console.log("Deleted metadata:", response.DeletedMetadata);
 ```
 
+Enum members in the query are sent by name (`"And"`, `"Equals"`); Dataverse rejects numbers there.
+
 ## Complete Method List
 
-**Entity Operations (5):**
+**Entity Operations (6):**
 
 - getEntityDefinitions
 - getEntityDefinition
 - createEntityDefinition
 - updateEntityDefinition (uses PUT)
+- mergeAndUpdateEntityDefinition (retrieve, merge, PUT)
 - deleteEntityDefinition
 
 **Attribute Operations (5):**
@@ -432,17 +465,15 @@ console.log("Deleted metadata:", response.DeletedMetadata);
 
 - retrieveMetadataChanges
 
-**Total: 45 methods**
-
 ## Important Notes
 
-1. **Update Operations Use PUT**: Per Microsoft documentation, all metadata update operations must use HTTP PUT (not PATCH). This means you must send the complete definition, not just changed properties.
+1. **Update Operations Use PUT**: Per Microsoft documentation, all metadata update operations must use HTTP PUT (not PATCH). A PUT replaces the definition, so send the complete definition, not just changed properties, or use `mergeAndUpdateEntityDefinition()` for tables.
 
-2. **MSCRM.MergeLabels Header**: When updating, set `MSCRM.MergeLabels: true` header to merge labels instead of replacing them.
+2. **MSCRM.MergeLabels Header**: Every update sends `MSCRM.MergeLabels: true`, so labels are merged instead of replaced.
 
 3. **Publishing**: Metadata changes must be published using PublishXml or PublishAllXml action before they take effect.
 
-4. **Solution Context**: Use `MSCRM.SolutionUniqueName` header to associate changes with a specific solution.
+4. **Solution Context**: Pass `{ solutionUniqueName }` as the last argument of any create or update; the SDK sends it as the `MSCRM.SolutionUniqueName` header.
 
 ## Reference Documentation
 

@@ -2,9 +2,17 @@
  * @fileoverview OrganizationService class providing C#-familiar CRUD operations for Dataverse
  */
 
-import type { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+import { Prefer } from "@mohsinonxrm/dataverse-sdk-core";
+import type {
+  DataverseClient,
+  DataverseRequestBuilder,
+  Executable,
+  RequestOptions,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import type {
   EntityReference,
+  ExpandOption,
+  OrganizationServiceOptions,
   CreateOptions,
   RetrieveOptions,
   RetrieveMultipleOptions,
@@ -15,8 +23,26 @@ import type {
   DisassociateOptions,
 } from "./types.js";
 
+/** Options every OrganizationService operation shares. */
+interface CommonOptions {
+  impersonateUserId?: string;
+  headers?: Record<string, string>;
+}
+
+/** Options of the operations that write a record (create, update). */
+interface WriteOptions extends CommonOptions {
+  returnRepresentation?: boolean;
+  select?: string[];
+  suppressDuplicateDetection?: boolean;
+  detectDuplicates?: boolean;
+}
+
 /**
- * OrganizationService provides a C#-familiar interface for Dataverse operations
+ * OrganizationService provides a C#-familiar interface for Dataverse operations.
+ *
+ * Every method goes through the client's request builder, so auth, retry, throttling and error
+ * mapping apply as they do for `client.api()`. Failed requests reject with the core error types
+ * (`DataverseError` and its subclasses).
  *
  * @example
  * ```typescript
@@ -37,7 +63,7 @@ import type {
  *   select: ['name', 'telephone1', 'revenue']
  * });
  *
- * // Update
+ * // Update, only if nobody changed the record since it was read
  * await service.update('accounts', accountId, {
  *   telephone1: '555-0200'
  * }, { etag: account['@odata.etag'] });
@@ -48,23 +74,84 @@ import type {
  */
 export class OrganizationService {
   private client: DataverseClient;
+  /** Entity set names by lower-cased logical name: overrides, then metadata lookups. */
+  private entitySetNames = new Map<string, Promise<string>>();
 
   /**
    * Creates a new OrganizationService instance
    *
    * @param client - The DataverseClient instance to use for operations
+   * @param options - Optional settings, such as entity set names to use without a metadata lookup
    */
-  constructor(client: DataverseClient) {
+  constructor(client: DataverseClient, options: OrganizationServiceOptions = {}) {
     this.client = client;
+    for (const [logicalName, entitySetName] of Object.entries(options.entitySetNames ?? {})) {
+      this.setEntitySetName(logicalName, entitySetName);
+    }
   }
 
   /**
-   * Creates a new entity record
+   * The entity set name of a table, e.g. `"opportunity"` → `"opportunities"`.
+   *
+   * Methods that take a logical name (`assign()`, `setState()`, and the `EntityReference`s of
+   * `associate()`) use this. It reads `EntityDefinitions(LogicalName='…')?$select=EntitySetName`
+   * once per logical name and caches the answer on this service. Names given with
+   * `options.entitySetNames` or {@link setEntitySetName} are used without a lookup. A failed
+   * lookup rejects (with the core `DataverseError`, e.g. 404 for an unknown table) and is not
+   * cached.
+   *
+   * @param logicalName - The table's logical name, e.g. 'account'
+   * @returns The entity set name, e.g. 'accounts'
+   *
+   * @example
+   * ```typescript
+   * await service.getEntitySetName('opportunity'); // 'opportunities'
+   * ```
+   */
+  getEntitySetName(logicalName: string): Promise<string> {
+    const key = logicalName.toLowerCase();
+    const cached = this.entitySetNames.get(key);
+    if (cached) return cached;
+
+    const lookup = this.client
+      .api(`/EntityDefinitions(LogicalName='${key.replace(/'/g, "''")}')`)
+      .select("EntitySetName")
+      .get<{ EntitySetName?: string } | undefined>()
+      .then((definition) => {
+        if (!definition?.EntitySetName) {
+          throw new Error(`EntityDefinitions returned no EntitySetName for '${logicalName}'.`);
+        }
+        return definition.EntitySetName;
+      });
+    // Concurrent callers share one lookup; a failure is forgotten so the next call retries.
+    this.entitySetNames.set(key, lookup);
+    void lookup.catch(() => {
+      if (this.entitySetNames.get(key) === lookup) this.entitySetNames.delete(key);
+    });
+    return lookup;
+  }
+
+  /**
+   * Sets the entity set name to use for a logical name, so no metadata lookup is made for it.
+   *
+   * @param logicalName - The table's logical name, e.g. 'new_widget'
+   * @param entitySetName - Its entity set name, e.g. 'new_widgets'
+   */
+  setEntitySetName(logicalName: string, entitySetName: string): void {
+    this.entitySetNames.set(logicalName.toLowerCase(), Promise.resolve(entitySetName));
+  }
+
+  /**
+   * Creates a new entity record.
+   *
+   * Without `returnRepresentation` this resolves the new record's id, read from the
+   * `OData-EntityId` response header. With it, the request sends
+   * `Prefer: return=representation` and resolves the created record.
    *
    * @param entitySetName - The entity set name (plural, e.g., 'accounts', 'contacts')
    * @param entity - The entity data to create
    * @param options - Optional creation settings
-   * @returns The ID of the created record
+   * @returns The ID of the created record, or the record when `returnRepresentation` is true
    *
    * @example
    * ```typescript
@@ -90,48 +177,14 @@ export class OrganizationService {
     options?: CreateOptions
   ): Promise<string | T> {
     const builder = this.client.api(`/${entitySetName}`);
-
-    // Build headers
-    const headers: Record<string, string> = { ...options?.headers };
+    const requestOptions = this.applyWriteOptions(builder, options);
 
     if (options?.returnRepresentation) {
-      headers.Prefer = "return=representation";
-
-      if (options.select && options.select.length > 0) {
-        builder.select(...options.select);
-      }
+      const created = await builder.post<T | undefined>(entity, requestOptions);
+      return created ?? ({} as T);
     }
 
-    if (options?.suppressDuplicateDetection) {
-      headers["MSCRM.SuppressDuplicateDetection"] = "true";
-    }
-
-    if (options?.impersonateUserId) {
-      headers.MSCRMCallerID = options.impersonateUserId;
-    }
-
-    const response: Response = await builder.post(entity, headers);
-
-    // If returnRepresentation, parse and return the entity
-    if (options?.returnRepresentation) {
-      const text = await response.text();
-      return text ? JSON.parse(text) : ({} as T);
-    }
-
-    // Extract ID from OData-EntityId header
-    const entityIdHeader = response.headers.get("OData-EntityId");
-    if (!entityIdHeader) {
-      throw new Error("No OData-EntityId header in create response");
-    }
-
-    // Extract GUID from URL: https://org.crm.dynamics.com/api/data/v9.2/accounts(guid)
-    const regex = /\(([0-9a-f-]{36})\)/i;
-    const match = regex.exec(entityIdHeader);
-    if (!match) {
-      throw new Error(`Could not extract ID from OData-EntityId: ${entityIdHeader}`);
-    }
-
-    return match[1];
+    return builder.createAndGetId(entity, requestOptions);
   }
 
   /**
@@ -170,55 +223,20 @@ export class OrganizationService {
     const normalizedId = this.normalizeGuid(id);
     const builder = this.client.api(`/${entitySetName}(${normalizedId})`);
 
-    // Apply select
     if (options?.select && options.select.length > 0) {
       builder.select(...options.select);
     }
+    this.applyExpand(builder, options?.expand);
 
-    // Apply expand
-    if (options?.expand) {
-      if (typeof options.expand === "string") {
-        builder.expand(options.expand);
-      } else {
-        for (const exp of options.expand) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const expandOptions: any = {};
-
-          if (exp.select && exp.select.length > 0) {
-            expandOptions.select = exp.select;
-          }
-
-          if (exp.filter) {
-            expandOptions.filter = exp.filter;
-          }
-
-          if (exp.orderBy) {
-            expandOptions.orderBy = exp.orderBy;
-          }
-
-          if (exp.top !== undefined) {
-            expandOptions.top = exp.top;
-          }
-
-          builder.expand(exp.navigationProperty, expandOptions);
-        }
-      }
-    }
-
-    // Build headers
-    const headers: Record<string, string> = { ...options?.headers };
-
-    if (options?.impersonateUserId) {
-      headers.MSCRMCallerID = options.impersonateUserId;
-    }
-
-    const response: Response = await builder.get(headers);
-    const text = await response.text();
-    return JSON.parse(text);
+    return builder.get<T>(this.applyCommonOptions(builder, options));
   }
 
   /**
-   * Updates an entity record
+   * Updates an existing entity record.
+   *
+   * Like the C# `IOrganizationService.Update`, this never creates a record: the PATCH carries
+   * `If-Match: *` (or `If-Match: <etag>` when `etag` is given), so a missing record rejects with
+   * a 404 instead of being created. Use `client.api(...).patch()` for an upsert.
    *
    * @param entitySetName - The entity set name (plural, e.g., 'accounts', 'contacts')
    * @param id - The GUID of the record to update
@@ -260,36 +278,16 @@ export class OrganizationService {
     const normalizedId = this.normalizeGuid(id);
     const builder = this.client.api(`/${entitySetName}(${normalizedId})`);
 
-    // Build headers
-    const headers: Record<string, string> = { ...options?.headers };
+    // `If-Match: *` makes Dataverse reject the PATCH with 404 when the record doesn't exist,
+    // instead of creating it (PATCH is an upsert without it).
+    builder.ifMatch(options?.etag ?? "*");
+    const requestOptions = this.applyWriteOptions(builder, options);
 
-    if (options?.etag) {
-      headers["If-Match"] = options.etag;
-    }
-
+    const updated = await builder.patch<T | undefined>(entity, requestOptions);
     if (options?.returnRepresentation) {
-      headers.Prefer = "return=representation";
-
-      if (options.select && options.select.length > 0) {
-        builder.select(...options.select);
-      }
+      return updated ?? ({} as T);
     }
-
-    if (options?.suppressDuplicateDetection) {
-      headers["MSCRM.SuppressDuplicateDetection"] = "true";
-    }
-
-    if (options?.impersonateUserId) {
-      headers.MSCRMCallerID = options.impersonateUserId;
-    }
-
-    const response: Response = await builder.patch(entity, headers);
-
-    // If returnRepresentation, parse and return the entity
-    if (options?.returnRepresentation) {
-      const text = await response.text();
-      return text ? JSON.parse(text) : ({} as T);
-    }
+    return undefined;
   }
 
   /**
@@ -319,22 +317,18 @@ export class OrganizationService {
     const normalizedId = this.normalizeGuid(id);
     const builder = this.client.api(`/${entitySetName}(${normalizedId})`);
 
-    // Build headers
-    const headers: Record<string, string> = { ...options?.headers };
-
     if (options?.etag) {
-      headers["If-Match"] = options.etag;
+      builder.ifMatch(options.etag);
     }
 
-    if (options?.impersonateUserId) {
-      headers.MSCRMCallerID = options.impersonateUserId;
-    }
-
-    await builder.delete(headers);
+    await builder.delete(this.applyCommonOptions(builder, options));
   }
 
   /**
-   * Retrieves multiple entity records matching a query
+   * Retrieves multiple entity records matching a query.
+   *
+   * This returns one page. When `@odata.nextLink` is set, pass it to
+   * `client.api(nextLink).get()` for the next page, or use `client.api(...).iterate()`.
    *
    * @param entitySetName - The entity set name (plural, e.g., 'accounts', 'contacts')
    * @param options - Optional query settings
@@ -378,17 +372,14 @@ export class OrganizationService {
   ): Promise<RetrieveMultipleResult<T>> {
     const builder = this.client.api(`/${entitySetName}`);
 
-    // Apply select
     if (options?.select && options.select.length > 0) {
       builder.select(...options.select);
     }
 
-    // Apply filter
     if (options?.filter) {
       builder.filter(options.filter);
     }
 
-    // Apply orderBy
     if (options?.orderBy) {
       if (Array.isArray(options.orderBy)) {
         builder.orderBy(...options.orderBy);
@@ -397,69 +388,29 @@ export class OrganizationService {
       }
     }
 
-    // Apply top
     if (options?.top !== undefined) {
       builder.top(options.top);
     }
 
-    // Apply skip
     if (options?.skip !== undefined) {
       builder.skip(options.skip);
     }
 
-    // Apply count
     if (options?.count) {
       builder.count(true);
     }
 
-    // Apply expand
-    if (options?.expand) {
-      if (typeof options.expand === "string") {
-        builder.expand(options.expand);
-      } else {
-        for (const exp of options.expand) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const expandOptions: any = {};
+    this.applyExpand(builder, options?.expand);
 
-          if (exp.select && exp.select.length > 0) {
-            expandOptions.select = exp.select;
-          }
-
-          if (exp.filter) {
-            expandOptions.filter = exp.filter;
-          }
-
-          if (exp.orderBy) {
-            expandOptions.orderBy = exp.orderBy;
-          }
-
-          if (exp.top !== undefined) {
-            expandOptions.top = exp.top;
-          }
-
-          builder.expand(exp.navigationProperty, expandOptions);
-        }
-      }
-    }
-
-    // Build headers
-    const headers: Record<string, string> = { ...options?.headers };
-
-    if (options?.impersonateUserId) {
-      headers.MSCRMCallerID = options.impersonateUserId;
-    }
-
-    const response: Response = await builder.get(headers);
-    const text = await response.text();
-    return JSON.parse(text);
+    return builder.get<RetrieveMultipleResult<T>>(this.applyCommonOptions(builder, options));
   }
 
   /**
-   * Associates entity records using a relationship
+   * Associates entity records using a collection-valued navigation property
    *
    * @param entitySetName - The entity set name (plural, e.g., 'accounts', 'contacts')
    * @param id - The GUID of the primary record
-   * @param relationship - The relationship navigation property name
+   * @param relationship - The collection-valued navigation property name
    * @param relatedEntities - Array of entity references to associate
    * @param options - Optional association settings
    *
@@ -467,13 +418,8 @@ export class OrganizationService {
    * ```typescript
    * // Associate contacts to an account
    * await service.associate('accounts', accountId, 'contact_customer_accounts', [
-   *   { logicalName: 'contacts', id: contactId1 },
-   *   { logicalName: 'contacts', id: contactId2 }
-   * ]);
-   *
-   * // Associate single record
-   * await service.associate('opportunities', opportunityId, 'parentaccountid', [
-   *   { logicalName: 'accounts', id: accountId }
+   *   { logicalName: 'contact', id: contactId1 },
+   *   { logicalName: 'contact', id: contactId2 }
    * ]);
    * ```
    */
@@ -486,28 +432,22 @@ export class OrganizationService {
   ): Promise<void> {
     const normalizedId = this.normalizeGuid(id);
 
-    // Build headers
-    const headers: Record<string, string> = { ...options?.headers };
-
-    if (options?.impersonateUserId) {
-      headers.MSCRMCallerID = options.impersonateUserId;
-    }
-
     // For collection-valued navigation properties (many-to-many or one-to-many)
     // POST to /{entitySetName}({id})/{relationship}/$ref
     for (const related of relatedEntities) {
       const relatedId = this.normalizeGuid(related.id);
 
-      // Determine the related entity set name from logicalName
-      const relatedSetName = this.getEntitySetName(related.logicalName);
+      const relatedSetName =
+        related.entitySetName ?? (await this.getEntitySetName(related.logicalName));
 
       const builder = this.client.api(`/${entitySetName}(${normalizedId})/${relationship}/$ref`);
 
+      // Dataverse rejects a relative @odata.id here, so the reference is the absolute URL.
       const body = {
-        "@odata.id": `${relatedSetName}(${relatedId})`,
+        "@odata.id": `${this.client.getBaseUrl()}/${relatedSetName}(${relatedId})`,
       };
 
-      await builder.post(body, headers);
+      await builder.post(body, this.applyCommonOptions(builder, options));
     }
   }
 
@@ -517,7 +457,7 @@ export class OrganizationService {
    * @param entitySetName - The entity set name (plural, e.g., 'accounts', 'contacts')
    * @param id - The GUID of the primary record
    * @param relationship - The relationship navigation property name
-   * @param relatedId - Optional GUID of specific record to disassociate (for single-valued navigation)
+   * @param relatedId - Optional GUID of specific record to disassociate (for collection-valued navigation)
    * @param options - Optional disassociation settings
    *
    * @example
@@ -526,7 +466,7 @@ export class OrganizationService {
    * await service.disassociate('accounts', accountId, 'contact_customer_accounts', contactId);
    *
    * // Clear single-valued navigation (lookup)
-   * await service.disassociate('opportunities', opportunityId, 'parentaccountid');
+   * await service.disassociate('accounts', accountId, 'primarycontactid');
    * ```
    */
   async disassociate(
@@ -537,13 +477,6 @@ export class OrganizationService {
     options?: DisassociateOptions
   ): Promise<void> {
     const normalizedId = this.normalizeGuid(id);
-
-    // Build headers
-    const headers: Record<string, string> = { ...options?.headers };
-
-    if (options?.impersonateUserId) {
-      headers.MSCRMCallerID = options.impersonateUserId;
-    }
 
     // For collection-valued navigation: DELETE /{entitySetName}({id})/{relationship}({relatedId})/$ref
     // For single-valued navigation: DELETE /{entitySetName}({id})/{relationship}/$ref
@@ -557,7 +490,7 @@ export class OrganizationService {
     }
 
     const builder = this.client.api(url);
-    await builder.delete(headers);
+    await builder.delete(this.applyCommonOptions(builder, options));
   }
 
   /**
@@ -579,8 +512,11 @@ export class OrganizationService {
     OrganizationId: string;
   }> {
     const builder = this.client.api("/WhoAmI");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const response = (await builder.get()) as any;
+    const response = await builder.get<{
+      UserId: string;
+      BusinessUnitId: string;
+      OrganizationId: string;
+    }>();
     return {
       UserId: response.UserId,
       BusinessUnitId: response.BusinessUnitId,
@@ -591,7 +527,8 @@ export class OrganizationService {
   /**
    * Assigns a record to a user or team
    *
-   * @param entityName - The logical name of the entity
+   * @param entityName - The logical name of the entity (its entity set name is resolved with
+   *   {@link getEntitySetName})
    * @param recordId - The ID of the record to assign
    * @param assigneeId - The ID of the user or team to assign to
    * @param assigneeType - The type of assignee ('systemuser' or 'team')
@@ -607,20 +544,22 @@ export class OrganizationService {
     assigneeId: string,
     assigneeType: "systemuser" | "team" = "systemuser"
   ): Promise<void> {
-    const entitySetName = this.getEntitySetName(entityName);
+    const entitySetName = await this.getEntitySetName(entityName);
+    const assigneeSetName = await this.getEntitySetName(assigneeType);
     const normalizedId = this.normalizeGuid(recordId);
     const normalizedAssigneeId = this.normalizeGuid(assigneeId);
 
     const builder = this.client.api(`/${entitySetName}(${normalizedId})`);
     await builder.patch({
-      [`ownerid@odata.bind`]: `/${this.getEntitySetName(assigneeType)}(${normalizedAssigneeId})`,
+      [`ownerid@odata.bind`]: `/${assigneeSetName}(${normalizedAssigneeId})`,
     });
   }
 
   /**
    * Sets the state and status of a record
    *
-   * @param entityName - The logical name of the entity
+   * @param entityName - The logical name of the entity (its entity set name is resolved with
+   *   {@link getEntitySetName})
    * @param recordId - The ID of the record
    * @param stateCode - The state code (0 = Active, 1 = Inactive, etc.)
    * @param statusCode - The status code (specific to entity)
@@ -637,7 +576,7 @@ export class OrganizationService {
     stateCode: number,
     statusCode: number
   ): Promise<void> {
-    const entitySetName = this.getEntitySetName(entityName);
+    const entitySetName = await this.getEntitySetName(entityName);
     const normalizedId = this.normalizeGuid(recordId);
 
     const builder = this.client.api(`/${entitySetName}(${normalizedId})`);
@@ -656,10 +595,9 @@ export class OrganizationService {
    * @example
    * ```typescript
    * // Using Messages (C# SDK pattern)
-   * import { ExecuteWorkflowRequest } from '@mohsinonxrm/dataverse-sdk-messages';
+   * import { WhoAmIRequest } from '@mohsinonxrm/dataverse-sdk-messages';
    *
-   * const request = new ExecuteWorkflowRequest(workflowId, entityId);
-   * const response = await service.execute(request);
+   * const response = await service.execute(new WhoAmIRequest());
    *
    * // Also works with Actions/Functions directly
    * import { WhoAmIFunction } from '@mohsinonxrm/dataverse-sdk-functions';
@@ -669,8 +607,7 @@ export class OrganizationService {
    */
   async execute<TResponse>(request: unknown): Promise<TResponse> {
     // Check if request implements Executable<T> interface (has toRequestInformation and parseResponse)
-
-    if (this.isExecutable(request)) {
+    if (this.isExecutable<TResponse>(request)) {
       return await this.client.execute(request);
     }
 
@@ -683,18 +620,77 @@ export class OrganizationService {
   /**
    * Type guard to check if an object implements Executable<T> interface
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private isExecutable(obj: any): obj is {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    toRequestInformation: (baseUrl: string) => any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    parseResponse: (response: Response) => Promise<any>;
-  } {
+  private isExecutable<T>(obj: unknown): obj is Executable<T> {
+    if (typeof obj !== "object" || obj === null) return false;
+    const candidate = obj as { toRequestInformation?: unknown; parseResponse?: unknown };
     return (
-      obj &&
-      typeof obj.toRequestInformation === "function" &&
-      typeof obj.parseResponse === "function"
+      typeof candidate.toRequestInformation === "function" &&
+      typeof candidate.parseResponse === "function"
     );
+  }
+
+  /**
+   * Applies impersonation to the builder and returns the request options carrying the caller's
+   * extra headers. Headers must go in `RequestOptions.headers`: the builder's terminals take
+   * `RequestOptions`, not a header map.
+   */
+  private applyCommonOptions(
+    builder: DataverseRequestBuilder,
+    options: CommonOptions | undefined
+  ): RequestOptions | undefined {
+    if (options?.impersonateUserId) {
+      builder.impersonate(options.impersonateUserId);
+    }
+    return options?.headers ? { headers: { ...options.headers } } : undefined;
+  }
+
+  /** {@link applyCommonOptions} plus `Prefer: return=representation` and duplicate detection. */
+  private applyWriteOptions(
+    builder: DataverseRequestBuilder,
+    options: WriteOptions | undefined
+  ): RequestOptions | undefined {
+    if (options?.returnRepresentation) {
+      builder.prefer(Prefer.returnRepresentation());
+      if (options.select && options.select.length > 0) {
+        builder.select(...options.select);
+      }
+    }
+
+    // Dataverse's Web API skips duplicate detection unless the request asks for it, so
+    // suppression is the default and only "detect" needs a header.
+    if (options?.detectDuplicates || options?.suppressDuplicateDetection === false) {
+      builder.detectDuplicates();
+    }
+
+    return this.applyCommonOptions(builder, options);
+  }
+
+  /**
+   * Sets `$expand` from a raw string or a list of expand options. All entries go into one
+   * `$expand` (the builder's `expand()` replaces the previous value, so it is called once).
+   */
+  private applyExpand(
+    builder: DataverseRequestBuilder,
+    expand: string | ExpandOption[] | undefined
+  ): void {
+    if (!expand) return;
+    if (typeof expand === "string") {
+      builder.expand(expand);
+      return;
+    }
+    const parts = expand.map((exp) => {
+      const nested: string[] = [];
+      if (exp.select && exp.select.length > 0) nested.push(`$select=${exp.select.join(",")}`);
+      if (exp.filter) nested.push(`$filter=${exp.filter}`);
+      if (exp.orderBy) nested.push(`$orderby=${exp.orderBy}`);
+      if (exp.top !== undefined) nested.push(`$top=${String(exp.top)}`);
+      return nested.length > 0
+        ? `${exp.navigationProperty}(${nested.join(";")})`
+        : exp.navigationProperty;
+    });
+    if (parts.length > 0) {
+      builder.expand(...parts);
+    }
   }
 
   /**
@@ -711,40 +707,5 @@ export class OrganizationService {
     normalized = normalized.toLowerCase();
 
     return normalized;
-  }
-
-  /**
-   * Gets the entity set name from a logical name
-   * Simple pluralization - this should be enhanced or use metadata in the future
-   *
-   * @param logicalName - The entity logical name
-   * @returns The entity set name
-   */
-  private getEntitySetName(logicalName: string): string {
-    // Very basic pluralization - in real implementation this should use metadata
-    // For now, just append 's' if it doesn't end with 's'
-    // Common cases handled explicitly
-    const pluralMap: Record<string, string> = {
-      account: "accounts",
-      contact: "contacts",
-      opportunity: "opportunities",
-      lead: "leads",
-      systemuser: "systemusers",
-      team: "teams",
-      businessunit: "businessunits",
-      organization: "organizations",
-      incident: "incidents",
-      task: "tasks",
-      appointment: "appointments",
-      email: "emails",
-      phonecall: "phonecalls",
-      letter: "letters",
-      fax: "faxes",
-      activityparty: "activityparties",
-      annotation: "annotations",
-      attachment: "attachments",
-    };
-
-    return pluralMap[logicalName.toLowerCase()] || `${logicalName}s`;
   }
 }

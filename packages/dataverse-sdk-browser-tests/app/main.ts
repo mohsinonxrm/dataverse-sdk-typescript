@@ -123,14 +123,16 @@ const smoke = {
     );
   },
 
-  /** A file upload from a Blob, as a browser app would do it (#58). */
+  /** A file upload from a Blob, as a browser app would do it (#58). Returns the file steps. */
   async uploadBlob(): Promise<string[]> {
     const fake = fakeFetch((r) =>
-      r.url.endsWith("/InitializeFileBlocksUpload")
-        ? json({ FileContinuationToken: "tok" })
-        : r.url.endsWith("/CommitFileBlocksUpload")
-          ? json({ FileId: "f1", FileSizeInBytes: 3 })
-          : new Response(null, { status: 204 })
+      new URL(r.url).pathname.endsWith("/EntityDefinitions")
+        ? json({ value: [{ LogicalName: "account", PrimaryIdAttribute: "accountid" }] }) // #60
+        : r.url.endsWith("/InitializeFileBlocksUpload")
+          ? json({ FileContinuationToken: "tok" })
+          : r.url.endsWith("/CommitFileBlocksUpload")
+            ? json({ FileId: "f1", FileSizeInBytes: 3 })
+            : new Response(null, { status: 204 })
     );
     const c = client(fake.provider);
     const files = new FileColumnClient({ send: (req) => c.send(req) }, c.getBaseUrl());
@@ -141,7 +143,9 @@ const smoke = {
       new Blob(["abc"], { type: "text/plain" }),
       "a.txt"
     );
-    return fake.calls.map((r) => new URL(r.url).pathname.split("/").pop() ?? "");
+    return fake.calls
+      .map((r) => new URL(r.url).pathname.split("/").pop() ?? "")
+      .filter((step) => step !== "EntityDefinitions");
   },
 };
 

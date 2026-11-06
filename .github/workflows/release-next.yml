@@ -1,0 +1,44 @@
+name: Release (next)
+
+# Publishes snapshot versions of every package with a pending changeset to the `next` dist-tag,
+# so consumer apps can test unreleased fixes: `npm i @mohsinonxrm/dataverse-sdk-core@next`.
+# Manual only, and only from `dev`. Nothing is committed: the snapshot versions exist only in
+# this run's checkout.
+on:
+  workflow_dispatch:
+
+concurrency: release-next
+
+permissions:
+  contents: read
+  id-token: write # npm provenance (and trusted publishing once configured)
+
+jobs:
+  publish-next:
+    name: Publish snapshot to next
+    if: github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24
+          cache: "pnpm"
+          registry-url: "https://registry.npmjs.org"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm test
+      - name: Check package exports and types (publint, attw)
+        run: pnpm check:packages
+      - name: Version as snapshots (e.g. 2.0.0-next-20261105123456)
+        run: pnpm changeset version --snapshot next
+      - name: Rebuild with the snapshot versions
+        run: pnpm build
+      - name: Publish to the next dist-tag
+        run: pnpm changeset publish --tag next --no-git-tag
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: "true"
