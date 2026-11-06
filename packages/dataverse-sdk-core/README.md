@@ -185,7 +185,9 @@ await builder.get({
 every attempt, every retry wait (including `Retry-After`) and the wait for a concurrency slot. When it
 passes, the request rejects with `DataverseNetworkError` named `RequestTimeout`, even if retries were
 left. `attemptTimeoutMs` limits a single attempt; a timed-out attempt is not retried. A caller's
-`signal` aborting rejects with `DataverseAbortError`. Neither the SDK's timers nor its listeners stay
+`signal` aborting rejects with `DataverseAbortError`. A caller's signal that times out
+(`AbortSignal.timeout(ms)`) rejects like `timeoutMs`, with `DataverseNetworkError` named
+`RequestTimeout`, and its `TimeoutError` is the `cause`. Neither the SDK's timers nor its listeners stay
 on your `signal` after the request, so one signal can be shared by any number of requests.
 
 ### Fluent API Enhancements
@@ -578,7 +580,7 @@ import {
   DataverseError, // Base class: every error the SDK throws is an instance
   DataverseODataError, // HTTP error response (4xx/5xx)
   DataverseThrottleError, // 429, with retryAfterMs
-  DataverseNetworkError, // fetch failed (ConnectionFailed: DNS/TLS/CORS) or timed out (RequestTimeout)
+  DataverseNetworkError, // fetch failed (ConnectionFailed: DNS/TLS/CORS) or timed out (RequestTimeout: timeoutMs or AbortSignal.timeout())
   DataverseAbortError, // cancelled through an AbortSignal (name "AbortError")
   DataverseInvalidRequestError, // refused before sending (e.g. TokenOriginRefused)
   DataverseAuthenticationError, // auth helpers (e.g. EmptyAccessToken)
