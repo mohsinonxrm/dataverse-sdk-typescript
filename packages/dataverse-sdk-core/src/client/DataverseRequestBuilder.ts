@@ -1,11 +1,16 @@
 import type { RequestInformation } from "../abstractions/http.js";
-import type { BindManyExecutor, PreferOption, RequestOptions } from "../abstractions/options.js";
+import type {
+  BindManyExecutor,
+  CreateAndGetIdOptions,
+  PreferOption,
+  RequestOptions,
+} from "../abstractions/options.js";
 import { buildQuery } from "../odata/query.js";
 import type { QueryState } from "../odata/query.js";
 import type { PageResponse } from "../paging/types.js";
 import { PageIterator } from "../paging/PageIterator.js";
 import { buildUrl } from "../utils/url.js";
-import { entityIdFromResponse, readJson } from "../utils/response.js";
+import { createdEntityId, readJson } from "../utils/response.js";
 import { parseODataError } from "../errors/parseODataError.js";
 import {
   DataverseDuplicateError,
@@ -391,13 +396,29 @@ export class DataverseRequestBuilder {
   }
 
   /**
-   * Create a record and return its id, read from the `OData-EntityId` response header.
-   * Works without `Prefer: return=representation`, which is Dataverse's default for creates.
+   * Create a record and return its id.
+   *
+   * A plain create (Dataverse's default, `204 No Content`) carries the id in its `OData-EntityId`
+   * header (or `Location`). A create with `Prefer: return=representation` (`201 Created`) has
+   * neither header, only the record in the body: pass the table's primary key as
+   * `primaryIdAttribute` (e.g. `"accountid"`) to read the id from it. Without it, such a create
+   * rejects with `DataverseInvalidRequestError` saying so; the record has been created by then.
+   *
+   * @example
+   * ```typescript
+   * const id = await client.api("accounts").createAndGetId({ name: "Contoso" });
+   * const contactId = await client
+   *   .api("contacts")
+   *   .createAndGetId(
+   *     { lastname: "Doe" },
+   *     { prefer: [Prefer.returnRepresentation()], primaryIdAttribute: "contactid" }
+   *   );
+   * ```
    */
-  async createAndGetId(body: unknown, options?: RequestOptions): Promise<string> {
-    const res = await this.send("POST", this.withBindings(body), options);
-    await res.body?.cancel();
-    return entityIdFromResponse(res);
+  async createAndGetId(body: unknown, options?: CreateAndGetIdOptions): Promise<string> {
+    const { primaryIdAttribute, ...requestOptions } = options ?? {};
+    const res = await this.send("POST", this.withBindings(body), requestOptions);
+    return createdEntityId(res, primaryIdAttribute);
   }
 
   async getPage<T = unknown>(options?: RequestOptions): Promise<PageResponse<T>> {

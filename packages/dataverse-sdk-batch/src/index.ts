@@ -23,3 +23,4 @@ export {
 } from "./encoding.js";
 export { decodeBatchResponse, extractBoundary } from "./decoding.js";
 export { createBindManyExecutor } from "./bindManyExecutor.js";
+export { entityIdFromBatchResponse, type EntityIdFromBatchResponseOptions } from "./entityId.js";

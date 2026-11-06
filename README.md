@@ -336,7 +336,6 @@ if (result.success) {
 
 ```typescript
 import {
-  WhoAmIRequest,
   ExecuteWorkflowRequest,
   MergeRequest,
   createEntityReference,
@@ -345,9 +344,9 @@ import { OrganizationService } from "@mohsinonxrm/dataverse-sdk-xrm";
 
 const org = new OrganizationService(client);
 
-// Platform messages (1,356+ available)
-const whoAmI = await org.execute(new WhoAmIRequest());
-console.log("User ID:", whoAmI.result.UserId);
+// WhoAmI is a Web API function: use org.whoAmI(), or WhoAmIFunction from the functions package
+const whoAmI = await org.whoAmI();
+console.log("User ID:", whoAmI.UserId);
 
 // Execute workflow
 const workflowRequest = new ExecuteWorkflowRequest(workflowId, {
@@ -671,7 +670,7 @@ pnpm --filter @mohsinonxrm/dataverse-sdk-core test:watch
 
 - Audit operations
 - Async operation polling
-- Circuit breaker & bulkhead patterns
+- Circuit breaker & bulkhead middleware ([#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100))
 - FetchXML query builder
 - Relationship operations advanced patterns
 

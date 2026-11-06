@@ -18,7 +18,7 @@
 import { config } from "dotenv";
 import chalk from "chalk";
 import { ConfidentialClientApplication } from "@azure/msal-node";
-import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+import { DataverseClient, DataverseError } from "@mohsinonxrm/dataverse-sdk-core";
 import { MsalNodeTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-msal-node";
 import { OrganizationService } from "@mohsinonxrm/dataverse-sdk-xrm";
 import { WhoAmIFunction } from "@mohsinonxrm/dataverse-sdk-functions";
@@ -376,9 +376,7 @@ async function mergeDemo(orgService: OrganizationService, client: DataverseClien
       .get<any>();
     console.log(chalk.red("✗ Subordinate lead still exists (unexpected)"));
   } catch (error: unknown) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((error as any).statusCode === 404) {
-      // eslint-disable-line @typescript-eslint/restrict-template-expressions
+    if (error instanceof DataverseError && error.status === 404) {
       console.log(chalk.green("✓ Subordinate lead deleted"));
     }
   }

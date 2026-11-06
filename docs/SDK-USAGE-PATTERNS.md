@@ -93,6 +93,14 @@ console.log(`Created account: ${accountId}`);
 // Without return=representation, createAndGetId() reads the id from OData-EntityId
 const otherId = await client.api("/accounts").createAndGetId({ name: "Fabrikam" });
 
+// With return=representation the 201 has no OData-EntityId: name the primary key to read it
+const thirdId = await client
+  .api("/accounts")
+  .createAndGetId(
+    { name: "Northwind" },
+    { prefer: [Prefer.returnRepresentation()], primaryIdAttribute: "accountid" }
+  );
+
 // ========== RETRIEVE ==========
 // expand() takes strings; nested query options go inline in OData syntax
 const account = await client
@@ -378,7 +386,10 @@ console.log(`Async operation ID: ${executeResponse.asyncoperationid}`);
 import { OrganizationService } from "@mohsinonxrm/dataverse-sdk-xrm";
 import { WhoAmIFunction } from "@mohsinonxrm/dataverse-sdk-functions";
 import { WinOpportunityAction } from "@mohsinonxrm/dataverse-sdk-actions";
-import { ExecuteWorkflowRequest } from "@mohsinonxrm/dataverse-sdk-messages";
+import {
+  ExecuteWorkflowRequest,
+  type ExecuteWorkflowResponse,
+} from "@mohsinonxrm/dataverse-sdk-messages";
 
 const service = new OrganizationService(client);
 
@@ -398,7 +409,7 @@ const workflowRequest = new ExecuteWorkflowRequest(workflowId, {
   EntityId: recordId,
   InputArguments: {},
 });
-const workflowResponse = await service.execute(workflowRequest);
+const workflowResponse = await service.execute<ExecuteWorkflowResponse>(workflowRequest);
 console.log(`Async operation: ${workflowResponse.result.asyncoperationid}`);
 
 // NOTE: service.execute() works with ANY Executable<T> class:
@@ -458,7 +469,7 @@ The `@mohsinonxrm/dataverse-sdk-messages` package contains 1,356+ generated requ
 - ✅ **All messages implement Executable<T>** - All 1,356+ message classes can be executed directly
 - ✅ **OrganizationService.execute() works** - Executes any message that implements Executable<T> interface
 - ✅ **DataverseClient.execute() works** - Also executes any Executable<T> message
-- ✅ **Direct exports only** - Import message classes directly (e.g., `import { WhoAmIRequest } from '@mohsinonxrm/dataverse-sdk-messages'`)
+- ✅ **Direct exports only** - Import message classes directly (e.g., `import { ExecuteWorkflowRequest } from '@mohsinonxrm/dataverse-sdk-messages'`)
 
 ### Usage Pattern
 
@@ -466,9 +477,7 @@ The `@mohsinonxrm/dataverse-sdk-messages` package contains 1,356+ generated requ
 // ========== Import message classes directly ==========
 import {
   ExecuteWorkflowRequest,
-  WinOpportunityRequest,
-  AssignRequest,
-  createEntityReference,
+  type ExecuteWorkflowResponse,
 } from "@mohsinonxrm/dataverse-sdk-messages";
 
 // ========== Execute via OrganizationService ==========
@@ -479,15 +488,12 @@ const workflowRequest = new ExecuteWorkflowRequest(workflowId, {
   EntityId: recordId,
   InputArguments: {},
 });
-const workflowResponse = await service.execute(workflowRequest);
+const workflowResponse = await service.execute<ExecuteWorkflowResponse>(workflowRequest);
 console.log(`Async operation: ${workflowResponse.result.asyncoperationid}`);
 
-// Assign message
-const assignRequest = new AssignRequest(
-  createEntityReference("account", accountId),
-  createEntityReference("systemuser", userId)
-);
-await service.execute(assignRequest);
+// Assign and SetState aren't Web API messages: they are record updates, so use the helpers
+await service.assign("account", accountId, userId); // PATCH ownerid@odata.bind
+await service.setState("account", accountId, 1, 2); // PATCH statecode / statuscode
 
 // ========== Execute via DataverseClient ==========
 // Messages also work directly with client.execute()
@@ -499,10 +505,8 @@ const response = await client.execute(workflowRequest);
 All messages are exported directly (no namespaces required):
 
 ```typescript
-// System messages
-import { WhoAmIRequest, WhoAmIResponse } from "@mohsinonxrm/dataverse-sdk-messages";
-import { AssignRequest, AssignResponse } from "@mohsinonxrm/dataverse-sdk-messages";
-import { SetStateRequest, SetStateResponse } from "@mohsinonxrm/dataverse-sdk-messages";
+// WhoAmI is a Web API function, so it lives in the functions package
+import { WhoAmIFunction, type WhoAmIResponse } from "@mohsinonxrm/dataverse-sdk-functions";
 
 // Workflow and process messages
 import {

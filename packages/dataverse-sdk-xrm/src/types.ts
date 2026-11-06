@@ -29,6 +29,18 @@ export interface EntityReference {
 }
 
 /**
+ * Options every OrganizationService method takes.
+ */
+export interface OperationOptions {
+  /**
+   * Cancels the operation: the request in flight (and any request the operation has not sent
+   * yet) is aborted, and the call rejects with the core `DataverseAbortError`, whose `name` is
+   * `"AbortError"`. A signal that is already aborted rejects without sending anything.
+   */
+  signal?: AbortSignal;
+}
+
+/**
  * Options for the OrganizationService constructor
  */
 export interface OrganizationServiceOptions {
@@ -73,7 +85,7 @@ export interface ExpandOption {
 /**
  * Options for create operations
  */
-export interface CreateOptions {
+export interface CreateOptions extends OperationOptions {
   /**
    * Return the created entity in the response
    * Sets Prefer: return=representation header
@@ -113,7 +125,7 @@ export interface CreateOptions {
 /**
  * Options for retrieve operations
  */
-export interface RetrieveOptions {
+export interface RetrieveOptions extends OperationOptions {
   /**
    * Specific columns/attributes to retrieve
    */
@@ -140,7 +152,7 @@ export interface RetrieveOptions {
 /**
  * Options for update operations
  */
-export interface UpdateOptions {
+export interface UpdateOptions extends OperationOptions {
   /**
    * ETag value for optimistic concurrency, sent as `If-Match`. Without it, `If-Match: *` is sent,
    * so the update fails with 404 instead of creating a missing record.
@@ -186,7 +198,7 @@ export interface UpdateOptions {
 /**
  * Options for delete operations
  */
-export interface DeleteOptions {
+export interface DeleteOptions extends OperationOptions {
   /**
    * ETag value for optimistic concurrency
    * Sets If-Match header
@@ -208,7 +220,7 @@ export interface DeleteOptions {
 /**
  * Options for associate operations
  */
-export interface AssociateOptions {
+export interface AssociateOptions extends OperationOptions {
   /**
    * User ID to impersonate for this operation
    * Sets MSCRMCallerID header
@@ -224,7 +236,7 @@ export interface AssociateOptions {
 /**
  * Options for disassociate operations
  */
-export interface DisassociateOptions {
+export interface DisassociateOptions extends OperationOptions {
   /**
    * User ID to impersonate for this operation
    * Sets MSCRMCallerID header
@@ -240,7 +252,7 @@ export interface DisassociateOptions {
 /**
  * Options for retrieveMultiple operations
  */
-export interface RetrieveMultipleOptions {
+export interface RetrieveMultipleOptions extends OperationOptions {
   /**
    * Specific columns/attributes to retrieve
    */

@@ -213,18 +213,10 @@ type ResolvedOptions = typeof DEFAULTS &
 function resolveOptions(client?: RetryOptions, perRequest?: RetryOptions): ResolvedOptions {
   const merged: typeof DEFAULTS & RetryOptions = {
     ...DEFAULTS,
-    ...definedOnly(normalize(client)),
-    ...definedOnly(normalize(perRequest)),
+    ...definedOnly(client ?? {}),
+    ...definedOnly(perRequest ?? {}),
   };
   return { ...merged, maxRetryAfterMs: merged.maxRetryAfterMs ?? merged.maxDelayMs };
-}
-
-/** Map the deprecated `delay` alias onto `baseDelayMs`. */
-function normalize(o?: RetryOptions): RetryOptions {
-  if (!o) return {};
-  // eslint-disable-next-line @typescript-eslint/no-deprecated -- still honoured for compatibility
-  const { delay, useExponentialBackoff: _ignored, ...rest } = o;
-  return { ...rest, baseDelayMs: rest.baseDelayMs ?? delay };
 }
 
 /** `min(maxDelayMs, baseDelayMs * 2^attempt)`, with ±20% jitter when enabled. */
