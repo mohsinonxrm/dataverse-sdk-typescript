@@ -2,7 +2,7 @@
 
 > **Package**: `@mohsinonxrm/dataverse-sdk-actions`
 >
-> **Coverage**: <!-- count:actions -->1,360<!-- /count --> typed Web API actions, generated from a Dataverse `$metadata`. The lists below are generated from the package source by `pnpm --filter generate-sdk-types docs`, so every class, constructor and route shown exists.
+> **Coverage**: <!-- count:actions -->1,556<!-- /count --> typed Web API actions, generated from a Dataverse `$metadata`. The lists below are generated from the package source by `pnpm --filter generate-sdk-types docs`, so every class, constructor and route shown exists.
 
 ---
 
@@ -86,7 +86,7 @@ BulkDelete: Start an asynchronous bulk delete job for a query.
 - `new UpdateMultipleAction(entitySetName, { Targets })` (`POST /{entitySetName}/Microsoft.Dynamics.CRM.UpdateMultiple`): Update records of one table in one request.
 - `new UpsertMultipleAction(entitySetName, { Targets })` (`POST /{entitySetName}/Microsoft.Dynamics.CRM.UpsertMultiple`): Create or update records of one table in one request.
 - `new DeleteMultipleAction(entitySetName, { Targets })` (`POST /{entitySetName}/Microsoft.Dynamics.CRM.DeleteMultiple`): Delete elastic-table records in one request.
-- `new BulkDeleteAction({ QuerySet?, JobName, SendEmailNotification, ToRecipients, CCRecipients, RecurrencePattern, StartDateTime, SourceImportId?, RunNow? })` (`POST /BulkDelete`): Start an asynchronous bulk delete job for a query.
+- `new BulkDeleteAction({ QuerySet?, JobName, SendEmailNotification, ToRecipients, CCRecipients, RecurrencePattern, StartDateTime, SourceImportId?, RunNow?, Options? })` (`POST /BulkDelete`): Start an asynchronous bulk delete job for a query.
 
 <!-- /operations -->
 

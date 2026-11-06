@@ -2,7 +2,7 @@
 
 > **Package**: `@mohsinonxrm/dataverse-sdk-functions`
 >
-> **Coverage**: <!-- count:functions -->281<!-- /count --> typed Web API functions, generated from a Dataverse `$metadata`. The lists below are generated from the package source by `pnpm --filter generate-sdk-types docs`, so every class, constructor and route shown exists.
+> **Coverage**: <!-- count:functions -->300<!-- /count --> typed Web API functions, generated from a Dataverse `$metadata`. The lists below are generated from the package source by `pnpm --filter generate-sdk-types docs`, so every class, constructor and route shown exists.
 
 Functions are **GET operations** without side effects. Each function is a class whose constructor
 takes **one object with the parameters, by their `$metadata` names**
