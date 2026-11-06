@@ -344,6 +344,7 @@ const relationshipId = await metadataClient.createOneToManyRelationship({
   ReferencedAttribute: "new_projectid",
   ReferencingEntity: "new_task",
   Lookup: {
+    "@odata.type": "Microsoft.Dynamics.CRM.LookupAttributeMetadata",
     SchemaName: "new_ProjectId",
     DisplayName: { LocalizedLabels: [{ Label: "Project", LanguageCode: 1033 }] },
     RequiredLevel: { Value: "ApplicationRequired" },
@@ -391,6 +392,7 @@ const relationshipId = await metadataClient.createOneToManyRelationship({
   ReferencedAttribute: "accountid",
   ReferencingEntity: "new_project", // "Many" side (child)
   Lookup: {
+    "@odata.type": "Microsoft.Dynamics.CRM.LookupAttributeMetadata",
     SchemaName: "new_AccountId",
     DisplayName: { LocalizedLabels: [{ Label: "Account", LanguageCode: 1033 }] },
     RequiredLevel: { Value: "None" },
@@ -482,9 +484,9 @@ console.log("New option value:", result.NewOptionValue);
 
 ```typescript
 // Create customer lookup (targets account OR contact)
-const result = await metadataClient.createCustomerRelationships({
+const result = await metadataClient.createCustomerRelationship({
   Lookup: {
-    "@odata.type": "Microsoft.Dynamics.CRM.LookupAttributeMetadata",
+    "@odata.type": "Microsoft.Dynamics.CRM.ComplexLookupAttributeMetadata",
     SchemaName: "new_CustomerId",
     DisplayName: { LocalizedLabels: [{ Label: "Customer", LanguageCode: 1033 }] },
     RequiredLevel: { Value: "ApplicationRequired" },
@@ -512,7 +514,7 @@ const result = await metadataClient.createCustomerRelationships({
 
 ```typescript
 // Create lookup targeting multiple custom entities
-const result = await metadataClient.createPolymorphicLookupAttribute({
+const result = await metadataClient.createPolymorphicLookup({
   OneToManyRelationships: [
     {
       "@odata.type": "Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata",
@@ -530,6 +532,7 @@ const result = await metadataClient.createPolymorphicLookupAttribute({
     },
   ],
   Lookup: {
+    "@odata.type": "Microsoft.Dynamics.CRM.ComplexLookupAttributeMetadata",
     SchemaName: "new_RegardingId",
     DisplayName: { LocalizedLabels: [{ Label: "Regarding", LanguageCode: 1033 }] },
     RequiredLevel: { Value: "None" },
@@ -680,17 +683,13 @@ const entityId = await metadataClient.createEntityDefinition({
 
 ---
 
-## License
-
-This package is part of the `dataverse-sdk-typescript` monorepo and is licensed under **GNU AGPL v3.0**. See [LICENSE](../../LICENSE) for details.
-
-### Publishing Changes
+## Publishing Changes
 
 Metadata changes must be published before they take effect in the application. Use PublishXml or PublishAllXml actions from the messages package.
 
 ## License
 
-GNU AGPL v3.0
+This package is part of the `dataverse-sdk-typescript` monorepo and is licensed under **GNU AGPL v3.0**. See [LICENSE](../../LICENSE) for details.
 
 ## Related Packages
 

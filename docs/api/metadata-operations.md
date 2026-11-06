@@ -72,7 +72,9 @@ const id = await metadataClient.createEntityDefinition(definition, {
 
 ## Column Operations
 
-### Create Column - All 12 Types
+### Create Columns
+
+Text, choice (local and global) examples follow; the [package README](../../packages/dataverse-sdk-metadata/README.md#column-attribute-operations) has every column type (memo, whole number, decimal, currency, date and time, yes/no, lookup, file and image).
 
 **Text Column:**
 
@@ -281,13 +283,27 @@ const response = await metadataClient.insertStatusValue({
 ### Create Customer Lookup (Account/Contact)
 
 ```typescript
+// Takes CreateCustomerRelationshipsParams: the lookup and one relationship per target table
 const response = await metadataClient.createCustomerRelationship({
-  "@odata.type": "Microsoft.Dynamics.CRM.ComplexLookupAttributeMetadata",
-  SchemaName: "new_CustomerId",
-  DisplayName: {
-    LocalizedLabels: [{ Label: "Customer", LanguageCode: 1033 }],
+  Lookup: {
+    "@odata.type": "Microsoft.Dynamics.CRM.ComplexLookupAttributeMetadata",
+    SchemaName: "new_CustomerId",
+    DisplayName: {
+      LocalizedLabels: [{ Label: "Customer", LanguageCode: 1033 }],
+    },
   },
-  // Creates relationships to both account and contact
+  OneToManyRelationships: [
+    {
+      SchemaName: "new_account_project_customer",
+      ReferencedEntity: "account",
+      ReferencingEntity: "new_project",
+    },
+    {
+      SchemaName: "new_contact_project_customer",
+      ReferencedEntity: "contact",
+      ReferencingEntity: "new_project",
+    },
+  ],
 });
 ```
 
@@ -295,9 +311,12 @@ const response = await metadataClient.createCustomerRelationship({
 
 ```typescript
 const response = await metadataClient.createPolymorphicLookup({
-  LookupAttributeLogicalName: "new_relateditem",
-  LookupAttributeDisplayName: {
-    LocalizedLabels: [{ Label: "Related Item", LanguageCode: 1033 }],
+  Lookup: {
+    "@odata.type": "Microsoft.Dynamics.CRM.ComplexLookupAttributeMetadata",
+    SchemaName: "new_RelatedItem",
+    DisplayName: {
+      LocalizedLabels: [{ Label: "Related Item", LanguageCode: 1033 }],
+    },
   },
   OneToManyRelationships: [
     {
