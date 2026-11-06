@@ -2,6 +2,7 @@ import type { CsdlSchema, CsdlEntityType, CsdlComplexType } from "../parsers/csd
 import { resolve, join } from "path";
 import { csdlTypeToTs, toPascalCase as _toPascalCase } from "../utils/typescript-writer.js";
 import { writeTypeScriptFile, generateIndexFile, purgeDirectory } from "../utils/file-writer.js";
+import { METADATA_HELPER_FILES } from "./metadata-helpers.js";
 
 /**
  * Generate metadata API types.
@@ -111,6 +112,74 @@ export async function generateMetadataTypes(
   console.log(`  ✅ Generated metadata types`);
 }
 
+/** A change to one generated property: its TS type, whether it's required, and a JSDoc line. */
+interface PropertyOverride {
+  type?: string;
+  required?: boolean;
+  doc?: string;
+}
+
+/** Corrections to a CSDL type that $metadata can't express. */
+interface TypeOverride {
+  /** Lines emitted first in the interface body, as written (indented, with a trailing newline). */
+  leading?: string;
+  properties?: Partial<Record<string, PropertyOverride>>;
+}
+
+/**
+ * Corrections to generated metadata types (#171, #209).
+ *
+ * - `@odata.type` isn't a CSDL property, but payloads carry it: responses use it to name the
+ *   derived type, and create payloads need it (the create types in metadata-helpers.ts require it).
+ * - A label is only valid with its text and language, though CSDL marks both nullable, and
+ *   `UserLocalizedLabel` comes back as `null` when the user's language has no label.
+ */
+const TYPE_OVERRIDES: Partial<Record<string, TypeOverride>> = {
+  MetadataBase: {
+    leading:
+      "  /**\n" +
+      '   * The derived metadata type. Responses carry it as `"#Microsoft.Dynamics.CRM.<Type>"` when the\n' +
+      "   * value's type differs from the declared one (attributes in a collection, for example).\n" +
+      '   * Create payloads use the create types, which require it as `"Microsoft.Dynamics.CRM.<Type>"`.\n' +
+      "   */\n" +
+      '  "@odata.type"?: string;\n',
+  },
+  Label: {
+    leading:
+      "  /** Optional in payloads; the Web API samples send it. */\n" +
+      '  "@odata.type"?: "Microsoft.Dynamics.CRM.Label";\n',
+    properties: { UserLocalizedLabel: { type: "LocalizedLabel | null" } },
+  },
+  LocalizedLabel: {
+    leading:
+      "  /** Optional in payloads; the Web API samples send it. */\n" +
+      '  "@odata.type"?: "Microsoft.Dynamics.CRM.LocalizedLabel";\n',
+    properties: {
+      Label: { required: true, doc: "The label text." },
+      LanguageCode: { required: true, doc: "The language, as an LCID such as `1033`." },
+    },
+  },
+};
+
+/**
+ * Generate the property lines of an entity or complex type, applying TYPE_OVERRIDES.
+ */
+function generateProperties(
+  typeName: string,
+  properties: ReadonlyArray<{ name: string; type: string; nullable?: boolean }>
+): string {
+  const override = TYPE_OVERRIDES[typeName];
+  let code = override?.leading ?? "";
+  for (const prop of properties) {
+    const change = override?.properties?.[prop.name];
+    const tsType = change?.type ?? csdlTypeToTs(prop.type);
+    const required = change?.required ?? prop.nullable === false;
+    if (change?.doc) code += `  /** ${change.doc} */\n`;
+    code += `  ${prop.name}${required ? "" : "?"}: ${tsType};\n`;
+  }
+  return code;
+}
+
 /**
  * Generate TypeScript interface for an entity type.
  */
@@ -162,12 +231,7 @@ function generateEntityTypeInterface(entityType: CsdlEntityType): string {
     code += `export interface ${entityType.name} {\n`;
   }
 
-  // Add properties
-  for (const prop of entityType.properties) {
-    const tsType = csdlTypeToTs(prop.type);
-    const optional = prop.nullable !== false ? "?" : "";
-    code += `  ${prop.name}${optional}: ${tsType};\n`;
-  }
+  code += generateProperties(entityType.name, entityType.properties);
 
   // Add navigation properties as optional references
   for (const navProp of entityType.navigationProperties) {
@@ -225,12 +289,7 @@ function generateComplexTypeInterface(complexType: CsdlComplexType): string {
     code += `export interface ${complexType.name} {\n`;
   }
 
-  // Add properties
-  for (const prop of complexType.properties) {
-    const tsType = csdlTypeToTs(prop.type);
-    const optional = prop.nullable !== false ? "?" : "";
-    code += `  ${prop.name}${optional}: ${tsType};\n`;
-  }
+  code += generateProperties(complexType.name, complexType.properties);
 
   code += `}\n`;
 
@@ -238,20 +297,34 @@ function generateComplexTypeInterface(complexType: CsdlComplexType): string {
 }
 
 /**
- * Generate TypeScript enum declaration from a CSDL enum type.
+ * Generate the declaration for a CSDL enum type (#66, #209).
+ *
+ * The Web API reads and writes enum members only by name: a create body with a number is rejected
+ * (`0x80048d19`), and responses return names. So each enum is a const object whose values are the
+ * member names, plus a union type of those names. `X.Member` still works, a plain `"Member"` is
+ * accepted, and each member's JSDoc keeps its numeric value.
  */
-function generateEnumTypeDeclaration(enumType: {
+export function generateEnumTypeDeclaration(enumType: {
   name: string;
   members: Array<{ name: string; value: number }>;
 }): string {
-  let code = `/**\n * ${enumType.name}\n */\n`;
-  code += `export enum ${enumType.name} {\n`;
-
-  for (const member of enumType.members) {
-    code += `  ${member.name} = ${String(member.value)},\n`;
+  const { name, members } = enumType;
+  let code = `/**\n * ${name}\n`;
+  const example = members.at(0)?.name;
+  if (example !== undefined) {
+    code += ` *\n`;
+    code += ` * The Web API reads and writes enum members by name (\`"${example}"\`), never by number,\n`;
+    code += ` * so this is a string union. \`${name}.${example}\` is the name; each member's comment\n`;
+    code += ` * gives its numeric value.\n`;
   }
-
-  code += `}\n`;
+  code += ` */\n`;
+  code += `export const ${name} = {\n`;
+  for (const member of members) {
+    code += `  /** ${String(member.value)} */\n`;
+    code += `  ${member.name}: "${member.name}",\n`;
+  }
+  code += `} as const;\n\n`;
+  code += `export type ${name} = (typeof ${name})[keyof typeof ${name}];\n`;
   return code;
 }
 
@@ -284,278 +357,14 @@ function extractImportType(csdlType: string): string | null {
 }
 
 /**
- * Generate manual helper files that don't exist in CSDL.
- * These are type aliases, base types, and parameter interfaces needed by MetadataClient.
+ * Write the hand-written helper files (see metadata-helpers.ts) that don't exist in CSDL.
  */
 async function generateManualHelperFiles(
   outputPath: string,
   generatedFiles: string[]
 ): Promise<void> {
-  // 1. RelationshipMetadataBase - base type not in CSDL
-  const relationshipBase = `import type { MetadataBase } from "./MetadataBase.js";
-
-/**
- * RelationshipMetadataBase - base interface for relationship metadata
- * (Not present in CSDL - manually maintained)
- */
-export interface RelationshipMetadataBase extends MetadataBase {
-  IsCustomRelationship?: boolean;
-  IsCustomizable?: { Value: boolean; CanBeChanged: boolean };
-  IsManaged?: boolean;
-  IsValidForAdvancedFind?: boolean;
-  SchemaName?: string;
-  SecurityTypes?: string;
-  RelationshipType?: string;
-  IntroducedVersion?: string;
-}
-`;
-  await writeTypeScriptFile(join(outputPath, "RelationshipMetadataBase.ts"), relationshipBase);
-  generatedFiles.push("RelationshipMetadataBase");
-
-  // 2. OptionSetMetadataBase - base type not in CSDL
-  const optionSetBase = `import type { MetadataBase } from "./MetadataBase.js";
-
-/**
- * OptionSetMetadataBase - base interface for option set metadata
- * (Not present in CSDL - manually maintained)
- */
-export interface OptionSetMetadataBase extends MetadataBase {
-  Description?: { LocalizedLabels?: Array<{ Label?: string; LanguageCode?: number }> };
-  DisplayName?: { LocalizedLabels?: Array<{ Label?: string; LanguageCode?: number }> };
-  IsCustomOptionSet?: boolean;
-  IsCustomizable?: { Value: boolean };
-  IsGlobal?: boolean;
-  IsManaged?: boolean;
-  Name?: string;
-  OptionSetType?: number;
-  IntroducedVersion?: string;
-  ExternalTypeName?: string;
-}
-`;
-  await writeTypeScriptFile(join(outputPath, "OptionSetMetadataBase.ts"), optionSetBase);
-  generatedFiles.push("OptionSetMetadataBase");
-
-  // 3. metadata-params.ts - Parameter interfaces for actions
-  const metadataParams = `import type { Label } from "./Label.js";
-
-/**
- * Parameters for InsertOptionValue action
- */
-export interface InsertOptionValueParams {
-  EntityLogicalName?: string;
-  AttributeLogicalName?: string;
-  Label: Label;
-  Value?: number;
-  SolutionUniqueName?: string;
-}
-
-/**
- * Parameters for UpdateOptionValue action
- */
-export interface UpdateOptionValueParams {
-  EntityLogicalName?: string;
-  AttributeLogicalName?: string;
-  Value: number;
-  Label?: Label;
-  Description?: Label;
-  MergeLabels?: boolean;
-}
-
-/**
- * Parameters for DeleteOptionValue action
- */
-export interface DeleteOptionValueParams {
-  EntityLogicalName?: string;
-  AttributeLogicalName?: string;
-  Value: number;
-}
-
-/**
- * Parameters for OrderOption action
- */
-export interface OrderOptionParams {
-  EntityLogicalName: string;
-  AttributeLogicalName: string;
-  Values: number[];
-  SolutionUniqueName?: string;
-}
-
-/**
- * Parameters for InsertStatusValue action
- */
-export interface InsertStatusValueParams {
-  EntityLogicalName: string;
-  AttributeLogicalName: string;
-  Label: Label;
-  StateCode: number;
-  Value?: number;
-  SolutionUniqueName?: string;
-}
-
-/**
- * Parameters for CreateCustomerRelationships action
- */
-export interface CreateCustomerRelationshipsParams {
-  Lookup: { SchemaName: string };
-  OneToManyRelationships: Array<{
-    ReferencedEntity: string;
-    ReferencingEntity: string;
-    SchemaName: string;
-  }>;
-}
-
-/**
- * Parameters for CreatePolymorphicLookupAttribute action
- */
-export interface CreatePolymorphicLookupAttributeParams {
-  Lookup: {
-    SchemaName: string;
-    DisplayName: Label;
-    Description?: Label;
-  };
-  OneToManyRelationships: Array<{
-    ReferencedEntity: string;
-    ReferencingEntity: string;
-    SchemaName: string;
-  }>;
-  SolutionUniqueName?: string;
-}
-`;
-  await writeTypeScriptFile(join(outputPath, "metadata-params.ts"), metadataParams);
-  generatedFiles.push("metadata-params");
-
-  // 4-8. Type aliases for Create/Update operations
-  // Note: Per Microsoft Web API documentation, use EntityType versions (not Complex) for POST/PUT
-  // ComplexLookupAttributeMetadata is the ONLY exception for customer lookup columns
-  const typeAliases = [
-    {
-      name: "EntityMetadataCreate",
-      content: `import type { EntityMetadata } from "./EntityMetadata.js";
-
-/**
- * EntityMetadataCreate - type for creating a new entity
- * Uses EntityMetadata (per Microsoft Web API documentation)
- */
-export type EntityMetadataCreate = EntityMetadata;
-`,
-    },
-    {
-      name: "EntityMetadataUpdate",
-      content: `import type { EntityMetadata } from "./EntityMetadata.js";
-
-/**
- * EntityMetadataUpdate - type for updating an entity
- * Uses EntityMetadata (per Microsoft Web API documentation)
- */
-export type EntityMetadataUpdate = EntityMetadata;
-`,
-    },
-    {
-      name: "AttributeMetadataCreateTypes",
-      content: `import type { AttributeMetadata } from "./AttributeMetadata.js";
-import type { BigIntAttributeMetadata } from "./BigIntAttributeMetadata.js";
-import type { BooleanAttributeMetadata } from "./BooleanAttributeMetadata.js";
-import type { DateTimeAttributeMetadata } from "./DateTimeAttributeMetadata.js";
-import type { DecimalAttributeMetadata } from "./DecimalAttributeMetadata.js";
-import type { DoubleAttributeMetadata } from "./DoubleAttributeMetadata.js";
-import type { IntegerAttributeMetadata } from "./IntegerAttributeMetadata.js";
-import type { LookupAttributeMetadata } from "./LookupAttributeMetadata.js";
-import type { ComplexLookupAttributeMetadata } from "./ComplexLookupAttributeMetadata.js";
-import type { MemoAttributeMetadata } from "./MemoAttributeMetadata.js";
-import type { MoneyAttributeMetadata } from "./MoneyAttributeMetadata.js";
-import type { StringAttributeMetadata } from "./StringAttributeMetadata.js";
-import type { FileAttributeMetadata } from "./FileAttributeMetadata.js";
-import type { ImageAttributeMetadata } from "./ImageAttributeMetadata.js";
-import type { EnumAttributeMetadata } from "./EnumAttributeMetadata.js";
-import type { PicklistAttributeMetadata } from "./PicklistAttributeMetadata.js";
-import type { ManagedPropertyAttributeMetadata } from "./ManagedPropertyAttributeMetadata.js";
-import type { UniqueIdentifierAttributeMetadata } from "./UniqueIdentifierAttributeMetadata.js";
-
-/**
- * AttributeMetadataCreateTypes - union of all attribute create types
- * Uses EntityType versions per Microsoft Web API documentation
- * Exception: ComplexLookupAttributeMetadata for customer lookup columns
- */
-export type AttributeMetadataCreateTypes =
-  | AttributeMetadata
-  | BigIntAttributeMetadata
-  | BooleanAttributeMetadata
-  | DateTimeAttributeMetadata
-  | DecimalAttributeMetadata
-  | DoubleAttributeMetadata
-  | IntegerAttributeMetadata
-  | LookupAttributeMetadata
-  | ComplexLookupAttributeMetadata
-  | MemoAttributeMetadata
-  | MoneyAttributeMetadata
-  | StringAttributeMetadata
-  | FileAttributeMetadata
-  | ImageAttributeMetadata
-  | EnumAttributeMetadata
-  | PicklistAttributeMetadata
-  | ManagedPropertyAttributeMetadata
-  | UniqueIdentifierAttributeMetadata;
-`,
-    },
-    {
-      name: "OneToManyRelationshipMetadataCreate",
-      content: `import type { OneToManyRelationshipMetadata } from "./OneToManyRelationshipMetadata.js";
-
-/**
- * OneToManyRelationshipMetadataCreate - type for creating a 1:N relationship
- * Uses OneToManyRelationshipMetadata (per Microsoft Web API documentation)
- */
-export type OneToManyRelationshipMetadataCreate = OneToManyRelationshipMetadata;
-`,
-    },
-    {
-      name: "OneToManyRelationshipMetadataUpdate",
-      content: `import type { OneToManyRelationshipMetadata } from "./OneToManyRelationshipMetadata.js";
-
-/**
- * OneToManyRelationshipMetadataUpdate - type for updating a 1:N relationship
- * Uses OneToManyRelationshipMetadata (per Microsoft Web API documentation)
- */
-export type OneToManyRelationshipMetadataUpdate = OneToManyRelationshipMetadata;
-`,
-    },
-    {
-      name: "ManyToManyRelationshipMetadataCreate",
-      content: `import type { ManyToManyRelationshipMetadata } from "./ManyToManyRelationshipMetadata.js";
-
-/**
- * ManyToManyRelationshipMetadataCreate - type for creating an N:N relationship
- * Uses ManyToManyRelationshipMetadata (per Microsoft Web API documentation)
- */
-export type ManyToManyRelationshipMetadataCreate = ManyToManyRelationshipMetadata;
-`,
-    },
-    {
-      name: "ManyToManyRelationshipMetadataUpdate",
-      content: `import type { ManyToManyRelationshipMetadata } from "./ManyToManyRelationshipMetadata.js";
-
-/**
- * ManyToManyRelationshipMetadataUpdate - type for updating an N:N relationship
- * Uses ManyToManyRelationshipMetadata (per Microsoft Web API documentation)
- */
-export type ManyToManyRelationshipMetadataUpdate = ManyToManyRelationshipMetadata;
-`,
-    },
-    {
-      name: "OptionSetMetadataCreate",
-      content: `import type { OptionSetMetadata } from "./OptionSetMetadata.js";
-
-/**
- * OptionSetMetadataCreate - type for creating an option set
- * Uses OptionSetMetadata (per Microsoft Web API documentation)
- */
-export type OptionSetMetadataCreate = OptionSetMetadata;
-`,
-    },
-  ];
-
-  for (const alias of typeAliases) {
-    await writeTypeScriptFile(join(outputPath, `${alias.name}.ts`), alias.content);
-    generatedFiles.push(alias.name);
+  for (const helper of METADATA_HELPER_FILES) {
+    await writeTypeScriptFile(join(outputPath, `${helper.name}.ts`), helper.content);
+    generatedFiles.push(helper.name);
   }
 }

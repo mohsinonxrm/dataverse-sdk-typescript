@@ -46,6 +46,19 @@ parseFunctions(schema): CsdlFunction[]    // Handles binding detection
 - Handles inheritance via `extends`
 - Marks nullable properties with `?`
 - Includes navigation properties as optional references
+- Emits enums as string-valued const objects plus a union type
+  (`export const OwnershipTypes = { UserOwned: "UserOwned", … } as const`), because the Web API
+  reads and writes enum members only by name and rejects numbers (#66, #209). Each member's JSDoc
+  keeps its numeric value.
+- Applies `TYPE_OVERRIDES` for what CSDL can't express: `@odata.type` on `MetadataBase`, `Label`
+  and `LocalizedLabel`, a required `Label`/`LanguageCode` on `LocalizedLabel`, and a nullable
+  `Label.UserLocalizedLabel`.
+- Writes the hand-written files in `src/generators/metadata-helpers.ts` verbatim: the
+  `RelationshipMetadataBase` and `OptionSetMetadataBase` bases (with their `RelationshipType`,
+  `SecurityTypes` and `OptionSetType` enums), the action parameter shapes, and the create and
+  update payloads (`*AttributeMetadataCreate`, the `AttributeMetadataCreateTypes` union
+  discriminated on `@odata.type`, and the table, relationship and option set types). Edit them
+  there: `test/metadata-generator.test.ts` fails when they and the committed package differ.
 
 **Filtering Rules:**
 
