@@ -49,12 +49,12 @@ Create an app registration in [Azure Portal](https://portal.azure.com):
 3. Set to **Yes**
 4. Click **Save**
 
-### 2. Node.js 18+
+### 2. Node.js 22+
 
-Ensure you have Node.js 18 or later:
+Ensure you have Node.js 22 or later:
 
 ```bash
-node --version  # Should be v18.0.0 or higher
+node --version  # Should be v22.0.0 or higher
 ```
 
 ---
@@ -217,7 +217,7 @@ const accountData = {
 const response = await client
   .api("/accounts")
   .header("Prefer", "return=representation")
-  .post(accountData);
+  .post<{ accountid: string }>(accountData);
 
 const accountId = response.accountid;
 ```
@@ -229,7 +229,7 @@ Retrieves the account with selected columns:
 ```typescript
 const account = await client
   .api(`/accounts(${accountId})`)
-  .select(["name", "telephone1", "address1_city", "createdon"])
+  .select("name", "telephone1", "address1_city", "createdon")
   .get();
 
 console.log("Name:", account.name);
@@ -255,10 +255,10 @@ Queries with OData operators:
 ```typescript
 const response = await client
   .api("/accounts")
-  .select(["name", "createdon"])
-  .orderby("createdon desc")
+  .select("name", "createdon")
+  .orderBy("createdon desc")
   .top(5)
-  .get();
+  .get<{ value: { name: string }[] }>();
 
 for (const account of response.value) {
   console.log(account.name);
@@ -350,15 +350,19 @@ pnpm start
 ### Add More Operations
 
 ```typescript
-// Associate account with a contact
-await client.api(`/accounts(${accountId})/contact_customer_accounts/$ref`).post({
-  "@odata.id": `contacts(${contactId})`,
-});
+// Associate a contact with an account (OrganizationService, shown below)
+await orgService.associate("accounts", accountId, "contact_customer_accounts", [
+  { logicalName: "contact", id: contactId },
+]);
 
 // Use $batch for multiple operations
-import { BatchClient } from "@mohsinonxrm/dataverse-sdk-batch";
-const batchClient = new BatchClient(client);
-// ... batch operations
+import { BatchRequestBuilder } from "@mohsinonxrm/dataverse-sdk-batch";
+
+const batch = new BatchRequestBuilder(client);
+batch.addRequest("who", "GET", "WhoAmI");
+batch.addRequest("top", "GET", "accounts?$select=name&$top=5");
+const result = await batch.execute();
+console.log(result.responses.get("top")?.body);
 ```
 
 ### Add Metadata Operations
@@ -379,7 +383,7 @@ const entities = await metadataClient.getEntityDefinitions({
 import { OrganizationService } from "@mohsinonxrm/dataverse-sdk-xrm";
 
 const orgService = new OrganizationService(client);
-const accountId = await orgService.create("account", {
+const accountId = await orgService.create("accounts", {
   name: "Contoso",
 });
 ```

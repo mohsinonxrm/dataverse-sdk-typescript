@@ -99,7 +99,7 @@ async function assignDemo(orgService: OrganizationService, client: DataverseClie
   });
 
   createdRecords.accounts.push(accountId);
-  console.log(`  Created: ${chalk.dim(String(accountId).substring(0, 8) + "...")}`);
+  console.log(`  Created: ${chalk.dim(accountId.substring(0, 8) + "...")}`); // eslint-disable-line @typescript-eslint/restrict-plus-operands
 
   // Get another user to assign to
   const targetUserId = process.env.TEST_USER_ID;
@@ -209,7 +209,7 @@ async function executeWorkflowDemo(orgService: OrganizationService): Promise<voi
     console.log(chalk.dim("\nExample code:"));
     console.log(
       chalk.dim(`
-  const request = new ExecuteWorkflowRequest(workflowId, targetRecordId);
+  const request = new ExecuteWorkflowRequest(workflowId, targetRecordId, { Arguments: [] });
   const response = await orgService.execute(request);
   console.log(\`Async Operation ID: \${response.result.asyncoperationid}\`);
     `)
@@ -249,7 +249,7 @@ async function winOpportunityDemo(
 
   // Create test opportunity
   console.log("Creating test opportunity...");
-  const opportunityId = await orgService.create("opportunities", {
+  const opportunityId: string = await orgService.create("opportunities", {
     name: "Test Opportunity for Win",
     estimatedvalue: 75000,
     estimatedclosedate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
@@ -266,7 +266,8 @@ async function winOpportunityDemo(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const request = new WinOpportunityRequest(
     {
-      opportunityid: opportunityId,
+      "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
+      "opportunityid@odata.bind": `/opportunities(${opportunityId})`,
       actualrevenue: 78000,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any, // opportunityclose type
@@ -343,6 +344,7 @@ async function mergeDemo(orgService: OrganizationService, client: DataverseClien
     createEntityReference("lead", subordinateId),
 
     {
+      "@odata.type": "Microsoft.Dynamics.CRM.lead",
       subject: "Merged lead - consolidated from duplicate",
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any, // UpdateContent uses entity properties
