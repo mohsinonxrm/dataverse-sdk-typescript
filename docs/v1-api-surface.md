@@ -65,7 +65,7 @@
 - `interface DiagnosticHeaderOptions` (`DataverseClientOptions.diagnosticHeaders`)
 - `interface LoggingConfig` (`DataverseClientOptions.logging`)
 - `type BindManyExecutor`
-- Per-request middleware options: `class MiddlewareRequestOptions`, `type MiddlewareRetryOptions`, `interface MiddlewareConcurrencyOptions`, `interface TelemetryOptions`, `interface LoggingOptions`, `interface MiddlewareOptions`, `type MiddlewareOptionEntry`
+- Per-request middleware options: `class MiddlewareRequestOptions`, `interface MiddlewareConcurrencyOptions`, `interface TelemetryOptions`, `interface LoggingOptions`, `interface MiddlewareOptions`, `type MiddlewareOptionEntry`
 
 ### 1.6 Prefer helpers (typed)
 

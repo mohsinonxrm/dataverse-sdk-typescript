@@ -14,7 +14,7 @@ vi.mock("../src/utils/sleep.js", () => ({
 import { DataverseClient } from "../src/client/DataverseClient.js";
 import { RequestOptions as MiddlewareRequestOptions } from "../src/middleware/RequestOptions.js";
 import type { RetryOptions } from "../src/abstractions/options.js";
-import type { MiddlewareRetryOptions } from "../src/index.js";
+import type * as core from "../src/index.js";
 import type { FetchProvider, HttpMethod } from "../src/abstractions/http.js";
 import { DataverseThrottleError } from "../src/errors/DataverseThrottleError.js";
 import { DataverseNetworkError } from "../src/errors/NamedErrors.js";
@@ -152,8 +152,10 @@ describe("#17: jitter", () => {
 });
 
 describe("#17: one RetryOptions type", () => {
-  it("the per-request type is the client type", () => {
-    expectTypeOf<MiddlewareRetryOptions>().toEqualTypeOf<RetryOptions>();
+  it("the per-request type is the client type, exported once as RetryOptions", () => {
+    expectTypeOf<core.RetryOptions>().toEqualTypeOf<RetryOptions>();
+    // @ts-expect-error MiddlewareRetryOptions was a second name for RetryOptions; removed before 2.0.0
+    expectTypeOf<core.MiddlewareRetryOptions>().toBeUnknown();
   });
 
   it("retryableStatusCodes works at client level", async () => {

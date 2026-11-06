@@ -10,7 +10,6 @@ export * from "./paging/index.js";
 // New exports for enhanced patterns
 export {
   RequestOptions as MiddlewareRequestOptions,
-  RetryOptions as MiddlewareRetryOptions,
   ConcurrencyOptions as MiddlewareConcurrencyOptions,
   TelemetryOptions,
   LoggingOptions,

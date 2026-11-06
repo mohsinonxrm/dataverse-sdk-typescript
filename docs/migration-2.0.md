@@ -32,6 +32,7 @@ Every package moves from 1.0.x to 2.0.0 together. Most of 2.0 fixes code that di
   - `retry.delay`: use `baseDelayMs`.
   - `retry.useExponentialBackoff`: it had no effect, because backoff is always exponential.
   - `circuitBreaker` and `bulkhead`, with their `CircuitBreakerOptions` and `BulkheadOptions` types: they had no effect. Circuit breaker and bulkhead middleware are planned in [#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100).
+  - The `MiddlewareRetryOptions` export: it was a second name for `RetryOptions`. Import `RetryOptions` instead; the options themselves are unchanged.
 - **Auth.**
   - A token is fetched for every attempt, and a 401 triggers one token refresh and one retry.
   - The token is only attached to requests for the client's own origin.
