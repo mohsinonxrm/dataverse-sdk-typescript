@@ -12,7 +12,7 @@ export class msdynmkt_GetMetadataItemsForRequest
   implements Executable<msdynmkt_GetMetadataItemsForResponse>
 {
   constructor(
-    public msdynmkt_GetMetadataItemsFor_request_LanguageCode: number,
+    public msdynmkt_GetMetadataItemsFor_request_LanguageCode: number | undefined,
     public msdynmkt_GetMetadataItemsFor_request_SourceLogicalNames: string[]
   ) {
     super("msdynmkt_GetMetadataItemsFor");

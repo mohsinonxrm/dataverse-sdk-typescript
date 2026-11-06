@@ -1,4 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_iotalert } from "./types/index.js";
 
 /**
@@ -14,7 +16,7 @@ export interface msdyn_IoTNewPrimaryAlertResponse {
  * Unbound action
  */
 export class msdyn_IoTNewPrimaryAlertAction implements Executable<msdyn_IoTNewPrimaryAlertResponse> {
-  constructor(public readonly primaryAlert: msdyn_iotalert) {}
+  constructor(public readonly primaryAlert: EntityReference | EntityPayload<msdyn_iotalert>) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_IoTNewPrimaryAlert`;

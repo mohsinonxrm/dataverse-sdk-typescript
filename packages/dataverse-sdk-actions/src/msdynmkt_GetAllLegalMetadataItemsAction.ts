@@ -14,7 +14,7 @@ export interface msdynmkt_GetAllLegalMetadataItemsResponse {
  * Unbound action
  */
 export class msdynmkt_GetAllLegalMetadataItemsAction implements Executable<msdynmkt_GetAllLegalMetadataItemsResponse> {
-  constructor(public readonly msdynmkt_GetAllLegalMetadataItems_request_LanguageCode: number) {}
+  constructor(public readonly msdynmkt_GetAllLegalMetadataItems_request_LanguageCode?: number) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_GetAllLegalMetadataItems`;

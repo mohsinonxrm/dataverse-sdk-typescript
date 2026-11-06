@@ -12,7 +12,7 @@ export class msdyn_RetrieveKnowledgeSearchModifiersRequest
   extends OrganizationRequest
   implements Executable<msdyn_RetrieveKnowledgeSearchModifiersResponse>
 {
-  constructor(public runtimeMode: string) {
+  constructor(public runtimeMode?: string) {
     super("msdyn_RetrieveKnowledgeSearchModifiers");
   }
 

@@ -11,8 +11,8 @@ export class msdyn_CleanupCopilotAgentResponsesRequest
   implements Executable<msdyn_CleanupCopilotAgentResponsesResponse>
 {
   constructor(
-    public untilMarker: string,
-    public conversationId: string
+    public untilMarker?: string,
+    public conversationId?: string
   ) {
     super("msdyn_CleanupCopilotAgentResponses");
   }

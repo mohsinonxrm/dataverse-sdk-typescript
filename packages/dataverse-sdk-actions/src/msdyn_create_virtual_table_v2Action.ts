@@ -14,24 +14,24 @@ export interface msdyn_create_virtual_table_v2Response {
  */
 export class msdyn_create_virtual_table_v2Action implements Executable<msdyn_create_virtual_table_v2Response> {
   constructor(
-    public readonly virtual_table_columns: Record<string, unknown>[],
+    public readonly virtual_table_columns: Record<string, unknown>[] | undefined,
     public readonly dataset_value: string,
-    public readonly virtual_table_schema_name: string,
+    public readonly virtual_table_schema_name: string | undefined,
     public readonly virtual_table_name: string,
-    public readonly datasource_id: string,
-    public readonly solution_id: string,
-    public readonly connectionreference_id: string,
-    public readonly datasource_name: string,
-    public readonly use_environment_variable_for_dataset: boolean,
+    public readonly datasource_id: string | undefined,
+    public readonly solution_id: string | undefined,
+    public readonly connectionreference_id: string | undefined,
+    public readonly datasource_name: string | undefined,
+    public readonly use_environment_variable_for_dataset: boolean | undefined,
     public readonly primary_field_name: string,
-    public readonly virtual_table_plural_name: string,
+    public readonly virtual_table_plural_name: string | undefined,
     public readonly virtual_table_external_name: string,
-    public readonly environment_variable_names: Record<string, unknown>[],
-    public readonly environment_id: string,
+    public readonly environment_variable_names: Record<string, unknown>[] | undefined,
+    public readonly environment_id: string | undefined,
     public readonly connection_id: string,
     public readonly primary_key_name: string,
-    public readonly connectionreference_display_name: string,
-    public readonly connectionreference_logical_name: string
+    public readonly connectionreference_display_name?: string,
+    public readonly connectionreference_logical_name?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

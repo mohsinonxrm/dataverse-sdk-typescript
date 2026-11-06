@@ -12,7 +12,7 @@ export class msdyn_SaveOpportunityResearchAgentContentCustomActionRequest
   extends OrganizationRequest
   implements Executable<msdyn_SaveOpportunityResearchAgentContentCustomActionResponse>
 {
-  constructor(public agentContent: string) {
+  constructor(public agentContent?: string) {
     super("msdyn_SaveOpportunityResearchAgentContentCustomAction");
   }
 

@@ -17,7 +17,7 @@ export class CCaaS_EndSessionAction implements Executable<CCaaS_EndSessionRespon
   constructor(
     public readonly msdyn_ocliveworkitemId: string,
     public readonly apiVersion: string,
-    public readonly sessionId: string
+    public readonly sessionId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

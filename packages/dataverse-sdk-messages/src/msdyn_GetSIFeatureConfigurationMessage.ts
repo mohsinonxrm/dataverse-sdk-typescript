@@ -14,7 +14,7 @@ export class msdyn_GetSIFeatureConfigurationRequest
 {
   constructor(
     public sIParameters: string,
-    public orgMigratedToCoreServices: boolean
+    public orgMigratedToCoreServices?: boolean
   ) {
     super("msdyn_GetSIFeatureConfiguration");
   }

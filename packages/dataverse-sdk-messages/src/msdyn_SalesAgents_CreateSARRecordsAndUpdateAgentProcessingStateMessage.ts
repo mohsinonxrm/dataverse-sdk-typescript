@@ -11,7 +11,7 @@ export class msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentProcessingStateRequ
   implements Executable<msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentProcessingStateResponse>
 {
   constructor(
-    public msdyn_TrackingId: string,
+    public msdyn_TrackingId: string | undefined,
     public msdyn_SARRecordsToCreate: string,
     public msdyn_SalesAgentType: number
   ) {

@@ -14,7 +14,7 @@ export class msdyn_SalesExternalServiceInvokeRequest
 {
   constructor(
     public msdyn_entityName: string,
-    public msdyn_activityId: string,
+    public msdyn_activityId: string | undefined,
     public msdyn_id: string
   ) {
     super("msdyn_SalesExternalServiceInvoke");

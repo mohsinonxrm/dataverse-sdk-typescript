@@ -16,7 +16,7 @@ export interface msdyn_SaveOpportunityResearchAgentContentCustomActionResponse {
  * Unbound action
  */
 export class msdyn_SaveOpportunityResearchAgentContentCustomActionAction implements Executable<msdyn_SaveOpportunityResearchAgentContentCustomActionResponse> {
-  constructor(public readonly agentContent: string) {}
+  constructor(public readonly agentContent?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SaveOpportunityResearchAgentContentCustomAction`;

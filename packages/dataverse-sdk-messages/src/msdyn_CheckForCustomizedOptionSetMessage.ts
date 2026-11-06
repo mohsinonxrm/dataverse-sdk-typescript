@@ -13,9 +13,9 @@ export class msdyn_CheckForCustomizedOptionSetRequest
   implements Executable<msdyn_CheckForCustomizedOptionSetResponse>
 {
   constructor(
-    public entityIds: string,
-    public solutionId: string,
-    public excludeSolutionIds: string
+    public entityIds?: string,
+    public solutionId?: string,
+    public excludeSolutionIds?: string
   ) {
     super("msdyn_CheckForCustomizedOptionSet");
   }

@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdynmkt_consentprovidervalidate action
@@ -15,7 +16,7 @@ export interface msdynmkt_consentprovidervalidateResponse {
  * Unbound action
  */
 export class msdynmkt_consentprovidervalidateAction implements Executable<msdynmkt_consentprovidervalidateResponse> {
-  constructor(public readonly consentprovider: EntityReference) {}
+  constructor(public readonly consentprovider: EntityReference | AnyEntityPayload) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_consentprovidervalidate`;

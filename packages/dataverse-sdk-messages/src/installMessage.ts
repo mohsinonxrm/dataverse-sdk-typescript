@@ -12,9 +12,9 @@ export class installRequest extends OrganizationRequest implements Executable<in
   constructor(
     public workflowId: string,
     public connectionReferences: string,
-    public appIds: string,
-    public context: string,
-    public expand: string
+    public appIds?: string,
+    public context?: string,
+    public expand?: string
   ) {
     super("install");
   }

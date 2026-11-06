@@ -14,9 +14,9 @@ export interface msdyn_JsonGetBooleanResponse {
  */
 export class msdyn_JsonGetBooleanAction implements Executable<msdyn_JsonGetBooleanResponse> {
   constructor(
-    public readonly json: string,
+    public readonly json: string | undefined,
     public readonly propertyPath: string,
-    public readonly defaultReturnValue: boolean
+    public readonly defaultReturnValue?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

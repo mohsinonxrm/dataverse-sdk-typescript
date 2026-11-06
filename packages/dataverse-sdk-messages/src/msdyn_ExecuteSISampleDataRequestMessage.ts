@@ -14,8 +14,8 @@ export class msdyn_ExecuteSISampleDataRequestRequest
 {
   constructor(
     public operation: string,
-    public version: string,
-    public lcid: string
+    public version?: string,
+    public lcid?: string
   ) {
     super("msdyn_ExecuteSISampleDataRequest");
   }

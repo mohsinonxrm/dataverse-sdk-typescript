@@ -14,7 +14,7 @@ export interface msdyn_GetEmailAssistStreamResponse {
  */
 export class msdyn_GetEmailAssistStreamAction implements Executable<msdyn_GetEmailAssistStreamResponse> {
   constructor(
-    public readonly context: string,
+    public readonly context: string | undefined,
     public readonly requestPayload: string
   ) {}
 

@@ -14,8 +14,8 @@ export class DetectLanguageRequest
 {
   constructor(
     public text: string,
-    public modelId: string,
-    public countryHint: string
+    public modelId?: string,
+    public countryHint?: string
   ) {
     super("DetectLanguage");
   }

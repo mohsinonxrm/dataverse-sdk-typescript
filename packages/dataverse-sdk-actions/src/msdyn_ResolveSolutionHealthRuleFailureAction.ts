@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_ResolveSolutionHealthRuleFailure action
@@ -14,7 +15,7 @@ export interface msdyn_ResolveSolutionHealthRuleFailureResponse {
  * Unbound action
  */
 export class msdyn_ResolveSolutionHealthRuleFailureAction implements Executable<msdyn_ResolveSolutionHealthRuleFailureResponse> {
-  constructor(public readonly analysisResult: EntityReference) {}
+  constructor(public readonly analysisResult?: EntityReference | AnyEntityPayload) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ResolveSolutionHealthRuleFailure`;

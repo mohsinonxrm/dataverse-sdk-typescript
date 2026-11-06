@@ -15,7 +15,7 @@ export interface _DownloademailasattachmentResponse {
 export class _DownloademailasattachmentAction implements Executable<_DownloademailasattachmentResponse> {
   constructor(
     public readonly emailIdToBeDownloaded: string,
-    public readonly additionalParameter: string
+    public readonly additionalParameter?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

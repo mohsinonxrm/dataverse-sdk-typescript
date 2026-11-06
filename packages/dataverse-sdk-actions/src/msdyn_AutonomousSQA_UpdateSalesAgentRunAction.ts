@@ -14,15 +14,15 @@ export interface msdyn_AutonomousSQA_UpdateSalesAgentRunResponse {
  */
 export class msdyn_AutonomousSQA_UpdateSalesAgentRunAction implements Executable<msdyn_AutonomousSQA_UpdateSalesAgentRunResponse> {
   constructor(
-    public readonly msdyn_IsNonRetryableError: boolean,
-    public readonly msdyn_IsSalesAgentRunComplete: boolean,
-    public readonly msdyn_SalesAgentRun: string,
-    public readonly msdyn_TrackingId: string,
-    public readonly msdyn_HasAgentRunFailed: boolean,
-    public readonly msdyn_IsAgentThrottled: boolean,
-    public readonly msdyn_RetryAfterDate: string,
-    public readonly msdyn_HasAgentRunStarted: boolean,
-    public readonly msdyn_SalesMacroAgentType: number
+    public readonly msdyn_IsNonRetryableError?: boolean,
+    public readonly msdyn_IsSalesAgentRunComplete?: boolean,
+    public readonly msdyn_SalesAgentRun?: string,
+    public readonly msdyn_TrackingId?: string,
+    public readonly msdyn_HasAgentRunFailed?: boolean,
+    public readonly msdyn_IsAgentThrottled?: boolean,
+    public readonly msdyn_RetryAfterDate?: string,
+    public readonly msdyn_HasAgentRunStarted?: boolean,
+    public readonly msdyn_SalesMacroAgentType?: number
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

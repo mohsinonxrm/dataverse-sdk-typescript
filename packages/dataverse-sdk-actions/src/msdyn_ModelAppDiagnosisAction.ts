@@ -1,4 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { appmodule } from "./types/index.js";
 
 /**
@@ -20,7 +22,7 @@ export interface msdyn_ModelAppDiagnosisResponse {
 export class msdyn_ModelAppDiagnosisAction implements Executable<msdyn_ModelAppDiagnosisResponse> {
   constructor(
     public readonly issueType: string,
-    public readonly componentInstance: appmodule
+    public readonly componentInstance: EntityReference | EntityPayload<appmodule>
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

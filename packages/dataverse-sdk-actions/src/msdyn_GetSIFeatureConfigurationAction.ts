@@ -15,7 +15,7 @@ export interface msdyn_GetSIFeatureConfigurationResponse {
 export class msdyn_GetSIFeatureConfigurationAction implements Executable<msdyn_GetSIFeatureConfigurationResponse> {
   constructor(
     public readonly sIParameters: string,
-    public readonly orgMigratedToCoreServices: boolean
+    public readonly orgMigratedToCoreServices?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

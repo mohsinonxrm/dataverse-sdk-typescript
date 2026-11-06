@@ -13,7 +13,7 @@ export interface msdyn_OSGetPredictionModelStatusResponse {
  * Unbound action
  */
 export class msdyn_OSGetPredictionModelStatusAction implements Executable<msdyn_OSGetPredictionModelStatusResponse> {
-  constructor(public readonly predictionName: string) {}
+  constructor(public readonly predictionName?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_OSGetPredictionModelStatus`;

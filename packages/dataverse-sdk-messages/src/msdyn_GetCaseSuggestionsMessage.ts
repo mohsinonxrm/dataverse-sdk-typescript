@@ -14,7 +14,7 @@ export class msdyn_GetCaseSuggestionsRequest
 {
   constructor(
     public incidentId: string,
-    public count: number
+    public count?: number
   ) {
     super("msdyn_GetCaseSuggestions");
   }

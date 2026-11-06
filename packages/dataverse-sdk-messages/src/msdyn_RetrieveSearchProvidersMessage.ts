@@ -12,7 +12,7 @@ export class msdyn_RetrieveSearchProvidersRequest
   extends OrganizationRequest
   implements Executable<msdyn_RetrieveSearchProvidersResponse>
 {
-  constructor(public applicationId: string) {
+  constructor(public applicationId?: string) {
     super("msdyn_RetrieveSearchProviders");
   }
 

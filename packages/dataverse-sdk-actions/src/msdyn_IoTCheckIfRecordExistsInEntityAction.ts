@@ -13,7 +13,7 @@ export interface msdyn_IoTCheckIfRecordExistsInEntityResponse {
  * Unbound action
  */
 export class msdyn_IoTCheckIfRecordExistsInEntityAction implements Executable<msdyn_IoTCheckIfRecordExistsInEntityResponse> {
-  constructor(public readonly entitiesLogicalNames: string) {}
+  constructor(public readonly entitiesLogicalNames?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_IoTCheckIfRecordExistsInEntity`;

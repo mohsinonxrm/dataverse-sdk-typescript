@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { _RoutingRuleSetValidationResponse as _RoutingRuleSetValidationResponseData } from "./types/index.js";
 
 /**
@@ -13,7 +14,7 @@ export class _RoutingRuleSetValidationRequest
   extends OrganizationRequest
   implements Executable<_RoutingRuleSetValidationResponse>
 {
-  constructor(public routingRuleSet: EntityReference) {
+  constructor(public routingRuleSet: EntityReference | AnyEntityPayload) {
     super("_RoutingRuleSetValidation");
   }
 

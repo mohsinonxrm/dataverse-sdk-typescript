@@ -15,7 +15,7 @@ export interface DiscoverFabricAISkillsResponse {
 export class DiscoverFabricAISkillsAction implements Executable<DiscoverFabricAISkillsResponse> {
   constructor(
     public readonly workspaceId: string,
-    public readonly fabricEnvironment: string
+    public readonly fabricEnvironment?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

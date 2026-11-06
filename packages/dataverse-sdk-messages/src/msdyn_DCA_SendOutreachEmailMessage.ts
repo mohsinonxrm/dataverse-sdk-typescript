@@ -13,7 +13,7 @@ export class msdyn_DCA_SendOutreachEmailRequest
   implements Executable<msdyn_DCA_SendOutreachEmailResponse>
 {
   constructor(
-    public msdyn_TrackingId: string,
+    public msdyn_TrackingId: string | undefined,
     public msdyn_SalesAgentRun: string
   ) {
     super("msdyn_DCA_SendOutreachEmail");

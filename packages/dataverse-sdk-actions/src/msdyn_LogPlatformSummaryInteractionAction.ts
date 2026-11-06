@@ -14,9 +14,9 @@ export interface msdyn_LogPlatformSummaryInteractionResponse {
  */
 export class msdyn_LogPlatformSummaryInteractionAction implements Executable<msdyn_LogPlatformSummaryInteractionResponse> {
   constructor(
-    public readonly interactionData: string,
-    public readonly context: string,
-    public readonly interactionType: string
+    public readonly interactionData?: string,
+    public readonly context?: string,
+    public readonly interactionType?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

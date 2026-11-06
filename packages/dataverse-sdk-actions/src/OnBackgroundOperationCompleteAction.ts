@@ -17,7 +17,7 @@ export interface OnBackgroundOperationCompleteResponse {
 export class OnBackgroundOperationCompleteAction implements Executable<OnBackgroundOperationCompleteResponse> {
   constructor(
     public readonly locationUrl: string,
-    public readonly callbackUrl: string,
+    public readonly callbackUrl: string | undefined,
     public readonly backgroundOperationId: string,
     public readonly payloadType: number
   ) {}

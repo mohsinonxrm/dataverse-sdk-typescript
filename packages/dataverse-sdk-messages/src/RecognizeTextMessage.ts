@@ -13,9 +13,9 @@ export class RecognizeTextRequest
   implements Executable<RecognizeTextResponse>
 {
   constructor(
-    public modelId: string,
+    public modelId: string | undefined,
     public base64encoded: string,
-    public source: string
+    public source?: string
   ) {
     super("RecognizeText");
   }

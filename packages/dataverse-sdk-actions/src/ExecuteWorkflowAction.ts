@@ -21,7 +21,7 @@ export class ExecuteWorkflowAction implements Executable<ExecuteWorkflowResponse
   constructor(
     public readonly workflowId: string,
     public readonly entityId: string,
-    public readonly inputArguments: InputArgumentCollection
+    public readonly inputArguments?: InputArgumentCollection
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

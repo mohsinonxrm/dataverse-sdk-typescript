@@ -17,7 +17,7 @@ export class PredictionSchemaAction implements Executable<PredictionSchemaRespon
   constructor(
     public readonly msdyn_aimodelId: string,
     public readonly version: string,
-    public readonly predictionMode: string
+    public readonly predictionMode?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -14,11 +14,11 @@ export class QuestionAnalyticsRequest
 {
   constructor(
     public botId: string,
-    public page: number,
+    public page: number | undefined,
     public endDateTime: string,
     public startDateTime: string,
     public state: string,
-    public count: number
+    public count?: number
   ) {
     super("QuestionAnalytics");
   }

@@ -13,10 +13,10 @@ export class McpUpdateTableRequest
   implements Executable<McpUpdateTableResponse>
 {
   constructor(
-    public newDisplayName: string,
+    public newDisplayName: string | undefined,
     public tablename: string,
     public item: string,
-    public description: string
+    public description?: string
   ) {
     super("McpUpdateTable");
   }

@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_cloneentity action
@@ -19,10 +20,10 @@ export interface msdyn_cloneentityResponse {
  */
 export class msdyn_cloneentityAction implements Executable<msdyn_cloneentityResponse> {
   constructor(
-    public readonly sourceEntity: EntityReference,
-    public readonly queryReference: EntityReference,
-    public readonly transformAction: string,
-    public readonly transformParams: EntityReference
+    public readonly sourceEntity: EntityReference | AnyEntityPayload,
+    public readonly queryReference?: EntityReference | AnyEntityPayload,
+    public readonly transformAction?: string,
+    public readonly transformParams?: EntityReference | AnyEntityPayload
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

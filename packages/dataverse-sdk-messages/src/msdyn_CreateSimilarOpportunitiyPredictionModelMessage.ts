@@ -10,7 +10,7 @@ export class msdyn_CreateSimilarOpportunitiyPredictionModelRequest
   extends OrganizationRequest
   implements Executable<msdyn_CreateSimilarOpportunitiyPredictionModelResponse>
 {
-  constructor(public modelState: string) {
+  constructor(public modelState?: string) {
     super("msdyn_CreateSimilarOpportunitiyPredictionModel");
   }
 

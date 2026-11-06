@@ -12,7 +12,7 @@ export class msdyn_SalesAgents_CompleteOrchestrationRequest
 {
   constructor(
     public msdyn_SarRecordId: string,
-    public msdyn_TrackingId: string,
+    public msdyn_TrackingId: string | undefined,
     public msdyn_SalesAgentType: number
   ) {
     super("msdyn_SalesAgents_CompleteOrchestration");

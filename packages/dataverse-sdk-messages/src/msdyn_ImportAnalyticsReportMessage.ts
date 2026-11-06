@@ -11,7 +11,7 @@ export class msdyn_ImportAnalyticsReportRequest
   implements Executable<msdyn_ImportAnalyticsReportResponse>
 {
   constructor(
-    public msdyn_OverwriteDraft: boolean,
+    public msdyn_OverwriteDraft: boolean | undefined,
     public msdyn_AnalyticsReportContent: string,
     public msdyn_AnalyticsFeatureId: string
   ) {

@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * msdyn_upsertSalesRoutingDiagnostic request message
@@ -12,7 +13,7 @@ export class msdyn_upsertSalesRoutingDiagnosticRequest
   implements Executable<msdyn_upsertSalesRoutingDiagnosticResponse>
 {
   constructor(
-    public targetObject: EntityReference,
+    public targetObject: EntityReference | AnyEntityPayload,
     public payload: string,
     public eventType: number
   ) {

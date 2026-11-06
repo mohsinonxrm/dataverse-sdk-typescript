@@ -13,7 +13,7 @@ export interface GetTrackingTokenEmailResponse {
  * Unbound action
  */
 export class GetTrackingTokenEmailAction implements Executable<GetTrackingTokenEmailResponse> {
-  constructor(public readonly subject: string) {}
+  constructor(public readonly subject?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/GetTrackingTokenEmail`;

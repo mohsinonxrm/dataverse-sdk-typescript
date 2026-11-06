@@ -13,7 +13,7 @@ export interface msdyn_CreateSimilarOpportunitiyPredictionModelResponse {
  * Unbound action
  */
 export class msdyn_CreateSimilarOpportunitiyPredictionModelAction implements Executable<msdyn_CreateSimilarOpportunitiyPredictionModelResponse> {
-  constructor(public readonly modelState: string) {}
+  constructor(public readonly modelState?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CreateSimilarOpportunitiyPredictionModel`;

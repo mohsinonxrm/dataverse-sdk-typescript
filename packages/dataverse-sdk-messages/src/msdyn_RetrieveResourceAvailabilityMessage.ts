@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type {
   msdyn_RetrieveResourceAvailabilityResponse as msdyn_RetrieveResourceAvailabilityResponseData,
   msdyn_timegroup,
@@ -17,29 +18,29 @@ export class msdyn_RetrieveResourceAvailabilityRequest
   implements Executable<msdyn_RetrieveResourceAvailabilityResponse>
 {
   constructor(
-    public workOrder: EntityReference,
+    public workOrder: EntityReference | AnyEntityPayload | undefined,
     public realTimeMode: boolean,
     public duration: number,
-    public forceDateRange: boolean,
+    public forceDateRange: boolean | undefined,
     public ignoreDuration: boolean,
     public ignoreTravelTime: boolean,
     public allowOverlapping: boolean,
     public radius: number,
     public startTime: string,
     public endTime: string,
-    public timeGroup: msdyn_timegroup,
-    public calendar: string,
-    public characteristics: Record<string, unknown>[],
-    public territories: Record<string, unknown>[],
-    public resourceTypes: Record<string, unknown>[],
-    public resources: Record<string, unknown>[],
-    public restrictedResources: Record<string, unknown>[],
-    public latitude: number,
-    public longitude: number,
-    public categories: Record<string, unknown>[],
-    public organizationalUnits: Record<string, unknown>[],
-    public teams: Record<string, unknown>[],
-    public businessUnits: Record<string, unknown>[]
+    public timeGroup?: EntityReference | EntityPayload<msdyn_timegroup>,
+    public calendar?: string,
+    public characteristics?: Record<string, unknown>[],
+    public territories?: Record<string, unknown>[],
+    public resourceTypes?: Record<string, unknown>[],
+    public resources?: Record<string, unknown>[],
+    public restrictedResources?: Record<string, unknown>[],
+    public latitude?: number,
+    public longitude?: number,
+    public categories?: Record<string, unknown>[],
+    public organizationalUnits?: Record<string, unknown>[],
+    public teams?: Record<string, unknown>[],
+    public businessUnits?: Record<string, unknown>[]
   ) {
     super("msdyn_RetrieveResourceAvailability");
   }

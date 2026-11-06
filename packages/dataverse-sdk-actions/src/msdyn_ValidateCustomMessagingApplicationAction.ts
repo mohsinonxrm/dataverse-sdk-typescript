@@ -16,7 +16,7 @@ export interface msdyn_ValidateCustomMessagingApplicationResponse {
 export class msdyn_ValidateCustomMessagingApplicationAction implements Executable<msdyn_ValidateCustomMessagingApplicationResponse> {
   constructor(
     public readonly customMessagingBCRMSAppId: string,
-    public readonly customMessagingBCRRecordId: string,
+    public readonly customMessagingBCRRecordId: string | undefined,
     public readonly customMessagingBCRMSAppSecret: string
   ) {}
 

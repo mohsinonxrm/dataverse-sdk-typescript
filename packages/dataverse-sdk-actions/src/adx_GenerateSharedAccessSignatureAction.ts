@@ -14,9 +14,9 @@ export interface adx_GenerateSharedAccessSignatureResponse {
  */
 export class adx_GenerateSharedAccessSignatureAction implements Executable<adx_GenerateSharedAccessSignatureResponse> {
   constructor(
-    public readonly permissions: number,
-    public readonly resourceType: number,
-    public readonly resource: string
+    public readonly permissions?: number,
+    public readonly resourceType?: number,
+    public readonly resource?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -16,12 +16,12 @@ export interface msdyn_EvaluateConversationResponse {
 export class msdyn_EvaluateConversationAction implements Executable<msdyn_EvaluateConversationResponse> {
   constructor(
     public readonly criteriaId: string,
-    public readonly extendedContext: string,
-    public readonly conversationPayload: string,
-    public readonly langLocale: string,
+    public readonly extendedContext: string | undefined,
+    public readonly conversationPayload: string | undefined,
+    public readonly langLocale: string | undefined,
     public readonly evaluationId: string,
-    public readonly allowCrossGeo: boolean,
-    public readonly recordId: string
+    public readonly allowCrossGeo?: boolean,
+    public readonly recordId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

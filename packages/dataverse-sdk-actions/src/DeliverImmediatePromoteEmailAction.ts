@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { email } from "./types/index.js";
 
 /**
@@ -22,7 +23,7 @@ export class DeliverImmediatePromoteEmailAction implements Executable<DeliverImm
   constructor(
     public readonly emailId: string,
     public readonly messageId: string,
-    public readonly subject: string,
+    public readonly subject: string | undefined,
     public readonly from: string,
     public readonly to: string,
     public readonly cc: string,
@@ -31,10 +32,10 @@ export class DeliverImmediatePromoteEmailAction implements Executable<DeliverImm
     public readonly submittedBy: string,
     public readonly importance: string,
     public readonly body: string,
-    public readonly attachmentIds: string[],
-    public readonly eWSUrl: string,
-    public readonly attachmentToken: string,
-    public readonly extraProperties: EntityReference
+    public readonly attachmentIds?: string[],
+    public readonly eWSUrl?: string,
+    public readonly attachmentToken?: string,
+    public readonly extraProperties?: EntityReference | AnyEntityPayload
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

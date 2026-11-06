@@ -13,11 +13,11 @@ export class msdyn_ValidateKeyVaultRequest
   implements Executable<msdyn_ValidateKeyVaultResponse>
 {
   constructor(
-    public keyVaultUri: string,
-    public platformType: string,
-    public isAppSigningEnabled: boolean,
-    public bundleIdentifier: string,
-    public storageTypeForUpload: string
+    public keyVaultUri?: string,
+    public platformType?: string,
+    public isAppSigningEnabled?: boolean,
+    public bundleIdentifier?: string,
+    public storageTypeForUpload?: string
   ) {
     super("msdyn_ValidateKeyVault");
   }

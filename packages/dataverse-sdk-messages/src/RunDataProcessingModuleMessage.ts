@@ -13,12 +13,12 @@ export class RunDataProcessingModuleRequest
   implements Executable<RunDataProcessingModuleResponse>
 {
   constructor(
-    public endPoints: string[],
-    public jobArguments: string[],
-    public scalarInputs: string[],
-    public callbackUri: string,
+    public endPoints: string[] | undefined,
+    public jobArguments: string[] | undefined,
+    public scalarInputs: string[] | undefined,
+    public callbackUri: string | undefined,
     public dataProcessingConfigurationId: string,
-    public upstreamResults: string[]
+    public upstreamResults?: string[]
   ) {
     super("RunDataProcessingModule");
   }

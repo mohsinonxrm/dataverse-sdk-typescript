@@ -14,7 +14,7 @@ export class _ServiceCalendarActionRequest
 {
   constructor(
     public type: number,
-    public inputParameter: string
+    public inputParameter?: string
   ) {
     super("_ServiceCalendarAction");
   }

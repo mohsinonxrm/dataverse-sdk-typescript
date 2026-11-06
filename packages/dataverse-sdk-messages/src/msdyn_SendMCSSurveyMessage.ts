@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * msdyn_SendMCSSurvey request message
@@ -12,12 +13,12 @@ export class msdyn_SendMCSSurveyRequest
   implements Executable<msdyn_SendMCSSurveyResponse>
 {
   constructor(
-    public from: EntityReference,
+    public from: EntityReference | AnyEntityPayload,
     public to: Record<string, unknown>[],
-    public cc: Record<string, unknown>[],
-    public bcc: Record<string, unknown>[],
-    public regarding: EntityReference,
-    public template: EntityReference
+    public cc: Record<string, unknown>[] | undefined,
+    public bcc: Record<string, unknown>[] | undefined,
+    public regarding: EntityReference | AnyEntityPayload,
+    public template?: EntityReference | AnyEntityPayload
   ) {
     super("msdyn_SendMCSSurvey");
   }

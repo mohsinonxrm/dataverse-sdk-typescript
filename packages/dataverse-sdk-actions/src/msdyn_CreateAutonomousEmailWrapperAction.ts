@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_CreateAutonomousEmailWrapper action
@@ -15,10 +16,10 @@ export interface msdyn_CreateAutonomousEmailWrapperResponse {
  */
 export class msdyn_CreateAutonomousEmailWrapperAction implements Executable<msdyn_CreateAutonomousEmailWrapperResponse> {
   constructor(
-    public readonly senderEntity: EntityReference,
-    public readonly entity: EntityReference,
+    public readonly senderEntity: EntityReference | AnyEntityPayload | undefined,
+    public readonly entity: EntityReference | AnyEntityPayload,
     public readonly nextSuggestion: string,
-    public readonly sourceContextEntity: EntityReference
+    public readonly sourceContextEntity?: EntityReference | AnyEntityPayload
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

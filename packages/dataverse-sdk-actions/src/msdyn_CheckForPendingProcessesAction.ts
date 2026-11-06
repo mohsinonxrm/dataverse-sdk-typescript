@@ -17,7 +17,7 @@ export interface msdyn_CheckForPendingProcessesResponse {
  * Unbound action
  */
 export class msdyn_CheckForPendingProcessesAction implements Executable<msdyn_CheckForPendingProcessesResponse> {
-  constructor(public readonly solutionId: string) {}
+  constructor(public readonly solutionId?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckForPendingProcesses`;

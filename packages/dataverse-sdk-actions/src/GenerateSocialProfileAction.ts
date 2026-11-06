@@ -1,4 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { socialprofile } from "./types/index.js";
 
 /**
@@ -18,7 +20,7 @@ export interface GenerateSocialProfileResponse extends socialprofile {
  * Binding parameter: entityset (Collection(mscrm.socialprofile))
  */
 export class GenerateSocialProfileAction implements Executable<GenerateSocialProfileResponse> {
-  constructor(public readonly entity: socialprofile) {}
+  constructor(public readonly entity: EntityReference | EntityPayload<socialprofile>) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action (entity collection)

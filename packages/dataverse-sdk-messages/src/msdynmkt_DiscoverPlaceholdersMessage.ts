@@ -12,7 +12,7 @@ export class msdynmkt_DiscoverPlaceholdersRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_DiscoverPlaceholdersResponse>
 {
-  constructor(public discoverPlaceholdersRequest: string) {
+  constructor(public discoverPlaceholdersRequest?: string) {
     super("msdynmkt_DiscoverPlaceholders");
   }
 

@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { activitymimeattachment, email } from "./types/index.js";
 
 /**
@@ -16,7 +17,7 @@ export class DeliverPromoteEmailRequest
   constructor(
     public emailId: string,
     public messageId: string,
-    public subject: string,
+    public subject: string | undefined,
     public from: string,
     public to: string,
     public cc: string,
@@ -25,8 +26,8 @@ export class DeliverPromoteEmailRequest
     public submittedBy: string,
     public importance: string,
     public body: string,
-    public attachments: activitymimeattachment[],
-    public extraProperties: EntityReference
+    public attachments: (EntityReference | EntityPayload<activitymimeattachment>)[],
+    public extraProperties?: EntityReference | AnyEntityPayload
   ) {
     super("DeliverPromoteEmail");
   }

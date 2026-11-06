@@ -12,7 +12,7 @@ export class msdyn_GetKnowledgeDraftAssistStreamRequest
 {
   constructor(
     public requestPayload: string,
-    public context: string
+    public context?: string
   ) {
     super("msdyn_GetKnowledgeDraftAssistStream");
   }

@@ -16,10 +16,10 @@ export interface msdyn_SalesMeetingPreparationResponse {
  */
 export class msdyn_SalesMeetingPreparationAction implements Executable<msdyn_SalesMeetingPreparationResponse> {
   constructor(
-    public readonly msdyn_sessionId: string,
-    public readonly msdyn_activityId: string,
+    public readonly msdyn_sessionId: string | undefined,
+    public readonly msdyn_activityId: string | undefined,
     public readonly msdyn_id: string,
-    public readonly msdyn_responseFormat: string
+    public readonly msdyn_responseFormat?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

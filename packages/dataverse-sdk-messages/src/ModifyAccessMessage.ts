@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { PrincipalAccess } from "./types/index.js";
 
 /**
@@ -13,8 +14,8 @@ export class ModifyAccessRequest
   implements Executable<ModifyAccessResponse>
 {
   constructor(
-    public target: EntityReference,
-    public principalAccess: PrincipalAccess
+    public target: EntityReference | AnyEntityPayload,
+    public principalAccess?: PrincipalAccess
   ) {
     super("ModifyAccess");
   }

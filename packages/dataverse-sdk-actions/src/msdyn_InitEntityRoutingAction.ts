@@ -14,14 +14,14 @@ export interface msdyn_InitEntityRoutingResponse {
  */
 export class msdyn_InitEntityRoutingAction implements Executable<msdyn_InitEntityRoutingResponse> {
   constructor(
-    public readonly intentFamilyId: string,
-    public readonly appInsightsEnvInformation: string,
-    public readonly intentId: string,
+    public readonly intentFamilyId: string | undefined,
+    public readonly appInsightsEnvInformation: string | undefined,
+    public readonly intentId: string | undefined,
     public readonly liveWorkStreamId: string,
-    public readonly appInsightsAdditionalInformation: string,
+    public readonly appInsightsAdditionalInformation: string | undefined,
     public readonly entityLogicalName: string,
-    public readonly intentString: string,
-    public readonly intentGroupId: string,
+    public readonly intentString: string | undefined,
+    public readonly intentGroupId: string | undefined,
     public readonly entityRecordId: string
   ) {}
 

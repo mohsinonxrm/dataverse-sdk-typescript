@@ -15,7 +15,7 @@ export interface _ServiceCalendarActionResponse {
 export class _ServiceCalendarActionAction implements Executable<_ServiceCalendarActionResponse> {
   constructor(
     public readonly type: number,
-    public readonly inputParameter: string
+    public readonly inputParameter?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_CreateRequirementGroupBookingsResponse as msdyn_CreateRequirementGroupBookingsResponseData } from "./types/index.js";
 
 /**
@@ -14,11 +15,11 @@ export class msdyn_CreateRequirementGroupBookingsRequest
   implements Executable<msdyn_CreateRequirementGroupBookingsResponse>
 {
   constructor(
-    public version: string,
+    public version: string | undefined,
     public start: string,
     public duration: number,
     public resourceAssignments: Record<string, unknown>[],
-    public requirementGroup: EntityReference
+    public requirementGroup: EntityReference | AnyEntityPayload
   ) {
     super("msdyn_CreateRequirementGroupBookings");
   }

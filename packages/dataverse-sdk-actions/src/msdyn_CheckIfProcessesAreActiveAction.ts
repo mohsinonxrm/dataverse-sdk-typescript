@@ -19,8 +19,8 @@ export interface msdyn_CheckIfProcessesAreActiveResponse {
  */
 export class msdyn_CheckIfProcessesAreActiveAction implements Executable<msdyn_CheckIfProcessesAreActiveResponse> {
   constructor(
-    public readonly entityIds: string,
-    public readonly solutionId: string
+    public readonly entityIds?: string,
+    public readonly solutionId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

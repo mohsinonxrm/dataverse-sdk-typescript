@@ -14,9 +14,9 @@ export interface msdyn_SetTalkingPointLikedStatusResponse {
  */
 export class msdyn_SetTalkingPointLikedStatusAction implements Executable<msdyn_SetTalkingPointLikedStatusResponse> {
   constructor(
-    public readonly messageId: string,
-    public readonly inferredMessageId: string,
-    public readonly isLiked: boolean
+    public readonly messageId?: string,
+    public readonly inferredMessageId?: string,
+    public readonly isLiked?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

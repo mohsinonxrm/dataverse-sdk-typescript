@@ -13,8 +13,8 @@ export class msdyn_fetchemailsentimentsapiRequest
   implements Executable<msdyn_fetchemailsentimentsapiResponse>
 {
   constructor(
-    public entityid: string,
-    public entitylogicalname: string
+    public entityid?: string,
+    public entitylogicalname?: string
   ) {
     super("msdyn_fetchemailsentimentsapi");
   }

@@ -1,4 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { opportunity } from "./types/index.js";
 
 /**
@@ -17,7 +19,7 @@ export interface GetInvoiceProductsFromOpportunityResponse {
 export class GetInvoiceProductsFromOpportunityAction implements Executable<GetInvoiceProductsFromOpportunityResponse> {
   constructor(
     public readonly invoiceId: string,
-    public readonly opportunity: opportunity
+    public readonly opportunity: EntityReference | EntityPayload<opportunity>
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

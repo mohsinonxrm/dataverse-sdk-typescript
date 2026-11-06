@@ -17,7 +17,7 @@ export interface msdyn_SalesExternalServiceInvokeResponse {
 export class msdyn_SalesExternalServiceInvokeAction implements Executable<msdyn_SalesExternalServiceInvokeResponse> {
   constructor(
     public readonly msdyn_entityName: string,
-    public readonly msdyn_activityId: string,
+    public readonly msdyn_activityId: string | undefined,
     public readonly msdyn_id: string
   ) {}
 

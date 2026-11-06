@@ -14,7 +14,7 @@ export class GenerateSalesOrderFromOpportunityRequest
 {
   constructor(
     public opportunityId: string,
-    public columnSet: ColumnSet
+    public columnSet?: ColumnSet
   ) {
     super("GenerateSalesOrderFromOpportunity");
   }

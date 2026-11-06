@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_GeocodeAddressResponse as msdyn_GeocodeAddressResponseData } from "./types/index.js";
 
 /**
@@ -14,14 +15,14 @@ export class msdyn_GeocodeAddressRequest
   implements Executable<msdyn_GeocodeAddressResponse>
 {
   constructor(
-    public target: EntityReference,
-    public version: string,
+    public target: EntityReference | AnyEntityPayload | undefined,
+    public version: string | undefined,
     public line1: string,
     public city: string,
     public stateOrProvince: string,
     public postalCode: string,
     public country: string,
-    public lcid: number
+    public lcid?: number
   ) {
     super("msdyn_GeocodeAddress");
   }

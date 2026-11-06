@@ -14,8 +14,8 @@ export interface msdyn_GetResourcePopupDetailsResponse {
  */
 export class msdyn_GetResourcePopupDetailsAction implements Executable<msdyn_GetResourcePopupDetailsResponse> {
   constructor(
-    public readonly startDate: string,
-    public readonly endDate: string,
+    public readonly startDate: string | undefined,
+    public readonly endDate: string | undefined,
     public readonly resourceId: string
   ) {}
 

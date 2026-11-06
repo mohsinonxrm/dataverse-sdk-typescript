@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * msdyn_SendRecordEventUpdate request message
@@ -13,10 +14,10 @@ export class msdyn_SendRecordEventUpdateRequest
 {
   constructor(
     public msdyn_EventType: string,
-    public msdyn_RegardingRecord: EntityReference,
-    public msdyn_AttributeDisplayValues: string[],
-    public msdyn_AttributeNames: string[],
-    public msdyn_RegardingActivity: EntityReference
+    public msdyn_RegardingRecord: EntityReference | AnyEntityPayload,
+    public msdyn_AttributeDisplayValues?: string[],
+    public msdyn_AttributeNames?: string[],
+    public msdyn_RegardingActivity?: EntityReference | AnyEntityPayload
   ) {
     super("msdyn_SendRecordEventUpdate");
   }

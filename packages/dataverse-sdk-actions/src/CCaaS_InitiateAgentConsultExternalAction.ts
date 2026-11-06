@@ -16,14 +16,14 @@ export interface CCaaS_InitiateAgentConsultExternalResponse {
 export class CCaaS_InitiateAgentConsultExternalAction implements Executable<CCaaS_InitiateAgentConsultExternalResponse> {
   constructor(
     public readonly msdyn_ocliveworkitemId: string,
-    public readonly externalReferenceType: string,
+    public readonly externalReferenceType: string | undefined,
     public readonly externalParticipantChannel: string,
     public readonly apiVersion: string,
     public readonly queueId: string,
-    public readonly externalReferenceId: string,
+    public readonly externalReferenceId: string | undefined,
     public readonly consultType: string,
     public readonly externalParticipantChannelType: string,
-    public readonly agentName: string,
+    public readonly agentName: string | undefined,
     public readonly conversationAccess: string
   ) {}
 

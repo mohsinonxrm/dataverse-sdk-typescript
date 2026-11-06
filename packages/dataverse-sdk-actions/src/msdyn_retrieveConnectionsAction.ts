@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_retrieveConnections action
@@ -16,8 +17,8 @@ export interface msdyn_retrieveConnectionsResponse {
 export class msdyn_retrieveConnectionsAction implements Executable<msdyn_retrieveConnectionsResponse> {
   constructor(
     public readonly smtpAdress: string,
-    public readonly crmRecord: EntityReference,
-    public readonly callerFeature: string
+    public readonly crmRecord?: EntityReference | AnyEntityPayload,
+    public readonly callerFeature?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

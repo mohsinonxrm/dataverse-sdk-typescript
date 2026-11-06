@@ -17,8 +17,8 @@ export interface msdyn_CheckForDeletedProcessResponse {
  */
 export class msdyn_CheckForDeletedProcessAction implements Executable<msdyn_CheckForDeletedProcessResponse> {
   constructor(
-    public readonly entityIds: string,
-    public readonly solutionId: string
+    public readonly entityIds?: string,
+    public readonly solutionId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

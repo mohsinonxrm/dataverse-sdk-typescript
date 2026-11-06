@@ -14,7 +14,7 @@ export class msdyn_ValidateCustomMessagingApplicationRequest
 {
   constructor(
     public customMessagingBCRMSAppId: string,
-    public customMessagingBCRRecordId: string,
+    public customMessagingBCRRecordId: string | undefined,
     public customMessagingBCRMSAppSecret: string
   ) {
     super("msdyn_ValidateCustomMessagingApplication");

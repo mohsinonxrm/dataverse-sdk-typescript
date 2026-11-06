@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { GetLinkedChatsResponse as GetLinkedChatsResponseData } from "./types/index.js";
 
 /**
@@ -13,7 +14,7 @@ export class GetLinkedChatsRequest
   extends OrganizationRequest
   implements Executable<GetLinkedChatsResponse>
 {
-  constructor(public regardingEntity: EntityReference) {
+  constructor(public regardingEntity: EntityReference | AnyEntityPayload) {
     super("GetLinkedChats");
   }
 

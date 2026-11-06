@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_TrackExchangeActivityResponse as msdyn_TrackExchangeActivityResponseData } from "./types/index.js";
 
 /**
@@ -14,9 +15,9 @@ export class msdyn_TrackExchangeActivityRequest
   implements Executable<msdyn_TrackExchangeActivityResponse>
 {
   constructor(
-    public exchangeItemId: string,
-    public regarding: EntityReference,
-    public entitySetName: string
+    public exchangeItemId?: string,
+    public regarding?: EntityReference | AnyEntityPayload,
+    public entitySetName?: string
   ) {
     super("msdyn_TrackExchangeActivity");
   }

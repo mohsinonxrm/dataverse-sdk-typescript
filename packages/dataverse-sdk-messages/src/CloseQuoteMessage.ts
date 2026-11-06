@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { quoteclose } from "./types/index.js";
 
 /**
@@ -12,7 +14,7 @@ export class CloseQuoteRequest
   implements Executable<CloseQuoteResponse>
 {
   constructor(
-    public quoteClose: quoteclose,
+    public quoteClose: EntityReference | EntityPayload<quoteclose>,
     public status: number
   ) {
     super("CloseQuote");

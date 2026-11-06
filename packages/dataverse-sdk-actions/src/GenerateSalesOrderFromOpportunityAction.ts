@@ -20,7 +20,7 @@ export interface GenerateSalesOrderFromOpportunityResponse {
 export class GenerateSalesOrderFromOpportunityAction implements Executable<GenerateSalesOrderFromOpportunityResponse> {
   constructor(
     public readonly opportunityId: string,
-    public readonly columnSet: ColumnSet
+    public readonly columnSet?: ColumnSet
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

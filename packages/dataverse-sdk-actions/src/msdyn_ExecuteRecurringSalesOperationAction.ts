@@ -14,8 +14,8 @@ export interface msdyn_ExecuteRecurringSalesOperationResponse {
  */
 export class msdyn_ExecuteRecurringSalesOperationAction implements Executable<msdyn_ExecuteRecurringSalesOperationResponse> {
   constructor(
-    public readonly inputData: string,
-    public readonly isRSAV2Entity: boolean,
+    public readonly inputData: string | undefined,
+    public readonly isRSAV2Entity: boolean | undefined,
     public readonly customActionName: string,
     public readonly triggerName: string
   ) {}

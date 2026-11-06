@@ -10,7 +10,7 @@ export class msdyn_ScheduleRealTimeScoringRequest
   extends OrganizationRequest
   implements Executable<msdyn_ScheduleRealTimeScoringResponse>
 {
-  constructor(public inputData: string) {
+  constructor(public inputData?: string) {
     super("msdyn_ScheduleRealTimeScoring");
   }
 

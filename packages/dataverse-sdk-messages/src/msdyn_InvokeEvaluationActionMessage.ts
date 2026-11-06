@@ -13,7 +13,7 @@ export class msdyn_InvokeEvaluationActionRequest
   implements Executable<msdyn_InvokeEvaluationActionResponse>
 {
   constructor(
-    public additionalContext: string,
+    public additionalContext: string | undefined,
     public actionPayload: string,
     public actionType: string
   ) {

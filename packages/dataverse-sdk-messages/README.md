@@ -238,9 +238,10 @@ import { MergeRequest, createEntityReference } from "@mohsinonxrm/dataverse-sdk-
 
 const request = new MergeRequest(
   createEntityReference("account", masterAccountId), // Target (keep)
-  subordinateAccountId, // Subordinate (merge & deactivate)
+  createEntityReference("account", subordinateAccountId), // Subordinate (merge & deactivate)
   {
-    // Update content
+    // UpdateContent: column values to set on the target
+    "@odata.type": "Microsoft.Dynamics.CRM.account",
     name: "Merged Company Name",
     revenue: 1000000,
   },
@@ -252,9 +253,10 @@ await service.execute(request);
 
 **Constructor:**
 
-- `target: EntityReference` - The master record (will remain after merge)
-- `subordinateId: string` - GUID of the subordinate record (will be deactivated/deleted)
-- `updateContent: Record<string, unknown>` - Updates to apply to the master record
+- `target: EntityReference | AnyEntityPayload` - The master record (will remain after merge)
+- `subordinate: EntityReference | AnyEntityPayload` - The subordinate record (will be deactivated)
+- `updateContent: EntityReference | AnyEntityPayload | undefined` - Column values to set on the
+  master record, with `@odata.type` naming the table
 - `performParentingChecks: boolean` - Whether to perform parenting checks
 
 ---
@@ -435,13 +437,24 @@ See [docs/mapping/message-to-webapi.md](../../docs/mapping/message-to-webapi.md)
 
 ## EntityReference Type
 
-```typescript
-interface EntityReference {
-  logicalName: string; // e.g., 'account', 'contact'
-  id: string; // GUID
-  name?: string; // Optional display name
-}
-```
+A reference to one record. Its enumerable properties are the Web API shape, `@odata.type` and
+the table's primary key (`{ "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "<id>" }`;
+activities use `activityid`). `logicalName`, `id`, `name` and `entitySetName` are kept on it but
+not sent.
+
+### Entity Payloads
+
+An entity-typed parameter also takes the record itself, with column values:
+
+- a parameter of one table (`WinOpportunity`'s `OpportunityClose`) is
+  `EntityReference | EntityPayload<opportunityclose>`: its columns, `@odata.type`, and lookups set
+  with `<navigation property>@odata.bind`;
+- a parameter of any table (`crmbaseentity`, such as `Merge`'s `UpdateContent`) is
+  `EntityReference | AnyEntityPayload`, and `@odata.type` names the table.
+
+Parameters that `$metadata` doesn't mark `Nullable="false"` are optional: at the end of the
+argument list they can be left out (`new ExecuteWorkflowRequest(workflowId, entityId)`), and
+elsewhere they accept `undefined`.
 
 ---
 
@@ -455,7 +468,10 @@ Helper to create entity references.
 import { createEntityReference } from "@mohsinonxrm/dataverse-sdk-messages";
 
 const accountRef = createEntityReference("account", accountId);
-// { logicalName: 'account', id: '...' }
+// JSON: {"@odata.type":"Microsoft.Dynamics.CRM.account","accountid":"<id>"}
+const named = createEntityReference("contact", contactId, "John Doe"); // name is kept, not sent
+// A table the generated CSDL doesn't know:
+createEntityReference("new_project", id, { primaryIdAttribute: "new_projectid" });
 ```
 
 ---

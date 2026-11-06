@@ -14,7 +14,7 @@ export class OnBackgroundOperationCompleteRequest
 {
   constructor(
     public locationUrl: string,
-    public callbackUrl: string,
+    public callbackUrl: string | undefined,
     public backgroundOperationId: string,
     public payloadType: number
   ) {

@@ -11,11 +11,11 @@ export class DeleteOptionValueRequest
   implements Executable<DeleteOptionValueResponse>
 {
   constructor(
-    public optionSetName: string,
-    public attributeLogicalName: string,
-    public entityLogicalName: string,
+    public optionSetName: string | undefined,
+    public attributeLogicalName: string | undefined,
+    public entityLogicalName: string | undefined,
     public value: number,
-    public solutionUniqueName: string
+    public solutionUniqueName?: string
   ) {
     super("DeleteOptionValue");
   }

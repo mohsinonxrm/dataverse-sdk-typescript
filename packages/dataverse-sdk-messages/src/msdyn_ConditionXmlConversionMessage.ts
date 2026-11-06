@@ -17,7 +17,7 @@ export class msdyn_ConditionXmlConversionRequest
     public outputType: string,
     public inputString: string,
     public entityName: string,
-    public enableUnderNotUnderSupport: boolean
+    public enableUnderNotUnderSupport?: boolean
   ) {
     super("msdyn_ConditionXmlConversion");
   }

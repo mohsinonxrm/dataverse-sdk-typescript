@@ -17,10 +17,10 @@ export class msdyn_GetMultipleResourceBookingDetailsAction implements Executable
     public readonly startDate: string,
     public readonly endDate: string,
     public readonly timescale: number,
-    public readonly schedulerSettings: string,
+    public readonly schedulerSettings: string | undefined,
     public readonly targets: string,
-    public readonly considerAppointments: boolean,
-    public readonly ignoreTimeZone: boolean
+    public readonly considerAppointments?: boolean,
+    public readonly ignoreTimeZone?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

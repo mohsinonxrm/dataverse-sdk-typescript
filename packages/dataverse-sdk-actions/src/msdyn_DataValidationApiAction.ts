@@ -15,7 +15,7 @@ export interface msdyn_DataValidationApiResponse {
 export class msdyn_DataValidationApiAction implements Executable<msdyn_DataValidationApiResponse> {
   constructor(
     public readonly apiType: number,
-    public readonly apiPayLoad: string
+    public readonly apiPayLoad?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -15,7 +15,7 @@ export interface DeprovisionLanguageResponse {
 export class DeprovisionLanguageAction implements Executable<DeprovisionLanguageResponse> {
   constructor(
     public readonly language: number,
-    public readonly cleanupLanguageRows: boolean
+    public readonly cleanupLanguageRows?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

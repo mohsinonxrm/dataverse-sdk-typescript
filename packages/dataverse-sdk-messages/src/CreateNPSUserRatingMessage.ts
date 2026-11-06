@@ -12,7 +12,7 @@ export class CreateNPSUserRatingRequest
 {
   constructor(
     public score: number,
-    public comment: string,
+    public comment: string | undefined,
     public appModuleId: string,
     public browser: string,
     public device: string

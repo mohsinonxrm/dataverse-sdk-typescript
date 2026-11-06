@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_RetrieveKnowledgeSuggestionsResponse as msdyn_RetrieveKnowledgeSuggestionsResponseData } from "./types/index.js";
 
 /**
@@ -14,8 +15,8 @@ export class msdyn_RetrieveKnowledgeSuggestionsRequest
   implements Executable<msdyn_RetrieveKnowledgeSuggestionsResponse>
 {
   constructor(
-    public count: number,
-    public target: EntityReference
+    public count: number | undefined,
+    public target: EntityReference | AnyEntityPayload
   ) {
     super("msdyn_RetrieveKnowledgeSuggestions");
   }

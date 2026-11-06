@@ -14,14 +14,14 @@ export interface searchsuggestResponse {
  */
 export class searchsuggestAction implements Executable<searchsuggestResponse> {
   constructor(
-    public readonly entities: string,
-    public readonly top: number,
+    public readonly entities: string | undefined,
+    public readonly top: number | undefined,
     public readonly search: string,
-    public readonly filter: string,
-    public readonly options: string,
-    public readonly orderby: string,
-    public readonly fuzzy: boolean,
-    public readonly propertybag: string
+    public readonly filter?: string,
+    public readonly options?: string,
+    public readonly orderby?: string,
+    public readonly fuzzy?: boolean,
+    public readonly propertybag?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -14,10 +14,10 @@ export class msdyn_UpdateAutoCaptureSettingsRequest
 {
   constructor(
     public actiontype: number,
-    public dialogtype: number,
-    public businessProcessFlowId: string,
-    public businessProcessFlowInstanceId: string,
-    public actionStepId: string
+    public dialogtype?: number,
+    public businessProcessFlowId?: string,
+    public businessProcessFlowInstanceId?: string,
+    public actionStepId?: string
   ) {
     super("msdyn_UpdateAutoCaptureSettings");
   }

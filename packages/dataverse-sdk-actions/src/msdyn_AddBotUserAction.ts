@@ -16,12 +16,12 @@ export interface msdyn_AddBotUserResponse {
 export class msdyn_AddBotUserAction implements Executable<msdyn_AddBotUserResponse> {
   constructor(
     public readonly botApplicationId: string,
-    public readonly applicationId: string,
+    public readonly applicationId: string | undefined,
     public readonly firstName: string,
     public readonly lastName: string,
-    public readonly botHandle: string,
-    public readonly owningEnvironmentId: string,
-    public readonly properties: string
+    public readonly botHandle?: string,
+    public readonly owningEnvironmentId?: string,
+    public readonly properties?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from ExecuteFxExpression action
@@ -20,10 +21,10 @@ export interface ExecuteFxExpressionResponse {
 export class ExecuteFxExpressionAction implements Executable<ExecuteFxExpressionResponse> {
   constructor(
     public readonly expression: string,
-    public readonly inputparameters: EntityReference,
-    public readonly context: string,
-    public readonly entitylogicalname: string,
-    public readonly outputparameters: EntityReference
+    public readonly inputparameters?: EntityReference | AnyEntityPayload,
+    public readonly context?: string,
+    public readonly entitylogicalname?: string,
+    public readonly outputparameters?: EntityReference | AnyEntityPayload
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

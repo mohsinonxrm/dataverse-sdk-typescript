@@ -15,7 +15,7 @@ export class BackgroundSendEmailRequest
   extends OrganizationRequest
   implements Executable<BackgroundSendEmailResponse>
 {
-  constructor(public query: TypedQueryBase) {
+  constructor(public query?: TypedQueryBase) {
     super("BackgroundSendEmail");
   }
 

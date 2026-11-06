@@ -14,11 +14,11 @@ export class msdyn_ExecuteAggregateAndUpdateIntentMetricsRequest
 {
   constructor(
     public msdyn_trackingdate: string,
-    public msdyn_shouldupdateintents: boolean,
+    public msdyn_shouldupdateintents: boolean | undefined,
     public msdyn_pagenumber: number,
-    public msdyn_batchsize: number,
-    public msdyn_parallelexecutions: number,
-    public msdyn_pagingcookie: string,
+    public msdyn_batchsize: number | undefined,
+    public msdyn_parallelexecutions: number | undefined,
+    public msdyn_pagingcookie: string | undefined,
     public msdyn_trackingid: string
   ) {
     super("msdyn_ExecuteAggregateAndUpdateIntentMetrics");

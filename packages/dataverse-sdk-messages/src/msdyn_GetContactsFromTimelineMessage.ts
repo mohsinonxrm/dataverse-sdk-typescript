@@ -15,7 +15,7 @@ export class msdyn_GetContactsFromTimelineRequest
   constructor(
     public entityLogicalName: string,
     public recordId: string,
-    public customActionInputs: string
+    public customActionInputs?: string
   ) {
     super("msdyn_GetContactsFromTimeline");
   }

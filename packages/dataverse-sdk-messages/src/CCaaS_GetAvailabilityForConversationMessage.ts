@@ -13,9 +13,9 @@ export class CCaaS_GetAvailabilityForConversationRequest
   implements Executable<CCaaS_GetAvailabilityForConversationResponse>
 {
   constructor(
-    public customContextItems: string,
+    public customContextItems: string | undefined,
     public apiVersion: string,
-    public conversationId: string
+    public conversationId?: string
   ) {
     super("CCaaS_GetAvailabilityForConversation");
   }

@@ -15,7 +15,8 @@ export interface msdynmkt_GetCjoEventsMetadataItemsByNamesResponse {
  */
 export class msdynmkt_GetCjoEventsMetadataItemsByNamesAction implements Executable<msdynmkt_GetCjoEventsMetadataItemsByNamesResponse> {
   constructor(
-    public readonly msdynmkt_GetCjoEventsMetadataItemsByNames_request_LanguageCode: number,
+    public readonly msdynmkt_GetCjoEventsMetadataItemsByNames_request_LanguageCode:
+      number | undefined,
     public readonly msdynmkt_GetCjoEventsMetadataItemsByNames_request_EventNames: string[]
   ) {}
 

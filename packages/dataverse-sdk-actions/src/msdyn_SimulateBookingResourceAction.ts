@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_SimulateBookingResource action
@@ -15,38 +16,38 @@ export interface msdyn_SimulateBookingResourceResponse {
  */
 export class msdyn_SimulateBookingResourceAction implements Executable<msdyn_SimulateBookingResourceResponse> {
   constructor(
-    public readonly subcontractLineId: string,
-    public readonly subcontractId: string,
-    public readonly distributeEvenlyBehavior: number,
-    public readonly newStartDateTime: string,
-    public readonly newResourceId: string,
-    public readonly newTravelTime: number,
-    public readonly newDistance: number,
+    public readonly subcontractLineId: string | undefined,
+    public readonly subcontractId: string | undefined,
+    public readonly distributeEvenlyBehavior: number | undefined,
+    public readonly newStartDateTime: string | undefined,
+    public readonly newResourceId: string | undefined,
+    public readonly newTravelTime: number | undefined,
+    public readonly newDistance: number | undefined,
     public readonly resourceId: string,
-    public readonly requirementId: string,
-    public readonly work: EntityReference,
+    public readonly requirementId: string | undefined,
+    public readonly work: EntityReference | AnyEntityPayload | undefined,
     public readonly bookingStatusId: string,
     public readonly bookingMethod: number,
     public readonly bookingType: number,
     public readonly schedules: string,
     public readonly timeframe: number,
-    public readonly hours: number,
-    public readonly percentage: number,
-    public readonly distributeMethod: number,
-    public readonly bookingIds: string,
-    public readonly defaultBookingHeader: EntityReference,
-    public readonly defaultBookingDetail: EntityReference,
-    public readonly reloadStartDate: string,
-    public readonly reloadEndDate: string,
-    public readonly reloadDetailBookings: boolean,
-    public readonly timeZoneCode: number,
-    public readonly schedulerSettings: string,
-    public readonly preventPartialFulfillment: boolean,
-    public readonly allowDoubleBooking: boolean,
-    public readonly cancelExistingBooking: boolean,
-    public readonly uRSInternalFlags: string,
-    public readonly considerAppointments: boolean,
-    public readonly ignoreTimeZone: boolean
+    public readonly hours?: number,
+    public readonly percentage?: number,
+    public readonly distributeMethod?: number,
+    public readonly bookingIds?: string,
+    public readonly defaultBookingHeader?: EntityReference | AnyEntityPayload,
+    public readonly defaultBookingDetail?: EntityReference | AnyEntityPayload,
+    public readonly reloadStartDate?: string,
+    public readonly reloadEndDate?: string,
+    public readonly reloadDetailBookings?: boolean,
+    public readonly timeZoneCode?: number,
+    public readonly schedulerSettings?: string,
+    public readonly preventPartialFulfillment?: boolean,
+    public readonly allowDoubleBooking?: boolean,
+    public readonly cancelExistingBooking?: boolean,
+    public readonly uRSInternalFlags?: string,
+    public readonly considerAppointments?: boolean,
+    public readonly ignoreTimeZone?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

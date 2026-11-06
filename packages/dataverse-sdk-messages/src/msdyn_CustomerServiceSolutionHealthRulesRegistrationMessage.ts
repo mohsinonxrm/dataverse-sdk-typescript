@@ -12,7 +12,7 @@ export class msdyn_CustomerServiceSolutionHealthRulesRegistrationRequest
   extends OrganizationRequest
   implements Executable<msdyn_CustomerServiceSolutionHealthRulesRegistrationResponse>
 {
-  constructor(public solutionNames: string) {
+  constructor(public solutionNames?: string) {
     super("msdyn_CustomerServiceSolutionHealthRulesRegistration");
   }
 

@@ -15,7 +15,7 @@ export interface SyncBulkOperationResponse {
  */
 export class SyncBulkOperationAction implements Executable<SyncBulkOperationResponse> {
   constructor(
-    public readonly querySet: QueryExpression[],
+    public readonly querySet: QueryExpression[] | undefined,
     public readonly operationType: number
   ) {}
 

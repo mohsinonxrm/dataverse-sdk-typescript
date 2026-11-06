@@ -14,17 +14,17 @@ export interface searchqueryResponse {
  */
 export class searchqueryAction implements Executable<searchqueryResponse> {
   constructor(
-    public readonly options: string,
-    public readonly filter: string,
-    public readonly propertybag: string,
-    public readonly entities: string,
+    public readonly options: string | undefined,
+    public readonly filter: string | undefined,
+    public readonly propertybag: string | undefined,
+    public readonly entities: string | undefined,
     public readonly search: string,
-    public readonly facets: string,
-    public readonly skip: number,
-    public readonly count: boolean,
-    public readonly top: number,
-    public readonly orderby: string,
-    public readonly semanticquery: string
+    public readonly facets?: string,
+    public readonly skip?: number,
+    public readonly count?: boolean,
+    public readonly top?: number,
+    public readonly orderby?: string,
+    public readonly semanticquery?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

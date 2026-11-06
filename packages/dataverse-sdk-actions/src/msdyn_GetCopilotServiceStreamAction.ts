@@ -14,7 +14,7 @@ export interface msdyn_GetCopilotServiceStreamResponse {
  */
 export class msdyn_GetCopilotServiceStreamAction implements Executable<msdyn_GetCopilotServiceStreamResponse> {
   constructor(
-    public readonly requestPayload: string,
+    public readonly requestPayload: string | undefined,
     public readonly context: string
   ) {}
 

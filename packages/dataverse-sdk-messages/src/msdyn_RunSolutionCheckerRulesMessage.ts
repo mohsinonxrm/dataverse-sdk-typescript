@@ -11,8 +11,8 @@ export class msdyn_RunSolutionCheckerRulesRequest
   implements Executable<msdyn_RunSolutionCheckerRulesResponse>
 {
   constructor(
-    public analysisComponentId: string,
-    public inAppNotificationEnabled: boolean
+    public analysisComponentId?: string,
+    public inAppNotificationEnabled?: boolean
   ) {
     super("msdyn_RunSolutionCheckerRules");
   }

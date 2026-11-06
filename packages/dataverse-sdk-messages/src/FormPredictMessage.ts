@@ -14,10 +14,10 @@ export class FormPredictRequest
   constructor(
     public entityName: string,
     public predictorFields: string[],
-    public context: string,
+    public context: string | undefined,
     public requestedFields: string[],
     public recordValues: string,
-    public clientPartnerSource: string
+    public clientPartnerSource?: string
   ) {
     super("FormPredict");
   }

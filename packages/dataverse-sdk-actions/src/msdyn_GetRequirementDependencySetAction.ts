@@ -14,7 +14,7 @@ export interface msdyn_GetRequirementDependencySetResponse {
  */
 export class msdyn_GetRequirementDependencySetAction implements Executable<msdyn_GetRequirementDependencySetResponse> {
   constructor(
-    public readonly version: string,
+    public readonly version: string | undefined,
     public readonly requirementIds: string
   ) {}
 

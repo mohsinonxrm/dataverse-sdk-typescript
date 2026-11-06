@@ -14,8 +14,8 @@ export interface msdyn_PullDataForIoTDeviceResponse {
  */
 export class msdyn_PullDataForIoTDeviceAction implements Executable<msdyn_PullDataForIoTDeviceResponse> {
   constructor(
-    public readonly isScheduledDataPull: boolean,
-    public readonly ioTDeviceIds: string
+    public readonly isScheduledDataPull?: boolean,
+    public readonly ioTDeviceIds?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -16,9 +16,9 @@ export interface CreateFlowCredentialApplicationResponse {
 export class CreateFlowCredentialApplicationAction implements Executable<CreateFlowCredentialApplicationResponse> {
   constructor(
     public readonly flowmachinegroupId: string,
-    public readonly sharingtype: string,
-    public readonly password: string,
-    public readonly description: string,
+    public readonly sharingtype: string | undefined,
+    public readonly password: string | undefined,
+    public readonly description: string | undefined,
     public readonly certificate: string,
     public readonly applicationId: string
   ) {}

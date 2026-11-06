@@ -13,7 +13,7 @@ export interface msdyn_SalesAcceleratorMailNotificationToAdminResponse {
  * Unbound action
  */
 export class msdyn_SalesAcceleratorMailNotificationToAdminAction implements Executable<msdyn_SalesAcceleratorMailNotificationToAdminResponse> {
-  constructor(public readonly inputData: string) {}
+  constructor(public readonly inputData?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAcceleratorMailNotificationToAdmin`;

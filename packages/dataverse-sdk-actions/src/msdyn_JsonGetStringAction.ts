@@ -14,9 +14,9 @@ export interface msdyn_JsonGetStringResponse {
  */
 export class msdyn_JsonGetStringAction implements Executable<msdyn_JsonGetStringResponse> {
   constructor(
-    public readonly json: string,
+    public readonly json: string | undefined,
     public readonly propertyPath: string,
-    public readonly defaultReturnValue: string
+    public readonly defaultReturnValue?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

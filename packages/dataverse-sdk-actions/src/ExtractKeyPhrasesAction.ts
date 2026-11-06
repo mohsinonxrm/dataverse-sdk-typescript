@@ -15,8 +15,8 @@ export interface ExtractKeyPhrasesResponse {
 export class ExtractKeyPhrasesAction implements Executable<ExtractKeyPhrasesResponse> {
   constructor(
     public readonly text: string,
-    public readonly modelId: string,
-    public readonly language: string
+    public readonly modelId?: string,
+    public readonly language?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

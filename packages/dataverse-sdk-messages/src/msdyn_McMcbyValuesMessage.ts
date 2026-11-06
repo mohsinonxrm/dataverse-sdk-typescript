@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_McMcbyValuesResponse as msdyn_McMcbyValuesResponseData } from "./types/index.js";
 
 /**
@@ -14,8 +15,8 @@ export class msdyn_McMcbyValuesRequest
   implements Executable<msdyn_McMcbyValuesResponse>
 {
   constructor(
-    public crmRecord: EntityReference,
-    public kPIType: string
+    public crmRecord?: EntityReference | AnyEntityPayload,
+    public kPIType?: string
   ) {
     super("msdyn_McMcbyValues");
   }

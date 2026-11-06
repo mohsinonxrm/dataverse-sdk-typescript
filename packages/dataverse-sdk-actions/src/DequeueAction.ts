@@ -20,7 +20,7 @@ export interface DequeueResponse {
 export class DequeueAction implements Executable<DequeueResponse> {
   constructor(
     public readonly workqueueId: string,
-    public readonly request: string
+    public readonly request?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

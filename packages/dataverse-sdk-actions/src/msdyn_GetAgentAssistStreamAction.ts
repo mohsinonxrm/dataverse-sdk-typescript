@@ -14,7 +14,7 @@ export interface msdyn_GetAgentAssistStreamResponse {
  */
 export class msdyn_GetAgentAssistStreamAction implements Executable<msdyn_GetAgentAssistStreamResponse> {
   constructor(
-    public readonly context: string,
+    public readonly context: string | undefined,
     public readonly requestPayload: string
   ) {}
 

@@ -15,9 +15,9 @@ export class ImportSolutionsRequest
     public publishWorkflows: boolean,
     public customizationFiles: string,
     public importJobId: string,
-    public convertToManaged: boolean,
-    public skipProductUpdateDependencies: boolean,
-    public holdingSolution: boolean
+    public convertToManaged?: boolean,
+    public skipProductUpdateDependencies?: boolean,
+    public holdingSolution?: boolean
   ) {
     super("ImportSolutions");
   }

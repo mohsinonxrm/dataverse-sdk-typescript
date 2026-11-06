@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_ActivateSdkMessageProcessingSteps action
@@ -15,7 +16,7 @@ export interface msdyn_ActivateSdkMessageProcessingStepsResponse {
  * Unbound action
  */
 export class msdyn_ActivateSdkMessageProcessingStepsAction implements Executable<msdyn_ActivateSdkMessageProcessingStepsResponse> {
-  constructor(public readonly analysisResult: EntityReference) {}
+  constructor(public readonly analysisResult?: EntityReference | AnyEntityPayload) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ActivateSdkMessageProcessingSteps`;

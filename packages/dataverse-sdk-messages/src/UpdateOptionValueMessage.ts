@@ -12,18 +12,18 @@ export class UpdateOptionValueRequest
   implements Executable<UpdateOptionValueResponse>
 {
   constructor(
-    public color: string,
-    public optionSetName: string,
-    public attributeLogicalName: string,
-    public externalValue: string,
-    public entityLogicalName: string,
-    public isHidden: boolean,
+    public color: string | undefined,
+    public optionSetName: string | undefined,
+    public attributeLogicalName: string | undefined,
+    public externalValue: string | undefined,
+    public entityLogicalName: string | undefined,
+    public isHidden: boolean | undefined,
     public value: number,
-    public label: Label,
-    public description: Label,
+    public label: Label | undefined,
+    public description: Label | undefined,
     public mergeLabels: boolean,
-    public parentValues: number[],
-    public solutionUniqueName: string
+    public parentValues?: number[],
+    public solutionUniqueName?: string
   ) {
     super("UpdateOptionValue");
   }

@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from InitializeFileBlocksDownload action
@@ -18,9 +19,9 @@ export interface InitializeFileBlocksDownloadResponse {
  */
 export class InitializeFileBlocksDownloadAction implements Executable<InitializeFileBlocksDownloadResponse> {
   constructor(
-    public readonly target: EntityReference,
+    public readonly target: EntityReference | AnyEntityPayload,
     public readonly fileAttributeName: string,
-    public readonly dataSource: string
+    public readonly dataSource?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

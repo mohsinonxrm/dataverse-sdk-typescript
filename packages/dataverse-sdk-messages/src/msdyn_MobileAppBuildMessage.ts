@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import type { EntityReference } from "./EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type {
   msdyn_MobileAppBuildResponse as msdyn_MobileAppBuildResponseData,
   msdyn_mobileapp,
@@ -16,8 +18,8 @@ export class msdyn_MobileAppBuildRequest
   implements Executable<msdyn_MobileAppBuildResponse>
 {
   constructor(
-    public msdyn_MobileApp: msdyn_mobileapp,
-    public appCenterApiToken: string
+    public msdyn_MobileApp: EntityReference | EntityPayload<msdyn_mobileapp>,
+    public appCenterApiToken?: string
   ) {
     super("msdyn_MobileAppBuild");
   }

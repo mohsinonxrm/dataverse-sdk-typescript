@@ -14,7 +14,7 @@ export class PreValidateGitComponentsRequest
 {
   constructor(
     public solutionUniqueName: string,
-    public isRetriableOnly: boolean
+    public isRetriableOnly?: boolean
   ) {
     super("PreValidateGitComponents");
   }

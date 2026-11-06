@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import type { EntityReference } from "./EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type {
   adx_AzureBlobStorageUrlResponse as adx_AzureBlobStorageUrlResponseData,
   annotation,
@@ -15,7 +17,7 @@ export class adx_AzureBlobStorageUrlRequest
   extends OrganizationRequest
   implements Executable<adx_AzureBlobStorageUrlResponse>
 {
-  constructor(public annotation: annotation) {
+  constructor(public annotation?: EntityReference | EntityPayload<annotation>) {
     super("adx_AzureBlobStorageUrl");
   }
 

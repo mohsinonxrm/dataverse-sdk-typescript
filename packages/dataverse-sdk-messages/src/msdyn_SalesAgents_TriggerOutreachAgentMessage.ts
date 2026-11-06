@@ -15,7 +15,7 @@ export class msdyn_SalesAgents_TriggerOutreachAgentRequest
   constructor(
     public msdyn_TrackingId: string,
     public msdyn_SalesAgentRun: string,
-    public msdyn_OutreachConfig: string
+    public msdyn_OutreachConfig?: string
   ) {
     super("msdyn_SalesAgents_TriggerOutreachAgent");
   }

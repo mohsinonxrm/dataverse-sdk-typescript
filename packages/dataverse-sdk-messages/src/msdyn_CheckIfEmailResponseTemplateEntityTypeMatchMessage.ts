@@ -12,7 +12,7 @@ export class msdyn_CheckIfEmailResponseTemplateEntityTypeMatchRequest
   extends OrganizationRequest
   implements Executable<msdyn_CheckIfEmailResponseTemplateEntityTypeMatchResponse>
 {
-  constructor(public solutionId: string) {
+  constructor(public solutionId?: string) {
     super("msdyn_CheckIfEmailResponseTemplateEntityTypeMatch");
   }
 

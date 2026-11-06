@@ -12,8 +12,15 @@ import {
   getEntitySetName,
   isCollectionType,
   extractEntityTypeName,
+  constructorParameterList,
 } from "../utils/typescript-writer.js";
 import { writeTypeScriptFile, purgeDirectory } from "../utils/file-writer.js";
+import {
+  ENTITY_PAYLOAD_MODULE,
+  ENTITY_PAYLOAD_SOURCE,
+  entityParameterType,
+} from "../utils/entity-payload.js";
+import { entityReferenceSource } from "../utils/entity-reference.js";
 import { polymorphicParameterType } from "../utils/polymorphism.js";
 import { collectionBinding, ENTITY_SET_PARAM } from "../utils/binding.js";
 
@@ -171,7 +178,6 @@ export async function generateMessages(
     console.log(`\n  🗑️  Purging ${absolutePath}...`);
     await purgeDirectory(absolutePath, [
       "OrganizationRequest.ts",
-      "EntityReference.ts",
       "types.ts",
       "types", // Don't delete the types folder (complex types are generated first)
     ]);
@@ -180,6 +186,18 @@ export async function generateMessages(
 
   // Runtime helpers the generated response classes use to read the body
   await writeTypeScriptFile(join(absolutePath, `${RESPONSE_DATA_MODULE}.ts`), RESPONSE_DATA_SOURCE);
+
+  // Entity references with the CSDL's primary keys, as in the actions package: a reference in a
+  // body is {"@odata.type", <primary key>}; the hand-written one sent "id", which the Web API
+  // rejects (#74). And the payload types of entity-typed parameters.
+  await writeTypeScriptFile(
+    join(absolutePath, "EntityReference.ts"),
+    entityReferenceSource(csdl, "messages")
+  );
+  await writeTypeScriptFile(
+    join(absolutePath, "types", `${ENTITY_PAYLOAD_MODULE}.ts`),
+    ENTITY_PAYLOAD_SOURCE
+  );
 
   // Generate all messages
   console.log(`\n  Generating ${String(allActions.length)} Web API action messages...`);
@@ -209,6 +227,7 @@ function generateMessageClass(csdl: CsdlSchema, action: CsdlAction): string {
 
   // Collect all complex type references used in this file
   const complexTypesUsed = new Set<string>();
+  const payloadTypes = new Set<string>();
   let needsEntityReference = false;
 
   let code = `import { OrganizationRequest, OrganizationResponse } from './OrganizationRequest.js';\n`;
@@ -225,6 +244,16 @@ function generateMessageClass(csdl: CsdlSchema, action: CsdlAction): string {
     }
     const typeName = csdlTypeToTs(param.type, true);
     const baseType = typeName.replace("[]", "");
+
+    // Entity-typed parameters take an entity payload or a reference (#74)
+    const entityParam =
+      param.name === action.bindingParameter?.name
+        ? undefined
+        : entityParameterType(csdl, param.type);
+    if (entityParam) {
+      for (const t of entityParam.payload) payloadTypes.add(t);
+      if (entityParam.tsType.includes("EntityReference")) needsEntityReference = true;
+    }
 
     // Check if this is EntityReference
     if (baseType === "EntityReference" || param.type === "Microsoft.Dynamics.CRM.crmbaseentity") {
@@ -252,6 +281,9 @@ function generateMessageClass(csdl: CsdlSchema, action: CsdlAction): string {
   // Add import for EntityReference if needed
   if (needsEntityReference) {
     code += `import type { EntityReference } from './EntityReference.js';\n`;
+  }
+  if (payloadTypes.size > 0) {
+    code += `import type { ${[...payloadTypes].sort().join(", ")} } from './types/${ENTITY_PAYLOAD_MODULE}.js';\n`;
   }
 
   // Import complex types from local types folder (following actions package pattern)
@@ -288,6 +320,7 @@ function generateMessageClass(csdl: CsdlSchema, action: CsdlAction): string {
     tsName: string;
     isBinding: boolean;
     nullable: boolean;
+    optional?: boolean;
   }> = [];
 
   // Check if binding parameter is a Collection type
@@ -330,18 +363,22 @@ function generateMessageClass(csdl: CsdlSchema, action: CsdlAction): string {
 
     constructorParams.push({
       name: toCamelCase(param.name),
-      type: polymorphicParameterType(csdl, param.type)?.tsType ?? csdlTypeToTs(param.type, true),
+      type:
+        polymorphicParameterType(csdl, param.type)?.tsType ??
+        entityParameterType(csdl, param.type)?.tsType ??
+        csdlTypeToTs(param.type, true),
       tsName: param.name,
       isBinding: false,
       nullable: param.nullable ?? false,
+      // In CSDL a parameter without Nullable="false" may be left out (#74, as #68 for functions)
+      // A `MessageName` parameter shadows OrganizationRequest.messageName (a string), so it stays
+      // required.
+      optional: param.nullable !== false && toCamelCase(param.name) !== "messageName",
     });
   }
 
   code += `  constructor(\n`;
-  for (const param of constructorParams) {
-    const optional = param.nullable ? "?" : "";
-    code += `    public ${param.name}${optional}: ${param.type},\n`;
-  }
+  code += constructorParameterList(constructorParams, "public");
   code += `  ) {\n`;
   code += `    super('${action.name}');\n`;
   code += `  }\n\n`;
@@ -503,8 +540,9 @@ function generateMessagesIndex(actions: CsdlAction[]): string {
   code += `// Base classes and types\n`;
   code += `export { OrganizationRequest, OrganizationResponse } from './OrganizationRequest.js';\n`;
   code += `export type { OrganizationRequestOptions } from './OrganizationRequest.js';\n`;
-  code += `export type { EntityReference } from './EntityReference.js';\n`;
+  code += `export type { EntityReference, EntityReferenceOptions } from './EntityReference.js';\n`;
   code += `export { createEntityReference } from './EntityReference.js';\n`;
+  code += `export type { AnyEntityPayload, EntityPayload } from './types/${ENTITY_PAYLOAD_MODULE}.js';\n`;
   code += `export type { MessageRequest, MessageResponse } from './types.js';\n\n`;
 
   // Export all message classes

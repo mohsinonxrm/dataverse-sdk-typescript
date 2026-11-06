@@ -15,7 +15,7 @@ export interface msdyn_GetSequenceAnalyticsKPIsResponse {
 export class msdyn_GetSequenceAnalyticsKPIsAction implements Executable<msdyn_GetSequenceAnalyticsKPIsResponse> {
   constructor(
     public readonly sequenceId: string,
-    public readonly sequenceStepId: string,
+    public readonly sequenceStepId: string | undefined,
     public readonly startDate: string,
     public readonly endDate: string,
     public readonly configuration: number

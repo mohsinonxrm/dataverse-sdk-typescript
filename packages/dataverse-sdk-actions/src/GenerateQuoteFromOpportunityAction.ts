@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { ColumnSet } from "./types/index.js";
 
 /**
@@ -21,8 +22,8 @@ export interface GenerateQuoteFromOpportunityResponse {
 export class GenerateQuoteFromOpportunityAction implements Executable<GenerateQuoteFromOpportunityResponse> {
   constructor(
     public readonly opportunityId: string,
-    public readonly columnSet: ColumnSet,
-    public readonly processInstanceId: EntityReference
+    public readonly columnSet?: ColumnSet,
+    public readonly processInstanceId?: EntityReference | AnyEntityPayload
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

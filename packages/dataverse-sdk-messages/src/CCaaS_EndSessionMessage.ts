@@ -13,7 +13,7 @@ export class CCaaS_EndSessionRequest
   constructor(
     public msdyn_ocliveworkitemId: string,
     public apiVersion: string,
-    public sessionId: string
+    public sessionId?: string
   ) {
     super("CCaaS_EndSession");
   }

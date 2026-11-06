@@ -14,8 +14,8 @@ export interface msdyn_fetchemailsentimentsapiResponse {
  */
 export class msdyn_fetchemailsentimentsapiAction implements Executable<msdyn_fetchemailsentimentsapiResponse> {
   constructor(
-    public readonly entityid: string,
-    public readonly entitylogicalname: string
+    public readonly entityid?: string,
+    public readonly entitylogicalname?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -18,19 +18,19 @@ export class ExportSolutionAsyncAction implements Executable<ExportSolutionAsync
   constructor(
     public readonly solutionName: string,
     public readonly managed: boolean,
-    public readonly targetVersion: string,
-    public readonly exportAutoNumberingSettings: boolean,
-    public readonly exportCalendarSettings: boolean,
-    public readonly exportCustomizationSettings: boolean,
-    public readonly exportEmailTrackingSettings: boolean,
-    public readonly exportGeneralSettings: boolean,
-    public readonly exportMarketingSettings: boolean,
-    public readonly exportOutlookSynchronizationSettings: boolean,
-    public readonly exportRelationshipRoles: boolean,
-    public readonly exportIsvConfig: boolean,
-    public readonly exportSales: boolean,
-    public readonly exportExternalApplications: boolean,
-    public readonly exportComponentsParams: ExportComponentsParams
+    public readonly targetVersion?: string,
+    public readonly exportAutoNumberingSettings?: boolean,
+    public readonly exportCalendarSettings?: boolean,
+    public readonly exportCustomizationSettings?: boolean,
+    public readonly exportEmailTrackingSettings?: boolean,
+    public readonly exportGeneralSettings?: boolean,
+    public readonly exportMarketingSettings?: boolean,
+    public readonly exportOutlookSynchronizationSettings?: boolean,
+    public readonly exportRelationshipRoles?: boolean,
+    public readonly exportIsvConfig?: boolean,
+    public readonly exportSales?: boolean,
+    public readonly exportExternalApplications?: boolean,
+    public readonly exportComponentsParams?: ExportComponentsParams
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

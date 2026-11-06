@@ -12,6 +12,7 @@ import {
   getEntitySetName,
   isCollectionType,
   extractEntityTypeName,
+  constructorParameterList,
 } from "../utils/typescript-writer.js";
 import {
   writeTypeScriptFile,
@@ -21,6 +22,11 @@ import {
 import { polymorphicParameterType } from "../utils/polymorphism.js";
 import { entityReturn, entityResponseInterface } from "../utils/entity-return.js";
 import { entityReferenceSource } from "../utils/entity-reference.js";
+import {
+  ENTITY_PAYLOAD_MODULE,
+  ENTITY_PAYLOAD_SOURCE,
+  entityParameterType,
+} from "../utils/entity-payload.js";
 import { collectionBinding, ENTITY_SET_PARAM } from "../utils/binding.js";
 
 /**
@@ -220,8 +226,22 @@ function generateActionClass(csdl: CsdlSchema, action: CsdlAction): string {
     );
   }
 
+  // Entity-typed parameters take an entity payload or a reference (#74)
+  const payloadTypes = new Set<string>();
+  for (const p of action.parameters) {
+    if (p.name === action.bindingParameter?.name || polymorphicParameterType(csdl, p.type))
+      continue;
+    const entityParam = entityParameterType(csdl, p.type);
+    if (!entityParam) continue;
+    for (const t of entityParam.payload) payloadTypes.add(t);
+    if (entityParam.tsType.includes("EntityReference")) needsEntityReference = true;
+  }
+
   if (needsEntityReference) {
     code += `import type { EntityReference } from './types/EntityReference.js';\n`;
+  }
+  if (payloadTypes.size > 0) {
+    code += `import type { ${[...payloadTypes].sort().join(", ")} } from './types/${ENTITY_PAYLOAD_MODULE}.js';\n`;
   }
 
   // Import complex types from types folder (excluding EntityReference)
@@ -266,6 +286,7 @@ function generateActionClass(csdl: CsdlSchema, action: CsdlAction): string {
     type: string;
     tsName: string;
     isBinding: boolean;
+    optional?: boolean;
   }> = [];
 
   // Check if binding parameter is a Collection type (e.g., CreateMultiple, UpdateMultiple)
@@ -306,17 +327,20 @@ function generateActionClass(csdl: CsdlSchema, action: CsdlAction): string {
 
     constructorParams.push({
       name: toCamelCase(param.name),
-      type: polymorphicParameterType(csdl, param.type)?.tsType ?? csdlTypeToTs(param.type, true),
+      type:
+        polymorphicParameterType(csdl, param.type)?.tsType ??
+        entityParameterType(csdl, param.type)?.tsType ??
+        csdlTypeToTs(param.type, true),
       tsName: param.name,
       isBinding: false,
+      // In CSDL a parameter without Nullable="false" may be left out (#74, as #68 for functions)
+      optional: param.nullable !== false,
     });
   }
 
   if (constructorParams.length > 0) {
     code += `  constructor(\n`;
-    for (const param of constructorParams) {
-      code += `    public readonly ${param.name}: ${param.type},\n`;
-    }
+    code += constructorParameterList(constructorParams, "public readonly");
     code += `  ) {}\n\n`;
   }
 
@@ -469,6 +493,7 @@ function generateActionsIndex(actions: CsdlAction[]): string {
 
   // Export EntityReference type
   code += `\nexport { type EntityReference, type EntityReferenceOptions, createEntityReference, getEntitySetNameFromReference } from './types/EntityReference.js';\n`;
+  code += `export type { AnyEntityPayload, EntityPayload } from './types/${ENTITY_PAYLOAD_MODULE}.js';\n`;
 
   return code;
 }
@@ -481,5 +506,10 @@ async function ensureEntityReferenceType(outputPath: string, csdl: CsdlSchema): 
   await writeTypeScriptFile(
     join(outputPath, "types", "EntityReference.ts"),
     entityReferenceSource(csdl, "actions")
+  );
+  // The payload types of entity-typed parameters (#74)
+  await writeTypeScriptFile(
+    join(outputPath, "types", `${ENTITY_PAYLOAD_MODULE}.ts`),
+    ENTITY_PAYLOAD_SOURCE
   );
 }

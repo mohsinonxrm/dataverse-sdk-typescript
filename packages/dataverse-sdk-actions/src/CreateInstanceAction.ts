@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from CreateInstance action
@@ -15,7 +16,7 @@ export interface CreateInstanceResponse {
  */
 export class CreateInstanceAction implements Executable<CreateInstanceResponse> {
   constructor(
-    public readonly target: EntityReference,
+    public readonly target: EntityReference | AnyEntityPayload,
     public readonly count: number
   ) {}
 

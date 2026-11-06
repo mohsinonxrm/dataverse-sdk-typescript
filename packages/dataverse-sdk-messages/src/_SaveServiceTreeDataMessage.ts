@@ -14,7 +14,7 @@ export class _SaveServiceTreeDataRequest
 {
   constructor(
     public rootNodeId: string,
-    public resourceRuleList: string
+    public resourceRuleList?: string
   ) {
     super("_SaveServiceTreeData");
   }

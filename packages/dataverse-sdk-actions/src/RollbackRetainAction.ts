@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { EntityRecordCountCollection } from "./types/index.js";
 
 /**
@@ -16,8 +17,8 @@ export interface RollbackRetainResponse {
  */
 export class RollbackRetainAction implements Executable<RollbackRetainResponse> {
   constructor(
-    public readonly target: EntityReference,
-    public readonly operationId: string
+    public readonly target: EntityReference | AnyEntityPayload,
+    public readonly operationId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

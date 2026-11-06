@@ -16,10 +16,10 @@ export class msdyn_GetSummaryBookingsRequest
     public resourceIds: string,
     public startDate: string,
     public endDate: string,
-    public timeZoneCode: number,
+    public timeZoneCode: number | undefined,
     public timescale: number,
-    public considerAppointments: boolean,
-    public considerFirstDayOfWeekSettings: boolean
+    public considerAppointments?: boolean,
+    public considerFirstDayOfWeekSettings?: boolean
   ) {
     super("msdyn_GetSummaryBookings");
   }

@@ -15,9 +15,10 @@ export interface msdynmkt_GetDataverseTableMetadataItemsResponse {
  */
 export class msdynmkt_GetDataverseTableMetadataItemsAction implements Executable<msdynmkt_GetDataverseTableMetadataItemsResponse> {
   constructor(
-    public readonly msdynmkt_GetDataverseTableMetadataItems_request_LanguageCode: number,
+    public readonly msdynmkt_GetDataverseTableMetadataItems_request_LanguageCode:
+      number | undefined,
     public readonly msdynmkt_GetDataverseTableMetadataItems_request_SourceLogicalNames: string[],
-    public readonly msdynmkt_GetDataverseTableMetadataItems_request_UseLazyLoading: boolean
+    public readonly msdynmkt_GetDataverseTableMetadataItems_request_UseLazyLoading?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

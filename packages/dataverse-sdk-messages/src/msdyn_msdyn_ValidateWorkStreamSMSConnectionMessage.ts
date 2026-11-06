@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import type { EntityReference } from "./EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type {
   msdyn_liveworkstream,
   msdyn_msdyn_ValidateWorkStreamSMSConnectionResponse as msdyn_msdyn_ValidateWorkStreamSMSConnectionResponseData,
@@ -18,10 +20,10 @@ export class msdyn_msdyn_ValidateWorkStreamSMSConnectionRequest
   implements Executable<msdyn_msdyn_ValidateWorkStreamSMSConnectionResponse>
 {
   constructor(
-    public ocPhoneNumberEntityReference: msdyn_ocphonenumber,
-    public workStreamEntityReference: msdyn_liveworkstream,
-    public sMSNumberEntityReference: msdyn_smsnumber,
-    public input: string
+    public ocPhoneNumberEntityReference?: EntityReference | EntityPayload<msdyn_ocphonenumber>,
+    public workStreamEntityReference?: EntityReference | EntityPayload<msdyn_liveworkstream>,
+    public sMSNumberEntityReference?: EntityReference | EntityPayload<msdyn_smsnumber>,
+    public input?: string
   ) {
     super("msdyn_msdyn_ValidateWorkStreamSMSConnection");
   }

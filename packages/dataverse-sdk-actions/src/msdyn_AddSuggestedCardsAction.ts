@@ -15,9 +15,9 @@ export interface msdyn_AddSuggestedCardsResponse {
 export class msdyn_AddSuggestedCardsAction implements Executable<msdyn_AddSuggestedCardsResponse> {
   constructor(
     public readonly scope: string,
-    public readonly businessProcessFlowId: string,
-    public readonly businessProcessFlowInstanceId: string,
-    public readonly actionStepId: string
+    public readonly businessProcessFlowId?: string,
+    public readonly businessProcessFlowInstanceId?: string,
+    public readonly actionStepId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

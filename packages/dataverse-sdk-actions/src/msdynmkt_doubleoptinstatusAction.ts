@@ -15,7 +15,7 @@ export interface msdynmkt_doubleoptinstatusResponse {
 export class msdynmkt_doubleoptinstatusAction implements Executable<msdynmkt_doubleoptinstatusResponse> {
   constructor(
     public readonly msdynmkt_complianceid: string,
-    public readonly dOI_Job_Status: string
+    public readonly dOI_Job_Status?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

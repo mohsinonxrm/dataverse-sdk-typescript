@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * AppendRelatedParty request message
@@ -12,8 +13,8 @@ export class AppendRelatedPartyRequest
   implements Executable<AppendRelatedPartyResponse>
 {
   constructor(
-    public activity: EntityReference,
-    public party: EntityReference
+    public activity: EntityReference | AnyEntityPayload,
+    public party: EntityReference | AnyEntityPayload
   ) {
     super("AppendRelatedParty");
   }

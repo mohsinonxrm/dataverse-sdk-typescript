@@ -12,8 +12,8 @@ export class CCaaS_JoinConversationRequest
 {
   constructor(
     public msdyn_ocliveworkitemId: string,
-    public clientId: string,
-    public conversationAccess: number,
+    public clientId: string | undefined,
+    public conversationAccess: number | undefined,
     public sessionId: string,
     public apiVersion: string
   ) {

@@ -12,7 +12,7 @@ export class msdyn_applyworktemplateforresourcesRequest
 {
   constructor(
     public calendarIds: string,
-    public templateCalendarId: string
+    public templateCalendarId?: string
   ) {
     super("msdyn_applyworktemplateforresources");
   }

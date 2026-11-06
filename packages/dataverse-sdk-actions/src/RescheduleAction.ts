@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { BusinessNotification, ValidationResult } from "./types/index.js";
 
 /**
@@ -17,8 +18,8 @@ export interface RescheduleResponse {
  */
 export class RescheduleAction implements Executable<RescheduleResponse> {
   constructor(
-    public readonly target: EntityReference,
-    public readonly returnNotifications: boolean
+    public readonly target: EntityReference | AnyEntityPayload,
+    public readonly returnNotifications?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

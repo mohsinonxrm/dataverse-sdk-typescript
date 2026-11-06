@@ -19,14 +19,14 @@ export interface msdyn_SalesOpportunitySummaryResponse {
  */
 export class msdyn_SalesOpportunitySummaryAction implements Executable<msdyn_SalesOpportunitySummaryResponse> {
   constructor(
-    public readonly msdyn_skipHeader: string,
-    public readonly msdyn_lastComputationTime: string,
+    public readonly msdyn_skipHeader: string | undefined,
+    public readonly msdyn_lastComputationTime: string | undefined,
     public readonly msdyn_id: string,
-    public readonly msdyn_isMergedCatchupAndSummary: boolean,
-    public readonly msdyn_additionalParams: string,
-    public readonly msdyn_sessionId: string,
-    public readonly msdyn_activityId: string,
-    public readonly msdyn_responseFormat: string
+    public readonly msdyn_isMergedCatchupAndSummary?: boolean,
+    public readonly msdyn_additionalParams?: string,
+    public readonly msdyn_sessionId?: string,
+    public readonly msdyn_activityId?: string,
+    public readonly msdyn_responseFormat?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

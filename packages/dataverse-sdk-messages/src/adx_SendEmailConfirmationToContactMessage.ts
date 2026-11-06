@@ -16,9 +16,9 @@ export class adx_SendEmailConfirmationToContactRequest
     public code: string,
     public urlCode: string,
     public userId: string,
-    public businessProcessFlowId: string,
-    public businessProcessFlowInstanceId: string,
-    public actionStepId: string
+    public businessProcessFlowId?: string,
+    public businessProcessFlowInstanceId?: string,
+    public actionStepId?: string
   ) {
     super("adx_SendEmailConfirmationToContact");
   }

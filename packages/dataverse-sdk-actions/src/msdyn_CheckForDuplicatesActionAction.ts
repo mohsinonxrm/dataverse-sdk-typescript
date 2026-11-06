@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_CheckForDuplicatesAction action
@@ -15,7 +16,7 @@ export interface msdyn_CheckForDuplicatesActionResponse {
  * Unbound action
  */
 export class msdyn_CheckForDuplicatesActionAction implements Executable<msdyn_CheckForDuplicatesActionResponse> {
-  constructor(public readonly record: EntityReference) {}
+  constructor(public readonly record?: EntityReference | AnyEntityPayload) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckForDuplicatesAction`;

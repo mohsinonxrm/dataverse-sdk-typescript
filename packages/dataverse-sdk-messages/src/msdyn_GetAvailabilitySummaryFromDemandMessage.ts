@@ -19,8 +19,8 @@ export class msdyn_GetAvailabilitySummaryFromDemandRequest
     public resourceIds: string,
     public startDate: string,
     public endDate: string,
-    public considerAppointments: boolean,
-    public ignoreTimeZone: boolean
+    public considerAppointments?: boolean,
+    public ignoreTimeZone?: boolean
   ) {
     super("msdyn_GetAvailabilitySummaryFromDemand");
   }

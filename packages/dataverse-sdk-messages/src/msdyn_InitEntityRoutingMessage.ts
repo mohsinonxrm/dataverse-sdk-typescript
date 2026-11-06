@@ -11,14 +11,14 @@ export class msdyn_InitEntityRoutingRequest
   implements Executable<msdyn_InitEntityRoutingResponse>
 {
   constructor(
-    public intentFamilyId: string,
-    public appInsightsEnvInformation: string,
-    public intentId: string,
+    public intentFamilyId: string | undefined,
+    public appInsightsEnvInformation: string | undefined,
+    public intentId: string | undefined,
     public liveWorkStreamId: string,
-    public appInsightsAdditionalInformation: string,
+    public appInsightsAdditionalInformation: string | undefined,
     public entityLogicalName: string,
-    public intentString: string,
-    public intentGroupId: string,
+    public intentString: string | undefined,
+    public intentGroupId: string | undefined,
     public entityRecordId: string
   ) {
     super("msdyn_InitEntityRouting");

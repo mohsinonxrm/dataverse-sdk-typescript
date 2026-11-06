@@ -15,7 +15,7 @@ export interface msdyn_GetAnalyticsReportDetailResponse {
 export class msdyn_GetAnalyticsReportDetailAction implements Executable<msdyn_GetAnalyticsReportDetailResponse> {
   constructor(
     public readonly analyticsRecordId: string,
-    public readonly getAnalyticsReportAction: string
+    public readonly getAnalyticsReportAction?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

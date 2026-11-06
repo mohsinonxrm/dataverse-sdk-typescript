@@ -13,8 +13,8 @@ export class msdyn_SalesAgents_FetchReadyRecordsForAgentProcessingRequest
 {
   constructor(
     public msdyn_SalesAgentType: number,
-    public msdyn_Top: number,
-    public msdyn_TrackingId: string
+    public msdyn_Top?: number,
+    public msdyn_TrackingId?: string
   ) {
     super("msdyn_SalesAgents_FetchReadyRecordsForAgentProcessing");
   }

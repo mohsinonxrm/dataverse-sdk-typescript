@@ -14,8 +14,8 @@ export interface msdyn_CleanupDiagnosticsWrappersResponse {
  */
 export class msdyn_CleanupDiagnosticsWrappersAction implements Executable<msdyn_CleanupDiagnosticsWrappersResponse> {
   constructor(
-    public readonly workItemId: string,
-    public readonly targetId: string,
+    public readonly workItemId: string | undefined,
+    public readonly targetId: string | undefined,
     public readonly runNumber: number
   ) {}
 

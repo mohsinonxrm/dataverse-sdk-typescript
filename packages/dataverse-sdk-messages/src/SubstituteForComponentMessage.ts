@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { SubstituteForComponentResponse as SubstituteForComponentResponseData } from "./types/index.js";
 
 /**
@@ -14,7 +15,7 @@ export class SubstituteForComponentRequest
   implements Executable<SubstituteForComponentResponse>
 {
   constructor(
-    public entity: EntityReference,
+    public entity: EntityReference | AnyEntityPayload,
     public subStore: string
   ) {
     super("SubstituteForComponent");

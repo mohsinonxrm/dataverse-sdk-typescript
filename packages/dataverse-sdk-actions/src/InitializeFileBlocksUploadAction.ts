@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from InitializeFileBlocksUpload action
@@ -15,7 +16,7 @@ export interface InitializeFileBlocksUploadResponse {
  */
 export class InitializeFileBlocksUploadAction implements Executable<InitializeFileBlocksUploadResponse> {
   constructor(
-    public readonly target: EntityReference,
+    public readonly target: EntityReference | AnyEntityPayload,
     public readonly fileName: string,
     public readonly fileAttributeName: string
   ) {}

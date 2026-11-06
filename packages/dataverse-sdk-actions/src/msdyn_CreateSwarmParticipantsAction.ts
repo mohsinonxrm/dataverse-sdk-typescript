@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_CreateSwarmParticipants action
@@ -14,7 +15,7 @@ export interface msdyn_CreateSwarmParticipantsResponse {
  * Unbound action
  */
 export class msdyn_CreateSwarmParticipantsAction implements Executable<msdyn_CreateSwarmParticipantsResponse> {
-  constructor(public readonly swarmEntityReference: EntityReference) {}
+  constructor(public readonly swarmEntityReference: EntityReference | AnyEntityPayload) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CreateSwarmParticipants`;

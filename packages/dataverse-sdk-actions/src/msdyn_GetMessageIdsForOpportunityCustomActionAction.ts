@@ -16,7 +16,7 @@ export interface msdyn_GetMessageIdsForOpportunityCustomActionResponse {
  * Unbound action
  */
 export class msdyn_GetMessageIdsForOpportunityCustomActionAction implements Executable<msdyn_GetMessageIdsForOpportunityCustomActionResponse> {
-  constructor(public readonly opportunityId: string) {}
+  constructor(public readonly opportunityId?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetMessageIdsForOpportunityCustomAction`;

@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { PropagationOwnershipOptions } from "./types/index.js";
 
 /**
@@ -18,14 +19,14 @@ export class CreateActivitiesListAction implements Executable<CreateActivitiesLi
   constructor(
     public readonly listId: string,
     public readonly friendlyName: string,
-    public readonly activity: EntityReference,
+    public readonly activity: EntityReference | AnyEntityPayload,
     public readonly templateId: string,
     public readonly propagate: boolean,
     public readonly ownershipOptions: PropagationOwnershipOptions,
-    public readonly owner: EntityReference,
+    public readonly owner: EntityReference | AnyEntityPayload,
     public readonly sendEmail: boolean,
     public readonly postWorkflowEvent: boolean,
-    public readonly queueId: string
+    public readonly queueId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

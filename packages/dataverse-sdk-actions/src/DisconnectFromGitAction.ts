@@ -13,7 +13,7 @@ export interface DisconnectFromGitResponse {
  * Unbound action
  */
 export class DisconnectFromGitAction implements Executable<DisconnectFromGitResponse> {
-  constructor(public readonly solutionUniqueName: string) {}
+  constructor(public readonly solutionUniqueName?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/DisconnectFromGit`;

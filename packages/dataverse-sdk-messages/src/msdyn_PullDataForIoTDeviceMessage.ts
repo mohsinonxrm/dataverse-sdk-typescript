@@ -11,8 +11,8 @@ export class msdyn_PullDataForIoTDeviceRequest
   implements Executable<msdyn_PullDataForIoTDeviceResponse>
 {
   constructor(
-    public isScheduledDataPull: boolean,
-    public ioTDeviceIds: string
+    public isScheduledDataPull?: boolean,
+    public ioTDeviceIds?: string
   ) {
     super("msdyn_PullDataForIoTDevice");
   }

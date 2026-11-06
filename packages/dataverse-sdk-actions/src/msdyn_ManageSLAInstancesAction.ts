@@ -17,7 +17,7 @@ export class msdyn_ManageSLAInstancesAction implements Executable<msdyn_ManageSL
     public readonly sLAId: string,
     public readonly regardingId: string,
     public readonly entityLogicalName: string,
-    public readonly recalculate: number
+    public readonly recalculate?: number
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

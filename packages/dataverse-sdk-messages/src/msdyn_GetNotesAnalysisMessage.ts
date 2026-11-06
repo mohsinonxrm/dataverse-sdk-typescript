@@ -13,8 +13,8 @@ export class msdyn_GetNotesAnalysisRequest
   implements Executable<msdyn_GetNotesAnalysisResponse>
 {
   constructor(
-    public noteText: string,
-    public crossGeoDataMovementEnabled: boolean
+    public noteText?: string,
+    public crossGeoDataMovementEnabled?: boolean
   ) {
     super("msdyn_GetNotesAnalysis");
   }

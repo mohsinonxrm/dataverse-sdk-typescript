@@ -13,9 +13,9 @@ export class msdyn_ExecuteCopilotServiceJobRequest
   implements Executable<msdyn_ExecuteCopilotServiceJobResponse>
 {
   constructor(
-    public msdyn_JobPayload: string,
+    public msdyn_JobPayload: string | undefined,
     public msdyn_JobType: number,
-    public msdyn_AuthFlowType: number
+    public msdyn_AuthFlowType?: number
   ) {
     super("msdyn_ExecuteCopilotServiceJob");
   }

@@ -12,10 +12,10 @@ export class msdyn_InitEntityRoutingFlowRequest
 {
   constructor(
     public liveWorkStreamId: string,
-    public queueId: string,
+    public queueId: string | undefined,
     public entityRecordId: string,
     public entityLogicalName: string,
-    public liveWorkItemTitle: string
+    public liveWorkItemTitle?: string
   ) {
     super("msdyn_InitEntityRoutingFlow");
   }

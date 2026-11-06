@@ -17,8 +17,8 @@ export interface msdyn_SalesAdaptiveCardResponseResponse {
  */
 export class msdyn_SalesAdaptiveCardResponseAction implements Executable<msdyn_SalesAdaptiveCardResponseResponse> {
   constructor(
-    public readonly msdyn_query: string,
-    public readonly msdyn_id: string,
+    public readonly msdyn_query: string | undefined,
+    public readonly msdyn_id: string | undefined,
     public readonly msdyn_scenario: number
   ) {}
 

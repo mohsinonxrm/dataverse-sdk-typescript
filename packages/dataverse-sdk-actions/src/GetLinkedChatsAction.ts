@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from GetLinkedChats action
@@ -14,7 +15,7 @@ export interface GetLinkedChatsResponse {
  * Unbound action
  */
 export class GetLinkedChatsAction implements Executable<GetLinkedChatsResponse> {
-  constructor(public readonly regardingEntity: EntityReference) {}
+  constructor(public readonly regardingEntity: EntityReference | AnyEntityPayload) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/GetLinkedChats`;

@@ -13,11 +13,11 @@ export class BulkRetainRequest
   implements Executable<BulkRetainResponse>
 {
   constructor(
-    public entityName: string,
+    public entityName: string | undefined,
     public fetchXml: string,
-    public pageSize: number,
-    public operationId: string,
-    public pagingCookie: string
+    public pageSize?: number,
+    public operationId?: string,
+    public pagingCookie?: string
   ) {
     super("BulkRetain");
   }

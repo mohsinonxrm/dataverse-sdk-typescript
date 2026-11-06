@@ -17,9 +17,9 @@ export class CreatePolymorphicLookupAttributeRequest
   implements Executable<CreatePolymorphicLookupAttributeResponse>
 {
   constructor(
-    public lookup: ComplexLookupAttributeMetadata,
-    public oneToManyRelationships: ComplexOneToManyRelationshipMetadata[],
-    public solutionUniqueName: string
+    public lookup?: ComplexLookupAttributeMetadata,
+    public oneToManyRelationships?: ComplexOneToManyRelationshipMetadata[],
+    public solutionUniqueName?: string
   ) {
     super("CreatePolymorphicLookupAttribute");
   }

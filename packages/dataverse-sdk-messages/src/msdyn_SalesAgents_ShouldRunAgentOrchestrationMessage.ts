@@ -14,7 +14,7 @@ export class msdyn_SalesAgents_ShouldRunAgentOrchestrationRequest
 {
   constructor(
     public msdyn_SalesAgentType: number,
-    public msdyn_TrackingId: string
+    public msdyn_TrackingId?: string
   ) {
     super("msdyn_SalesAgents_ShouldRunAgentOrchestration");
   }

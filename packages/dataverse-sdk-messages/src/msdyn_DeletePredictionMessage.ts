@@ -11,10 +11,10 @@ export class msdyn_DeletePredictionRequest
   implements Executable<msdyn_DeletePredictionResponse>
 {
   constructor(
-    public modelId: string,
-    public isCrmDeleteOnly: boolean,
-    public predictionName: string,
-    public isActiveModel: boolean
+    public modelId?: string,
+    public isCrmDeleteOnly?: boolean,
+    public predictionName?: string,
+    public isActiveModel?: boolean
   ) {
     super("msdyn_DeletePrediction");
   }

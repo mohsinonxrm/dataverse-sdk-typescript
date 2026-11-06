@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import type { EntityReference } from "./EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type {
   BulkDetectDuplicatesResponse as BulkDetectDuplicatesResponseData,
   TypedQueryBase,
@@ -17,12 +19,12 @@ export class BulkDetectDuplicatesRequest
   implements Executable<BulkDetectDuplicatesResponse>
 {
   constructor(
-    public query: TypedQueryBase,
+    public query: TypedQueryBase | undefined,
     public jobName: string,
     public sendEmailNotification: boolean,
     public templateId: string,
-    public toRecipients: activityparty[],
-    public cCRecipients: activityparty[],
+    public toRecipients: (EntityReference | EntityPayload<activityparty>)[],
+    public cCRecipients: (EntityReference | EntityPayload<activityparty>)[],
     public recurrencePattern: string,
     public recurrenceStartTime: string
   ) {

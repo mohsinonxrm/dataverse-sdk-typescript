@@ -14,9 +14,9 @@ export interface _ResourcesAddUpdateActionResponse {
  */
 export class _ResourcesAddUpdateActionAction implements Executable<_ResourcesAddUpdateActionResponse> {
   constructor(
-    public readonly newlyAddedResources: string,
-    public readonly resourceGroupId: string,
-    public readonly resourceGroupsToAdd: string
+    public readonly newlyAddedResources?: string,
+    public readonly resourceGroupId?: string,
+    public readonly resourceGroupsToAdd?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { ColumnSet, salesorder } from "./types/index.js";
 
 /**
@@ -15,12 +16,12 @@ export class ConvertQuoteToSalesOrderRequest
 {
   constructor(
     public quoteId: string,
-    public columnSet: ColumnSet,
-    public quoteCloseDate: string,
-    public quoteCloseStatus: number,
-    public quoteCloseSubject: string,
-    public quoteCloseDescription: string,
-    public processInstanceId: EntityReference
+    public columnSet?: ColumnSet,
+    public quoteCloseDate?: string,
+    public quoteCloseStatus?: number,
+    public quoteCloseSubject?: string,
+    public quoteCloseDescription?: string,
+    public processInstanceId?: EntityReference | AnyEntityPayload
   ) {
     super("ConvertQuoteToSalesOrder");
   }

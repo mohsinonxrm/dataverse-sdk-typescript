@@ -14,8 +14,8 @@ export interface msdyn_SaveSalesCopilotEmailInsightsResponse {
  */
 export class msdyn_SaveSalesCopilotEmailInsightsAction implements Executable<msdyn_SaveSalesCopilotEmailInsightsResponse> {
   constructor(
-    public readonly msdyn_extractedquestions: Record<string, unknown>[],
-    public readonly msdyn_activityid: string,
+    public readonly msdyn_extractedquestions: Record<string, unknown>[] | undefined,
+    public readonly msdyn_activityid: string | undefined,
     public readonly msdyn_salescopilotemailinsights: Record<string, unknown>[]
   ) {}
 

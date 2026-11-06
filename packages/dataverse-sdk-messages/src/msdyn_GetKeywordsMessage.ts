@@ -13,11 +13,11 @@ export class msdyn_GetKeywordsRequest
   implements Executable<msdyn_GetKeywordsResponse>
 {
   constructor(
-    public msdyn_entityType: string,
-    public msdyn_activityId: string,
-    public msdyn_queryLocale: string,
+    public msdyn_entityType: string | undefined,
+    public msdyn_activityId: string | undefined,
+    public msdyn_queryLocale: string | undefined,
     public msdyn_userquery: string,
-    public msdyn_entityName: string
+    public msdyn_entityName?: string
   ) {
     super("msdyn_GetKeywords");
   }

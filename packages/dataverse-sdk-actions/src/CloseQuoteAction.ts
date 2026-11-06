@@ -1,4 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { quoteclose } from "./types/index.js";
 
 /**
@@ -15,7 +17,7 @@ export interface CloseQuoteResponse {
  */
 export class CloseQuoteAction implements Executable<CloseQuoteResponse> {
   constructor(
-    public readonly quoteClose: quoteclose,
+    public readonly quoteClose: EntityReference | EntityPayload<quoteclose>,
     public readonly status: number
   ) {}
 

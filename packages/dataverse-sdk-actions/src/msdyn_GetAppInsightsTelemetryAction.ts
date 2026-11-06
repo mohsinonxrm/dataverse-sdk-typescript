@@ -15,8 +15,8 @@ export interface msdyn_GetAppInsightsTelemetryResponse {
 export class msdyn_GetAppInsightsTelemetryAction implements Executable<msdyn_GetAppInsightsTelemetryResponse> {
   constructor(
     public readonly msdyn_Query: string,
-    public readonly msdyn_Timespan: string,
-    public readonly msdyn_LiveWorkItemIds: string
+    public readonly msdyn_Timespan?: string,
+    public readonly msdyn_LiveWorkItemIds?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

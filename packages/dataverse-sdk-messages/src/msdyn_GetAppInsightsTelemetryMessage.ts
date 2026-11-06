@@ -14,8 +14,8 @@ export class msdyn_GetAppInsightsTelemetryRequest
 {
   constructor(
     public msdyn_Query: string,
-    public msdyn_Timespan: string,
-    public msdyn_LiveWorkItemIds: string
+    public msdyn_Timespan?: string,
+    public msdyn_LiveWorkItemIds?: string
   ) {
     super("msdyn_GetAppInsightsTelemetry");
   }

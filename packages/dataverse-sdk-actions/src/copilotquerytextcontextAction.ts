@@ -14,14 +14,14 @@ export interface copilotquerytextcontextResponse {
  */
 export class copilotquerytextcontextAction implements Executable<copilotquerytextcontextResponse> {
   constructor(
-    public readonly totalResultCount: boolean,
-    public readonly orderBy: string,
-    public readonly searchMode: string,
-    public readonly entityParameters: string,
-    public readonly skip: number,
-    public readonly top: number,
-    public readonly options: string,
-    public readonly searchType: string,
+    public readonly totalResultCount: boolean | undefined,
+    public readonly orderBy: string | undefined,
+    public readonly searchMode: string | undefined,
+    public readonly entityParameters: string | undefined,
+    public readonly skip: number | undefined,
+    public readonly top: number | undefined,
+    public readonly options: string | undefined,
+    public readonly searchType: string | undefined,
     public readonly searchText: string
   ) {}
 

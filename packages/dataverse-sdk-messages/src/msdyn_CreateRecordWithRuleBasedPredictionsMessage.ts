@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * msdyn_CreateRecordWithRuleBasedPredictions request message
@@ -13,9 +14,9 @@ export class msdyn_CreateRecordWithRuleBasedPredictionsRequest
   implements Executable<msdyn_CreateRecordWithRuleBasedPredictionsResponse>
 {
   constructor(
-    public msdyn_Context: EntityReference,
-    public msdyn_ContextGenerationParameters: string,
-    public msdyn_Target: EntityReference
+    public msdyn_Context: EntityReference | AnyEntityPayload | undefined,
+    public msdyn_ContextGenerationParameters: string | undefined,
+    public msdyn_Target: EntityReference | AnyEntityPayload
   ) {
     super("msdyn_CreateRecordWithRuleBasedPredictions");
   }

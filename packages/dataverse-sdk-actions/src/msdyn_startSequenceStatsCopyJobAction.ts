@@ -13,7 +13,7 @@ export interface msdyn_startSequenceStatsCopyJobResponse {
  * Unbound action
  */
 export class msdyn_startSequenceStatsCopyJobAction implements Executable<msdyn_startSequenceStatsCopyJobResponse> {
-  constructor(public readonly inputData: string) {}
+  constructor(public readonly inputData?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_startSequenceStatsCopyJob`;

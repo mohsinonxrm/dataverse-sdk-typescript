@@ -13,9 +13,9 @@ export class msdyn_CheckForDeletedWebResourcesRequest
   implements Executable<msdyn_CheckForDeletedWebResourcesResponse>
 {
   constructor(
-    public entityIds: string,
-    public solutionId: string,
-    public excludeSolutionIds: string
+    public entityIds?: string,
+    public solutionId?: string,
+    public excludeSolutionIds?: string
   ) {
     super("msdyn_CheckForDeletedWebResources");
   }

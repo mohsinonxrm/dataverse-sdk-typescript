@@ -16,9 +16,9 @@ export interface msdyn_getAppConfigByContextResponse {
 export class msdyn_getAppConfigByContextAction implements Executable<msdyn_getAppConfigByContextResponse> {
   constructor(
     public readonly appUniqueName: string,
-    public readonly userId: string,
-    public readonly roles: string,
-    public readonly formFactor: number
+    public readonly userId?: string,
+    public readonly roles?: string,
+    public readonly formFactor?: number
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

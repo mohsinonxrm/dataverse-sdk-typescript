@@ -12,7 +12,7 @@ export class msdynmkt_PersonalizationGetEntityAttributesRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_PersonalizationGetEntityAttributesResponse>
 {
-  constructor(public getEntityAttributesRequest: string) {
+  constructor(public getEntityAttributesRequest?: string) {
     super("msdynmkt_PersonalizationGetEntityAttributes");
   }
 

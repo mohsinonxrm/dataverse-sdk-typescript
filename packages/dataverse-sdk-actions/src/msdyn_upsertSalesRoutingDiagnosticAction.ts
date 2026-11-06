@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_upsertSalesRoutingDiagnostic action
@@ -15,7 +16,7 @@ export interface msdyn_upsertSalesRoutingDiagnosticResponse {
  */
 export class msdyn_upsertSalesRoutingDiagnosticAction implements Executable<msdyn_upsertSalesRoutingDiagnosticResponse> {
   constructor(
-    public readonly targetObject: EntityReference,
+    public readonly targetObject: EntityReference | AnyEntityPayload,
     public readonly payload: string,
     public readonly eventType: number
   ) {}

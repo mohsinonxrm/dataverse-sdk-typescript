@@ -15,8 +15,8 @@ export interface msdyn_SalesAgents_HandoverNotifySingleResponse {
 export class msdyn_SalesAgents_HandoverNotifySingleAction implements Executable<msdyn_SalesAgents_HandoverNotifySingleResponse> {
   constructor(
     public readonly msdyn_SalesAgentRun: string,
-    public readonly msdyn_TrackingId: string,
-    public readonly msdyn_HandoverContext: string
+    public readonly msdyn_TrackingId?: string,
+    public readonly msdyn_HandoverContext?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

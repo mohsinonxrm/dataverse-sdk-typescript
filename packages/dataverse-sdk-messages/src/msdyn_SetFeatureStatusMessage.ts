@@ -11,10 +11,10 @@ export class msdyn_SetFeatureStatusRequest
   implements Executable<msdyn_SetFeatureStatusResponse>
 {
   constructor(
-    public featureType: number,
-    public status: boolean,
-    public isSolutionUninstall: boolean,
-    public configurationData: string
+    public featureType?: number,
+    public status?: boolean,
+    public isSolutionUninstall?: boolean,
+    public configurationData?: string
   ) {
     super("msdyn_SetFeatureStatus");
   }

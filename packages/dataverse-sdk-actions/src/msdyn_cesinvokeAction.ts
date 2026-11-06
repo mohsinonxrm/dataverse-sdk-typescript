@@ -15,9 +15,9 @@ export interface msdyn_cesinvokeResponse {
  */
 export class msdyn_cesinvokeAction implements Executable<msdyn_cesinvokeResponse> {
   constructor(
-    public readonly callType: string,
-    public readonly eventName: string,
-    public readonly surveyName: string
+    public readonly callType?: string,
+    public readonly eventName?: string,
+    public readonly surveyName?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

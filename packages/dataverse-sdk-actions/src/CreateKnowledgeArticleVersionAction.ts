@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from CreateKnowledgeArticleVersion action
@@ -19,7 +20,7 @@ export interface CreateKnowledgeArticleVersionResponse {
  */
 export class CreateKnowledgeArticleVersionAction implements Executable<CreateKnowledgeArticleVersionResponse> {
   constructor(
-    public readonly source: EntityReference,
+    public readonly source: EntityReference | AnyEntityPayload,
     public readonly isMajor: boolean
   ) {}
 

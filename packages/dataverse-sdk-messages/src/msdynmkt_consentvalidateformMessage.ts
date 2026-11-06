@@ -14,10 +14,10 @@ export class msdynmkt_consentvalidateformRequest
 {
   constructor(
     public msdynmkt_editorname: string,
-    public validationType: number,
-    public formBusinessUnitId: string,
-    public complianceProfileId: string,
-    public isDoubleOptInForciblyDisabled: boolean,
+    public validationType: number | undefined,
+    public formBusinessUnitId: string | undefined,
+    public complianceProfileId: string | undefined,
+    public isDoubleOptInForciblyDisabled: boolean | undefined,
     public msdynmkt_formhtml: string
   ) {
     super("msdynmkt_consentvalidateform");

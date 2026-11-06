@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from GeneratePowerFxFormula action
@@ -16,8 +17,8 @@ export interface GeneratePowerFxFormulaResponse {
 export class GeneratePowerFxFormulaAction implements Executable<GeneratePowerFxFormulaResponse> {
   constructor(
     public readonly operationId: string,
-    public readonly parameterValues: EntityReference,
-    public readonly connectionReference: EntityReference
+    public readonly parameterValues: EntityReference | AnyEntityPayload | undefined,
+    public readonly connectionReference: EntityReference | AnyEntityPayload
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

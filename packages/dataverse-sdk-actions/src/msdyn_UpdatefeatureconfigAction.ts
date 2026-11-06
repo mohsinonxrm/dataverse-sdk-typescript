@@ -14,8 +14,8 @@ export interface msdyn_UpdatefeatureconfigResponse {
  */
 export class msdyn_UpdatefeatureconfigAction implements Executable<msdyn_UpdatefeatureconfigResponse> {
   constructor(
-    public readonly featureType: number,
-    public readonly configuration: string
+    public readonly featureType?: number,
+    public readonly configuration?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

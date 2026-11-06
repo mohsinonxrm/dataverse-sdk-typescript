@@ -12,7 +12,7 @@ export class SendEmailRequest extends OrganizationRequest implements Executable<
   constructor(
     public emailId: string,
     public issueSend: boolean,
-    public trackingToken: string
+    public trackingToken?: string
   ) {
     super("SendEmail");
   }

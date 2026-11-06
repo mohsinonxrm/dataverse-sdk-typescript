@@ -19,8 +19,8 @@ export class msdyn_GetResourceBookingDetailsAction implements Executable<msdyn_G
     public readonly startDate: string,
     public readonly endDate: string,
     public readonly timescale: number,
-    public readonly schedulerSettings: string,
-    public readonly considerAppointments: boolean
+    public readonly schedulerSettings?: string,
+    public readonly considerAppointments?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

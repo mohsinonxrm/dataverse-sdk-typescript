@@ -15,7 +15,7 @@ export interface msdyn_GetResourceBookingFormParametersResponse {
 export class msdyn_GetResourceBookingFormParametersAction implements Executable<msdyn_GetResourceBookingFormParametersResponse> {
   constructor(
     public readonly bookingContext: string,
-    public readonly timeZoneCode: number
+    public readonly timeZoneCode?: number
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

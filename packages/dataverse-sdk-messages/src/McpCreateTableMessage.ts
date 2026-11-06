@@ -13,10 +13,10 @@ export class McpCreateTableRequest
   implements Executable<McpCreateTableResponse>
 {
   constructor(
-    public displayname: string,
+    public displayname: string | undefined,
     public item: string,
     public tablename: string,
-    public description: string
+    public description?: string
   ) {
     super("McpCreateTable");
   }

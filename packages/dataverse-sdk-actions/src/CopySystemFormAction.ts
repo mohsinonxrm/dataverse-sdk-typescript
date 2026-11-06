@@ -1,4 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { systemform } from "./types/index.js";
 
 /**
@@ -20,7 +22,7 @@ export interface CopySystemFormResponse extends systemform {
 export class CopySystemFormAction implements Executable<CopySystemFormResponse> {
   constructor(
     public readonly systemformId: string,
-    public readonly target: systemform
+    public readonly target?: EntityReference | EntityPayload<systemform>
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

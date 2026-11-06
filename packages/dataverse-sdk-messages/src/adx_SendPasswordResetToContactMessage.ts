@@ -17,9 +17,9 @@ export class adx_SendPasswordResetToContactRequest
     public urlCode: string,
     public email: string,
     public userId: string,
-    public businessProcessFlowId: string,
-    public businessProcessFlowInstanceId: string,
-    public actionStepId: string
+    public businessProcessFlowId?: string,
+    public businessProcessFlowInstanceId?: string,
+    public actionStepId?: string
   ) {
     super("adx_SendPasswordResetToContact");
   }

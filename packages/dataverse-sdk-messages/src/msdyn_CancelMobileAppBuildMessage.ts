@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import type { EntityReference } from "./EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type {
   msdyn_CancelMobileAppBuildResponse as msdyn_CancelMobileAppBuildResponseData,
   msdyn_mobileapp,
@@ -17,7 +19,7 @@ export class msdyn_CancelMobileAppBuildRequest
 {
   constructor(
     public operationId: string,
-    public msdyn_MobileApp: msdyn_mobileapp
+    public msdyn_MobileApp: EntityReference | EntityPayload<msdyn_mobileapp>
   ) {
     super("msdyn_CancelMobileAppBuild");
   }

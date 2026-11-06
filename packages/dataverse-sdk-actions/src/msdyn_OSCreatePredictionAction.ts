@@ -13,7 +13,7 @@ export interface msdyn_OSCreatePredictionResponse {
  * Unbound action
  */
 export class msdyn_OSCreatePredictionAction implements Executable<msdyn_OSCreatePredictionResponse> {
-  constructor(public readonly modelState: string) {}
+  constructor(public readonly modelState?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_OSCreatePrediction`;

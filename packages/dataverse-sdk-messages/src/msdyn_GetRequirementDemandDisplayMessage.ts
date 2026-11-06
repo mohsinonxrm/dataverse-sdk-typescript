@@ -16,7 +16,7 @@ export class msdyn_GetRequirementDemandDisplayRequest
     public requirementIds: string,
     public timescale: number,
     public timeZoneCode: number,
-    public ignoreTimeZone: boolean
+    public ignoreTimeZone?: boolean
   ) {
     super("msdyn_GetRequirementDemandDisplay");
   }

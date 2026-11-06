@@ -14,7 +14,7 @@ export class msdyn_ActivateWorkflowRequest
 {
   constructor(
     public msdyn_WorkflowId: string,
-    public msdyn_WorkflowUniqueName: string
+    public msdyn_WorkflowUniqueName?: string
   ) {
     super("msdyn_ActivateWorkflow");
   }

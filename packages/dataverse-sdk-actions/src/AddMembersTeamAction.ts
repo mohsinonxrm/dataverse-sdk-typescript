@@ -1,4 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { systemuser } from "./types/index.js";
 
 /**
@@ -17,7 +19,7 @@ export interface AddMembersTeamResponse {
 export class AddMembersTeamAction implements Executable<AddMembersTeamResponse> {
   constructor(
     public readonly teamId: string,
-    public readonly members: systemuser[]
+    public readonly members: (EntityReference | EntityPayload<systemuser>)[]
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

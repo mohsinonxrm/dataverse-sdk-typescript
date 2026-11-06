@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type {
   AddItemCampaignActivityResponse as AddItemCampaignActivityResponseData,
   campaignactivity,
@@ -17,8 +18,8 @@ export class AddItemCampaignActivityRequest
   implements Executable<AddItemCampaignActivityResponse>
 {
   constructor(
-    public campaignActivity: campaignactivity,
-    public item: EntityReference
+    public campaignActivity: EntityReference | EntityPayload<campaignactivity>,
+    public item: EntityReference | AnyEntityPayload
   ) {
     super("AddItemCampaignActivity");
   }

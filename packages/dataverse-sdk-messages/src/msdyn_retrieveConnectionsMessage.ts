@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_retrieveConnectionsResponse as msdyn_retrieveConnectionsResponseData } from "./types/index.js";
 
 /**
@@ -15,8 +16,8 @@ export class msdyn_retrieveConnectionsRequest
 {
   constructor(
     public smtpAdress: string,
-    public crmRecord: EntityReference,
-    public callerFeature: string
+    public crmRecord?: EntityReference | AnyEntityPayload,
+    public callerFeature?: string
   ) {
     super("msdyn_retrieveConnections");
   }

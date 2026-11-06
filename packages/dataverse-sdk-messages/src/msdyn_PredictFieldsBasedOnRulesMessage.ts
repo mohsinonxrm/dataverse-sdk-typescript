@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * msdyn_PredictFieldsBasedOnRules request message
@@ -13,9 +14,9 @@ export class msdyn_PredictFieldsBasedOnRulesRequest
   implements Executable<msdyn_PredictFieldsBasedOnRulesResponse>
 {
   constructor(
-    public msdyn_Target: EntityReference,
-    public msdyn_ContextGenerationParameters: string,
-    public msdyn_Context: EntityReference
+    public msdyn_Target: EntityReference | AnyEntityPayload,
+    public msdyn_ContextGenerationParameters?: string,
+    public msdyn_Context?: EntityReference | AnyEntityPayload
   ) {
     super("msdyn_PredictFieldsBasedOnRules");
   }

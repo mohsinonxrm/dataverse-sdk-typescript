@@ -19,7 +19,7 @@ export class msdyn_ConditionXmlConversionAction implements Executable<msdyn_Cond
     public readonly outputType: string,
     public readonly inputString: string,
     public readonly entityName: string,
-    public readonly enableUnderNotUnderSupport: boolean
+    public readonly enableUnderNotUnderSupport?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

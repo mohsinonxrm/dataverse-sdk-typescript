@@ -13,11 +13,11 @@ export class msdyn_SalesAgents_SendEmailReplyRequest
   implements Executable<msdyn_SalesAgents_SendEmailReplyResponse>
 {
   constructor(
-    public msdyn_TrackingId: string,
+    public msdyn_TrackingId: string | undefined,
     public msdyn_ParentActivityId: string,
     public msdyn_AgentProfileId: string,
     public msdyn_Emailbody: string,
-    public msdyn_IsDelayedSend: boolean
+    public msdyn_IsDelayedSend?: boolean
   ) {
     super("msdyn_SalesAgents_SendEmailReply");
   }

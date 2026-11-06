@@ -14,12 +14,12 @@ export interface searchautocompleteResponse {
  */
 export class searchautocompleteAction implements Executable<searchautocompleteResponse> {
   constructor(
-    public readonly propertybag: string,
-    public readonly filter: string,
-    public readonly fuzzy: boolean,
-    public readonly options: string,
+    public readonly propertybag: string | undefined,
+    public readonly filter: string | undefined,
+    public readonly fuzzy: boolean | undefined,
+    public readonly options: string | undefined,
     public readonly search: string,
-    public readonly entities: string
+    public readonly entities?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

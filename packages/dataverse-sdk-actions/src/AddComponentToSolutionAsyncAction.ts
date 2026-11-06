@@ -18,8 +18,8 @@ export class AddComponentToSolutionAsyncAction implements Executable<AddComponen
     public readonly id: string,
     public readonly solutionUniqueName: string,
     public readonly addRequiredComponents: boolean,
-    public readonly includeChildComponents: boolean,
-    public readonly includeEntityMetadata: boolean
+    public readonly includeChildComponents?: boolean,
+    public readonly includeEntityMetadata?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

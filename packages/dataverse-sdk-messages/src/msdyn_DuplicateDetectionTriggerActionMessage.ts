@@ -11,8 +11,8 @@ export class msdyn_DuplicateDetectionTriggerActionRequest
   implements Executable<msdyn_DuplicateDetectionTriggerActionResponse>
 {
   constructor(
-    public baseRecordType: string,
-    public baseRecordId: string
+    public baseRecordType?: string,
+    public baseRecordId?: string
   ) {
     super("msdyn_DuplicateDetectionTriggerAction");
   }

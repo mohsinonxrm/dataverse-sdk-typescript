@@ -13,7 +13,7 @@ export interface msdynmkt_PersonalizationGetEntityProvidersResponse {
  * Unbound action
  */
 export class msdynmkt_PersonalizationGetEntityProvidersAction implements Executable<msdynmkt_PersonalizationGetEntityProvidersResponse> {
-  constructor(public readonly getProvidersRequest: string) {}
+  constructor(public readonly getProvidersRequest?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_PersonalizationGetEntityProviders`;

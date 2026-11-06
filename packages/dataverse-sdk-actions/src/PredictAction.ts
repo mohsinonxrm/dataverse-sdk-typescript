@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from Predict action
@@ -21,9 +22,9 @@ export class PredictAction implements Executable<PredictResponse> {
   constructor(
     public readonly msdyn_aimodelId: string,
     public readonly version: string,
-    public readonly request: string,
-    public readonly requestv2: EntityReference,
-    public readonly source: string
+    public readonly request?: string,
+    public readonly requestv2?: EntityReference | AnyEntityPayload,
+    public readonly source?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

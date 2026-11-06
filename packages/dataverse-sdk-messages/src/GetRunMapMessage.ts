@@ -12,8 +12,8 @@ export class GetRunMapRequest extends OrganizationRequest implements Executable<
   constructor(
     public businessprocessId: string,
     public runId: string,
-    public continuationToken: string,
-    public max: number
+    public continuationToken?: string,
+    public max?: number
   ) {
     super("GetRunMap");
   }

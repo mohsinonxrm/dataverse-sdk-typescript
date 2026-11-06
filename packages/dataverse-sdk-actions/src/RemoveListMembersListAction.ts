@@ -1,4 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { list } from "./types/index.js";
 
 /**
@@ -15,7 +17,7 @@ export interface RemoveListMembersListResponse {
  */
 export class RemoveListMembersListAction implements Executable<RemoveListMembersListResponse> {
   constructor(
-    public readonly list: list,
+    public readonly list: EntityReference | EntityPayload<list>,
     public readonly members: Record<string, unknown>[]
   ) {}
 

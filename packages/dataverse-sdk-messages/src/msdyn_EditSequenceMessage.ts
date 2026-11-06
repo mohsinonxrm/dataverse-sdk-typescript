@@ -13,8 +13,8 @@ export class msdyn_EditSequenceRequest
   implements Executable<msdyn_EditSequenceResponse>
 {
   constructor(
-    public sequenceId: string,
-    public discardChanges: boolean
+    public sequenceId?: string,
+    public discardChanges?: boolean
   ) {
     super("msdyn_EditSequence");
   }

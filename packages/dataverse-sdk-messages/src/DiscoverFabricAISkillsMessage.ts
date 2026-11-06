@@ -14,7 +14,7 @@ export class DiscoverFabricAISkillsRequest
 {
   constructor(
     public workspaceId: string,
-    public fabricEnvironment: string
+    public fabricEnvironment?: string
   ) {
     super("DiscoverFabricAISkills");
   }

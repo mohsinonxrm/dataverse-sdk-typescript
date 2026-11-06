@@ -12,7 +12,7 @@ export class msdynmkt_PersonalizationGetEntityTypesRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_PersonalizationGetEntityTypesResponse>
 {
-  constructor(public getEntityTypesRequest: string) {
+  constructor(public getEntityTypesRequest?: string) {
     super("msdynmkt_PersonalizationGetEntityTypes");
   }
 

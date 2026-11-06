@@ -12,7 +12,7 @@ export class msdyn_CheckForWorkflowTypeOfRuleItemsRequest
   extends OrganizationRequest
   implements Executable<msdyn_CheckForWorkflowTypeOfRuleItemsResponse>
 {
-  constructor(public solutionId: string) {
+  constructor(public solutionId?: string) {
     super("msdyn_CheckForWorkflowTypeOfRuleItems");
   }
 

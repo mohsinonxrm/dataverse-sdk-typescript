@@ -11,15 +11,15 @@ export class msdyn_ActionCardActionLoggerRequest
   implements Executable<msdyn_ActionCardActionLoggerResponse>
 {
   constructor(
-    public cardType: number,
+    public cardType: number | undefined,
     public userId: string,
     public cardTypeId: string,
     public actionType: string,
     public totalActions: number,
-    public actionCardId: string,
-    public regardingObjectId: string,
-    public regardingObjectLogicalName: string,
-    public regardingObjectTypeCode: number
+    public actionCardId?: string,
+    public regardingObjectId?: string,
+    public regardingObjectLogicalName?: string,
+    public regardingObjectTypeCode?: number
   ) {
     super("msdyn_ActionCardActionLogger");
   }

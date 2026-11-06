@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import type { EntityReference } from "./EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type {
   appmodule,
   msdyn_ModelAppDiagnosisResponse as msdyn_ModelAppDiagnosisResponseData,
@@ -17,7 +19,7 @@ export class msdyn_ModelAppDiagnosisRequest
 {
   constructor(
     public issueType: string,
-    public componentInstance: appmodule
+    public componentInstance: EntityReference | EntityPayload<appmodule>
   ) {
     super("msdyn_ModelAppDiagnosis");
   }

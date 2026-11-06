@@ -15,8 +15,8 @@ export class PowerAutomateProxyRequest
   constructor(
     public httpMethod: string,
     public relativeUrl: string,
-    public requestHeaders: string,
-    public requestBody: string
+    public requestHeaders?: string,
+    public requestBody?: string
   ) {
     super("PowerAutomateProxy");
   }

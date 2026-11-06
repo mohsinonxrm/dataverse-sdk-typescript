@@ -14,7 +14,7 @@ export interface msdyn_JoinLinkedChatConversationResponse {
  */
 export class msdyn_JoinLinkedChatConversationAction implements Executable<msdyn_JoinLinkedChatConversationResponse> {
   constructor(
-    public readonly msdyn_UserId: string,
+    public readonly msdyn_UserId: string | undefined,
     public readonly msdyn_RegardingEntityId: string,
     public readonly msdyn_TeamsConversationId: string
   ) {}

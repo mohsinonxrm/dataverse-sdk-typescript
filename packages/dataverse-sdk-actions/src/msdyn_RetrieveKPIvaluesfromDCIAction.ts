@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_RetrieveKPIvaluesfromDCI action
@@ -16,9 +17,9 @@ export interface msdyn_RetrieveKPIvaluesfromDCIResponse {
  */
 export class msdyn_RetrieveKPIvaluesfromDCIAction implements Executable<msdyn_RetrieveKPIvaluesfromDCIResponse> {
   constructor(
-    public readonly crmRecord: EntityReference,
-    public readonly kPINameFilterMap: string,
-    public readonly similarEntities: string
+    public readonly crmRecord?: EntityReference | AnyEntityPayload,
+    public readonly kPINameFilterMap?: string,
+    public readonly similarEntities?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

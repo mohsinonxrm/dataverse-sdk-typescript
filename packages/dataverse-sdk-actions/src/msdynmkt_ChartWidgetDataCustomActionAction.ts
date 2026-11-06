@@ -17,7 +17,7 @@ export interface msdynmkt_ChartWidgetDataCustomActionResponse {
  * Unbound action
  */
 export class msdynmkt_ChartWidgetDataCustomActionAction implements Executable<msdynmkt_ChartWidgetDataCustomActionResponse> {
-  constructor(public readonly widgetRequest: string) {}
+  constructor(public readonly widgetRequest?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_ChartWidgetDataCustomAction`;

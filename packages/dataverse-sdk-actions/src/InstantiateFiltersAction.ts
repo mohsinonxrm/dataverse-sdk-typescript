@@ -1,4 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { savedquery } from "./types/index.js";
 
 /**
@@ -17,7 +19,7 @@ export interface InstantiateFiltersResponse {
 export class InstantiateFiltersAction implements Executable<InstantiateFiltersResponse> {
   constructor(
     public readonly systemuserId: string,
-    public readonly templateCollection: savedquery[]
+    public readonly templateCollection: (EntityReference | EntityPayload<savedquery>)[]
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

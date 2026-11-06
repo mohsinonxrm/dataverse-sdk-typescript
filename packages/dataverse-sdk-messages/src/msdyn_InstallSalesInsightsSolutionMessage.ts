@@ -14,7 +14,7 @@ export class msdyn_InstallSalesInsightsSolutionRequest
 {
   constructor(
     public solutionName: string,
-    public forceInstall: boolean
+    public forceInstall?: boolean
   ) {
     super("msdyn_InstallSalesInsightsSolution");
   }

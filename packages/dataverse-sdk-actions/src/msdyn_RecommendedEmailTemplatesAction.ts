@@ -16,15 +16,15 @@ export interface msdyn_RecommendedEmailTemplatesResponse {
  */
 export class msdyn_RecommendedEmailTemplatesAction implements Executable<msdyn_RecommendedEmailTemplatesResponse> {
   constructor(
-    public readonly isTemplateResponse: boolean,
-    public readonly emailContextData: string,
+    public readonly isTemplateResponse: boolean | undefined,
+    public readonly emailContextData: string | undefined,
     public readonly emailId: string,
     public readonly templateFiltersInString: string,
-    public readonly filters: string,
+    public readonly filters: string | undefined,
     public readonly customerIntent: string,
     public readonly transactionId: string,
     public readonly emailString: string,
-    public readonly multiturnPayload: string,
+    public readonly multiturnPayload: string | undefined,
     public readonly copilotRequestParameters: string
   ) {}
 

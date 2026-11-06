@@ -13,7 +13,7 @@ export interface msdyn_ApplyPredictionResponse {
  * Unbound action
  */
 export class msdyn_ApplyPredictionAction implements Executable<msdyn_ApplyPredictionResponse> {
-  constructor(public readonly autoScheduleTrainingConfig: string) {}
+  constructor(public readonly autoScheduleTrainingConfig?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ApplyPrediction`;

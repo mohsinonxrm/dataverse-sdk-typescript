@@ -12,7 +12,7 @@ export class msdyn_CreateNewAnalysisJobRequest
   extends OrganizationRequest
   implements Executable<msdyn_CreateNewAnalysisJobResponse>
 {
-  constructor(public componentInstances: Record<string, unknown>[]) {
+  constructor(public componentInstances?: Record<string, unknown>[]) {
     super("msdyn_CreateNewAnalysisJob");
   }
 

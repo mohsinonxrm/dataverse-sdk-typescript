@@ -13,9 +13,9 @@ export class msdyn_JsonGetStringRequest
   implements Executable<msdyn_JsonGetStringResponse>
 {
   constructor(
-    public json: string,
+    public json: string | undefined,
     public propertyPath: string,
-    public defaultReturnValue: string
+    public defaultReturnValue?: string
   ) {
     super("msdyn_JsonGetString");
   }

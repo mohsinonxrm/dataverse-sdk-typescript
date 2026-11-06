@@ -16,7 +16,7 @@ export interface msdyn_GetCaseSuggestionsResponse {
 export class msdyn_GetCaseSuggestionsAction implements Executable<msdyn_GetCaseSuggestionsResponse> {
   constructor(
     public readonly incidentId: string,
-    public readonly count: number
+    public readonly count?: number
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

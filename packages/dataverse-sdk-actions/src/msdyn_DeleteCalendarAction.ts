@@ -13,7 +13,7 @@ export interface msdyn_DeleteCalendarResponse {
  * Unbound action
  */
 export class msdyn_DeleteCalendarAction implements Executable<msdyn_DeleteCalendarResponse> {
-  constructor(public readonly calendarEventInfo: string) {}
+  constructor(public readonly calendarEventInfo?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_DeleteCalendar`;

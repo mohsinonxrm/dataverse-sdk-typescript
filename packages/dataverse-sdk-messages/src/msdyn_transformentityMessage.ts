@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * msdyn_transformentity request message
@@ -13,8 +14,8 @@ export class msdyn_transformentityRequest
   implements Executable<msdyn_transformentityResponse>
 {
   constructor(
-    public entity: EntityReference,
-    public params: EntityReference
+    public entity: EntityReference | AnyEntityPayload,
+    public params: EntityReference | AnyEntityPayload
   ) {
     super("msdyn_transformentity");
   }

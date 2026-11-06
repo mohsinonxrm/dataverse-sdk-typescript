@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { SubstitutionResult } from "./types/index.js";
 
 /**
@@ -16,7 +17,7 @@ export interface SubstituteForComponentResponse {
  */
 export class SubstituteForComponentAction implements Executable<SubstituteForComponentResponse> {
   constructor(
-    public readonly entity: EntityReference,
+    public readonly entity: EntityReference | AnyEntityPayload,
     public readonly subStore: string
   ) {}
 

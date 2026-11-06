@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_CSCopilotResolveCase action
@@ -17,7 +18,7 @@ export interface msdyn_CSCopilotResolveCaseResponse {
  */
 export class msdyn_CSCopilotResolveCaseAction implements Executable<msdyn_CSCopilotResolveCaseResponse> {
   constructor(
-    public readonly incident: EntityReference,
+    public readonly incident: EntityReference | AnyEntityPayload,
     public readonly resolutionReason: number,
     public readonly callerIdentifier: string,
     public readonly statusReason: number

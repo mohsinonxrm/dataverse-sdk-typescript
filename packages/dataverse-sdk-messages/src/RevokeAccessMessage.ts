@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * RevokeAccess request message
@@ -12,8 +13,8 @@ export class RevokeAccessRequest
   implements Executable<RevokeAccessResponse>
 {
   constructor(
-    public target: EntityReference,
-    public revokee: EntityReference
+    public target: EntityReference | AnyEntityPayload,
+    public revokee: EntityReference | AnyEntityPayload
   ) {
     super("RevokeAccess");
   }

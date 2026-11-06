@@ -18,12 +18,12 @@ export interface msdyn_SalesAccountCatchupResponse {
 export class msdyn_SalesAccountCatchupAction implements Executable<msdyn_SalesAccountCatchupResponse> {
   constructor(
     public readonly msdyn_id: string,
-    public readonly msdyn_sessionId: string,
-    public readonly msdyn_responseFormat: string,
-    public readonly msdyn_activityId: string,
-    public readonly msdyn_since: string,
-    public readonly msdyn_skipHeader: string,
-    public readonly msdyn_additionalParams: string
+    public readonly msdyn_sessionId?: string,
+    public readonly msdyn_responseFormat?: string,
+    public readonly msdyn_activityId?: string,
+    public readonly msdyn_since?: string,
+    public readonly msdyn_skipHeader?: string,
+    public readonly msdyn_additionalParams?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

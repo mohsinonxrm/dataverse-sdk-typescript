@@ -16,7 +16,7 @@ export class ExportSolutionFromGitRequest
     public solutionName: string,
     public managed: boolean,
     public releaseBranch: string,
-    public isLiteExport: boolean
+    public isLiteExport?: boolean
   ) {
     super("ExportSolutionFromGit");
   }

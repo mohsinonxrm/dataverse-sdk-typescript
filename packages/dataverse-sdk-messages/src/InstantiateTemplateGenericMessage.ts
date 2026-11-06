@@ -15,7 +15,7 @@ export class InstantiateTemplateGenericRequest
     public templateId: string,
     public objectType: string,
     public objectId: string,
-    public entityLogicalName: string
+    public entityLogicalName?: string
   ) {
     super("InstantiateTemplateGeneric");
   }

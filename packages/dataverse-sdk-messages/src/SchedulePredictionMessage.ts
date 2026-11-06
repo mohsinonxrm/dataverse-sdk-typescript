@@ -15,8 +15,8 @@ export class SchedulePredictionRequest
   constructor(
     public msdyn_aimodelId: string,
     public version: string,
-    public predictImmediately: boolean,
-    public cleanupRequired: boolean
+    public predictImmediately?: boolean,
+    public cleanupRequired?: boolean
   ) {
     super("SchedulePrediction");
   }

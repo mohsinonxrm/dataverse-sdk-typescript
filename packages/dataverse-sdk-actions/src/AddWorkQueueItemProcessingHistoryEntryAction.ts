@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from AddWorkQueueItemProcessingHistoryEntry action
@@ -17,7 +18,7 @@ export interface AddWorkQueueItemProcessingHistoryEntryResponse {
 export class AddWorkQueueItemProcessingHistoryEntryAction implements Executable<AddWorkQueueItemProcessingHistoryEntryResponse> {
   constructor(
     public readonly workqueueitemId: string,
-    public readonly item: EntityReference
+    public readonly item: EntityReference | AnyEntityPayload
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

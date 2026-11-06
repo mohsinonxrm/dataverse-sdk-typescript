@@ -15,7 +15,7 @@ export interface msdyn_RetrieveOutlookSchedulesResponse {
  */
 export class msdyn_RetrieveOutlookSchedulesAction implements Executable<msdyn_RetrieveOutlookSchedulesResponse> {
   constructor(
-    public readonly version: string,
+    public readonly version: string | undefined,
     public readonly startDate: string,
     public readonly endDate: string,
     public readonly bookableResourceEmails: string

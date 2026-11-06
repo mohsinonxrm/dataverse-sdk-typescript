@@ -18,7 +18,7 @@ export interface msdyn_CheckIfAutoRouteToOwnerQueueEnabledResponse {
  * Unbound action
  */
 export class msdyn_CheckIfAutoRouteToOwnerQueueEnabledAction implements Executable<msdyn_CheckIfAutoRouteToOwnerQueueEnabledResponse> {
-  constructor(public readonly solutionId: string) {}
+  constructor(public readonly solutionId?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckIfAutoRouteToOwnerQueueEnabled`;

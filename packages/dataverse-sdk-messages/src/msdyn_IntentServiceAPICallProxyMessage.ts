@@ -13,8 +13,8 @@ export class msdyn_IntentServiceAPICallProxyRequest
   implements Executable<msdyn_IntentServiceAPICallProxyResponse>
 {
   constructor(
-    public intentServiceEntityType: string,
-    public intentServiceRequestPayload: string,
+    public intentServiceEntityType: string | undefined,
+    public intentServiceRequestPayload: string | undefined,
     public intentServiceRequestPayloadForTelemetry: string
   ) {
     super("msdyn_IntentServiceAPICallProxy");

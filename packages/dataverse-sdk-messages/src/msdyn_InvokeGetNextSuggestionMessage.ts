@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_InvokeGetNextSuggestionResponse as msdyn_InvokeGetNextSuggestionResponseData } from "./types/index.js";
 
 /**
@@ -14,9 +15,9 @@ export class msdyn_InvokeGetNextSuggestionRequest
   implements Executable<msdyn_InvokeGetNextSuggestionResponse>
 {
   constructor(
-    public entity: EntityReference,
-    public customAgentResponse: string,
-    public sourceContextEntity: EntityReference
+    public entity?: EntityReference | AnyEntityPayload,
+    public customAgentResponse?: string,
+    public sourceContextEntity?: EntityReference | AnyEntityPayload
   ) {
     super("msdyn_InvokeGetNextSuggestion");
   }

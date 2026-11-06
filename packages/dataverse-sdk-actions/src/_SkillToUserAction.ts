@@ -14,8 +14,8 @@ export interface _SkillToUserResponse {
  */
 export class _SkillToUserAction implements Executable<_SkillToUserResponse> {
   constructor(
-    public readonly updatedBRC: Record<string, unknown>[],
-    public readonly deletedBRC: Record<string, unknown>[]
+    public readonly updatedBRC?: Record<string, unknown>[],
+    public readonly deletedBRC?: Record<string, unknown>[]
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

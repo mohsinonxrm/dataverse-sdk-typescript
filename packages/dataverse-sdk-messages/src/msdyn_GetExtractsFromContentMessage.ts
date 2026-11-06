@@ -13,12 +13,12 @@ export class msdyn_GetExtractsFromContentRequest
   implements Executable<msdyn_GetExtractsFromContentResponse>
 {
   constructor(
-    public msdyn_activityId: string,
-    public msdyn_userQuery: string,
-    public msdyn_source: string,
-    public msdyn_top: number,
-    public msdyn_extractOperationInputParams: string,
-    public msdyn_keywords: string
+    public msdyn_activityId?: string,
+    public msdyn_userQuery?: string,
+    public msdyn_source?: string,
+    public msdyn_top?: number,
+    public msdyn_extractOperationInputParams?: string,
+    public msdyn_keywords?: string
   ) {
     super("msdyn_GetExtractsFromContent");
   }

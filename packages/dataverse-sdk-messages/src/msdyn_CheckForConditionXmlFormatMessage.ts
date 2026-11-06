@@ -12,7 +12,7 @@ export class msdyn_CheckForConditionXmlFormatRequest
   extends OrganizationRequest
   implements Executable<msdyn_CheckForConditionXmlFormatResponse>
 {
-  constructor(public solutionId: string) {
+  constructor(public solutionId?: string) {
     super("msdyn_CheckForConditionXmlFormat");
   }
 

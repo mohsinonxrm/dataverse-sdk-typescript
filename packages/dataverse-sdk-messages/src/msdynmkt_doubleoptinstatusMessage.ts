@@ -14,7 +14,7 @@ export class msdynmkt_doubleoptinstatusRequest
 {
   constructor(
     public msdynmkt_complianceid: string,
-    public dOI_Job_Status: string
+    public dOI_Job_Status?: string
   ) {
     super("msdynmkt_doubleoptinstatus");
   }

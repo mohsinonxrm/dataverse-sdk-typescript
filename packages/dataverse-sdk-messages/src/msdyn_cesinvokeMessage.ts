@@ -13,9 +13,9 @@ export class msdyn_cesinvokeRequest
   implements Executable<msdyn_cesinvokeResponse>
 {
   constructor(
-    public callType: string,
-    public eventName: string,
-    public surveyName: string
+    public callType?: string,
+    public eventName?: string,
+    public surveyName?: string
   ) {
     super("msdyn_cesinvoke");
   }

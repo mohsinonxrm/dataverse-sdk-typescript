@@ -18,17 +18,17 @@ export interface InferEntityDefinitionResponse {
  */
 export class InferEntityDefinitionAction implements Executable<InferEntityDefinitionResponse> {
   constructor(
-    public readonly languageCode: number,
-    public readonly useUserSettings: boolean,
-    public readonly userContext: string,
+    public readonly languageCode: number | undefined,
+    public readonly useUserSettings: boolean | undefined,
+    public readonly userContext: string | undefined,
     public readonly solutionPrefix: string,
-    public readonly previewData: string,
-    public readonly sourceTimeZone: string,
-    public readonly parseSampleData: boolean,
-    public readonly fileInfo: string,
+    public readonly previewData: string | undefined,
+    public readonly sourceTimeZone: string | undefined,
+    public readonly parseSampleData: boolean | undefined,
+    public readonly fileInfo: string | undefined,
     public readonly recordId: string,
-    public readonly entityDefinition: string,
-    public readonly entitiesCollection: string
+    public readonly entityDefinition?: string,
+    public readonly entitiesCollection?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

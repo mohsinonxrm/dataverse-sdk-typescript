@@ -16,10 +16,10 @@ export interface msdyn_GetWorkListConfigurationResponse {
  */
 export class msdyn_GetWorkListConfigurationAction implements Executable<msdyn_GetWorkListConfigurationResponse> {
   constructor(
-    public readonly viewtype: string,
-    public readonly getData: boolean,
-    public readonly defaultViewType: string,
-    public readonly queryParams: string
+    public readonly viewtype?: string,
+    public readonly getData?: boolean,
+    public readonly defaultViewType?: string,
+    public readonly queryParams?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

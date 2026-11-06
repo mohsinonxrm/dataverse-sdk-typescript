@@ -15,7 +15,7 @@ export interface msdyncrm_UpsertFileResponse {
 export class msdyncrm_UpsertFileAction implements Executable<msdyncrm_UpsertFileResponse> {
   constructor(
     public readonly inputFile: string,
-    public readonly inputKeywords: string
+    public readonly inputKeywords?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

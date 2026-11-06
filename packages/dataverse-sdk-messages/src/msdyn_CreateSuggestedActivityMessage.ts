@@ -16,7 +16,7 @@ export class msdyn_CreateSuggestedActivityRequest
     public suggestedActivityId: string,
     public regardingObjectId: string,
     public regardingObjectEntity: string,
-    public isAdminConsented: boolean
+    public isAdminConsented?: boolean
   ) {
     super("msdyn_CreateSuggestedActivity");
   }

@@ -11,10 +11,10 @@ export class msdyn_UpdateCadenceRunStatusRequest
   implements Executable<msdyn_UpdateCadenceRunStatusResponse>
 {
   constructor(
-    public salesCadenceInstanceId: string,
-    public statusType: number,
-    public overallStatus: number,
-    public flowRunStatus: string
+    public salesCadenceInstanceId?: string,
+    public statusType?: number,
+    public overallStatus?: number,
+    public flowRunStatus?: string
   ) {
     super("msdyn_UpdateCadenceRunStatus");
   }

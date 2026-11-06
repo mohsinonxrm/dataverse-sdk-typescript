@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * _EvaluateRuleAndRoute request message
@@ -12,7 +13,7 @@ export class _EvaluateRuleAndRouteRequest
   implements Executable<_EvaluateRuleAndRouteResponse>
 {
   constructor(
-    public target: EntityReference,
+    public target: EntityReference | AnyEntityPayload,
     public routingRuleSetId: string
   ) {
     super("_EvaluateRuleAndRoute");

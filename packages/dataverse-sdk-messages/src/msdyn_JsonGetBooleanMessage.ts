@@ -13,9 +13,9 @@ export class msdyn_JsonGetBooleanRequest
   implements Executable<msdyn_JsonGetBooleanResponse>
 {
   constructor(
-    public json: string,
+    public json: string | undefined,
     public propertyPath: string,
-    public defaultReturnValue: boolean
+    public defaultReturnValue?: boolean
   ) {
     super("msdyn_JsonGetBoolean");
   }

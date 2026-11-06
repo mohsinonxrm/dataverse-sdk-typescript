@@ -13,7 +13,7 @@ export interface msdynmkt_ContactabilitySnapshotCustomActionResponse {
  * Unbound action
  */
 export class msdynmkt_ContactabilitySnapshotCustomActionAction implements Executable<msdynmkt_ContactabilitySnapshotCustomActionResponse> {
-  constructor(public readonly input: string) {}
+  constructor(public readonly input?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_ContactabilitySnapshotCustomAction`;

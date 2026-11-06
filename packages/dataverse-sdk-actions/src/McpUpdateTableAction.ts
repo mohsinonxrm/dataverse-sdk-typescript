@@ -14,10 +14,10 @@ export interface McpUpdateTableResponse {
  */
 export class McpUpdateTableAction implements Executable<McpUpdateTableResponse> {
   constructor(
-    public readonly newDisplayName: string,
+    public readonly newDisplayName: string | undefined,
     public readonly tablename: string,
     public readonly item: string,
-    public readonly description: string
+    public readonly description?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

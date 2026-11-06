@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from SendAppNotification action
@@ -15,15 +16,15 @@ export interface SendAppNotificationResponse {
  */
 export class SendAppNotificationAction implements Executable<SendAppNotificationResponse> {
   constructor(
-    public readonly recipient: EntityReference,
-    public readonly expiry: number,
-    public readonly priority: number,
-    public readonly overrideContent: EntityReference,
+    public readonly recipient: EntityReference | AnyEntityPayload,
+    public readonly expiry: number | undefined,
+    public readonly priority: number | undefined,
+    public readonly overrideContent: EntityReference | AnyEntityPayload | undefined,
     public readonly title: string,
-    public readonly iconType: number,
-    public readonly body: string,
-    public readonly actions: EntityReference,
-    public readonly toastType: number
+    public readonly iconType?: number,
+    public readonly body?: string,
+    public readonly actions?: EntityReference | AnyEntityPayload,
+    public readonly toastType?: number
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

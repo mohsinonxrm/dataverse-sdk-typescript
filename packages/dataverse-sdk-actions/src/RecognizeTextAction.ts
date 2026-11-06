@@ -14,9 +14,9 @@ export interface RecognizeTextResponse {
  */
 export class RecognizeTextAction implements Executable<RecognizeTextResponse> {
   constructor(
-    public readonly modelId: string,
+    public readonly modelId: string | undefined,
     public readonly base64encoded: string,
-    public readonly source: string
+    public readonly source?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -16,8 +16,8 @@ export interface msdyn_GetAnswerFromDocumentsResponse {
  */
 export class msdyn_GetAnswerFromDocumentsAction implements Executable<msdyn_GetAnswerFromDocumentsResponse> {
   constructor(
-    public readonly msdyn_activityId: string,
-    public readonly msdyn_updatedUserQuery: string,
+    public readonly msdyn_activityId: string | undefined,
+    public readonly msdyn_updatedUserQuery: string | undefined,
     public readonly msdyn_documentUrl: string
   ) {}
 

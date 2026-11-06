@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * msdyn_ResolveSolutionHealthRuleFailure request message
@@ -11,7 +12,7 @@ export class msdyn_ResolveSolutionHealthRuleFailureRequest
   extends OrganizationRequest
   implements Executable<msdyn_ResolveSolutionHealthRuleFailureResponse>
 {
-  constructor(public analysisResult: EntityReference) {
+  constructor(public analysisResult?: EntityReference | AnyEntityPayload) {
     super("msdyn_ResolveSolutionHealthRuleFailure");
   }
 

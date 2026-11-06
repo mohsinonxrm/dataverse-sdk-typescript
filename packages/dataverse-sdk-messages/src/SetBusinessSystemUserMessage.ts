@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { businessunit } from "./types/index.js";
 
 /**
@@ -14,9 +15,9 @@ export class SetBusinessSystemUserRequest
 {
   constructor(
     public systemuserId: string,
-    public businessUnit: businessunit,
-    public reassignPrincipal: EntityReference,
-    public doNotMoveAllRecords: boolean
+    public businessUnit: EntityReference | EntityPayload<businessunit>,
+    public reassignPrincipal: EntityReference | AnyEntityPayload,
+    public doNotMoveAllRecords?: boolean
   ) {
     super("SetBusinessSystemUser");
   }

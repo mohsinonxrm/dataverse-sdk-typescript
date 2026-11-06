@@ -18,9 +18,9 @@ export interface msdyn_CheckForCustomizedAppModuleResponse {
  */
 export class msdyn_CheckForCustomizedAppModuleAction implements Executable<msdyn_CheckForCustomizedAppModuleResponse> {
   constructor(
-    public readonly entityIds: string,
-    public readonly solutionId: string,
-    public readonly excludeSolutionIds: string
+    public readonly entityIds?: string,
+    public readonly solutionId?: string,
+    public readonly excludeSolutionIds?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

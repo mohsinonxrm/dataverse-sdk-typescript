@@ -11,10 +11,10 @@ export class msdyn_CascadeCrewBookingsRequest
   implements Executable<msdyn_CascadeCrewBookingsResponse>
 {
   constructor(
-    public bookingsToCreate: Record<string, unknown>[],
-    public bookingsToUpdate: Record<string, unknown>[],
-    public parentBookingsToUpdate: Record<string, unknown>[],
-    public batchNumber: number
+    public bookingsToCreate?: Record<string, unknown>[],
+    public bookingsToUpdate?: Record<string, unknown>[],
+    public parentBookingsToUpdate?: Record<string, unknown>[],
+    public batchNumber?: number
   ) {
     super("msdyn_CascadeCrewBookings");
   }

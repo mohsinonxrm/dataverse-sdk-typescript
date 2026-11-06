@@ -12,7 +12,7 @@ export class TrainRequest extends OrganizationRequest implements Executable<Trai
   constructor(
     public msdyn_aiconfigurationId: string,
     public version: string,
-    public source: string
+    public source?: string
   ) {
     super("Train");
   }

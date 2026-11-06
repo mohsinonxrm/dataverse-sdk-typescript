@@ -16,8 +16,8 @@ export class msdyn_StoreQualityEvaluationResultAction implements Executable<msdy
   constructor(
     public readonly criteriaVersionNumber: number,
     public readonly evaluationId: string,
-    public readonly evaluationMethod: number,
-    public readonly evaluationInsight: string,
+    public readonly evaluationMethod: number | undefined,
+    public readonly evaluationInsight: string | undefined,
     public readonly status: string
   ) {}
 

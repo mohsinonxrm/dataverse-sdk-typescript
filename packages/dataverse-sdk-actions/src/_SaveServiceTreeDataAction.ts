@@ -16,7 +16,7 @@ export interface _SaveServiceTreeDataResponse {
 export class _SaveServiceTreeDataAction implements Executable<_SaveServiceTreeDataResponse> {
   constructor(
     public readonly rootNodeId: string,
-    public readonly resourceRuleList: string
+    public readonly resourceRuleList?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

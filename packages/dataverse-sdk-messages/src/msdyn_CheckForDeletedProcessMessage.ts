@@ -13,8 +13,8 @@ export class msdyn_CheckForDeletedProcessRequest
   implements Executable<msdyn_CheckForDeletedProcessResponse>
 {
   constructor(
-    public entityIds: string,
-    public solutionId: string
+    public entityIds?: string,
+    public solutionId?: string
   ) {
     super("msdyn_CheckForDeletedProcess");
   }

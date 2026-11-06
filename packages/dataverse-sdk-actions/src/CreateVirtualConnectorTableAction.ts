@@ -15,7 +15,7 @@ export interface CreateVirtualConnectorTableResponse {
  */
 export class CreateVirtualConnectorTableAction implements Executable<CreateVirtualConnectorTableResponse> {
   constructor(
-    public readonly createVirtualConnectorTableMetadata: CreateVirtualConnectorTableMetadata
+    public readonly createVirtualConnectorTableMetadata?: CreateVirtualConnectorTableMetadata
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

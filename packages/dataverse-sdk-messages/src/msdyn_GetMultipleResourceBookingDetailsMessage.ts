@@ -16,10 +16,10 @@ export class msdyn_GetMultipleResourceBookingDetailsRequest
     public startDate: string,
     public endDate: string,
     public timescale: number,
-    public schedulerSettings: string,
+    public schedulerSettings: string | undefined,
     public targets: string,
-    public considerAppointments: boolean,
-    public ignoreTimeZone: boolean
+    public considerAppointments?: boolean,
+    public ignoreTimeZone?: boolean
   ) {
     super("msdyn_GetMultipleResourceBookingDetails");
   }

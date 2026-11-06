@@ -11,7 +11,7 @@ export class msdynmkt_GetAllLegalMetadataItemsRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_GetAllLegalMetadataItemsResponse>
 {
-  constructor(public msdynmkt_GetAllLegalMetadataItems_request_LanguageCode: number) {
+  constructor(public msdynmkt_GetAllLegalMetadataItems_request_LanguageCode?: number) {
     super("msdynmkt_GetAllLegalMetadataItems");
   }
 

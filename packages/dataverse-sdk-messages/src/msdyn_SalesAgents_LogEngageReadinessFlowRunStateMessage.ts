@@ -11,10 +11,10 @@ export class msdyn_SalesAgents_LogEngageReadinessFlowRunStateRequest
   implements Executable<msdyn_SalesAgents_LogEngageReadinessFlowRunStateResponse>
 {
   constructor(
-    public msdyn_TrackingId: string,
-    public msdyn_SalesAgentRun: string,
-    public msdyn_Thread: string,
-    public msdyn_FlowRunState: string
+    public msdyn_TrackingId?: string,
+    public msdyn_SalesAgentRun?: string,
+    public msdyn_Thread?: string,
+    public msdyn_FlowRunState?: string
   ) {
     super("msdyn_SalesAgents_LogEngageReadinessFlowRunState");
   }

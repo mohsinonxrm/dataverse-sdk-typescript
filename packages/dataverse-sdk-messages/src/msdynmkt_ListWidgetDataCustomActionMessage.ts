@@ -12,7 +12,7 @@ export class msdynmkt_ListWidgetDataCustomActionRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_ListWidgetDataCustomActionResponse>
 {
-  constructor(public widgetRequest: string) {
+  constructor(public widgetRequest?: string) {
     super("msdynmkt_ListWidgetDataCustomAction");
   }
 

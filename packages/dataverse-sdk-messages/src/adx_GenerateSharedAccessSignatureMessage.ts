@@ -13,9 +13,9 @@ export class adx_GenerateSharedAccessSignatureRequest
   implements Executable<adx_GenerateSharedAccessSignatureResponse>
 {
   constructor(
-    public permissions: number,
-    public resourceType: number,
-    public resource: string
+    public permissions?: number,
+    public resourceType?: number,
+    public resource?: string
   ) {
     super("adx_GenerateSharedAccessSignature");
   }

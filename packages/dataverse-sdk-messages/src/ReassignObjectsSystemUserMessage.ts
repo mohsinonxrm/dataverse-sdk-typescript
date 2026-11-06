@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * ReassignObjectsSystemUser request message
@@ -13,8 +14,8 @@ export class ReassignObjectsSystemUserRequest
 {
   constructor(
     public systemuserId: string,
-    public reassignPrincipal: EntityReference,
-    public objectType: number
+    public reassignPrincipal: EntityReference | AnyEntityPayload,
+    public objectType?: number
   ) {
     super("ReassignObjectsSystemUser");
   }

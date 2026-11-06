@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { systemuser } from "./types/index.js";
 
 /**
@@ -13,7 +15,7 @@ export class SetParentSystemUserRequest
 {
   constructor(
     public systemuserId: string,
-    public parent: systemuser,
+    public parent: EntityReference | EntityPayload<systemuser>,
     public keepChildUsers: boolean
   ) {
     super("SetParentSystemUser");

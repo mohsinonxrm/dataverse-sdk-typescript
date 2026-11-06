@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from CompoundUpdateDuplicateDetectionRule action
@@ -15,7 +16,7 @@ export interface CompoundUpdateDuplicateDetectionRuleResponse {
  */
 export class CompoundUpdateDuplicateDetectionRuleAction implements Executable<CompoundUpdateDuplicateDetectionRuleResponse> {
   constructor(
-    public readonly entity: EntityReference,
+    public readonly entity: EntityReference | AnyEntityPayload,
     public readonly childEntities: Record<string, unknown>[]
   ) {}
 

@@ -10,7 +10,7 @@ export class msdyn_OSApplyPredictionRequest
   extends OrganizationRequest
   implements Executable<msdyn_OSApplyPredictionResponse>
 {
-  constructor(public autoScheduleTrainingConfig: string) {
+  constructor(public autoScheduleTrainingConfig?: string) {
     super("msdyn_OSApplyPrediction");
   }
 

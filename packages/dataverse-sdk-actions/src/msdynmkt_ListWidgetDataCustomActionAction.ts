@@ -17,7 +17,7 @@ export interface msdynmkt_ListWidgetDataCustomActionResponse {
  * Unbound action
  */
 export class msdynmkt_ListWidgetDataCustomActionAction implements Executable<msdynmkt_ListWidgetDataCustomActionResponse> {
-  constructor(public readonly widgetRequest: string) {}
+  constructor(public readonly widgetRequest?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_ListWidgetDataCustomAction`;

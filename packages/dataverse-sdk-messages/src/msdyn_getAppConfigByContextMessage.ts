@@ -14,9 +14,9 @@ export class msdyn_getAppConfigByContextRequest
 {
   constructor(
     public appUniqueName: string,
-    public userId: string,
-    public roles: string,
-    public formFactor: number
+    public userId?: string,
+    public roles?: string,
+    public formFactor?: number
   ) {
     super("msdyn_getAppConfigByContext");
   }

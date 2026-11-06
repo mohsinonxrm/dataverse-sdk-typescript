@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_CancelBookingsResponse as msdyn_CancelBookingsResponseData } from "./types/index.js";
 
 /**
@@ -14,10 +15,10 @@ export class msdyn_CancelBookingsRequest
   implements Executable<msdyn_CancelBookingsResponse>
 {
   constructor(
-    public bookingIds: string,
-    public defaultBookingDetail: EntityReference,
-    public bookingCancelContext: string,
-    public considerAppointments: boolean
+    public bookingIds?: string,
+    public defaultBookingDetail?: EntityReference | AnyEntityPayload,
+    public bookingCancelContext?: string,
+    public considerAppointments?: boolean
   ) {
     super("msdyn_CancelBookings");
   }

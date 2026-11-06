@@ -12,7 +12,7 @@ export class msdyn_UpdateModelGradesRequest
   extends OrganizationRequest
   implements Executable<msdyn_UpdateModelGradesResponse>
 {
-  constructor(public predictionGrade: string) {
+  constructor(public predictionGrade?: string) {
     super("msdyn_UpdateModelGrades");
   }
 

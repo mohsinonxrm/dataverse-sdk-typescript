@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * PvaStartConversation request message
@@ -14,7 +15,7 @@ export class PvaStartConversationRequest
 {
   constructor(
     public version: string,
-    public request: EntityReference
+    public request: EntityReference | AnyEntityPayload
   ) {
     super("PvaStartConversation");
   }

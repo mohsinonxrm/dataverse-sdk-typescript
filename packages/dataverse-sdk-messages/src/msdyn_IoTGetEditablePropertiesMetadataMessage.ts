@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import type { EntityReference } from "./EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type {
   msdyn_IoTGetEditablePropertiesMetadataResponse as msdyn_IoTGetEditablePropertiesMetadataResponseData,
   msdyn_iotdevicecategory,
@@ -15,7 +17,7 @@ export class msdyn_IoTGetEditablePropertiesMetadataRequest
   extends OrganizationRequest
   implements Executable<msdyn_IoTGetEditablePropertiesMetadataResponse>
 {
-  constructor(public deviceCategory: msdyn_iotdevicecategory) {
+  constructor(public deviceCategory: EntityReference | EntityPayload<msdyn_iotdevicecategory>) {
     super("msdyn_IoTGetEditablePropertiesMetadata");
   }
 

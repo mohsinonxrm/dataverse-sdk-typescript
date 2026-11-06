@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from CalculatePrice action
@@ -15,8 +16,8 @@ export interface CalculatePriceResponse {
  */
 export class CalculatePriceAction implements Executable<CalculatePriceResponse> {
   constructor(
-    public readonly target: EntityReference,
-    public readonly parentId: string
+    public readonly target: EntityReference | AnyEntityPayload,
+    public readonly parentId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

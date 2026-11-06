@@ -14,11 +14,11 @@ export interface msdyn_GetKeywordsResponse {
  */
 export class msdyn_GetKeywordsAction implements Executable<msdyn_GetKeywordsResponse> {
   constructor(
-    public readonly msdyn_entityType: string,
-    public readonly msdyn_activityId: string,
-    public readonly msdyn_queryLocale: string,
+    public readonly msdyn_entityType: string | undefined,
+    public readonly msdyn_activityId: string | undefined,
+    public readonly msdyn_queryLocale: string | undefined,
     public readonly msdyn_userquery: string,
-    public readonly msdyn_entityName: string
+    public readonly msdyn_entityName?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

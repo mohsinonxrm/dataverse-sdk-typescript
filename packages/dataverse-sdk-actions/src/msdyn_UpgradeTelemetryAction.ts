@@ -15,17 +15,17 @@ export interface msdyn_UpgradeTelemetryResponse {
 export class msdyn_UpgradeTelemetryAction implements Executable<msdyn_UpgradeTelemetryResponse> {
   constructor(
     public readonly eventId: number,
-    public readonly runId: string,
-    public readonly packageName: string,
-    public readonly solutionName: string,
-    public readonly startingVersion: string,
-    public readonly targetVersion: string,
-    public readonly durationSeconds: number,
-    public readonly success: number,
-    public readonly stepId: string,
-    public readonly stepName: string,
-    public readonly errorMessage: string,
-    public readonly details: string
+    public readonly runId?: string,
+    public readonly packageName?: string,
+    public readonly solutionName?: string,
+    public readonly startingVersion?: string,
+    public readonly targetVersion?: string,
+    public readonly durationSeconds?: number,
+    public readonly success?: number,
+    public readonly stepId?: string,
+    public readonly stepName?: string,
+    public readonly errorMessage?: string,
+    public readonly details?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

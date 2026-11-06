@@ -17,7 +17,7 @@ export class msdyn_assignentityAction implements Executable<msdyn_assignentityRe
     public readonly regardingEntityId: string,
     public readonly regardingEntityName: string,
     public readonly segmentId: string,
-    public readonly correlationId: string
+    public readonly correlationId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

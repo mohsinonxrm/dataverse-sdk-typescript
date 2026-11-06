@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import type { EntityReference } from "./EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type {
   msdyn_CreatePublishAIConfigResponse as msdyn_CreatePublishAIConfigResponseData,
   msdyn_ocsimltraining,
@@ -17,7 +19,7 @@ export class msdyn_CreatePublishAIConfigRequest
 {
   constructor(
     public msdyn_ocskillidentmlmodelId: string,
-    public ocsimltraining: msdyn_ocsimltraining
+    public ocsimltraining: EntityReference | EntityPayload<msdyn_ocsimltraining>
   ) {
     super("msdyn_CreatePublishAIConfig");
   }

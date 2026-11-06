@@ -14,7 +14,7 @@ export class msdyn_GetServiceBaseUrlRequest
 {
   constructor(
     public azureApplicationType: number,
-    public orgMigratedToCoreServices: boolean
+    public orgMigratedToCoreServices?: boolean
   ) {
     super("msdyn_GetServiceBaseUrl");
   }

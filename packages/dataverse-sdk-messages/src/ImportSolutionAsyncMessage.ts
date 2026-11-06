@@ -19,21 +19,21 @@ export class ImportSolutionAsyncRequest
   constructor(
     public overwriteUnmanagedCustomizations: boolean,
     public publishWorkflows: boolean,
-    public customizationFile: string,
-    public importJobId: string,
-    public convertToManaged: boolean,
-    public skipProductUpdateDependencies: boolean,
-    public holdingSolution: boolean,
-    public skipQueueRibbonJob: boolean,
-    public layerDesiredOrder: LayerDesiredOrder,
-    public asyncRibbonProcessing: boolean,
-    public componentParameters: Record<string, unknown>[],
-    public solutionParameters: SolutionParameters,
-    public isTemplateMode: boolean,
-    public templateSuffix: string,
-    public templateDisplayNamePrefix: string,
-    public stageAndUpgrade: boolean,
-    public schemaUpdatesOnly: boolean
+    public customizationFile?: string,
+    public importJobId?: string,
+    public convertToManaged?: boolean,
+    public skipProductUpdateDependencies?: boolean,
+    public holdingSolution?: boolean,
+    public skipQueueRibbonJob?: boolean,
+    public layerDesiredOrder?: LayerDesiredOrder,
+    public asyncRibbonProcessing?: boolean,
+    public componentParameters?: Record<string, unknown>[],
+    public solutionParameters?: SolutionParameters,
+    public isTemplateMode?: boolean,
+    public templateSuffix?: string,
+    public templateDisplayNamePrefix?: string,
+    public stageAndUpgrade?: boolean,
+    public schemaUpdatesOnly?: boolean
   ) {
     super("ImportSolutionAsync");
   }

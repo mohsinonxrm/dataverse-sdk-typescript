@@ -20,7 +20,7 @@ export class FullTextSearchKnowledgeArticleAction implements Executable<FullText
     public readonly useInflection: boolean,
     public readonly removeDuplicates: boolean,
     public readonly stateCode: number,
-    public readonly queryExpression: TypedQueryBase
+    public readonly queryExpression?: TypedQueryBase
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

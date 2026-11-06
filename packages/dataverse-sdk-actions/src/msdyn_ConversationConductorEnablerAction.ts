@@ -16,12 +16,12 @@ export interface msdyn_ConversationConductorEnablerResponse {
 export class msdyn_ConversationConductorEnablerAction implements Executable<msdyn_ConversationConductorEnablerResponse> {
   constructor(
     public readonly botApplicationId: string,
-    public readonly applicationId: string,
+    public readonly applicationId: string | undefined,
     public readonly firstName: string,
     public readonly lastName: string,
-    public readonly botHandle: string,
-    public readonly owningEnvironmentId: string,
-    public readonly properties: string
+    public readonly botHandle?: string,
+    public readonly owningEnvironmentId?: string,
+    public readonly properties?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -1,4 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { solutioncomponent } from "./types/index.js";
 
 /**
@@ -15,7 +17,7 @@ export interface RemoveSolutionComponentResponse {
  */
 export class RemoveSolutionComponentAction implements Executable<RemoveSolutionComponentResponse> {
   constructor(
-    public readonly solutionComponent: solutioncomponent,
+    public readonly solutionComponent: EntityReference | EntityPayload<solutioncomponent>,
     public readonly componentType: number,
     public readonly solutionUniqueName: string
   ) {}

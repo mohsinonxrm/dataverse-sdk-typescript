@@ -13,9 +13,9 @@ export class msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecksRequest
   implements Executable<msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecksResponse>
 {
   constructor(
-    public msdyn_TrackingId: string,
-    public msdyn_SalesAgentRun: string,
-    public msdyn_SalesMacroAgentType: number
+    public msdyn_TrackingId?: string,
+    public msdyn_SalesAgentRun?: string,
+    public msdyn_SalesMacroAgentType?: number
   ) {
     super("msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecks");
   }

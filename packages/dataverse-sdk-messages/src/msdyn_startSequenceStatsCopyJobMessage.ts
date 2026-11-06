@@ -10,7 +10,7 @@ export class msdyn_startSequenceStatsCopyJobRequest
   extends OrganizationRequest
   implements Executable<msdyn_startSequenceStatsCopyJobResponse>
 {
-  constructor(public inputData: string) {
+  constructor(public inputData?: string) {
     super("msdyn_startSequenceStatsCopyJob");
   }
 

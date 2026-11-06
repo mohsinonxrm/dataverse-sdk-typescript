@@ -14,7 +14,7 @@ export class msdyn_assignentityRequest
     public regardingEntityId: string,
     public regardingEntityName: string,
     public segmentId: string,
-    public correlationId: string
+    public correlationId?: string
   ) {
     super("msdyn_assignentity");
   }

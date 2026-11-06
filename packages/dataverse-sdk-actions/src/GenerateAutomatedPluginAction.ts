@@ -16,8 +16,8 @@ export interface GenerateAutomatedPluginResponse {
 export class GenerateAutomatedPluginAction implements Executable<GenerateAutomatedPluginResponse> {
   constructor(
     public readonly stage: number,
-    public readonly context: string,
-    public readonly solutionUniqueName: string,
+    public readonly context: string | undefined,
+    public readonly solutionUniqueName: string | undefined,
     public readonly expression: string,
     public readonly entityLogicalName: string,
     public readonly messageName: string,

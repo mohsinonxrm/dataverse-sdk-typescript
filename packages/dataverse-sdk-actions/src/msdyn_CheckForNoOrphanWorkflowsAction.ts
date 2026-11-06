@@ -17,7 +17,7 @@ export interface msdyn_CheckForNoOrphanWorkflowsResponse {
  * Unbound action
  */
 export class msdyn_CheckForNoOrphanWorkflowsAction implements Executable<msdyn_CheckForNoOrphanWorkflowsResponse> {
-  constructor(public readonly solutionId: string) {}
+  constructor(public readonly solutionId?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckForNoOrphanWorkflows`;

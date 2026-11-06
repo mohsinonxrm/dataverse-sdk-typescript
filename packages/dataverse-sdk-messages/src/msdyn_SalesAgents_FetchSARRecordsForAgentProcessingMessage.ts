@@ -15,8 +15,8 @@ export class msdyn_SalesAgents_FetchSARRecordsForAgentProcessingRequest
   constructor(
     public msdyn_SalesAgentType: number,
     public msdyn_AgentType: number,
-    public msdyn_TrackingId: string,
-    public msdyn_Top: number
+    public msdyn_TrackingId?: string,
+    public msdyn_Top?: number
   ) {
     super("msdyn_SalesAgents_FetchSARRecordsForAgentProcessing");
   }

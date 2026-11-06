@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { InitializeFileBlocksUploadResponse as InitializeFileBlocksUploadResponseData } from "./types/index.js";
 
 /**
@@ -14,7 +15,7 @@ export class InitializeFileBlocksUploadRequest
   implements Executable<InitializeFileBlocksUploadResponse>
 {
   constructor(
-    public target: EntityReference,
+    public target: EntityReference | AnyEntityPayload,
     public fileName: string,
     public fileAttributeName: string
   ) {

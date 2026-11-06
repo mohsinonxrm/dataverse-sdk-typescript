@@ -13,7 +13,7 @@ export class msdyn_SalesAgents_CreateSARBasedOnPreviousAgentRequest
   constructor(
     public msdyn_SalesAgentType: number,
     public msdyn_PreviousSarRecordId: string,
-    public msdyn_TrackingId: string
+    public msdyn_TrackingId?: string
   ) {
     super("msdyn_SalesAgents_CreateSARBasedOnPreviousAgent");
   }

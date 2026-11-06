@@ -12,7 +12,7 @@ export class msdyn_RetrieveKnowledgeManagementSettingsRequest
   extends OrganizationRequest
   implements Executable<msdyn_RetrieveKnowledgeManagementSettingsResponse>
 {
-  constructor(public recordTypes: string) {
+  constructor(public recordTypes?: string) {
     super("msdyn_RetrieveKnowledgeManagementSettings");
   }
 

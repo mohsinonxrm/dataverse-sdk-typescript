@@ -16,7 +16,7 @@ export interface msdyn_LeadResearchCustomActionResponse {
  * Unbound action
  */
 export class msdyn_LeadResearchCustomActionAction implements Executable<msdyn_LeadResearchCustomActionResponse> {
-  constructor(public readonly researchRequest: string) {}
+  constructor(public readonly researchRequest?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_LeadResearchCustomAction`;

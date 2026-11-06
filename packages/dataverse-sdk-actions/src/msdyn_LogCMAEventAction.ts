@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_LogCMAEvent action
@@ -19,8 +20,8 @@ export class msdyn_LogCMAEventAction implements Executable<msdyn_LogCMAEventResp
     public readonly eventType: string,
     public readonly source: string,
     public readonly component: string,
-    public readonly eventData: string,
-    public readonly entity: EntityReference
+    public readonly eventData?: string,
+    public readonly entity?: EntityReference | AnyEntityPayload
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

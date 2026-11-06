@@ -15,7 +15,7 @@ export interface msdyn_StartODOSDeprovisioningResponse {
 export class msdyn_StartODOSDeprovisioningAction implements Executable<msdyn_StartODOSDeprovisioningResponse> {
   constructor(
     public readonly featureName: string,
-    public readonly isDeprecationDeprovisioning: boolean
+    public readonly isDeprecationDeprovisioning?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -17,7 +17,7 @@ export interface ReplacePrivilegesRoleResponse {
 export class ReplacePrivilegesRoleAction implements Executable<ReplacePrivilegesRoleResponse> {
   constructor(
     public readonly roleId: string,
-    public readonly privileges: RolePrivilege[]
+    public readonly privileges?: RolePrivilege[]
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

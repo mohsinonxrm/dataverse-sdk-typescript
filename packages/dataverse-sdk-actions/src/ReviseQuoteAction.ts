@@ -19,7 +19,7 @@ export interface ReviseQuoteResponse extends quote {
 export class ReviseQuoteAction implements Executable<ReviseQuoteResponse> {
   constructor(
     public readonly quoteId: string,
-    public readonly columnSet: ColumnSet
+    public readonly columnSet?: ColumnSet
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

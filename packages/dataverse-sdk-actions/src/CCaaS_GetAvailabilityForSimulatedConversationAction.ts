@@ -21,10 +21,10 @@ export interface CCaaS_GetAvailabilityForSimulatedConversationResponse {
  */
 export class CCaaS_GetAvailabilityForSimulatedConversationAction implements Executable<CCaaS_GetAvailabilityForSimulatedConversationResponse> {
   constructor(
-    public readonly liveWorkStreamId: string,
-    public readonly customContextItems: string,
+    public readonly liveWorkStreamId: string | undefined,
+    public readonly customContextItems: string | undefined,
     public readonly apiVersion: string,
-    public readonly channelEngagementContext: string
+    public readonly channelEngagementContext?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -18,7 +18,7 @@ export interface msdyn_CheckIfActivityMonitorEnabledResponse {
  * Unbound action
  */
 export class msdyn_CheckIfActivityMonitorEnabledAction implements Executable<msdyn_CheckIfActivityMonitorEnabledResponse> {
-  constructor(public readonly solutionId: string) {}
+  constructor(public readonly solutionId?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckIfActivityMonitorEnabled`;

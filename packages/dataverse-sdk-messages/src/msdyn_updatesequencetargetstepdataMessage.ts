@@ -12,7 +12,7 @@ export class msdyn_updatesequencetargetstepdataRequest
 {
   constructor(
     public msdyn_sequencetargetstepid: string,
-    public msdyn_linkedactivityid: string
+    public msdyn_linkedactivityid?: string
   ) {
     super("msdyn_updatesequencetargetstepdata");
   }

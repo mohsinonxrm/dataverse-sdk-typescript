@@ -11,15 +11,15 @@ export class UpsertCompositeDataSourceRequest
   implements Executable<UpsertCompositeDataSourceResponse>
 {
   constructor(
-    public parentDisplayName: string,
+    public parentDisplayName: string | undefined,
     public parentSchemaName: string,
     public parentParameterKey: string,
-    public parentApiId: string,
-    public parentValue: string,
-    public childDisplayName: string,
-    public childSchemaName: string,
-    public childParameterKey: string,
-    public childValue: string
+    public parentApiId?: string,
+    public parentValue?: string,
+    public childDisplayName?: string,
+    public childSchemaName?: string,
+    public childParameterKey?: string,
+    public childValue?: string
   ) {
     super("UpsertCompositeDataSource");
   }

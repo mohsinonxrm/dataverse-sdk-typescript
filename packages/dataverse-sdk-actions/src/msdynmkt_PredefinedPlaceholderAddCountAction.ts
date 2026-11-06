@@ -13,7 +13,7 @@ export interface msdynmkt_PredefinedPlaceholderAddCountResponse {
  * Unbound action
  */
 export class msdynmkt_PredefinedPlaceholderAddCountAction implements Executable<msdynmkt_PredefinedPlaceholderAddCountResponse> {
-  constructor(public readonly predefinedPlaceholderAddCountRequest: string) {}
+  constructor(public readonly predefinedPlaceholderAddCountRequest?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_PredefinedPlaceholderAddCount`;

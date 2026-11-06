@@ -14,8 +14,8 @@ export interface msdyn_CleanupCopilotAgentResponsesResponse {
  */
 export class msdyn_CleanupCopilotAgentResponsesAction implements Executable<msdyn_CleanupCopilotAgentResponsesResponse> {
   constructor(
-    public readonly untilMarker: string,
-    public readonly conversationId: string
+    public readonly untilMarker?: string,
+    public readonly conversationId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
