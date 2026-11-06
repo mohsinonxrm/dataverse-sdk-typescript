@@ -23,11 +23,11 @@ The SDK is organized as a monorepo with focused, composable packages:
 
 ### Core SDK
 
-| Package                                                                | Description                                                                            | Status      |
-| ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | ----------- |
-| **[@mohsinonxrm/dataverse-sdk-core](./packages/dataverse-sdk-core)**   | HTTP pipeline, middleware, fluent request builder, OData query support                 | ✅ Complete |
-| **[@mohsinonxrm/dataverse-sdk-batch](./packages/dataverse-sdk-batch)** | $batch operations with change sets, Content-ID references (auto-split is planned: #57) | ✅ Complete |
-| **[@mohsinonxrm/dataverse-sdk-xrm](./packages/dataverse-sdk-xrm)**     | OrganizationService facade (create/retrieve/update/delete/associate/execute)           | ✅ Complete |
+| Package                                                                | Description                                                                  | Status      |
+| ---------------------------------------------------------------------- | ---------------------------------------------------------------------------- | ----------- |
+| **[@mohsinonxrm/dataverse-sdk-core](./packages/dataverse-sdk-core)**   | HTTP pipeline, middleware, fluent request builder, OData query support       | ✅ Complete |
+| **[@mohsinonxrm/dataverse-sdk-batch](./packages/dataverse-sdk-batch)** | $batch operations with change sets, Content-ID references, auto-split        | ✅ Complete |
+| **[@mohsinonxrm/dataverse-sdk-xrm](./packages/dataverse-sdk-xrm)**     | OrganizationService facade (create/retrieve/update/delete/associate/execute) | ✅ Complete |
 
 ### Authentication
 
@@ -68,10 +68,10 @@ The SDK is organized as a monorepo with focused, composable packages:
 
 ```bash
 # Core SDK + authentication
-npm install @mohsinonxrm/dataverse-sdk-core @mohsinonxrm/dataverse-sdk-auth-msal-node
+npm install @mohsinonxrm/dataverse-sdk-core @mohsinonxrm/dataverse-sdk-auth-msal-node @azure/msal-node
 
 # Or with pnpm
-pnpm add @mohsinonxrm/dataverse-sdk-core @mohsinonxrm/dataverse-sdk-auth-msal-node
+pnpm add @mohsinonxrm/dataverse-sdk-core @mohsinonxrm/dataverse-sdk-auth-msal-node @azure/msal-node
 ```
 
 ### Basic Usage (Node.js - Client Credentials)
@@ -292,7 +292,7 @@ batch.addRequest("get-accounts", "GET", "/accounts?$top=5");
 // Transactional change set
 batch.beginChangeset();
 
-// Create account with Content-ID $1
+// Create account; its id is the Content-ID, so later requests can refer to it as $create-account
 batch.addRequest(
   "create-account",
   "POST",
@@ -301,7 +301,7 @@ batch.addRequest(
   { name: "Parent Account" }
 );
 
-// Create contact referencing $1
+// Create contact referencing the account
 batch.addRequest(
   "create-contact",
   "POST",
@@ -310,8 +310,9 @@ batch.addRequest(
   {
     firstname: "John",
     lastname: "Doe",
-    "parentcustomerid_account@odata.bind": "$1", // References Content-ID
-  }
+    "parentcustomerid_account@odata.bind": "$create-account", // References the Content-ID
+  },
+  ["create-account"]
 );
 
 batch.endChangeset();
@@ -415,21 +416,15 @@ import { FileColumnClient } from "@mohsinonxrm/dataverse-sdk-files";
 
 const fileClient = new FileColumnClient(client);
 
-// Upload with progress
-await fileClient.upload(
-  "accounts",
-  accountId,
-  "new_logo",
-  logoFile, // Blob or Buffer
-  {
-    chunkSize: 4 * 1024 * 1024, // 4MB chunks
-    onProgress: (uploaded, total) => {
-      console.log(`Upload: ${Math.round((uploaded / total) * 100)}%`);
-    },
-  }
-);
+// Upload with progress (entity set, record id, column, data, file name, options)
+await fileClient.upload("accounts", accountId, "new_logo", logoFile, "logo.png", {
+  chunkSize: 4 * 1024 * 1024, // 4MB, the default and the maximum
+  onProgress: ({ percentage }) => {
+    console.log(`Upload: ${percentage}%`);
+  },
+});
 
-// Download
+// Download: resolves to a Blob
 const file = await fileClient.download("accounts", accountId, "new_logo");
 ```
 

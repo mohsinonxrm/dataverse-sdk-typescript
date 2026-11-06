@@ -175,12 +175,11 @@ export default function AdvancedQuerying() {
     setError(null);
 
     try {
-      // Note: Object-based expand syntax not yet implemented in SDK
-      // Using string-based expand as workaround
+      // expand(navigationProperty, options): the options object follows the property it belongs to
       const response = await client
         .api("/contacts")
         .select("fullname", "emailaddress1")
-        .expand("parentcustomerid_account($select=name,revenue)")
+        .expand("parentcustomerid_account", { select: ["name", "revenue"] })
         .top(5)
         .get<JsonObject>();
 
@@ -198,10 +197,10 @@ export default function AdvancedQuerying() {
     setError(null);
 
     try {
-      const encodedFetchXml = encodeURIComponent(fetchXml);
-      const response = await client.api(`/accounts?fetchXml=${encodedFetchXml}`).get<JsonObject>();
+      // Runs the query against the entity set and returns one page (value, moreRecords, pagingCookie, ...)
+      const response = await client.fetchXml<JsonObject>("accounts", fetchXml);
 
-      setResults(response);
+      setResults({ ...response });
     } catch (err) {
       setError(err as Error);
     } finally {
@@ -279,7 +278,7 @@ export default function AdvancedQuerying() {
               },
               {
                 label: "Results",
-                code: "",
+                code: `await client.fetchXml('accounts', fetchXml)`,
                 result: JSON.stringify(results, null, 2),
               },
             ]}
@@ -384,12 +383,8 @@ export default function AdvancedQuerying() {
               {
                 label: "Expand Query",
                 code: `await client.api('/contacts')
-  .select()
-  .expand({
-    parentcustomerid_account: {
-      select: ['name', 'revenue']
-    }
-  })
+  .select('fullname', 'emailaddress1')
+  .expand('parentcustomerid_account', { select: ['name', 'revenue'] })
   .top(5)
   .get()`,
                 result: JSON.stringify(results, null, 2),
@@ -443,7 +438,7 @@ export default function AdvancedQuerying() {
             items={[
               {
                 label: "Results",
-                code: "",
+                code: `await client.fetchXml('accounts', fetchXml)`,
                 result: JSON.stringify(results, null, 2),
               },
             ]}

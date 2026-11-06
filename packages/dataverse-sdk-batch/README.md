@@ -140,7 +140,7 @@ getTotalRequestCount(): number
 Clears all requests and resets the builder state.
 
 ```typescript
-clear(): void
+clear(): BatchRequestBuilder
 ```
 
 ## Usage Examples
