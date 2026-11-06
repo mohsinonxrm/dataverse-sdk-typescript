@@ -1,4 +1,4 @@
-## ADR 0004 — Messages (CrmSdkMessages / XrmSdkMessages) + Generic OrganizationRequest
+## ADR 0004 — Messages (direct exports) + Generic OrganizationRequest
 
 **File:** `docs/adr/0004-messages.md`  
 **Status:** Accepted  
@@ -13,7 +13,7 @@ Some messages are module-specific (Sales/Customer Service). For example, `WinOpp
 
 Developers coming from .NET expect:
 
-- message classes separated by namespaces (CrmSdk vs XrmSdk),
+- message classes grouped as in the .NET SDK (CrmSdk vs XrmSdk namespaces; see the decision below for why this SDK does not use them),
 - request/response pairs,
 - a generic `OrganizationRequest` escape hatch when a message isn’t strongly typed.
 
