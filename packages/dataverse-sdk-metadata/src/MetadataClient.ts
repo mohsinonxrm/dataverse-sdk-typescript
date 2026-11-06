@@ -36,7 +36,6 @@ import type {
   GetValidManyToManyResponse,
   EntityQueryExpression,
   RetrieveMetadataChangesResponse,
-  DeletedMetadataFilters,
 } from "./types/index.js";
 
 /**
@@ -735,39 +734,42 @@ export class MetadataClient {
   // ==================== Relationship Eligibility ====================
 
   /**
-   * Check if an entity can be referenced (primary in 1:N)
+   * Check if an entity can be the primary (referenced) table in a 1:N relationship.
+   * Sends the `CanBeReferenced` action: `POST /CanBeReferenced` with `{ "EntityName": … }`.
    * @param entityName Entity logical name
    * @returns Whether the entity can be referenced
    */
   async canBeReferenced(entityName: string): Promise<boolean> {
     const response = await this.client
-      .api(`/CanBeReferenced(EntityName='${entityName}')`)
-      .get<CanBeReferencedResponse>();
-    return response.CanBeReferenced ?? false;
+      .api("/CanBeReferenced")
+      .post<CanBeReferencedResponse | undefined>({ EntityName: entityName });
+    return response?.CanBeReferenced ?? false;
   }
 
   /**
-   * Check if an entity can be referencing (related in 1:N)
+   * Check if an entity can be the related (referencing) table in a 1:N relationship.
+   * Sends the `CanBeReferencing` action: `POST /CanBeReferencing` with `{ "EntityName": … }`.
    * @param entityName Entity logical name
    * @returns Whether the entity can be referencing
    */
   async canBeReferencing(entityName: string): Promise<boolean> {
     const response = await this.client
-      .api(`/CanBeReferencing(EntityName='${entityName}')`)
-      .get<CanBeReferencingResponse>();
-    return response.CanBeReferencing ?? false;
+      .api("/CanBeReferencing")
+      .post<CanBeReferencingResponse | undefined>({ EntityName: entityName });
+    return response?.CanBeReferencing ?? false;
   }
 
   /**
-   * Check if an entity can participate in many-to-many
+   * Check if an entity can take part in a many-to-many relationship.
+   * Sends the `CanManyToMany` action: `POST /CanManyToMany` with `{ "EntityName": … }`.
    * @param entityName Entity logical name
    * @returns Whether the entity can participate in N:N
    */
   async canManyToMany(entityName: string): Promise<boolean> {
     const response = await this.client
-      .api(`/CanManyToMany(EntityName='${entityName}')`)
-      .get<CanManyToManyResponse>();
-    return response.CanManyToMany ?? false;
+      .api("/CanManyToMany")
+      .post<CanManyToManyResponse | undefined>({ EntityName: entityName });
+    return response?.CanManyToMany ?? false;
   }
 
   /**
@@ -808,55 +810,85 @@ export class MetadataClient {
   // ==================== Metadata Change Tracking ====================
 
   /**
-   * Retrieve metadata changes since a client version stamp
+   * Retrieve metadata, or the changes to it since an earlier call.
+   *
+   * `RetrieveMetadataChanges` is a Web API **function**, so this sends a GET with parameter
+   * aliases: `GET /RetrieveMetadataChanges(Query=@p1,ClientVersionStamp=@p2,…)?@p1=<json>`.
+   * Keep the returned `ServerVersionStamp` and pass it as `clientVersionStamp` next time to get
+   * only what changed since then.
+   *
+   * Dataverse reads the enum members in the query (`FilterOperator`, `ConditionOperator`) only
+   * by name (`"And"`, `"Equals"`), so numeric values are sent as their names. A condition's
+   * `Value` is `{ Type, Value }`, e.g. `{ Type: "System.String", Value: "account" }`.
+   *
    * @param query Entity query expression
-   * @param clientVersionStamp Client version stamp from previous call
-   * @param deletedMetadataFilters Types of deleted metadata to return
-   * @returns Metadata changes response with server version stamp
+   * @param clientVersionStamp `ServerVersionStamp` from a previous call
+   * @param deletedMetadataFilters With a version stamp, which deleted metadata to return: a
+   *   member name (`"Default"`, `"Attribute"`, `"Relationship"`, `"Label"`, `"OptionSet"`,
+   *   `"All"`, or a `DeletedMetadataFilters` member), a comma-separated list of names, or the
+   *   numeric flag value
+   * @returns The matching metadata, any deleted metadata, and the new `ServerVersionStamp`
    * @example
    * ```typescript
-   * const result = await metadataClient.retrieveMetadataChanges({
+   * const query = {
    *   Criteria: {
-   *     FilterOperator: 'And',
+   *     FilterOperator: "And",
    *     Conditions: [
    *       {
-   *         PropertyName: 'LogicalName',
-   *         ConditionOperator: 'Equals',
-   *         Value: 'account'
-   *       }
-   *     ]
+   *         PropertyName: "LogicalName",
+   *         ConditionOperator: "Equals",
+   *         Value: { Type: "System.String", Value: "account" },
+   *       },
+   *     ],
    *   },
-   *   Properties: {
-   *     AllProperties: false,
-   *     PropertyNames: ['LogicalName', 'DisplayName', 'SchemaName']
-   *   }
-   * });
-   * // Store result.ServerVersionStamp for next call
+   *   Properties: { AllProperties: false, PropertyNames: ["LogicalName", "SchemaName"] },
+   * };
+   * const first = await metadataClient.retrieveMetadataChanges(query);
+   * // Later: only what changed since the first call
+   * const changes = await metadataClient.retrieveMetadataChanges(query, first.ServerVersionStamp);
    * ```
    */
   async retrieveMetadataChanges(
     query: EntityQueryExpression,
     clientVersionStamp?: string,
-    deletedMetadataFilters?: DeletedMetadataFilters
+    deletedMetadataFilters?: string | number
   ): Promise<RetrieveMetadataChangesResponse> {
-    const params: {
-      Query: EntityQueryExpression;
-      ClientVersionStamp?: string;
-      DeletedMetadataFilters?: DeletedMetadataFilters;
-    } = {
-      Query: query,
-    };
+    const aliases = ["Query=@p1"];
+    const values = [`@p1=${encodeURIComponent(JSON.stringify(query, enumNameReplacer))}`];
 
     if (clientVersionStamp) {
-      params.ClientVersionStamp = clientVersionStamp;
+      aliases.push("ClientVersionStamp=@p2");
+      values.push(`@p2=${encodeURIComponent(stringLiteral(clientVersionStamp))}`);
     }
 
-    if (deletedMetadataFilters) {
-      params.DeletedMetadataFilters = deletedMetadataFilters;
+    if (deletedMetadataFilters !== undefined) {
+      aliases.push("DeletedMetadataFilters=@p3");
+      const literal = `Microsoft.Dynamics.CRM.DeletedMetadataFilters'${String(deletedMetadataFilters)}'`;
+      values.push(`@p3=${encodeURIComponent(literal)}`);
     }
 
     return await this.client
-      .api("/RetrieveMetadataChanges")
-      .post<RetrieveMetadataChangesResponse>(params);
+      .api(`/RetrieveMetadataChanges(${aliases.join(",")})?${values.join("&")}`)
+      .get<RetrieveMetadataChangesResponse>();
   }
+}
+
+/** An OData string literal: wrapped in single quotes, with embedded quotes doubled. */
+function stringLiteral(value: string): string {
+  return `'${value.replace(/'/g, "''")}'`;
+}
+
+const LOGICAL_OPERATORS = ["And", "Or"];
+const CONDITION_OPERATORS = ["Equals", "NotEquals", "In", "NotIn", "GreaterThan", "LessThan"];
+
+/**
+ * JSON replacer for metadata queries. Dataverse reads an enum member in a JSON parameter only
+ * by name ("Cannot read the value '0' as a quoted JSON string value"), so numeric
+ * `FilterOperator` and `ConditionOperator` values are written as their member names.
+ */
+function enumNameReplacer(key: string, value: unknown): unknown {
+  if (typeof value !== "number") return value;
+  if (key === "FilterOperator") return LOGICAL_OPERATORS[value] ?? value;
+  if (key === "ConditionOperator") return CONDITION_OPERATORS[value] ?? value;
+  return value;
 }

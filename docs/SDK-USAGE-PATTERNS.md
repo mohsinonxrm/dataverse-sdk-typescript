@@ -624,24 +624,37 @@ const entities = await metadataClient.getEntityDefinitions({
 console.log(`Found ${entities.length} custom entities`);
 
 // ========== RETRIEVE METADATA CHANGES ==========
-import type { EntityQueryExpression } from "@mohsinonxrm/dataverse-sdk-metadata";
+import {
+  LogicalOperator,
+  MetadataConditionOperator,
+  type EntityQueryExpression,
+} from "@mohsinonxrm/dataverse-sdk-metadata";
 
 const query: EntityQueryExpression = {
   Criteria: {
-    Conditions: [{ PropertyName: "SchemaName", ConditionOperator: "Equals", Value: "new_Project" }],
+    FilterOperator: LogicalOperator.And,
+    Conditions: [
+      {
+        PropertyName: "SchemaName",
+        ConditionOperator: MetadataConditionOperator.Equals,
+        Value: { Type: "System.String", Value: "new_Project" },
+      },
+    ],
   },
   Properties: {
     PropertyNames: ["Attributes", "OneToManyRelationships"],
   },
 };
 
-const changes = await metadataClient.retrieveMetadataChanges({
-  Query: query,
-  ClientVersionStamp: null,
-  DeletedMetadataFilters: "Entity",
-});
+// Positional: (query, clientVersionStamp?, deletedMetadataFilters?)
+const first = await metadataClient.retrieveMetadataChanges(query);
+const changes = await metadataClient.retrieveMetadataChanges(
+  query,
+  first.ServerVersionStamp,
+  "Default"
+);
 
-console.log("Metadata changes retrieved");
+console.log("Metadata changes retrieved", changes.ServerVersionStamp);
 ```
 
 ### 2. Using HTTP-First with `client.api()`

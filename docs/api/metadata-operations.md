@@ -268,62 +268,82 @@ const response = await metadataClient.createPolymorphicLookup({
 
 ## Relationship Eligibility
 
+`canBeReferenced`, `canBeReferencing` and `canManyToMany` send Web API actions
+(`POST /CanBeReferenced` with `{ "EntityName": "…" }`) and return a `boolean`. The `getValid*`
+methods send functions (`GET`) and return `string[]`.
+
 ### Check if Entity Can Be Primary (1) in 1:N
 
 ```typescript
-const response = await metadataClient.canBeReferenced("new_project");
-console.log("Can be referenced:", response.CanBeReferenced);
+const canBeReferenced: boolean = await metadataClient.canBeReferenced("new_project");
 ```
 
 ### Check if Entity Can Be Related (Many) in 1:N
 
 ```typescript
-const response = await metadataClient.canBeReferencing("new_project");
-console.log("Can be referencing:", response.CanBeReferencing);
+const canBeReferencing: boolean = await metadataClient.canBeReferencing("new_project");
 ```
 
 ### Check N:N Support
 
 ```typescript
-const response = await metadataClient.canManyToMany("new_project");
-console.log("Supports N:N:", response.CanManyToMany);
+const canManyToMany: boolean = await metadataClient.canManyToMany("new_project");
 ```
 
-### Get Valid Referencing Entities
+### Get Valid Referencing and Referenced Entities
 
 ```typescript
-const response = await metadataClient.getValidReferencingEntities("account");
-console.log("Entities that can reference account:", response.EntityNames);
+// Tables that can reference account (be the "many" side)
+const referencing: string[] = await metadataClient.getValidReferencingEntities("account");
+// Tables that contact can reference (be the "one" side)
+const referenced: string[] = await metadataClient.getValidReferencedEntities("contact");
+// Every table that can take part in an N:N relationship; takes no argument
+const manyToMany: string[] = await metadataClient.getValidManyToMany();
 ```
 
 ## Metadata Change Tracking
 
 ### RetrieveMetadataChanges
 
+`retrieveMetadataChanges(query, clientVersionStamp?, deletedMetadataFilters?)` takes positional
+arguments. `RetrieveMetadataChanges` is a function, so the SDK sends
+`GET /RetrieveMetadataChanges(Query=@p1,ClientVersionStamp=@p2,DeletedMetadataFilters=@p3)?@p1=<json>…`.
+
 ```typescript
-const response = await metadataClient.retrieveMetadataChanges({
-  Query: {
-    "@odata.type": "Microsoft.Dynamics.CRM.EntityQueryExpression",
-    Criteria: {
-      Conditions: [
-        {
-          PropertyName: "SchemaName",
-          ConditionOperator: "Equals",
-          Value: { Value: "new_project" },
-        },
-      ],
-    },
-    Properties: {
-      PropertyNames: ["DisplayName", "SchemaName", "Attributes"],
-    },
+import {
+  LogicalOperator,
+  MetadataConditionOperator,
+  type EntityQueryExpression,
+} from "@mohsinonxrm/dataverse-sdk-metadata";
+
+const query: EntityQueryExpression = {
+  Criteria: {
+    FilterOperator: LogicalOperator.And,
+    Conditions: [
+      {
+        PropertyName: "SchemaName",
+        ConditionOperator: MetadataConditionOperator.Equals,
+        Value: { Type: "System.String", Value: "new_project" },
+      },
+    ],
   },
-  ClientVersionStamp: previousVersionStamp, // From previous call
-  DeletedMetadataFilters: "Entity",
-});
+  Properties: { AllProperties: false, PropertyNames: ["DisplayName", "SchemaName"] },
+};
+
+const first = await metadataClient.retrieveMetadataChanges(query);
+
+// Later: only what changed since the first call, including deleted tables
+const response = await metadataClient.retrieveMetadataChanges(
+  query,
+  first.ServerVersionStamp,
+  "Default" // DeletedMetadataFilters member name(s), e.g. "Default", "Attribute", "All"
+);
 
 console.log("Server version:", response.ServerVersionStamp);
 console.log("Deleted metadata:", response.DeletedMetadata);
 ```
+
+Enum members in the query are sent by name (`"And"`, `"Equals"`); Dataverse rejects numbers there.
 
 ## Complete Method List
 
