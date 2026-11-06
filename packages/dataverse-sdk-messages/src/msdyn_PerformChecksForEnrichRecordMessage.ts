@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_PerformChecksForEnrichRecordResponse as msdyn_PerformChecksForEnrichRecordResponseData } from "./types/index.js";
 
 /**
@@ -13,7 +14,7 @@ export class msdyn_PerformChecksForEnrichRecordRequest
   extends OrganizationRequest
   implements Executable<msdyn_PerformChecksForEnrichRecordResponse>
 {
-  constructor(public msdyn_Target: EntityReference) {
+  constructor(public msdyn_Target: EntityReference | AnyEntityPayload) {
     super("msdyn_PerformChecksForEnrichRecord");
   }
 

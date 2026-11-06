@@ -11,7 +11,7 @@ export class msdyn_BusinessClosureSaveRequest
   implements Executable<msdyn_BusinessClosureSaveResponse>
 {
   constructor(
-    public id: string,
+    public id: string | undefined,
     public name: string,
     public start: string,
     public end: string

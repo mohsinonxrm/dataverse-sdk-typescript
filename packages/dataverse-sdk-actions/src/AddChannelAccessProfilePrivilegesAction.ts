@@ -16,7 +16,7 @@ export interface AddChannelAccessProfilePrivilegesResponse {
 export class AddChannelAccessProfilePrivilegesAction implements Executable<AddChannelAccessProfilePrivilegesResponse> {
   constructor(
     public readonly channelAccessProfileId: string,
-    public readonly privileges: ChannelAccessProfilePrivilege[]
+    public readonly privileges?: ChannelAccessProfilePrivilege[]
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

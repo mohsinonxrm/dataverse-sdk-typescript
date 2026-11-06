@@ -219,7 +219,25 @@ csdlTypeToTs(csdlType: string): string {
   required: Dataverse always includes them (as `null` when empty).
 - Function parameters without `Nullable="false"` are optional: `?` when every later parameter is
   optional too, otherwise `T | undefined` in place. An `undefined` parameter is left out of the URL.
-  Action and message parameters are still all required.
+- Action and message parameters follow the same rule (#74); `JSON.stringify` leaves an
+  `undefined` one out of the body. A message parameter named `MessageName` stays required, because
+  it shadows `OrganizationRequest.messageName`.
+
+### Entity-typed parameters
+
+Action and message body parameters of an entity type take an entity payload or a reference
+(`src/utils/entity-payload.ts`, #74). The Web API reads them as entities: a reference is the same
+shape with only the primary key.
+
+- `crmbaseentity` (any table, such as `Merge`'s `UpdateContent`): `EntityReference | AnyEntityPayload`.
+- A table (`WinOpportunity`'s `OpportunityClose`): `EntityReference | EntityPayload<opportunityclose>`,
+  its columns plus `@odata.type` and `<lookup>@odata.bind`.
+- A collection of a table: `(EntityReference | EntityPayload<table>)[]`.
+- `principal` and the other abstract system types stay `EntityReference`.
+
+`types/EntityPayload.ts` is generated into both packages. The messages package's `EntityReference.ts`
+is generated from the CSDL like the actions package's (`entityReferenceSource(csdl, "messages")`), so a
+reference sends the table's primary key, not `id`. Its third argument is still a display name.
 
 ### Function parameter literals
 

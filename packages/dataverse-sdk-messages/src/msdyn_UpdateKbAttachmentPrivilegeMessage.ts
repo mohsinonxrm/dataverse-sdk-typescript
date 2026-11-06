@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { knowledgearticle, msdyn_kbattachment } from "./types/index.js";
 
 /**
@@ -13,10 +14,10 @@ export class msdyn_UpdateKbAttachmentPrivilegeRequest
   implements Executable<msdyn_UpdateKbAttachmentPrivilegeResponse>
 {
   constructor(
-    public kbAttachmentId: msdyn_kbattachment,
-    public parentKnowledgeArticleId: knowledgearticle,
-    public principalId: EntityReference,
-    public accessMask: string
+    public kbAttachmentId: EntityReference | EntityPayload<msdyn_kbattachment>,
+    public parentKnowledgeArticleId: EntityReference | EntityPayload<knowledgearticle>,
+    public principalId: EntityReference | AnyEntityPayload,
+    public accessMask?: string
   ) {
     super("msdyn_UpdateKbAttachmentPrivilege");
   }

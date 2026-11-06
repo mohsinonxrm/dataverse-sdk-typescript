@@ -14,7 +14,7 @@ export class _GetServiceTreeDataRequest
 {
   constructor(
     public serviceId: string,
-    public inputSource: string
+    public inputSource?: string
   ) {
     super("_GetServiceTreeData");
   }

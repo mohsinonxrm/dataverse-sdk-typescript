@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type {
   msdyn_RegisterSolutionHealthRuleResponse as msdyn_RegisterSolutionHealthRuleResponseData,
   msdyn_solutionhealthruleset,
@@ -18,15 +19,15 @@ export class msdyn_RegisterSolutionHealthRuleRequest
   implements Executable<msdyn_RegisterSolutionHealthRuleResponse>
 {
   constructor(
-    public ruleDescription: string,
-    public owningSolutionId: string,
-    public uniqueName: string,
-    public resolutionAction: EntityReference,
-    public ruleSetId: msdyn_solutionhealthruleset,
-    public ruleArguments: string,
+    public ruleDescription: string | undefined,
+    public owningSolutionId: string | undefined,
+    public uniqueName: string | undefined,
+    public resolutionAction: EntityReference | AnyEntityPayload | undefined,
+    public ruleSetId: EntityReference | EntityPayload<msdyn_solutionhealthruleset>,
+    public ruleArguments: string | undefined,
     public ruleName: string,
-    public workflowReference: workflow,
-    public resolutionMessage: string
+    public workflowReference: EntityReference | EntityPayload<workflow>,
+    public resolutionMessage?: string
   ) {
     super("msdyn_RegisterSolutionHealthRule");
   }

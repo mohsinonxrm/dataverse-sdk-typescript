@@ -16,7 +16,7 @@ export class msdyn_AnalyticsSaveDataInConfigStoreAction implements Executable<ms
   constructor(
     public readonly key: string,
     public readonly value: string,
-    public readonly configName: string
+    public readonly configName?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

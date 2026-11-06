@@ -14,7 +14,7 @@ export interface msdynmkt_RetrieveServiceFeatureFlagsResponse {
  * Unbound action
  */
 export class msdynmkt_RetrieveServiceFeatureFlagsAction implements Executable<msdynmkt_RetrieveServiceFeatureFlagsResponse> {
-  constructor(public readonly serviceName: string) {}
+  constructor(public readonly serviceName?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_RetrieveServiceFeatureFlags`;

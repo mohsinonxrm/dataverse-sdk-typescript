@@ -13,12 +13,12 @@ export class GenerateInstantPluginRequest
   implements Executable<GenerateInstantPluginResponse>
 {
   constructor(
-    public solutionUniqueName: string,
+    public solutionUniqueName: string | undefined,
     public expression: string,
-    public context: string,
+    public context: string | undefined,
     public description: string,
-    public entityLogicalName: string,
-    public parameters: string,
+    public entityLogicalName: string | undefined,
+    public parameters: string | undefined,
     public name: string
   ) {
     super("GenerateInstantPlugin");

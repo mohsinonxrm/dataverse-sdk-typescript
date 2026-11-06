@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { CreateAndSendNewEmailResponse as CreateAndSendNewEmailResponseData } from "./types/index.js";
 
 /**
@@ -14,14 +15,14 @@ export class CreateAndSendNewEmailRequest
   implements Executable<CreateAndSendNewEmailResponse>
 {
   constructor(
-    public subject: string,
-    public body: string,
-    public from: string,
-    public to: string,
-    public cc: string,
-    public bcc: string,
-    public regarding: EntityReference,
-    public importance: number
+    public subject?: string,
+    public body?: string,
+    public from?: string,
+    public to?: string,
+    public cc?: string,
+    public bcc?: string,
+    public regarding?: EntityReference | AnyEntityPayload,
+    public importance?: number
   ) {
     super("CreateAndSendNewEmail");
   }

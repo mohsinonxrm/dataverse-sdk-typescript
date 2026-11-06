@@ -12,9 +12,9 @@ export class msdyn_AddSuggestedCardsRequest
 {
   constructor(
     public scope: string,
-    public businessProcessFlowId: string,
-    public businessProcessFlowInstanceId: string,
-    public actionStepId: string
+    public businessProcessFlowId?: string,
+    public businessProcessFlowInstanceId?: string,
+    public actionStepId?: string
   ) {
     super("msdyn_AddSuggestedCards");
   }

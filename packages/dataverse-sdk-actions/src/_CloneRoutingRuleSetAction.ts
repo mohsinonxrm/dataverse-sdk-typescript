@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from _CloneRoutingRuleSet action
@@ -15,8 +16,8 @@ export interface _CloneRoutingRuleSetResponse {
  */
 export class _CloneRoutingRuleSetAction implements Executable<_CloneRoutingRuleSetResponse> {
   constructor(
-    public readonly routingRuleSetIdToClone: EntityReference,
-    public readonly routingRuleSetIdToOverwrite: EntityReference,
+    public readonly routingRuleSetIdToClone: EntityReference | AnyEntityPayload,
+    public readonly routingRuleSetIdToOverwrite: EntityReference | AnyEntityPayload | undefined,
     public readonly options: string
   ) {}
 

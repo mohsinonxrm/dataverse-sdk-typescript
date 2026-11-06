@@ -13,8 +13,8 @@ export class msdyn_ProvisionSharePointDocumentLibrariesRequest
   implements Executable<msdyn_ProvisionSharePointDocumentLibrariesResponse>
 {
   constructor(
-    public sharePointSiteURL: string,
-    public folderStructureEntityValue: number
+    public sharePointSiteURL?: string,
+    public folderStructureEntityValue?: number
   ) {
     super("msdyn_ProvisionSharePointDocumentLibraries");
   }

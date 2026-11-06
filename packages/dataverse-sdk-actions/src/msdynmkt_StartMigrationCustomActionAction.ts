@@ -13,7 +13,7 @@ export interface msdynmkt_StartMigrationCustomActionResponse {
  * Unbound action
  */
 export class msdynmkt_StartMigrationCustomActionAction implements Executable<msdynmkt_StartMigrationCustomActionResponse> {
-  constructor(public readonly whatIf: boolean) {}
+  constructor(public readonly whatIf?: boolean) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_StartMigrationCustomAction`;

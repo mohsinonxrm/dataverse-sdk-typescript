@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from AddPrincipalToQueue action
@@ -17,7 +18,7 @@ export interface AddPrincipalToQueueResponse {
 export class AddPrincipalToQueueAction implements Executable<AddPrincipalToQueueResponse> {
   constructor(
     public readonly queueId: string,
-    public readonly principal: EntityReference
+    public readonly principal: EntityReference | AnyEntityPayload
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

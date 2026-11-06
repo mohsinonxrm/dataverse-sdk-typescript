@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { AccessRights } from "./types/index.js";
 
 /**
@@ -13,7 +14,7 @@ export class RevokeSharedLinkRequest
   implements Executable<RevokeSharedLinkResponse>
 {
   constructor(
-    public target: EntityReference,
+    public target: EntityReference | AnyEntityPayload,
     public sharedRights: AccessRights
   ) {
     super("RevokeSharedLink");

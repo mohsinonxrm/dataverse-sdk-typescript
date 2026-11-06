@@ -7,8 +7,9 @@
 
 // Base classes and types
 export { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-export type { EntityReference } from "./EntityReference.js";
+export type { EntityReference, EntityReferenceOptions } from "./EntityReference.js";
 export { createEntityReference } from "./EntityReference.js";
+export type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 export type { MessageRequest, MessageResponse } from "./types.js";
 
 // Message classes

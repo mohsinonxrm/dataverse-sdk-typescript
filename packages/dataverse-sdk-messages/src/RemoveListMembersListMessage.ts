@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { list } from "./types/index.js";
 
 /**
@@ -12,7 +14,7 @@ export class RemoveListMembersListRequest
   implements Executable<RemoveListMembersListResponse>
 {
   constructor(
-    public list: list,
+    public list: EntityReference | EntityPayload<list>,
     public members: Record<string, unknown>[]
   ) {
     super("RemoveListMembersList");

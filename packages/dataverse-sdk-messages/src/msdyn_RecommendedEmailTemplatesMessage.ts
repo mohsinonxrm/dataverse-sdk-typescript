@@ -13,15 +13,15 @@ export class msdyn_RecommendedEmailTemplatesRequest
   implements Executable<msdyn_RecommendedEmailTemplatesResponse>
 {
   constructor(
-    public isTemplateResponse: boolean,
-    public emailContextData: string,
+    public isTemplateResponse: boolean | undefined,
+    public emailContextData: string | undefined,
     public emailId: string,
     public templateFiltersInString: string,
-    public filters: string,
+    public filters: string | undefined,
     public customerIntent: string,
     public transactionId: string,
     public emailString: string,
-    public multiturnPayload: string,
+    public multiturnPayload: string | undefined,
     public copilotRequestParameters: string
   ) {
     super("msdyn_RecommendedEmailTemplates");

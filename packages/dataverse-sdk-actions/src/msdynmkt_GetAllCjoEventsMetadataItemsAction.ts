@@ -14,7 +14,9 @@ export interface msdynmkt_GetAllCjoEventsMetadataItemsResponse {
  * Unbound action
  */
 export class msdynmkt_GetAllCjoEventsMetadataItemsAction implements Executable<msdynmkt_GetAllCjoEventsMetadataItemsResponse> {
-  constructor(public readonly msdynmkt_GetAllCjoEventsMetadataItems_request_LanguageCode: number) {}
+  constructor(
+    public readonly msdynmkt_GetAllCjoEventsMetadataItems_request_LanguageCode?: number
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_GetAllCjoEventsMetadataItems`;

@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { email } from "./types/index.js";
 
 /**
@@ -15,8 +16,8 @@ export class SendEmailFromTemplateRequest
 {
   constructor(
     public templateId: string,
-    public regarding: EntityReference,
-    public target: EntityReference
+    public regarding: EntityReference | AnyEntityPayload,
+    public target: EntityReference | AnyEntityPayload
   ) {
     super("SendEmailFromTemplate");
   }

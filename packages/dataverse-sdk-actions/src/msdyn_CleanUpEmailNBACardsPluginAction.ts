@@ -13,7 +13,7 @@ export interface msdyn_CleanUpEmailNBACardsPluginResponse {
  * Unbound action
  */
 export class msdyn_CleanUpEmailNBACardsPluginAction implements Executable<msdyn_CleanUpEmailNBACardsPluginResponse> {
-  constructor(public readonly inputData: string) {}
+  constructor(public readonly inputData?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CleanUpEmailNBACardsPlugin`;

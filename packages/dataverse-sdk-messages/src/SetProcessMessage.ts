@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * SetProcess request message
@@ -12,9 +13,9 @@ export class SetProcessRequest
   implements Executable<SetProcessResponse>
 {
   constructor(
-    public target: EntityReference,
-    public newProcess: EntityReference,
-    public newProcessInstance: EntityReference
+    public target: EntityReference | AnyEntityPayload,
+    public newProcess?: EntityReference | AnyEntityPayload,
+    public newProcessInstance?: EntityReference | AnyEntityPayload
   ) {
     super("SetProcess");
   }

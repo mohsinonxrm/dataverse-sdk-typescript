@@ -10,7 +10,7 @@ export class msdyn_PredictiveScoringBackgroundJobRequest
   extends OrganizationRequest
   implements Executable<msdyn_PredictiveScoringBackgroundJobResponse>
 {
-  constructor(public inputData: string) {
+  constructor(public inputData?: string) {
     super("msdyn_PredictiveScoringBackgroundJob");
   }
 

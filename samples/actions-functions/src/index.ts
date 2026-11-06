@@ -310,7 +310,7 @@ async function winOpportunityDemo(client: DataverseClient): Promise<void> {
   // Win the opportunity
   console.log("\nWinning the opportunity...");
 
-  const opportunityClose: Record<string, unknown> = {
+  const opportunityClose = {
     "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
     subject: "Won: Test Opportunity",
     "opportunityid@odata.bind": `/opportunities(${opportunityId})`,

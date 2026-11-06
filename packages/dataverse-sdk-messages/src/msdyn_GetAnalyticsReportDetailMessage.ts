@@ -14,7 +14,7 @@ export class msdyn_GetAnalyticsReportDetailRequest
 {
   constructor(
     public analyticsRecordId: string,
-    public getAnalyticsReportAction: string
+    public getAnalyticsReportAction?: string
   ) {
     super("msdyn_GetAnalyticsReportDetail");
   }

@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { QuickTestResponse as QuickTestResponseData } from "./types/index.js";
 
 /**
@@ -13,9 +14,9 @@ export class QuickTestRequest extends OrganizationRequest implements Executable<
   constructor(
     public msdyn_aiconfigurationId: string,
     public version: string,
-    public request: string,
-    public requestv2: EntityReference,
-    public source: string
+    public request?: string,
+    public requestv2?: EntityReference | AnyEntityPayload,
+    public source?: string
   ) {
     super("QuickTest");
   }

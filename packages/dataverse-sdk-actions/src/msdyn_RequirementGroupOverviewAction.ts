@@ -16,14 +16,14 @@ export interface msdyn_RequirementGroupOverviewResponse {
 export class msdyn_RequirementGroupOverviewAction implements Executable<msdyn_RequirementGroupOverviewResponse> {
   constructor(
     public readonly msdyn_requirementgroupId: string,
-    public readonly start: string,
-    public readonly end: string,
-    public readonly duration: number,
-    public readonly interval: number,
-    public readonly resourceIdsFilter: string,
-    public readonly overviewTypes: string,
-    public readonly constraintBag: string,
-    public readonly removeRedundantCrewCombinations: boolean
+    public readonly start?: string,
+    public readonly end?: string,
+    public readonly duration?: number,
+    public readonly interval?: number,
+    public readonly resourceIdsFilter?: string,
+    public readonly overviewTypes?: string,
+    public readonly constraintBag?: string,
+    public readonly removeRedundantCrewCombinations?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

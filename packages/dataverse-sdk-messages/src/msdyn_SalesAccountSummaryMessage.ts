@@ -13,14 +13,14 @@ export class msdyn_SalesAccountSummaryRequest
   implements Executable<msdyn_SalesAccountSummaryResponse>
 {
   constructor(
-    public msdyn_sessionId: string,
-    public msdyn_lastComputationTime: string,
-    public msdyn_activityId: string,
-    public msdyn_isMergedCatchupAndSummary: boolean,
-    public msdyn_additionalParams: string,
-    public msdyn_responseFormat: string,
+    public msdyn_sessionId: string | undefined,
+    public msdyn_lastComputationTime: string | undefined,
+    public msdyn_activityId: string | undefined,
+    public msdyn_isMergedCatchupAndSummary: boolean | undefined,
+    public msdyn_additionalParams: string | undefined,
+    public msdyn_responseFormat: string | undefined,
     public msdyn_id: string,
-    public msdyn_skipHeader: string
+    public msdyn_skipHeader?: string
   ) {
     super("msdyn_SalesAccountSummary");
   }

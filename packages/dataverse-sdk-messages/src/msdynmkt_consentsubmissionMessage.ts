@@ -13,13 +13,13 @@ export class msdynmkt_consentsubmissionRequest
   implements Executable<msdynmkt_consentsubmissionResponse>
 {
   constructor(
-    public msdynmkt_preferencecenterid: string,
-    public msdynmkt_consentversion: string,
+    public msdynmkt_preferencecenterid: string | undefined,
+    public msdynmkt_consentversion: string | undefined,
     public msdynmkt_purposeconsents: string,
-    public msdynmkt_trackingcontextid: string,
+    public msdynmkt_trackingcontextid: string | undefined,
     public msdynmkt_contactpointtype: number,
     public msdynmkt_contactpointvalue: string,
-    public msdynmkt_topicconsents: string
+    public msdynmkt_topicconsents?: string
   ) {
     super("msdynmkt_consentsubmission");
   }

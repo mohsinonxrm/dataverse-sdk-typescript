@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import type { EntityReference } from "./EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { delegatedauthorization, team } from "./types/index.js";
 
 /**
@@ -12,7 +14,9 @@ export class ProvisionDelegationRequest
   extends OrganizationRequest
   implements Executable<ProvisionDelegationResponse>
 {
-  constructor(public delegatedauthorization: delegatedauthorization) {
+  constructor(
+    public delegatedauthorization: EntityReference | EntityPayload<delegatedauthorization>
+  ) {
     super("ProvisionDelegation");
   }
 

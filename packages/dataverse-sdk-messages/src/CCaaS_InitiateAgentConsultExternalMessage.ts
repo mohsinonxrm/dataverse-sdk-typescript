@@ -12,14 +12,14 @@ export class CCaaS_InitiateAgentConsultExternalRequest
 {
   constructor(
     public msdyn_ocliveworkitemId: string,
-    public externalReferenceType: string,
+    public externalReferenceType: string | undefined,
     public externalParticipantChannel: string,
     public apiVersion: string,
     public queueId: string,
-    public externalReferenceId: string,
+    public externalReferenceId: string | undefined,
     public consultType: string,
     public externalParticipantChannelType: string,
-    public agentName: string,
+    public agentName: string | undefined,
     public conversationAccess: string
   ) {
     super("CCaaS_InitiateAgentConsultExternal");

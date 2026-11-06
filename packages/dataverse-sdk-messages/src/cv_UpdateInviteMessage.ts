@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import type { EntityReference } from "./EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { msfp_surveyinvite } from "./types/index.js";
 
 /**
@@ -12,7 +14,7 @@ export class cv_UpdateInviteRequest
   extends OrganizationRequest
   implements Executable<cv_UpdateInviteResponse>
 {
-  constructor(public inviteentity: msfp_surveyinvite) {
+  constructor(public inviteentity: EntityReference | EntityPayload<msfp_surveyinvite>) {
     super("cv_UpdateInvite");
   }
 

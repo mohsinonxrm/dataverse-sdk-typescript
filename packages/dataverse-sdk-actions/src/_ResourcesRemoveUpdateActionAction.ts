@@ -14,8 +14,8 @@ export interface _ResourcesRemoveUpdateActionResponse {
  */
 export class _ResourcesRemoveUpdateActionAction implements Executable<_ResourcesRemoveUpdateActionResponse> {
   constructor(
-    public readonly resourcesToBeRemoved: string,
-    public readonly resourceGroupId: string
+    public readonly resourcesToBeRemoved?: string,
+    public readonly resourceGroupId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { email } from "./types/index.js";
 
 /**
@@ -20,8 +21,8 @@ export interface SendEmailFromTemplateResponse extends email {
 export class SendEmailFromTemplateAction implements Executable<SendEmailFromTemplateResponse> {
   constructor(
     public readonly templateId: string,
-    public readonly regarding: EntityReference,
-    public readonly target: EntityReference
+    public readonly regarding: EntityReference | AnyEntityPayload,
+    public readonly target: EntityReference | AnyEntityPayload
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

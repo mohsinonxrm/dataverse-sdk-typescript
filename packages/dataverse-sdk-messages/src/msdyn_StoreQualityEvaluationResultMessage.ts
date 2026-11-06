@@ -15,8 +15,8 @@ export class msdyn_StoreQualityEvaluationResultRequest
   constructor(
     public criteriaVersionNumber: number,
     public evaluationId: string,
-    public evaluationMethod: number,
-    public evaluationInsight: string,
+    public evaluationMethod: number | undefined,
+    public evaluationInsight: string | undefined,
     public status: string
   ) {
     super("msdyn_StoreQualityEvaluationResult");

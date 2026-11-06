@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_RetrieveKPIvaluesfromDCIResponse as msdyn_RetrieveKPIvaluesfromDCIResponseData } from "./types/index.js";
 
 /**
@@ -14,9 +15,9 @@ export class msdyn_RetrieveKPIvaluesfromDCIRequest
   implements Executable<msdyn_RetrieveKPIvaluesfromDCIResponse>
 {
   constructor(
-    public crmRecord: EntityReference,
-    public kPINameFilterMap: string,
-    public similarEntities: string
+    public crmRecord?: EntityReference | AnyEntityPayload,
+    public kPINameFilterMap?: string,
+    public similarEntities?: string
   ) {
     super("msdyn_RetrieveKPIvaluesfromDCI");
   }

@@ -12,7 +12,7 @@ export class msdyn_CheckForPendingProcessesRequest
   extends OrganizationRequest
   implements Executable<msdyn_CheckForPendingProcessesResponse>
 {
-  constructor(public solutionId: string) {
+  constructor(public solutionId?: string) {
     super("msdyn_CheckForPendingProcesses");
   }
 

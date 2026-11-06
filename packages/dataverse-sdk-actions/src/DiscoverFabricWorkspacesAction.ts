@@ -13,7 +13,7 @@ export interface DiscoverFabricWorkspacesResponse {
  * Unbound action
  */
 export class DiscoverFabricWorkspacesAction implements Executable<DiscoverFabricWorkspacesResponse> {
-  constructor(public readonly fabricEnvironment: string) {}
+  constructor(public readonly fabricEnvironment?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/DiscoverFabricWorkspaces`;

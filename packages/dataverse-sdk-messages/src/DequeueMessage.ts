@@ -10,7 +10,7 @@ import { responseObject } from "./internal/responseData.js";
 export class DequeueRequest extends OrganizationRequest implements Executable<DequeueResponse> {
   constructor(
     public workqueueId: string,
-    public request: string
+    public request?: string
   ) {
     super("Dequeue");
   }

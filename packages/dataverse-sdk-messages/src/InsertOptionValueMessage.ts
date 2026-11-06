@@ -16,17 +16,17 @@ export class InsertOptionValueRequest
   implements Executable<InsertOptionValueResponse>
 {
   constructor(
-    public color: string,
-    public optionSetName: string,
-    public attributeLogicalName: string,
-    public externalValue: string,
-    public entityLogicalName: string,
-    public isHidden: boolean,
-    public value: number,
-    public label: Label,
-    public description: Label,
-    public parentValues: number[],
-    public solutionUniqueName: string
+    public color?: string,
+    public optionSetName?: string,
+    public attributeLogicalName?: string,
+    public externalValue?: string,
+    public entityLogicalName?: string,
+    public isHidden?: boolean,
+    public value?: number,
+    public label?: Label,
+    public description?: Label,
+    public parentValues?: number[],
+    public solutionUniqueName?: string
   ) {
     super("InsertOptionValue");
   }

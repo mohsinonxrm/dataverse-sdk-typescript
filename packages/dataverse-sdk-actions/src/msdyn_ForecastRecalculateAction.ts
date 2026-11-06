@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_ForecastRecalculate action
@@ -15,7 +16,7 @@ export interface msdyn_ForecastRecalculateResponse {
  */
 export class msdyn_ForecastRecalculateAction implements Executable<msdyn_ForecastRecalculateResponse> {
   constructor(
-    public readonly forecastInstance: EntityReference,
+    public readonly forecastInstance: EntityReference | AnyEntityPayload,
     public readonly isRefreshHierarchy: boolean
   ) {}
 

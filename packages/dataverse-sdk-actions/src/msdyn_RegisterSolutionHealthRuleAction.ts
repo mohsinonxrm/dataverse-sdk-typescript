@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_solutionhealthruleset, workflow } from "./types/index.js";
 
 /**
@@ -16,15 +17,15 @@ export interface msdyn_RegisterSolutionHealthRuleResponse {
  */
 export class msdyn_RegisterSolutionHealthRuleAction implements Executable<msdyn_RegisterSolutionHealthRuleResponse> {
   constructor(
-    public readonly ruleDescription: string,
-    public readonly owningSolutionId: string,
-    public readonly uniqueName: string,
-    public readonly resolutionAction: EntityReference,
-    public readonly ruleSetId: msdyn_solutionhealthruleset,
-    public readonly ruleArguments: string,
+    public readonly ruleDescription: string | undefined,
+    public readonly owningSolutionId: string | undefined,
+    public readonly uniqueName: string | undefined,
+    public readonly resolutionAction: EntityReference | AnyEntityPayload | undefined,
+    public readonly ruleSetId: EntityReference | EntityPayload<msdyn_solutionhealthruleset>,
+    public readonly ruleArguments: string | undefined,
     public readonly ruleName: string,
-    public readonly workflowReference: workflow,
-    public readonly resolutionMessage: string
+    public readonly workflowReference: EntityReference | EntityPayload<workflow>,
+    public readonly resolutionMessage?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

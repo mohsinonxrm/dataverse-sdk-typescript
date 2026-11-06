@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import type { EntityReference } from "./EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type {
   BulkDeleteResponse as BulkDeleteResponseData,
   QueryExpression,
@@ -17,15 +19,15 @@ export class BulkDeleteRequest
   implements Executable<BulkDeleteResponse>
 {
   constructor(
-    public querySet: QueryExpression[],
+    public querySet: QueryExpression[] | undefined,
     public jobName: string,
     public sendEmailNotification: boolean,
-    public toRecipients: activityparty[],
-    public cCRecipients: activityparty[],
+    public toRecipients: (EntityReference | EntityPayload<activityparty>)[],
+    public cCRecipients: (EntityReference | EntityPayload<activityparty>)[],
     public recurrencePattern: string,
     public startDateTime: string,
-    public sourceImportId: string,
-    public runNow: boolean
+    public sourceImportId?: string,
+    public runNow?: boolean
   ) {
     super("BulkDelete");
   }

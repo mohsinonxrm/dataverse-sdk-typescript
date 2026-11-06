@@ -14,7 +14,7 @@ export interface msdyn_ImportAnalyticsReportResponse {
  */
 export class msdyn_ImportAnalyticsReportAction implements Executable<msdyn_ImportAnalyticsReportResponse> {
   constructor(
-    public readonly msdyn_OverwriteDraft: boolean,
+    public readonly msdyn_OverwriteDraft: boolean | undefined,
     public readonly msdyn_AnalyticsReportContent: string,
     public readonly msdyn_AnalyticsFeatureId: string
   ) {}

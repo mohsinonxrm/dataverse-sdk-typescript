@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * msdyn_ApplyRoutingRuleEntityRecord request message
@@ -11,7 +12,7 @@ export class msdyn_ApplyRoutingRuleEntityRecordRequest
   extends OrganizationRequest
   implements Executable<msdyn_ApplyRoutingRuleEntityRecordResponse>
 {
-  constructor(public target: EntityReference) {
+  constructor(public target: EntityReference | AnyEntityPayload) {
     super("msdyn_ApplyRoutingRuleEntityRecord");
   }
 

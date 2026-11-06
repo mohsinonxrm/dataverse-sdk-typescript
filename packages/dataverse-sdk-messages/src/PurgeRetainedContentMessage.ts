@@ -13,9 +13,9 @@ export class PurgeRetainedContentRequest
   implements Executable<PurgeRetainedContentResponse>
 {
   constructor(
-    public entityName: string,
-    public pageSize: number,
-    public operationId: string,
+    public entityName: string | undefined,
+    public pageSize: number | undefined,
+    public operationId: string | undefined,
     public maxVersionToPurge: number
   ) {
     super("PurgeRetainedContent");

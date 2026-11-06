@@ -18,9 +18,9 @@ export class ImportSolutionsAction implements Executable<ImportSolutionsResponse
     public readonly publishWorkflows: boolean,
     public readonly customizationFiles: string,
     public readonly importJobId: string,
-    public readonly convertToManaged: boolean,
-    public readonly skipProductUpdateDependencies: boolean,
-    public readonly holdingSolution: boolean
+    public readonly convertToManaged?: boolean,
+    public readonly skipProductUpdateDependencies?: boolean,
+    public readonly holdingSolution?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

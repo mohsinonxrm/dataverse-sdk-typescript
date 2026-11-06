@@ -17,7 +17,7 @@ export interface AddPrivilegesRoleResponse {
 export class AddPrivilegesRoleAction implements Executable<AddPrivilegesRoleResponse> {
   constructor(
     public readonly roleId: string,
-    public readonly privileges: RolePrivilege[]
+    public readonly privileges?: RolePrivilege[]
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

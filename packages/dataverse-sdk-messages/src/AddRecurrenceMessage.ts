@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import type { EntityReference } from "./EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { recurringappointmentmaster } from "./types/index.js";
 
 /**
@@ -14,7 +16,7 @@ export class AddRecurrenceRequest
 {
   constructor(
     public appointmentId: string,
-    public target: recurringappointmentmaster
+    public target: EntityReference | EntityPayload<recurringappointmentmaster>
   ) {
     super("AddRecurrence");
   }

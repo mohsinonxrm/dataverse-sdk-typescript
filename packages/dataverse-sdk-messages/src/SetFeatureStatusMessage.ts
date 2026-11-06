@@ -13,8 +13,8 @@ export class SetFeatureStatusRequest
   constructor(
     public featureType: number,
     public status: boolean,
-    public configData: string,
-    public isSolutionUninstall: boolean
+    public configData?: string,
+    public isSolutionUninstall?: boolean
   ) {
     super("SetFeatureStatus");
   }

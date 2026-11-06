@@ -14,8 +14,8 @@ export interface msdyn_UpdateRITenantInfoResponse {
  */
 export class msdyn_UpdateRITenantInfoAction implements Executable<msdyn_UpdateRITenantInfoResponse> {
   constructor(
-    public readonly hubName: string,
-    public readonly primaryKey: string
+    public readonly hubName?: string,
+    public readonly primaryKey?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

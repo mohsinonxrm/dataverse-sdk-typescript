@@ -14,12 +14,12 @@ export interface msdyn_SalesAgents_HandoverInitiateResponse {
  */
 export class msdyn_SalesAgents_HandoverInitiateAction implements Executable<msdyn_SalesAgents_HandoverInitiateResponse> {
   constructor(
-    public readonly msdyn_AssignTo: number,
-    public readonly msdyn_HandoverIntent: number,
-    public readonly msdyn_GetHandoverDetailsInfo: string,
+    public readonly msdyn_AssignTo: number | undefined,
+    public readonly msdyn_HandoverIntent: number | undefined,
+    public readonly msdyn_GetHandoverDetailsInfo: string | undefined,
     public readonly msdyn_SalesAgentRun: string,
-    public readonly msdyn_HandoverTarget: number,
-    public readonly msdyn_TrackingId: string
+    public readonly msdyn_HandoverTarget?: number,
+    public readonly msdyn_TrackingId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

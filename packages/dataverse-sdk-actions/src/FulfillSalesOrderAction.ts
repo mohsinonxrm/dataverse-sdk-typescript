@@ -1,4 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { orderclose } from "./types/index.js";
 
 /**
@@ -16,7 +18,7 @@ export interface FulfillSalesOrderResponse {
  */
 export class FulfillSalesOrderAction implements Executable<FulfillSalesOrderResponse> {
   constructor(
-    public readonly orderClose: orderclose,
+    public readonly orderClose: EntityReference | EntityPayload<orderclose>,
     public readonly status: number
   ) {}
 

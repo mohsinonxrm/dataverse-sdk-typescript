@@ -20,9 +20,9 @@ export class msdyn_BookingResourceRequirementRequest
     public bookingType: number,
     public startDateTime: string,
     public endDateTime: string,
-    public timeframe: number,
-    public hours: number,
-    public percentage: number
+    public timeframe?: number,
+    public hours?: number,
+    public percentage?: number
   ) {
     super("msdyn_BookingResourceRequirement");
   }

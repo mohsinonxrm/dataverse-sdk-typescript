@@ -19,9 +19,9 @@ export interface msdyn_CheckForCustomizedWebResourcesResponse {
  */
 export class msdyn_CheckForCustomizedWebResourcesAction implements Executable<msdyn_CheckForCustomizedWebResourcesResponse> {
   constructor(
-    public readonly entityIds: string,
-    public readonly solutionId: string,
-    public readonly excludeSolutionIds: string
+    public readonly entityIds?: string,
+    public readonly solutionId?: string,
+    public readonly excludeSolutionIds?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

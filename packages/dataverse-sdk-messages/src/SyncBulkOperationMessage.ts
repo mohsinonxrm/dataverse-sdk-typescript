@@ -16,7 +16,7 @@ export class SyncBulkOperationRequest
   implements Executable<SyncBulkOperationResponse>
 {
   constructor(
-    public querySet: QueryExpression[],
+    public querySet: QueryExpression[] | undefined,
     public operationType: number
   ) {
     super("SyncBulkOperation");

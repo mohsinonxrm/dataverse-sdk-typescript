@@ -17,8 +17,8 @@ export class msdyn_GetResourceBookingDetailsRequest
     public startDate: string,
     public endDate: string,
     public timescale: number,
-    public schedulerSettings: string,
-    public considerAppointments: boolean
+    public schedulerSettings?: string,
+    public considerAppointments?: boolean
   ) {
     super("msdyn_GetResourceBookingDetails");
   }

@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_RetrieveCadenceSuggestionsResponse as msdyn_RetrieveCadenceSuggestionsResponseData } from "./types/index.js";
 
 /**
@@ -14,9 +15,9 @@ export class msdyn_RetrieveCadenceSuggestionsRequest
   implements Executable<msdyn_RetrieveCadenceSuggestionsResponse>
 {
   constructor(
-    public entityReference: EntityReference,
+    public entityReference: EntityReference | AnyEntityPayload,
     public activityType: number,
-    public linkedActivityId: string,
+    public linkedActivityId: string | undefined,
     public stepType: number
   ) {
     super("msdyn_RetrieveCadenceSuggestions");

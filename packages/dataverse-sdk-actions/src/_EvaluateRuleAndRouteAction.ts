@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from _EvaluateRuleAndRoute action
@@ -15,7 +16,7 @@ export interface _EvaluateRuleAndRouteResponse {
  */
 export class _EvaluateRuleAndRouteAction implements Executable<_EvaluateRuleAndRouteResponse> {
   constructor(
-    public readonly target: EntityReference,
+    public readonly target: EntityReference | AnyEntityPayload,
     public readonly routingRuleSetId: string
   ) {}
 

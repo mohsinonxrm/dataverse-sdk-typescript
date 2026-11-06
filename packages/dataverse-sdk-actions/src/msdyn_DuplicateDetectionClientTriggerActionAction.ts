@@ -13,7 +13,7 @@ export interface msdyn_DuplicateDetectionClientTriggerActionResponse {
  * Unbound action
  */
 export class msdyn_DuplicateDetectionClientTriggerActionAction implements Executable<msdyn_DuplicateDetectionClientTriggerActionResponse> {
-  constructor(public readonly inputData: string) {}
+  constructor(public readonly inputData?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_DuplicateDetectionClientTriggerAction`;

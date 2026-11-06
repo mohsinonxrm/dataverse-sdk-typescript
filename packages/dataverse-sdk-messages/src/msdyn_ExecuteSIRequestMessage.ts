@@ -14,9 +14,9 @@ export class msdyn_ExecuteSIRequestRequest
 {
   constructor(
     public methodName: string,
-    public methodParams: string,
+    public methodParams: string | undefined,
     public httpRequestType: string,
-    public orgMigratedToCoreServices: boolean
+    public orgMigratedToCoreServices?: boolean
   ) {
     super("msdyn_ExecuteSIRequest");
   }

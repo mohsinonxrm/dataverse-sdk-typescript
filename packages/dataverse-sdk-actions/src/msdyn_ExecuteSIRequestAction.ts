@@ -15,9 +15,9 @@ export interface msdyn_ExecuteSIRequestResponse {
 export class msdyn_ExecuteSIRequestAction implements Executable<msdyn_ExecuteSIRequestResponse> {
   constructor(
     public readonly methodName: string,
-    public readonly methodParams: string,
+    public readonly methodParams: string | undefined,
     public readonly httpRequestType: string,
-    public readonly orgMigratedToCoreServices: boolean
+    public readonly orgMigratedToCoreServices?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

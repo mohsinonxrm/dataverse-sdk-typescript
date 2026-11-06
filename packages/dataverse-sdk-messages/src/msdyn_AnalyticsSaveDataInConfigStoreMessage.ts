@@ -13,7 +13,7 @@ export class msdyn_AnalyticsSaveDataInConfigStoreRequest
   constructor(
     public key: string,
     public value: string,
-    public configName: string
+    public configName?: string
   ) {
     super("msdyn_AnalyticsSaveDataInConfigStore");
   }

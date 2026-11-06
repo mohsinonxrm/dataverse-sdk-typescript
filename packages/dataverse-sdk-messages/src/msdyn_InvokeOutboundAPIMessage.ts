@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_ocoutboundconfiguration } from "./types/index.js";
 
 /**
@@ -12,8 +14,8 @@ export class msdyn_InvokeOutboundAPIRequest
   implements Executable<msdyn_InvokeOutboundAPIResponse>
 {
   constructor(
-    public outboundSettingsRecord: msdyn_ocoutboundconfiguration,
-    public contactList: string
+    public outboundSettingsRecord?: EntityReference | EntityPayload<msdyn_ocoutboundconfiguration>,
+    public contactList?: string
   ) {
     super("msdyn_InvokeOutboundAPI");
   }

@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import type { EntityReference } from "./EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type {
   RemoveSolutionComponentResponse as RemoveSolutionComponentResponseData,
   solutioncomponent,
@@ -16,7 +18,7 @@ export class RemoveSolutionComponentRequest
   implements Executable<RemoveSolutionComponentResponse>
 {
   constructor(
-    public solutionComponent: solutioncomponent,
+    public solutionComponent: EntityReference | EntityPayload<solutioncomponent>,
     public componentType: number,
     public solutionUniqueName: string
   ) {

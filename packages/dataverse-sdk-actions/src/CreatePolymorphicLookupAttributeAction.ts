@@ -19,9 +19,9 @@ export interface CreatePolymorphicLookupAttributeResponse {
  */
 export class CreatePolymorphicLookupAttributeAction implements Executable<CreatePolymorphicLookupAttributeResponse> {
   constructor(
-    public readonly lookup: ComplexLookupAttributeMetadata,
-    public readonly oneToManyRelationships: ComplexOneToManyRelationshipMetadata[],
-    public readonly solutionUniqueName: string
+    public readonly lookup?: ComplexLookupAttributeMetadata,
+    public readonly oneToManyRelationships?: ComplexOneToManyRelationshipMetadata[],
+    public readonly solutionUniqueName?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -14,8 +14,8 @@ export class msdyn_CreateRequirementModelRequest
 {
   constructor(
     public attributes: string,
-    public from: string,
-    public to: string
+    public from?: string,
+    public to?: string
   ) {
     super("msdyn_CreateRequirementModel");
   }

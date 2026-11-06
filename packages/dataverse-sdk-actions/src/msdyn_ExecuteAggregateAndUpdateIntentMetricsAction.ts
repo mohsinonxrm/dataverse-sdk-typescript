@@ -16,11 +16,11 @@ export interface msdyn_ExecuteAggregateAndUpdateIntentMetricsResponse {
 export class msdyn_ExecuteAggregateAndUpdateIntentMetricsAction implements Executable<msdyn_ExecuteAggregateAndUpdateIntentMetricsResponse> {
   constructor(
     public readonly msdyn_trackingdate: string,
-    public readonly msdyn_shouldupdateintents: boolean,
+    public readonly msdyn_shouldupdateintents: boolean | undefined,
     public readonly msdyn_pagenumber: number,
-    public readonly msdyn_batchsize: number,
-    public readonly msdyn_parallelexecutions: number,
-    public readonly msdyn_pagingcookie: string,
+    public readonly msdyn_batchsize: number | undefined,
+    public readonly msdyn_parallelexecutions: number | undefined,
+    public readonly msdyn_pagingcookie: string | undefined,
     public readonly msdyn_trackingid: string
   ) {}
 

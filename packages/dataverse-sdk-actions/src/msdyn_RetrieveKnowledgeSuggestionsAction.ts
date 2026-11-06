@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_RetrieveKnowledgeSuggestions action
@@ -15,8 +16,8 @@ export interface msdyn_RetrieveKnowledgeSuggestionsResponse {
  */
 export class msdyn_RetrieveKnowledgeSuggestionsAction implements Executable<msdyn_RetrieveKnowledgeSuggestionsResponse> {
   constructor(
-    public readonly count: number,
-    public readonly target: EntityReference
+    public readonly count: number | undefined,
+    public readonly target: EntityReference | AnyEntityPayload
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

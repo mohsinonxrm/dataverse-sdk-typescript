@@ -13,11 +13,11 @@ export class msdynmkt_checkconsentbatchRequest
   implements Executable<msdynmkt_checkconsentbatchResponse>
 {
   constructor(
-    public msdynmkt_owningbusinessunitid: string,
+    public msdynmkt_owningbusinessunitid: string | undefined,
     public msdynmkt_channeltype: string,
     public msdynmkt_contactpoints: string[],
     public msdynmkt_compliancesettingsid: string,
-    public msdynmkt_topicid: string,
+    public msdynmkt_topicid: string | undefined,
     public msdynmkt_purposeid: string
   ) {
     super("msdynmkt_checkconsentbatch");

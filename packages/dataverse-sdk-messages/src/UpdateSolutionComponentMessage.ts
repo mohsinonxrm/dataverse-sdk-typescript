@@ -14,7 +14,7 @@ export class UpdateSolutionComponentRequest
     public componentId: string,
     public componentType: number,
     public solutionUniqueName: string,
-    public includedComponentSettingsValues: string[]
+    public includedComponentSettingsValues?: string[]
   ) {
     super("UpdateSolutionComponent");
   }

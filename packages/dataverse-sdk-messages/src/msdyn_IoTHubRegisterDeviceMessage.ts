@@ -10,7 +10,7 @@ export class msdyn_IoTHubRegisterDeviceRequest
   extends OrganizationRequest
   implements Executable<msdyn_IoTHubRegisterDeviceResponse>
 {
-  constructor(public entityCollection: Record<string, unknown>[]) {
+  constructor(public entityCollection?: Record<string, unknown>[]) {
     super("msdyn_IoTHubRegisterDevice");
   }
 

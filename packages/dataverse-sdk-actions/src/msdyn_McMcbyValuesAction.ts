@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_McMcbyValues action
@@ -15,8 +16,8 @@ export interface msdyn_McMcbyValuesResponse {
  */
 export class msdyn_McMcbyValuesAction implements Executable<msdyn_McMcbyValuesResponse> {
   constructor(
-    public readonly crmRecord: EntityReference,
-    public readonly kPIType: string
+    public readonly crmRecord?: EntityReference | AnyEntityPayload,
+    public readonly kPIType?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

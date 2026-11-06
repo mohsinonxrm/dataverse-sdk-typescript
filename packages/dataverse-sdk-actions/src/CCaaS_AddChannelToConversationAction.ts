@@ -16,9 +16,9 @@ export interface CCaaS_AddChannelToConversationResponse {
 export class CCaaS_AddChannelToConversationAction implements Executable<CCaaS_AddChannelToConversationResponse> {
   constructor(
     public readonly msdyn_ocliveworkitemId: string,
-    public readonly agentId: string,
+    public readonly agentId: string | undefined,
     public readonly channelType: string,
-    public readonly destinationPhoneNumber: string,
+    public readonly destinationPhoneNumber: string | undefined,
     public readonly apiVersion: string
   ) {}
 

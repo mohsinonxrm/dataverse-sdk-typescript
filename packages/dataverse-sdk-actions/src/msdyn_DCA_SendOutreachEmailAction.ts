@@ -14,7 +14,7 @@ export interface msdyn_DCA_SendOutreachEmailResponse {
  */
 export class msdyn_DCA_SendOutreachEmailAction implements Executable<msdyn_DCA_SendOutreachEmailResponse> {
   constructor(
-    public readonly msdyn_TrackingId: string,
+    public readonly msdyn_TrackingId: string | undefined,
     public readonly msdyn_SalesAgentRun: string
   ) {}
 

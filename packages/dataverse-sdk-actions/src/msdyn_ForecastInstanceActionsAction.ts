@@ -15,7 +15,7 @@ export interface msdyn_ForecastInstanceActionsResponse {
 export class msdyn_ForecastInstanceActionsAction implements Executable<msdyn_ForecastInstanceActionsResponse> {
   constructor(
     public readonly serviceName: string,
-    public readonly webApiName: string,
+    public readonly webApiName: string | undefined,
     public readonly requestJson: string
   ) {}
 

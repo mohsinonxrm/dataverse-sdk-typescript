@@ -13,7 +13,7 @@ export interface msdyn_RetrieveSearchProvidersResponse {
  * Unbound action
  */
 export class msdyn_RetrieveSearchProvidersAction implements Executable<msdyn_RetrieveSearchProvidersResponse> {
-  constructor(public readonly applicationId: string) {}
+  constructor(public readonly applicationId?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_RetrieveSearchProviders`;

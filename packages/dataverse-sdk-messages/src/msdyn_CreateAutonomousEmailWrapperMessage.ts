@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_CreateAutonomousEmailWrapperResponse as msdyn_CreateAutonomousEmailWrapperResponseData } from "./types/index.js";
 
 /**
@@ -14,10 +15,10 @@ export class msdyn_CreateAutonomousEmailWrapperRequest
   implements Executable<msdyn_CreateAutonomousEmailWrapperResponse>
 {
   constructor(
-    public senderEntity: EntityReference,
-    public entity: EntityReference,
+    public senderEntity: EntityReference | AnyEntityPayload | undefined,
+    public entity: EntityReference | AnyEntityPayload,
     public nextSuggestion: string,
-    public sourceContextEntity: EntityReference
+    public sourceContextEntity?: EntityReference | AnyEntityPayload
   ) {
     super("msdyn_CreateAutonomousEmailWrapper");
   }

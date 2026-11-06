@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseValue } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { campaign, transactioncurrency } from "./types/index.js";
 
 /**
@@ -18,12 +19,12 @@ export class QualifyLeadRequest
     public createAccount: boolean,
     public createContact: boolean,
     public createOpportunity: boolean,
-    public opportunityCurrencyId: transactioncurrency,
-    public opportunityCustomerId: EntityReference,
-    public sourceCampaignId: campaign,
+    public opportunityCurrencyId: EntityReference | EntityPayload<transactioncurrency> | undefined,
+    public opportunityCustomerId: EntityReference | AnyEntityPayload | undefined,
+    public sourceCampaignId: EntityReference | EntityPayload<campaign> | undefined,
     public status: number,
-    public processInstanceId: EntityReference,
-    public leadQualificationV2Param: string
+    public processInstanceId?: EntityReference | AnyEntityPayload,
+    public leadQualificationV2Param?: string
   ) {
     super("QualifyLead");
   }

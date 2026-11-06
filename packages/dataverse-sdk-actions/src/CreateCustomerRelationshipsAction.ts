@@ -19,9 +19,9 @@ export interface CreateCustomerRelationshipsResponse {
  */
 export class CreateCustomerRelationshipsAction implements Executable<CreateCustomerRelationshipsResponse> {
   constructor(
-    public readonly lookup: ComplexLookupAttributeMetadata,
-    public readonly oneToManyRelationships: ComplexOneToManyRelationshipMetadata[],
-    public readonly solutionUniqueName: string
+    public readonly lookup?: ComplexLookupAttributeMetadata,
+    public readonly oneToManyRelationships?: ComplexOneToManyRelationshipMetadata[],
+    public readonly solutionUniqueName?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

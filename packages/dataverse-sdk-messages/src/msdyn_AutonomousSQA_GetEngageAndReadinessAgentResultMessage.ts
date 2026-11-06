@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResponse as msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResponseData } from "./types/index.js";
 
 /**
@@ -14,7 +15,7 @@ export class msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultRequest
   implements Executable<msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResponse>
 {
   constructor(
-    public msdyn_RegardingObjectId: EntityReference,
+    public msdyn_RegardingObjectId: EntityReference | AnyEntityPayload,
     public msdyn_TrackingId: string
   ) {
     super("msdyn_AutonomousSQA_GetEngageAndReadinessAgentResult");

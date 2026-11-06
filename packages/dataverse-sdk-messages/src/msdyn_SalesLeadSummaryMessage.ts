@@ -13,17 +13,17 @@ export class msdyn_SalesLeadSummaryRequest
   implements Executable<msdyn_SalesLeadSummaryResponse>
 {
   constructor(
-    public msdyn_additionalParams: string,
-    public msdyn_activityId: string,
-    public msdyn_doSuggestUpdates: boolean,
-    public msdyn_parentContactId: string,
+    public msdyn_additionalParams: string | undefined,
+    public msdyn_activityId: string | undefined,
+    public msdyn_doSuggestUpdates: boolean | undefined,
+    public msdyn_parentContactId: string | undefined,
     public msdyn_id: string,
-    public msdyn_lastComputationTime: string,
-    public msdyn_isMergedCatchupAndSummary: boolean,
-    public msdyn_skipHeader: string,
-    public msdyn_sessionId: string,
-    public msdyn_parentAccountId: string,
-    public msdyn_responseFormat: string
+    public msdyn_lastComputationTime?: string,
+    public msdyn_isMergedCatchupAndSummary?: boolean,
+    public msdyn_skipHeader?: string,
+    public msdyn_sessionId?: string,
+    public msdyn_parentAccountId?: string,
+    public msdyn_responseFormat?: string
   ) {
     super("msdyn_SalesLeadSummary");
   }

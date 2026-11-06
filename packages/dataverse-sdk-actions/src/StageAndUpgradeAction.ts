@@ -19,14 +19,14 @@ export class StageAndUpgradeAction implements Executable<StageAndUpgradeResponse
     public readonly publishWorkflows: boolean,
     public readonly customizationFile: string,
     public readonly importJobId: string,
-    public readonly convertToManaged: boolean,
-    public readonly skipProductUpdateDependencies: boolean,
-    public readonly skipQueueRibbonJob: boolean,
-    public readonly asyncRibbonProcessing: boolean,
-    public readonly componentParameters: Record<string, unknown>[],
-    public readonly solutionParameters: SolutionParameters,
-    public readonly layerDesiredOrder: LayerDesiredOrder,
-    public readonly schemaUpdatesOnly: boolean
+    public readonly convertToManaged?: boolean,
+    public readonly skipProductUpdateDependencies?: boolean,
+    public readonly skipQueueRibbonJob?: boolean,
+    public readonly asyncRibbonProcessing?: boolean,
+    public readonly componentParameters?: Record<string, unknown>[],
+    public readonly solutionParameters?: SolutionParameters,
+    public readonly layerDesiredOrder?: LayerDesiredOrder,
+    public readonly schemaUpdatesOnly?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

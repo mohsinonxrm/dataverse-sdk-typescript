@@ -15,17 +15,17 @@ export interface InsertOptionValueResponse {
  */
 export class InsertOptionValueAction implements Executable<InsertOptionValueResponse> {
   constructor(
-    public readonly color: string,
-    public readonly optionSetName: string,
-    public readonly attributeLogicalName: string,
-    public readonly externalValue: string,
-    public readonly entityLogicalName: string,
-    public readonly isHidden: boolean,
-    public readonly value: number,
-    public readonly label: Label,
-    public readonly description: Label,
-    public readonly parentValues: number[],
-    public readonly solutionUniqueName: string
+    public readonly color?: string,
+    public readonly optionSetName?: string,
+    public readonly attributeLogicalName?: string,
+    public readonly externalValue?: string,
+    public readonly entityLogicalName?: string,
+    public readonly isHidden?: boolean,
+    public readonly value?: number,
+    public readonly label?: Label,
+    public readonly description?: Label,
+    public readonly parentValues?: number[],
+    public readonly solutionUniqueName?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import type { EntityReference } from "./EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type {
   msdyn_CloneMultipleResponse as msdyn_CloneMultipleResponseData,
   msdyn_configuration,
@@ -17,10 +19,10 @@ export class msdyn_CloneMultipleRequest
 {
   constructor(
     public entityIds: string,
-    public queryReference: msdyn_configuration,
-    public ufxQuery: string,
-    public transformAction: string,
-    public transformParams: string
+    public queryReference?: EntityReference | EntityPayload<msdyn_configuration>,
+    public ufxQuery?: string,
+    public transformAction?: string,
+    public transformParams?: string
   ) {
     super("msdyn_CloneMultiple");
   }

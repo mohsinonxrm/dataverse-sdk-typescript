@@ -13,7 +13,7 @@ export class msdyn_SalesAgents_BatchUpdateSARStatesRequest
   constructor(
     public msdyn_StateCode: number,
     public msdyn_StatusCode: number,
-    public msdyn_TrackingId: string,
+    public msdyn_TrackingId: string | undefined,
     public msdyn_SalesAgentRunIds: string[]
   ) {
     super("msdyn_SalesAgents_BatchUpdateSARStates");

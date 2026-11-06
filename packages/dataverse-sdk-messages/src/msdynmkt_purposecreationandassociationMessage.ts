@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * msdynmkt_purposecreationandassociation request message
@@ -13,10 +14,10 @@ export class msdynmkt_purposecreationandassociationRequest
 {
   constructor(
     public msdynmkt_customenforcementmodel: number,
-    public msdynmkt_purposeid: string,
+    public msdynmkt_purposeid: string | undefined,
     public msdynmkt_enforcementmodel: number,
     public msdynmkt_name: string,
-    public msdynmkt_compliancesettings4: EntityReference,
+    public msdynmkt_compliancesettings4: EntityReference | AnyEntityPayload,
     public msdynmkt_purpose_id: string,
     public msdynmkt_smsenforcementmodel: number,
     public msdynmkt_voiceenforcementmodel: number,

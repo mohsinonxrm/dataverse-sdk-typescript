@@ -14,11 +14,11 @@ export class msdyn_GetDocumentContentRequest
 {
   constructor(
     public msdyn_documents: string,
-    public msdyn_activityId: string,
+    public msdyn_activityId: string | undefined,
     public msdyn_type: string,
-    public msdyn_userQuery: string,
-    public msdyn_shouldUpload: boolean,
-    public msdyn_keywords: string
+    public msdyn_userQuery?: string,
+    public msdyn_shouldUpload?: boolean,
+    public msdyn_keywords?: string
   ) {
     super("msdyn_GetDocumentContent");
   }

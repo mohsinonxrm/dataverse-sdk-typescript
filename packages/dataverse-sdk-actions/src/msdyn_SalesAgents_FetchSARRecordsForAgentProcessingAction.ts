@@ -16,8 +16,8 @@ export class msdyn_SalesAgents_FetchSARRecordsForAgentProcessingAction implement
   constructor(
     public readonly msdyn_SalesAgentType: number,
     public readonly msdyn_AgentType: number,
-    public readonly msdyn_TrackingId: string,
-    public readonly msdyn_Top: number
+    public readonly msdyn_TrackingId?: string,
+    public readonly msdyn_Top?: number
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_UpdateBookingsStatus action
@@ -17,10 +18,10 @@ export interface msdyn_UpdateBookingsStatusResponse {
 export class msdyn_UpdateBookingsStatusAction implements Executable<msdyn_UpdateBookingsStatusResponse> {
   constructor(
     public readonly targetStatusId: string,
-    public readonly bookingIds: string,
-    public readonly defaultBookingDetail: EntityReference,
-    public readonly bookingStatusChangeContext: string,
-    public readonly considerAppointments: boolean
+    public readonly bookingIds?: string,
+    public readonly defaultBookingDetail?: EntityReference | AnyEntityPayload,
+    public readonly bookingStatusChangeContext?: string,
+    public readonly considerAppointments?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

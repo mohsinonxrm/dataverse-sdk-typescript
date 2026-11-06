@@ -15,7 +15,7 @@ export interface msdyn_updatesequencetargetstepdataResponse {
 export class msdyn_updatesequencetargetstepdataAction implements Executable<msdyn_updatesequencetargetstepdataResponse> {
   constructor(
     public readonly msdyn_sequencetargetstepid: string,
-    public readonly msdyn_linkedactivityid: string
+    public readonly msdyn_linkedactivityid?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from _RoutingRuleSetValidation action
@@ -15,7 +16,7 @@ export interface _RoutingRuleSetValidationResponse {
  * Unbound action
  */
 export class _RoutingRuleSetValidationAction implements Executable<_RoutingRuleSetValidationResponse> {
-  constructor(public readonly routingRuleSet: EntityReference) {}
+  constructor(public readonly routingRuleSet: EntityReference | AnyEntityPayload) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/_RoutingRuleSetValidation`;

@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_ActivateSdkMessageProcessingStepsResponse as msdyn_ActivateSdkMessageProcessingStepsResponseData } from "./types/index.js";
 
 /**
@@ -13,7 +14,7 @@ export class msdyn_ActivateSdkMessageProcessingStepsRequest
   extends OrganizationRequest
   implements Executable<msdyn_ActivateSdkMessageProcessingStepsResponse>
 {
-  constructor(public analysisResult: EntityReference) {
+  constructor(public analysisResult?: EntityReference | AnyEntityPayload) {
     super("msdyn_ActivateSdkMessageProcessingSteps");
   }
 

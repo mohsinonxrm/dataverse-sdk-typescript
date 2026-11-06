@@ -18,7 +18,7 @@ export class CCaaS_InitiateAgentTransferAction implements Executable<CCaaS_Initi
     public readonly msdyn_ocliveworkitemId: string,
     public readonly agentId: string,
     public readonly apiVersion: string,
-    public readonly queueId: string
+    public readonly queueId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -1,4 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { recurringappointmentmaster } from "./types/index.js";
 
 /**
@@ -15,7 +17,7 @@ export interface DeleteOpenInstancesResponse {
  */
 export class DeleteOpenInstancesAction implements Executable<DeleteOpenInstancesResponse> {
   constructor(
-    public readonly target: recurringappointmentmaster,
+    public readonly target: EntityReference | EntityPayload<recurringappointmentmaster>,
     public readonly seriesEndDate: string,
     public readonly stateOfPastInstances: number
   ) {}

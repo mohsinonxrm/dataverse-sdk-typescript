@@ -10,7 +10,7 @@ export class msdyn_SalesAcceleratorMailNotificationToAdminRequest
   extends OrganizationRequest
   implements Executable<msdyn_SalesAcceleratorMailNotificationToAdminResponse>
 {
-  constructor(public inputData: string) {
+  constructor(public inputData?: string) {
     super("msdyn_SalesAcceleratorMailNotificationToAdmin");
   }
 

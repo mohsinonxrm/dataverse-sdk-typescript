@@ -11,11 +11,11 @@ export class OrderOptionRequest
   implements Executable<OrderOptionResponse>
 {
   constructor(
-    public optionSetName: string,
-    public attributeLogicalName: string,
-    public entityLogicalName: string,
+    public optionSetName: string | undefined,
+    public attributeLogicalName: string | undefined,
+    public entityLogicalName: string | undefined,
     public values: number[],
-    public solutionUniqueName: string
+    public solutionUniqueName?: string
   ) {
     super("OrderOption");
   }

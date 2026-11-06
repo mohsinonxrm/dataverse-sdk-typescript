@@ -12,7 +12,7 @@ export class msdyn_CheckReqRibbonCommandDefRequest
   extends OrganizationRequest
   implements Executable<msdyn_CheckReqRibbonCommandDefResponse>
 {
-  constructor(public commandAndEntityList: string) {
+  constructor(public commandAndEntityList?: string) {
     super("msdyn_CheckReqRibbonCommandDef");
   }
 

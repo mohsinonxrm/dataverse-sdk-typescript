@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { opportunityclose } from "./types/index.js";
 
 /**
@@ -12,8 +14,8 @@ export class LoseOpportunityRequest
   implements Executable<LoseOpportunityResponse>
 {
   constructor(
-    public caller: string,
-    public opportunityClose: opportunityclose,
+    public caller: string | undefined,
+    public opportunityClose: EntityReference | EntityPayload<opportunityclose>,
     public status: number
   ) {
     super("LoseOpportunity");

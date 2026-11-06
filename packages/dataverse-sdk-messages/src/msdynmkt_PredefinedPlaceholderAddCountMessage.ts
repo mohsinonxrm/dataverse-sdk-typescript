@@ -10,7 +10,7 @@ export class msdynmkt_PredefinedPlaceholderAddCountRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_PredefinedPlaceholderAddCountResponse>
 {
-  constructor(public predefinedPlaceholderAddCountRequest: string) {
+  constructor(public predefinedPlaceholderAddCountRequest?: string) {
     super("msdynmkt_PredefinedPlaceholderAddCount");
   }
 

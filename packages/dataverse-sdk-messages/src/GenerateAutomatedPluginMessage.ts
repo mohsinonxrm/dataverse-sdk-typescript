@@ -14,8 +14,8 @@ export class GenerateAutomatedPluginRequest
 {
   constructor(
     public stage: number,
-    public context: string,
-    public solutionUniqueName: string,
+    public context: string | undefined,
+    public solutionUniqueName: string | undefined,
     public expression: string,
     public entityLogicalName: string,
     public messageName: string,

@@ -14,9 +14,9 @@ export class CCaaS_InitiateAgentGroupTransferRequest
     public msdyn_ocliveworkitemId: string,
     public agentGroupId: string,
     public apiVersion: string,
-    public intentId: string,
-    public intentGroupId: string,
-    public intentFamilyId: string
+    public intentId?: string,
+    public intentGroupId?: string,
+    public intentFamilyId?: string
   ) {
     super("CCaaS_InitiateAgentGroupTransfer");
   }

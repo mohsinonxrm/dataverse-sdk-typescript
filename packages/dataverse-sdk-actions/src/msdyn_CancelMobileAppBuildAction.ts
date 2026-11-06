@@ -1,4 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_mobileapp } from "./types/index.js";
 
 /**
@@ -16,7 +18,7 @@ export interface msdyn_CancelMobileAppBuildResponse {
 export class msdyn_CancelMobileAppBuildAction implements Executable<msdyn_CancelMobileAppBuildResponse> {
   constructor(
     public readonly operationId: string,
-    public readonly msdyn_MobileApp: msdyn_mobileapp
+    public readonly msdyn_MobileApp: EntityReference | EntityPayload<msdyn_mobileapp>
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

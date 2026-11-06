@@ -12,7 +12,7 @@ export class msdynmkt_optoutofallvoicecommunicationRequest
 {
   constructor(
     public msdynmkt_contactpointvalue: string,
-    public msdynmkt_correlationid: string
+    public msdynmkt_correlationid?: string
   ) {
     super("msdynmkt_optoutofallvoicecommunication");
   }

@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from OnExternalCreated action
@@ -14,7 +15,7 @@ export interface OnExternalCreatedResponse {
  * Unbound action
  */
 export class OnExternalCreatedAction implements Executable<OnExternalCreatedResponse> {
-  constructor(public readonly target: EntityReference) {}
+  constructor(public readonly target: EntityReference | AnyEntityPayload) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/OnExternalCreated`;

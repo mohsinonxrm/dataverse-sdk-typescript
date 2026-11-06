@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * OnExternalDeleted request message
@@ -11,7 +12,7 @@ export class OnExternalDeletedRequest
   extends OrganizationRequest
   implements Executable<OnExternalDeletedResponse>
 {
-  constructor(public target: EntityReference) {
+  constructor(public target: EntityReference | AnyEntityPayload) {
     super("OnExternalDeleted");
   }
 

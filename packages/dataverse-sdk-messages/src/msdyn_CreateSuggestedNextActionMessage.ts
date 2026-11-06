@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_CreateSuggestedNextActionResponse as msdyn_CreateSuggestedNextActionResponseData } from "./types/index.js";
 
 /**
@@ -15,7 +16,7 @@ export class msdyn_CreateSuggestedNextActionRequest
 {
   constructor(
     public suggestionSubtype: string,
-    public entity: EntityReference,
+    public entity: EntityReference | AnyEntityPayload | undefined,
     public draftEmailId: string,
     public suggestionType: string
   ) {

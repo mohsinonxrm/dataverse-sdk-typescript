@@ -14,15 +14,15 @@ export interface msdyn_ActionCardActionLoggerResponse {
  */
 export class msdyn_ActionCardActionLoggerAction implements Executable<msdyn_ActionCardActionLoggerResponse> {
   constructor(
-    public readonly cardType: number,
+    public readonly cardType: number | undefined,
     public readonly userId: string,
     public readonly cardTypeId: string,
     public readonly actionType: string,
     public readonly totalActions: number,
-    public readonly actionCardId: string,
-    public readonly regardingObjectId: string,
-    public readonly regardingObjectLogicalName: string,
-    public readonly regardingObjectTypeCode: number
+    public readonly actionCardId?: string,
+    public readonly regardingObjectId?: string,
+    public readonly regardingObjectLogicalName?: string,
+    public readonly regardingObjectTypeCode?: number
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

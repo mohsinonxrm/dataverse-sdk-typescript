@@ -14,14 +14,14 @@ export class msdyn_RequirementGroupOverviewRequest
 {
   constructor(
     public msdyn_requirementgroupId: string,
-    public start: string,
-    public end: string,
-    public duration: number,
-    public interval: number,
-    public resourceIdsFilter: string,
-    public overviewTypes: string,
-    public constraintBag: string,
-    public removeRedundantCrewCombinations: boolean
+    public start?: string,
+    public end?: string,
+    public duration?: number,
+    public interval?: number,
+    public resourceIdsFilter?: string,
+    public overviewTypes?: string,
+    public constraintBag?: string,
+    public removeRedundantCrewCombinations?: boolean
   ) {
     super("msdyn_RequirementGroupOverview");
   }

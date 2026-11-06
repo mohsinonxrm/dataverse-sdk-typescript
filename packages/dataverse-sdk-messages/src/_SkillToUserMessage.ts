@@ -11,8 +11,8 @@ export class _SkillToUserRequest
   implements Executable<_SkillToUserResponse>
 {
   constructor(
-    public updatedBRC: Record<string, unknown>[],
-    public deletedBRC: Record<string, unknown>[]
+    public updatedBRC?: Record<string, unknown>[],
+    public deletedBRC?: Record<string, unknown>[]
   ) {
     super("_SkillToUser");
   }

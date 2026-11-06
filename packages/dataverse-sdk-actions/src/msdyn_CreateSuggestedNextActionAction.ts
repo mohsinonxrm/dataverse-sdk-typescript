@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_CreateSuggestedNextAction action
@@ -16,7 +17,7 @@ export interface msdyn_CreateSuggestedNextActionResponse {
 export class msdyn_CreateSuggestedNextActionAction implements Executable<msdyn_CreateSuggestedNextActionResponse> {
   constructor(
     public readonly suggestionSubtype: string,
-    public readonly entity: EntityReference,
+    public readonly entity: EntityReference | AnyEntityPayload | undefined,
     public readonly draftEmailId: string,
     public readonly suggestionType: string
   ) {}

@@ -14,7 +14,7 @@ export class ExportMappingsImportMapRequest
 {
   constructor(
     public importmapId: string,
-    public exportIds: boolean
+    public exportIds?: boolean
   ) {
     super("ExportMappingsImportMap");
   }

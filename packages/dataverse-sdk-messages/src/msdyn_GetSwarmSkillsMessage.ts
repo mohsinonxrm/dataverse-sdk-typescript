@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseValue } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * msdyn_GetSwarmSkills request message
@@ -12,7 +13,7 @@ export class msdyn_GetSwarmSkillsRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetSwarmSkillsResponse>
 {
-  constructor(public swarmObject: EntityReference) {
+  constructor(public swarmObject: EntityReference | AnyEntityPayload) {
     super("msdyn_GetSwarmSkills");
   }
 

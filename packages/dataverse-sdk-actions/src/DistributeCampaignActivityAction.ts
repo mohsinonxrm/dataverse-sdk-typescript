@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { PropagationOwnershipOptions, bulkoperation, queue, template } from "./types/index.js";
 
 /**
@@ -22,12 +23,12 @@ export class DistributeCampaignActivityAction implements Executable<DistributeCa
   constructor(
     public readonly campaignactivityId: string,
     public readonly propagate: boolean,
-    public readonly activity: EntityReference,
-    public readonly template: template,
+    public readonly activity: EntityReference | AnyEntityPayload | undefined,
+    public readonly template: EntityReference | EntityPayload<template>,
     public readonly ownershipOptions: PropagationOwnershipOptions,
-    public readonly owner: EntityReference,
+    public readonly owner: EntityReference | AnyEntityPayload,
     public readonly sendEmail: boolean,
-    public readonly queue: queue,
+    public readonly queue: EntityReference | EntityPayload<queue> | undefined,
     public readonly postWorkflowEvent: boolean
   ) {}
 

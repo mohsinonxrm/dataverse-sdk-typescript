@@ -17,9 +17,9 @@ export class msdyn_SalesAgents_LogMicroagentFlowDataAction implements Executable
   constructor(
     public readonly msdyn_salesagentrunid: string,
     public readonly msdyn_agenttype: number,
-    public readonly msdyn_salesagenttype: number,
-    public readonly trackingId: string,
-    public readonly continueOnError: boolean,
+    public readonly msdyn_salesagenttype: number | undefined,
+    public readonly trackingId: string | undefined,
+    public readonly continueOnError: boolean | undefined,
     public readonly data: string
   ) {}
 

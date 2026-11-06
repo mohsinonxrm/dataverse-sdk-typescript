@@ -13,7 +13,7 @@ export interface msdynmkt_PersonalizationGetEventsByNameResponse {
  * Unbound action
  */
 export class msdynmkt_PersonalizationGetEventsByNameAction implements Executable<msdynmkt_PersonalizationGetEventsByNameResponse> {
-  constructor(public readonly getPersonalizationEventRequest: string) {}
+  constructor(public readonly getPersonalizationEventRequest?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_PersonalizationGetEventsByName`;

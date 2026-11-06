@@ -13,9 +13,9 @@ export class AddMembersBatchListRequest
   implements Executable<AddMembersBatchListResponse>
 {
   constructor(
-    public listId: string,
-    public fetchXml: string,
-    public skipCount: number
+    public listId?: string,
+    public fetchXml?: string,
+    public skipCount?: number
   ) {
     super("AddMembersBatchList");
   }

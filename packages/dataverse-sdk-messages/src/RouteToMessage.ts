@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { queueitem } from "./types/index.js";
 
 /**
@@ -10,8 +11,8 @@ import type { queueitem } from "./types/index.js";
  */
 export class RouteToRequest extends OrganizationRequest implements Executable<RouteToResponse> {
   constructor(
-    public target: EntityReference,
-    public queueItem: queueitem
+    public target: EntityReference | AnyEntityPayload,
+    public queueItem?: EntityReference | EntityPayload<queueitem>
   ) {
     super("RouteTo");
   }

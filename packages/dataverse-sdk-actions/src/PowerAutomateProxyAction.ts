@@ -18,8 +18,8 @@ export class PowerAutomateProxyAction implements Executable<PowerAutomateProxyRe
   constructor(
     public readonly httpMethod: string,
     public readonly relativeUrl: string,
-    public readonly requestHeaders: string,
-    public readonly requestBody: string
+    public readonly requestHeaders?: string,
+    public readonly requestBody?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

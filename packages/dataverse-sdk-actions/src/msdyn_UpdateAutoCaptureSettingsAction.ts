@@ -15,10 +15,10 @@ export interface msdyn_UpdateAutoCaptureSettingsResponse {
 export class msdyn_UpdateAutoCaptureSettingsAction implements Executable<msdyn_UpdateAutoCaptureSettingsResponse> {
   constructor(
     public readonly actiontype: number,
-    public readonly dialogtype: number,
-    public readonly businessProcessFlowId: string,
-    public readonly businessProcessFlowInstanceId: string,
-    public readonly actionStepId: string
+    public readonly dialogtype?: number,
+    public readonly businessProcessFlowId?: string,
+    public readonly businessProcessFlowInstanceId?: string,
+    public readonly actionStepId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

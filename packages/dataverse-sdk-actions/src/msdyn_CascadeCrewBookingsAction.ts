@@ -14,10 +14,10 @@ export interface msdyn_CascadeCrewBookingsResponse {
  */
 export class msdyn_CascadeCrewBookingsAction implements Executable<msdyn_CascadeCrewBookingsResponse> {
   constructor(
-    public readonly bookingsToCreate: Record<string, unknown>[],
-    public readonly bookingsToUpdate: Record<string, unknown>[],
-    public readonly parentBookingsToUpdate: Record<string, unknown>[],
-    public readonly batchNumber: number
+    public readonly bookingsToCreate?: Record<string, unknown>[],
+    public readonly bookingsToUpdate?: Record<string, unknown>[],
+    public readonly parentBookingsToUpdate?: Record<string, unknown>[],
+    public readonly batchNumber?: number
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

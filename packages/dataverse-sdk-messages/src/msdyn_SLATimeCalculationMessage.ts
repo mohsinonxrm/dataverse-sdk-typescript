@@ -16,9 +16,9 @@ export class msdyn_SLATimeCalculationRequest
     public calendarId: string,
     public startTime: string,
     public requestType: string,
-    public minutes: number,
-    public logsLevel: number,
-    public endTime: string
+    public minutes?: number,
+    public logsLevel?: number,
+    public endTime?: string
   ) {
     super("msdyn_SLATimeCalculation");
   }

@@ -14,9 +14,9 @@ export class CCaaS_InitiateAgentTransferExternalRequest
     public msdyn_ocliveworkitemId: string,
     public externalParticipantChannel: string,
     public externalParticipantChannelType: string,
-    public agentName: string,
-    public externalReferenceId: string,
-    public externalReferenceType: string,
+    public agentName: string | undefined,
+    public externalReferenceId: string | undefined,
+    public externalReferenceType: string | undefined,
     public apiVersion: string
   ) {
     super("CCaaS_InitiateAgentTransferExternal");

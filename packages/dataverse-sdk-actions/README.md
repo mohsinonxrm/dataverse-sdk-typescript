@@ -189,11 +189,11 @@ Merges two entity records (subordinate into target).
 ```typescript
 import { MergeAction, createEntityReference } from "@mohsinonxrm/dataverse-sdk-actions";
 
-const target = createEntityReference("account", "target-account-guid"); // Keep this record
 const action = new MergeAction(
-  target,
+  createEntityReference("account", "target-account-guid"), // Keep this record
   createEntityReference("account", "subordinate-account-guid"), // Merge & deactivate this
-  target, // UpdateContent (see #74 for typed entity payloads)
+  // UpdateContent: column values to set on the target (or undefined)
+  { "@odata.type": "Microsoft.Dynamics.CRM.account", description: "Merged" },
   false // PerformParentingChecks
 );
 
@@ -214,6 +214,35 @@ JSON.stringify(createEntityReference("email", id)); // {"@odata.type":"Microsoft
 The primary keys and entity sets come from the CSDL the package was generated from. For a table
 it doesn't know (a custom table created later), pass them:
 `createEntityReference("new_project", id, { primaryIdAttribute: "new_projectid", entitySetName: "new_projects" })`.
+
+### Entity Payloads
+
+An entity-typed parameter also takes the record itself, with column values: in a request body the
+Web API reads it as an entity, and a reference is the same shape with only the primary key.
+
+- A parameter of one table (`WinOpportunity`'s `OpportunityClose`) is
+  `EntityReference | EntityPayload<opportunityclose>`: any of its columns, `@odata.type`, and lookups
+  set with `<navigation property>@odata.bind`.
+- A parameter of any table (`crmbaseentity`, such as `Merge`'s `UpdateContent`) is
+  `EntityReference | AnyEntityPayload`, and `@odata.type` names the table.
+
+```typescript
+await client.execute(
+  new WinOpportunityAction(
+    {
+      "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
+      subject: "Won",
+      "opportunityid@odata.bind": `/opportunities(${opportunityId})`,
+    },
+    undefined, // Caller
+    3 // Status: Won
+  )
+);
+```
+
+Parameters that `$metadata` doesn't mark `Nullable="false"` are optional: at the end of the
+argument list they can be left out (`new ExecuteWorkflowAction(workflowId, entityId)`), and
+elsewhere they accept `undefined`. Either way they are left out of the request body.
 
 ## Bulk Operations
 

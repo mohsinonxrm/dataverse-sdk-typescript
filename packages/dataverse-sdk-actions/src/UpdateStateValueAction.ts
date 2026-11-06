@@ -15,14 +15,14 @@ export interface UpdateStateValueResponse {
  */
 export class UpdateStateValueAction implements Executable<UpdateStateValueResponse> {
   constructor(
-    public readonly optionSetName: string,
-    public readonly attributeLogicalName: string,
-    public readonly entityLogicalName: string,
+    public readonly optionSetName: string | undefined,
+    public readonly attributeLogicalName: string | undefined,
+    public readonly entityLogicalName: string | undefined,
     public readonly value: number,
-    public readonly label: Label,
-    public readonly description: Label,
+    public readonly label: Label | undefined,
+    public readonly description: Label | undefined,
     public readonly mergeLabels: boolean,
-    public readonly defaultStatusCode: number
+    public readonly defaultStatusCode?: number
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

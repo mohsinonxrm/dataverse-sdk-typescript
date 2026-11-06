@@ -14,7 +14,7 @@ export class msdyn_ForecastInstanceActionsRequest
 {
   constructor(
     public serviceName: string,
-    public webApiName: string,
+    public webApiName: string | undefined,
     public requestJson: string
   ) {
     super("msdyn_ForecastInstanceActions");

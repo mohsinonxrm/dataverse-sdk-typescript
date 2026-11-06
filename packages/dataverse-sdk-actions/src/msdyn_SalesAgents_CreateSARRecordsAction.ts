@@ -16,7 +16,7 @@ export interface msdyn_SalesAgents_CreateSARRecordsResponse {
 export class msdyn_SalesAgents_CreateSARRecordsAction implements Executable<msdyn_SalesAgents_CreateSARRecordsResponse> {
   constructor(
     public readonly msdyn_InputPayload: string,
-    public readonly msdyn_TrackingId: string
+    public readonly msdyn_TrackingId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_LogCMAEventResponse as msdyn_LogCMAEventResponseData } from "./types/index.js";
 
 /**
@@ -17,8 +18,8 @@ export class msdyn_LogCMAEventRequest
     public eventType: string,
     public source: string,
     public component: string,
-    public eventData: string,
-    public entity: EntityReference
+    public eventData?: string,
+    public entity?: EntityReference | AnyEntityPayload
   ) {
     super("msdyn_LogCMAEvent");
   }

@@ -22,9 +22,9 @@ export class msdyn_BookingResourceRequirementAction implements Executable<msdyn_
     public readonly bookingType: number,
     public readonly startDateTime: string,
     public readonly endDateTime: string,
-    public readonly timeframe: number,
-    public readonly hours: number,
-    public readonly percentage: number
+    public readonly timeframe?: number,
+    public readonly hours?: number,
+    public readonly percentage?: number
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

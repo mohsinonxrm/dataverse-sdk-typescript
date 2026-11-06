@@ -20,7 +20,7 @@ export class CCaaS_InitiateAgentGroupConsultAction implements Executable<CCaaS_I
     public readonly intentGroupId: string,
     public readonly apiVersion: string,
     public readonly conversationAccess: string,
-    public readonly agentGroupId: string,
+    public readonly agentGroupId: string | undefined,
     public readonly intentFamilyId: string,
     public readonly consultType: string
   ) {}

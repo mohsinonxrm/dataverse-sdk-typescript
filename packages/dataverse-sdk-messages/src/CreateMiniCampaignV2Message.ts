@@ -26,7 +26,7 @@ export class CreateMiniCampaignV2Request
     public ownerId: string,
     public ownerTypeCode: number,
     public sendEmail: boolean,
-    public queueId: string
+    public queueId?: string
   ) {
     super("CreateMiniCampaignV2");
   }

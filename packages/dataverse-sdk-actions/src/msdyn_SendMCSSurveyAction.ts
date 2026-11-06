@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_SendMCSSurvey action
@@ -15,12 +16,12 @@ export interface msdyn_SendMCSSurveyResponse {
  */
 export class msdyn_SendMCSSurveyAction implements Executable<msdyn_SendMCSSurveyResponse> {
   constructor(
-    public readonly from: EntityReference,
+    public readonly from: EntityReference | AnyEntityPayload,
     public readonly to: Record<string, unknown>[],
-    public readonly cc: Record<string, unknown>[],
-    public readonly bcc: Record<string, unknown>[],
-    public readonly regarding: EntityReference,
-    public readonly template: EntityReference
+    public readonly cc: Record<string, unknown>[] | undefined,
+    public readonly bcc: Record<string, unknown>[] | undefined,
+    public readonly regarding: EntityReference | AnyEntityPayload,
+    public readonly template?: EntityReference | AnyEntityPayload
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -14,10 +14,10 @@ export interface msdyn_UpdateCadenceRunStatusResponse {
  */
 export class msdyn_UpdateCadenceRunStatusAction implements Executable<msdyn_UpdateCadenceRunStatusResponse> {
   constructor(
-    public readonly salesCadenceInstanceId: string,
-    public readonly statusType: number,
-    public readonly overallStatus: number,
-    public readonly flowRunStatus: string
+    public readonly salesCadenceInstanceId?: string,
+    public readonly statusType?: number,
+    public readonly overallStatus?: number,
+    public readonly flowRunStatus?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

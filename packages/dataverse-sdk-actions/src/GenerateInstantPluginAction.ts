@@ -16,12 +16,12 @@ export interface GenerateInstantPluginResponse {
  */
 export class GenerateInstantPluginAction implements Executable<GenerateInstantPluginResponse> {
   constructor(
-    public readonly solutionUniqueName: string,
+    public readonly solutionUniqueName: string | undefined,
     public readonly expression: string,
-    public readonly context: string,
+    public readonly context: string | undefined,
     public readonly description: string,
-    public readonly entityLogicalName: string,
-    public readonly parameters: string,
+    public readonly entityLogicalName: string | undefined,
+    public readonly parameters: string | undefined,
     public readonly name: string
   ) {}
 

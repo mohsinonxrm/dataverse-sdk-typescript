@@ -11,12 +11,12 @@ export class UpdateAutomatedPluginRequest
   implements Executable<UpdateAutomatedPluginResponse>
 {
   constructor(
-    public expression: string,
-    public solutionUniqueName: string,
-    public entityLogicalName: string,
-    public context: string,
-    public name: string,
-    public stage: number,
+    public expression: string | undefined,
+    public solutionUniqueName: string | undefined,
+    public entityLogicalName: string | undefined,
+    public context: string | undefined,
+    public name: string | undefined,
+    public stage: number | undefined,
     public fxExpressionUniqueName: string,
     public messageName: string
   ) {

@@ -11,8 +11,8 @@ export class msdyn_ExecuteRecurringSalesOperationRequest
   implements Executable<msdyn_ExecuteRecurringSalesOperationResponse>
 {
   constructor(
-    public inputData: string,
-    public isRSAV2Entity: boolean,
+    public inputData: string | undefined,
+    public isRSAV2Entity: boolean | undefined,
     public customActionName: string,
     public triggerName: string
   ) {

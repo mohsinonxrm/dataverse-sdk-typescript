@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_InvokeIntelligenceActionResponse as msdyn_InvokeIntelligenceActionResponseData } from "./types/index.js";
 
 /**
@@ -14,8 +15,8 @@ export class msdyn_InvokeIntelligenceActionRequest
   implements Executable<msdyn_InvokeIntelligenceActionResponse>
 {
   constructor(
-    public context: string,
-    public entityReference: EntityReference,
+    public context: string | undefined,
+    public entityReference: EntityReference | AnyEntityPayload | undefined,
     public scenarioType: string,
     public requestPayload: string
   ) {

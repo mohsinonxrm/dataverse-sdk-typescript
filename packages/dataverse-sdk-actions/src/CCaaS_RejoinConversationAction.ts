@@ -16,9 +16,9 @@ export interface CCaaS_RejoinConversationResponse {
 export class CCaaS_RejoinConversationAction implements Executable<CCaaS_RejoinConversationResponse> {
   constructor(
     public readonly msdyn_ocliveworkitemId: string,
-    public readonly clientId: string,
+    public readonly clientId: string | undefined,
     public readonly apiVersion: string,
-    public readonly sessionId: string
+    public readonly sessionId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

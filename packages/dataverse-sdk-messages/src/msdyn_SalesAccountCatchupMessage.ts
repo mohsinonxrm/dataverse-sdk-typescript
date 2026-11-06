@@ -14,12 +14,12 @@ export class msdyn_SalesAccountCatchupRequest
 {
   constructor(
     public msdyn_id: string,
-    public msdyn_sessionId: string,
-    public msdyn_responseFormat: string,
-    public msdyn_activityId: string,
-    public msdyn_since: string,
-    public msdyn_skipHeader: string,
-    public msdyn_additionalParams: string
+    public msdyn_sessionId?: string,
+    public msdyn_responseFormat?: string,
+    public msdyn_activityId?: string,
+    public msdyn_since?: string,
+    public msdyn_skipHeader?: string,
+    public msdyn_additionalParams?: string
   ) {
     super("msdyn_SalesAccountCatchup");
   }

@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from Merge action
@@ -15,9 +16,9 @@ export interface MergeResponse {
  */
 export class MergeAction implements Executable<MergeResponse> {
   constructor(
-    public readonly target: EntityReference,
-    public readonly subordinate: EntityReference,
-    public readonly updateContent: EntityReference,
+    public readonly target: EntityReference | AnyEntityPayload,
+    public readonly subordinate: EntityReference | AnyEntityPayload,
+    public readonly updateContent: EntityReference | AnyEntityPayload | undefined,
     public readonly performParentingChecks: boolean
   ) {}
 

@@ -13,10 +13,10 @@ export class msdyn_SalesAgents_FetchOutreachEmailForAgentRequest
   implements Executable<msdyn_SalesAgents_FetchOutreachEmailForAgentResponse>
 {
   constructor(
-    public msdyn_SalesAgentRunId: string,
+    public msdyn_SalesAgentRunId: string | undefined,
     public msdyn_RegardingEntityName: string,
-    public msdyn_TrackingId: string,
-    public msdyn_OutreachConfig: string,
+    public msdyn_TrackingId: string | undefined,
+    public msdyn_OutreachConfig: string | undefined,
     public msdyn_RegardingEntityId: string
   ) {
     super("msdyn_SalesAgents_FetchOutreachEmailForAgent");

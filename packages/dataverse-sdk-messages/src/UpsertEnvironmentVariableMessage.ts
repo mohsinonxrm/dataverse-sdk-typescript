@@ -11,14 +11,14 @@ export class UpsertEnvironmentVariableRequest
   implements Executable<UpsertEnvironmentVariableResponse>
 {
   constructor(
-    public displayName: string,
+    public displayName: string | undefined,
     public schemaName: string,
     public type: number,
-    public defaultValue: string,
-    public value: string,
-    public secretStore: number,
-    public parameterKey: string,
-    public apiId: string
+    public defaultValue?: string,
+    public value?: string,
+    public secretStore?: number,
+    public parameterKey?: string,
+    public apiId?: string
   ) {
     super("UpsertEnvironmentVariable");
   }

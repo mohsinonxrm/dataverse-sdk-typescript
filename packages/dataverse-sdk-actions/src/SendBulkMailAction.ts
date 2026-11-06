@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { TypedQueryBase } from "./types/index.js";
 
 /**
@@ -16,11 +17,11 @@ export interface SendBulkMailResponse {
  */
 export class SendBulkMailAction implements Executable<SendBulkMailResponse> {
   constructor(
-    public readonly sender: EntityReference,
+    public readonly sender: EntityReference | AnyEntityPayload,
     public readonly templateId: string,
     public readonly regardingType: string,
     public readonly regardingId: string,
-    public readonly query: TypedQueryBase
+    public readonly query?: TypedQueryBase
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

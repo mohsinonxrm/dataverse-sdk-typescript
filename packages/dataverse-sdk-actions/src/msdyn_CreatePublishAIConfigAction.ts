@@ -1,4 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_ocsimltraining } from "./types/index.js";
 
 /**
@@ -17,7 +19,7 @@ export interface msdyn_CreatePublishAIConfigResponse {
 export class msdyn_CreatePublishAIConfigAction implements Executable<msdyn_CreatePublishAIConfigResponse> {
   constructor(
     public readonly msdyn_ocskillidentmlmodelId: string,
-    public readonly ocsimltraining: msdyn_ocsimltraining
+    public readonly ocsimltraining: EntityReference | EntityPayload<msdyn_ocsimltraining>
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

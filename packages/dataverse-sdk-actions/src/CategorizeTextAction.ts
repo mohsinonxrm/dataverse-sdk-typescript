@@ -15,8 +15,8 @@ export interface CategorizeTextResponse {
 export class CategorizeTextAction implements Executable<CategorizeTextResponse> {
   constructor(
     public readonly text: string,
-    public readonly modelId: string,
-    public readonly language: string
+    public readonly modelId?: string,
+    public readonly language?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

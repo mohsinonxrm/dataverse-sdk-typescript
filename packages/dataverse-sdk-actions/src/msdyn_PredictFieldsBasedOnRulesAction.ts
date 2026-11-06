@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_PredictFieldsBasedOnRules action
@@ -19,9 +20,9 @@ export interface msdyn_PredictFieldsBasedOnRulesResponse {
  */
 export class msdyn_PredictFieldsBasedOnRulesAction implements Executable<msdyn_PredictFieldsBasedOnRulesResponse> {
   constructor(
-    public readonly msdyn_Target: EntityReference,
-    public readonly msdyn_ContextGenerationParameters: string,
-    public readonly msdyn_Context: EntityReference
+    public readonly msdyn_Target: EntityReference | AnyEntityPayload,
+    public readonly msdyn_ContextGenerationParameters?: string,
+    public readonly msdyn_Context?: EntityReference | AnyEntityPayload
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

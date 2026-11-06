@@ -16,9 +16,9 @@ export interface PurgeRetainedContentResponse {
  */
 export class PurgeRetainedContentAction implements Executable<PurgeRetainedContentResponse> {
   constructor(
-    public readonly entityName: string,
-    public readonly pageSize: number,
-    public readonly operationId: string,
+    public readonly entityName: string | undefined,
+    public readonly pageSize: number | undefined,
+    public readonly operationId: string | undefined,
     public readonly maxVersionToPurge: number
   ) {}
 

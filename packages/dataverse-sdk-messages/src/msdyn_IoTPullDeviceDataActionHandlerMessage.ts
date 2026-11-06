@@ -12,7 +12,7 @@ export class msdyn_IoTPullDeviceDataActionHandlerRequest
   extends OrganizationRequest
   implements Executable<msdyn_IoTPullDeviceDataActionHandlerResponse>
 {
-  constructor(public entityCollection: Record<string, unknown>[]) {
+  constructor(public entityCollection?: Record<string, unknown>[]) {
     super("msdyn_IoTPullDeviceDataActionHandler");
   }
 

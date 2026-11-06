@@ -14,17 +14,17 @@ export class msdyn_UpgradeTelemetryRequest
 {
   constructor(
     public eventId: number,
-    public runId: string,
-    public packageName: string,
-    public solutionName: string,
-    public startingVersion: string,
-    public targetVersion: string,
-    public durationSeconds: number,
-    public success: number,
-    public stepId: string,
-    public stepName: string,
-    public errorMessage: string,
-    public details: string
+    public runId?: string,
+    public packageName?: string,
+    public solutionName?: string,
+    public startingVersion?: string,
+    public targetVersion?: string,
+    public durationSeconds?: number,
+    public success?: number,
+    public stepId?: string,
+    public stepName?: string,
+    public errorMessage?: string,
+    public details?: string
   ) {
     super("msdyn_UpgradeTelemetry");
   }

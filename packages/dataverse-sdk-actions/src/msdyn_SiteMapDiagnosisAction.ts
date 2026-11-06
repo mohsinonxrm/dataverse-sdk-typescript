@@ -1,4 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { sitemap } from "./types/index.js";
 
 /**
@@ -20,7 +22,7 @@ export interface msdyn_SiteMapDiagnosisResponse {
 export class msdyn_SiteMapDiagnosisAction implements Executable<msdyn_SiteMapDiagnosisResponse> {
   constructor(
     public readonly issueType: string,
-    public readonly componentInstance: sitemap
+    public readonly componentInstance: EntityReference | EntityPayload<sitemap>
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

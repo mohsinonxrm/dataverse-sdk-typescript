@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { RegisterFlowMachineResponse as RegisterFlowMachineResponseData } from "./types/index.js";
 
 /**
@@ -15,14 +16,14 @@ export class RegisterFlowMachineRequest
 {
   constructor(
     public machineName: string,
-    public machineDescription: string,
+    public machineDescription: string | undefined,
     public machineCapacity: number,
     public agentVersion: string,
     public groupPublicKey: string,
-    public hostingType: number,
-    public targetGroup: EntityReference,
-    public pictureInPictureSupport: number,
-    public machineDomain: string
+    public hostingType?: number,
+    public targetGroup?: EntityReference | AnyEntityPayload,
+    public pictureInPictureSupport?: number,
+    public machineDomain?: string
   ) {
     super("RegisterFlowMachine");
   }

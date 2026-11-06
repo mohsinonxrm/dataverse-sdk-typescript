@@ -14,7 +14,7 @@ export class msdyn_URFirstPartyIntegrationApiRequest
 {
   constructor(
     public methodName: string,
-    public inputParameter: string
+    public inputParameter?: string
   ) {
     super("msdyn_URFirstPartyIntegrationApi");
   }

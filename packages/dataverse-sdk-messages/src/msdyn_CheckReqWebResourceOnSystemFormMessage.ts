@@ -12,7 +12,7 @@ export class msdyn_CheckReqWebResourceOnSystemFormRequest
   extends OrganizationRequest
   implements Executable<msdyn_CheckReqWebResourceOnSystemFormResponse>
 {
-  constructor(public entityAndWebResourceList: string) {
+  constructor(public entityAndWebResourceList?: string) {
     super("msdyn_CheckReqWebResourceOnSystemForm");
   }
 

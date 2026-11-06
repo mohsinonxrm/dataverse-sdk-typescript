@@ -12,7 +12,7 @@ export class msdyn_EmailValidationCustomActionRequest
   extends OrganizationRequest
   implements Executable<msdyn_EmailValidationCustomActionResponse>
 {
-  constructor(public emailValidationRequest: string) {
+  constructor(public emailValidationRequest?: string) {
     super("msdyn_EmailValidationCustomAction");
   }
 

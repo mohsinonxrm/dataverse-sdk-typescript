@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { PropagationOwnershipOptions, bulkoperation, queue, template } from "./types/index.js";
 
 /**
@@ -16,12 +17,12 @@ export class DistributeCampaignActivityRequest
   constructor(
     public campaignactivityId: string,
     public propagate: boolean,
-    public activity: EntityReference,
-    public template: template,
+    public activity: EntityReference | AnyEntityPayload | undefined,
+    public template: EntityReference | EntityPayload<template>,
     public ownershipOptions: PropagationOwnershipOptions,
-    public owner: EntityReference,
+    public owner: EntityReference | AnyEntityPayload,
     public sendEmail: boolean,
-    public queue: queue,
+    public queue: EntityReference | EntityPayload<queue> | undefined,
     public postWorkflowEvent: boolean
   ) {
     super("DistributeCampaignActivity");

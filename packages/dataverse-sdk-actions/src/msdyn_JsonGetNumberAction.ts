@@ -14,9 +14,9 @@ export interface msdyn_JsonGetNumberResponse {
  */
 export class msdyn_JsonGetNumberAction implements Executable<msdyn_JsonGetNumberResponse> {
   constructor(
-    public readonly json: string,
+    public readonly json: string | undefined,
     public readonly propertyPath: string,
-    public readonly defaultReturnValue: number
+    public readonly defaultReturnValue?: number
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

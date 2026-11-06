@@ -14,12 +14,12 @@ export class msdyn_ConversationConductorEnablerRequest
 {
   constructor(
     public botApplicationId: string,
-    public applicationId: string,
+    public applicationId: string | undefined,
     public firstName: string,
     public lastName: string,
-    public botHandle: string,
-    public owningEnvironmentId: string,
-    public properties: string
+    public botHandle?: string,
+    public owningEnvironmentId?: string,
+    public properties?: string
   ) {
     super("msdyn_ConversationConductorEnabler");
   }

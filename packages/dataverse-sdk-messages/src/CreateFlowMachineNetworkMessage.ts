@@ -15,10 +15,10 @@ export class CreateFlowMachineNetworkRequest
   constructor(
     public subnet: string,
     public type: string,
-    public extendedproperties: string,
+    public extendedproperties: string | undefined,
     public supportedscenario: string,
     public name: string,
-    public description: string
+    public description?: string
   ) {
     super("CreateFlowMachineNetwork");
   }

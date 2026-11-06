@@ -14,7 +14,7 @@ export class ExportRetainedDataRequest
 {
   constructor(
     public fetchXml: string,
-    public layoutXml: string
+    public layoutXml?: string
   ) {
     super("ExportRetainedData");
   }

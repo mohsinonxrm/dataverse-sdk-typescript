@@ -11,7 +11,7 @@ export class RemoveCertificateCredentialRequest
   implements Executable<RemoveCertificateCredentialResponse>
 {
   constructor(
-    public certificateCredentialId: string,
+    public certificateCredentialId: string | undefined,
     public entityId: string,
     public entityLogicalName: string
   ) {

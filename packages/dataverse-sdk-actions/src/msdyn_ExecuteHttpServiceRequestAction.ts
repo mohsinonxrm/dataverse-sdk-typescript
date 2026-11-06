@@ -18,7 +18,7 @@ export class msdyn_ExecuteHttpServiceRequestAction implements Executable<msdyn_E
     public readonly msdyn_RequestType: string,
     public readonly msdyn_RequestUrl: string,
     public readonly msdyn_CloudServiceApplicationType: number,
-    public readonly msdyn_RequestBody: string,
+    public readonly msdyn_RequestBody: string | undefined,
     public readonly msdyn_Method: string
   ) {}
 

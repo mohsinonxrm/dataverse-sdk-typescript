@@ -14,7 +14,7 @@ export interface msdyn_BusinessClosureSaveResponse {
  */
 export class msdyn_BusinessClosureSaveAction implements Executable<msdyn_BusinessClosureSaveResponse> {
   constructor(
-    public readonly id: string,
+    public readonly id: string | undefined,
     public readonly name: string,
     public readonly start: string,
     public readonly end: string

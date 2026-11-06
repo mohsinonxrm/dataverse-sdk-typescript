@@ -14,7 +14,7 @@ export class msdyn_ManageSLAInstancesRequest
     public sLAId: string,
     public regardingId: string,
     public entityLogicalName: string,
-    public recalculate: number
+    public recalculate?: number
   ) {
     super("msdyn_ManageSLAInstances");
   }

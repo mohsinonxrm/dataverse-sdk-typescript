@@ -14,8 +14,8 @@ export class GetJobStatusRequest
 {
   constructor(
     public istrain: boolean,
-    public correlationid: string,
-    public aimodelid: string
+    public correlationid?: string,
+    public aimodelid?: string
   ) {
     super("GetJobStatus");
   }

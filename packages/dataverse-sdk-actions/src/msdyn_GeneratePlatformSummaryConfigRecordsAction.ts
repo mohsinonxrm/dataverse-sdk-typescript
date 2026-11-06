@@ -13,7 +13,7 @@ export interface msdyn_GeneratePlatformSummaryConfigRecordsResponse {
  * Unbound action
  */
 export class msdyn_GeneratePlatformSummaryConfigRecordsAction implements Executable<msdyn_GeneratePlatformSummaryConfigRecordsResponse> {
-  constructor(public readonly entityLogicalName: string) {}
+  constructor(public readonly entityLogicalName?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GeneratePlatformSummaryConfigRecords`;

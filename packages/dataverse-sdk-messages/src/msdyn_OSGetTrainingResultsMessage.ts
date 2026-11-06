@@ -12,7 +12,7 @@ export class msdyn_OSGetTrainingResultsRequest
   extends OrganizationRequest
   implements Executable<msdyn_OSGetTrainingResultsResponse>
 {
-  constructor(public predictionName: string) {
+  constructor(public predictionName?: string) {
     super("msdyn_OSGetTrainingResults");
   }
 

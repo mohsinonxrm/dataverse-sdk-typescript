@@ -15,7 +15,7 @@ export interface _GetServiceTreeDataResponse {
 export class _GetServiceTreeDataAction implements Executable<_GetServiceTreeDataResponse> {
   constructor(
     public readonly serviceId: string,
-    public readonly inputSource: string
+    public readonly inputSource?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

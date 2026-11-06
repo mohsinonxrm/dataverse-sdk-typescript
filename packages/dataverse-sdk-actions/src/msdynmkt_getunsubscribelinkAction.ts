@@ -18,16 +18,16 @@ export interface msdynmkt_getunsubscribelinkResponse {
 export class msdynmkt_getunsubscribelinkAction implements Executable<msdynmkt_getunsubscribelinkResponse> {
   constructor(
     public readonly msdynmkt_purposeid: string,
-    public readonly msdynmkt_sourcemessageentityname: string,
+    public readonly msdynmkt_sourcemessageentityname: string | undefined,
     public readonly msdynmkt_messagetemplateid: string,
-    public readonly msdynmkt_owningbusinessunitid: string,
+    public readonly msdynmkt_owningbusinessunitid: string | undefined,
     public readonly msdynmkt_entitytype: string,
     public readonly msdynmkt_entityid: string,
     public readonly msdynmkt_contactpoint: string,
-    public readonly msdynmkt_oneclickunsubscribelink: boolean,
+    public readonly msdynmkt_oneclickunsubscribelink: boolean | undefined,
     public readonly msdynmkt_compliancesettingsid: string,
-    public readonly msdynmkt_topicid: string,
-    public readonly msdynmkt_sourceapplication: string
+    public readonly msdynmkt_topicid?: string,
+    public readonly msdynmkt_sourceapplication?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

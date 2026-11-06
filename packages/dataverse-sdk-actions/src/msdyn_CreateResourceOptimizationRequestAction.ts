@@ -17,9 +17,9 @@ export class msdyn_CreateResourceOptimizationRequestAction implements Executable
     public readonly resourceIds: string,
     public readonly startDate: string,
     public readonly endDate: string,
-    public readonly goalId: string,
-    public readonly isSimulation: boolean,
-    public readonly optimizationRequestId: string
+    public readonly goalId?: string,
+    public readonly isSimulation?: boolean,
+    public readonly optimizationRequestId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

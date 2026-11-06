@@ -14,7 +14,7 @@ export interface msdyn_getSalesSequenceExperimentSettingsResponse {
  */
 export class msdyn_getSalesSequenceExperimentSettingsAction implements Executable<msdyn_getSalesSequenceExperimentSettingsResponse> {
   constructor(
-    public readonly msdyn_experimentRecordId: string,
+    public readonly msdyn_experimentRecordId: string | undefined,
     public readonly msdyn_experimentKey: string,
     public readonly msdyn_experimentVersionRecordId: string
   ) {}

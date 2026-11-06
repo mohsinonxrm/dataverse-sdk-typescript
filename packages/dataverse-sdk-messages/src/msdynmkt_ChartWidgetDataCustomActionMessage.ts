@@ -12,7 +12,7 @@ export class msdynmkt_ChartWidgetDataCustomActionRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_ChartWidgetDataCustomActionResponse>
 {
-  constructor(public widgetRequest: string) {
+  constructor(public widgetRequest?: string) {
     super("msdynmkt_ChartWidgetDataCustomAction");
   }
 

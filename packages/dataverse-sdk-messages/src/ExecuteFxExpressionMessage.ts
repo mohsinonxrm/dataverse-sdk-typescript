@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * ExecuteFxExpression request message
@@ -14,10 +15,10 @@ export class ExecuteFxExpressionRequest
 {
   constructor(
     public expression: string,
-    public inputparameters: EntityReference,
-    public context: string,
-    public entitylogicalname: string,
-    public outputparameters: EntityReference
+    public inputparameters?: EntityReference | AnyEntityPayload,
+    public context?: string,
+    public entitylogicalname?: string,
+    public outputparameters?: EntityReference | AnyEntityPayload
   ) {
     super("ExecuteFxExpression");
   }

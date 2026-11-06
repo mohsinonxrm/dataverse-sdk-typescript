@@ -1,4 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_iotdevicecategory } from "./types/index.js";
 
 /**
@@ -14,7 +16,9 @@ export interface msdyn_IoTGetTagsMetadataResponse {
  * Unbound action
  */
 export class msdyn_IoTGetTagsMetadataAction implements Executable<msdyn_IoTGetTagsMetadataResponse> {
-  constructor(public readonly deviceCategory: msdyn_iotdevicecategory) {}
+  constructor(
+    public readonly deviceCategory: EntityReference | EntityPayload<msdyn_iotdevicecategory>
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_IoTGetTagsMetadata`;

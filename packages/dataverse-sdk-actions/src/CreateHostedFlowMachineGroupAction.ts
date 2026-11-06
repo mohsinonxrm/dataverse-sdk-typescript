@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from CreateHostedFlowMachineGroup action
@@ -16,16 +17,16 @@ export interface CreateHostedFlowMachineGroupResponse {
  */
 export class CreateHostedFlowMachineGroupAction implements Executable<CreateHostedFlowMachineGroupResponse> {
   constructor(
-    public readonly groupImage: string,
-    public readonly groupCapacityCount: number,
-    public readonly groupDomainSetting: string,
-    public readonly groupDescription: string,
-    public readonly groupMachineNetworkId: EntityReference,
-    public readonly groupMaximumMachineCount: number,
-    public readonly groupName: string,
+    public readonly groupImage: string | undefined,
+    public readonly groupCapacityCount: number | undefined,
+    public readonly groupDomainSetting: string | undefined,
+    public readonly groupDescription: string | undefined,
+    public readonly groupMachineNetworkId: EntityReference | AnyEntityPayload | undefined,
+    public readonly groupMaximumMachineCount: number | undefined,
+    public readonly groupName: string | undefined,
     public readonly groupCredentials: string,
-    public readonly groupUsageType: string,
-    public readonly groupManagedVersion: string
+    public readonly groupUsageType?: string,
+    public readonly groupManagedVersion?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

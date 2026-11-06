@@ -14,8 +14,8 @@ export interface msdyn_RunSolutionCheckerRulesResponse {
  */
 export class msdyn_RunSolutionCheckerRulesAction implements Executable<msdyn_RunSolutionCheckerRulesResponse> {
   constructor(
-    public readonly analysisComponentId: string,
-    public readonly inAppNotificationEnabled: boolean
+    public readonly analysisComponentId?: string,
+    public readonly inAppNotificationEnabled?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

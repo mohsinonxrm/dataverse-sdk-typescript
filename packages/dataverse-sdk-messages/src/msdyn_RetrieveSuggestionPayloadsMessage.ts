@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseValue } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * msdyn_RetrieveSuggestionPayloads request message
@@ -13,10 +14,10 @@ export class msdyn_RetrieveSuggestionPayloadsRequest
   implements Executable<msdyn_RetrieveSuggestionPayloadsResponse>
 {
   constructor(
-    public suggestionFor: EntityReference,
-    public context: string,
-    public suggestionType: string,
-    public languageLocales: string
+    public suggestionFor: EntityReference | AnyEntityPayload,
+    public context?: string,
+    public suggestionType?: string,
+    public languageLocales?: string
   ) {
     super("msdyn_RetrieveSuggestionPayloads");
   }

@@ -12,7 +12,7 @@ export class msdyn_GetSalesAcceleratedSellerDetailsRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetSalesAcceleratedSellerDetailsResponse>
 {
-  constructor(public filterConditions: string) {
+  constructor(public filterConditions?: string) {
     super("msdyn_GetSalesAcceleratedSellerDetails");
   }
 

@@ -11,7 +11,7 @@ export class msdyn_GetCopilotServiceStreamRequest
   implements Executable<msdyn_GetCopilotServiceStreamResponse>
 {
   constructor(
-    public requestPayload: string,
+    public requestPayload: string | undefined,
     public context: string
   ) {
     super("msdyn_GetCopilotServiceStream");

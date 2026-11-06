@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type {
   PropagateByExpressionResponse as PropagateByExpressionResponseData,
   PropagationOwnershipOptions,
@@ -18,16 +19,16 @@ export class PropagateByExpressionRequest
   implements Executable<PropagateByExpressionResponse>
 {
   constructor(
-    public queryExpression: TypedQueryBase,
+    public queryExpression: TypedQueryBase | undefined,
     public friendlyName: string,
     public executeImmediately: boolean,
-    public activity: EntityReference,
+    public activity: EntityReference | AnyEntityPayload,
     public templateId: string,
     public ownershipOptions: PropagationOwnershipOptions,
     public postWorkflowEvent: boolean,
-    public owner: EntityReference,
+    public owner: EntityReference | AnyEntityPayload,
     public sendEmail: boolean,
-    public queueId: string
+    public queueId?: string
   ) {
     super("PropagateByExpression");
   }

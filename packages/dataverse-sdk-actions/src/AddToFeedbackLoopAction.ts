@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from AddToFeedbackLoop action
@@ -17,9 +18,9 @@ export interface AddToFeedbackLoopResponse {
 export class AddToFeedbackLoopAction implements Executable<AddToFeedbackLoopResponse> {
   constructor(
     public readonly msdyn_aimodelId: string,
-    public readonly inputName: string,
-    public readonly predictionOutput: string,
-    public readonly predictionInput: EntityReference
+    public readonly inputName: string | undefined,
+    public readonly predictionOutput: string | undefined,
+    public readonly predictionInput: EntityReference | AnyEntityPayload
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

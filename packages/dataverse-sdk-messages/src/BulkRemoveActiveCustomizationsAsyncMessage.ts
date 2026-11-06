@@ -16,7 +16,7 @@ export class BulkRemoveActiveCustomizationsAsyncRequest
   implements Executable<BulkRemoveActiveCustomizationsAsyncResponse>
 {
   constructor(
-    public bulkRemoveActiveCustomizationsParameters: BulkRemoveActiveCustomizationsParameters
+    public bulkRemoveActiveCustomizationsParameters?: BulkRemoveActiveCustomizationsParameters
   ) {
     super("BulkRemoveActiveCustomizationsAsync");
   }

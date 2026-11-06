@@ -13,10 +13,10 @@ export class msdyn_PerformNotesAnalysisActionRequest
   implements Executable<msdyn_PerformNotesAnalysisActionResponse>
 {
   constructor(
-    public entityName: string,
-    public serializedAction: string,
-    public parentEntityName: string,
-    public parentEntityId: string
+    public entityName?: string,
+    public serializedAction?: string,
+    public parentEntityName?: string,
+    public parentEntityId?: string
   ) {
     super("msdyn_PerformNotesAnalysisAction");
   }

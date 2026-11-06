@@ -15,7 +15,7 @@ export interface PreValidateGitComponentsResponse {
 export class PreValidateGitComponentsAction implements Executable<PreValidateGitComponentsResponse> {
   constructor(
     public readonly solutionUniqueName: string,
-    public readonly isRetriableOnly: boolean
+    public readonly isRetriableOnly?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

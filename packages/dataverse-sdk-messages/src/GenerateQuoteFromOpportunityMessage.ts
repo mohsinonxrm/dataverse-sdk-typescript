@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { ColumnSet } from "./types/index.js";
 
 /**
@@ -15,8 +16,8 @@ export class GenerateQuoteFromOpportunityRequest
 {
   constructor(
     public opportunityId: string,
-    public columnSet: ColumnSet,
-    public processInstanceId: EntityReference
+    public columnSet?: ColumnSet,
+    public processInstanceId?: EntityReference | AnyEntityPayload
   ) {
     super("GenerateQuoteFromOpportunity");
   }

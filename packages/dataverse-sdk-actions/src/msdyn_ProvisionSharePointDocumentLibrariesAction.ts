@@ -15,8 +15,8 @@ export interface msdyn_ProvisionSharePointDocumentLibrariesResponse {
  */
 export class msdyn_ProvisionSharePointDocumentLibrariesAction implements Executable<msdyn_ProvisionSharePointDocumentLibrariesResponse> {
   constructor(
-    public readonly sharePointSiteURL: string,
-    public readonly folderStructureEntityValue: number
+    public readonly sharePointSiteURL?: string,
+    public readonly folderStructureEntityValue?: number
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

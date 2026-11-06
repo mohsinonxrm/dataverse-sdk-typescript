@@ -17,8 +17,8 @@ export class AddSolutionComponentRequest
     public componentType: number,
     public solutionUniqueName: string,
     public addRequiredComponents: boolean,
-    public doNotIncludeSubcomponents: boolean,
-    public includedComponentSettingsValues: string[]
+    public doNotIncludeSubcomponents?: boolean,
+    public includedComponentSettingsValues?: string[]
   ) {
     super("AddSolutionComponent");
   }

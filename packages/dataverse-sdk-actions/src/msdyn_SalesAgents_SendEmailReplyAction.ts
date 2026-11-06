@@ -14,11 +14,11 @@ export interface msdyn_SalesAgents_SendEmailReplyResponse {
  */
 export class msdyn_SalesAgents_SendEmailReplyAction implements Executable<msdyn_SalesAgents_SendEmailReplyResponse> {
   constructor(
-    public readonly msdyn_TrackingId: string,
+    public readonly msdyn_TrackingId: string | undefined,
     public readonly msdyn_ParentActivityId: string,
     public readonly msdyn_AgentProfileId: string,
     public readonly msdyn_Emailbody: string,
-    public readonly msdyn_IsDelayedSend: boolean
+    public readonly msdyn_IsDelayedSend?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

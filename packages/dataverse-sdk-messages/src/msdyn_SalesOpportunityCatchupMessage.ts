@@ -13,12 +13,12 @@ export class msdyn_SalesOpportunityCatchupRequest
   implements Executable<msdyn_SalesOpportunityCatchupResponse>
 {
   constructor(
-    public msdyn_since: string,
-    public msdyn_responseFormat: string,
-    public msdyn_additionalParams: string,
-    public msdyn_sessionId: string,
-    public msdyn_activityId: string,
-    public msdyn_skipHeader: string,
+    public msdyn_since: string | undefined,
+    public msdyn_responseFormat: string | undefined,
+    public msdyn_additionalParams: string | undefined,
+    public msdyn_sessionId: string | undefined,
+    public msdyn_activityId: string | undefined,
+    public msdyn_skipHeader: string | undefined,
     public msdyn_id: string
   ) {
     super("msdyn_SalesOpportunityCatchup");

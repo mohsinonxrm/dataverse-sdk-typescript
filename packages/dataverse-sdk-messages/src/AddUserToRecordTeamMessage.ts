@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type {
   AddUserToRecordTeamResponse as AddUserToRecordTeamResponseData,
   teamtemplate,
@@ -18,8 +19,8 @@ export class AddUserToRecordTeamRequest
 {
   constructor(
     public systemuserId: string,
-    public record: EntityReference,
-    public teamTemplate: teamtemplate
+    public record: EntityReference | AnyEntityPayload,
+    public teamTemplate: EntityReference | EntityPayload<teamtemplate>
   ) {
     super("AddUserToRecordTeam");
   }

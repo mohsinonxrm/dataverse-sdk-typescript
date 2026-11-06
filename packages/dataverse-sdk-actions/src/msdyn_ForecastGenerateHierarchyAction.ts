@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_forecastdefinition } from "./types/index.js";
 
 /**
@@ -16,9 +17,9 @@ export interface msdyn_ForecastGenerateHierarchyResponse {
  */
 export class msdyn_ForecastGenerateHierarchyAction implements Executable<msdyn_ForecastGenerateHierarchyResponse> {
   constructor(
-    public readonly forecastDefinition: msdyn_forecastdefinition,
+    public readonly forecastDefinition: EntityReference | EntityPayload<msdyn_forecastdefinition>,
     public readonly isRefresh: boolean,
-    public readonly recurrenceIndex: number
+    public readonly recurrenceIndex?: number
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

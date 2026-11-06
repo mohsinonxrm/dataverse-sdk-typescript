@@ -16,7 +16,7 @@ export interface StageSolutionResponse {
 export class StageSolutionAction implements Executable<StageSolutionResponse> {
   constructor(
     public readonly customizationFile: string,
-    public readonly stageSolutionUploadId: string
+    public readonly stageSolutionUploadId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

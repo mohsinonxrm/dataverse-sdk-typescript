@@ -17,7 +17,7 @@ export interface msdyn_CheckReqRibbonCommandDefResponse {
  * Unbound action
  */
 export class msdyn_CheckReqRibbonCommandDefAction implements Executable<msdyn_CheckReqRibbonCommandDefResponse> {
-  constructor(public readonly commandAndEntityList: string) {}
+  constructor(public readonly commandAndEntityList?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckReqRibbonCommandDef`;

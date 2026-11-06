@@ -18,11 +18,11 @@ export interface QuestionAnalyticsResponse {
 export class QuestionAnalyticsAction implements Executable<QuestionAnalyticsResponse> {
   constructor(
     public readonly botId: string,
-    public readonly page: number,
+    public readonly page: number | undefined,
     public readonly endDateTime: string,
     public readonly startDateTime: string,
     public readonly state: string,
-    public readonly count: number
+    public readonly count?: number
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

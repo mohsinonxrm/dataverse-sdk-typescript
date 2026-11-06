@@ -1,4 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { recurringappointmentmaster } from "./types/index.js";
 
 /**
@@ -20,7 +22,7 @@ export interface AddRecurrenceResponse extends recurringappointmentmaster {
 export class AddRecurrenceAction implements Executable<AddRecurrenceResponse> {
   constructor(
     public readonly appointmentId: string,
-    public readonly target: recurringappointmentmaster
+    public readonly target: EntityReference | EntityPayload<recurringappointmentmaster>
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

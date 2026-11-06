@@ -11,8 +11,8 @@ export class msdyn_CapacityProfilesToUsersRequest
   implements Executable<msdyn_CapacityProfilesToUsersResponse>
 {
   constructor(
-    public addedBookableResourceCapacityProfiles: Record<string, unknown>[],
-    public deletedBookableResourceCapacityProfiles: Record<string, unknown>[]
+    public addedBookableResourceCapacityProfiles?: Record<string, unknown>[],
+    public deletedBookableResourceCapacityProfiles?: Record<string, unknown>[]
   ) {
     super("msdyn_CapacityProfilesToUsers");
   }

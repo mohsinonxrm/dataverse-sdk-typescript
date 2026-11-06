@@ -13,8 +13,8 @@ export class msdyn_SalesAgents_UpsertAgentProcessingStateRequest
   constructor(
     public msdyn_Records: Record<string, unknown>[],
     public msdyn_SalesAgentType: number,
-    public msdyn_TrackingId: string,
-    public msdyn_SkipVersionNumberUpdate: boolean
+    public msdyn_TrackingId?: string,
+    public msdyn_SkipVersionNumberUpdate?: boolean
   ) {
     super("msdyn_SalesAgents_UpsertAgentProcessingState");
   }

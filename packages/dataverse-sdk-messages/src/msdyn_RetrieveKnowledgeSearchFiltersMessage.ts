@@ -12,7 +12,7 @@ export class msdyn_RetrieveKnowledgeSearchFiltersRequest
   extends OrganizationRequest
   implements Executable<msdyn_RetrieveKnowledgeSearchFiltersResponse>
 {
-  constructor(public searchFiltersMetadata: string) {
+  constructor(public searchFiltersMetadata?: string) {
     super("msdyn_RetrieveKnowledgeSearchFilters");
   }
 

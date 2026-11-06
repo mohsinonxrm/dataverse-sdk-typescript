@@ -12,9 +12,9 @@ export class UpdateFlowMachineNetworkRequest
 {
   constructor(
     public flowmachinenetworkId: string,
-    public description: string,
-    public extendedproperties: string,
-    public name: string
+    public description?: string,
+    public extendedproperties?: string,
+    public name?: string
   ) {
     super("UpdateFlowMachineNetwork");
   }

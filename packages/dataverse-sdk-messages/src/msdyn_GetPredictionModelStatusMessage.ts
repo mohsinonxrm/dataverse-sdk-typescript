@@ -12,7 +12,7 @@ export class msdyn_GetPredictionModelStatusRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetPredictionModelStatusResponse>
 {
-  constructor(public predictionName: string) {
+  constructor(public predictionName?: string) {
     super("msdyn_GetPredictionModelStatus");
   }
 

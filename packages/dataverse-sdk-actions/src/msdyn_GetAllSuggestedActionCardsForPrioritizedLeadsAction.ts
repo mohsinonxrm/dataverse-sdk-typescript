@@ -14,8 +14,8 @@ export interface msdyn_GetAllSuggestedActionCardsForPrioritizedLeadsResponse {
  */
 export class msdyn_GetAllSuggestedActionCardsForPrioritizedLeadsAction implements Executable<msdyn_GetAllSuggestedActionCardsForPrioritizedLeadsResponse> {
   constructor(
-    public readonly clientContext: string,
-    public readonly otherData: string
+    public readonly clientContext?: string,
+    public readonly otherData?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

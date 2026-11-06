@@ -16,7 +16,7 @@ export interface msdyn_EmailValidationCustomActionResponse {
  * Unbound action
  */
 export class msdyn_EmailValidationCustomActionAction implements Executable<msdyn_EmailValidationCustomActionResponse> {
-  constructor(public readonly emailValidationRequest: string) {}
+  constructor(public readonly emailValidationRequest?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_EmailValidationCustomAction`;

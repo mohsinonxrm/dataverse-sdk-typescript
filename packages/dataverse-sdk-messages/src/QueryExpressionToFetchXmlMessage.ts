@@ -15,7 +15,7 @@ export class QueryExpressionToFetchXmlRequest
   extends OrganizationRequest
   implements Executable<QueryExpressionToFetchXmlResponse>
 {
-  constructor(public query: TypedQueryBase) {
+  constructor(public query?: TypedQueryBase) {
     super("QueryExpressionToFetchXml");
   }
 

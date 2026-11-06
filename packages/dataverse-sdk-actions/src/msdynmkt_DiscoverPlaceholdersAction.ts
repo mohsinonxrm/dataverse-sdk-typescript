@@ -13,7 +13,7 @@ export interface msdynmkt_DiscoverPlaceholdersResponse {
  * Unbound action
  */
 export class msdynmkt_DiscoverPlaceholdersAction implements Executable<msdynmkt_DiscoverPlaceholdersResponse> {
-  constructor(public readonly discoverPlaceholdersRequest: string) {}
+  constructor(public readonly discoverPlaceholdersRequest?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_DiscoverPlaceholders`;

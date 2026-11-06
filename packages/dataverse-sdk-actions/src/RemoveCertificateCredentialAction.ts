@@ -14,7 +14,7 @@ export interface RemoveCertificateCredentialResponse {
  */
 export class RemoveCertificateCredentialAction implements Executable<RemoveCertificateCredentialResponse> {
   constructor(
-    public readonly certificateCredentialId: string,
+    public readonly certificateCredentialId: string | undefined,
     public readonly entityId: string,
     public readonly entityLogicalName: string
   ) {}

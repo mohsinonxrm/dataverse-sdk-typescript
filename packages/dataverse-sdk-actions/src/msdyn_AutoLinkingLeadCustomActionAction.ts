@@ -16,7 +16,7 @@ export interface msdyn_AutoLinkingLeadCustomActionResponse {
  * Unbound action
  */
 export class msdyn_AutoLinkingLeadCustomActionAction implements Executable<msdyn_AutoLinkingLeadCustomActionResponse> {
-  constructor(public readonly autoLinkRequest: string) {}
+  constructor(public readonly autoLinkRequest?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_AutoLinkingLeadCustomAction`;

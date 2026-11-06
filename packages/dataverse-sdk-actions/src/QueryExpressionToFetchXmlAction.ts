@@ -14,7 +14,7 @@ export interface QueryExpressionToFetchXmlResponse {
  * Unbound action
  */
 export class QueryExpressionToFetchXmlAction implements Executable<QueryExpressionToFetchXmlResponse> {
-  constructor(public readonly query: TypedQueryBase) {}
+  constructor(public readonly query?: TypedQueryBase) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/QueryExpressionToFetchXml`;

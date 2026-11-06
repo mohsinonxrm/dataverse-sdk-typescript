@@ -14,8 +14,8 @@ export interface msdyn_StartRIProvisioningResponse {
  */
 export class msdyn_StartRIProvisioningAction implements Executable<msdyn_StartRIProvisioningResponse> {
   constructor(
-    public readonly hubName: string,
-    public readonly primaryKey: string
+    public readonly hubName?: string,
+    public readonly primaryKey?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

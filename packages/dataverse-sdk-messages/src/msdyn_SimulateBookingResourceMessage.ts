@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseValue } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * msdyn_SimulateBookingResource request message
@@ -13,38 +14,38 @@ export class msdyn_SimulateBookingResourceRequest
   implements Executable<msdyn_SimulateBookingResourceResponse>
 {
   constructor(
-    public subcontractLineId: string,
-    public subcontractId: string,
-    public distributeEvenlyBehavior: number,
-    public newStartDateTime: string,
-    public newResourceId: string,
-    public newTravelTime: number,
-    public newDistance: number,
+    public subcontractLineId: string | undefined,
+    public subcontractId: string | undefined,
+    public distributeEvenlyBehavior: number | undefined,
+    public newStartDateTime: string | undefined,
+    public newResourceId: string | undefined,
+    public newTravelTime: number | undefined,
+    public newDistance: number | undefined,
     public resourceId: string,
-    public requirementId: string,
-    public work: EntityReference,
+    public requirementId: string | undefined,
+    public work: EntityReference | AnyEntityPayload | undefined,
     public bookingStatusId: string,
     public bookingMethod: number,
     public bookingType: number,
     public schedules: string,
     public timeframe: number,
-    public hours: number,
-    public percentage: number,
-    public distributeMethod: number,
-    public bookingIds: string,
-    public defaultBookingHeader: EntityReference,
-    public defaultBookingDetail: EntityReference,
-    public reloadStartDate: string,
-    public reloadEndDate: string,
-    public reloadDetailBookings: boolean,
-    public timeZoneCode: number,
-    public schedulerSettings: string,
-    public preventPartialFulfillment: boolean,
-    public allowDoubleBooking: boolean,
-    public cancelExistingBooking: boolean,
-    public uRSInternalFlags: string,
-    public considerAppointments: boolean,
-    public ignoreTimeZone: boolean
+    public hours?: number,
+    public percentage?: number,
+    public distributeMethod?: number,
+    public bookingIds?: string,
+    public defaultBookingHeader?: EntityReference | AnyEntityPayload,
+    public defaultBookingDetail?: EntityReference | AnyEntityPayload,
+    public reloadStartDate?: string,
+    public reloadEndDate?: string,
+    public reloadDetailBookings?: boolean,
+    public timeZoneCode?: number,
+    public schedulerSettings?: string,
+    public preventPartialFulfillment?: boolean,
+    public allowDoubleBooking?: boolean,
+    public cancelExistingBooking?: boolean,
+    public uRSInternalFlags?: string,
+    public considerAppointments?: boolean,
+    public ignoreTimeZone?: boolean
   ) {
     super("msdyn_SimulateBookingResource");
   }

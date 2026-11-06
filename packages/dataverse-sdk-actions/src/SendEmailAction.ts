@@ -17,7 +17,7 @@ export class SendEmailAction implements Executable<SendEmailResponse> {
   constructor(
     public readonly emailId: string,
     public readonly issueSend: boolean,
-    public readonly trackingToken: string
+    public readonly trackingToken?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

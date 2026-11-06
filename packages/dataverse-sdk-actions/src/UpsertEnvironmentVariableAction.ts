@@ -14,14 +14,14 @@ export interface UpsertEnvironmentVariableResponse {
  */
 export class UpsertEnvironmentVariableAction implements Executable<UpsertEnvironmentVariableResponse> {
   constructor(
-    public readonly displayName: string,
+    public readonly displayName: string | undefined,
     public readonly schemaName: string,
     public readonly type: number,
-    public readonly defaultValue: string,
-    public readonly value: string,
-    public readonly secretStore: number,
-    public readonly parameterKey: string,
-    public readonly apiId: string
+    public readonly defaultValue?: string,
+    public readonly value?: string,
+    public readonly secretStore?: number,
+    public readonly parameterKey?: string,
+    public readonly apiId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

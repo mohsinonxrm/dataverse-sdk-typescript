@@ -13,18 +13,18 @@ export class msdynmkt_StartLoadConsentV4CustomActionRequest
   implements Executable<msdynmkt_StartLoadConsentV4CustomActionResponse>
 {
   constructor(
-    public commercialPurposeId: string,
-    public commercialTopicId: string,
-    public transactionalPurposeId: string,
-    public transactionalTopicId: string,
-    public trackingPurposeId: string,
-    public sourceEntity: string,
-    public owningBusinessUnit: string,
-    public filterType: string,
-    public filterId: string,
-    public consentValue: number,
-    public updateExistingRecords: boolean,
-    public complianceProfileId: string
+    public commercialPurposeId?: string,
+    public commercialTopicId?: string,
+    public transactionalPurposeId?: string,
+    public transactionalTopicId?: string,
+    public trackingPurposeId?: string,
+    public sourceEntity?: string,
+    public owningBusinessUnit?: string,
+    public filterType?: string,
+    public filterId?: string,
+    public consentValue?: number,
+    public updateExistingRecords?: boolean,
+    public complianceProfileId?: string
   ) {
     super("msdynmkt_StartLoadConsentV4CustomAction");
   }

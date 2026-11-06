@@ -17,8 +17,8 @@ export class AddComponentToSolutionAsyncRequest
     public id: string,
     public solutionUniqueName: string,
     public addRequiredComponents: boolean,
-    public includeChildComponents: boolean,
-    public includeEntityMetadata: boolean
+    public includeChildComponents?: boolean,
+    public includeEntityMetadata?: boolean
   ) {
     super("AddComponentToSolutionAsync");
   }

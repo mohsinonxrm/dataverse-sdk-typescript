@@ -14,10 +14,10 @@ export interface msdyn_SalesAgents_FetchOutreachEmailForAgentResponse {
  */
 export class msdyn_SalesAgents_FetchOutreachEmailForAgentAction implements Executable<msdyn_SalesAgents_FetchOutreachEmailForAgentResponse> {
   constructor(
-    public readonly msdyn_SalesAgentRunId: string,
+    public readonly msdyn_SalesAgentRunId: string | undefined,
     public readonly msdyn_RegardingEntityName: string,
-    public readonly msdyn_TrackingId: string,
-    public readonly msdyn_OutreachConfig: string,
+    public readonly msdyn_TrackingId: string | undefined,
+    public readonly msdyn_OutreachConfig: string | undefined,
     public readonly msdyn_RegardingEntityId: string
   ) {}
 

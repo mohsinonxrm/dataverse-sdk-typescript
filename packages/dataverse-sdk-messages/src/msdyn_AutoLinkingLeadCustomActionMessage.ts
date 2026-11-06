@@ -12,7 +12,7 @@ export class msdyn_AutoLinkingLeadCustomActionRequest
   extends OrganizationRequest
   implements Executable<msdyn_AutoLinkingLeadCustomActionResponse>
 {
-  constructor(public autoLinkRequest: string) {
+  constructor(public autoLinkRequest?: string) {
     super("msdyn_AutoLinkingLeadCustomAction");
   }
 

@@ -13,7 +13,7 @@ export interface msdyn_GetTrainingResultsResponse {
  * Unbound action
  */
 export class msdyn_GetTrainingResultsAction implements Executable<msdyn_GetTrainingResultsResponse> {
-  constructor(public readonly predictionName: string) {}
+  constructor(public readonly predictionName?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetTrainingResults`;

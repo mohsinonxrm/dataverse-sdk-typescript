@@ -14,7 +14,7 @@ export interface msdyn_SalesAgents_IsOrchestrationCompleteResponse {
  */
 export class msdyn_SalesAgents_IsOrchestrationCompleteAction implements Executable<msdyn_SalesAgents_IsOrchestrationCompleteResponse> {
   constructor(
-    public readonly msdyn_TrackingId: string,
+    public readonly msdyn_TrackingId: string | undefined,
     public readonly msdyn_AgentType: number,
     public readonly msdyn_SalesAgentType: number
   ) {}

@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * AddWorkQueueItemProcessingHistoryEntry request message
@@ -13,7 +14,7 @@ export class AddWorkQueueItemProcessingHistoryEntryRequest
 {
   constructor(
     public workqueueitemId: string,
-    public item: EntityReference
+    public item: EntityReference | AnyEntityPayload
   ) {
     super("AddWorkQueueItemProcessingHistoryEntry");
   }

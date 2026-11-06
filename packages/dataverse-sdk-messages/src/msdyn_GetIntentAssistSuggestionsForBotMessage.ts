@@ -13,7 +13,7 @@ export class msdyn_GetIntentAssistSuggestionsForBotRequest
   implements Executable<msdyn_GetIntentAssistSuggestionsForBotResponse>
 {
   constructor(
-    public slot__conversation: string[],
+    public slot__conversation: string[] | undefined,
     public intentAssistForBotRequest: string
   ) {
     super("msdyn_GetIntentAssistSuggestionsForBot");

@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { ColumnSet, salesorder } from "./types/index.js";
 
 /**
@@ -20,12 +21,12 @@ export interface ConvertQuoteToSalesOrderResponse extends salesorder {
 export class ConvertQuoteToSalesOrderAction implements Executable<ConvertQuoteToSalesOrderResponse> {
   constructor(
     public readonly quoteId: string,
-    public readonly columnSet: ColumnSet,
-    public readonly quoteCloseDate: string,
-    public readonly quoteCloseStatus: number,
-    public readonly quoteCloseSubject: string,
-    public readonly quoteCloseDescription: string,
-    public readonly processInstanceId: EntityReference
+    public readonly columnSet?: ColumnSet,
+    public readonly quoteCloseDate?: string,
+    public readonly quoteCloseStatus?: number,
+    public readonly quoteCloseSubject?: string,
+    public readonly quoteCloseDescription?: string,
+    public readonly processInstanceId?: EntityReference | AnyEntityPayload
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * ReassignObjectsOwner request message
@@ -12,9 +13,9 @@ export class ReassignObjectsOwnerRequest
   implements Executable<ReassignObjectsOwnerResponse>
 {
   constructor(
-    public fromPrincipal: EntityReference,
-    public toPrincipal: EntityReference,
-    public objectType: number
+    public fromPrincipal: EntityReference | AnyEntityPayload,
+    public toPrincipal: EntityReference | AnyEntityPayload,
+    public objectType?: number
   ) {
     super("ReassignObjectsOwner");
   }

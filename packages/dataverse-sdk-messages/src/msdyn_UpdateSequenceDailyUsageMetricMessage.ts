@@ -10,7 +10,7 @@ export class msdyn_UpdateSequenceDailyUsageMetricRequest
   extends OrganizationRequest
   implements Executable<msdyn_UpdateSequenceDailyUsageMetricResponse>
 {
-  constructor(public previousDaysCount: number) {
+  constructor(public previousDaysCount?: number) {
     super("msdyn_UpdateSequenceDailyUsageMetric");
   }
 

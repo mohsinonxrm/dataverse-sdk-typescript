@@ -18,7 +18,7 @@ export class CCaaS_RejectConversationAction implements Executable<CCaaS_RejectCo
     public readonly msdyn_ocliveworkitemId: string,
     public readonly apiVersion: string,
     public readonly sessionId: string,
-    public readonly rejectReason: string
+    public readonly rejectReason?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

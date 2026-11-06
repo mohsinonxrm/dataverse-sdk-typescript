@@ -13,8 +13,8 @@ export class msdyn_GetResourcePopupDetailsRequest
   implements Executable<msdyn_GetResourcePopupDetailsResponse>
 {
   constructor(
-    public startDate: string,
-    public endDate: string,
+    public startDate: string | undefined,
+    public endDate: string | undefined,
     public resourceId: string
   ) {
     super("msdyn_GetResourcePopupDetails");

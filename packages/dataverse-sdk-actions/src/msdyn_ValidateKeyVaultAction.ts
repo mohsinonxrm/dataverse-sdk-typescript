@@ -14,11 +14,11 @@ export interface msdyn_ValidateKeyVaultResponse {
  */
 export class msdyn_ValidateKeyVaultAction implements Executable<msdyn_ValidateKeyVaultResponse> {
   constructor(
-    public readonly keyVaultUri: string,
-    public readonly platformType: string,
-    public readonly isAppSigningEnabled: boolean,
-    public readonly bundleIdentifier: string,
-    public readonly storageTypeForUpload: string
+    public readonly keyVaultUri?: string,
+    public readonly platformType?: string,
+    public readonly isAppSigningEnabled?: boolean,
+    public readonly bundleIdentifier?: string,
+    public readonly storageTypeForUpload?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

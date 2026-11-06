@@ -12,7 +12,7 @@ export class msdyn_CheckIfProcessesOwnedByDisabledUsersRequest
   extends OrganizationRequest
   implements Executable<msdyn_CheckIfProcessesOwnedByDisabledUsersResponse>
 {
-  constructor(public solutionId: string) {
+  constructor(public solutionId?: string) {
     super("msdyn_CheckIfProcessesOwnedByDisabledUsers");
   }
 

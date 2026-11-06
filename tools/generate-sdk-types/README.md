@@ -129,13 +129,14 @@ packages/
     ...
     types/                              # complex types, entity types and enums from the CSDL
     index.ts
-    OrganizationRequest.ts, EntityReference.ts, types.ts   # hand-written, not generated
+    OrganizationRequest.ts, types.ts    # hand-written, not generated
+    EntityReference.ts                  # references with the CSDL primary keys (generated)
 
   dataverse-sdk-actions/src/            # flat: one file per action
     CreateMultipleAction.ts
     ExecuteWorkflowAction.ts
     ...
-    types/                              # complex types, entity types, enums, EntityReference.ts
+    types/                              # complex types, entity types, enums, EntityReference.ts, EntityPayload.ts
     index.ts
 
   dataverse-sdk-functions/src/          # flat: one file per function

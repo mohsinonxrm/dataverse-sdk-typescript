@@ -14,9 +14,9 @@ export interface msdyn_IngestAnalyticsDataCustomChannelsResponse {
  */
 export class msdyn_IngestAnalyticsDataCustomChannelsAction implements Executable<msdyn_IngestAnalyticsDataCustomChannelsResponse> {
   constructor(
-    public readonly msdyn_linkedactivityid: string,
+    public readonly msdyn_linkedactivityid: string | undefined,
     public readonly msdyn_eventname: string,
-    public readonly msdyn_sequencestepid: string
+    public readonly msdyn_sequencestepid?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

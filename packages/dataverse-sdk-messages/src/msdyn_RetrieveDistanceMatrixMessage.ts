@@ -13,7 +13,7 @@ export class msdyn_RetrieveDistanceMatrixRequest
   implements Executable<msdyn_RetrieveDistanceMatrixResponse>
 {
   constructor(
-    public version: string,
+    public version: string | undefined,
     public sources: Record<string, unknown>[],
     public targets: Record<string, unknown>[]
   ) {

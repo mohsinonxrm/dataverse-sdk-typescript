@@ -14,7 +14,7 @@ export interface BackgroundSendEmailResponse {
  * Unbound action
  */
 export class BackgroundSendEmailAction implements Executable<BackgroundSendEmailResponse> {
-  constructor(public readonly query: TypedQueryBase) {}
+  constructor(public readonly query?: TypedQueryBase) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/BackgroundSendEmail`;

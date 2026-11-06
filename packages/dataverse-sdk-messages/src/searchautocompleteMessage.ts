@@ -13,12 +13,12 @@ export class searchautocompleteRequest
   implements Executable<searchautocompleteResponse>
 {
   constructor(
-    public propertybag: string,
-    public filter: string,
-    public fuzzy: boolean,
-    public options: string,
+    public propertybag: string | undefined,
+    public filter: string | undefined,
+    public fuzzy: boolean | undefined,
+    public options: string | undefined,
     public search: string,
-    public entities: string
+    public entities?: string
   ) {
     super("searchautocomplete");
   }

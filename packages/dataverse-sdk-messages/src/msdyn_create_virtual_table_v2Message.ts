@@ -13,24 +13,24 @@ export class msdyn_create_virtual_table_v2Request
   implements Executable<msdyn_create_virtual_table_v2Response>
 {
   constructor(
-    public virtual_table_columns: Record<string, unknown>[],
+    public virtual_table_columns: Record<string, unknown>[] | undefined,
     public dataset_value: string,
-    public virtual_table_schema_name: string,
+    public virtual_table_schema_name: string | undefined,
     public virtual_table_name: string,
-    public datasource_id: string,
-    public solution_id: string,
-    public connectionreference_id: string,
-    public datasource_name: string,
-    public use_environment_variable_for_dataset: boolean,
+    public datasource_id: string | undefined,
+    public solution_id: string | undefined,
+    public connectionreference_id: string | undefined,
+    public datasource_name: string | undefined,
+    public use_environment_variable_for_dataset: boolean | undefined,
     public primary_field_name: string,
-    public virtual_table_plural_name: string,
+    public virtual_table_plural_name: string | undefined,
     public virtual_table_external_name: string,
-    public environment_variable_names: Record<string, unknown>[],
-    public environment_id: string,
+    public environment_variable_names: Record<string, unknown>[] | undefined,
+    public environment_id: string | undefined,
     public connection_id: string,
     public primary_key_name: string,
-    public connectionreference_display_name: string,
-    public connectionreference_logical_name: string
+    public connectionreference_display_name?: string,
+    public connectionreference_logical_name?: string
   ) {
     super("msdyn_create_virtual_table_v2");
   }

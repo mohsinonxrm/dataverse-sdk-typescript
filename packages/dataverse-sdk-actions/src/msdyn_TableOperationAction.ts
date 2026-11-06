@@ -14,7 +14,7 @@ export interface msdyn_TableOperationResponse {
  */
 export class msdyn_TableOperationAction implements Executable<msdyn_TableOperationResponse> {
   constructor(
-    public readonly entityNames: string,
+    public readonly entityNames: string | undefined,
     public readonly scenario: string
   ) {}
 

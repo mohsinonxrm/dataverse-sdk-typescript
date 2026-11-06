@@ -12,22 +12,22 @@ export class _EvaluateSearchRequestRequest
   implements Executable<_EvaluateSearchRequestResponse>
 {
   constructor(
-    public serviceAppointmentId: string,
+    public serviceAppointmentId: string | undefined,
     public serviceId: string,
-    public dateOptionSet: number,
-    public timeOptionSet: number,
-    public dayList: string,
-    public requiredResources: Record<string, unknown>[],
-    public searchWindowStart: string,
-    public searchWindowEnd: string,
-    public searchRecurrenceStart: number,
-    public timeRangeEnd: number,
+    public dateOptionSet: number | undefined,
+    public timeOptionSet: number | undefined,
+    public dayList: string | undefined,
+    public requiredResources: Record<string, unknown>[] | undefined,
+    public searchWindowStart: string | undefined,
+    public searchWindowEnd: string | undefined,
+    public searchRecurrenceStart: number | undefined,
+    public timeRangeEnd: number | undefined,
     public duration: number,
-    public direction: number,
-    public sites: Record<string, unknown>[],
-    public numberOfResults: number,
-    public _SearchWindowStart: string,
-    public _SearchWindowEnd: string
+    public direction?: number,
+    public sites?: Record<string, unknown>[],
+    public numberOfResults?: number,
+    public _SearchWindowStart?: string,
+    public _SearchWindowEnd?: string
   ) {
     super("_EvaluateSearchRequest");
   }

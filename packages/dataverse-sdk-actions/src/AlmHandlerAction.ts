@@ -15,7 +15,7 @@ export interface AlmHandlerResponse {
 export class AlmHandlerAction implements Executable<AlmHandlerResponse> {
   constructor(
     public readonly action: string,
-    public readonly input: string
+    public readonly input?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

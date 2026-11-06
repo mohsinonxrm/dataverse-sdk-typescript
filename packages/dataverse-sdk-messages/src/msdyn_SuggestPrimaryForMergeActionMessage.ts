@@ -11,7 +11,7 @@ export class msdyn_SuggestPrimaryForMergeActionRequest
   extends OrganizationRequest
   implements Executable<msdyn_SuggestPrimaryForMergeActionResponse>
 {
-  constructor(public recordList: Record<string, unknown>[]) {
+  constructor(public recordList?: Record<string, unknown>[]) {
     super("msdyn_SuggestPrimaryForMergeAction");
   }
 

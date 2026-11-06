@@ -14,9 +14,9 @@ export interface msdyn_DisconnectSequenceResponse {
  */
 export class msdyn_DisconnectSequenceAction implements Executable<msdyn_DisconnectSequenceResponse> {
   constructor(
-    public readonly regardingEntityId: string,
-    public readonly regardingEntityName: string,
-    public readonly sequenceTargetId: string
+    public readonly regardingEntityId?: string,
+    public readonly regardingEntityName?: string,
+    public readonly sequenceTargetId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

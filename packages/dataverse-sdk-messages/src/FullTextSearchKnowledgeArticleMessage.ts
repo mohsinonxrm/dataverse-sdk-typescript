@@ -17,7 +17,7 @@ export class FullTextSearchKnowledgeArticleRequest
     public useInflection: boolean,
     public removeDuplicates: boolean,
     public stateCode: number,
-    public queryExpression: TypedQueryBase
+    public queryExpression?: TypedQueryBase
   ) {
     super("FullTextSearchKnowledgeArticle");
   }

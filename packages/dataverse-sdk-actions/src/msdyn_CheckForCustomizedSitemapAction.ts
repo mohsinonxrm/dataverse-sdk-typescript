@@ -19,9 +19,9 @@ export interface msdyn_CheckForCustomizedSitemapResponse {
  */
 export class msdyn_CheckForCustomizedSitemapAction implements Executable<msdyn_CheckForCustomizedSitemapResponse> {
   constructor(
-    public readonly entityIds: string,
-    public readonly solutionId: string,
-    public readonly excludeSolutionIds: string
+    public readonly entityIds?: string,
+    public readonly solutionId?: string,
+    public readonly excludeSolutionIds?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -15,9 +15,9 @@ export interface msdyn_FeedbackResponse {
 export class msdyn_FeedbackAction implements Executable<msdyn_FeedbackResponse> {
   constructor(
     public readonly featureName: string,
-    public readonly value: number,
-    public readonly description: string,
-    public readonly properties: string
+    public readonly value?: number,
+    public readonly description?: string,
+    public readonly properties?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

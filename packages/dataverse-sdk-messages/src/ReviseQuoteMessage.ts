@@ -14,7 +14,7 @@ export class ReviseQuoteRequest
 {
   constructor(
     public quoteId: string,
-    public columnSet: ColumnSet
+    public columnSet?: ColumnSet
   ) {
     super("ReviseQuote");
   }

@@ -17,7 +17,7 @@ export interface msdyn_CheckReqWebResourceOnSystemFormResponse {
  * Unbound action
  */
 export class msdyn_CheckReqWebResourceOnSystemFormAction implements Executable<msdyn_CheckReqWebResourceOnSystemFormResponse> {
-  constructor(public readonly entityAndWebResourceList: string) {}
+  constructor(public readonly entityAndWebResourceList?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckReqWebResourceOnSystemForm`;

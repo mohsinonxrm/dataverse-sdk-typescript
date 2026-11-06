@@ -12,7 +12,7 @@ export class DiscoverFabricWorkspacesRequest
   extends OrganizationRequest
   implements Executable<DiscoverFabricWorkspacesResponse>
 {
-  constructor(public fabricEnvironment: string) {
+  constructor(public fabricEnvironment?: string) {
     super("DiscoverFabricWorkspaces");
   }
 

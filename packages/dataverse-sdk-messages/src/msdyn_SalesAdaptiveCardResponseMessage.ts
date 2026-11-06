@@ -13,8 +13,8 @@ export class msdyn_SalesAdaptiveCardResponseRequest
   implements Executable<msdyn_SalesAdaptiveCardResponseResponse>
 {
   constructor(
-    public msdyn_query: string,
-    public msdyn_id: string,
+    public msdyn_query: string | undefined,
+    public msdyn_id: string | undefined,
     public msdyn_scenario: number
   ) {
     super("msdyn_SalesAdaptiveCardResponse");

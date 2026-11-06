@@ -15,7 +15,7 @@ export interface CreateNPSUserRatingResponse {
 export class CreateNPSUserRatingAction implements Executable<CreateNPSUserRatingResponse> {
   constructor(
     public readonly score: number,
-    public readonly comment: string,
+    public readonly comment: string | undefined,
     public readonly appModuleId: string,
     public readonly browser: string,
     public readonly device: string

@@ -14,8 +14,8 @@ export interface msdyn_GeneratePlatformSummaryResponse {
  */
 export class msdyn_GeneratePlatformSummaryAction implements Executable<msdyn_GeneratePlatformSummaryResponse> {
   constructor(
-    public readonly clientContext: string,
-    public readonly otherData: string
+    public readonly clientContext?: string,
+    public readonly otherData?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

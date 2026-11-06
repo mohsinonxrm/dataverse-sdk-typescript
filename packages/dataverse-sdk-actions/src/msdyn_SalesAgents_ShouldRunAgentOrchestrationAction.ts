@@ -15,7 +15,7 @@ export interface msdyn_SalesAgents_ShouldRunAgentOrchestrationResponse {
 export class msdyn_SalesAgents_ShouldRunAgentOrchestrationAction implements Executable<msdyn_SalesAgents_ShouldRunAgentOrchestrationResponse> {
   constructor(
     public readonly msdyn_SalesAgentType: number,
-    public readonly msdyn_TrackingId: string
+    public readonly msdyn_TrackingId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

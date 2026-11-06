@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_RetrieveRelationshipActivityKPIValues action
@@ -17,8 +18,8 @@ export interface msdyn_RetrieveRelationshipActivityKPIValuesResponse {
  */
 export class msdyn_RetrieveRelationshipActivityKPIValuesAction implements Executable<msdyn_RetrieveRelationshipActivityKPIValuesResponse> {
   constructor(
-    public readonly crmRecord: EntityReference,
-    public readonly getLinkedInKPI: boolean
+    public readonly crmRecord: EntityReference | AnyEntityPayload,
+    public readonly getLinkedInKPI?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

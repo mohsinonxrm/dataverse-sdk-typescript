@@ -15,7 +15,7 @@ export interface msdyn_InstallSalesInsightsSolutionResponse {
 export class msdyn_InstallSalesInsightsSolutionAction implements Executable<msdyn_InstallSalesInsightsSolutionResponse> {
   constructor(
     public readonly solutionName: string,
-    public readonly forceInstall: boolean
+    public readonly forceInstall?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

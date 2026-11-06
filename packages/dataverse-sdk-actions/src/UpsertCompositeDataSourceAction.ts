@@ -14,15 +14,15 @@ export interface UpsertCompositeDataSourceResponse {
  */
 export class UpsertCompositeDataSourceAction implements Executable<UpsertCompositeDataSourceResponse> {
   constructor(
-    public readonly parentDisplayName: string,
+    public readonly parentDisplayName: string | undefined,
     public readonly parentSchemaName: string,
     public readonly parentParameterKey: string,
-    public readonly parentApiId: string,
-    public readonly parentValue: string,
-    public readonly childDisplayName: string,
-    public readonly childSchemaName: string,
-    public readonly childParameterKey: string,
-    public readonly childValue: string
+    public readonly parentApiId?: string,
+    public readonly parentValue?: string,
+    public readonly childDisplayName?: string,
+    public readonly childSchemaName?: string,
+    public readonly childParameterKey?: string,
+    public readonly childValue?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

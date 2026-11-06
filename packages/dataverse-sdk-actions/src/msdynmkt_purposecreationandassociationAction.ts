@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdynmkt_purposecreationandassociation action
@@ -16,10 +17,10 @@ export interface msdynmkt_purposecreationandassociationResponse {
 export class msdynmkt_purposecreationandassociationAction implements Executable<msdynmkt_purposecreationandassociationResponse> {
   constructor(
     public readonly msdynmkt_customenforcementmodel: number,
-    public readonly msdynmkt_purposeid: string,
+    public readonly msdynmkt_purposeid: string | undefined,
     public readonly msdynmkt_enforcementmodel: number,
     public readonly msdynmkt_name: string,
-    public readonly msdynmkt_compliancesettings4: EntityReference,
+    public readonly msdynmkt_compliancesettings4: EntityReference | AnyEntityPayload,
     public readonly msdynmkt_purpose_id: string,
     public readonly msdynmkt_smsenforcementmodel: number,
     public readonly msdynmkt_voiceenforcementmodel: number,

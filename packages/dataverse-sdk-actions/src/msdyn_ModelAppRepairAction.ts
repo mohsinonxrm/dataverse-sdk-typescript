@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_ModelAppRepair action
@@ -16,7 +17,7 @@ export interface msdyn_ModelAppRepairResponse {
  * Unbound action
  */
 export class msdyn_ModelAppRepairAction implements Executable<msdyn_ModelAppRepairResponse> {
-  constructor(public readonly analysisResult: EntityReference) {}
+  constructor(public readonly analysisResult?: EntityReference | AnyEntityPayload) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ModelAppRepair`;

@@ -14,7 +14,7 @@ export class msdyn_DataValidationApiRequest
 {
   constructor(
     public apiType: number,
-    public apiPayLoad: string
+    public apiPayLoad?: string
   ) {
     super("msdyn_DataValidationApi");
   }

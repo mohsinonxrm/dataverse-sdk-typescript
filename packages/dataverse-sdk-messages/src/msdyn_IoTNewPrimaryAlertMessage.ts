@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_iotalert } from "./types/index.js";
 
 /**
@@ -11,7 +13,7 @@ export class msdyn_IoTNewPrimaryAlertRequest
   extends OrganizationRequest
   implements Executable<msdyn_IoTNewPrimaryAlertResponse>
 {
-  constructor(public primaryAlert: msdyn_iotalert) {
+  constructor(public primaryAlert: EntityReference | EntityPayload<msdyn_iotalert>) {
     super("msdyn_IoTNewPrimaryAlert");
   }
 

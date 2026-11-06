@@ -14,7 +14,7 @@ export class _DownloademailasattachmentRequest
 {
   constructor(
     public emailIdToBeDownloaded: string,
-    public additionalParameter: string
+    public additionalParameter?: string
   ) {
     super("_Downloademailasattachment");
   }

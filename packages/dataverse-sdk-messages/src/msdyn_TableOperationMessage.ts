@@ -13,7 +13,7 @@ export class msdyn_TableOperationRequest
   implements Executable<msdyn_TableOperationResponse>
 {
   constructor(
-    public entityNames: string,
+    public entityNames: string | undefined,
     public scenario: string
   ) {
     super("msdyn_TableOperation");

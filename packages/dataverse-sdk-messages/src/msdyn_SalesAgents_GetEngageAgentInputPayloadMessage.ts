@@ -13,10 +13,10 @@ export class msdyn_SalesAgents_GetEngageAgentInputPayloadRequest
   implements Executable<msdyn_SalesAgents_GetEngageAgentInputPayloadResponse>
 {
   constructor(
-    public msdyn_Thread: string,
-    public msdyn_SalesAgentRun: string,
+    public msdyn_Thread: string | undefined,
+    public msdyn_SalesAgentRun: string | undefined,
     public msdyn_SalesMacroAgentType: number,
-    public msdyn_TrackingId: string
+    public msdyn_TrackingId?: string
   ) {
     super("msdyn_SalesAgents_GetEngageAgentInputPayload");
   }

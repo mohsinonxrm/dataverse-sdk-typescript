@@ -13,8 +13,8 @@ export class msdyn_GeneratePlatformSummaryRequest
   implements Executable<msdyn_GeneratePlatformSummaryResponse>
 {
   constructor(
-    public clientContext: string,
-    public otherData: string
+    public clientContext?: string,
+    public otherData?: string
   ) {
     super("msdyn_GeneratePlatformSummary");
   }

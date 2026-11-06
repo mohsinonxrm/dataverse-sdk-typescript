@@ -18,9 +18,9 @@ export class msdyn_SLATimeCalculationAction implements Executable<msdyn_SLATimeC
     public readonly calendarId: string,
     public readonly startTime: string,
     public readonly requestType: string,
-    public readonly minutes: number,
-    public readonly logsLevel: number,
-    public readonly endTime: string
+    public readonly minutes?: number,
+    public readonly logsLevel?: number,
+    public readonly endTime?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { dynamicpropertyinstance } from "./types/index.js";
 
 /**
@@ -11,7 +13,9 @@ export class UpdateProductPropertiesRequest
   extends OrganizationRequest
   implements Executable<UpdateProductPropertiesResponse>
 {
-  constructor(public propertyInstanceList: dynamicpropertyinstance[]) {
+  constructor(
+    public propertyInstanceList: (EntityReference | EntityPayload<dynamicpropertyinstance>)[]
+  ) {
     super("UpdateProductProperties");
   }
 

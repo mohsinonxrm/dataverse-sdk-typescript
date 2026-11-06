@@ -12,7 +12,7 @@ export class msdyn_CheckIfAutoRouteToOwnerQueueEnabledRequest
   extends OrganizationRequest
   implements Executable<msdyn_CheckIfAutoRouteToOwnerQueueEnabledResponse>
 {
-  constructor(public solutionId: string) {
+  constructor(public solutionId?: string) {
     super("msdyn_CheckIfAutoRouteToOwnerQueueEnabled");
   }
 

@@ -13,10 +13,10 @@ export class pm_CreateProcessRequest
   implements Executable<pm_CreateProcessResponse>
 {
   constructor(
-    public reportData: string,
+    public reportData: string | undefined,
     public inputDataBinding: string,
     public name: string,
-    public description: string
+    public description?: string
   ) {
     super("pm_CreateProcess");
   }

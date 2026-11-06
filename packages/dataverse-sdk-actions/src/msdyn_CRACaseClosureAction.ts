@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_CRACaseClosure action
@@ -20,7 +21,7 @@ export class msdyn_CRACaseClosureAction implements Executable<msdyn_CRACaseClosu
     public readonly msdyn_McsConversationId: string,
     public readonly msdyn_IncomingEmailId: string,
     public readonly msdyn_IsMonitoringActive: boolean,
-    public readonly msdyn_Entity: EntityReference
+    public readonly msdyn_Entity: EntityReference | AnyEntityPayload
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -14,7 +14,7 @@ export class msdyn_ExecuteSandboxRequestRequest
 {
   constructor(
     public methodName: string,
-    public methodParams: string
+    public methodParams?: string
   ) {
     super("msdyn_ExecuteSandboxRequest");
   }

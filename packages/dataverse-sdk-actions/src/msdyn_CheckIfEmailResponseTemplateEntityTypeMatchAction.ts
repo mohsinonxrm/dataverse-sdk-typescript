@@ -17,7 +17,7 @@ export interface msdyn_CheckIfEmailResponseTemplateEntityTypeMatchResponse {
  * Unbound action
  */
 export class msdyn_CheckIfEmailResponseTemplateEntityTypeMatchAction implements Executable<msdyn_CheckIfEmailResponseTemplateEntityTypeMatchResponse> {
-  constructor(public readonly solutionId: string) {}
+  constructor(public readonly solutionId?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckIfEmailResponseTemplateEntityTypeMatch`;

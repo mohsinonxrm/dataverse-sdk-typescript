@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_EmailTemplateRecommendation action
@@ -18,18 +19,18 @@ export interface msdyn_EmailTemplateRecommendationResponse {
  */
 export class msdyn_EmailTemplateRecommendationAction implements Executable<msdyn_EmailTemplateRecommendationResponse> {
   constructor(
-    public readonly headers: number,
+    public readonly headers: number | undefined,
     public readonly customerIntent: string,
-    public readonly filters: string,
+    public readonly filters: string | undefined,
     public readonly templateFiltersInString: string,
     public readonly emailString: string,
-    public readonly isTemplateResponse: boolean,
+    public readonly isTemplateResponse: boolean | undefined,
     public readonly transactionId: string,
-    public readonly multiturnPayload: string,
-    public readonly emailContextData: string,
+    public readonly multiturnPayload: string | undefined,
+    public readonly emailContextData: string | undefined,
     public readonly copilotRequestParameters: string,
     public readonly emailId: string,
-    public readonly entityReference: EntityReference
+    public readonly entityReference?: EntityReference | AnyEntityPayload
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

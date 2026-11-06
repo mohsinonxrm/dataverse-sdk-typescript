@@ -13,10 +13,10 @@ export class msdyn_SalesAgents_ProcessEngageAgentResponseRequest
   implements Executable<msdyn_SalesAgents_ProcessEngageAgentResponseResponse>
 {
   constructor(
-    public msdyn_Thread: string,
-    public msdyn_TrackingId: string,
+    public msdyn_Thread: string | undefined,
+    public msdyn_TrackingId: string | undefined,
     public msdyn_SalesMacroAgentType: number,
-    public msdyn_SalesAgentRun: string,
+    public msdyn_SalesAgentRun: string | undefined,
     public msdyn_EngageAgentActivities: string
   ) {
     super("msdyn_SalesAgents_ProcessEngageAgentResponse");

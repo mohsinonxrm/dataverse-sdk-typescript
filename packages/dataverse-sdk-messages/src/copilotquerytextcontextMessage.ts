@@ -13,14 +13,14 @@ export class copilotquerytextcontextRequest
   implements Executable<copilotquerytextcontextResponse>
 {
   constructor(
-    public totalResultCount: boolean,
-    public orderBy: string,
-    public searchMode: string,
-    public entityParameters: string,
-    public skip: number,
-    public top: number,
-    public options: string,
-    public searchType: string,
+    public totalResultCount: boolean | undefined,
+    public orderBy: string | undefined,
+    public searchMode: string | undefined,
+    public entityParameters: string | undefined,
+    public skip: number | undefined,
+    public top: number | undefined,
+    public options: string | undefined,
+    public searchType: string | undefined,
     public searchText: string
   ) {
     super("copilotquerytextcontext");

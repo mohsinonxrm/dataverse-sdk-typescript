@@ -16,8 +16,8 @@ export class SummarizeRecordAction implements Executable<SummarizeRecordResponse
   constructor(
     public readonly id: string,
     public readonly entityLogicalName: string,
-    public readonly recordContext: string,
-    public readonly isMergedCatchupAndSummary: boolean
+    public readonly recordContext?: string,
+    public readonly isMergedCatchupAndSummary?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

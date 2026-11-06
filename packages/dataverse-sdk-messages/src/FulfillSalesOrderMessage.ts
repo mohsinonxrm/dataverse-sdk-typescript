@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { orderclose } from "./types/index.js";
 
 /**
@@ -12,7 +14,7 @@ export class FulfillSalesOrderRequest
   implements Executable<FulfillSalesOrderResponse>
 {
   constructor(
-    public orderClose: orderclose,
+    public orderClose: EntityReference | EntityPayload<orderclose>,
     public status: number
   ) {
     super("FulfillSalesOrder");

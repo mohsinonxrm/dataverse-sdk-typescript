@@ -14,12 +14,12 @@ export class msdyn_EvaluateConversationRequest
 {
   constructor(
     public criteriaId: string,
-    public extendedContext: string,
-    public conversationPayload: string,
-    public langLocale: string,
+    public extendedContext: string | undefined,
+    public conversationPayload: string | undefined,
+    public langLocale: string | undefined,
     public evaluationId: string,
-    public allowCrossGeo: boolean,
-    public recordId: string
+    public allowCrossGeo?: boolean,
+    public recordId?: string
   ) {
     super("msdyn_EvaluateConversation");
   }

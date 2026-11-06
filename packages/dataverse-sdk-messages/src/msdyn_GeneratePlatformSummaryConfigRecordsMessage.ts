@@ -12,7 +12,7 @@ export class msdyn_GeneratePlatformSummaryConfigRecordsRequest
   extends OrganizationRequest
   implements Executable<msdyn_GeneratePlatformSummaryConfigRecordsResponse>
 {
-  constructor(public entityLogicalName: string) {
+  constructor(public entityLogicalName?: string) {
     super("msdyn_GeneratePlatformSummaryConfigRecords");
   }
 

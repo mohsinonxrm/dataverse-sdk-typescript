@@ -14,7 +14,7 @@ export class msdyn_FpsActionRequest
 {
   constructor(
     public type: number,
-    public inputParameter: string
+    public inputParameter?: string
   ) {
     super("msdyn_FpsAction");
   }

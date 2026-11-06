@@ -14,8 +14,8 @@ export interface msdyn_CapacityProfilesToUsersResponse {
  */
 export class msdyn_CapacityProfilesToUsersAction implements Executable<msdyn_CapacityProfilesToUsersResponse> {
   constructor(
-    public readonly addedBookableResourceCapacityProfiles: Record<string, unknown>[],
-    public readonly deletedBookableResourceCapacityProfiles: Record<string, unknown>[]
+    public readonly addedBookableResourceCapacityProfiles?: Record<string, unknown>[],
+    public readonly deletedBookableResourceCapacityProfiles?: Record<string, unknown>[]
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

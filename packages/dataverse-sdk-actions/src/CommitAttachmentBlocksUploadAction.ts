@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from CommitAttachmentBlocksUpload action
@@ -16,7 +17,7 @@ export interface CommitAttachmentBlocksUploadResponse {
  */
 export class CommitAttachmentBlocksUploadAction implements Executable<CommitAttachmentBlocksUploadResponse> {
   constructor(
-    public readonly target: EntityReference,
+    public readonly target: EntityReference | AnyEntityPayload,
     public readonly blockList: string[],
     public readonly fileContinuationToken: string
   ) {}

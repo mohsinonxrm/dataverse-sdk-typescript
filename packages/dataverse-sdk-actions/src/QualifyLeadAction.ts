@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { campaign, transactioncurrency } from "./types/index.js";
 
 /**
@@ -21,12 +22,13 @@ export class QualifyLeadAction implements Executable<QualifyLeadResponse> {
     public readonly createAccount: boolean,
     public readonly createContact: boolean,
     public readonly createOpportunity: boolean,
-    public readonly opportunityCurrencyId: transactioncurrency,
-    public readonly opportunityCustomerId: EntityReference,
-    public readonly sourceCampaignId: campaign,
+    public readonly opportunityCurrencyId:
+      EntityReference | EntityPayload<transactioncurrency> | undefined,
+    public readonly opportunityCustomerId: EntityReference | AnyEntityPayload | undefined,
+    public readonly sourceCampaignId: EntityReference | EntityPayload<campaign> | undefined,
     public readonly status: number,
-    public readonly processInstanceId: EntityReference,
-    public readonly leadQualificationV2Param: string
+    public readonly processInstanceId?: EntityReference | AnyEntityPayload,
+    public readonly leadQualificationV2Param?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

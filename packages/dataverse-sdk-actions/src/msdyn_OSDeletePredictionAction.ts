@@ -14,10 +14,10 @@ export interface msdyn_OSDeletePredictionResponse {
  */
 export class msdyn_OSDeletePredictionAction implements Executable<msdyn_OSDeletePredictionResponse> {
   constructor(
-    public readonly modelId: string,
-    public readonly isCrmDeleteOnly: boolean,
-    public readonly predictionName: string,
-    public readonly isActiveModel: boolean
+    public readonly modelId?: string,
+    public readonly isCrmDeleteOnly?: boolean,
+    public readonly predictionName?: string,
+    public readonly isActiveModel?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

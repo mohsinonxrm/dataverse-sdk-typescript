@@ -12,9 +12,9 @@ export class msdyn_FeedbackRequest
 {
   constructor(
     public featureName: string,
-    public value: number,
-    public description: string,
-    public properties: string
+    public value?: number,
+    public description?: string,
+    public properties?: string
   ) {
     super("msdyn_Feedback");
   }

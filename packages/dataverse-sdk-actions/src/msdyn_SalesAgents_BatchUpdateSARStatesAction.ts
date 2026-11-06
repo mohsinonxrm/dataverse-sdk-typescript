@@ -16,7 +16,7 @@ export class msdyn_SalesAgents_BatchUpdateSARStatesAction implements Executable<
   constructor(
     public readonly msdyn_StateCode: number,
     public readonly msdyn_StatusCode: number,
-    public readonly msdyn_TrackingId: string,
+    public readonly msdyn_TrackingId: string | undefined,
     public readonly msdyn_SalesAgentRunIds: string[]
   ) {}
 

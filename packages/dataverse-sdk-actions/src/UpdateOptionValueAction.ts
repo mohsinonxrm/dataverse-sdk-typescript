@@ -15,18 +15,18 @@ export interface UpdateOptionValueResponse {
  */
 export class UpdateOptionValueAction implements Executable<UpdateOptionValueResponse> {
   constructor(
-    public readonly color: string,
-    public readonly optionSetName: string,
-    public readonly attributeLogicalName: string,
-    public readonly externalValue: string,
-    public readonly entityLogicalName: string,
-    public readonly isHidden: boolean,
+    public readonly color: string | undefined,
+    public readonly optionSetName: string | undefined,
+    public readonly attributeLogicalName: string | undefined,
+    public readonly externalValue: string | undefined,
+    public readonly entityLogicalName: string | undefined,
+    public readonly isHidden: boolean | undefined,
     public readonly value: number,
-    public readonly label: Label,
-    public readonly description: Label,
+    public readonly label: Label | undefined,
+    public readonly description: Label | undefined,
     public readonly mergeLabels: boolean,
-    public readonly parentValues: number[],
-    public readonly solutionUniqueName: string
+    public readonly parentValues?: number[],
+    public readonly solutionUniqueName?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

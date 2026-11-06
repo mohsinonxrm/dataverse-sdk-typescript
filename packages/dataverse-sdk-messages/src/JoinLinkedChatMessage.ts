@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * JoinLinkedChat request message
@@ -14,7 +15,7 @@ export class JoinLinkedChatRequest
   constructor(
     public teamsChatId: string,
     public userId: string,
-    public regardingEntity: EntityReference
+    public regardingEntity: EntityReference | AnyEntityPayload
   ) {
     super("JoinLinkedChat");
   }

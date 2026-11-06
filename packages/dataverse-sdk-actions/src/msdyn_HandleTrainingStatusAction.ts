@@ -15,8 +15,8 @@ export interface msdyn_HandleTrainingStatusResponse {
 export class msdyn_HandleTrainingStatusAction implements Executable<msdyn_HandleTrainingStatusResponse> {
   constructor(
     public readonly curentModel: string,
-    public readonly previousModel: string,
-    public readonly predictionScheduledOperation: string,
+    public readonly previousModel: string | undefined,
+    public readonly predictionScheduledOperation: string | undefined,
     public readonly trainingResult: string
   ) {}
 

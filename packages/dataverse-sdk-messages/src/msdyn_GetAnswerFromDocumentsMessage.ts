@@ -13,8 +13,8 @@ export class msdyn_GetAnswerFromDocumentsRequest
   implements Executable<msdyn_GetAnswerFromDocumentsResponse>
 {
   constructor(
-    public msdyn_activityId: string,
-    public msdyn_updatedUserQuery: string,
+    public msdyn_activityId: string | undefined,
+    public msdyn_updatedUserQuery: string | undefined,
     public msdyn_documentUrl: string
   ) {
     super("msdyn_GetAnswerFromDocuments");

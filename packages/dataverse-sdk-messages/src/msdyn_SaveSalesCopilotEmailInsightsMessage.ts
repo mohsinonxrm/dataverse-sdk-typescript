@@ -11,8 +11,8 @@ export class msdyn_SaveSalesCopilotEmailInsightsRequest
   implements Executable<msdyn_SaveSalesCopilotEmailInsightsResponse>
 {
   constructor(
-    public msdyn_extractedquestions: Record<string, unknown>[],
-    public msdyn_activityid: string,
+    public msdyn_extractedquestions: Record<string, unknown>[] | undefined,
+    public msdyn_activityid: string | undefined,
     public msdyn_salescopilotemailinsights: Record<string, unknown>[]
   ) {
     super("msdyn_SaveSalesCopilotEmailInsights");

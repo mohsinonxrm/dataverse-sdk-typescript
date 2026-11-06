@@ -13,7 +13,7 @@ export interface msdyn_RetrieveKnowledgeManagementSettingsResponse {
  * Unbound action
  */
 export class msdyn_RetrieveKnowledgeManagementSettingsAction implements Executable<msdyn_RetrieveKnowledgeManagementSettingsResponse> {
-  constructor(public readonly recordTypes: string) {}
+  constructor(public readonly recordTypes?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_RetrieveKnowledgeManagementSettings`;

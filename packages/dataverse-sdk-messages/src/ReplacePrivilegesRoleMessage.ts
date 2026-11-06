@@ -13,7 +13,7 @@ export class ReplacePrivilegesRoleRequest
 {
   constructor(
     public roleId: string,
-    public privileges: RolePrivilege[]
+    public privileges?: RolePrivilege[]
   ) {
     super("ReplacePrivilegesRole");
   }

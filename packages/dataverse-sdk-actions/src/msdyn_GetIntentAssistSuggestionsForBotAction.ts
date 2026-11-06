@@ -14,7 +14,7 @@ export interface msdyn_GetIntentAssistSuggestionsForBotResponse {
  */
 export class msdyn_GetIntentAssistSuggestionsForBotAction implements Executable<msdyn_GetIntentAssistSuggestionsForBotResponse> {
   constructor(
-    public readonly slot__conversation: string[],
+    public readonly slot__conversation: string[] | undefined,
     public readonly intentAssistForBotRequest: string
   ) {}
 

@@ -14,9 +14,9 @@ export class msdyn_CreateResourceOptimizationRequestRequest
     public resourceIds: string,
     public startDate: string,
     public endDate: string,
-    public goalId: string,
-    public isSimulation: boolean,
-    public optimizationRequestId: string
+    public goalId?: string,
+    public isSimulation?: boolean,
+    public optimizationRequestId?: string
   ) {
     super("msdyn_CreateResourceOptimizationRequest");
   }

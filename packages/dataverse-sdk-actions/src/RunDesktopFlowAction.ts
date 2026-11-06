@@ -16,13 +16,13 @@ export interface RunDesktopFlowResponse {
 export class RunDesktopFlowAction implements Executable<RunDesktopFlowResponse> {
   constructor(
     public readonly workflowId: string,
-    public readonly inputs: string,
+    public readonly inputs: string | undefined,
     public readonly runMode: string,
     public readonly connectionName: string,
-    public readonly runPriority: string,
-    public readonly timeout: number,
-    public readonly connectionType: number,
-    public readonly callbackUrl: string
+    public readonly runPriority?: string,
+    public readonly timeout?: number,
+    public readonly connectionType?: number,
+    public readonly callbackUrl?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

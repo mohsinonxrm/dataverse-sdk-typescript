@@ -16,8 +16,8 @@ export class msdyn_SalesAgents_UpsertAgentProcessingStateAction implements Execu
   constructor(
     public readonly msdyn_Records: Record<string, unknown>[],
     public readonly msdyn_SalesAgentType: number,
-    public readonly msdyn_TrackingId: string,
-    public readonly msdyn_SkipVersionNumberUpdate: boolean
+    public readonly msdyn_TrackingId?: string,
+    public readonly msdyn_SkipVersionNumberUpdate?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

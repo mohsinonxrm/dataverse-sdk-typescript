@@ -19,19 +19,19 @@ export class ImportSolutionAction implements Executable<ImportSolutionResponse> 
     public readonly publishWorkflows: boolean,
     public readonly customizationFile: string,
     public readonly importJobId: string,
-    public readonly convertToManaged: boolean,
-    public readonly skipProductUpdateDependencies: boolean,
-    public readonly holdingSolution: boolean,
-    public readonly skipQueueRibbonJob: boolean,
-    public readonly layerDesiredOrder: LayerDesiredOrder,
-    public readonly asyncRibbonProcessing: boolean,
-    public readonly componentParameters: Record<string, unknown>[],
-    public readonly isTemplateMode: boolean,
-    public readonly templateSuffix: string,
-    public readonly solutionParameters: SolutionParameters,
-    public readonly templateDisplayNamePrefix: string,
-    public readonly stageAndUpgrade: boolean,
-    public readonly schemaUpdatesOnly: boolean
+    public readonly convertToManaged?: boolean,
+    public readonly skipProductUpdateDependencies?: boolean,
+    public readonly holdingSolution?: boolean,
+    public readonly skipQueueRibbonJob?: boolean,
+    public readonly layerDesiredOrder?: LayerDesiredOrder,
+    public readonly asyncRibbonProcessing?: boolean,
+    public readonly componentParameters?: Record<string, unknown>[],
+    public readonly isTemplateMode?: boolean,
+    public readonly templateSuffix?: string,
+    public readonly solutionParameters?: SolutionParameters,
+    public readonly templateDisplayNamePrefix?: string,
+    public readonly stageAndUpgrade?: boolean,
+    public readonly schemaUpdatesOnly?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

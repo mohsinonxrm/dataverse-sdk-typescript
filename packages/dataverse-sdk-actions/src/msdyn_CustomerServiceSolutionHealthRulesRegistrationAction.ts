@@ -15,7 +15,7 @@ export interface msdyn_CustomerServiceSolutionHealthRulesRegistrationResponse {
  * Unbound action
  */
 export class msdyn_CustomerServiceSolutionHealthRulesRegistrationAction implements Executable<msdyn_CustomerServiceSolutionHealthRulesRegistrationResponse> {
-  constructor(public readonly solutionNames: string) {}
+  constructor(public readonly solutionNames?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CustomerServiceSolutionHealthRulesRegistration`;

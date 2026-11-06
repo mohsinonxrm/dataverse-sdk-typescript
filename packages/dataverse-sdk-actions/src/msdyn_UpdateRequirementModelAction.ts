@@ -14,9 +14,9 @@ export interface msdyn_UpdateRequirementModelResponse {
  */
 export class msdyn_UpdateRequirementModelAction implements Executable<msdyn_UpdateRequirementModelResponse> {
   constructor(
-    public readonly from: string,
-    public readonly to: string,
-    public readonly requirementGroupId: string,
+    public readonly from: string | undefined,
+    public readonly to: string | undefined,
+    public readonly requirementGroupId: string | undefined,
     public readonly attributes: string
   ) {}
 

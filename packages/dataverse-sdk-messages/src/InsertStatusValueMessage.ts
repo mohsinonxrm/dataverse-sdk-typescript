@@ -16,15 +16,15 @@ export class InsertStatusValueRequest
   implements Executable<InsertStatusValueResponse>
 {
   constructor(
-    public color: string,
-    public optionSetName: string,
-    public attributeLogicalName: string,
-    public entityLogicalName: string,
-    public value: number,
-    public label: Label,
-    public description: Label,
+    public color: string | undefined,
+    public optionSetName: string | undefined,
+    public attributeLogicalName: string | undefined,
+    public entityLogicalName: string | undefined,
+    public value: number | undefined,
+    public label: Label | undefined,
+    public description: Label | undefined,
     public stateCode: number,
-    public solutionUniqueName: string
+    public solutionUniqueName?: string
   ) {
     super("InsertStatusValue");
   }

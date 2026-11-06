@@ -15,12 +15,12 @@ export interface RunDataProcessingModuleResponse {
  */
 export class RunDataProcessingModuleAction implements Executable<RunDataProcessingModuleResponse> {
   constructor(
-    public readonly endPoints: string[],
-    public readonly jobArguments: string[],
-    public readonly scalarInputs: string[],
-    public readonly callbackUri: string,
+    public readonly endPoints: string[] | undefined,
+    public readonly jobArguments: string[] | undefined,
+    public readonly scalarInputs: string[] | undefined,
+    public readonly callbackUri: string | undefined,
     public readonly dataProcessingConfigurationId: string,
-    public readonly upstreamResults: string[]
+    public readonly upstreamResults?: string[]
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

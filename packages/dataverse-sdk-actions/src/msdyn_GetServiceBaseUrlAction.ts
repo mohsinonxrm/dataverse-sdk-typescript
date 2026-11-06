@@ -15,7 +15,7 @@ export interface msdyn_GetServiceBaseUrlResponse {
 export class msdyn_GetServiceBaseUrlAction implements Executable<msdyn_GetServiceBaseUrlResponse> {
   constructor(
     public readonly azureApplicationType: number,
-    public readonly orgMigratedToCoreServices: boolean
+    public readonly orgMigratedToCoreServices?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

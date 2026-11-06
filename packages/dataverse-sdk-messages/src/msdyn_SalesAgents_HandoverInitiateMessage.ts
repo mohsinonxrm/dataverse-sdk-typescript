@@ -13,12 +13,12 @@ export class msdyn_SalesAgents_HandoverInitiateRequest
   implements Executable<msdyn_SalesAgents_HandoverInitiateResponse>
 {
   constructor(
-    public msdyn_AssignTo: number,
-    public msdyn_HandoverIntent: number,
-    public msdyn_GetHandoverDetailsInfo: string,
+    public msdyn_AssignTo: number | undefined,
+    public msdyn_HandoverIntent: number | undefined,
+    public msdyn_GetHandoverDetailsInfo: string | undefined,
     public msdyn_SalesAgentRun: string,
-    public msdyn_HandoverTarget: number,
-    public msdyn_TrackingId: string
+    public msdyn_HandoverTarget?: number,
+    public msdyn_TrackingId?: string
   ) {
     super("msdyn_SalesAgents_HandoverInitiate");
   }

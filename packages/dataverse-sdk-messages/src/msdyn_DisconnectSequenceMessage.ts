@@ -11,9 +11,9 @@ export class msdyn_DisconnectSequenceRequest
   implements Executable<msdyn_DisconnectSequenceResponse>
 {
   constructor(
-    public regardingEntityId: string,
-    public regardingEntityName: string,
-    public sequenceTargetId: string
+    public regardingEntityId?: string,
+    public regardingEntityName?: string,
+    public sequenceTargetId?: string
   ) {
     super("msdyn_DisconnectSequence");
   }

@@ -11,7 +11,7 @@ export class msdyn_GetEmailAssistStreamRequest
   implements Executable<msdyn_GetEmailAssistStreamResponse>
 {
   constructor(
-    public context: string,
+    public context: string | undefined,
     public requestPayload: string
   ) {
     super("msdyn_GetEmailAssistStream");

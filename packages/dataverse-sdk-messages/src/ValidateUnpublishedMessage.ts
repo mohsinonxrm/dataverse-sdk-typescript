@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * ValidateUnpublished request message
@@ -11,7 +12,7 @@ export class ValidateUnpublishedRequest
   extends OrganizationRequest
   implements Executable<ValidateUnpublishedResponse>
 {
-  constructor(public target: EntityReference) {
+  constructor(public target: EntityReference | AnyEntityPayload) {
     super("ValidateUnpublished");
   }
 

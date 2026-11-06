@@ -13,9 +13,9 @@ export class msdyn_CheckIfSLAOwnerIsActiveOrInactiveRequest
   implements Executable<msdyn_CheckIfSLAOwnerIsActiveOrInactiveResponse>
 {
   constructor(
-    public entityIds: string,
-    public solutionId: string,
-    public excludeSolutionIds: string
+    public entityIds?: string,
+    public solutionId?: string,
+    public excludeSolutionIds?: string
   ) {
     super("msdyn_CheckIfSLAOwnerIsActiveOrInactive");
   }

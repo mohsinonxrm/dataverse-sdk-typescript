@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { teamtemplate } from "./types/index.js";
 
 /**
@@ -18,8 +19,8 @@ export interface AddUserToRecordTeamResponse {
 export class AddUserToRecordTeamAction implements Executable<AddUserToRecordTeamResponse> {
   constructor(
     public readonly systemuserId: string,
-    public readonly record: EntityReference,
-    public readonly teamTemplate: teamtemplate
+    public readonly record: EntityReference | AnyEntityPayload,
+    public readonly teamTemplate: EntityReference | EntityPayload<teamtemplate>
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

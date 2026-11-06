@@ -47,7 +47,7 @@ describe("#23: generated actions send one lower-case content-type", () => {
         {
           "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
           subject: "Won",
-        } as unknown as ConstructorParameters<typeof actions.WinOpportunityAction>[0],
+        },
         "",
         3
       )

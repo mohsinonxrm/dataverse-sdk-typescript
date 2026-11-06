@@ -1,5 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "./EntityReference.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { incidentresolution } from "./types/index.js";
 
 /**
@@ -12,7 +14,7 @@ export class CloseIncidentRequest
   implements Executable<CloseIncidentResponse>
 {
   constructor(
-    public incidentResolution: incidentresolution,
+    public incidentResolution: EntityReference | EntityPayload<incidentresolution>,
     public status: number
   ) {
     super("CloseIncident");

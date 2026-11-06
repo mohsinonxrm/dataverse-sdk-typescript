@@ -20,7 +20,7 @@ export interface GenerateInvoiceFromOpportunityResponse {
 export class GenerateInvoiceFromOpportunityAction implements Executable<GenerateInvoiceFromOpportunityResponse> {
   constructor(
     public readonly opportunityId: string,
-    public readonly columnSet: ColumnSet
+    public readonly columnSet?: ColumnSet
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -15,10 +15,10 @@ export interface msdyn_SalesAgents_FetchRecordsForAgentProcessingResponse {
  */
 export class msdyn_SalesAgents_FetchRecordsForAgentProcessingAction implements Executable<msdyn_SalesAgents_FetchRecordsForAgentProcessingResponse> {
   constructor(
-    public readonly msdyn_Top: number,
+    public readonly msdyn_Top: number | undefined,
     public readonly msdyn_SalesAgentType: number,
-    public readonly msdyn_NextLink: string,
-    public readonly msdyn_TrackingId: string
+    public readonly msdyn_NextLink?: string,
+    public readonly msdyn_TrackingId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

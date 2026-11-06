@@ -12,7 +12,7 @@ export class msdyn_SaveAgentContentCustomActionRequest
   extends OrganizationRequest
   implements Executable<msdyn_SaveAgentContentCustomActionResponse>
 {
-  constructor(public agentContent: string) {
+  constructor(public agentContent?: string) {
     super("msdyn_SaveAgentContentCustomAction");
   }
 

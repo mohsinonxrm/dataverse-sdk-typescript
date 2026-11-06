@@ -13,17 +13,17 @@ export class InferEntityDefinitionRequest
   implements Executable<InferEntityDefinitionResponse>
 {
   constructor(
-    public languageCode: number,
-    public useUserSettings: boolean,
-    public userContext: string,
+    public languageCode: number | undefined,
+    public useUserSettings: boolean | undefined,
+    public userContext: string | undefined,
     public solutionPrefix: string,
-    public previewData: string,
-    public sourceTimeZone: string,
-    public parseSampleData: boolean,
-    public fileInfo: string,
+    public previewData: string | undefined,
+    public sourceTimeZone: string | undefined,
+    public parseSampleData: boolean | undefined,
+    public fileInfo: string | undefined,
     public recordId: string,
-    public entityDefinition: string,
-    public entitiesCollection: string
+    public entityDefinition?: string,
+    public entitiesCollection?: string
   ) {
     super("InferEntityDefinition");
   }

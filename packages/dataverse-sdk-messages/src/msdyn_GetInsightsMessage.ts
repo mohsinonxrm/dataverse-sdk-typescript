@@ -15,7 +15,7 @@ export class msdyn_GetInsightsRequest
   constructor(
     public msdyn_payload: string,
     public msdyn_insighttype: string,
-    public msdyn_responseFormat: string
+    public msdyn_responseFormat?: string
   ) {
     super("msdyn_GetInsights");
   }

@@ -17,7 +17,7 @@ export class UpdateSolutionComponentAction implements Executable<UpdateSolutionC
     public readonly componentId: string,
     public readonly componentType: number,
     public readonly solutionUniqueName: string,
-    public readonly includedComponentSettingsValues: string[]
+    public readonly includedComponentSettingsValues?: string[]
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

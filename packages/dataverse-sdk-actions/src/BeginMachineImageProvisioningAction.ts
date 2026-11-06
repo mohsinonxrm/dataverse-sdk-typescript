@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from BeginMachineImageProvisioning action
@@ -16,10 +17,10 @@ export interface BeginMachineImageProvisioningResponse {
  */
 export class BeginMachineImageProvisioningAction implements Executable<BeginMachineImageProvisioningResponse> {
   constructor(
-    public readonly vmImageDescription: string,
+    public readonly vmImageDescription: string | undefined,
     public readonly vmImageName: string,
-    public readonly sharedImageGalleryDestination: EntityReference,
-    public readonly machineImageSource: EntityReference
+    public readonly sharedImageGalleryDestination: EntityReference | AnyEntityPayload,
+    public readonly machineImageSource: EntityReference | AnyEntityPayload
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

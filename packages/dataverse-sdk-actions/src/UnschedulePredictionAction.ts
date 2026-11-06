@@ -17,7 +17,7 @@ export class UnschedulePredictionAction implements Executable<UnschedulePredicti
   constructor(
     public readonly msdyn_aimodelId: string,
     public readonly version: string,
-    public readonly skipStatusUpdate: boolean
+    public readonly skipStatusUpdate?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

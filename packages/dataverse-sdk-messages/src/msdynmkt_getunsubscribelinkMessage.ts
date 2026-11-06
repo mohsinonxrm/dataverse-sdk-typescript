@@ -14,16 +14,16 @@ export class msdynmkt_getunsubscribelinkRequest
 {
   constructor(
     public msdynmkt_purposeid: string,
-    public msdynmkt_sourcemessageentityname: string,
+    public msdynmkt_sourcemessageentityname: string | undefined,
     public msdynmkt_messagetemplateid: string,
-    public msdynmkt_owningbusinessunitid: string,
+    public msdynmkt_owningbusinessunitid: string | undefined,
     public msdynmkt_entitytype: string,
     public msdynmkt_entityid: string,
     public msdynmkt_contactpoint: string,
-    public msdynmkt_oneclickunsubscribelink: boolean,
+    public msdynmkt_oneclickunsubscribelink: boolean | undefined,
     public msdynmkt_compliancesettingsid: string,
-    public msdynmkt_topicid: string,
-    public msdynmkt_sourceapplication: string
+    public msdynmkt_topicid?: string,
+    public msdynmkt_sourceapplication?: string
   ) {
     super("msdynmkt_getunsubscribelink");
   }

@@ -18,7 +18,7 @@ export class InstantiateTemplateGenericAction implements Executable<InstantiateT
     public readonly templateId: string,
     public readonly objectType: string,
     public readonly objectId: string,
-    public readonly entityLogicalName: string
+    public readonly entityLogicalName?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

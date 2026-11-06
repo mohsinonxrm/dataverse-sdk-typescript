@@ -19,9 +19,9 @@ export interface msdyn_CheckForCustomizedOptionSetResponse {
  */
 export class msdyn_CheckForCustomizedOptionSetAction implements Executable<msdyn_CheckForCustomizedOptionSetResponse> {
   constructor(
-    public readonly entityIds: string,
-    public readonly solutionId: string,
-    public readonly excludeSolutionIds: string
+    public readonly entityIds?: string,
+    public readonly solutionId?: string,
+    public readonly excludeSolutionIds?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

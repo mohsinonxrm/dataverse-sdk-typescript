@@ -15,12 +15,12 @@ export interface msdyn_CreateEntityResponse {
  */
 export class msdyn_CreateEntityAction implements Executable<msdyn_CreateEntityResponse> {
   constructor(
-    public readonly useUserSettings: boolean,
-    public readonly connectionInfo: string,
-    public readonly fileInfo: string,
-    public readonly previewData: string,
-    public readonly isToExistingTable: boolean,
-    public readonly sampleData: string,
+    public readonly useUserSettings: boolean | undefined,
+    public readonly connectionInfo: string | undefined,
+    public readonly fileInfo: string | undefined,
+    public readonly previewData: string | undefined,
+    public readonly isToExistingTable: boolean | undefined,
+    public readonly sampleData: string | undefined,
     public readonly entityDefinition: string
   ) {}
 

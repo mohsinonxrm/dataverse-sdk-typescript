@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_EmailTemplateRecommendationResponse as msdyn_EmailTemplateRecommendationResponseData } from "./types/index.js";
 
 /**
@@ -14,18 +15,18 @@ export class msdyn_EmailTemplateRecommendationRequest
   implements Executable<msdyn_EmailTemplateRecommendationResponse>
 {
   constructor(
-    public headers: number,
+    public headers: number | undefined,
     public customerIntent: string,
-    public filters: string,
+    public filters: string | undefined,
     public templateFiltersInString: string,
     public emailString: string,
-    public isTemplateResponse: boolean,
+    public isTemplateResponse: boolean | undefined,
     public transactionId: string,
-    public multiturnPayload: string,
-    public emailContextData: string,
+    public multiturnPayload: string | undefined,
+    public emailContextData: string | undefined,
     public copilotRequestParameters: string,
     public emailId: string,
-    public entityReference: EntityReference
+    public entityReference?: EntityReference | AnyEntityPayload
   ) {
     super("msdyn_EmailTemplateRecommendation");
   }

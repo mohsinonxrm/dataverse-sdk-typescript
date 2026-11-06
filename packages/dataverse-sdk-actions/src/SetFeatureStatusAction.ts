@@ -16,8 +16,8 @@ export class SetFeatureStatusAction implements Executable<SetFeatureStatusRespon
   constructor(
     public readonly featureType: number,
     public readonly status: boolean,
-    public readonly configData: string,
-    public readonly isSolutionUninstall: boolean
+    public readonly configData?: string,
+    public readonly isSolutionUninstall?: boolean
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

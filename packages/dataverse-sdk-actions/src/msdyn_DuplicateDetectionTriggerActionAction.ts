@@ -14,8 +14,8 @@ export interface msdyn_DuplicateDetectionTriggerActionResponse {
  */
 export class msdyn_DuplicateDetectionTriggerActionAction implements Executable<msdyn_DuplicateDetectionTriggerActionResponse> {
   constructor(
-    public readonly baseRecordType: string,
-    public readonly baseRecordId: string
+    public readonly baseRecordType?: string,
+    public readonly baseRecordId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -14,9 +14,9 @@ export interface msdyn_ExecuteCopilotServiceJobResponse {
  */
 export class msdyn_ExecuteCopilotServiceJobAction implements Executable<msdyn_ExecuteCopilotServiceJobResponse> {
   constructor(
-    public readonly msdyn_JobPayload: string,
+    public readonly msdyn_JobPayload: string | undefined,
     public readonly msdyn_JobType: number,
-    public readonly msdyn_AuthFlowType: number
+    public readonly msdyn_AuthFlowType?: number
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

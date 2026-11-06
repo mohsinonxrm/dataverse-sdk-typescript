@@ -1,6 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * AddPrincipalToQueue request message
@@ -13,7 +14,7 @@ export class AddPrincipalToQueueRequest
 {
   constructor(
     public queueId: string,
-    public principal: EntityReference
+    public principal: EntityReference | AnyEntityPayload
   ) {
     super("AddPrincipalToQueue");
   }

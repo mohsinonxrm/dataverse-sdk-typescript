@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_RetrieveRelationshipActivityKPIValuesResponse as msdyn_RetrieveRelationshipActivityKPIValuesResponseData } from "./types/index.js";
 
 /**
@@ -14,8 +15,8 @@ export class msdyn_RetrieveRelationshipActivityKPIValuesRequest
   implements Executable<msdyn_RetrieveRelationshipActivityKPIValuesResponse>
 {
   constructor(
-    public crmRecord: EntityReference,
-    public getLinkedInKPI: boolean
+    public crmRecord: EntityReference | AnyEntityPayload,
+    public getLinkedInKPI?: boolean
   ) {
     super("msdyn_RetrieveRelationshipActivityKPIValues");
   }

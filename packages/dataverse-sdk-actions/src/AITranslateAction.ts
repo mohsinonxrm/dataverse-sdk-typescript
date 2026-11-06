@@ -14,7 +14,7 @@ export interface AITranslateResponse {
  */
 export class AITranslateAction implements Executable<AITranslateResponse> {
   constructor(
-    public readonly targetLanguage: string,
+    public readonly targetLanguage: string | undefined,
     public readonly text: string
   ) {}
 

@@ -14,7 +14,7 @@ export interface msdyn_RetrieveDistanceMatrixResponse {
  */
 export class msdyn_RetrieveDistanceMatrixAction implements Executable<msdyn_RetrieveDistanceMatrixResponse> {
   constructor(
-    public readonly version: string,
+    public readonly version: string | undefined,
     public readonly sources: Record<string, unknown>[],
     public readonly targets: Record<string, unknown>[]
   ) {}

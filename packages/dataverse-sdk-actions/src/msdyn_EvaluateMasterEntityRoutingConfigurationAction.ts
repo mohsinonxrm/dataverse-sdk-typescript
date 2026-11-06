@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_EvaluateMasterEntityRoutingConfiguration action
@@ -14,7 +15,7 @@ export interface msdyn_EvaluateMasterEntityRoutingConfigurationResponse {
  * Unbound action
  */
 export class msdyn_EvaluateMasterEntityRoutingConfigurationAction implements Executable<msdyn_EvaluateMasterEntityRoutingConfigurationResponse> {
-  constructor(public readonly target: EntityReference) {}
+  constructor(public readonly target: EntityReference | AnyEntityPayload) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_EvaluateMasterEntityRoutingConfiguration`;

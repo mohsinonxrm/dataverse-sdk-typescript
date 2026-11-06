@@ -12,7 +12,7 @@ export class msdyn_StartODOSDeprovisioningRequest
 {
   constructor(
     public featureName: string,
-    public isDeprecationDeprovisioning: boolean
+    public isDeprecationDeprovisioning?: boolean
   ) {
     super("msdyn_StartODOSDeprovisioning");
   }

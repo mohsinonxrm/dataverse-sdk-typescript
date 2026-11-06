@@ -13,7 +13,7 @@ export class AITranslateRequest
   implements Executable<AITranslateResponse>
 {
   constructor(
-    public targetLanguage: string,
+    public targetLanguage: string | undefined,
     public text: string
   ) {
     super("AITranslate");

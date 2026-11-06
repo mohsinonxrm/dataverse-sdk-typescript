@@ -13,9 +13,9 @@ export class msdyn_JsonGetNumberRequest
   implements Executable<msdyn_JsonGetNumberResponse>
 {
   constructor(
-    public json: string,
+    public json: string | undefined,
     public propertyPath: string,
-    public defaultReturnValue: number
+    public defaultReturnValue?: number
   ) {
     super("msdyn_JsonGetNumber");
   }

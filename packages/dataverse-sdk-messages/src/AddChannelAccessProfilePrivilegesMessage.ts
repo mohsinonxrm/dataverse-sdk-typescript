@@ -13,7 +13,7 @@ export class AddChannelAccessProfilePrivilegesRequest
 {
   constructor(
     public channelAccessProfileId: string,
-    public privileges: ChannelAccessProfilePrivilege[]
+    public privileges?: ChannelAccessProfilePrivilege[]
   ) {
     super("AddChannelAccessProfilePrivileges");
   }

@@ -14,7 +14,7 @@ export class msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentExecutionConfigRequ
     public msdyn_SalesAgentType: number,
     public msdyn_AgentExecutionConfigToUpdate: string,
     public msdyn_SARRecordsToCreate: string,
-    public msdyn_TrackingId: string
+    public msdyn_TrackingId?: string
   ) {
     super("msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentExecutionConfig");
   }

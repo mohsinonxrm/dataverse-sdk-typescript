@@ -20,10 +20,10 @@ export class FormPredictAction implements Executable<FormPredictResponse> {
   constructor(
     public readonly entityName: string,
     public readonly predictorFields: string[],
-    public readonly context: string,
+    public readonly context: string | undefined,
     public readonly requestedFields: string[],
     public readonly recordValues: string,
-    public readonly clientPartnerSource: string
+    public readonly clientPartnerSource?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

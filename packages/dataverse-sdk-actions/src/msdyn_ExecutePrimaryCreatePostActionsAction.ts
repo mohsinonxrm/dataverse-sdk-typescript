@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_ExecutePrimaryCreatePostActions action
@@ -15,8 +16,8 @@ export interface msdyn_ExecutePrimaryCreatePostActionsResponse {
  */
 export class msdyn_ExecutePrimaryCreatePostActionsAction implements Executable<msdyn_ExecutePrimaryCreatePostActionsResponse> {
   constructor(
-    public readonly sourceEntityReference: EntityReference,
-    public readonly primaryEntityReference: EntityReference,
+    public readonly sourceEntityReference: EntityReference | AnyEntityPayload,
+    public readonly primaryEntityReference: EntityReference | AnyEntityPayload,
     public readonly ruleId: string
   ) {}
 

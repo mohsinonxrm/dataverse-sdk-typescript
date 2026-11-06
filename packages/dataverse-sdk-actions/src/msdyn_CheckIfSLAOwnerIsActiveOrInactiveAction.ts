@@ -18,9 +18,9 @@ export interface msdyn_CheckIfSLAOwnerIsActiveOrInactiveResponse {
  */
 export class msdyn_CheckIfSLAOwnerIsActiveOrInactiveAction implements Executable<msdyn_CheckIfSLAOwnerIsActiveOrInactiveResponse> {
   constructor(
-    public readonly entityIds: string,
-    public readonly solutionId: string,
-    public readonly excludeSolutionIds: string
+    public readonly entityIds?: string,
+    public readonly solutionId?: string,
+    public readonly excludeSolutionIds?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

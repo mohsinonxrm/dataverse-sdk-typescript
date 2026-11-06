@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from msdyn_GetCaseResolutionAgentSettings action
@@ -14,7 +15,7 @@ export interface msdyn_GetCaseResolutionAgentSettingsResponse {
  * Unbound action
  */
 export class msdyn_GetCaseResolutionAgentSettingsAction implements Executable<msdyn_GetCaseResolutionAgentSettingsResponse> {
-  constructor(public readonly entity: EntityReference) {}
+  constructor(public readonly entity?: EntityReference | AnyEntityPayload) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetCaseResolutionAgentSettings`;

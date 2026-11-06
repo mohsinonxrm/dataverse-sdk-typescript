@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
  * Response from SendTemplate action
@@ -16,10 +17,10 @@ export interface SendTemplateResponse {
 export class SendTemplateAction implements Executable<SendTemplateResponse> {
   constructor(
     public readonly templateId: string,
-    public readonly sender: EntityReference,
+    public readonly sender: EntityReference | AnyEntityPayload,
     public readonly recipients: Record<string, unknown>[],
-    public readonly regarding: EntityReference,
-    public readonly deliveryPriorityCode: number
+    public readonly regarding: EntityReference | AnyEntityPayload,
+    public readonly deliveryPriorityCode?: number
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

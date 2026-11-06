@@ -14,10 +14,10 @@ export interface msdyn_PerformNotesAnalysisActionResponse {
  */
 export class msdyn_PerformNotesAnalysisActionAction implements Executable<msdyn_PerformNotesAnalysisActionResponse> {
   constructor(
-    public readonly entityName: string,
-    public readonly serializedAction: string,
-    public readonly parentEntityName: string,
-    public readonly parentEntityId: string
+    public readonly entityName?: string,
+    public readonly serializedAction?: string,
+    public readonly parentEntityName?: string,
+    public readonly parentEntityId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {

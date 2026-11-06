@@ -16,7 +16,7 @@ export interface msdyn_InvokeEvaluationActionResponse {
  */
 export class msdyn_InvokeEvaluationActionAction implements Executable<msdyn_InvokeEvaluationActionResponse> {
   constructor(
-    public readonly additionalContext: string,
+    public readonly additionalContext: string | undefined,
     public readonly actionPayload: string,
     public readonly actionType: string
   ) {}
