@@ -2,7 +2,12 @@
  * @fileoverview OrganizationService class providing C#-familiar CRUD operations for Dataverse
  */
 
-import { odataLiteral, odataKey, Prefer } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  DataverseAbortError,
+  odataLiteral,
+  odataKey,
+  Prefer,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import type {
   DataverseClient,
   DataverseRequestBuilder,
@@ -13,6 +18,7 @@ import type {
   EntityReference,
   ExpandOption,
   OrganizationServiceOptions,
+  OperationOptions,
   CreateOptions,
   RetrieveOptions,
   RetrieveMultipleOptions,
@@ -23,8 +29,8 @@ import type {
   DisassociateOptions,
 } from "./types.js";
 
-/** Options every OrganizationService operation shares. */
-interface CommonOptions {
+/** Options of the operations that take impersonation and extra headers. */
+interface CommonOptions extends OperationOptions {
   impersonateUserId?: string;
   headers?: Record<string, string>;
 }
@@ -37,12 +43,33 @@ interface WriteOptions extends CommonOptions {
   detectDuplicates?: boolean;
 }
 
+/** An entity set name lookup still waiting for its response. */
+interface PendingLookup {
+  /** Callers still waiting; `Infinity` once one without a signal joins (it can't cancel). */
+  waiters: number;
+  /** Aborts the request and drops it from the cache. */
+  cancel: () => void;
+}
+
+/** The error an aborted operation rejects with, the same type the core client throws. */
+function abortError(signal: AbortSignal): DataverseAbortError {
+  return new DataverseAbortError(undefined, signal.reason);
+}
+
+/** The request options that carry a caller's signal, or `undefined` without one. */
+function signalOptions(options: OperationOptions | undefined): RequestOptions | undefined {
+  return options?.signal ? { signal: options.signal } : undefined;
+}
+
 /**
  * OrganizationService provides a C#-familiar interface for Dataverse operations.
  *
  * Every method goes through the client's request builder, so auth, retry, throttling and error
  * mapping apply as they do for `client.api()`. Failed requests reject with the core error types
  * (`DataverseError` and its subclasses).
+ *
+ * Every method takes an `AbortSignal` (`{ signal }`, in its options object or as its last
+ * argument). Aborting it cancels the request and rejects with `DataverseAbortError`.
  *
  * @example
  * ```typescript
@@ -76,6 +103,8 @@ export class OrganizationService {
   private client: DataverseClient;
   /** Entity set names by lower-cased logical name: overrides, then metadata lookups. */
   private entitySetNames = new Map<string, Promise<string>>();
+  /** Metadata lookups in flight, so they're cancelled only once every caller has aborted. */
+  private pendingLookups = new Map<string, PendingLookup>();
 
   /**
    * Creates a new OrganizationService instance
@@ -100,7 +129,11 @@ export class OrganizationService {
    * lookup rejects (with the core `DataverseError`, e.g. 404 for an unknown table) and is not
    * cached.
    *
+   * Concurrent callers share one lookup. Aborting a caller's `signal` rejects that caller's
+   * promise; the lookup request itself is aborted once every caller waiting on it has aborted.
+   *
    * @param logicalName - The table's logical name, e.g. 'account'
+   * @param options - Optional settings, such as a `signal` to cancel the lookup
    * @returns The entity set name, e.g. 'accounts'
    *
    * @example
@@ -108,26 +141,66 @@ export class OrganizationService {
    * await service.getEntitySetName('opportunity'); // 'opportunities'
    * ```
    */
-  getEntitySetName(logicalName: string): Promise<string> {
-    const key = logicalName.toLowerCase();
-    const cached = this.entitySetNames.get(key);
-    if (cached) return cached;
+  getEntitySetName(logicalName: string, options?: OperationOptions): Promise<string> {
+    const signal = options?.signal;
+    if (signal?.aborted) return Promise.reject(abortError(signal));
 
+    const key = logicalName.toLowerCase();
+    const lookup = this.entitySetNames.get(key) ?? this.lookUpEntitySetName(key, logicalName);
+    const pending = this.pendingLookups.get(key);
+    // A known answer (or an override) has no request left to cancel.
+    if (!pending) return lookup;
+    if (!signal) {
+      pending.waiters = Number.POSITIVE_INFINITY;
+      return lookup;
+    }
+
+    pending.waiters++;
+    return new Promise<string>((resolve, reject) => {
+      const onAbort = (): void => {
+        reject(abortError(signal));
+        // The last waiter to give up cancels the request.
+        if (--pending.waiters === 0) pending.cancel();
+      };
+      signal.addEventListener("abort", onAbort, { once: true });
+      lookup.then(resolve, reject).finally(() => {
+        signal.removeEventListener("abort", onAbort);
+      });
+    });
+  }
+
+  /** Sends the metadata lookup for `key`, caching it while it is pending and once it succeeds. */
+  private lookUpEntitySetName(key: string, logicalName: string): Promise<string> {
+    const controller = new AbortController();
     const lookup = this.client
       .api(`/EntityDefinitions(${odataKey({ LogicalName: key })})`)
       .select("EntitySetName")
-      .get<{ EntitySetName?: string } | undefined>()
+      .get<{ EntitySetName?: string } | undefined>({ signal: controller.signal })
       .then((definition) => {
         if (!definition?.EntitySetName) {
           throw new Error(`EntityDefinitions returned no EntitySetName for '${logicalName}'.`);
         }
         return definition.EntitySetName;
       });
+    const settled = (): void => {
+      if (this.pendingLookups.get(key) === pending) this.pendingLookups.delete(key);
+    };
+    const forget = (): void => {
+      if (this.entitySetNames.get(key) === lookup) this.entitySetNames.delete(key);
+      settled();
+    };
+    const pending: PendingLookup = {
+      waiters: 0,
+      cancel: () => {
+        // Forget it at once, so a caller arriving before the rejection lands starts a new lookup.
+        forget();
+        controller.abort();
+      },
+    };
     // Concurrent callers share one lookup; a failure is forgotten so the next call retries.
     this.entitySetNames.set(key, lookup);
-    void lookup.catch(() => {
-      if (this.entitySetNames.get(key) === lookup) this.entitySetNames.delete(key);
-    });
+    this.pendingLookups.set(key, pending);
+    void lookup.then(settled, forget);
     return lookup;
   }
 
@@ -138,7 +211,9 @@ export class OrganizationService {
    * @param entitySetName - Its entity set name, e.g. 'new_widgets'
    */
   setEntitySetName(logicalName: string, entitySetName: string): void {
-    this.entitySetNames.set(logicalName.toLowerCase(), Promise.resolve(entitySetName));
+    const key = logicalName.toLowerCase();
+    this.entitySetNames.set(key, Promise.resolve(entitySetName));
+    this.pendingLookups.delete(key);
   }
 
   /**
@@ -458,7 +533,8 @@ export class OrganizationService {
       const relatedId = this.normalizeGuid(related.id);
 
       const relatedSetName =
-        related.entitySetName ?? (await this.getEntitySetName(related.logicalName));
+        related.entitySetName ??
+        (await this.getEntitySetName(related.logicalName, { signal: options?.signal }));
 
       const builder = this.client.api(`/${entitySetName}(${normalizedId})/${relationship}/$ref`);
 
@@ -516,6 +592,7 @@ export class OrganizationService {
   /**
    * Gets the current user information
    *
+   * @param options - Optional settings, such as a `signal` to cancel the request
    * @returns WhoAmI response with user, business unit, and organization IDs
    *
    * @example
@@ -526,7 +603,7 @@ export class OrganizationService {
    * console.log('Organization:', whoAmI.OrganizationId);
    * ```
    */
-  async whoAmI(): Promise<{
+  async whoAmI(options?: OperationOptions): Promise<{
     UserId: string;
     BusinessUnitId: string;
     OrganizationId: string;
@@ -536,7 +613,7 @@ export class OrganizationService {
       UserId: string;
       BusinessUnitId: string;
       OrganizationId: string;
-    }>();
+    }>(signalOptions(options));
     return {
       UserId: response.UserId,
       BusinessUnitId: response.BusinessUnitId,
@@ -552,6 +629,8 @@ export class OrganizationService {
    * @param recordId - The ID of the record to assign
    * @param assigneeId - The ID of the user or team to assign to
    * @param assigneeType - The type of assignee ('systemuser' or 'team')
+   * @param options - Optional settings, such as a `signal` to cancel the request (and the entity
+   *   set name lookups it needs)
    *
    * @example
    * ```typescript
@@ -562,19 +641,22 @@ export class OrganizationService {
     entityName: string,
     recordId: string,
     assigneeId: string,
-    assigneeType: "systemuser" | "team" = "systemuser"
+    assigneeType: "systemuser" | "team" = "systemuser",
+    options?: OperationOptions
   ): Promise<void> {
-    const entitySetName = await this.getEntitySetName(entityName);
-    const assigneeSetName = await this.getEntitySetName(assigneeType);
+    const lookupOptions = { signal: options?.signal };
+    const entitySetName = await this.getEntitySetName(entityName, lookupOptions);
+    const assigneeSetName = await this.getEntitySetName(assigneeType, lookupOptions);
     const normalizedId = this.normalizeGuid(recordId);
     const normalizedAssigneeId = this.normalizeGuid(assigneeId);
 
     const builder = this.client.api(`/${entitySetName}(${normalizedId})`);
     // `If-Match: *`: a missing record rejects with 404 instead of being created (#272).
     builder.ifMatch("*");
-    await builder.patch({
-      [`ownerid@odata.bind`]: `/${assigneeSetName}(${normalizedAssigneeId})`,
-    });
+    await builder.patch(
+      { [`ownerid@odata.bind`]: `/${assigneeSetName}(${normalizedAssigneeId})` },
+      signalOptions(options)
+    );
   }
 
   /**
@@ -585,6 +667,8 @@ export class OrganizationService {
    * @param recordId - The ID of the record
    * @param stateCode - The state code (0 = Active, 1 = Inactive, etc.)
    * @param statusCode - The status code (specific to entity)
+   * @param options - Optional settings, such as a `signal` to cancel the request (and the entity
+   *   set name lookup it needs)
    *
    * @example
    * ```typescript
@@ -596,43 +680,45 @@ export class OrganizationService {
     entityName: string,
     recordId: string,
     stateCode: number,
-    statusCode: number
+    statusCode: number,
+    options?: OperationOptions
   ): Promise<void> {
-    const entitySetName = await this.getEntitySetName(entityName);
+    const entitySetName = await this.getEntitySetName(entityName, { signal: options?.signal });
     const normalizedId = this.normalizeGuid(recordId);
 
     const builder = this.client.api(`/${entitySetName}(${normalizedId})`);
     // `If-Match: *`: a missing record rejects with 404 instead of being created (#272).
     builder.ifMatch("*");
-    await builder.patch({
-      statecode: stateCode,
-      statuscode: statusCode,
-    });
+    await builder.patch({ statecode: stateCode, statuscode: statusCode }, signalOptions(options));
   }
 
   /**
    * Executes a message request
    *
    * @param request - The message request to execute (must implement Executable<T> interface)
+   * @param options - Optional settings, such as a `signal` to cancel the request
    * @returns The message response
    *
    * @example
    * ```typescript
-   * // Using Messages (C# SDK pattern)
-   * import { WhoAmIRequest } from '@mohsinonxrm/dataverse-sdk-messages';
+   * // A message (C# SDK pattern): ExecuteWorkflowRequest(workflowId, entityId, inputArguments)
+   * import { ExecuteWorkflowRequest } from '@mohsinonxrm/dataverse-sdk-messages';
    *
-   * const response = await service.execute(new WhoAmIRequest());
+   * const response = await service.execute(new ExecuteWorkflowRequest(workflowId, accountId));
    *
    * // Also works with Actions/Functions directly
    * import { WhoAmIFunction } from '@mohsinonxrm/dataverse-sdk-functions';
    *
    * const whoAmI = await service.execute(new WhoAmIFunction());
+   *
+   * // Cancellable: aborting the controller rejects with DataverseAbortError
+   * await service.execute(new WhoAmIFunction(), { signal: controller.signal });
    * ```
    */
-  async execute<TResponse>(request: unknown): Promise<TResponse> {
+  async execute<TResponse>(request: unknown, options?: OperationOptions): Promise<TResponse> {
     // Check if request implements Executable<T> interface (has toRequestInformation and parseResponse)
     if (this.isExecutable<TResponse>(request)) {
-      return await this.client.execute(request);
+      return await this.client.execute(request, signalOptions(options));
     }
 
     throw new Error(
@@ -655,8 +741,8 @@ export class OrganizationService {
 
   /**
    * Applies impersonation to the builder and returns the request options carrying the caller's
-   * extra headers. Headers must go in `RequestOptions.headers`: the builder's terminals take
-   * `RequestOptions`, not a header map.
+   * extra headers and signal. Headers must go in `RequestOptions.headers`: the builder's
+   * terminals take `RequestOptions`, not a header map.
    */
   private applyCommonOptions(
     builder: DataverseRequestBuilder,
@@ -665,7 +751,10 @@ export class OrganizationService {
     if (options?.impersonateUserId) {
       builder.impersonate(options.impersonateUserId);
     }
-    return options?.headers ? { headers: { ...options.headers } } : undefined;
+    const requestOptions: RequestOptions = {};
+    if (options?.headers) requestOptions.headers = { ...options.headers };
+    if (options?.signal) requestOptions.signal = options.signal;
+    return requestOptions.headers || requestOptions.signal ? requestOptions : undefined;
   }
 
   /** {@link applyCommonOptions} plus `Prefer: return=representation` and duplicate detection. */
@@ -690,8 +779,8 @@ export class OrganizationService {
   }
 
   /**
-   * Sets `$expand` from a raw string or a list of expand options. All entries go into one
-   * `$expand` (the builder's `expand()` replaces the previous value, so it is called once).
+   * Adds `$expand` from a raw string or a list of expand options. The builder's `expand()`
+   * joins its arguments, and the entries of earlier calls, into one `$expand`.
    */
   private applyExpand(
     builder: DataverseRequestBuilder,
