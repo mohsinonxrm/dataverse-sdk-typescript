@@ -18,7 +18,7 @@ export class CalculateActualValueOpportunityRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/opportunitys(${this.opportunityId})/Microsoft.Dynamics.CRM.CalculateActualValueOpportunity`;
+    const url = `${baseUrl}/opportunities(${this.opportunityId})/Microsoft.Dynamics.CRM.CalculateActualValueOpportunity`;
 
     return {
       method: "POST",

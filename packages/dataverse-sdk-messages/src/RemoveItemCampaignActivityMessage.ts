@@ -20,7 +20,7 @@ export class RemoveItemCampaignActivityRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/campaignactivitys(${this.campaignactivityId})/Microsoft.Dynamics.CRM.RemoveItemCampaignActivity`;
+    const url = `${baseUrl}/campaignactivities(${this.campaignactivityId})/Microsoft.Dynamics.CRM.RemoveItemCampaignActivity`;
 
     const body: Record<string, unknown> = {
       CampaignActivityItem: this.campaignActivityItem,

@@ -20,7 +20,7 @@ export class GetRunMapRequest extends OrganizationRequest implements Executable<
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/businessprocesss(${this.businessprocessId})/Microsoft.Dynamics.CRM.GetRunMap`;
+    const url = `${baseUrl}/businessprocesses(${this.businessprocessId})/Microsoft.Dynamics.CRM.GetRunMap`;
 
     const body: Record<string, unknown> = {
       runId: this.runId,

@@ -524,3 +524,59 @@ describe("#70: message response parsing", () => {
     }
   });
 });
+
+/** #76: bound messages use the CSDL entity set, not `${type}s` (opportunitys, businessprocesss). */
+describe("#76: message entity sets", () => {
+  const SETS_EDMX = `<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+  <edmx:DataServices>
+    <Schema Namespace="Microsoft.Dynamics.CRM" Alias="mscrm" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+      <EntityType Name="opportunity" />
+      <EntityType Name="businessprocess" />
+      <EntityType Name="nosetentity" />
+      <Action Name="CalculateActualValueOpportunity" IsBound="true">
+        <Parameter Name="entity" Type="mscrm.opportunity" Nullable="false" />
+      </Action>
+      <Action Name="GetRunMap" IsBound="true">
+        <Parameter Name="entity" Type="mscrm.businessprocess" Nullable="false" />
+      </Action>
+      <Action Name="Orphan" IsBound="true">
+        <Parameter Name="entity" Type="mscrm.nosetentity" Nullable="false" />
+      </Action>
+      <EntityContainer Name="System">
+        <EntitySet Name="opportunities" EntityType="Microsoft.Dynamics.CRM.opportunity" />
+        <EntitySet Name="businessprocesses" EntityType="Microsoft.Dynamics.CRM.businessprocess" />
+      </EntityContainer>
+    </Schema>
+  </edmx:DataServices>
+</edmx:Edmx>`;
+
+  let out: string;
+  const read = (path: string) => readFile(join(out, "messages", path), "utf8");
+
+  beforeAll(async () => {
+    vi.spyOn(console, "log").mockImplementation(() => undefined);
+    out = await mkdtemp(join(tmpdir(), "gen-76-"));
+    await generateMessages(parseEdmx(SETS_EDMX), join(out, "messages"), false);
+  });
+
+  afterAll(async () => {
+    vi.restoreAllMocks();
+    await rm(out, { recursive: true, force: true });
+  });
+
+  it("uses the entity set from the CSDL", async () => {
+    expect(await read("CalculateActualValueOpportunityMessage.ts")).toContain(
+      "`${baseUrl}/opportunities(${this.opportunityId})/Microsoft.Dynamics.CRM.CalculateActualValueOpportunity`"
+    );
+    expect(await read("GetRunMapMessage.ts")).toContain(
+      "`${baseUrl}/businessprocesses(${this.businessprocessId})/Microsoft.Dynamics.CRM.GetRunMap`"
+    );
+  });
+
+  it("falls back to <type>s with a warning, like actions, only without an entity set", async () => {
+    const code = await read("OrphanMessage.ts");
+    expect(code).toContain("// WARNING: Entity set not found in metadata");
+    expect(code).toContain("`${baseUrl}/nosetentitys(${this.nosetentityId})/");
+  });
+});
