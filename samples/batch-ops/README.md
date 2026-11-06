@@ -3,7 +3,7 @@
 Comprehensive sample demonstrating Dataverse `$batch` operations including:
 
 - **Changesets** (transactional groups - all succeed or all fail)
-- **Content-ID references** ($1, $2, etc.) for linking records
+- **Content-ID references** (`$<id>`) for linking records
 - **Continue-on-error** for partial success scenarios
 - **Mixed operations** (create, update, delete, query in one batch)
 - **Performance comparison** (individual vs batch vs bulk)
@@ -14,7 +14,7 @@ This sample is perfect for:
 - Understanding batch request structure and multipart/mixed format
 - Creating parent-child relationships in a single request
 - Processing multiple operations atomically
-- Optimizing API call performance (3-5x faster than individual calls)
+- Comparing individual calls, `$batch` and `CreateMultiple`
 - Handling partial failures gracefully
 
 ---
@@ -25,9 +25,9 @@ The `$batch` endpoint in Dataverse Web API allows you to:
 
 - **Group multiple operations** into a single HTTP request
 - **Create transactions** using changesets (all-or-nothing execution)
-- **Reference previous operations** using Content-ID ($1, $2, etc.)
+- **Reference previous operations** using Content-ID (`$<id>`)
 - **Reduce network overhead** by combining operations
-- **Handle up to 1000 operations** per batch request
+- **Handle up to 1000 operations** per `$batch` request (the SDK splits larger batches for you)
 
 ### Batch vs Bulk Operations
 
@@ -38,7 +38,7 @@ The `$batch` endpoint in Dataverse Web API allows you to:
 | Multi-entity        | ✅ Yes              | ❌ Same entity only                  |
 | Content-ID refs     | ✅ Yes              | ❌ No                                |
 | Query operations    | ✅ Yes              | ❌ No                                |
-| Performance         | Good (3-5x)         | Best (5-10x)                         |
+| Performance         | Good                | Best                                 |
 | Use case            | Complex workflows   | High-volume same-entity              |
 
 **Rule of thumb:**
@@ -62,10 +62,10 @@ See [daemon-clientcredentials sample](../daemon-clientcredentials/README.md#prer
 - ✅ Admin consent granted
 - ✅ Application User created in Dataverse
 
-### 2. Node.js 18+
+### 2. Node.js 22+
 
 ```bash
-node --version  # Should be v18.0.0 or higher
+node --version  # Should be v22.0.0 or higher
 ```
 
 ---
@@ -113,7 +113,7 @@ This executes 6 comprehensive demos:
 
 1. **Simple Batch** - parallel independent operations (no transaction)
 2. **Changeset** - transactional group (atomic commit)
-3. **Content-ID References** - create parent and link children using $1
+3. **Content-ID References** - create parent and link children using `$account`
 4. **Continue-on-Error** - partial success handling
 5. **Mixed Operations** - CRUD + query in one batch
 6. **Performance Comparison** - individual vs batch vs bulk
@@ -130,425 +130,228 @@ Changes to `src/index.ts` will automatically reload.
 
 ## Demo Explanations
 
-### Demo 1: Simple Batch (No Changeset)
-
-Creates 3 accounts in parallel without a transaction:
+Every demo builds a `BatchRequestBuilder` and sends it with `execute()`. The signature is
+`addRequest(id, method, url, headers?, body?, dependsOn?)`; the `id` keys the result and, inside a
+changeset, is also the part's Content-ID.
 
 ```typescript
-const batch = batchClient.createBatch();
+import { BatchRequestBuilder } from "@mohsinonxrm/dataverse-sdk-batch";
 
-batch.addCreate("accounts", { name: "Account 1" }, "1");
-batch.addCreate("accounts", { name: "Account 2" }, "2");
-batch.addCreate("accounts", { name: "Account 3" }, "3");
-
-const response = await batchClient.executeBatch(batch);
+const batch = new BatchRequestBuilder(client);
 ```
 
-**Characteristics:**
+### Demo 1: Simple Batch (No Changeset)
 
-- Operations execute **independently**
-- If one fails, others may still succeed
-- No rollback if failures occur
-- Faster execution (parallel processing)
+Three creates without a transaction. If one fails, the others are not rolled back:
 
-**Use when:**
+```typescript
+const prefer = { Prefer: "return=representation" };
+batch.addRequest("req1", "POST", "/accounts", prefer, { name: "Account 1" });
+batch.addRequest("req2", "POST", "/accounts", prefer, { name: "Account 2" });
+batch.addRequest("req3", "POST", "/accounts", prefer, { name: "Account 3" });
 
-- Operations are unrelated
-- Partial success is acceptable
-- Maximum throughput needed
-
----
+const result = await batch.execute();
+console.log(result.success, result.responses.size); // true 3
+```
 
 ### Demo 2: Changeset (Transactional)
 
-Creates account + 2 contacts atomically:
+Requests between `beginChangeset()` and `endChangeset()` succeed or fail together:
 
 ```typescript
-const batch = batchClient.createBatch();
+batch.beginChangeset();
+batch.addRequest("create-account", "POST", "/accounts", undefined, {
+  name: "Transactional Account",
+});
+batch.addRequest("create-contact1", "POST", "/contacts", undefined, {
+  firstname: "John",
+  lastname: "Doe",
+});
+batch.addRequest("create-contact2", "POST", "/contacts", undefined, {
+  firstname: "Jane",
+  lastname: "Smith",
+});
+batch.endChangeset();
 
-batch.beginChangeset(); // Start transaction
-
-batch.addCreate("accounts", { name: "Parent" }, "1");
-batch.addCreate("contacts", { firstname: "John" }, "2");
-batch.addCreate("contacts", { firstname: "Jane" }, "3");
-
-batch.endChangeset(); // End transaction
-
-const response = await batchClient.executeBatch(batch);
+await batch.execute();
 ```
 
-**Characteristics:**
-
-- **All operations succeed or all fail** (ACID transaction)
-- Automatic rollback on any failure
-- Operations execute sequentially
-- Slightly slower than non-changeset
-
-**Use when:**
-
-- Data integrity is critical
-- Operations are dependent
-- No partial success allowed
-
-**Example scenario:** Creating an opportunity with multiple products - if any product fails, the entire opportunity should not be created.
-
----
+If one request fails, Dataverse rolls the changeset back and `execute()` throws a
+`DataverseBatchError` whose `result` holds the failing response.
 
 ### Demo 3: Content-ID References
 
-Creates account and links 2 contacts using `$1` reference:
+Inside a changeset, a request's id is its Content-ID. A later request refers to the record an
+earlier one creates as `$<id>`:
 
 ```typescript
-const batch = batchClient.createBatch();
-
 batch.beginChangeset();
 
-// Create account with Content-ID = 1
-batch.addCreate("accounts", { name: "Parent" }, "1");
+// The id "account" is the Content-ID
+batch.addRequest("account", "POST", "/accounts", undefined, { name: "Parent Account" });
 
-// Link contact to account using $1
-batch.addCreate(
-  "contacts",
-  {
-    firstname: "Child",
-    "parentcustomerid_account@odata.bind": "$1", // References Content-ID 1
-  },
-  "2"
+// $account resolves to the account created above. dependsOn names the earlier request
+// the body refers to; it is checked when the request is added.
+batch.addRequest(
+  "contact1",
+  "POST",
+  "/contacts",
+  undefined,
+  { firstname: "Child", lastname: "Contact 1", "parentcustomerid_account@odata.bind": "$account" },
+  ["account"]
+);
+batch.addRequest(
+  "contact2",
+  "POST",
+  "/contacts",
+  undefined,
+  { firstname: "Child", lastname: "Contact 2", "parentcustomerid_account@odata.bind": "$account" },
+  ["account"]
 );
 
 batch.endChangeset();
+await batch.execute();
 ```
 
-**How Content-IDs work:**
-
-1. Assign Content-ID to create operation (e.g., `'1'`)
-2. Reference it as `$1` in navigation properties
-3. Server resolves `$1` to the actual created ID
-
-**Use cases:**
-
-- Parent-child relationships
-- Multi-level hierarchies
-- Complex data graphs
-- Avoiding multiple round trips
-
-**Example:** Create account → create contact → create opportunity for that contact, all in one request.
-
----
+Ids inside a changeset may only contain letters, digits, `.`, `_`, `~` and `-`, and `$<id>`
+only works within the same changeset. An id such as `"1"` gives the classic `$1`.
 
 ### Demo 4: Continue-on-Error
 
-Processes 5 operations, 1 fails, 4 succeed:
+By default Dataverse stops at the first failure. With `continueOnError: true` it runs every
+request and `execute()` returns the result instead of throwing:
 
 ```typescript
-const batch = batchClient.createBatch();
+// req3 binds to a contact that does not exist
+const result = await batch.execute({ continueOnError: true });
 
-batch.setContinueOnError(true); // Enable partial success
-
-batch.addCreate("accounts", { name: "Valid 1" }, "1");
-batch.addCreate("accounts", { name: "Valid 2" }, "2");
-batch.addCreate(
-  "accounts",
-  {
-    name: "Invalid",
-    "primarycontactid@odata.bind": "/contacts(00000000-0000-0000-0000-000000000000)", // Non-existent
-  },
-  "3"
-);
-batch.addCreate("accounts", { name: "Valid 3" }, "4");
-batch.addCreate("accounts", { name: "Valid 4" }, "5");
-
-const response = await batchClient.executeBatch(batch);
-
-// Check each response
-for (const resp of response.responses) {
-  if (resp.status >= 200 && resp.status < 300) {
-    console.log("Success:", resp.status);
-  } else {
-    console.error("Failed:", resp.status, resp.body);
-  }
+for (const [id, response] of result.responses) {
+  console.log(id, response.status); // req1 201, req2 201, req3 4xx, req4 201, req5 201
 }
+for (const [id, error] of result.errors) {
+  console.log(id, error.message); // typed errors, as client.api() would throw
+}
+console.log(result.success, result.successfulRequests, result.failedRequests); // false 4 1
 ```
-
-**Default behavior (without continue-on-error):**
-
-- Batch fails on first error
-- Remaining operations are skipped
-- Returns error immediately
-
-**With continue-on-error:**
-
-- All operations are attempted
-- Each response indicates success/failure
-- Caller decides how to handle failures
-
-**Use when:**
-
-- Importing data with potential bad records
-- Best-effort processing acceptable
-- Need visibility into all failures
-
-**Example:** Bulk data import where you want to import valid records and log/fix invalid ones separately.
-
----
 
 ### Demo 5: Mixed Operations
 
-Combines query, create, update, delete in one batch:
+A query followed by a changeset with a create, an update and a delete:
 
 ```typescript
-const batch = batchClient.createBatch();
+batch.addRequest("query", "GET", "/accounts?$select=name&$top=5");
 
-// Query operation (outside changeset)
-batch.addGet("/accounts?$select=name&$top=5", "1");
-
-// Transactional operations
 batch.beginChangeset();
-
-batch.addCreate("accounts", { name: "New" }, "2");
-batch.addUpdate("accounts", existingId, { websiteurl: "https://updated.com" }, "3");
-batch.addDelete("accounts", deleteId, "4");
-
+batch.addRequest("create", "POST", "/accounts", undefined, {
+  name: "New Account from Mixed Batch",
+});
+batch.addRequest("update", "PATCH", `/accounts(${testAccountId})`, undefined, {
+  websiteurl: "https://updated.example.com",
+});
+batch.addRequest("delete", "DELETE", `/accounts(${deleteAccountId})`);
 batch.endChangeset();
 
-const response = await batchClient.executeBatch(batch);
+const result = await batch.execute();
+const rows = (result.responses.get("query")?.body as { value: { name: string }[] }).value;
 ```
-
-**Batch structure:**
-
-```
-Batch
-├─ GET /accounts (query - outside changeset)
-└─ Changeset
-   ├─ POST /accounts (create)
-   ├─ PATCH /accounts(id) (update)
-   └─ DELETE /accounts(id) (delete)
-```
-
-**Rules:**
-
-- **GET operations** must be outside changesets (queries are read-only)
-- **Changesets** can contain POST, PATCH, PUT, DELETE
-- Mix changesets and individual operations as needed
-
-**Use cases:**
-
-- Fetch data, then create/update based on results (requires 2 batches)
-- Atomic multi-record updates with cleanup
-- Complex workflows
-
----
 
 ### Demo 6: Performance Comparison
 
-Measures actual performance for 10 account creates:
-
-**Individual API calls:**
-
-```typescript
-for (let i = 0; i < 10; i++) {
-  await client.api("/accounts").post({ name: `Account ${i}` });
-}
-// Result: ~6-12 seconds (0.8-1.7 records/sec)
-```
-
-**Batch with changeset:**
-
-```typescript
-const batch = batchClient.createBatch();
-batch.beginChangeset();
-for (let i = 0; i < 10; i++) {
-  batch.addCreate("accounts", { name: `Account ${i}` }, String(i));
-}
-batch.endChangeset();
-await batchClient.executeBatch(batch);
-// Result: ~2-4 seconds (2.5-5 records/sec) - 3-5x faster
-```
-
-**Bulk operation (CreateMultiple):**
-
-```typescript
-const accounts = Array.from({ length: 10 }, (_, i) => ({
-  "@odata.type": "Microsoft.Dynamics.CRM.account",
-  name: `Account ${i}`,
-}));
-const action = new CreateMultipleAction("accounts", accounts);
-await client.execute(action);
-// Result: ~1-2 seconds (5-10 records/sec) - 6-12x faster
-```
-
-**Performance summary:**
-
-- **Individual:** Baseline (slowest)
-- **Batch:** 3-5x faster than individual
-- **Bulk:** 6-12x faster than individual (same-entity only)
+Creates 10 accounts three ways and prints the time of each: one request per record, one `$batch`
+changeset, and one `CreateMultiple` call. The bulk call is
+`client.execute(new CreateMultipleAction("accounts", targets))`, where each target carries
+`"@odata.type": "Microsoft.Dynamics.CRM.account"`. Timings depend on your network and
+environment; with 10 records the differences are small. The sample then deletes everything it
+created, in one batch.
 
 ---
 
 ## Batch Response Structure
 
+`execute()` returns a `BatchExecutionResult`:
+
 ```typescript
-interface BatchResponse {
-  responses: Array<{
-    contentId: string; // Matches request Content-ID
-    status: number; // HTTP status (200, 201, 204, 4xx, 5xx)
-    headers: Record<string, string>;
-    body?: any; // Response data (if any)
-  }>;
+interface BatchExecutionResult {
+  responses: Map<string, BatchResponseStep>; // keyed by the id passed to addRequest
+  results: BatchResponseStep[]; // every response received, in request order
+  errors: Map<string, Error>; // failed requests, keyed by id
+  success: boolean; // every request ran and succeeded
+  totalRequests: number;
+  successfulRequests: number;
+  failedRequests: number;
+  skippedRequestIds: string[]; // no response: Dataverse stopped early, or the changeset rolled back
+  stoppedEarly: boolean;
+}
+
+interface BatchResponseStep {
+  id: string;
+  status: number; // 200, 201, 204, 4xx, 5xx
+  headers: Record<string, string>;
+  body?: any; // parsed JSON, otherwise the text
 }
 ```
 
-**Parsing responses:**
-
 ```typescript
-const response = await batchClient.executeBatch(batch);
+const result = await batch.execute({ continueOnError: true });
 
-for (const resp of response.responses) {
-  console.log(`Content-ID ${resp.contentId}: ${resp.status}`);
-
-  if (resp.status === 201) {
-    // Created
-    const id = resp.body.accountid;
-    console.log("Created:", id);
-  } else if (resp.status === 204) {
-    // Updated or deleted (no body)
-    console.log("Success (no content)");
-  } else if (resp.status >= 400) {
-    // Error
-    console.error("Error:", resp.body.error.message);
+for (const [id, response] of result.responses) {
+  if (response.status === 201) {
+    console.log(id, "created", response.body?.accountid); // with Prefer: return=representation
+  } else if (response.status === 204) {
+    console.log(id, "succeeded (no content)");
   }
 }
 ```
+
+See the [batch package README](../../packages/dataverse-sdk-batch/README.md) for the full API.
 
 ---
 
 ## Best Practices
 
-### 1. Batch Size Limits
+### 1. Batch Size
 
-- **Maximum:** 1000 operations per batch
-- **Recommended:** 100-500 for reliability
-- **Large batches:** May timeout or fail
-
-**Auto-splitting (not yet implemented in v1):**
-
-```typescript
-// Future feature
-const largeBatch = createBatchWithAutoSplit({ maxSize: 500 });
-// Automatically splits into multiple batch requests
-```
+- **Maximum:** 1000 requests per `$batch`.
+- `execute()` splits larger batches into several `$batch` requests, one after the other, and never splits a changeset. Set `batchSize` (1 to 1000) to send smaller ones.
+- Without `continueOnError`, the batches after one with a failure are not sent; their ids are in `skippedRequestIds`.
 
 ### 2. Changeset Design
 
-**✅ Good:** Small, focused changesets
+- Keep changesets small and related (a parent plus its children).
+- A changeset cannot be nested or empty, and cannot hold more than 1000 requests.
+- Put `GET` requests outside changesets.
+
+### 3. Error Handling
 
 ```typescript
-batch.beginChangeset();
-batch.addCreate("accounts", parent, "1");
-batch.addCreate("contacts", child1, "2");
-batch.addCreate("contacts", child2, "3");
-batch.endChangeset();
+import { DataverseBatchError } from "@mohsinonxrm/dataverse-sdk-batch";
+
+try {
+  await batch.execute();
+} catch (error) {
+  if (error instanceof DataverseBatchError && error.result) {
+    const { results, errors, skippedRequestIds } = error.result;
+    // results: what was received; errors: typed failures; skippedRequestIds: never ran
+  }
+}
 ```
 
-**❌ Bad:** Everything in one giant changeset
-
-```typescript
-batch.beginChangeset();
-// 500 operations here - slow, risky
-batch.endChangeset();
-```
-
-**Why:** Large changesets:
-
-- Hold database locks longer
-- Higher chance of conflicts
-- Harder to debug failures
-
-### 3. Error Handling Strategies
-
-**Strategy A: Fail-fast (default)**
-
-```typescript
-const batch = batchClient.createBatch();
-// If any operation fails, entire batch fails
-```
-
-Use for critical workflows where partial success is unacceptable.
-
-**Strategy B: Continue-on-error**
-
-```typescript
-batch.setContinueOnError(true);
-// Process all operations, handle failures individually
-```
-
-Use for bulk imports where you want to identify all bad records.
-
-**Strategy C: Hybrid (multiple changesets)**
-
-```typescript
-// Changeset 1: Critical operations (fail-fast)
-batch.beginChangeset();
-batch.addCreate("accounts", critical);
-batch.endChangeset();
-
-// Changeset 2: Optional operations (separate transaction)
-batch.beginChangeset();
-batch.addCreate("contacts", optional);
-batch.endChangeset();
-```
-
-Use for workflows with varying importance levels.
+Use `continueOnError: true` when partial success is acceptable.
 
 ### 4. Content-ID Best Practices
 
-**✅ Use sequential numbers:**
-
-```typescript
-batch.addCreate("accounts", data, "1");
-batch.addCreate("contacts", data, "2");
-```
-
-**❌ Avoid complex IDs:**
-
-```typescript
-batch.addCreate("accounts", data, "parent-account-uuid-123"); // Harder to track
-```
-
-**✅ Document relationships:**
-
-```typescript
-// Create parent (Content-ID 1)
-batch.addCreate("accounts", { name: "Parent" }, "1");
-
-// Create children referencing parent ($1)
-batch.addCreate(
-  "contacts",
-  {
-    firstname: "Child 1",
-    "parentcustomerid_account@odata.bind": "$1",
-  },
-  "2"
-);
-```
+- Use descriptive ids (`"account"`, `"contact1"`); they are your result keys too.
+- Add the referenced request first; a `dependsOn` that names a later request throws when you add it.
+- Reference with `$<id>` in `@odata.bind` values or as the URL of a later `PATCH` or `DELETE`.
 
 ### 5. Debugging Batch Requests
 
-Enable SDK logging to see raw batch request/response:
+`batch.encode(boundary)` returns the multipart body `execute()` would send for a batch that fits
+in one `$batch`:
 
 ```typescript
-const client = new DataverseClient({
-  baseUrl: env.dataverseUrl,
-  tokenProvider,
-  logger: console, // Log all requests
-});
+console.log(batch.encode("batch_debug"));
 ```
-
-**Inspect multipart/mixed format:**
-
-- Batch boundary markers
-- Content-ID assignments
-- Individual request headers/bodies
 
 ---
 
@@ -556,49 +359,33 @@ const client = new DataverseClient({
 
 ### Error: "Request length too large"
 
-**Cause:** Batch exceeds maximum size (typically ~4MB)
+**Cause:** the batch body is too large. **Solutions:** reduce the payload, or lower `batchSize`.
 
-**Solutions:**
+### Error: "Invalid request ID in a changeset" or "depends on ... not an earlier request"
 
-1. Reduce number of operations
-2. Reduce payload size (omit unnecessary fields)
-3. Split into multiple batches
+**Cause:** an id with characters outside letters, digits, `.`, `_`, `~` and `-`, or a `dependsOn`
+that names a request outside the open changeset. **Solution:** rename the id, and add the
+referenced request first, in the same changeset.
 
-### Error: "Invalid content-id reference"
+### Error: a `DataverseBatchError` for a changeset
 
-**Cause:** Referencing `$X` when Content-ID X doesn't exist or is outside changeset
-
-**Solutions:**
-
-1. Verify Content-ID is assigned before reference
-2. Ensure both operations are in same changeset
-3. Use correct syntax: `$1` not `1` or `${1}`
-
-### Error: "Changeset failed to commit"
-
-**Cause:** One operation in changeset failed, rolling back all
-
-**Solutions:**
-
-1. Check individual response statuses
-2. Validate data before batching
-3. Use continue-on-error if partial success acceptable
+**Cause:** one request in the changeset failed, so Dataverse rolled all of them back.
+**Solutions:** read `error.result.errors` for the failing request, validate data first, or move
+the independent requests out of the changeset.
 
 ### Error: "404 Not Found" for navigation property
 
-**Cause:** Invalid navigation property syntax
-
-**Solutions:**
+**Cause:** the navigation property or reference is wrong.
 
 ```typescript
-// ❌ Wrong
-'parentcustomerid@odata.bind': 'accounts(id)'
+// Wrong
+"parentcustomerid@odata.bind": "accounts(id)"
 
-// ✅ Correct
-'parentcustomerid_account@odata.bind': '/accounts(id)'
+// Correct
+"parentcustomerid_account@odata.bind": "/accounts(id)"
 
-// ✅ With Content-ID
-'parentcustomerid_account@odata.bind': '$1'
+// With a Content-ID
+"parentcustomerid_account@odata.bind": "$account"
 ```
 
 ---
@@ -607,89 +394,62 @@ const client = new DataverseClient({
 
 ### Pattern 1: Hierarchical Data Creation
 
-Create multi-level hierarchy in one batch:
-
 ```typescript
 batch.beginChangeset();
-
-// Level 1: Parent account
-batch.addCreate("accounts", { name: "Corporation" }, "1");
-
-// Level 2: Subsidiary accounts
-batch.addCreate(
-  "accounts",
-  {
-    name: "Subsidiary 1",
-    "parentaccountid@odata.bind": "$1",
-  },
-  "2"
+batch.addRequest("corp", "POST", "/accounts", undefined, { name: "Corporation" });
+batch.addRequest(
+  "sub1",
+  "POST",
+  "/accounts",
+  undefined,
+  { name: "Subsidiary 1", "parentaccountid@odata.bind": "$corp" },
+  ["corp"]
 );
-
-// Level 3: Contact under subsidiary
-batch.addCreate(
-  "contacts",
-  {
-    firstname: "Employee",
-    "parentcustomerid_account@odata.bind": "$2",
-  },
-  "3"
+batch.addRequest(
+  "employee",
+  "POST",
+  "/contacts",
+  undefined,
+  { firstname: "Employee", "parentcustomerid_account@odata.bind": "$sub1" },
+  ["sub1"]
 );
-
 batch.endChangeset();
 ```
 
 ### Pattern 2: Conditional Operations
 
-Query first, then create/update based on results (requires 2 batches):
+A batch cannot branch on its own results, so query first and send a second batch:
 
 ```typescript
-// Batch 1: Query
-const batch1 = batchClient.createBatch();
-batch1.addGet("/accounts?$filter=name eq 'Contoso'&$select=accountid", "1");
-const response1 = await batchClient.executeBatch(batch1);
+const first = new BatchRequestBuilder(client);
+first.addRequest("find", "GET", "/accounts?$filter=name eq 'Contoso'&$select=accountid");
+const found = await first.execute();
+const rows = (found.responses.get("find")?.body as { value: { accountid: string }[] }).value;
 
-// Batch 2: Create or update based on query
-const batch2 = batchClient.createBatch();
-const exists = response1.responses[0].body.value.length > 0;
-
-if (exists) {
-  const id = response1.responses[0].body.value[0].accountid;
-  batch2.addUpdate("accounts", id, { websiteurl: "https://updated.com" }, "1");
+const second = new BatchRequestBuilder(client);
+if (rows.length > 0) {
+  second.addRequest("write", "PATCH", `/accounts(${rows[0].accountid})`, undefined, {
+    websiteurl: "https://updated.example.com",
+  });
 } else {
-  batch2.addCreate("accounts", { name: "Contoso" }, "1");
+  second.addRequest("write", "POST", "/accounts", undefined, { name: "Contoso" });
 }
-
-await batchClient.executeBatch(batch2);
+await second.execute();
 ```
 
 ### Pattern 3: Bulk Update with Rollback
 
-Update multiple records atomically:
-
 ```typescript
-const accountIds = ["id1", "id2", "id3", "id4", "id5"];
-
-batch.beginChangeset(); // Atomic - all or nothing
-
+batch.beginChangeset(); // all or nothing
 for (const id of accountIds) {
-  batch.addUpdate(
-    "accounts",
-    id,
-    {
-      industrycode: 1, // Change industry
-      ownerid: newOwnerId, // Reassign owner
-    },
-    id
-  );
+  batch.addRequest(`update-${id}`, "PATCH", `/accounts(${id})`, undefined, { industrycode: 1 });
 }
-
 batch.endChangeset();
 
 try {
-  await batchClient.executeBatch(batch);
-  console.log("All accounts updated");
+  await batch.execute();
 } catch (error) {
-  console.log("Update failed - all rolled back");
+  // the changeset was rolled back; nothing was updated
 }
 ```
 
