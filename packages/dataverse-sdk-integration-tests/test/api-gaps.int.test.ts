@@ -131,8 +131,8 @@ describe.skipIf(!live)("live: small API gaps (#274)", () => {
     expect(result.results.map((r) => r.status)).toEqual([201, 201]);
     // Dataverse sends no OData-EntityId or Location for these, inside a change set or not.
     for (const r of result.results) {
-      expect(r.headers["odata-entityid"] === undefined).toBe(true);
-      expect(r.headers.location === undefined).toBe(true);
+      expect("odata-entityid" in r.headers).toBe(false);
+      expect("location" in r.headers).toBe(false);
       expect(() => entityIdFromBatchResponse(r)).toThrow(/primaryIdAttribute/);
     }
     const ids = result.results.map((r) =>
