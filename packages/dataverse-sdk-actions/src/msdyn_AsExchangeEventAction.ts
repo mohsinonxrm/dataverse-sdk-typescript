@@ -18,7 +18,8 @@ export class msdyn_AsExchangeEventAction implements Executable<msdyn_AsExchangeE
   constructor(public readonly msdyn_Bookings: Record<string, unknown>[]) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
-    const url = `${baseUrl}/msdyn_AsExchangeEvent`;
+    // Bound action (entity collection)
+    const url = `${baseUrl}/bookableresourcebookings/Microsoft.Dynamics.CRM.msdyn_AsExchangeEvent`;
 
     const body: Record<string, unknown> = {
       msdyn_Bookings: this.msdyn_Bookings,

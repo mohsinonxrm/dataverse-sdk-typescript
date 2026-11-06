@@ -19,7 +19,8 @@ export class GetDefaultPriceLevelFunction implements Executable<GetDefaultPriceL
   constructor(public readonly entityName: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
-    let url = `${baseUrl}/GetDefaultPriceLevel`;
+    // Bound function (entity collection)
+    let url = `${baseUrl}/pricelevels/Microsoft.Dynamics.CRM.GetDefaultPriceLevel`;
 
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();

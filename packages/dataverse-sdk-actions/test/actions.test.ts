@@ -122,13 +122,15 @@ describe("Bulk Operations", () => {
         { "@odata.type": "Microsoft.Dynamics.CRM.account", name: "Contoso" },
         { "@odata.type": "Microsoft.Dynamics.CRM.account", name: "Fabrikam" },
       ];
-      const action = new CreateMultipleAction(accounts);
+      const action = new CreateMultipleAction("accounts", accounts);
       const baseUrl = "https://org.crm.dynamics.com/api/data/v9.2";
 
       const requestInfo = action.toRequestInformation(baseUrl);
 
       expect(requestInfo.method).toBe("POST");
-      expect(requestInfo.url).toBe("https://org.crm.dynamics.com/api/data/v9.2/CreateMultiple");
+      expect(requestInfo.url).toBe(
+        "https://org.crm.dynamics.com/api/data/v9.2/accounts/Microsoft.Dynamics.CRM.CreateMultiple"
+      );
       expect(requestInfo.body).toEqual({
         Targets: accounts,
       });
@@ -136,14 +138,14 @@ describe("Bulk Operations", () => {
 
     it("should accept targets array", () => {
       const accounts = [{ "@odata.type": "Microsoft.Dynamics.CRM.account", name: "Test" }];
-      const action = new CreateMultipleAction(accounts);
+      const action = new CreateMultipleAction("accounts", accounts);
 
       expect(action.targets).toEqual(accounts);
     });
 
     it("should parse response with Ids", async () => {
       const accounts = [{ "@odata.type": "Microsoft.Dynamics.CRM.account", name: "Contoso" }];
-      const action = new CreateMultipleAction(accounts);
+      const action = new CreateMultipleAction("accounts", accounts);
       const mockResponse = new Response(JSON.stringify({ Ids: ["id1", "id2"] }), {
         status: 200,
         headers: { "Content-Type": "application/json" },
@@ -160,13 +162,15 @@ describe("Bulk Operations", () => {
       const updates = [
         { "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "id1", creditlimit: 50000 },
       ];
-      const action = new UpdateMultipleAction(updates);
+      const action = new UpdateMultipleAction("accounts", updates);
       const baseUrl = "https://org.crm.dynamics.com/api/data/v9.2";
 
       const requestInfo = action.toRequestInformation(baseUrl);
 
       expect(requestInfo.method).toBe("POST");
-      expect(requestInfo.url).toBe("https://org.crm.dynamics.com/api/data/v9.2/UpdateMultiple");
+      expect(requestInfo.url).toBe(
+        "https://org.crm.dynamics.com/api/data/v9.2/accounts/Microsoft.Dynamics.CRM.UpdateMultiple"
+      );
       expect(requestInfo.body).toEqual({
         Targets: updates,
       });
@@ -174,7 +178,7 @@ describe("Bulk Operations", () => {
 
     it("should accept targets array", () => {
       const updates = [{ "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "id1" }];
-      const action = new UpdateMultipleAction(updates);
+      const action = new UpdateMultipleAction("accounts", updates);
 
       expect(action.targets).toEqual(updates);
     });
@@ -186,13 +190,15 @@ describe("Bulk Operations", () => {
         { "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "id1", name: "Updated" },
         { "@odata.type": "Microsoft.Dynamics.CRM.account", name: "New" },
       ];
-      const action = new UpsertMultipleAction(records);
+      const action = new UpsertMultipleAction("accounts", records);
       const baseUrl = "https://org.crm.dynamics.com/api/data/v9.2";
 
       const requestInfo = action.toRequestInformation(baseUrl);
 
       expect(requestInfo.method).toBe("POST");
-      expect(requestInfo.url).toBe("https://org.crm.dynamics.com/api/data/v9.2/UpsertMultiple");
+      expect(requestInfo.url).toBe(
+        "https://org.crm.dynamics.com/api/data/v9.2/accounts/Microsoft.Dynamics.CRM.UpsertMultiple"
+      );
       expect(requestInfo.body).toEqual({
         Targets: records,
       });
@@ -200,7 +206,7 @@ describe("Bulk Operations", () => {
 
     it("should accept targets array", () => {
       const records = [{ "@odata.type": "Microsoft.Dynamics.CRM.account", name: "Test" }];
-      const action = new UpsertMultipleAction(records);
+      const action = new UpsertMultipleAction("accounts", records);
 
       expect(action.targets).toEqual(records);
     });
@@ -212,13 +218,15 @@ describe("Bulk Operations", () => {
         { "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "id1" },
         { "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "id2" },
       ];
-      const action = new DeleteMultipleAction(targets);
+      const action = new DeleteMultipleAction("accounts", targets);
       const baseUrl = "https://org.crm.dynamics.com/api/data/v9.2";
 
       const requestInfo = action.toRequestInformation(baseUrl);
 
       expect(requestInfo.method).toBe("POST");
-      expect(requestInfo.url).toBe("https://org.crm.dynamics.com/api/data/v9.2/DeleteMultiple");
+      expect(requestInfo.url).toBe(
+        "https://org.crm.dynamics.com/api/data/v9.2/accounts/Microsoft.Dynamics.CRM.DeleteMultiple"
+      );
       expect(requestInfo.body).toEqual({
         Targets: targets,
       });
@@ -226,7 +234,7 @@ describe("Bulk Operations", () => {
 
     it("should accept targets array", () => {
       const targets = [{ "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "id1" }];
-      const action = new DeleteMultipleAction(targets);
+      const action = new DeleteMultipleAction("accounts", targets);
 
       expect(action.targets).toEqual(targets);
     });

@@ -21,7 +21,8 @@ export class UtcTimeFromLocalTimeFunction implements Executable<UtcTimeFromLocal
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
-    let url = `${baseUrl}/UtcTimeFromLocalTime`;
+    // Bound function (entity collection)
+    let url = `${baseUrl}/resourcegroups/Microsoft.Dynamics.CRM.UtcTimeFromLocalTime`;
 
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();

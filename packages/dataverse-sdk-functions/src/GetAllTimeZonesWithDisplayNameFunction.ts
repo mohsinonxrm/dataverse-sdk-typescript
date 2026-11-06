@@ -20,7 +20,8 @@ export class GetAllTimeZonesWithDisplayNameFunction implements Executable<GetAll
   constructor(public readonly localeId: number) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
-    let url = `${baseUrl}/GetAllTimeZonesWithDisplayName`;
+    // Bound function (entity collection)
+    let url = `${baseUrl}/timezonedefinitions/Microsoft.Dynamics.CRM.GetAllTimeZonesWithDisplayName`;
 
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();

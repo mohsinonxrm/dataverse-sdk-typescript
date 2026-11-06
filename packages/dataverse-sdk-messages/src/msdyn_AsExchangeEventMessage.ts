@@ -16,7 +16,8 @@ export class msdyn_AsExchangeEventRequest
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
-    const url = `${baseUrl}/msdyn_AsExchangeEvent`;
+    // Bound action (entity collection)
+    const url = `${baseUrl}/bookableresourcebookings/Microsoft.Dynamics.CRM.msdyn_AsExchangeEvent`;
 
     const body: Record<string, unknown> = {
       msdyn_Bookings: this.msdyn_Bookings,

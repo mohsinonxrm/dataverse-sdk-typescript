@@ -104,7 +104,7 @@ async function bulkCreateAccounts(client: DataverseClient, count: number): Promi
   const startTime = Date.now();
 
   try {
-    const action = new CreateMultipleAction(accounts);
+    const action = new CreateMultipleAction("accounts", accounts);
     const response = await client.execute(action);
 
     const duration = ((Date.now() - startTime) / 1000).toFixed(2);
@@ -143,7 +143,7 @@ async function bulkUpdateAccounts(client: DataverseClient, accountIds: string[])
   try {
     // Note: UpdateMultiple is imported from actions package
     const { UpdateMultipleAction } = await import("@mohsinonxrm/dataverse-sdk-actions");
-    const action = new UpdateMultipleAction(updates);
+    const action = new UpdateMultipleAction("accounts", updates);
     await client.execute(action);
 
     const duration = ((Date.now() - startTime) / 1000).toFixed(2);
@@ -256,7 +256,7 @@ async function demonstrateErrorHandling(client: DataverseClient): Promise<void> 
       } as Record<string, unknown>,
     ];
 
-    const action = new CreateMultipleAction(invalidAccounts);
+    const action = new CreateMultipleAction("accounts", invalidAccounts);
     await client.execute(action);
   } catch (error) {
     console.log(chalk.yellow("✓ Error caught as expected:"));

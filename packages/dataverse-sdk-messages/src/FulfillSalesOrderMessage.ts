@@ -19,7 +19,8 @@ export class FulfillSalesOrderRequest
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
-    const url = `${baseUrl}/FulfillSalesOrder`;
+    // Bound action (entity collection)
+    const url = `${baseUrl}/salesorders/Microsoft.Dynamics.CRM.FulfillSalesOrder`;
 
     const body: Record<string, unknown> = {
       OrderClose: this.orderClose,

@@ -5,17 +5,23 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * CreateMultiple request message
  *
  * Web API Action: CreateMultiple
+ *
+ * The first argument is the entity set to call it on, for example "accounts".
  */
 export class CreateMultipleRequest
   extends OrganizationRequest
   implements Executable<CreateMultipleResponse>
 {
-  constructor(public targets: Record<string, unknown>[]) {
+  constructor(
+    public entitySetName: string,
+    public targets: Record<string, unknown>[]
+  ) {
     super("CreateMultiple");
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
-    const url = `${baseUrl}/CreateMultiple`;
+    // Bound action (entity collection)
+    const url = `${baseUrl}/${this.entitySetName}/Microsoft.Dynamics.CRM.CreateMultiple`;
 
     const body: Record<string, unknown> = {
       Targets: this.targets,

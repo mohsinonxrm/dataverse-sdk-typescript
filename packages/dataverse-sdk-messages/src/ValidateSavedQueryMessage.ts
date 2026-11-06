@@ -18,7 +18,8 @@ export class ValidateSavedQueryRequest
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
-    const url = `${baseUrl}/ValidateSavedQuery`;
+    // Bound action (entity collection)
+    const url = `${baseUrl}/savedqueries/Microsoft.Dynamics.CRM.ValidateSavedQuery`;
 
     const body: Record<string, unknown> = {
       FetchXml: this.fetchXml,

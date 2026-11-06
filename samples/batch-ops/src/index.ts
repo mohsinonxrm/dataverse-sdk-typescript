@@ -515,7 +515,7 @@ async function performanceComparisonDemo(client: DataverseClient): Promise<void>
   }));
 
   const startBulk = Date.now();
-  const action = new CreateMultipleAction(bulkAccounts);
+  const action = new CreateMultipleAction("accounts", bulkAccounts);
   const bulkResponse = await client.execute(action);
   const durationBulk = ((Date.now() - startBulk) / 1000).toFixed(2);
   const rateBulk = (recordCount / parseFloat(durationBulk)).toFixed(1);

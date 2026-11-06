@@ -19,6 +19,7 @@ import {
   purgeDirectory,
 } from "../utils/file-writer.js";
 import { polymorphicParameterType } from "../utils/polymorphism.js";
+import { collectionBinding, ENTITY_SET_PARAM } from "../utils/binding.js";
 
 /**
  * Map Complex* types to their non-Complex EntityType equivalents.
@@ -291,6 +292,15 @@ function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction): string {
   if (func.bindingParameter) {
     code += ` * Binding parameter: ${func.bindingParameter.name || "unnamed"} (${func.bindingParameter.type})\n`;
   }
+  // Collection-bound: called on an entity set (#69)
+  const collection =
+    func.isBound && func.bindingParameter && isCollectionType(func.bindingParameter.type)
+      ? collectionBinding(csdl, func.bindingParameter.type)
+      : undefined;
+  if (collection?.needsEntitySetName) {
+    code += ` *\n`;
+    code += ` * The first argument is the entity set to call it on, for example "accounts".\n`;
+  }
   code += ` */\n`;
   code += `export class ${className} implements Executable<${responseInterfaceName}> {\n`;
 
@@ -314,6 +324,16 @@ function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction): string {
     const entityTypeName = extractEntityTypeName(func.bindingParameter.type);
     constructorParams.push({
       name: `${entityTypeName}Id`,
+      type: "string",
+      tsName: func.bindingParameter.name,
+      isBinding: true,
+    });
+  }
+
+  if (collection?.needsEntitySetName && func.bindingParameter) {
+    // Bound to Collection(mscrm.crmbaseentity): the caller names the entity set
+    constructorParams.push({
+      name: ENTITY_SET_PARAM,
       type: "string",
       tsName: func.bindingParameter.name,
       isBinding: true,
@@ -410,16 +430,24 @@ function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction): string {
       code += `    }\n\n`;
     }
   } else {
-    // Unbound function
-    code += `    let url = \`\${baseUrl}/${func.name}\`;\n\n`;
+    if (collection) {
+      // Collection-bound function: GET /{entityset}/Microsoft.Dynamics.CRM.{name}(...)
+      code += `    // Bound function (entity collection)\n`;
+      if (collection.warning) code += `    // ${collection.warning}\n`;
+      code += `    let url = \`\${baseUrl}/${collection.segment}/Microsoft.Dynamics.CRM.${func.name}\`;\n\n`;
+    } else {
+      // Unbound function
+      code += `    let url = \`\${baseUrl}/${func.name}\`;\n\n`;
+    }
 
-    // Add query parameters using parameter aliases
-    if (constructorParams.length > 0) {
+    // Add query parameters using parameter aliases (the entity set isn't one)
+    const aliasParams = constructorParams.filter((p) => !p.isBinding);
+    if (aliasParams.length > 0) {
       code += `    // Build query parameters using parameter aliases\n`;
       code += `    const params = new URLSearchParams();\n`;
       code += `    const aliases: string[] = [];\n`;
       let aliasIndex = 1;
-      for (const param of constructorParams) {
+      for (const param of aliasParams) {
         const alias = `@p${String(aliasIndex++)}`;
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         const paramDef = func.parameters?.find((p) => p.name === param.tsName);

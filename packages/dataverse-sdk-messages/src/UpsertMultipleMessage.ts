@@ -5,17 +5,23 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * UpsertMultiple request message
  *
  * Web API Action: UpsertMultiple
+ *
+ * The first argument is the entity set to call it on, for example "accounts".
  */
 export class UpsertMultipleRequest
   extends OrganizationRequest
   implements Executable<UpsertMultipleResponse>
 {
-  constructor(public targets: Record<string, unknown>[]) {
+  constructor(
+    public entitySetName: string,
+    public targets: Record<string, unknown>[]
+  ) {
     super("UpsertMultiple");
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
-    const url = `${baseUrl}/UpsertMultiple`;
+    // Bound action (entity collection)
+    const url = `${baseUrl}/${this.entitySetName}/Microsoft.Dynamics.CRM.UpsertMultiple`;
 
     const body: Record<string, unknown> = {
       Targets: this.targets,

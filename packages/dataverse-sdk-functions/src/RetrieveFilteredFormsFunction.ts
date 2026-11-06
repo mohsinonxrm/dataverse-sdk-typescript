@@ -23,7 +23,8 @@ export class RetrieveFilteredFormsFunction implements Executable<RetrieveFiltere
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
-    let url = `${baseUrl}/RetrieveFilteredForms`;
+    // Bound function (entity collection)
+    let url = `${baseUrl}/systemforms/Microsoft.Dynamics.CRM.RetrieveFilteredForms`;
 
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();

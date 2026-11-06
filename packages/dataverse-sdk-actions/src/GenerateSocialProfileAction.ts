@@ -18,7 +18,8 @@ export class GenerateSocialProfileAction implements Executable<GenerateSocialPro
   constructor(public readonly entity: socialprofile) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
-    const url = `${baseUrl}/GenerateSocialProfile`;
+    // Bound action (entity collection)
+    const url = `${baseUrl}/socialprofiles/Microsoft.Dynamics.CRM.GenerateSocialProfile`;
 
     const body: Record<string, unknown> = {
       Entity: this.entity,
