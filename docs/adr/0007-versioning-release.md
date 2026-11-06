@@ -7,7 +7,7 @@
 
 ### Context
 
-The SDK is organized as a monorepo with 15+ packages (core, auth, operations, metadata, files, tooling, optional telemetry). We need clear versioning and release strategy that:
+The SDK is organized as a monorepo with 16 packages (core, auth, operations, metadata, files, tooling, optional telemetry). We need clear versioning and release strategy that:
 
 1. Balances comprehensive v1.0 scope with timely delivery
 2. Provides escape hatches for unsupported capabilities

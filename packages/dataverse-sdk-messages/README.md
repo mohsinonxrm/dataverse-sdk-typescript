@@ -402,7 +402,7 @@ await service.execute(
 
 - `messageName: string` - The name of the action/custom API
 - `parameters?: Record<string, unknown>` - The parameters for the action (default `{}`)
-- `options?: { boundTo?: { entitySetName: string; id: string } }` - Bind the action to a record
+- `options?: OrganizationRequestOptions` (`{ boundTo?: { entitySetName: string; id: string } }`, exported from the package root) - Bind the action to a record
 
 **Properties:**
 
