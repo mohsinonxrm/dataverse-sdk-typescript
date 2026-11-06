@@ -11,6 +11,7 @@ import {
 } from "@mohsinonxrm/dataverse-sdk-actions";
 import { blockRetryOptions, checkChunkSize, sendChecked } from "./requests.js";
 import type { FileUploadOptions, FileDownloadOptions } from "./types.js";
+import { fileTarget } from "./target.js";
 
 /**
  * Default chunk size for file uploads (4MB).
@@ -112,7 +113,8 @@ export class FileColumnClient {
    *
    * Automatically chunks files larger than the specified chunk size.
    *
-   * @param entitySetName - The entity set name (e.g., "accounts")
+   * @param entitySetName - The entity set name (e.g., "accounts"). The first upload to a table
+   *   looks up its logical name and primary key (one `EntityDefinitions` request, then cached).
    * @param recordId - The record ID (GUID)
    * @param columnName - The logical name of the file/image column
    * @param file - The file data: a `Blob` (or `File`), an `ArrayBuffer`, or a typed-array view
@@ -142,11 +144,7 @@ export class FileColumnClient {
 
     // Step 1: Initialize upload session
     const initAction = new InitializeFileBlocksUploadAction(
-      {
-        "@odata.type": "Microsoft.Dynamics.CRM.EntityReference",
-        logicalName: entitySetName,
-        id: normalizeGuid(recordId),
-      },
+      await fileTarget(this.adapter, this.baseUrl, entitySetName, normalizeGuid(recordId)),
       fileName,
       columnName
     );

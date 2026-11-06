@@ -22,6 +22,9 @@ function filesClientFor(client: DataverseClient): FileColumnClient {
 }
 
 function uploadRoutes(fake: ReturnType<typeof createTestClient>["fake"], blockStatus = 204) {
+  fake.on("GET", "/EntityDefinitions", () =>
+    jsonResponse({ value: [{ LogicalName: "account", PrimaryIdAttribute: "accountid" }] })
+  );
   fake.on("POST", "/InitializeFileBlocksUpload", () =>
     jsonResponse({ FileContinuationToken: "tok" })
   );
@@ -38,8 +41,9 @@ describe("files: FileColumnClient wire contract", () => {
     const { client, fake } = createTestClient();
     uploadRoutes(fake);
     await filesClientFor(client).upload("accounts", ID, "new_file", Buffer.from("abc"), "a.txt");
-    const paths = fake.requests.map((r) => r.path);
+    const paths = fake.requests.map((r) => r.path.split("?")[0]);
     expect(paths).toEqual([
+      "/EntityDefinitions",
       "/InitializeFileBlocksUpload",
       "/UploadBlock",
       "/CommitFileBlocksUpload",
@@ -47,11 +51,12 @@ describe("files: FileColumnClient wire contract", () => {
     expect(fake.requests.every((r) => r.headers.authorization === "Bearer test-token")).toBe(true);
   });
 
-  it.fails("#60: InitializeFileBlocksUpload Target is a typed entity reference", async () => {
+  it("#60: InitializeFileBlocksUpload Target is a typed entity reference", async () => {
     const { client, fake } = createTestClient();
     uploadRoutes(fake);
     await filesClientFor(client).upload("accounts", ID, "new_file", Buffer.from("abc"), "a.txt");
-    const init = JSON.parse(fake.requests[0]?.bodyText ?? "{}") as {
+    const initRequest = fake.requests.find((r) => r.path === "/InitializeFileBlocksUpload");
+    const init = JSON.parse(initRequest?.bodyText ?? "{}") as {
       Target?: Record<string, unknown>;
     };
     expect(init.Target).toEqual({ "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: ID });
