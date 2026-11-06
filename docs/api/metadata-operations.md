@@ -118,6 +118,42 @@ await metadataClient.createAttributeDefinition("new_project", {
 });
 ```
 
+### Read Columns by Type
+
+Pass `cast` to read only columns of one type through the
+`Microsoft.Dynamics.CRM.<Type>AttributeMetadata` path segment. The results are typed as that
+type, and `select` / `expand` can use its own properties (`OptionSet`, `Targets`, `MaxLength`, …),
+which the base `AttributeMetadata` rejects with `0x80060888`.
+
+```typescript
+// …/Attributes/Microsoft.Dynamics.CRM.PicklistAttributeMetadata
+//   ?LabelLanguages=1033&$select=LogicalName&$expand=OptionSet($select=Options),GlobalOptionSet($select=Options)
+const picklists = await metadataClient.getAttributeDefinitions("account", {
+  cast: "PicklistAttributeMetadata",
+  select: ["LogicalName"],
+  expand: ["OptionSet($select=Options)", "GlobalOptionSet($select=Options)"],
+  labelLanguages: 1033,
+});
+
+const industry = await metadataClient.getAttributeDefinition("account", "industrycode", {
+  cast: "PicklistAttributeMetadata",
+  expand: "OptionSet",
+});
+```
+
+Every read method also takes `labelLanguages` (one LCID or an array), sent as `LabelLanguages`,
+and `expand` as a string or an array.
+
+### Entity Set Names
+
+```typescript
+const set = await metadataClient.getEntitySetName("opportunity"); // "opportunities"
+```
+
+The first call reads `EntityDefinitions?$select=LogicalName,EntitySetName` once and caches the map
+on the client; a table missing from it is looked up on its own. `clearEntitySetNameCache()`
+forgets the map.
+
 ## Relationship Operations
 
 ### Create One-to-Many Relationship
@@ -389,6 +425,11 @@ Enum members in the query are sent by name (`"And"`, `"Equals"`); Dataverse reje
 - updateManyToManyRelationship (uses PUT)
 - deleteRelationship
 - deleteRelationshipBySchemaName
+
+**Entity Set Names (2):**
+
+- getEntitySetName (cached per client)
+- clearEntitySetNameCache
 
 **Global Choice Operations (5):**
 

@@ -113,7 +113,63 @@ const customEntities = await metadataClient.getEntityDefinitions({
 const projectEntity = await metadataClient.getEntityDefinition("new_project", {
   expand: "Attributes",
 });
+
+// Labels in specific languages (LCIDs), sent as LabelLanguages
+const labels = await metadataClient.getEntityDefinition("account", {
+  select: ["DisplayName"],
+  labelLanguages: [1033, 1036],
+});
 ```
+
+### Entity Set Names
+
+`getEntitySetName()` reads the entity set name used in Web API URLs from metadata, so you don't
+have to guess the plural. The first call loads every table's name in one request and caches the
+map on the `MetadataClient`; `clearEntitySetNameCache()` forgets it.
+
+```typescript
+const set = await metadataClient.getEntitySetName("opportunity"); // "opportunities"
+const record = await client.api(`${set}(${id})`).get();
+```
+
+### Read Columns by Type
+
+Type-specific properties, such as a choice column's options, a lookup's `Targets` or a text
+column's `MaxLength`, are only available through a type cast. Pass `cast` and the results are
+typed accordingly:
+
+```typescript
+// GET EntityDefinitions(LogicalName='account')/Attributes/Microsoft.Dynamics.CRM.PicklistAttributeMetadata
+//   ?LabelLanguages=1033&$select=LogicalName&$expand=OptionSet($select=Options),GlobalOptionSet($select=Options)
+const picklists = await metadataClient.getAttributeDefinitions("account", {
+  cast: "PicklistAttributeMetadata",
+  select: ["LogicalName"],
+  expand: ["OptionSet($select=Options)", "GlobalOptionSet($select=Options)"],
+  labelLanguages: 1033,
+});
+const options = picklists[0]?.OptionSet?.Options; // picklists is PicklistAttributeMetadata[]
+
+const lookups = await metadataClient.getAttributeDefinitions("account", {
+  cast: "LookupAttributeMetadata",
+  select: ["LogicalName", "Targets"],
+});
+
+const name = await metadataClient.getAttributeDefinition("account", "name", {
+  cast: "StringAttributeMetadata",
+  select: ["MaxLength", "Format"],
+});
+```
+
+`cast` takes any attribute metadata type name: `StringAttributeMetadata`, `MemoAttributeMetadata`,
+`IntegerAttributeMetadata`, `BigIntAttributeMetadata`, `DecimalAttributeMetadata`,
+`DoubleAttributeMetadata`, `MoneyAttributeMetadata`, `DateTimeAttributeMetadata`,
+`BooleanAttributeMetadata`, `PicklistAttributeMetadata`, `MultiSelectPicklistAttributeMetadata`,
+`StateAttributeMetadata`, `StatusAttributeMetadata`, `LookupAttributeMetadata`,
+`FileAttributeMetadata`, `ImageAttributeMetadata`, `UniqueIdentifierAttributeMetadata`,
+`EntityNameAttributeMetadata`, `EnumAttributeMetadata` or `ManagedPropertyAttributeMetadata`.
+
+Key values (logical names, schema names, option set names) are escaped, so a name containing `'`
+is sent as `'O''Brien'`.
 
 Every `create*` method returns the new component's `MetadataId`. Dataverse answers a metadata
 create with `204 No Content` and the id in the `OData-EntityId` header, which is where the SDK

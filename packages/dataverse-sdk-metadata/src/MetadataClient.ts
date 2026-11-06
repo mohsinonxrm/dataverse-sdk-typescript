@@ -3,7 +3,29 @@
  */
 
 import { DataverseInvalidRequestError, parseODataError } from "@mohsinonxrm/dataverse-sdk-core";
-import type { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+import type { DataverseClient, DataverseRequestBuilder } from "@mohsinonxrm/dataverse-sdk-core";
+import type {
+  BigIntAttributeMetadata,
+  BooleanAttributeMetadata,
+  DateTimeAttributeMetadata,
+  DecimalAttributeMetadata,
+  DoubleAttributeMetadata,
+  EntityNameAttributeMetadata,
+  EnumAttributeMetadata,
+  FileAttributeMetadata,
+  ImageAttributeMetadata,
+  IntegerAttributeMetadata,
+  LookupAttributeMetadata,
+  ManagedPropertyAttributeMetadata,
+  MemoAttributeMetadata,
+  MoneyAttributeMetadata,
+  MultiSelectPicklistAttributeMetadata,
+  PicklistAttributeMetadata,
+  StateAttributeMetadata,
+  StatusAttributeMetadata,
+  StringAttributeMetadata,
+  UniqueIdentifierAttributeMetadata,
+} from "./types/index.js";
 import type {
   EntityMetadata,
   EntityMetadataCreate,
@@ -43,9 +65,59 @@ import type {
  * Query options for retrieving metadata
  */
 export interface MetadataQueryOptions {
+  /** `$select`: the properties to return. */
   select?: string[];
+  /** `$filter` expression. */
   filter?: string;
-  expand?: string;
+  /** `$expand`: one or more navigation properties, with nested options inline, e.g. `"OptionSet($select=Options)"`. */
+  expand?: string | string[];
+  /**
+   * `LabelLanguages`: return labels in these languages (LCIDs, e.g. `1033`) instead of only the
+   * caller's language. Applies to every `Label` in the response.
+   */
+  labelLanguages?: number | number[];
+}
+
+/**
+ * The attribute types `getAttributeDefinitions` and `getAttributeDefinition` can cast to, and
+ * the metadata type each one returns.
+ */
+export interface AttributeMetadataByCast {
+  BigIntAttributeMetadata: BigIntAttributeMetadata;
+  BooleanAttributeMetadata: BooleanAttributeMetadata;
+  DateTimeAttributeMetadata: DateTimeAttributeMetadata;
+  DecimalAttributeMetadata: DecimalAttributeMetadata;
+  DoubleAttributeMetadata: DoubleAttributeMetadata;
+  EntityNameAttributeMetadata: EntityNameAttributeMetadata;
+  EnumAttributeMetadata: EnumAttributeMetadata;
+  FileAttributeMetadata: FileAttributeMetadata;
+  ImageAttributeMetadata: ImageAttributeMetadata;
+  IntegerAttributeMetadata: IntegerAttributeMetadata;
+  LookupAttributeMetadata: LookupAttributeMetadata;
+  ManagedPropertyAttributeMetadata: ManagedPropertyAttributeMetadata;
+  MemoAttributeMetadata: MemoAttributeMetadata;
+  MoneyAttributeMetadata: MoneyAttributeMetadata;
+  MultiSelectPicklistAttributeMetadata: MultiSelectPicklistAttributeMetadata;
+  PicklistAttributeMetadata: PicklistAttributeMetadata;
+  StateAttributeMetadata: StateAttributeMetadata;
+  StatusAttributeMetadata: StatusAttributeMetadata;
+  StringAttributeMetadata: StringAttributeMetadata;
+  UniqueIdentifierAttributeMetadata: UniqueIdentifierAttributeMetadata;
+}
+
+/** An attribute type to cast to, e.g. `"PicklistAttributeMetadata"`. */
+export type AttributeMetadataCast = keyof AttributeMetadataByCast;
+
+/**
+ * Query options for attribute definitions.
+ */
+export interface AttributeQueryOptions extends MetadataQueryOptions {
+  /**
+   * Read only attributes of this type, through the `Microsoft.Dynamics.CRM.<cast>` path segment.
+   * Needed to select or expand type-specific properties such as `OptionSet`, `Targets` or
+   * `MaxLength`.
+   */
+  cast?: AttributeMetadataCast;
 }
 
 /**
@@ -64,6 +136,8 @@ export interface MetadataWriteOptions {
  */
 export class MetadataClient {
   private readonly client: DataverseClient;
+  private entitySetNames: Map<string, string> | undefined;
+  private entitySetNamesLoad: Promise<Map<string, string>> | undefined;
 
   constructor(client: DataverseClient) {
     this.client = client;
@@ -84,19 +158,9 @@ export class MetadataClient {
    * ```
    */
   async getEntityDefinitions(options?: MetadataQueryOptions): Promise<EntityMetadata[]> {
-    let builder = this.client.api("/EntityDefinitions");
-
-    if (options?.select) {
-      builder = builder.select(...options.select);
-    }
-    if (options?.filter) {
-      builder = builder.filter(options.filter);
-    }
-    if (options?.expand) {
-      builder = builder.expand(options.expand);
-    }
-
-    const response = await builder.get<{ value: EntityMetadata[] }>();
+    const response = await this.query("/EntityDefinitions", options).get<{
+      value: EntityMetadata[];
+    }>();
     return response.value;
   }
 
@@ -116,16 +180,47 @@ export class MetadataClient {
     logicalName: string,
     options?: Omit<MetadataQueryOptions, "filter">
   ): Promise<EntityMetadata> {
-    let builder = this.client.api(`/EntityDefinitions(LogicalName='${logicalName}')`);
+    return await this.query(
+      `/EntityDefinitions(LogicalName=${key(logicalName)})`,
+      options
+    ).get<EntityMetadata>();
+  }
 
-    if (options?.select) {
-      builder = builder.select(...options.select);
-    }
-    if (options?.expand) {
-      builder = builder.expand(options.expand);
-    }
+  /**
+   * The entity set name of a table, e.g. `"accounts"` for `"account"`, from metadata.
+   *
+   * The first call reads `EntityDefinitions?$select=LogicalName,EntitySetName` once and caches
+   * the whole map on this `MetadataClient`; a table missing from the cache (created later) is
+   * looked up on its own and added. Use {@link clearEntitySetNameCache} after renaming or
+   * deleting tables.
+   * @param logicalName Entity logical name
+   * @returns The entity set name used in Web API URLs
+   * @example
+   * ```typescript
+   * const set = await metadataClient.getEntitySetName("account"); // "accounts"
+   * await client.api(`${set}(${id})`).get();
+   * ```
+   */
+  async getEntitySetName(logicalName: string): Promise<string> {
+    const name = logicalName.toLowerCase();
+    const cached = (await this.loadEntitySetNames()).get(name);
+    if (cached) return cached;
 
-    return await builder.get<EntityMetadata>();
+    const def = await this.getEntityDefinition(name, { select: ["LogicalName", "EntitySetName"] });
+    if (!def.EntitySetName) {
+      throw DataverseInvalidRequestError.invalidParameter(
+        "logicalName",
+        `table '${logicalName}' has no entity set name`
+      );
+    }
+    this.entitySetNames?.set(name, def.EntitySetName);
+    return def.EntitySetName;
+  }
+
+  /** Forget the entity set names cached by {@link getEntitySetName}. */
+  clearEntitySetNameCache(): void {
+    this.entitySetNamesLoad = undefined;
+    this.entitySetNames = undefined;
   }
 
   /**
@@ -173,7 +268,7 @@ export class MetadataClient {
     options?: MetadataWriteOptions
   ): Promise<void> {
     await this.updateDefinition(
-      `/EntityDefinitions(LogicalName='${logicalName}')`,
+      `/EntityDefinitions(LogicalName=${key(logicalName)})`,
       entity,
       options
     );
@@ -199,7 +294,7 @@ export class MetadataClient {
     changes: EntityMetadataUpdate,
     options?: MetadataWriteOptions
   ): Promise<void> {
-    const path = `/EntityDefinitions(LogicalName='${logicalName}')`;
+    const path = `/EntityDefinitions(LogicalName=${key(logicalName)})`;
     const current = await this.client.api(path).get<Record<string, unknown>>();
     const merged = {
       ...withoutAnnotations(current),
@@ -214,57 +309,86 @@ export class MetadataClient {
    * @param logicalName Entity logical name
    */
   async deleteEntityDefinition(logicalName: string): Promise<void> {
-    await this.client.api(`/EntityDefinitions(LogicalName='${logicalName}')`).delete<undefined>();
+    await this.client
+      .api(`/EntityDefinitions(LogicalName=${key(logicalName)})`)
+      .delete<undefined>();
   }
 
   // ==================== Attribute Definitions ====================
 
   /**
-   * Retrieve all attributes for an entity
+   * Retrieve the attributes of an entity.
+   *
+   * With `cast`, only attributes of that type are returned, typed accordingly, and `select` and
+   * `expand` can use the type's own properties, e.g. `OptionSet` on a picklist or `Targets` on
+   * a lookup. Without the cast, Dataverse rejects those (`0x80060888`).
    * @param entityLogicalName Entity logical name
-   * @param options Query options (select, filter)
+   * @param options Query options (cast, select, filter, expand, labelLanguages)
    * @returns Array of attribute metadata
+   * @example
+   * ```typescript
+   * // GET EntityDefinitions(LogicalName='account')/Attributes/Microsoft.Dynamics.CRM.PicklistAttributeMetadata
+   * //   ?LabelLanguages=1033&$select=LogicalName&$expand=OptionSet($select=Options),GlobalOptionSet($select=Options)
+   * const picklists = await metadataClient.getAttributeDefinitions("account", {
+   *   cast: "PicklistAttributeMetadata",
+   *   select: ["LogicalName"],
+   *   expand: ["OptionSet($select=Options)", "GlobalOptionSet($select=Options)"],
+   *   labelLanguages: 1033,
+   * });
+   * picklists[0].OptionSet?.Options; // typed as PicklistAttributeMetadata
+   * ```
    */
+  async getAttributeDefinitions<C extends AttributeMetadataCast>(
+    entityLogicalName: string,
+    options: AttributeQueryOptions & { cast: C }
+  ): Promise<Array<AttributeMetadataByCast[C]>>;
   async getAttributeDefinitions(
     entityLogicalName: string,
-    options?: Omit<MetadataQueryOptions, "expand">
+    options?: AttributeQueryOptions
+  ): Promise<AttributeMetadata[]>;
+  async getAttributeDefinitions(
+    entityLogicalName: string,
+    options?: AttributeQueryOptions
   ): Promise<AttributeMetadata[]> {
-    let builder = this.client.api(
-      `/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes`
-    );
-
-    if (options?.select) {
-      builder = builder.select(...options.select);
-    }
-    if (options?.filter) {
-      builder = builder.filter(options.filter);
-    }
-
-    const response = await builder.get<{ value: AttributeMetadata[] }>();
+    const path = `/EntityDefinitions(LogicalName=${key(entityLogicalName)})/Attributes${castSegment(options?.cast)}`;
+    const response = await this.query(path, options).get<{ value: AttributeMetadata[] }>();
     return response.value;
   }
 
   /**
-   * Retrieve a single attribute definition
+   * Retrieve a single attribute definition.
+   *
+   * With `cast`, the attribute is read as that type, so `select` and `expand` can use the type's
+   * own properties. Dataverse answers 404 if the attribute is of another type.
    * @param entityLogicalName Entity logical name
    * @param attributeLogicalName Attribute logical name
-   * @param options Query options (select)
+   * @param options Query options (cast, select, expand, labelLanguages)
    * @returns Attribute metadata
+   * @example
+   * ```typescript
+   * const industry = await metadataClient.getAttributeDefinition("account", "industrycode", {
+   *   cast: "PicklistAttributeMetadata",
+   *   expand: "OptionSet",
+   * });
+   * ```
    */
+  async getAttributeDefinition<C extends AttributeMetadataCast>(
+    entityLogicalName: string,
+    attributeLogicalName: string,
+    options: Omit<AttributeQueryOptions, "filter"> & { cast: C }
+  ): Promise<AttributeMetadataByCast[C]>;
   async getAttributeDefinition(
     entityLogicalName: string,
     attributeLogicalName: string,
-    options?: Omit<MetadataQueryOptions, "filter" | "expand">
+    options?: Omit<AttributeQueryOptions, "filter">
+  ): Promise<AttributeMetadata>;
+  async getAttributeDefinition(
+    entityLogicalName: string,
+    attributeLogicalName: string,
+    options?: Omit<AttributeQueryOptions, "filter">
   ): Promise<AttributeMetadata> {
-    let builder = this.client.api(
-      `/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes(LogicalName='${attributeLogicalName}')`
-    );
-
-    if (options?.select) {
-      builder = builder.select(...options.select);
-    }
-
-    return await builder.get<AttributeMetadata>();
+    const path = `/EntityDefinitions(LogicalName=${key(entityLogicalName)})/Attributes(LogicalName=${key(attributeLogicalName)})${castSegment(options?.cast)}`;
+    return await this.query(path, options).get<AttributeMetadata>();
   }
 
   /**
@@ -280,7 +404,7 @@ export class MetadataClient {
     options?: MetadataWriteOptions
   ): Promise<string> {
     return this.createDefinition(
-      `/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes`,
+      `/EntityDefinitions(LogicalName=${key(entityLogicalName)})/Attributes`,
       attribute,
       options
     );
@@ -303,7 +427,7 @@ export class MetadataClient {
     options?: MetadataWriteOptions
   ): Promise<void> {
     await this.updateDefinition(
-      `/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes(LogicalName='${attributeLogicalName}')`,
+      `/EntityDefinitions(LogicalName=${key(entityLogicalName)})/Attributes(LogicalName=${key(attributeLogicalName)})`,
       attribute,
       options
     );
@@ -320,7 +444,7 @@ export class MetadataClient {
   ): Promise<void> {
     await this.client
       .api(
-        `/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes(LogicalName='${attributeLogicalName}')`
+        `/EntityDefinitions(LogicalName=${key(entityLogicalName)})/Attributes(LogicalName=${key(attributeLogicalName)})`
       )
       .delete<undefined>();
   }
@@ -358,18 +482,10 @@ export class MetadataClient {
     entityLogicalName: string,
     options?: MetadataQueryOptions
   ): Promise<OneToManyRelationshipMetadata[]> {
-    let builder = this.client.api(
-      `/EntityDefinitions(LogicalName='${entityLogicalName}')/OneToManyRelationships`
-    );
-
-    if (options?.select) {
-      builder = builder.select(...options.select);
-    }
-    if (options?.filter) {
-      builder = builder.filter(options.filter);
-    }
-
-    const response = await builder.get<{ value: OneToManyRelationshipMetadata[] }>();
+    const response = await this.query(
+      `/EntityDefinitions(LogicalName=${key(entityLogicalName)})/OneToManyRelationships`,
+      options
+    ).get<{ value: OneToManyRelationshipMetadata[] }>();
     return response.value;
   }
 
@@ -383,18 +499,10 @@ export class MetadataClient {
     entityLogicalName: string,
     options?: MetadataQueryOptions
   ): Promise<OneToManyRelationshipMetadata[]> {
-    let builder = this.client.api(
-      `/EntityDefinitions(LogicalName='${entityLogicalName}')/ManyToOneRelationships`
-    );
-
-    if (options?.select) {
-      builder = builder.select(...options.select);
-    }
-    if (options?.filter) {
-      builder = builder.filter(options.filter);
-    }
-
-    const response = await builder.get<{ value: OneToManyRelationshipMetadata[] }>();
+    const response = await this.query(
+      `/EntityDefinitions(LogicalName=${key(entityLogicalName)})/ManyToOneRelationships`,
+      options
+    ).get<{ value: OneToManyRelationshipMetadata[] }>();
     return response.value;
   }
 
@@ -408,18 +516,10 @@ export class MetadataClient {
     entityLogicalName: string,
     options?: MetadataQueryOptions
   ): Promise<ManyToManyRelationshipMetadata[]> {
-    let builder = this.client.api(
-      `/EntityDefinitions(LogicalName='${entityLogicalName}')/ManyToManyRelationships`
-    );
-
-    if (options?.select) {
-      builder = builder.select(...options.select);
-    }
-    if (options?.filter) {
-      builder = builder.filter(options.filter);
-    }
-
-    const response = await builder.get<{ value: ManyToManyRelationshipMetadata[] }>();
+    const response = await this.query(
+      `/EntityDefinitions(LogicalName=${key(entityLogicalName)})/ManyToManyRelationships`,
+      options
+    ).get<{ value: ManyToManyRelationshipMetadata[] }>();
     return response.value;
   }
 
@@ -433,16 +533,9 @@ export class MetadataClient {
     schemaName: string,
     options?: Omit<MetadataQueryOptions, "filter">
   ): Promise<OneToManyRelationshipMetadata | ManyToManyRelationshipMetadata> {
-    let builder = this.client.api(`/RelationshipDefinitions(SchemaName='${schemaName}')`);
-
-    if (options?.select) {
-      builder = builder.select(...options.select);
-    }
-    if (options?.expand) {
-      builder = builder.expand(options.expand);
-    }
-
-    return await builder.get<OneToManyRelationshipMetadata | ManyToManyRelationshipMetadata>();
+    return await this.query(`/RelationshipDefinitions(SchemaName=${key(schemaName)})`, options).get<
+      OneToManyRelationshipMetadata | ManyToManyRelationshipMetadata
+    >();
   }
 
   /**
@@ -455,16 +548,9 @@ export class MetadataClient {
     metadataId: string,
     options?: Omit<MetadataQueryOptions, "filter">
   ): Promise<OneToManyRelationshipMetadata | ManyToManyRelationshipMetadata> {
-    let builder = this.client.api(`/RelationshipDefinitions(${metadataId})`);
-
-    if (options?.select) {
-      builder = builder.select(...options.select);
-    }
-    if (options?.expand) {
-      builder = builder.expand(options.expand);
-    }
-
-    return await builder.get<OneToManyRelationshipMetadata | ManyToManyRelationshipMetadata>();
+    return await this.query(`/RelationshipDefinitions(${metadataId})`, options).get<
+      OneToManyRelationshipMetadata | ManyToManyRelationshipMetadata
+    >();
   }
 
   /**
@@ -503,7 +589,7 @@ export class MetadataClient {
     options?: MetadataWriteOptions
   ): Promise<void> {
     await this.updateDefinition(
-      `/RelationshipDefinitions(SchemaName='${schemaName}')`,
+      `/RelationshipDefinitions(SchemaName=${key(schemaName)})`,
       relationship,
       options
     );
@@ -522,7 +608,7 @@ export class MetadataClient {
     options?: MetadataWriteOptions
   ): Promise<void> {
     await this.updateDefinition(
-      `/RelationshipDefinitions(SchemaName='${schemaName}')`,
+      `/RelationshipDefinitions(SchemaName=${key(schemaName)})`,
       relationship,
       options
     );
@@ -534,7 +620,7 @@ export class MetadataClient {
    */
   async deleteRelationshipBySchemaName(schemaName: string): Promise<void> {
     await this.client
-      .api(`/RelationshipDefinitions(SchemaName='${schemaName}')`)
+      .api(`/RelationshipDefinitions(SchemaName=${key(schemaName)})`)
       .delete<undefined>();
   }
 
@@ -546,19 +632,9 @@ export class MetadataClient {
    * @returns Array of global option set metadata
    */
   async getGlobalOptionSets(options?: MetadataQueryOptions): Promise<OptionSetMetadata[]> {
-    let builder = this.client.api("/GlobalOptionSetDefinitions");
-
-    if (options?.select) {
-      builder = builder.select(...options.select);
-    }
-    if (options?.filter) {
-      builder = builder.filter(options.filter);
-    }
-    if (options?.expand) {
-      builder = builder.expand(options.expand);
-    }
-
-    const response = await builder.get<{ value: OptionSetMetadata[] }>();
+    const response = await this.query("/GlobalOptionSetDefinitions", options).get<{
+      value: OptionSetMetadata[];
+    }>();
     return response.value;
   }
 
@@ -578,18 +654,9 @@ export class MetadataClient {
     );
     const path = isGuid
       ? `/GlobalOptionSetDefinitions(${nameOrMetadataId})`
-      : `/GlobalOptionSetDefinitions(Name='${nameOrMetadataId}')`;
+      : `/GlobalOptionSetDefinitions(Name=${key(nameOrMetadataId)})`;
 
-    let builder = this.client.api(path);
-
-    if (options?.select) {
-      builder = builder.select(...options.select);
-    }
-    if (options?.expand) {
-      builder = builder.expand(options.expand);
-    }
-
-    return await builder.get<OptionSetMetadata>();
+    return await this.query(path, options).get<OptionSetMetadata>();
   }
 
   /**
@@ -638,7 +705,7 @@ export class MetadataClient {
     );
     const path = isGuid
       ? `/GlobalOptionSetDefinitions(${nameOrMetadataId})`
-      : `/GlobalOptionSetDefinitions(Name='${nameOrMetadataId}')`;
+      : `/GlobalOptionSetDefinitions(Name=${key(nameOrMetadataId)})`;
 
     await this.updateDefinition(path, optionSet, options);
   }
@@ -653,7 +720,7 @@ export class MetadataClient {
     );
     const path = isGuid
       ? `/GlobalOptionSetDefinitions(${nameOrMetadataId})`
-      : `/GlobalOptionSetDefinitions(Name='${nameOrMetadataId}')`;
+      : `/GlobalOptionSetDefinitions(Name=${key(nameOrMetadataId)})`;
 
     await this.client.api(path).delete<undefined>();
   }
@@ -809,7 +876,7 @@ export class MetadataClient {
    */
   async getValidReferencingEntities(referencedEntityName: string): Promise<string[]> {
     const response = await this.client
-      .api(`/GetValidReferencingEntities(ReferencedEntityName='${referencedEntityName}')`)
+      .api(`/GetValidReferencingEntities(ReferencedEntityName=${key(referencedEntityName)})`)
       .get<GetValidReferencingEntitiesResponse>();
     return response.EntityNames ?? [];
   }
@@ -821,7 +888,7 @@ export class MetadataClient {
    */
   async getValidReferencedEntities(referencingEntityName: string): Promise<string[]> {
     const response = await this.client
-      .api(`/GetValidReferencedEntities(ReferencingEntityName='${referencingEntityName}')`)
+      .api(`/GetValidReferencedEntities(ReferencingEntityName=${key(referencingEntityName)})`)
       .get<GetValidReferencedEntitiesResponse>();
     return response.EntityNames ?? [];
   }
@@ -945,6 +1012,55 @@ export class MetadataClient {
       ? builder.header("MSCRM.SolutionUniqueName", options.solutionUniqueName)
       : builder;
   }
+
+  // ==================== Internals ====================
+
+  /** A GET builder for `path` with the query options applied. */
+  private query(path: string, options: MetadataQueryOptions | undefined): DataverseRequestBuilder {
+    const languages = options?.labelLanguages === undefined ? [] : [options.labelLanguages].flat();
+    // LabelLanguages is a Dataverse query option, not an OData one; the builder has no setter.
+    const url = languages.length > 0 ? `${path}?LabelLanguages=${languages.join(",")}` : path;
+
+    let builder = this.client.api(url);
+    if (options?.select?.length) builder = builder.select(...options.select);
+    if (options?.filter) builder = builder.filter(options.filter);
+    if (options?.expand?.length) builder = builder.expand(...[options.expand].flat());
+    return builder;
+  }
+
+  /** Load every table's entity set name once; a failed load is not cached. */
+  private loadEntitySetNames(): Promise<Map<string, string>> {
+    this.entitySetNamesLoad ??= this.query("/EntityDefinitions", {
+      select: ["LogicalName", "EntitySetName"],
+    })
+      .get<{ value: Array<Pick<EntityMetadata, "LogicalName" | "EntitySetName">> }>()
+      .then((response) => {
+        const names = new Map<string, string>();
+        for (const e of response.value) {
+          if (e.LogicalName && e.EntitySetName) names.set(e.LogicalName, e.EntitySetName);
+        }
+        this.entitySetNames = names;
+        return names;
+      })
+      .catch((err: unknown) => {
+        this.entitySetNamesLoad = undefined;
+        throw err;
+      });
+    return this.entitySetNamesLoad;
+  }
+}
+
+/**
+ * A string key value as an OData literal for a URL path, e.g. `LogicalName='account'`: embedded
+ * `'` doubled, as OData requires, and characters that would end the path (`/ ? # %` …) escaped.
+ */
+function key(value: string): string {
+  return `'${encodeURIComponent(value.replace(/'/g, "''"))}'`;
+}
+
+/** The type-cast path segment for an attribute query, or `""`. */
+function castSegment(cast: AttributeMetadataCast | undefined): string {
+  return cast ? `/Microsoft.Dynamics.CRM.${cast}` : "";
 }
 
 /** A GUID in parentheses at the end of an `OData-EntityId` URL. */
