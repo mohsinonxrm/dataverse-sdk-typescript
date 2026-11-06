@@ -1,3 +1,9 @@
+/**
+ * Portions of this file are adapted from dataverse-gen by Scott Durow
+ * (https://github.com/scottdurow/dataverse-gen), Copyright (c) 2020 Scott Durow, licensed under
+ * the MIT License. See THIRD_PARTY_NOTICES.md in this package for the notice.
+ */
+
 import * as xmljs from "xml-js";
 import type {
   DataverseGenConfig,

@@ -797,14 +797,21 @@ export function getLogicalName(schemaName: string): string | undefined {
 
 ## 🙏 Acknowledgments
 
-This implementation is heavily inspired by [scottdurow/dataverse-gen](https://github.com/scottdurow/dataverse-gen). We adapted Scott's proven patterns:
+Portions of this package are adapted from
+[scottdurow/dataverse-gen](https://github.com/scottdurow/dataverse-gen) (Copyright (c) 2020 Scott
+Durow, MIT License). The MIT copyright and permission notice is in
+[THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md), which ships with the package, and each adapted
+file has a header pointing to it. The adapted parts are:
 
-- Three-phase pipeline architecture (Load → Filter → Enrich)
-- Per-entity `RetrieveMetadataChanges` calls with `AttributeQuery`
-- Polymorphic lookup consolidation logic
-- Local option set enum generation strategy
-- Structural property type determination for actions/functions
-- Reserved keyword handling and code-safe naming
+- the three-phase pipeline (load `$metadata`, filter, enrich) and the `SchemaModel` /
+  `TypescriptGenerator` / `MetadataService` design;
+- per-entity `RetrieveMetadataChanges` calls with an `AttributeQuery`;
+- polymorphic lookup consolidation;
+- local option set enum generation;
+- structural property types for action and function parameters;
+- code-safe navigation names;
+- the `.dataverse-gen.json` configuration and the `init` / `generate` commands;
+- the EJS templates' entity metadata, enum and parameter metadata shapes.
 
 Key differences from scottdurow/dataverse-gen:
 
@@ -812,7 +819,7 @@ Key differences from scottdurow/dataverse-gen:
 - **Integrates with `@mohsinonxrm/dataverse-sdk-*`** packages (HTTP-first + OrganizationService)
 - **TypeScript-first** (no JavaScript transpilation output)
 - **Simplified configuration** (JSON-based, no prompts)
-- **AGPL v3 license** (vs MIT)
+- **AGPL v3 license** for this package; the adapted portions keep their MIT notice
 
 ---
 
