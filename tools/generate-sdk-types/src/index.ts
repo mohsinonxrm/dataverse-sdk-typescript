@@ -117,7 +117,8 @@ async function fetchMetadata(config: SdkGeneratorConfig): Promise<string> {
 
   // Create scope for Dataverse
   const scope = `${dataverseUrl}/.default`;
-  console.log(`🔑 Requesting token with scope: ${scope}`);
+  // The scope contains the environment URL, which isn't printed (public CI logs, #90)
+  console.log("🔑 Requesting a token for the Dataverse environment");
 
   // Create token provider
   const tokenProvider = new AzureIdentityTokenProvider(credential, {

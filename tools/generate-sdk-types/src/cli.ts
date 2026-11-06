@@ -93,8 +93,8 @@ program
         );
       }
 
-      console.log(`📍 Dataverse URL: ${config.dataverseUrl}`);
-      console.log(`🔐 Client ID: ${config.authentication.clientId}\n`);
+      // The environment URL and client id are not printed: this also runs in public CI logs (#90)
+      console.log("🔐 Dataverse environment and credentials configured\n");
 
       if (options.dryRun) {
         console.log("⚠️  DRY RUN MODE - No files will be written\n");
