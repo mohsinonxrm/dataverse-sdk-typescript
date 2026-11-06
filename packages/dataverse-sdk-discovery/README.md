@@ -99,6 +99,7 @@ interface DiscoveryClientOptions {
   logger?: Logger;
   telemetry?: TelemetryClient;
   retry?: RetryOptions; // 429/502/503/504, honouring Retry-After
+  middleware?: MiddlewareCustomization; // prepend / append / replace, as in DataverseClientOptions
 }
 ```
 
@@ -110,6 +111,27 @@ interface DiscoveryClientOptions {
 Requests go through the same pipeline as `DataverseClient`: the injected `fetchProvider`, retries
 with `Retry-After`, logging, telemetry and typed errors. The bearer token is sent only to the
 discovery host, including on `@odata.nextLink` pages.
+
+`middleware` customises that pipeline the way `DataverseClientOptions.middleware` does: `prepend`
+runs before the defaults (before the token is added), `append` runs right before `fetch` and sees
+the final headers, and `replace` receives the defaults. Use it to record discovery requests
+instead of wrapping `fetchProvider`:
+
+```typescript
+import { buildUrl, type Middleware } from "@mohsinonxrm/dataverse-sdk-core";
+
+const recorder: Middleware = {
+  name: "recorder",
+  execute: async (request, ctx, next) => {
+    const url = buildUrl(request); // the URL fetch receives
+    const response = await next(request, ctx);
+    console.log(request.method, url, response.status);
+    return response;
+  },
+};
+
+const discovery = new DiscoveryClient(tokenProvider, { middleware: { append: [recorder] } });
+```
 
 `getBaseUrl()` and `getScopes()` return the endpoint and scopes the client uses.
 

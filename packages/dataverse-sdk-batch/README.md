@@ -8,6 +8,7 @@ Batch operations support for the Dataverse SDK, enabling multiple requests to be
 - **Transactional Changesets**: Group related modifications that must succeed or fail together
 - **Content-ID References**: Inside a changeset, a request's id is its Content-ID, so a later request refers to the entity it creates as `$<id>`
 - **Request Order Kept**: Requests and changesets are sent, and their results returned, in the order you add them
+- **Created Record Ids**: `entityIdFromBatchResponse()` reads the id a create returned, from an `execute()` result or a decoded part
 - **Reusable Codec**: `encodeBatchRequest()` and `decodeBatchResponse()` are exported for tools that build or display `$batch` bodies themselves
 - **Error Handling**: Comprehensive error handling with per-request error tracking
 - **Continue on Error**: Optional continue-on-error semantics for partial success scenarios
@@ -244,6 +245,18 @@ batch.endChangeset();
 ```
 
 An id of `"1"` gives the classic `$1` form.
+
+### Ids of Created Records
+
+`entityIdFromBatchResponse()` reads a create's record id from its response's `OData-EntityId` header (or `Location`), like `entityIdFromResponse()` in core does for a `Response`. It takes a `BatchResponseStep` from `execute()` or a `BatchResponsePart` from `decodeBatchResponse()`, and throws `DataverseInvalidRequestError` when neither header holds an id (for example, the request was not a create):
+
+```typescript
+import { BatchRequestBuilder, entityIdFromBatchResponse } from "@mohsinonxrm/dataverse-sdk-batch";
+
+const result = await batch.execute();
+const accountId = entityIdFromBatchResponse(result.responses.get("account")!);
+const contactId = entityIdFromBatchResponse(result.responses.get("contact")!);
+```
 
 ### Error Handling
 

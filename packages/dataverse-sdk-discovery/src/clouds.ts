@@ -2,6 +2,7 @@ import { DataverseInvalidRequestError } from "@mohsinonxrm/dataverse-sdk-core";
 import type {
   FetchProvider,
   Logger,
+  MiddlewareCustomization,
   RetryOptions,
   TelemetryClient,
 } from "@mohsinonxrm/dataverse-sdk-core";
@@ -88,6 +89,15 @@ export interface DiscoveryClientOptions {
    * `Retry-After` is honoured. Defaults to the SDK's defaults.
    */
   retry?: RetryOptions;
+
+  /**
+   * Customise the middleware pipeline, as in `DataverseClientOptions.middleware`: `prepend`
+   * middleware runs before the defaults, `append` middleware runs last, right before `fetch`
+   * (so it sees the final headers, including `authorization`), and `replace` receives the
+   * defaults and returns the list to use. Use it to record or inspect discovery requests;
+   * `buildUrl(request)` from `@mohsinonxrm/dataverse-sdk-core` gives the URL `fetch` receives.
+   */
+  middleware?: MiddlewareCustomization;
 }
 
 /** The endpoint and scopes a {@link DiscoveryClientOptions} resolves to. */
