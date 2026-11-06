@@ -42,6 +42,26 @@ jobs:
       - name: Run tests
         run: pnpm test
 
+      # Release gates (#108): nothing is versioned or published unless the packages are well
+      # formed, the browser bundle works under a strict CSP, and the live suite passes.
+      - name: Check package exports and types (publint, attw)
+        run: pnpm check:packages
+
+      - name: Install Chromium for Playwright
+        run: pnpm --filter @mohsinonxrm/dataverse-sdk-browser-tests exec playwright install --with-deps chromium
+
+      - name: Browser smoke tests
+        run: pnpm test:browser
+
+      - name: Live integration tests (dev org)
+        env:
+          DATAVERSE_URL: ${{ secrets.DATAVERSE_URL }}
+          DATAVERSE_TENANT_ID: ${{ secrets.DATAVERSE_TENANT_ID }}
+          DATAVERSE_CLIENT_ID: ${{ secrets.DATAVERSE_CLIENT_ID }}
+          DATAVERSE_CLIENT_SECRET: ${{ secrets.DATAVERSE_CLIENT_SECRET }}
+          DATAVERSE_INTEGRATION_REQUIRED: "1"
+        run: pnpm test:integration
+
       - name: Create Release Pull Request or Publish
         id: changesets
         uses: changesets/action@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d # v1.9.0
