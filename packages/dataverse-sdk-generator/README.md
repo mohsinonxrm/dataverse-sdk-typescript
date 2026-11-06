@@ -72,19 +72,30 @@ pnpm dataverse-gen generate --token "eyJ0eXAi..."
 ### 4. Use Generated Types
 
 ```typescript
-import { Account, AccountMetadata } from "./generated/entities/Account.js";
 import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  createEntityReference,
+  formatEntityForWrite,
+} from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { type Account, AccountMetadata } from "./generated/entities/Account.js";
+import { EntityMetadataCache } from "./generated/metadata.js";
 
 const client = new DataverseClient({/* ... */});
 
-// Type-safe entity creation
+// Type-safe entity creation. Lookups take an EntityReference.
 const account: Account = {
-  logicalName: "account",
   name: "Contoso",
   creditlimit: 50000,
+  primarycontactid: createEntityReference("contact", contactId),
 };
 
-await client.api("/accounts").post(account);
+// formatEntityForWrite adds @odata.type and turns the lookup into
+// "primarycontactid@odata.bind": "/contacts(<id>)"
+const accountId = await client
+  .api(`/${AccountMetadata.collectionName}`)
+  .createAndGetId(
+    formatEntityForWrite(account, AccountMetadata, { metadataCache: EntityMetadataCache })
+  );
 
 // Use metadata
 console.log(AccountMetadata.collectionName); // "accounts"
@@ -239,7 +250,11 @@ imported, and the output type-checks under `strict`, `verbatimModuleSyntax` and 
 
 ```typescript
 // generated/entities/Account.ts
-import type { EntityMetadata, IEntity } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import type {
+  EntityMetadata,
+  EntityReference,
+  IEntity,
+} from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import type { account_industrycode } from "../enums/account_industrycode.js";
 import type { Contact } from "./Contact.js";
 
@@ -249,8 +264,6 @@ import type { Contact } from "./Contact.js";
  * Entity Set: accounts
  */
 export interface Account extends IEntity {
-  logicalName: "account";
-
   /** accountid */
   accountid?: string | null;
 
@@ -264,7 +277,7 @@ export interface Account extends IEntity {
   _primarycontactid_value?: string | null;
 
   /** Navigation: account_primary_contact */
-  primarycontactid?: Contact;
+  primarycontactid?: Contact | EntityReference;
 }
 
 export const AccountMetadata: EntityMetadata = {
@@ -309,8 +322,10 @@ export const AccountMetadata: EntityMetadata = {
 };
 ```
 
-A navigation property whose target table isn't generated (or is abstract, such as `ownerid`'s
-`principal`) is typed as `IEntity`.
+A single-valued navigation property is the related record when you read it (with `$expand`) or
+an `EntityReference` when you write it. A target table that isn't generated (or is abstract,
+such as `ownerid`'s `principal`) is typed as `IEntity`. Interfaces have no `logicalName`: the Web
+API rejects unknown properties, and the metadata already names the table.
 
 ### Enum Type
 
@@ -411,9 +426,10 @@ Generated types work seamlessly with the core SDK:
 
 ```typescript
 import { ConfidentialClientApplication } from "@azure/msal-node";
-import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+import { DataverseClient, Prefer } from "@mohsinonxrm/dataverse-sdk-core";
 import { MsalNodeTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-msal-node";
-import { Account, Contact } from "./generated/index.js";
+import { formatEntityForWrite } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { type Account, AccountMetadata } from "./generated/index.js";
 
 // Setup client
 const cca = new ConfidentialClientApplication({
@@ -428,31 +444,29 @@ const tokenProvider = new MsalNodeTokenProvider(cca, {
   scopes: ["https://org.crm.dynamics.com/.default"],
 });
 const client = new DataverseClient({
-  baseUrl: "https://org.crm.dynamics.com/api/data/v9.2",
+  baseUrl: "https://org.crm.dynamics.com",
   tokenProvider,
 });
 
 // Type-safe CRUD operations
 const account: Account = {
-  logicalName: "account",
   name: "Contoso",
   creditlimit: 100000,
 };
 
-const createResponse = await client
+const createdAccount = await client
   .api("/accounts")
-  .header("Prefer", "return=representation")
-  .post(account);
+  .prefer(Prefer.returnRepresentation())
+  .post<Account>(formatEntityForWrite(account, AccountMetadata));
 
-const createdAccount = createResponse as Account;
 console.log("Created:", createdAccount.accountid);
 
 // Type-safe queries
 const accounts = await client
   .api("/accounts")
-  .select(["name", "creditlimit"])
+  .select("name", "creditlimit")
   .filter("creditlimit gt 50000")
-  .get<Account[]>();
+  .get<{ value: Account[] }>();
 
 console.log(`Found ${accounts.value.length} accounts`);
 ```
@@ -581,13 +595,11 @@ generated/
 ```typescript
 // Contact.ts (generated)
 export interface Contact extends IEntity {
-  logicalName: "contact";
-
   /** Total Spend */
   contoso_totalspend?: number | null; // Rollup
 
   /** Navigation: contact_customer_accounts (polymorphic: account, contact) */
-  parentcustomerid?: Account | Contact;
+  parentcustomerid?: Account | Contact | EntityReference;
 }
 
 export const ContactMetadata: EntityMetadata = {
@@ -618,7 +630,9 @@ export const ContactMetadata: EntityMetadata = {
 ```
 
 `attributeTypes` maps each column to its OData type; `attributes` has the details. A polymorphic
-lookup's targets that are all generated give a union type; otherwise it's `IEntity`.
+lookup's targets that are all generated give a union type; otherwise it's `IEntity`. To set it,
+pass a reference to any target: `formatEntityForWrite()` binds through the navigation property
+for that table (`parentcustomerid_account@odata.bind` for an account).
 
 ### Metadata File Example
 
