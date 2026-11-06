@@ -9,7 +9,15 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
-    ignores: ["dist", "node_modules", ".turbo", "vite.config.ts", "eslint.config.js"],
+    ignores: [
+      "dist",
+      "node_modules",
+      ".turbo",
+      "vite.config.ts",
+      "vitest.config.ts",
+      "vitest.e2e.config.ts",
+      "eslint.config.js",
+    ],
   },
   js.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
