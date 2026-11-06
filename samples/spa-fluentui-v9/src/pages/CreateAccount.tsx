@@ -133,7 +133,7 @@ export default function CreateAccount() {
               <Input
                 value={(formData as any).accountnumber || ""}
                 onChange={(e) => handleChange("accountnumber", (e as any).target.value)}
-                placeholder="(e as any).g. ACC-001"
+                placeholder="e.g. ACC-001"
               />
             </Field>
 
@@ -141,7 +141,7 @@ export default function CreateAccount() {
               <Input
                 value={(formData as any).telephone1 || ""}
                 onChange={(e) => handleChange("telephone1", (e as any).target.value)}
-                placeholder="(e as any).g. +1 (555) 123-4567"
+                placeholder="e.g. +1 (555) 123-4567"
                 type="tel"
               />
             </Field>
@@ -152,7 +152,7 @@ export default function CreateAccount() {
               <Input
                 value={(formData as any).emailaddress1 || ""}
                 onChange={(e) => handleChange("emailaddress1", (e as any).target.value)}
-                placeholder="(e as any).g. contact@(example as any).com"
+                placeholder="e.g. contact@example.com"
                 type="email"
               />
             </Field>
@@ -161,7 +161,7 @@ export default function CreateAccount() {
               <Input
                 value={(formData as any).websiteurl || ""}
                 onChange={(e) => handleChange("websiteurl", (e as any).target.value)}
-                placeholder="(e as any).g. https://(example as any).com"
+                placeholder="e.g. https://example.com"
                 type="url"
               />
             </Field>
@@ -172,7 +172,7 @@ export default function CreateAccount() {
               <Input
                 value={(formData as any).revenue?.toString() || ""}
                 onChange={(e) => handleChange("revenue", (e as any).target.value)}
-                placeholder="(e as any).g. 1000000"
+                placeholder="e.g. 1000000"
                 type="number"
               />
             </Field>
@@ -181,7 +181,7 @@ export default function CreateAccount() {
               <Input
                 value={(formData as any).numberofemployees?.toString() || ""}
                 onChange={(e) => handleChange("numberofemployees", (e as any).target.value)}
-                placeholder="(e as any).g. 100"
+                placeholder="e.g. 100"
                 type="number"
               />
             </Field>
@@ -192,7 +192,7 @@ export default function CreateAccount() {
               <Input
                 value={(formData as any).address1_city || ""}
                 onChange={(e) => handleChange("address1_city", (e as any).target.value)}
-                placeholder="(e as any).g. Seattle"
+                placeholder="e.g. Seattle"
               />
             </Field>
 
@@ -200,7 +200,7 @@ export default function CreateAccount() {
               <Input
                 value={(formData as any).address1_stateorprovince || ""}
                 onChange={(e) => handleChange("address1_stateorprovince", (e as any).target.value)}
-                placeholder="(e as any).g. WA"
+                placeholder="e.g. WA"
               />
             </Field>
           </div>
@@ -209,7 +209,7 @@ export default function CreateAccount() {
             <Input
               value={(formData as any).address1_country || ""}
               onChange={(e) => handleChange("address1_country", (e as any).target.value)}
-              placeholder="(e as any).g. USA"
+              placeholder="e.g. USA"
             />
           </Field>
 

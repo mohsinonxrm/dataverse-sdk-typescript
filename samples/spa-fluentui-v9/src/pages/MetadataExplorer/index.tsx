@@ -110,23 +110,23 @@ export default function MetadataExplorer() {
 
     try {
       const entityDefinition = {
-        "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).EntityMetadata",
+        "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
         LogicalName: entityLogicalName,
         DisplayName: {
-          "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).Label",
+          "@odata.type": "Microsoft.Dynamics.CRM.Label",
           LocalizedLabels: [
             {
-              "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).LocalizedLabel",
+              "@odata.type": "Microsoft.Dynamics.CRM.LocalizedLabel",
               Label: entityDisplayName,
               LanguageCode: 1033,
             },
           ],
         },
         DisplayCollectionName: {
-          "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).Label",
+          "@odata.type": "Microsoft.Dynamics.CRM.Label",
           LocalizedLabels: [
             {
-              "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).LocalizedLabel",
+              "@odata.type": "Microsoft.Dynamics.CRM.LocalizedLabel",
               Label: `${entityDisplayName}s`,
               LanguageCode: 1033,
             },
@@ -138,16 +138,15 @@ export default function MetadataExplorer() {
         IsActivity: false,
         Attributes: [
           {
-            "@(odata as any).type":
-              "(Microsoft as any).Dynamics.(CRM as any).StringAttributeMetadata",
+            "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
             AttributeType: "String",
             AttributeTypeName: { Value: "StringType" },
             LogicalName: `${entityLogicalName}name`,
             DisplayName: {
-              "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).Label",
+              "@odata.type": "Microsoft.Dynamics.CRM.Label",
               LocalizedLabels: [
                 {
-                  "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).LocalizedLabel",
+                  "@odata.type": "Microsoft.Dynamics.CRM.LocalizedLabel",
                   Label: "Name",
                   LanguageCode: 1033,
                 },
@@ -202,15 +201,15 @@ export default function MetadataExplorer() {
 
     try {
       const attributeDefinition: any = {
-        "@(odata as any).type": `(Microsoft as any).Dynamics.CRM.${attributeType}AttributeMetadata`,
+        "@odata.type": `Microsoft.Dynamics.CRM.${attributeType}AttributeMetadata`,
         AttributeType: attributeType,
         AttributeTypeName: { Value: `${attributeType}Type` },
         LogicalName: attributeName,
         DisplayName: {
-          "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).Label",
+          "@odata.type": "Microsoft.Dynamics.CRM.Label",
           LocalizedLabels: [
             {
-              "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).LocalizedLabel",
+              "@odata.type": "Microsoft.Dynamics.CRM.LocalizedLabel",
               Label: attributeName,
               LanguageCode: 1033,
             },

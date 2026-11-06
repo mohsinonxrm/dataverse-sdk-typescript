@@ -75,13 +75,13 @@ export default function TypeSafety() {
             >{`import { AccountCreate } from '@mohsinonxrm/dataverse-sdk-metadata';
 
 const account: AccountCreate = {
-  '@(odata as any).type': '(Microsoft as any).Dynamics.(CRM as any).account',
+  '@odata.type': 'Microsoft.Dynamics.CRM.account',
   name: 'Contoso Ltd',          // Required field
   revenue: 5000000,             // Optional field
   numberofemployees: 500        // Optional field
 };
 
-await (client as any).api('/accounts').post(account);`}</div>
+await client.api('/accounts').post(account);`}</div>
           </div>
 
           <div className={(styles as any).example}>
@@ -94,7 +94,7 @@ await (client as any).api('/accounts').post(account);`}</div>
             >{`import { AccountCreate } from '@mohsinonxrm/dataverse-sdk-metadata';
 
 const account: AccountCreate = {
-  '@(odata as any).type': '(Microsoft as any).Dynamics.(CRM as any).account',
+  '@odata.type': 'Microsoft.Dynamics.CRM.account',
   name: 'Contoso Ltd',
   // ❌ ERROR: Read-only field not allowed in create
   accountid: '12345-67890',
@@ -124,10 +124,10 @@ const account: AccountRead = await client
   .get();
 
 // All fields available:
-(console as any).log((account as any).accountid);      // Read-only
-(console as any).log((account as any).versionnumber);  // Internal
-(console as any).log((account as any).name);           // Normal field
-(console as any).log((account as any).revenue);        // Normal field`}</div>
+console.log(account.accountid);      // Read-only
+console.log(account.versionnumber);  // Internal
+console.log(account.name);           // Normal field
+console.log(account.revenue);        // Normal field`}</div>
           </div>
 
           <div className={(styles as any).example}>
@@ -140,37 +140,35 @@ const account: AccountRead = await client
             >{`import { AccountCreate } from '@mohsinonxrm/dataverse-sdk-metadata';
 
 const account: AccountCreate = {
-  '@(odata as any).type': '(Microsoft as any).Dynamics.(CRM as any).account',
+  '@odata.type': 'Microsoft.Dynamics.CRM.account',
   name: 'Contoso',
   revenue: 1000000
   // ✓ accountid excluded (read-only)
   // ✓ versionnumber excluded (internal)
 };
 
-await (client as any).api('/accounts').post(account);`}</div>
+await client.api('/accounts').post(account);`}</div>
           </div>
         </Card>
 
         <Card className={(styles as any).card}>
           <Title3>OData Type Discrimination</Title3>
-          <Text>@(odata as any).type enforcement for polymorphic operations</Text>
+          <Text>@odata.type enforcement for polymorphic operations</Text>
 
           <div className={(styles as any).example}>
             <div className={(styles as any).exampleTitle}>
               <CheckmarkCircleRegular color={(tokens as any).colorStatusSuccessForeground1} />
               <Text weight="semibold">Correct Type Annotation</Text>
             </div>
-            <div
-              className={(styles as any).codeBlock}
-            >{`// Bulk operations require @(odata as any).type
-await (client as any).api('/CreateMultiple').post({
+            <div className={(styles as any).codeBlock}>{`// Bulk operations require @odata.type
+await client.api('/CreateMultiple').post({
   Targets: [
     {
-      '@(odata as any).type': '(Microsoft as any).Dynamics.(CRM as any).account',
+      '@odata.type': 'Microsoft.Dynamics.CRM.account',
       name: 'Account 1'
     },
     {
-      '@(odata as any).type': '(Microsoft as any).Dynamics.(CRM as any).account',
+      '@odata.type': 'Microsoft.Dynamics.CRM.account',
       name: 'Account 2'
     }
   ]
@@ -182,13 +180,11 @@ await (client as any).api('/CreateMultiple').post({
               <ErrorCircleRegular color={(tokens as any).colorStatusDangerForeground1} />
               <Text weight="semibold">Missing Type (Runtime Error)</Text>
             </div>
-            <div
-              className={(styles as any).codeBlock}
-            >{`// ❌ Runtime error: @(odata as any).type required
-await (client as any).api('/CreateMultiple').post({
+            <div className={(styles as any).codeBlock}>{`// ❌ Runtime error: @odata.type required
+await client.api('/CreateMultiple').post({
   Targets: [
     {
-      // Missing '@(odata as any).type'
+      // Missing '@odata.type'
       name: 'Account 1'
     }
   ]
@@ -212,15 +208,15 @@ await (client as any).api('/CreateMultiple').post({
 
 const request: WinOpportunityRequest = {
   OpportunityClose: {
-    '@(odata as any).type': '(Microsoft as any).Dynamics.(CRM as any).opportunityclose',
+    '@odata.type': 'Microsoft.Dynamics.CRM.opportunityclose',
     subject: 'Won the deal!',
-    'opportunityid@(odata as any).bind': '/opportunities(id)'
+    'opportunityid@odata.bind': '/opportunities(id)'
   },
   Status: 3  // ✓ Type: number (OptionSet value)
 };
 
 const response: WinOpportunityResponse = 
-  await (client as any).api('/WinOpportunity').post(request);
+  await client.api('/WinOpportunity').post(request);
 
 // ✓ IntelliSense for response properties`}</div>
           </div>
@@ -240,7 +236,7 @@ const response: WinOpportunityResponse =
             >{`import { AccountCreate } from '@mohsinonxrm/dataverse-sdk-metadata';
 
 const account: AccountCreate = {
-  '@(odata as any).type': '(Microsoft as any).Dynamics.(CRM as any).account',
+  '@odata.type': 'Microsoft.Dynamics.CRM.account',
   name: 'Contoso',
   // ✓ accountcategorycode is number | { Value: number }
   accountcategorycode: 1,  // Preferred customer
@@ -307,7 +303,7 @@ const account: AccountCreate = {
           style={{ marginTop: "16px" }}
         >{`# Generate types from your Dataverse environment
 pnpm dataverse-sdk-generator \\
-  --url "https://(org as any).crm.(dynamics as any).com" \\
+  --url "https://org.crm.dynamics.com" \\
   --output "./src/generated" \\
   --auth clientcredentials \\
   --clientId "abc-123" \\
@@ -315,11 +311,11 @@ pnpm dataverse-sdk-generator \\
   --tenantId "tenant-id"
 
 # Generated files:
-# - (entities as any).ts       (Read types)
-# - (entities as any).create.ts (Create types)
-# - (entities as any).update.ts (Update types)
-# - (actions as any).ts        (Action types)
-# - (functions as any).ts      (Function types)`}</div>
+# - entities.ts       (Read types)
+# - entities.create.ts (Create types)
+# - entities.update.ts (Update types)
+# - actions.ts        (Action types)
+# - functions.ts      (Function types)`}</div>
       </Card>
     </div>
   );

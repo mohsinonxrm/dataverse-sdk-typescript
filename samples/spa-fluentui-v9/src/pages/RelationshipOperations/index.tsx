@@ -74,10 +74,11 @@ export default function RelationshipOperations() {
     setError(null);
 
     try {
-      // Associate using raw API
-      await (client as any).api(`/contacts(${contactId})/contact_customer_accounts/$ref`).post({
-        "@(odata as any).id": `${client["baseUrl"]}/accounts(${accountId})`,
-      });
+      // contact_customer_accounts is the collection-valued side of the relationship, so it is
+      // navigated from the account; the builder posts the absolute @odata.id to .../$ref.
+      await client
+        .api(`/accounts(${accountId})`)
+        .associate("contact_customer_accounts", "contacts", contactId);
 
       setResults({
         operation: "Associate (Raw API)",
@@ -100,8 +101,10 @@ export default function RelationshipOperations() {
 
     try {
       // Associate using OrganizationService
-      await (orgService as any).associate("contact", contactId, relationship, [
-        { entityType: "account", id: accountId },
+      // associate(entitySetName, id, relationship, relatedEntities): the primary record is the
+      // account that owns the collection-valued navigation property.
+      await orgService.associate("accounts", accountId, relationship, [
+        { logicalName: "contact", id: contactId },
       ]);
 
       setResults({
@@ -125,9 +128,8 @@ export default function RelationshipOperations() {
 
     try {
       // Disassociate using OrganizationService
-      await (orgService as any).disassociate("contact", contactId, relationship, [
-        { entityType: "account", id: accountId },
-      ]);
+      // disassociate(entitySetName, id, relationship, relatedId): relatedId is a single GUID.
+      await orgService.disassociate("accounts", accountId, relationship, contactId);
 
       setResults({
         operation: "Disassociate",
@@ -153,7 +155,7 @@ export default function RelationshipOperations() {
       const response = await (client as any).api("/contacts").post({
         firstname: "Jane",
         lastname: "Doe",
-        "parentcustomerid_account@(odata as any).bind": `/accounts(${accountId})`,
+        "parentcustomerid_account@odata.bind": `/accounts(${accountId})`,
       });
 
       setResults({
@@ -328,24 +330,22 @@ export default function RelationshipOperations() {
               label: "Operation",
               code:
                 (results as any).operation === "Associate (Raw API)"
-                  ? `await (client as any).api('/contacts(${contactId})/${relationship}/$ref').post({
-  '@(odata as any).id': '/accounts(${accountId})'
-})`
+                  ? `await client
+  .api('/accounts(${accountId})')
+  .associate('contact_customer_accounts', 'contacts', '${contactId}')`
                   : (results as any).operation === "Associate (OrgService)"
-                    ? `await (orgService as any).associate('contact', '${contactId}', '${relationship}', [
-  { entityType: 'account', id: '${accountId}' }
+                    ? `await orgService.associate('accounts', '${accountId}', '${relationship}', [
+  { logicalName: 'contact', id: '${contactId}' }
 ])`
                     : (results as any).operation === "Disassociate"
-                      ? `await (orgService as any).disassociate('contact', '${contactId}', '${relationship}', [
-  { entityType: 'account', id: '${accountId}' }
-])`
+                      ? `await orgService.disassociate('accounts', '${accountId}', '${relationship}', '${contactId}')`
                       : (results as any).operation === "Create with Bind"
-                        ? `await (client as any).api('/contacts').post({
+                        ? `await client.api('/contacts').post({
   firstname: 'Jane',
   lastname: 'Doe',
-  'parentcustomerid_account@(odata as any).bind': '/accounts(${accountId})'
+  'parentcustomerid_account@odata.bind': '/accounts(${accountId})'
 })`
-                        : `await (client as any).api('/accounts(${accountId})/${relationship}')
+                        : `await client.api('/accounts(${accountId})/${relationship}')
   .select()
   .get()`,
               result: (JSON as any).stringify(results, null, 2),

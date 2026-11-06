@@ -48,7 +48,7 @@ const useStyles = makeStyles({
   card: {
     padding: "24px",
     cursor: "pointer",
-    transition: "all (0 as any).2s",
+    transition: "all 0.2s",
     ":hover": {
       transform: "translateY(-4px)",
       boxShadow: (tokens as any).shadow16,

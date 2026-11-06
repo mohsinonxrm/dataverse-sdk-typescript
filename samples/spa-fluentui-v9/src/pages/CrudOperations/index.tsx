@@ -112,8 +112,8 @@ export default function CrudOperations() {
 
   const comparisonItems = [
     {
-      label: "Raw API ((client as any).api)",
-      code: `const response = await (client as any).api('/accounts').post({
+      label: "Raw API (client.api)",
+      code: `const response = await client.api('/accounts').post({
   name: 'Contoso Ltd',
   revenue: 1000000,
   numberofemployees: 250
@@ -126,8 +126,8 @@ export default function CrudOperations() {
         ) : null,
     },
     {
-      label: "Typed API ((client as any).api<T>)",
-      code: `const response = await (client as any).api<Account>('/accounts').post({
+      label: "Typed API (client.api<T>)",
+      code: `const response = await client.api<Account>('/accounts').post({
   name: 'Contoso Ltd',
   revenue: 1000000,
   numberofemployees: 250
@@ -142,7 +142,7 @@ export default function CrudOperations() {
     },
     {
       label: "OrganizationService (C#-familiar)",
-      code: `const accountId = await (orgService as any).create('accounts', {
+      code: `const accountId = await orgService.create('accounts', {
   name: 'Contoso Ltd',
   revenue: 1000000,
   numberofemployees: 250

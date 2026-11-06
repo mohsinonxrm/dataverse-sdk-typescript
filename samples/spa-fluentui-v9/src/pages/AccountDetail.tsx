@@ -139,7 +139,7 @@ export default function AccountDetail() {
           "description",
           "createdon",
           "modifiedon",
-          "@(odata as any).etag"
+          "@odata.etag"
         )
         .get<Account>();
 
@@ -498,7 +498,7 @@ export default function AccountDetail() {
               <div>
                 <Body1 style={{ fontWeight: 600 }}>ETag</Body1>
                 <Body1 style={{ fontSize: "12px", wordBreak: "break-all" }}>
-                  {account["@(odata as any).etag"] || "—"}
+                  {account["@odata.etag"] || "—"}
                 </Body1>
               </div>
             </div>

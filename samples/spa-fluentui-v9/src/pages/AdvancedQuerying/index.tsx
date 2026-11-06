@@ -150,7 +150,7 @@ export default function AdvancedQuerying() {
         singlePage: (singlePage as any).value,
         pageWithLink: {
           value: (pageWithLink as any).value,
-          hasNext: !!pageWithLink["@(odata as any).nextLink"],
+          hasNext: !!pageWithLink["@odata.nextLink"],
         },
         iteratedItems,
         allItems,
@@ -316,7 +316,7 @@ export default function AdvancedQuerying() {
             items={[
               {
                 label: "get() - Single Page",
-                code: `await (client as any).api('/accounts')
+                code: `await client.api('/accounts')
   .select()
   .top(5)
   .get()`,
@@ -324,7 +324,7 @@ export default function AdvancedQuerying() {
               },
               {
                 label: "getPage() - With NextLink",
-                code: `await (client as any).api('/accounts')
+                code: `await client.api('/accounts')
   .select()
   .top(5)
   .getPage()`,
@@ -332,7 +332,7 @@ export default function AdvancedQuerying() {
               },
               {
                 label: "iterate() - First 3 Items",
-                code: `for await (const item of (builder as any).iterate()) {
+                code: `for await (const item of builder.iterate()) {
   // Process item
   if (count >= 3) break;
 }`,
@@ -340,7 +340,7 @@ export default function AdvancedQuerying() {
               },
               {
                 label: "getAll() - Bounded (max 10)",
-                code: `await (builder as any).getAll({ maxItems: 10 })`,
+                code: `await builder.getAll({ maxItems: 10 })`,
                 result: (JSON as any).stringify((results as any).allItems, null, 2),
               },
             ]}
@@ -378,7 +378,7 @@ export default function AdvancedQuerying() {
             items={[
               {
                 label: "Expand Query",
-                code: `await (client as any).api('/contacts')
+                code: `await client.api('/contacts')
   .select()
   .expand({
     parentcustomerid_account: {

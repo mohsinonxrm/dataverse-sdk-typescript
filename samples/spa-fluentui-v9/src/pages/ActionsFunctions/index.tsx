@@ -126,7 +126,7 @@ export default function ActionsFunctions() {
       // Bound function with parameter aliases
       const response = await client
         .api(
-          `/systemusers(${userId})/(Microsoft as any).Dynamics.(CRM as any).RetrievePrincipalAccess(Target=@target)?@target={'@(odata as any).type':'(Microsoft as any).Dynamics.(CRM as any).account','accountid':'${targetEntityId}'}`
+          `/systemusers(${userId})/Microsoft.Dynamics.CRM.RetrievePrincipalAccess(Target=@target)?@target={'@odata.type':'Microsoft.Dynamics.CRM.account','accountid':'${targetEntityId}'}`
         )
         .get();
 
@@ -152,9 +152,9 @@ export default function ActionsFunctions() {
       // WinOpportunity is an unbound action (POST request)
       const response = await (client as any).api("/WinOpportunity").post({
         OpportunityClose: {
-          "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).opportunityclose",
+          "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
           subject: "Won Opportunity",
-          "opportunityid@(odata as any).bind": `/opportunities(${opportunityId})`,
+          "opportunityid@odata.bind": `/opportunities(${opportunityId})`,
         },
         Status: 3, // Won
       });
@@ -179,7 +179,7 @@ export default function ActionsFunctions() {
     try {
       // ExecuteWorkflow is bound to workflow entity
       const response = await (client as any)
-        .api(`/workflows(${workflowId})/(Microsoft as any).Dynamics.(CRM as any).ExecuteWorkflow`)
+        .api(`/workflows(${workflowId})/Microsoft.Dynamics.CRM.ExecuteWorkflow`)
         .post({
           EntityId: targetEntityId,
         });
@@ -207,12 +207,12 @@ export default function ActionsFunctions() {
       // GrantAccess action
       await (client as any).api("/GrantAccess").post({
         Target: {
-          "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).account",
+          "@odata.type": "Microsoft.Dynamics.CRM.account",
           accountid: targetEntityId,
         },
         PrincipalAccess: {
           Principal: {
-            "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).systemuser",
+            "@odata.type": "Microsoft.Dynamics.CRM.systemuser",
             systemuserid: userId,
           },
           AccessMask: "ReadAccess,WriteAccess",
@@ -288,10 +288,10 @@ export default function ActionsFunctions() {
               label: "Function Call",
               code:
                 (results as any).function === "WhoAmI"
-                  ? `await (client as any).api('/WhoAmI').get()`
+                  ? `await client.api('/WhoAmI').get()`
                   : (results as any).function === "RetrieveVersion"
-                    ? `await (client as any).api('/RetrieveVersion').get()`
-                    : `await (client as any).api('/systemusers(${userId})/(Microsoft as any).Dynamics.(CRM as any).RetrievePrincipalAccess(Target=@target)?@target={...}').get()`,
+                    ? `await client.api('/RetrieveVersion').get()`
+                    : `await client.api('/systemusers(${userId})/Microsoft.Dynamics.CRM.RetrievePrincipalAccess(Target=@target)?@target={...}').get()`,
               result: (JSON as any).stringify(results, null, 2),
             },
           ]}
@@ -405,22 +405,22 @@ export default function ActionsFunctions() {
               label: "Action Call",
               code:
                 (results as any).action === "WinOpportunity"
-                  ? `await (client as any).api('/WinOpportunity').post({
+                  ? `await client.api('/WinOpportunity').post({
   OpportunityClose: {
-    '@(odata as any).type': '(Microsoft as any).Dynamics.(CRM as any).opportunityclose',
+    '@odata.type': 'Microsoft.Dynamics.CRM.opportunityclose',
     subject: 'Won Opportunity',
-    'opportunityid@(odata as any).bind': '/opportunities(${opportunityId})'
+    'opportunityid@odata.bind': '/opportunities(${opportunityId})'
   },
   Status: 3
 })`
                   : (results as any).action === "ExecuteWorkflow"
-                    ? `await (client as any).api('/workflows(${workflowId})/(Microsoft as any).Dynamics.(CRM as any).ExecuteWorkflow').post({
+                    ? `await client.api('/workflows(${workflowId})/Microsoft.Dynamics.CRM.ExecuteWorkflow').post({
   EntityId: '${targetEntityId}'
 })`
-                    : `await (client as any).api('/GrantAccess').post({
-  Target: { '@(odata as any).type': '(Microsoft as any).Dynamics.(CRM as any).account', accountid: '${targetEntityId}' },
+                    : `await client.api('/GrantAccess').post({
+  Target: { '@odata.type': 'Microsoft.Dynamics.CRM.account', accountid: '${targetEntityId}' },
   PrincipalAccess: {
-    Principal: { '@(odata as any).type': '(Microsoft as any).Dynamics.(CRM as any).systemuser', systemuserid: '${userId}' },
+    Principal: { '@odata.type': 'Microsoft.Dynamics.CRM.systemuser', systemuserid: '${userId}' },
     AccessMask: 'ReadAccess,WriteAccess'
   }
 })`,
