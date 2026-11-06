@@ -19,6 +19,7 @@ import { startDeadline } from "../utils/signals.js";
 import { generateUUID, normalizeHeaders } from "../utils/HeaderUtils.js";
 import { FeatureUsageTracker } from "../telemetry/FeatureUsageTracker.js";
 import { DataverseInvalidRequestError } from "../errors/NamedErrors.js";
+import { odataKey, type ODataKey } from "../odata/literal.js";
 import type { FetchXmlOptions, FetchXmlPage } from "../fetchxml/page.js";
 
 export class DataverseClient {
@@ -117,12 +118,12 @@ export class DataverseClient {
    * Create binding payload for single-valued navigation properties
    * @param navigationProperty - The navigation property name
    * @param entitySetName - The target entity set (e.g., 'accounts')
-   * @param id - The target record ID
+   * @param id - The target record: a GUID, or an alternate key object such as `{ accountnumber: "A-1" }`
    * @returns Object to spread into POST/PATCH body
    */
-  bind(navigationProperty: string, entitySetName: string, id: string): Record<string, string> {
+  bind(navigationProperty: string, entitySetName: string, id: ODataKey): Record<string, string> {
     return {
-      [`${navigationProperty}@odata.bind`]: `/${entitySetName}(${id})`,
+      [`${navigationProperty}@odata.bind`]: `/${entitySetName}(${odataKey(id)})`,
     };
   }
 
