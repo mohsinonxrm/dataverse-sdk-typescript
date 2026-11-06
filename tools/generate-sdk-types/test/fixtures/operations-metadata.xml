@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+<edmx:DataServices>
+<Schema Namespace="Microsoft.Dynamics.CRM" Alias="mscrm" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+<ComplexType Name="ComponentPrincipalAccess"><Property Name="ShareAccessMask" Type="mscrm.ShareAccessRights" /><Property Name="RequestType" Type="Edm.Int32" /><NavigationProperty Name="SharePrincipal" Type="mscrm.crmbaseentity" Nullable="false" /></ComplexType>
+<ComplexType Name="CreateMultipleResponse"><Property Name="Ids" Type="Collection(Edm.Guid)" /></ComplexType>
+<ComplexType Name="InputArgument"><Property Name="Count" Type="Edm.Int32" /><Property Name="IsReadOnly" Type="Edm.Boolean" /><Property Name="Keys" Type="Collection(Edm.String)" Nullable="false" Unicode="false" /><Property Name="Values" Type="Collection(mscrm.Object)" /></ComplexType>
+<ComplexType Name="InputArgumentCollection"><Property Name="Arguments" Type="mscrm.InputArgument" /></ComplexType>
+<ComplexType Name="LayerDesiredOrder"><Property Name="Type" Type="mscrm.LayerDesiredOrderType" /><Property Name="Solutions" Type="Collection(mscrm.SolutionInfo)" /></ComplexType>
+<ComplexType Name="Object"><Property Name="Type" Type="Edm.String" Nullable="false" Unicode="false" /><Property Name="Value" Type="Edm.String" Nullable="false" Unicode="false" /></ComplexType>
+<ComplexType Name="RetrieveEntityResponse"><Property Name="EntityMetadata" Type="mscrm.ComplexEntityMetadata" /></ComplexType>
+<ComplexType Name="RetrievePrincipalAccessResponse"><Property Name="AccessRights" Type="mscrm.AccessRights" /></ComplexType>
+<ComplexType Name="SolutionComponentOption"><NavigationProperty Name="Component" Type="mscrm.crmbaseentity" Nullable="false" /><Property Name="ImportDecision" Type="mscrm.ImportDecision" /><Property Name="ComponentPrincipalAccessItems" Type="Collection(mscrm.ComponentPrincipalAccess)" /></ComplexType>
+<ComplexType Name="SolutionInfo"><Property Name="Name" Type="Edm.String" Unicode="false" /></ComplexType>
+<ComplexType Name="SolutionParameters"><Property Name="StageSolutionUploadId" Type="Edm.Guid" /><NavigationProperty Name="PackageHistoryReference" Type="mscrm.crmbaseentity" Nullable="false" /><Property Name="SolutionComponentOptions" Type="Collection(mscrm.SolutionComponentOption)" /><Property Name="DeployMissingPackagesBeforeSolutionImport" Type="Edm.Boolean" /></ComplexType>
+<ComplexType Name="WhoAmIResponse"><Property Name="BusinessUnitId" Type="Edm.Guid" /><Property Name="UserId" Type="Edm.Guid" /><Property Name="OrganizationId" Type="Edm.Guid" /></ComplexType>
+<EntityType Name="asyncoperation" BaseType="mscrm.crmbaseentity" />
+<EntityType Name="crmbaseentity" Abstract="true" />
+<EntityType Name="organization" BaseType="mscrm.crmbaseentity"><Key><PropertyRef Name="organizationid" /></Key><Property Name="organizationid" Type="Edm.Guid" /></EntityType>
+<EntityType Name="principal" BaseType="mscrm.crmbaseentity" Abstract="true"><Key><PropertyRef Name="ownerid" /></Key><Property Name="ownerid" Type="Edm.Guid" /></EntityType>
+<EntityType Name="systemuser" BaseType="mscrm.principal"><Key><PropertyRef Name="ownerid" /></Key></EntityType>
+<EntityType Name="team" BaseType="mscrm.principal"><Key><PropertyRef Name="ownerid" /></Key></EntityType>
+<EntityType Name="workflow" BaseType="mscrm.crmbaseentity"><Key><PropertyRef Name="workflowid" /></Key><Property Name="workflowid" Type="Edm.Guid" /></EntityType>
+<EnumType Name="EntityFilters" IsFlags="true"><Member Name="Entity" Value="1" /><Member Name="Attributes" Value="2" /><Member Name="Privileges" Value="4" /><Member Name="Relationships" Value="8" /><Member Name="All" Value="15" /></EnumType>
+<EnumType Name="ImportDecision"><Member Name="Import" Value="0" /><Member Name="Skip" Value="1" /></EnumType>
+<EnumType Name="LayerDesiredOrderType"><Member Name="Below" Value="0" /><Member Name="Above" Value="1" /><Member Name="Base" Value="2" /></EnumType>
+<EnumType Name="ShareAccessRights"><Member Name="None" Value="0" /><Member Name="ReadAccess" Value="1" /><Member Name="WriteAccess" Value="2" /><Member Name="AppendAccess" Value="4" /><Member Name="AppendToAccess" Value="16" /><Member Name="CreateAccess" Value="32" /><Member Name="DeleteAccess" Value="65536" /><Member Name="ShareAccess" Value="262144" /><Member Name="AssignAccess" Value="524288" /></EnumType>
+<Action Name="ImportSolution"><Parameter Name="OverwriteUnmanagedCustomizations" Type="Edm.Boolean" Nullable="false" /><Parameter Name="PublishWorkflows" Type="Edm.Boolean" Nullable="false" /><Parameter Name="CustomizationFile" Type="Edm.Binary" Nullable="false" /><Parameter Name="ImportJobId" Type="Edm.Guid" Nullable="false" /><Parameter Name="ConvertToManaged" Type="Edm.Boolean" /><Parameter Name="SkipProductUpdateDependencies" Type="Edm.Boolean" /><Parameter Name="HoldingSolution" Type="Edm.Boolean" /><Parameter Name="SkipQueueRibbonJob" Type="Edm.Boolean" /><Parameter Name="LayerDesiredOrder" Type="mscrm.LayerDesiredOrder" /><Parameter Name="AsyncRibbonProcessing" Type="Edm.Boolean" /><Parameter Name="ComponentParameters" Type="Collection(mscrm.crmbaseentity)" /><Parameter Name="IsTemplateMode" Type="Edm.Boolean" /><Parameter Name="TemplateSuffix" Type="Edm.String" Unicode="false" /><Parameter Name="SolutionParameters" Type="mscrm.SolutionParameters" /><Parameter Name="TemplateDisplayNamePrefix" Type="Edm.String" Unicode="false" /><Parameter Name="StageAndUpgrade" Type="Edm.Boolean" /><Parameter Name="SchemaUpdatesOnly" Type="Edm.Boolean" /></Action>
+<Action Name="CreateMultiple" IsBound="true"><Parameter Name="entityset" Type="Collection(mscrm.crmbaseentity)" Nullable="false" /><Parameter Name="Targets" Type="Collection(mscrm.crmbaseentity)" Nullable="false" /><ReturnType Type="mscrm.CreateMultipleResponse" Nullable="false" /></Action>
+<Action Name="Merge"><Parameter Name="Target" Type="mscrm.crmbaseentity" Nullable="false" /><Parameter Name="Subordinate" Type="mscrm.crmbaseentity" Nullable="false" /><Parameter Name="UpdateContent" Type="mscrm.crmbaseentity" /><Parameter Name="PerformParentingChecks" Type="Edm.Boolean" Nullable="false" /></Action>
+<Action Name="ExecuteWorkflow" IsBound="true"><Parameter Name="entity" Type="mscrm.workflow" Nullable="false" /><Parameter Name="EntityId" Type="Edm.Guid" Nullable="false" /><Parameter Name="InputArguments" Type="mscrm.InputArgumentCollection" /><ReturnType Type="mscrm.asyncoperation" Nullable="false" /></Action>
+<Function Name="RetrieveEntity"><Parameter Name="EntityFilters" Type="mscrm.EntityFilters" Nullable="false" /><Parameter Name="LogicalName" Type="Edm.String" Unicode="false"><Annotation Term="Org.OData.Core.V1.OptionalParameter" /></Parameter><Parameter Name="MetadataId" Type="Edm.Guid" Nullable="false" /><Parameter Name="RetrieveAsIfPublished" Type="Edm.Boolean" Nullable="false" /><ReturnType Type="mscrm.RetrieveEntityResponse" Nullable="false" /></Function>
+<Function Name="WhoAmI"><ReturnType Type="mscrm.WhoAmIResponse" Nullable="false" /></Function>
+<Function Name="RetrievePrincipalAccess" IsBound="true"><Parameter Name="entity" Type="mscrm.systemuser" Nullable="false" /><Parameter Name="Target" Type="mscrm.crmbaseentity" Nullable="false" /><ReturnType Type="mscrm.RetrievePrincipalAccessResponse" Nullable="false" /></Function>
+<Function Name="RetrievePrincipalAccess" IsBound="true"><Parameter Name="entity" Type="mscrm.team" Nullable="false" /><Parameter Name="Target" Type="mscrm.crmbaseentity" Nullable="false" /><ReturnType Type="mscrm.RetrievePrincipalAccessResponse" Nullable="false" /></Function>
+<Function Name="RetrievePrincipalAccess" IsBound="true"><Parameter Name="entity" Type="mscrm.organization" Nullable="false" /><Parameter Name="Target" Type="mscrm.crmbaseentity" Nullable="false" /><ReturnType Type="mscrm.RetrievePrincipalAccessResponse" Nullable="false" /></Function>
+<EntityContainer Name="System">
+<EntitySet Name="asyncoperations" EntityType="Microsoft.Dynamics.CRM.asyncoperation" />
+<EntitySet Name="teams" EntityType="Microsoft.Dynamics.CRM.team" />
+<EntitySet Name="organizations" EntityType="Microsoft.Dynamics.CRM.organization" />
+<EntitySet Name="systemusers" EntityType="Microsoft.Dynamics.CRM.systemuser" />
+<EntitySet Name="workflows" EntityType="Microsoft.Dynamics.CRM.workflow" />
+</EntityContainer>
+</Schema>
+</edmx:DataServices>
+</edmx:Edmx>

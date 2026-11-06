@@ -60,19 +60,19 @@ PublishXml: Publish the named customizations.
 PublishAllXml: Publish all customizations.
 -->
 
-- `new GrantAccessRequest(target, principalAccess?)` (`POST /GrantAccess`): Share a record with a user or team.
-- `new RevokeAccessRequest(target, revokee)` (`POST /RevokeAccess`): Stop sharing a record.
-- `new MergeRequest(target, subordinate, updateContent, performParentingChecks)` (`POST /Merge`): Merge duplicate records.
-- `new ExecuteWorkflowRequest(workflowId, entityId, inputArguments?)` (`POST /workflows({workflowId})/Microsoft.Dynamics.CRM.ExecuteWorkflow`): Run an on-demand workflow on a record.
-- `new WinOpportunityRequest(opportunityClose, caller, status)` (`POST /WinOpportunity`): Close an opportunity as won.
-- `new LoseOpportunityRequest(caller, opportunityClose, status)` (`POST /LoseOpportunity`): Close an opportunity as lost.
-- `new QualifyLeadRequest(leadId, createAccount, createContact, createOpportunity, opportunityCurrencyId, opportunityCustomerId, sourceCampaignId, status, processInstanceId?, leadQualificationV2Param?)` (`POST /leads({leadId})/Microsoft.Dynamics.CRM.QualifyLead`): Qualify a lead.
-- `new ConvertQuoteToSalesOrderRequest(quoteId, columnSet?, quoteCloseDate?, quoteCloseStatus?, quoteCloseSubject?, quoteCloseDescription?, processInstanceId?)` (`POST /ConvertQuoteToSalesOrder`): Create an order from a quote.
-- `new CalculatePriceRequest(target, parentId?)` (`POST /CalculatePrice`): Recalculate a quote, order or invoice.
-- `new CloseIncidentRequest(incidentResolution, status)` (`POST /CloseIncident`): Resolve a case.
-- `new ExportSolutionRequest(solutionName, managed, targetVersion?, exportAutoNumberingSettings?, exportCalendarSettings?, exportCustomizationSettings?, exportEmailTrackingSettings?, exportGeneralSettings?, exportMarketingSettings?, exportOutlookSynchronizationSettings?, exportRelationshipRoles?, exportIsvConfig?, exportSales?, exportExternalApplications?, exportComponentsParams?)` (`POST /ExportSolution`): Export a solution.
-- `new ImportSolutionRequest(overwriteUnmanagedCustomizations, publishWorkflows, customizationFile, importJobId, convertToManaged?, skipProductUpdateDependencies?, holdingSolution?, skipQueueRibbonJob?, layerDesiredOrder?, asyncRibbonProcessing?, componentParameters?, isTemplateMode?, templateSuffix?, solutionParameters?, templateDisplayNamePrefix?, stageAndUpgrade?, schemaUpdatesOnly?)` (`POST /ImportSolution`): Import a solution.
-- `new PublishXmlRequest(parameterXml)` (`POST /PublishXml`): Publish the named customizations.
+- `new GrantAccessRequest({ Target, PrincipalAccess? })` (`POST /GrantAccess`): Share a record with a user or team.
+- `new RevokeAccessRequest({ Target, Revokee })` (`POST /RevokeAccess`): Stop sharing a record.
+- `new MergeRequest({ Target, Subordinate, UpdateContent?, PerformParentingChecks })` (`POST /Merge`): Merge duplicate records.
+- `new ExecuteWorkflowRequest(workflowId, { EntityId, InputArguments? })` (`POST /workflows({workflowId})/Microsoft.Dynamics.CRM.ExecuteWorkflow`): Run an on-demand workflow on a record.
+- `new WinOpportunityRequest({ OpportunityClose, Caller?, Status })` (`POST /WinOpportunity`): Close an opportunity as won.
+- `new LoseOpportunityRequest({ Caller?, OpportunityClose, Status })` (`POST /LoseOpportunity`): Close an opportunity as lost.
+- `new QualifyLeadRequest(leadId, { CreateAccount, CreateContact, CreateOpportunity, OpportunityCurrencyId?, OpportunityCustomerId?, SourceCampaignId?, Status, ProcessInstanceId?, LeadQualificationV2Param? })` (`POST /leads({leadId})/Microsoft.Dynamics.CRM.QualifyLead`): Qualify a lead.
+- `new ConvertQuoteToSalesOrderRequest({ QuoteId, ColumnSet?, QuoteCloseDate?, QuoteCloseStatus?, QuoteCloseSubject?, QuoteCloseDescription?, ProcessInstanceId? })` (`POST /ConvertQuoteToSalesOrder`): Create an order from a quote.
+- `new CalculatePriceRequest({ Target, ParentId? })` (`POST /CalculatePrice`): Recalculate a quote, order or invoice.
+- `new CloseIncidentRequest({ IncidentResolution, Status })` (`POST /CloseIncident`): Resolve a case.
+- `new ExportSolutionRequest({ SolutionName, Managed, TargetVersion?, ExportAutoNumberingSettings?, ExportCalendarSettings?, ExportCustomizationSettings?, ExportEmailTrackingSettings?, ExportGeneralSettings?, ExportMarketingSettings?, ExportOutlookSynchronizationSettings?, ExportRelationshipRoles?, ExportIsvConfig?, ExportSales?, ExportExternalApplications?, ExportComponentsParams? })` (`POST /ExportSolution`): Export a solution.
+- `new ImportSolutionRequest({ OverwriteUnmanagedCustomizations, PublishWorkflows, CustomizationFile, ImportJobId, ConvertToManaged?, SkipProductUpdateDependencies?, HoldingSolution?, SkipQueueRibbonJob?, LayerDesiredOrder?, AsyncRibbonProcessing?, ComponentParameters?, IsTemplateMode?, TemplateSuffix?, SolutionParameters?, TemplateDisplayNamePrefix?, StageAndUpgrade?, SchemaUpdatesOnly? })` (`POST /ImportSolution`): Import a solution.
+- `new PublishXmlRequest({ ParameterXml })` (`POST /PublishXml`): Publish the named customizations.
 - `new PublishAllXmlRequest()` (`POST /PublishAllXml`): Publish all customizations.
 
 <!-- /operations -->

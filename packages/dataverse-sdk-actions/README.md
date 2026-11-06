@@ -125,32 +125,32 @@ DownloadBlock: Download one block.
 ExportToExcel: Export a view as an .xlsx file.
 -->
 
-- `new CreateMultipleAction(entitySetName, targets)` (`POST /{entitySetName}/Microsoft.Dynamics.CRM.CreateMultiple`): Create records of one table in one request.
-- `new UpdateMultipleAction(entitySetName, targets)` (`POST /{entitySetName}/Microsoft.Dynamics.CRM.UpdateMultiple`): Update records of one table in one request.
-- `new UpsertMultipleAction(entitySetName, targets)` (`POST /{entitySetName}/Microsoft.Dynamics.CRM.UpsertMultiple`): Create or update records of one table in one request.
-- `new DeleteMultipleAction(entitySetName, targets)` (`POST /{entitySetName}/Microsoft.Dynamics.CRM.DeleteMultiple`): Delete elastic-table records in one request.
-- `new ExecuteWorkflowAction(workflowId, entityId, inputArguments?)` (`POST /workflows({workflowId})/Microsoft.Dynamics.CRM.ExecuteWorkflow`): Run an on-demand workflow on a record.
-- `new MergeAction(target, subordinate, updateContent, performParentingChecks)` (`POST /Merge`): Merge two records (account, contact, lead or incident).
-- `new ExportSolutionAction(solutionName, managed, targetVersion?, exportAutoNumberingSettings?, exportCalendarSettings?, exportCustomizationSettings?, exportEmailTrackingSettings?, exportGeneralSettings?, exportMarketingSettings?, exportOutlookSynchronizationSettings?, exportRelationshipRoles?, exportIsvConfig?, exportSales?, exportExternalApplications?, exportComponentsParams?)` (`POST /ExportSolution`): Export a solution.
-- `new ImportSolutionAction(overwriteUnmanagedCustomizations, publishWorkflows, customizationFile, importJobId, convertToManaged?, skipProductUpdateDependencies?, holdingSolution?, skipQueueRibbonJob?, layerDesiredOrder?, asyncRibbonProcessing?, componentParameters?, isTemplateMode?, templateSuffix?, solutionParameters?, templateDisplayNamePrefix?, stageAndUpgrade?, schemaUpdatesOnly?)` (`POST /ImportSolution`): Import a solution.
-- `new PublishXmlAction(parameterXml)` (`POST /PublishXml`): Publish the named customizations.
+- `new CreateMultipleAction(entitySetName, { Targets })` (`POST /{entitySetName}/Microsoft.Dynamics.CRM.CreateMultiple`): Create records of one table in one request.
+- `new UpdateMultipleAction(entitySetName, { Targets })` (`POST /{entitySetName}/Microsoft.Dynamics.CRM.UpdateMultiple`): Update records of one table in one request.
+- `new UpsertMultipleAction(entitySetName, { Targets })` (`POST /{entitySetName}/Microsoft.Dynamics.CRM.UpsertMultiple`): Create or update records of one table in one request.
+- `new DeleteMultipleAction(entitySetName, { Targets })` (`POST /{entitySetName}/Microsoft.Dynamics.CRM.DeleteMultiple`): Delete elastic-table records in one request.
+- `new ExecuteWorkflowAction(workflowId, { EntityId, InputArguments? })` (`POST /workflows({workflowId})/Microsoft.Dynamics.CRM.ExecuteWorkflow`): Run an on-demand workflow on a record.
+- `new MergeAction({ Target, Subordinate, UpdateContent?, PerformParentingChecks })` (`POST /Merge`): Merge two records (account, contact, lead or incident).
+- `new ExportSolutionAction({ SolutionName, Managed, TargetVersion?, ExportAutoNumberingSettings?, ExportCalendarSettings?, ExportCustomizationSettings?, ExportEmailTrackingSettings?, ExportGeneralSettings?, ExportMarketingSettings?, ExportOutlookSynchronizationSettings?, ExportRelationshipRoles?, ExportIsvConfig?, ExportSales?, ExportExternalApplications?, ExportComponentsParams? })` (`POST /ExportSolution`): Export a solution.
+- `new ImportSolutionAction({ OverwriteUnmanagedCustomizations, PublishWorkflows, CustomizationFile, ImportJobId, ConvertToManaged?, SkipProductUpdateDependencies?, HoldingSolution?, SkipQueueRibbonJob?, LayerDesiredOrder?, AsyncRibbonProcessing?, ComponentParameters?, IsTemplateMode?, TemplateSuffix?, SolutionParameters?, TemplateDisplayNamePrefix?, StageAndUpgrade?, SchemaUpdatesOnly? })` (`POST /ImportSolution`): Import a solution.
+- `new PublishXmlAction({ ParameterXml })` (`POST /PublishXml`): Publish the named customizations.
 - `new PublishAllXmlAction()` (`POST /PublishAllXml`): Publish all customizations.
-- `new WinOpportunityAction(opportunityClose, caller, status)` (`POST /WinOpportunity`): Close an opportunity as won.
-- `new LoseOpportunityAction(caller, opportunityClose, status)` (`POST /LoseOpportunity`): Close an opportunity as lost.
-- `new GenerateQuoteFromOpportunityAction(opportunityId, columnSet?, processInstanceId?)` (`POST /GenerateQuoteFromOpportunity`): Create a quote from an opportunity.
-- `new GenerateSalesOrderFromOpportunityAction(opportunityId, columnSet?)` (`POST /GenerateSalesOrderFromOpportunity`): Create an order from an opportunity.
-- `new ConvertQuoteToSalesOrderAction(quoteId, columnSet?, quoteCloseDate?, quoteCloseStatus?, quoteCloseSubject?, quoteCloseDescription?, processInstanceId?)` (`POST /ConvertQuoteToSalesOrder`): Create an order from a quote.
-- `new ConvertSalesOrderToInvoiceAction(salesOrderId, columnSet?, processInstanceId?)` (`POST /ConvertSalesOrderToInvoice`): Create an invoice from an order.
-- `new CalculatePriceAction(target, parentId?)` (`POST /CalculatePrice`): Recalculate a quote, order or invoice.
-- `new CloseIncidentAction(incidentResolution, status)` (`POST /CloseIncident`): Resolve a case.
-- `new msdyn_BookRequirementGroupAction(msdyn_requirementgroupId, start, duration, bookingResources)` (`POST /msdyn_requirementgroups({msdyn_requirementgroupId})/Microsoft.Dynamics.CRM.msdyn_BookRequirementGroup`): Book a requirement group (Field Service).
-- `new msdyn_CancelBookingsAction(bookingIds?, defaultBookingDetail?, bookingCancelContext?, considerAppointments?)` (`POST /msdyn_CancelBookings`): Cancel bookings (Field Service).
-- `new InitializeFileBlocksUploadAction(target, fileName, fileAttributeName)` (`POST /InitializeFileBlocksUpload`): Start a chunked upload to a file column.
-- `new UploadBlockAction(blockId, blockData, fileContinuationToken)` (`POST /UploadBlock`): Upload one block.
-- `new CommitFileBlocksUploadAction(fileName, mimeType, blockList, fileContinuationToken)` (`POST /CommitFileBlocksUpload`): Commit the blocks as the file.
-- `new InitializeFileBlocksDownloadAction(target, fileAttributeName, dataSource?)` (`POST /InitializeFileBlocksDownload`): Start a chunked download.
-- `new DownloadBlockAction(offset, blockLength, fileContinuationToken)` (`POST /DownloadBlock`): Download one block.
-- `new ExportToExcelAction(view, fetchXml, layoutXml, queryApi, queryParameters)` (`POST /ExportToExcel`): Export a view as an .xlsx file.
+- `new WinOpportunityAction({ OpportunityClose, Caller?, Status })` (`POST /WinOpportunity`): Close an opportunity as won.
+- `new LoseOpportunityAction({ Caller?, OpportunityClose, Status })` (`POST /LoseOpportunity`): Close an opportunity as lost.
+- `new GenerateQuoteFromOpportunityAction({ OpportunityId, ColumnSet?, ProcessInstanceId? })` (`POST /GenerateQuoteFromOpportunity`): Create a quote from an opportunity.
+- `new GenerateSalesOrderFromOpportunityAction({ OpportunityId, ColumnSet? })` (`POST /GenerateSalesOrderFromOpportunity`): Create an order from an opportunity.
+- `new ConvertQuoteToSalesOrderAction({ QuoteId, ColumnSet?, QuoteCloseDate?, QuoteCloseStatus?, QuoteCloseSubject?, QuoteCloseDescription?, ProcessInstanceId? })` (`POST /ConvertQuoteToSalesOrder`): Create an order from a quote.
+- `new ConvertSalesOrderToInvoiceAction({ SalesOrderId, ColumnSet?, ProcessInstanceId? })` (`POST /ConvertSalesOrderToInvoice`): Create an invoice from an order.
+- `new CalculatePriceAction({ Target, ParentId? })` (`POST /CalculatePrice`): Recalculate a quote, order or invoice.
+- `new CloseIncidentAction({ IncidentResolution, Status })` (`POST /CloseIncident`): Resolve a case.
+- `new msdyn_BookRequirementGroupAction(msdyn_requirementgroupId, { Start, Duration, BookingResources })` (`POST /msdyn_requirementgroups({msdyn_requirementgroupId})/Microsoft.Dynamics.CRM.msdyn_BookRequirementGroup`): Book a requirement group (Field Service).
+- `new msdyn_CancelBookingsAction({ BookingIds?, DefaultBookingDetail?, BookingCancelContext?, ConsiderAppointments? })` (`POST /msdyn_CancelBookings`): Cancel bookings (Field Service).
+- `new InitializeFileBlocksUploadAction({ Target, FileName, FileAttributeName })` (`POST /InitializeFileBlocksUpload`): Start a chunked upload to a file column.
+- `new UploadBlockAction({ BlockId, BlockData, FileContinuationToken })` (`POST /UploadBlock`): Upload one block.
+- `new CommitFileBlocksUploadAction({ FileName, MimeType, BlockList, FileContinuationToken })` (`POST /CommitFileBlocksUpload`): Commit the blocks as the file.
+- `new InitializeFileBlocksDownloadAction({ Target, FileAttributeName, DataSource? })` (`POST /InitializeFileBlocksDownload`): Start a chunked download.
+- `new DownloadBlockAction({ Offset, BlockLength, FileContinuationToken })` (`POST /DownloadBlock`): Download one block.
+- `new ExportToExcelAction({ View, FetchXml, LayoutXml, QueryApi, QueryParameters })` (`POST /ExportToExcel`): Export a view as an .xlsx file.
 
 <!-- /operations -->
 
@@ -434,9 +434,9 @@ UploadBlock: Upload one block (`blockId` and `blockData` are base64).
 CommitFileBlocksUpload: Commit the blocks, in order, as the file.
 -->
 
-- `new InitializeFileBlocksUploadAction(target, fileName, fileAttributeName)` (`POST /InitializeFileBlocksUpload`): Start the upload; returns `{ FileContinuationToken }`.
-- `new UploadBlockAction(blockId, blockData, fileContinuationToken)` (`POST /UploadBlock`): Upload one block (`blockId` and `blockData` are base64).
-- `new CommitFileBlocksUploadAction(fileName, mimeType, blockList, fileContinuationToken)` (`POST /CommitFileBlocksUpload`): Commit the blocks, in order, as the file.
+- `new InitializeFileBlocksUploadAction({ Target, FileName, FileAttributeName })` (`POST /InitializeFileBlocksUpload`): Start the upload; returns `{ FileContinuationToken }`.
+- `new UploadBlockAction({ BlockId, BlockData, FileContinuationToken })` (`POST /UploadBlock`): Upload one block (`blockId` and `blockData` are base64).
+- `new CommitFileBlocksUploadAction({ FileName, MimeType, BlockList, FileContinuationToken })` (`POST /CommitFileBlocksUpload`): Commit the blocks, in order, as the file.
 
 <!-- /operations -->
 

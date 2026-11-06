@@ -80,8 +80,8 @@ describe("generate-sdk-types", () => {
     expect(fn).toMatch(
       /import \{ formatParameterAlias \} from ["']\.\/internal\/odataLiteral\.js["']/
     );
-    expect(fn).toContain("formatParameterAlias(this.fetchXml, 'Edm.String')");
-    expect(fn).toContain("formatParameterAlias(this.count, 'Edm.Int32')");
+    expect(fn).toContain("formatParameterAlias(this.parameters.FetchXml, 'Edm.String')");
+    expect(fn).toContain("formatParameterAlias(this.parameters.Count, 'Edm.Int32')");
   });
 
   it("#22: the emitted formatParameterAlias doubles embedded quotes", async () => {
@@ -212,15 +212,13 @@ describe("#73: nullable properties and base-typed parameters", () => {
   it("base-typed parameters take the Typed<Base> union in actions, functions and messages", async () => {
     const action = await read("actions/QueryExpressionToFetchXmlAction.ts");
     expect(action).toContain("import type { TypedQueryBase } from './types/index.js';");
-    expect(action).toContain("public readonly query: TypedQueryBase,");
+    expect(action).toContain("  Query: TypedQueryBase;");
     expect(await read("actions/ValidateAction.ts")).toContain(
-      "public readonly activities: TypedActivitypointer[],"
+      "  Activities: TypedActivitypointer[];"
     );
-    expect(await read("functions/RollupFunction.ts")).toContain(
-      "public readonly query: TypedQueryBase,"
-    );
+    expect(await read("functions/RollupFunction.ts")).toContain("  Query: TypedQueryBase;");
     expect(await read("messages/QueryExpressionToFetchXmlMessage.ts")).toContain(
-      "public query: TypedQueryBase,"
+      "  Query: TypedQueryBase;"
     );
   });
 
@@ -231,15 +229,18 @@ describe("#73: nullable properties and base-typed parameters", () => {
       `import { QueryExpressionToFetchXmlAction } from "./QueryExpressionToFetchXmlAction.js";
 import { ValidateAction } from "./ValidateAction.js";
 new QueryExpressionToFetchXmlAction({
-  "@odata.type": "Microsoft.Dynamics.CRM.QueryExpression",
-  EntityName: "account",
-  ColumnSet: { AllColumns: true },
+  Query: {
+    "@odata.type": "Microsoft.Dynamics.CRM.QueryExpression",
+    EntityName: "account",
+    ColumnSet: { AllColumns: true },
+  },
 });
 new QueryExpressionToFetchXmlAction({
-  "@odata.type": "Microsoft.Dynamics.CRM.FetchExpression",
-  Query: "<fetch/>",
+  Query: { "@odata.type": "Microsoft.Dynamics.CRM.FetchExpression", Query: "<fetch/>" },
 });
-new ValidateAction([{ "@odata.type": "Microsoft.Dynamics.CRM.email", subject: "Hi" }]);
+new ValidateAction({
+  Activities: [{ "@odata.type": "Microsoft.Dynamics.CRM.email", subject: "Hi" }],
+});
 `
     );
     expect(errors).toEqual([]);
@@ -250,7 +251,7 @@ new ValidateAction([{ "@odata.type": "Microsoft.Dynamics.CRM.email", subject: "H
       join(out, "actions"),
       "usage-missing.ts",
       `import { QueryExpressionToFetchXmlAction } from "./QueryExpressionToFetchXmlAction.js";
-new QueryExpressionToFetchXmlAction({ EntityName: "account", ColumnSet: { AllColumns: true } });
+new QueryExpressionToFetchXmlAction({ Query: { EntityName: "account", ColumnSet: { AllColumns: true } } });
 `
     );
     expect(missing.join("\n")).toMatch(/usage-missing\.ts\(2\)/);
@@ -258,10 +259,12 @@ new QueryExpressionToFetchXmlAction({ EntityName: "account", ColumnSet: { AllCol
       join(out, "actions"),
       "usage-abstract.ts",
       `import { ValidateAction } from "./ValidateAction.js";
-new ValidateAction([{ "@odata.type": "Microsoft.Dynamics.CRM.activitypointer", subject: "Hi" }]);
+new ValidateAction({
+  Activities: [{ "@odata.type": "Microsoft.Dynamics.CRM.activitypointer", subject: "Hi" }],
+});
 `
     );
-    expect(abstract.join("\n")).toMatch(/usage-abstract\.ts\(2\)/);
+    expect(abstract.join("\n")).toMatch(/usage-abstract\.ts\(3\)/);
   });
 });
 
@@ -338,7 +341,7 @@ describe("#69: collection-bound operations", () => {
       "actions/ValidateSavedQueryAction.ts",
       "ValidateSavedQueryAction"
     );
-    const info = new Action("<fetch/>", 0).toRequestInformation(BASE);
+    const info = new Action({ FetchXml: "<fetch/>", QueryType: 0 }).toRequestInformation(BASE);
     expect(info.url).toBe(`${BASE}/savedqueries/Microsoft.Dynamics.CRM.ValidateSavedQuery`);
     expect(info.body).toEqual({ FetchXml: "<fetch/>", QueryType: 0 });
   });
@@ -348,7 +351,7 @@ describe("#69: collection-bound operations", () => {
     expect(code).toContain("public readonly entitySetName: string,");
     const Action = await load<Op>("actions/CreateMultipleAction.ts", "CreateMultipleAction");
     const targets = [{ "@odata.type": "Microsoft.Dynamics.CRM.account", name: "A" }];
-    const info = new Action("accounts", targets).toRequestInformation(BASE);
+    const info = new Action("accounts", { Targets: targets }).toRequestInformation(BASE);
     expect(info.url).toBe(`${BASE}/accounts/Microsoft.Dynamics.CRM.CreateMultiple`);
     expect(info.body).toEqual({ Targets: targets });
   });
@@ -358,7 +361,9 @@ describe("#69: collection-bound operations", () => {
       "functions/RetrieveFilteredFormsFunction.ts",
       "RetrieveFilteredFormsFunction"
     );
-    const url = new Fn("account", 2).toRequestInformation(BASE).url;
+    const url = new Fn({ EntityLogicalName: "account", FormType: 2 }).toRequestInformation(
+      BASE
+    ).url;
     expect(url).toBe(
       `${BASE}/systemforms/Microsoft.Dynamics.CRM.RetrieveFilteredForms(EntityLogicalName=@p1,FormType=@p2)?%40p1=%27account%27&%40p2=2`
     );
@@ -373,8 +378,8 @@ describe("#69: collection-bound operations", () => {
     expect(code).toContain(
       "const url = `${baseUrl}/${this.entitySetName}/Microsoft.Dynamics.CRM.CreateMultiple`;"
     );
-    const body = /const body: Record<string, unknown> = \{[\s\S]*?\};/.exec(code)?.[0] ?? "";
-    expect(body).toContain("Targets: this.targets,");
+    const body = /const body = requestBody\(\{[\s\S]*?\}\);/.exec(code)?.[0] ?? "";
+    expect(body).toContain("Targets: this.Parameters.Targets,");
     expect(body).not.toContain("entitySetName");
   });
 
@@ -456,42 +461,67 @@ describe("#67, #68: function parameter literals", () => {
 
   it("an enum is an enum literal; a GUID is bare (#67, #68)", async () => {
     const RetrieveEntity = await load("RetrieveEntityFunction");
-    expect(decoded(new RetrieveEntity(3, "account", GUID, false))).toBe(
+    expect(
+      decoded(
+        new RetrieveEntity({
+          EntityFilters: 3,
+          LogicalName: "account",
+          MetadataId: GUID,
+          RetrieveAsIfPublished: false,
+        })
+      )
+    ).toBe(
       `${BASE}/RetrieveEntity(EntityFilters=@p1,LogicalName=@p2,MetadataId=@p3,RetrieveAsIfPublished=@p4)` +
         `?@p1=Microsoft.Dynamics.CRM.EntityFilters'3'&@p2='account'&@p3=${GUID}&@p4=false`
     );
-    expect(decoded(new RetrieveEntity("Attributes", "account", GUID, false))).toContain(
-      "@p1=Microsoft.Dynamics.CRM.EntityFilters'Attributes'"
-    );
+    expect(
+      decoded(
+        new RetrieveEntity({
+          EntityFilters: "Attributes",
+          LogicalName: "account",
+          MetadataId: GUID,
+          RetrieveAsIfPublished: false,
+        })
+      )
+    ).toContain("@p1=Microsoft.Dynamics.CRM.EntityFilters'Attributes'");
   });
 
   it("a DateTimeOffset is bare and also takes a Date (#68)", async () => {
     const LocalTime = await load("LocalTimeFromUtcTimeFunction");
-    expect(decoded(new LocalTime(85, new Date("2026-01-01T00:00:00Z")))).toContain(
-      "@p2=2026-01-01T00:00:00.000Z"
-    );
-    expect(decoded(new LocalTime(85, "2026-01-01T00:00:00Z"))).toContain(
+    expect(
+      decoded(new LocalTime({ TimeZoneCode: 85, UtcTime: new Date("2026-01-01T00:00:00Z") }))
+    ).toContain("@p2=2026-01-01T00:00:00.000Z");
+    expect(decoded(new LocalTime({ TimeZoneCode: 85, UtcTime: "2026-01-01T00:00:00Z" }))).toContain(
       "@p2=2026-01-01T00:00:00Z"
     );
   });
 
-  it("nullable parameters are optional when trailing, and accept undefined otherwise (#68)", async () => {
+  it("nullable parameters are optional properties, left out of the URL when undefined (#68, #96)", async () => {
     const entity = await read("functions/RetrieveEntityFunction.ts");
+    expect(entity).toContain("export interface RetrieveEntityFunctionParameters {");
+    expect(entity).toContain("  EntityFilters: EntityFilters | keyof typeof EntityFilters;");
+    expect(entity).toContain("  LogicalName?: string;");
+    expect(entity).toContain("  MetadataId: string;");
     expect(entity).toContain(
-      "public readonly entityFilters: EntityFilters | keyof typeof EntityFilters,"
+      "constructor(\n    public readonly parameters: RetrieveEntityFunctionParameters,\n  ) {}"
     );
-    expect(entity).toContain("public readonly logicalName: string | undefined,");
-    expect(entity).toContain("public readonly metadataId: string,");
     const changes = await read("functions/GetChangesFunction.ts");
-    expect(changes).toContain("public readonly stamp: string,");
-    expect(changes).toContain("public readonly appModuleId?: string,");
-    expect(changes).toContain(
-      "public readonly filters?: EntityFilters | keyof typeof EntityFilters,"
-    );
+    expect(changes).toContain("  Stamp: string;");
+    expect(changes).toContain("  AppModuleId?: string;");
+    expect(changes).toContain("  Filters?: EntityFilters | keyof typeof EntityFilters;");
     const GetChanges = await load("GetChangesFunction");
-    expect(decoded(new GetChanges("s1"))).toBe(`${BASE}/GetChanges(Stamp=@p1)?@p1='s1'`);
+    expect(decoded(new GetChanges({ Stamp: "s1" }))).toBe(`${BASE}/GetChanges(Stamp=@p1)?@p1='s1'`);
+    expect(decoded(new GetChanges({ Stamp: "s1", AppModuleId: undefined }))).toBe(
+      `${BASE}/GetChanges(Stamp=@p1)?@p1='s1'`
+    );
     const RetrieveEntity = await load("RetrieveEntityFunction");
-    expect(decoded(new RetrieveEntity(1, undefined, GUID, true))).not.toContain("LogicalName");
+    const url = decoded(
+      new RetrieveEntity({ EntityFilters: 1, MetadataId: GUID, RetrieveAsIfPublished: true })
+    );
+    expect(url).toBe(
+      `${BASE}/RetrieveEntity(EntityFilters=@p1,MetadataId=@p3,RetrieveAsIfPublished=@p4)` +
+        `?@p1=Microsoft.Dynamics.CRM.EntityFilters'1'&@p3=${GUID}&@p4=true`
+    );
   });
 
   it("enums are exported as values, from the types index and the package index (#67)", async () => {
@@ -508,10 +538,15 @@ describe("#67, #68: function parameter literals", () => {
       join(out, "functions"),
       "usage-ok.ts",
       `import { EntityFilters, RetrieveEntityFunction, LocalTimeFromUtcTimeFunction, GetChangesFunction } from "./index.js";
-new RetrieveEntityFunction(EntityFilters.Entity | EntityFilters.Attributes, "account", "${GUID}", false);
-new RetrieveEntityFunction("Entity", undefined, "${GUID}", false);
-new LocalTimeFromUtcTimeFunction(85, new Date());
-new GetChangesFunction("s1");
+new RetrieveEntityFunction({
+  EntityFilters: EntityFilters.Entity | EntityFilters.Attributes,
+  LogicalName: "account",
+  MetadataId: "${GUID}",
+  RetrieveAsIfPublished: false,
+});
+new RetrieveEntityFunction({ EntityFilters: "Entity", MetadataId: "${GUID}", RetrieveAsIfPublished: false });
+new LocalTimeFromUtcTimeFunction({ TimeZoneCode: 85, UtcTime: new Date() });
+new GetChangesFunction({ Stamp: "s1" });
 `
     );
     expect(ok).toEqual([]);
@@ -519,7 +554,7 @@ new GetChangesFunction("s1");
       join(out, "functions"),
       "usage-bad.ts",
       `import { RetrieveEntityFunction } from "./index.js";
-new RetrieveEntityFunction("Bogus", "account", "${GUID}", false);
+new RetrieveEntityFunction({ EntityFilters: "Bogus", MetadataId: "${GUID}", RetrieveAsIfPublished: false });
 `
     );
     expect(bad.join("\n")).toMatch(/usage-bad\.ts\(2\)/);
@@ -634,10 +669,10 @@ describe("#72: entity references", () => {
   it("an action body carries the reference in the Web API shape", async () => {
     const refs = await load<RefModule>("actions/types/EntityReference.ts");
     const { MergeAction } = await load<{ MergeAction: Op }>("actions/MergeAction.ts");
-    const info = new MergeAction(
-      refs.createEntityReference("account", "a1"),
-      refs.createEntityReference("account", "a2")
-    ).toRequestInformation(BASE);
+    const info = new MergeAction({
+      Target: refs.createEntityReference("account", "a1"),
+      Subordinate: refs.createEntityReference("account", "a2"),
+    }).toRequestInformation(BASE);
     expect(JSON.parse(JSON.stringify(info.body))).toEqual({
       Target: { "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "a1" },
       Subordinate: { "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "a2" },
@@ -649,12 +684,15 @@ describe("#72: entity references", () => {
     const { InitializeFromFunction } = await load<{ InitializeFromFunction: Op }>(
       "functions/InitializeFromFunction.ts"
     );
-    const url = new InitializeFromFunction(
-      refs.createEntityReference("opportunity", "o1"),
-      "account"
-    ).toRequestInformation(BASE).url;
+    const url = new InitializeFromFunction({
+      EntityMoniker: refs.createEntityReference("opportunity", "o1"),
+      TargetEntityName: "account",
+    }).toRequestInformation(BASE).url;
     expect(decodeURIComponent(url)).toContain('@p1={"@odata.id":"opportunities(o1)"}');
-    const unknown = new InitializeFromFunction(refs.createEntityReference("new_thing", "n1"), "x");
+    const unknown = new InitializeFromFunction({
+      EntityMoniker: refs.createEntityReference("new_thing", "n1"),
+      TargetEntityName: "x",
+    });
     expect(() => unknown.toRequestInformation(BASE)).toThrow(/needs an entitySetName/);
   });
 });
@@ -873,11 +911,14 @@ describe("#70: message response parsing", () => {
 
   it("parseResponse goes through fromResponse; a message without a return has no result", async () => {
     const mod = (await import(join(out, "messages", "ExecuteWorkflowMessage.ts"))) as {
-      ExecuteWorkflowRequest: new (...args: string[]) => {
+      ExecuteWorkflowRequest: new (
+        id: string,
+        parameters: { EntityId: string }
+      ) => {
         parseResponse(r: Response): Promise<{ result: unknown }>;
       };
     };
-    const req = new mod.ExecuteWorkflowRequest("w1", "e1");
+    const req = new mod.ExecuteWorkflowRequest("w1", { EntityId: "e1" });
     expect((await req.parseResponse(body({ asyncoperationid: "aaa" }))).result).toEqual({
       asyncoperationid: "aaa",
     });

@@ -422,9 +422,10 @@ function generateMessageClass(csdl: CsdlSchema, action: CsdlAction, stem = actio
   code += `  constructor(\n`;
   for (const arg of ctorArgs) code += `    ${arg},\n`;
   code += `  ) {\n`;
-  code += bodyParams.length > 0
-    ? `    super('${action.name}', { ...parameters });\n`
-    : `    super('${action.name}');\n`;
+  code +=
+    bodyParams.length > 0
+      ? `    super('${action.name}', { ...parameters });\n`
+      : `    super('${action.name}');\n`;
   code += `  }\n\n`;
 
   // Generate toRequestInformation method (for Executable<T> interface)
@@ -597,7 +598,10 @@ function generateMessagesIndex(
   // One export per class: overloads have their own (#75), and a name with no unbound overload
   // has no plain-name export (#286)
   const entries = operations
-    .map((op) => ({ stem: stems.get(op) ?? op.name, hasParameters: op.parameters.some((p) => p.name) }))
+    .map((op) => ({
+      stem: stems.get(op) ?? op.name,
+      hasParameters: op.parameters.some((p) => p.name),
+    }))
     .sort((a, b) => a.stem.localeCompare(b.stem));
   for (const { stem, hasParameters } of entries) {
     // The parameters interface of the constructor (#96)

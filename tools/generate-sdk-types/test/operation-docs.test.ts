@@ -12,6 +12,7 @@ import {
   OPERATION_DOCS,
   exportedOperationNames,
   readOperation,
+  renderOperation,
   renderOperationBlocks,
   unknownOperationNames,
 } from "../src/docs/operation-docs.js";
@@ -37,7 +38,33 @@ describe("operation docs (#88)", () => {
       method: "POST",
       route: "/{entitySetName}/Microsoft.Dynamics.CRM.CreateMultiple",
     });
-    expect(op?.params.map((p) => p.name)).toEqual(["entitySetName", "targets"]);
+    expect(op?.args.map((a) => a.name)).toEqual(["entitySetName"]);
+    expect(op?.parameters).toEqual([
+      { name: "Targets", type: "Record<string, unknown>[]", optional: false },
+    ]);
+    // #96: the parameters object by CSDL name, required per Nullable="false"
+    const entity = readOperation(
+      join(ROOT, "packages", "dataverse-sdk-functions", "src"),
+      "functions",
+      "RetrieveEntity"
+    );
+    expect(entity?.args).toEqual([]);
+    expect(entity?.parameters?.map((p) => `${p.name}${p.optional ? "?" : ""}`)).toEqual([
+      "EntityFilters",
+      "LogicalName?",
+      "MetadataId",
+      "RetrieveAsIfPublished",
+    ]);
+    if (!entity) throw new Error("RetrieveEntityFunction not found");
+    expect(renderOperation(entity, "Read a table definition.")).toBe(
+      "- `new RetrieveEntityFunction({ EntityFilters, LogicalName?, MetadataId, RetrieveAsIfPublished })` (`GET /RetrieveEntity`): Read a table definition."
+    );
+    const whoAmI = readOperation(
+      join(ROOT, "packages", "dataverse-sdk-functions", "src"),
+      "functions",
+      "WhoAmI"
+    );
+    expect(whoAmI?.parameters).toBeUndefined();
     expect(readOperation(srcDir, "actions", "Assign")).toBeUndefined();
   });
 

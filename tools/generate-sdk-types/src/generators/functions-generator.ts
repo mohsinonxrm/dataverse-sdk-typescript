@@ -762,7 +762,10 @@ function generateFunctionsIndex(
   // One export per class: overloads have their own (#75), and a name with no unbound overload
   // has no plain-name export (#286)
   const entries = operations
-    .map((op) => ({ stem: stems.get(op) ?? op.name, hasParameters: op.parameters.some((p) => p.name) }))
+    .map((op) => ({
+      stem: stems.get(op) ?? op.name,
+      hasParameters: op.parameters.some((p) => p.name),
+    }))
     .sort((a, b) => a.stem.localeCompare(b.stem));
   for (const { stem, hasParameters } of entries) {
     // The parameters interface of the constructor (#96)

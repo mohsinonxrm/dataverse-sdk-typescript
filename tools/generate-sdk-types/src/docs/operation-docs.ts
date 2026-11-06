@@ -11,8 +11,9 @@
  *     …generated lines…
  *     <!-- /operations -->
  *
- * and `generate-sdk-types docs` writes, for each name, the class, its constructor parameters and
- * its route, read from the package source. A name the package doesn't export is an error, and
+ * and `generate-sdk-types docs` writes, for each name, the class, its constructor arguments (the
+ * record or entity set of a bound operation, then the properties of its parameters object, #96)
+ * and its route, read from the package source. A name the package doesn't export is an error, and
  * `test/operation-docs.test.ts` fails when a block is stale.
  */
 import { existsSync, readFileSync } from "node:fs";
@@ -27,8 +28,13 @@ export interface OperationDoc {
   method: "GET" | "POST";
   /** The route after the base URL, with `${this.x}` written as `{x}`. */
   route: string;
-  /** `optional`: the argument can be left out (a trailing optional parameter). */
-  params: Array<{ name: string; type: string; optional: boolean }>;
+  /** The arguments before the parameters object: the record id or entity set of a bound operation. */
+  args: Array<{ name: string; type: string }>;
+  /**
+   * The properties of the parameters object, by CSDL name (`optional`: it can be left out), or
+   * `undefined` when the operation takes no parameters.
+   */
+  parameters?: Array<{ name: string; type: string; optional: boolean }>;
 }
 
 const SUFFIX: Record<OperationKind, { file: string; cls: string }> = {
@@ -37,15 +43,15 @@ const SUFFIX: Record<OperationKind, { file: string; cls: string }> = {
   messages: { file: "Message", cls: "Request" },
 };
 
-/** Split a parameter list on top-level commas. */
-function splitParams(text: string): string[] {
+/** Split a parameter list on top-level commas (or interface members on `;`). */
+function splitParams(text: string, separator = ","): string[] {
   const out: string[] = [];
   let depth = 0;
   let cur = "";
   for (const ch of text) {
     if ("(<[{".includes(ch)) depth++;
     if (")>]}".includes(ch)) depth--;
-    if (ch === "," && depth === 0) {
+    if (ch === separator && depth === 0) {
       out.push(cur);
       cur = "";
     } else cur += ch;
@@ -70,38 +76,52 @@ export function readOperation(
   const className = `${name}${cls}`;
   const classAt = src.indexOf(`export class ${className}`);
   if (classAt < 0) return undefined;
-  const params: OperationDoc["params"] = [];
+  const args: OperationDoc["args"] = [];
+  let parameters: OperationDoc["parameters"];
   const ctorAt = src.indexOf("constructor(", classAt);
   const bodyAt = src.indexOf("toRequestInformation", classAt);
   if (ctorAt >= 0 && ctorAt < bodyAt) {
-    const open = ctorAt + "constructor(".length;
-    let depth = 1;
-    let close = open;
-    for (; close < src.length && depth > 0; close++) {
-      if (src[close] === "(") depth++;
-      if (src[close] === ")") depth--;
-    }
-    for (const p of splitParams(src.slice(open, close - 1))) {
-      const m = /^public (?:readonly )?(\w+)(\??): (.+)$/.exec(p);
+    for (const p of splitParams(enclosed(src, ctorAt + "constructor".length, "(", ")"))) {
+      const m = /^(?:public (?:readonly )?)?(\w+): (.+?)(?: = \{\})?$/.exec(p);
       if (!m) continue;
-      const undef = m[3].endsWith(" | undefined");
-      // Only a trailing optional argument (`x?`) can be left out; `x: T | undefined` in the
-      // middle must be passed, as `undefined` if need be
-      params.push({
-        name: m[1],
-        type: undef ? m[3].slice(0, -" | undefined".length) : m[3],
-        optional: m[2] === "?",
-      });
+      if (m[1] === "parameters") parameters = readParameters(src, m[2]);
+      else args.push({ name: m[1], type: m[2] });
     }
   }
   const url = /(?:const|let) url = `\$\{baseUrl\}\/([^`]*)`/.exec(src);
   const route = `/${(url?.[1] ?? "").replace(/\$\{this\.(\w+)\}/g, "{$1}")}`;
-  return { className, method: kind === "functions" ? "GET" : "POST", route, params };
+  return { className, method: kind === "functions" ? "GET" : "POST", route, args, parameters };
+}
+
+/** The text between the bracket `open` at or after `from` and its matching `close`. */
+function enclosed(src: string, from: number, open: string, close: string): string {
+  const start = src.indexOf(open, from) + 1;
+  let depth = 1;
+  let end = start;
+  for (; end < src.length && depth > 0; end++) {
+    if (src[end] === open) depth++;
+    if (src[end] === close) depth--;
+  }
+  return src.slice(start, end - 1);
+}
+
+/** The properties of the parameters interface `name` declared in `src` (#96). */
+function readParameters(src: string, name: string): NonNullable<OperationDoc["parameters"]> {
+  const at = src.indexOf(`export interface ${name} {`);
+  if (at < 0) throw new Error(`docs: no interface ${name}`);
+  const members = splitParams(enclosed(src, at, "{", "}"), ";");
+  return members.flatMap((member) => {
+    const m = /^(\w+)(\??): (.+)$/.exec(member);
+    return m ? [{ name: m[1], type: m[3], optional: m[2] === "?" }] : [];
+  });
 }
 
 /** The markdown line for one listed operation: its constructor, route and description. */
 export function renderOperation(op: OperationDoc, description: string): string {
-  const args = op.params.map((p) => `${p.name}${p.optional ? "?" : ""}`).join(", ");
+  const properties = op.parameters?.map((p) => `${p.name}${p.optional ? "?" : ""}`).join(", ");
+  const args = [...op.args.map((a) => a.name), ...(properties ? [`{ ${properties} }`] : [])].join(
+    ", "
+  );
   const desc = description ? ` ${description}` : "";
   return `- \`new ${op.className}(${args})\` (\`${op.method} ${op.route}\`):${desc}`;
 }

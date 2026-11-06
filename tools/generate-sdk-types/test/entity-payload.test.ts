@@ -103,42 +103,40 @@ const read = (path: string): Promise<string> => readFile(join(dir, path), "utf8"
 describe("entity payload parameters (#74)", () => {
   it("types crmbaseentity, table and table-collection parameters as payloads or references", async () => {
     const merge = await read("actions/MergeAction.ts");
-    expect(merge).toContain("public readonly target: EntityReference | AnyEntityPayload,");
-    expect(merge).toContain(
-      "public readonly updateContent: EntityReference | AnyEntityPayload | undefined,"
-    );
+    expect(merge).toContain("  Target: EntityReference | AnyEntityPayload;");
+    expect(merge).toContain("  UpdateContent?: EntityReference | AnyEntityPayload;");
     expect(await read("actions/WinOpportunityAction.ts")).toContain(
-      "public readonly opportunityClose: EntityReference | EntityPayload<opportunityclose>,"
+      "  OpportunityClose: EntityReference | EntityPayload<opportunityclose>;"
     );
     expect(await read("actions/AddMembersTeamAction.ts")).toContain(
-      "public readonly members: (EntityReference | EntityPayload<systemuser>)[]"
+      "  Members: (EntityReference | EntityPayload<systemuser>)[];"
     );
     expect(await read("messages/MergeMessage.ts")).toContain(
-      "public updateContent: EntityReference | AnyEntityPayload | undefined,"
+      "  UpdateContent?: EntityReference | AnyEntityPayload;"
     );
   });
 
-  it("compiles payload literals and omitted trailing arguments without casts", async () => {
+  it("compiles payload literals and omitted optional properties without casts", async () => {
     const errors = await typecheck(
       dir,
       "use-payloads.ts",
       `import { MergeAction, WinOpportunityAction, AddMembersTeamAction, createEntityReference } from "./actions/index.js";
 import { MergeRequest, WinOpportunityRequest, createEntityReference as ref } from "./messages/index.js";
 const update = { "@odata.type": "Microsoft.Dynamics.CRM.account", name: "Merged" };
-export const merge = new MergeAction(createEntityReference("account", "a1"), createEntityReference("account", "a2"), update, false);
-export const mergeRequest = new MergeRequest(ref("account", "a1"), ref("account", "a2"), update, false);
+export const merge = new MergeAction({ Target: createEntityReference("account", "a1"), Subordinate: createEntityReference("account", "a2"), UpdateContent: update, PerformParentingChecks: false });
+export const mergeRequest = new MergeRequest({ Target: ref("account", "a1"), Subordinate: ref("account", "a2"), UpdateContent: update, PerformParentingChecks: false });
 const close = {
   "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
   subject: "Won",
   "opportunityid@odata.bind": "/opportunities(o1)",
 };
-export const win = new WinOpportunityAction(close, 3);
-export const winRequest = new WinOpportunityRequest(close, 3, "");
-export const members = new AddMembersTeamAction("t1", [createEntityReference("systemuser", "u1")]);
+export const win = new WinOpportunityAction({ OpportunityClose: close, Status: 3 });
+export const winRequest = new WinOpportunityRequest({ OpportunityClose: close, Status: 3 });
+export const members = new AddMembersTeamAction("t1", { Members: [createEntityReference("systemuser", "u1")] });
 // @ts-expect-error a crmbaseentity payload must name its table
-export const untyped = new MergeAction(createEntityReference("account", "a1"), createEntityReference("account", "a2"), { name: "x" }, false);
+export const untyped = new MergeAction({ Target: createEntityReference("account", "a1"), Subordinate: createEntityReference("account", "a2"), UpdateContent: { name: "x" }, PerformParentingChecks: false });
 // @ts-expect-error a lookup is bound with a string
-export const badBind = new WinOpportunityAction({ "opportunityid@odata.bind": 1 }, 3);
+export const badBind = new WinOpportunityAction({ OpportunityClose: { "opportunityid@odata.bind": 1 }, Status: 3 });
 `
     );
     expect(errors).toEqual([]);
