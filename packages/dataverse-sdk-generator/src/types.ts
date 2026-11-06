@@ -55,6 +55,21 @@ export interface DataverseGenConfig {
   };
 
   /**
+   * Type operation responses exactly as `$metadata` declares them (default: `false`; the CLI's
+   * `--strict-nulls` turns it on).
+   *
+   * Every complex type an operation returns, directly or nested in another complex type, also
+   * gets an `<Name>Output` interface: every property is present, and is `T | null` unless the CSDL
+   * declares it `Nullable="false"` (then it's `T`). `<Class>Response` and the nested properties
+   * use it. A primitive or complex return the CSDL leaves nullable is `T | null`, and so are the
+   * items of a nullable collection return of primitives, enums or complex types.
+   *
+   * Parameters don't change: they keep the `<Name>` interfaces, whose properties are optional, so
+   * a caller sends only what it sets. Entity returns are `Record | null` either way.
+   */
+  strictNulls?: boolean;
+
+  /**
    * MSAL authentication for metadata retrieval (used by `dataverse-gen generate`).
    * `--token` on the command line takes precedence.
    */
@@ -109,6 +124,7 @@ export const DEFAULT_CONFIG: Partial<DataverseGenConfig> = {
     generateIndex: true,
     fileSuffix: "",
   },
+  strictNulls: false,
 };
 
 /**
@@ -313,6 +329,12 @@ export interface ActionType {
 
   /** Return type */
   ReturnType?: TypeScriptType;
+
+  /**
+   * Whether the CSDL leaves the return nullable (no `Nullable="false"` on `ReturnType`). For a
+   * collection it applies to the items. Only `strictNulls` reads it.
+   */
+  ReturnTypeNullable?: boolean;
 }
 
 /**
@@ -342,6 +364,12 @@ export interface FunctionType {
 
   /** Return type */
   ReturnType?: TypeScriptType;
+
+  /**
+   * Whether the CSDL leaves the return nullable (no `Nullable="false"` on `ReturnType`). For a
+   * collection it applies to the items. Only `strictNulls` reads it.
+   */
+  ReturnTypeNullable?: boolean;
 
   /** Is composable? */
   IsComposable?: boolean;
