@@ -195,6 +195,7 @@ const account = await service.retrieve("accounts", accountId, {
 console.log(`Account: ${account.name}`);
 
 // ========== UPDATE ==========
+// Sends If-Match: * so, like the C# Update, it never creates a missing record (404 instead).
 await service.update("accounts", accountId, {
   telephone1: "555-9999",
   revenue: 2000000,
@@ -228,9 +229,9 @@ const updated = await service.update(
 // ========== DELETE ==========
 await service.delete("accounts", accountId);
 
-// With optimistic concurrency
-await service.delete("accounts", accountId, {
-  etag: account["@odata.etag"],
+// Or, with optimistic concurrency (rejects with 412 if the record changed since it was read)
+await service.delete("accounts", otherAccountId, {
+  etag: otherAccount["@odata.etag"],
 });
 
 // ========== RETRIEVE MULTIPLE ==========
@@ -245,9 +246,10 @@ const result = await service.retrieveMultiple("accounts", {
 console.log(`Found ${result.value.length} of ${result["@odata.count"]} total`);
 
 // ========== ASSOCIATE ==========
+// EntityReference takes the logical name ("contact"), not the entity set name.
 await service.associate("accounts", accountId, "contact_customer_accounts", [
-  { logicalName: "contacts", id: contactId1 },
-  { logicalName: "contacts", id: contactId2 },
+  { logicalName: "contact", id: contactId1 },
+  { logicalName: "contact", id: contactId2 },
 ]);
 
 // ========== DISASSOCIATE ==========
@@ -272,12 +274,14 @@ const accountTyped = await service.retrieve<Account>("accounts", accountId, {
 console.log(accountTyped.name); // ✅ Type-safe
 console.log(accountTyped.invalidProp); // ❌ Compile error
 
-// Create with typed interface
-await service.create<Account>("accounts", {
-  name: "Typed Account",
-  revenue: 1000000,
-  // invalidProp: 'x' // ❌ Compile error
-});
+// With returnRepresentation, create() resolves the record (string | T, so narrow it). The
+// entity argument is not checked against T.
+const created = (await service.create<Account>(
+  "accounts",
+  { name: "Typed Account", revenue: 1000000 },
+  { returnRepresentation: true, select: ["accountid", "name"] }
+)) as Account;
+console.log(created.accountid);
 ```
 
 ---
@@ -575,8 +579,8 @@ const entityDef: EntityMetadataCreate = {
   HasNotes: true,
 };
 
-const createdEntity = await metadataClient.createEntity(entityDef);
-console.log(`Created entity: ${createdEntity.LogicalName}`);
+const entityMetadataId = await metadataClient.createEntityDefinition(entityDef);
+console.log(`Created entity: ${entityMetadataId}`);
 
 // ========== CREATE ATTRIBUTE ==========
 const attrDef: StringAttributeMetadataCreate = {
@@ -588,7 +592,7 @@ const attrDef: StringAttributeMetadataCreate = {
   FormatName: { Value: "Text" },
 };
 
-await metadataClient.createAttribute("new_project", attrDef);
+await metadataClient.createAttributeDefinition("new_project", attrDef);
 console.log("Attribute created");
 
 // ========== CREATE 1:N RELATIONSHIP ==========
@@ -620,42 +624,53 @@ const entities = await metadataClient.getEntityDefinitions({
 console.log(`Found ${entities.length} custom entities`);
 
 // ========== RETRIEVE METADATA CHANGES ==========
-import type { EntityQueryExpression } from "@mohsinonxrm/dataverse-sdk-metadata";
+import {
+  LogicalOperator,
+  MetadataConditionOperator,
+  type EntityQueryExpression,
+} from "@mohsinonxrm/dataverse-sdk-metadata";
 
 const query: EntityQueryExpression = {
   Criteria: {
-    Conditions: [{ PropertyName: "SchemaName", ConditionOperator: "Equals", Value: "new_Project" }],
+    FilterOperator: LogicalOperator.And,
+    Conditions: [
+      {
+        PropertyName: "SchemaName",
+        ConditionOperator: MetadataConditionOperator.Equals,
+        Value: { Type: "System.String", Value: "new_Project" },
+      },
+    ],
   },
   Properties: {
     PropertyNames: ["Attributes", "OneToManyRelationships"],
   },
 };
 
-const changes = await metadataClient.retrieveMetadataChanges({
-  Query: query,
-  ClientVersionStamp: null,
-  DeletedMetadataFilters: "Entity",
-});
+// Positional: (query, clientVersionStamp?, deletedMetadataFilters?)
+const first = await metadataClient.retrieveMetadataChanges(query);
+const changes = await metadataClient.retrieveMetadataChanges(
+  query,
+  first.ServerVersionStamp,
+  "Default"
+);
 
-console.log("Metadata changes retrieved");
+console.log("Metadata changes retrieved", changes.ServerVersionStamp);
 ```
 
 ### 2. Using HTTP-First with `client.api()`
 
 ```typescript
 // ========== CREATE ENTITY (Raw HTTP POST) ==========
-const entityResponse = await client
-  .api("/EntityDefinitions")
-  .preferRaw("return=representation")
-  .post({
-    "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
-    SchemaName: "new_Project",
-    DisplayName: {
-      LocalizedLabels: [{ Label: "Project", LanguageCode: 1033 }],
-    },
-    OwnershipType: "UserOwned",
-    HasActivities: true,
-  });
+// Dataverse answers 204 with the new MetadataId in OData-EntityId; createAndGetId() reads it
+const entityMetadataId = await client.api("/EntityDefinitions").createAndGetId({
+  "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
+  SchemaName: "new_Project",
+  DisplayName: {
+    LocalizedLabels: [{ Label: "Project", LanguageCode: 1033 }],
+  },
+  OwnershipType: "UserOwned",
+  HasActivities: true,
+});
 
 // ========== CREATE ATTRIBUTE (Raw HTTP POST) ==========
 await client.api("/EntityDefinitions(LogicalName='new_project')/Attributes").post({
@@ -777,7 +792,8 @@ OrganizationService is built **on top of** HTTP primitives:
 ```typescript
 // OrganizationService.create() internally does:
 const builder = this.client.api(`/${entitySetName}`);
-const response = await builder.post(entity, headers);
+if (options?.impersonateUserId) builder.impersonate(options.impersonateUserId);
+const id = await builder.createAndGetId(entity, { headers: options?.headers });
 ```
 
 It's a **convenience layer**, not a separate execution path.

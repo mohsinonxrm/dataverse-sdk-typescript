@@ -1,7 +1,17 @@
+import type {
+  MetadataODataType,
+  ServerSetMetadataProperty,
+} from "./AttributeMetadataCreateTypes.js";
 import type { OptionSetMetadata } from "./OptionSetMetadata.js";
 
 /**
- * OptionSetMetadataCreate - type for creating an option set
- * Uses OptionSetMetadata (per Microsoft Web API documentation)
+ * OptionSetMetadataCreate - the payload for creating a global choice: `@odata.type` and `Name`
+ * are required.
  */
-export type OptionSetMetadataCreate = OptionSetMetadata;
+export type OptionSetMetadataCreate = Omit<
+  OptionSetMetadata,
+  ServerSetMetadataProperty | "IsCustomOptionSet" | "@odata.type" | "Name"
+> & {
+  "@odata.type": MetadataODataType<"OptionSetMetadata">;
+  Name: string;
+};
