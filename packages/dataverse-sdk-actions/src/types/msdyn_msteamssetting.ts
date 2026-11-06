@@ -2,25 +2,25 @@
  * msdyn_msteamssetting entity type
  */
 export interface msdyn_msteamssetting {
-  importsequencenumber?: number;
-  _createdonbehalfby_value?: string;
-  overriddencreatedon?: string;
-  _owninguser_value?: string;
-  msdyn_msteamssettingsid?: string;
-  versionnumber?: number;
-  timezoneruleversionnumber?: number;
-  statecode?: number;
-  _modifiedonbehalfby_value?: string;
-  msdyn_msteamssettingsname?: string;
-  _owningbusinessunit_value?: string;
-  msdyn_tabserviceurl?: string;
-  statuscode?: number;
   _createdby_value?: string;
-  msdyn_msteamssettingid?: string;
-  createdon?: string;
+  _createdonbehalfby_value?: string;
   _modifiedby_value?: string;
-  utcconversiontimezonecode?: number;
+  _modifiedonbehalfby_value?: string;
   _ownerid_value?: string;
-  modifiedon?: string;
+  _owningbusinessunit_value?: string;
   _owningteam_value?: string;
+  _owninguser_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_msteamssettingid?: string;
+  msdyn_msteamssettingsid?: string;
+  msdyn_msteamssettingsname?: string;
+  msdyn_tabserviceurl?: string;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

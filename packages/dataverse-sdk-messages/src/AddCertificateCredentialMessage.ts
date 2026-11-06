@@ -7,9 +7,9 @@ import { requestBody } from "./internal/requestBody.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface AddCertificateCredentialRequestParameters {
-  entityLogicalName: string;
-  entityId: string;
   thumbprint: string;
+  entityId: string;
+  entityLogicalName: string;
 }
 
 /**
@@ -31,9 +31,9 @@ export class AddCertificateCredentialRequest
     const url = `${baseUrl}/AddCertificateCredential`;
 
     const body = requestBody({
-      entityLogicalName: this.Parameters.entityLogicalName,
-      entityId: this.Parameters.entityId,
       thumbprint: this.Parameters.thumbprint,
+      entityId: this.Parameters.entityId,
+      entityLogicalName: this.Parameters.entityLogicalName,
     });
 
     return {

@@ -13,8 +13,8 @@ export interface msdyn_CleanupCopilotAgentResponsesResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_CleanupCopilotAgentResponsesActionParameters {
-  UntilMarker?: string;
   ConversationId?: string;
+  UntilMarker?: string;
 }
 
 /**
@@ -31,8 +31,8 @@ export class msdyn_CleanupCopilotAgentResponsesAction implements Executable<msdy
     const url = `${baseUrl}/msdyn_CleanupCopilotAgentResponses`;
 
     const body = requestBody({
-      UntilMarker: this.parameters.UntilMarker,
       ConversationId: this.parameters.ConversationId,
+      UntilMarker: this.parameters.UntilMarker,
     });
 
     return {

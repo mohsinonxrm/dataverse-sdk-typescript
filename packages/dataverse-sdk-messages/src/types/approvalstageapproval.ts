@@ -2,35 +2,35 @@
  * approvalstageapproval entity type
  */
 export interface approvalstageapproval {
-  statuscode?: number;
+  _approval_value?: string;
+  _createdby_value?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
   _modifiedonbehalfby_value?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
   _owninguser_value?: string;
-  modeltype?: string;
-  overriddencreatedon?: string;
+  allowcancel?: boolean;
+  allowreassign?: boolean;
+  approvalstageapprovalid?: string;
+  createdon?: string;
+  customfields?: string;
+  details?: string;
+  importsequencenumber?: number;
+  itemlink?: string;
   itemlinkdescription?: string;
+  modelid?: string;
+  modeltype?: string;
+  modifiedon?: string;
   name?: string;
+  overriddencreatedon?: string;
   result?: string;
   sendemailnotification?: boolean;
   statecode?: number;
-  allowcancel?: boolean;
-  _createdonbehalfby_value?: string;
-  _modifiedby_value?: string;
-  importsequencenumber?: number;
-  modifiedon?: string;
-  approvalstageapprovalid?: string;
-  _approval_value?: string;
-  createdon?: string;
-  _owningbusinessunit_value?: string;
-  details?: string;
-  _ownerid_value?: string;
-  allowreassign?: boolean;
-  itemlink?: string;
-  utcconversiontimezonecode?: number;
-  _owningteam_value?: string;
+  statuscode?: number;
   timezoneruleversionnumber?: number;
   title?: string;
-  modelid?: string;
-  customfields?: string;
-  _createdby_value?: string;
+  utcconversiontimezonecode?: number;
   versionnumber?: number;
 }

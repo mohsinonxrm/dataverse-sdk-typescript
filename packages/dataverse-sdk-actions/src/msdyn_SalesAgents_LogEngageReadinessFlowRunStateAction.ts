@@ -13,10 +13,10 @@ export interface msdyn_SalesAgents_LogEngageReadinessFlowRunStateResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesAgents_LogEngageReadinessFlowRunStateActionParameters {
-  msdyn_TrackingId?: string;
-  msdyn_SalesAgentRun?: string;
   msdyn_Thread?: string;
+  msdyn_SalesAgentRun?: string;
   msdyn_FlowRunState?: string;
+  msdyn_TrackingId?: string;
 }
 
 /**
@@ -33,10 +33,10 @@ export class msdyn_SalesAgents_LogEngageReadinessFlowRunStateAction implements E
     const url = `${baseUrl}/msdyn_SalesAgents_LogEngageReadinessFlowRunState`;
 
     const body = requestBody({
-      msdyn_TrackingId: this.parameters.msdyn_TrackingId,
-      msdyn_SalesAgentRun: this.parameters.msdyn_SalesAgentRun,
       msdyn_Thread: this.parameters.msdyn_Thread,
+      msdyn_SalesAgentRun: this.parameters.msdyn_SalesAgentRun,
       msdyn_FlowRunState: this.parameters.msdyn_FlowRunState,
+      msdyn_TrackingId: this.parameters.msdyn_TrackingId,
     });
 
     return {

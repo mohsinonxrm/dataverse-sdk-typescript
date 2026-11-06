@@ -2,24 +2,24 @@
  * plugintypestatistic entity type
  */
 export interface plugintypestatistic {
-  _modifiedby_value?: string;
-  averageexecutetimeinmilliseconds?: number;
-  crashcount?: number;
-  executecount?: number;
-  _organizationid_value?: string;
-  terminatememorycontributionpercent?: number;
-  crashpercent?: number;
-  _modifiedonbehalfby_value?: string;
-  _createdonbehalfby_value?: string;
-  failurepercent?: number;
-  createdon?: string;
   _createdby_value?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _organizationid_value?: string;
   _plugintypeid_value?: string;
-  terminateothercontributionpercent?: number;
+  averageexecutetimeinmilliseconds?: number;
+  crashcontributionpercent?: number;
+  crashcount?: number;
+  crashpercent?: number;
+  createdon?: string;
+  executecount?: number;
+  failurecount?: number;
+  failurepercent?: number;
   modifiedon?: string;
   plugintypestatisticid?: string;
-  terminatehandlescontributionpercent?: number;
   terminatecpucontributionpercent?: number;
-  failurecount?: number;
-  crashcontributionpercent?: number;
+  terminatehandlescontributionpercent?: number;
+  terminatememorycontributionpercent?: number;
+  terminateothercontributionpercent?: number;
 }

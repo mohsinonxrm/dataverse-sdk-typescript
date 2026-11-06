@@ -5,11 +5,11 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from InferEntityDefinition action
  */
 export interface InferEntityDefinitionResponse {
-  FileInfo: string;
-  UsingFallbackLogic: boolean;
   EntitiesCollection: string;
   EntityDefinition: string;
+  FileInfo: string;
   SampleData: string;
+  UsingFallbackLogic: boolean;
 }
 
 /**
@@ -17,17 +17,17 @@ export interface InferEntityDefinitionResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface InferEntityDefinitionActionParameters {
+  FileInfo?: string;
+  ParseSampleData?: boolean;
+  RecordId: string;
   LanguageCode?: number;
+  EntitiesCollection?: string;
   UseUserSettings?: boolean;
+  EntityDefinition?: string;
+  SourceTimeZone?: string;
   UserContext?: string;
   SolutionPrefix: string;
   PreviewData?: string;
-  SourceTimeZone?: string;
-  ParseSampleData?: boolean;
-  FileInfo?: string;
-  RecordId: string;
-  EntityDefinition?: string;
-  EntitiesCollection?: string;
 }
 
 /**
@@ -42,17 +42,17 @@ export class InferEntityDefinitionAction implements Executable<InferEntityDefini
     const url = `${baseUrl}/InferEntityDefinition`;
 
     const body = requestBody({
+      FileInfo: this.parameters.FileInfo,
+      ParseSampleData: this.parameters.ParseSampleData,
+      RecordId: this.parameters.RecordId,
       LanguageCode: this.parameters.LanguageCode,
+      EntitiesCollection: this.parameters.EntitiesCollection,
       UseUserSettings: this.parameters.UseUserSettings,
+      EntityDefinition: this.parameters.EntityDefinition,
+      SourceTimeZone: this.parameters.SourceTimeZone,
       UserContext: this.parameters.UserContext,
       SolutionPrefix: this.parameters.SolutionPrefix,
       PreviewData: this.parameters.PreviewData,
-      SourceTimeZone: this.parameters.SourceTimeZone,
-      ParseSampleData: this.parameters.ParseSampleData,
-      FileInfo: this.parameters.FileInfo,
-      RecordId: this.parameters.RecordId,
-      EntityDefinition: this.parameters.EntityDefinition,
-      EntitiesCollection: this.parameters.EntitiesCollection,
     });
 
     return {

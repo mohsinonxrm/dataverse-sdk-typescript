@@ -2,18 +2,18 @@
  * TriggerDefinition complex type
  */
 export interface TriggerDefinition {
+  CatalogDisplayName?: string;
+  CatalogId?: string;
+  CatalogUniqueName?: string;
   DisplayName?: string;
-  PrimaryEntityLogicalName?: string;
+  EventType?: string;
+  OpenApiOperationIdName?: string;
   PrimaryEntityDisplayName?: string;
+  PrimaryEntityId?: string;
+  PrimaryEntityLogicalName?: string;
   SdkMessageId?: string;
   SdkMessageName?: string;
-  CatalogUniqueName?: string;
-  CatalogDisplayName?: string;
-  SubCatalogUniqueName?: string;
   SubCatalogDisplayName?: string;
-  EventType?: string;
-  PrimaryEntityId?: string;
-  CatalogId?: string;
   SubCatalogId?: string;
-  OpenApiOperationIdName?: string;
+  SubCatalogUniqueName?: string;
 }

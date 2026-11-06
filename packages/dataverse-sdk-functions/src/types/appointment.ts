@@ -4,23 +4,24 @@ import type { activitypointer } from "./activitypointer.js";
  * appointment entity type
  */
 export interface appointment extends activitypointer {
-  subcategory?: string;
-  subscriptionid?: string;
+  attachmenterrors?: number;
   category?: string;
-  onlinemeetingjoinurl?: string;
-  onlinemeetingchatid?: string;
-  isdraft?: boolean;
-  onlinemeetingtype?: number;
-  location?: string;
+  globalobjectid?: string;
+  importsequencenumber?: number;
   isalldayevent?: boolean;
-  originalstartdate?: string;
-  modifiedfieldsmask?: string;
-  outlookownerapptid?: number;
+  isdraft?: boolean;
   isonlinemeeting?: boolean;
   isunsafe?: number;
+  location?: string;
+  modifiedfieldsmask?: string;
+  msdyn_associatedagentname?: string;
+  onlinemeetingchatid?: string;
   onlinemeetingid?: string;
-  attachmenterrors?: number;
-  importsequencenumber?: number;
+  onlinemeetingjoinurl?: string;
+  onlinemeetingtype?: number;
+  originalstartdate?: string;
+  outlookownerapptid?: number;
   overriddencreatedon?: string;
-  globalobjectid?: string;
+  subcategory?: string;
+  subscriptionid?: string;
 }

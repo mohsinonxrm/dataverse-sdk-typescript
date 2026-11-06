@@ -15,6 +15,7 @@ export interface msdyn_SalesAgents_ShouldRunAgentOrchestrationResponse {
 export interface msdyn_SalesAgents_ShouldRunAgentOrchestrationActionParameters {
   msdyn_SalesAgentType: number;
   msdyn_TrackingId?: string;
+  msdyn_AgentProfileId?: string;
 }
 
 /**
@@ -33,6 +34,7 @@ export class msdyn_SalesAgents_ShouldRunAgentOrchestrationAction implements Exec
     const body = requestBody({
       msdyn_SalesAgentType: this.parameters.msdyn_SalesAgentType,
       msdyn_TrackingId: this.parameters.msdyn_TrackingId,
+      msdyn_AgentProfileId: this.parameters.msdyn_AgentProfileId,
     });
 
     return {

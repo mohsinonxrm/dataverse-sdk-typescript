@@ -9,19 +9,19 @@ import type { UpstreamResultInput } from "./UpstreamResultInput.js";
  * DataProcessingModuleExecuteRequest complex type
  */
 export interface DataProcessingModuleExecuteRequest {
-  DataProcessingConfigurationId?: string;
-  EndPoints?: string[];
-  JobName?: string;
-  Script?: string;
-  JobArguments?: string[];
-  ScalarInputs?: ScalarInputParameter[];
   CallbackUri?: string;
-  UpstreamResults?: UpstreamResultInput[];
-  OverrideApplicationId?: string;
+  DataProcessingConfigurationId?: string;
   DirectEntryContext?: DirectEntryContext;
+  DynamicAllocationSettings?: DynamicAllocationSettings;
+  EndPoints?: string[];
+  JobArguments?: string[];
+  JobName?: string;
   ModuleConfigurationJson?: string;
   ModuleRunId?: string;
   ModuleRunIncrementalSettings?: ModuleRunIncrementalSettings;
   ModuleRunOutputInfo?: ModuleRunOutputInfo;
-  DynamicAllocationSettings?: DynamicAllocationSettings;
+  OverrideApplicationId?: string;
+  ScalarInputs?: ScalarInputParameter[];
+  Script?: string;
+  UpstreamResults?: UpstreamResultInput[];
 }

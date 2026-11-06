@@ -5,10 +5,10 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_CheckForDeletedSDKMessageProcessingSteps action
  */
 export interface msdyn_CheckForDeletedSDKMessageProcessingStepsResponse {
+  HelpLink: string;
   Message: string;
   ResultEntities: string;
   ReturnStatus: number;
-  HelpLink: string;
 }
 
 /**

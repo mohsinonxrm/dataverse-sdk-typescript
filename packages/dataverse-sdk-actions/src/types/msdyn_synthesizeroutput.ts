@@ -2,24 +2,25 @@
  * msdyn_synthesizeroutput entity type
  */
 export interface msdyn_synthesizeroutput {
-  modifiedon?: string;
-  ttlinseconds?: number;
-  msdyn_iscomplete?: boolean;
+  _createdby_value?: string;
   _createdonbehalfby_value?: string;
-  msdyn_synthesizeroutputid?: string;
-  msdyn_componentresult?: string;
   _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _msdyn_referenceobjectid_value?: string;
   _ownerid_value?: string;
   _owningbusinessunit_value?: string;
-  _createdby_value?: string;
   _owningteam_value?: string;
-  importsequencenumber?: number;
-  partitionid?: string;
-  _modifiedonbehalfby_value?: string;
   _owninguser_value?: string;
   createdon?: string;
-  versionnumber?: number;
-  _msdyn_referenceobjectid_value?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_componentresult?: string;
+  msdyn_iscomplete?: boolean;
   msdyn_name?: string;
+  msdyn_salesagentprofileid?: string;
+  msdyn_synthesizeroutputid?: string;
   overriddencreatedon?: string;
+  partitionid?: string;
+  ttlinseconds?: number;
+  versionnumber?: number;
 }

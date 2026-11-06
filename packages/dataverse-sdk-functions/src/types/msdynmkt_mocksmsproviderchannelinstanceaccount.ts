@@ -2,25 +2,25 @@
  * msdynmkt_mocksmsproviderchannelinstanceaccount entity type
  */
 export interface msdynmkt_mocksmsproviderchannelinstanceaccount {
-  msdynmkt_authtoken?: string;
-  _createdonbehalfby_value?: string;
   _createdby_value?: string;
-  msdynmkt_accountsid?: string;
+  _createdonbehalfby_value?: string;
   _modifiedby_value?: string;
-  versionnumber?: number;
-  _owninguser_value?: string;
-  _ownerid_value?: string;
-  createdon?: string;
-  modifiedon?: string;
-  msdynmkt_mocksmsproviderchannelinstanceaccountid?: string;
-  overriddencreatedon?: string;
   _modifiedonbehalfby_value?: string;
+  _ownerid_value?: string;
   _owningbusinessunit_value?: string;
   _owningteam_value?: string;
+  _owninguser_value?: string;
+  createdon?: string;
   importsequencenumber?: number;
-  timezoneruleversionnumber?: number;
-  statuscode?: number;
+  modifiedon?: string;
+  msdynmkt_accountsid?: string;
+  msdynmkt_authtoken?: string;
+  msdynmkt_mocksmsproviderchannelinstanceaccountid?: string;
   msdynmkt_name?: string;
-  utcconversiontimezonecode?: number;
+  overriddencreatedon?: string;
   statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

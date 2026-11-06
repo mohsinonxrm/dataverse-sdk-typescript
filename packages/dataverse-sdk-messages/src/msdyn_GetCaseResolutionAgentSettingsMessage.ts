@@ -11,7 +11,9 @@ import type { msdyn_GetCaseResolutionAgentSettingsResponse as msdyn_GetCaseResol
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_GetCaseResolutionAgentSettingsRequestParameters {
+  RunId?: string;
   Entity?: EntityReference | AnyEntityPayload;
+  SkipEnablementChecks?: boolean;
 }
 
 /**
@@ -33,7 +35,9 @@ export class msdyn_GetCaseResolutionAgentSettingsRequest
     const url = `${baseUrl}/msdyn_GetCaseResolutionAgentSettings`;
 
     const body = requestBody({
+      RunId: this.Parameters.RunId,
       Entity: this.Parameters.Entity,
+      SkipEnablementChecks: this.Parameters.SkipEnablementChecks,
     });
 
     return {

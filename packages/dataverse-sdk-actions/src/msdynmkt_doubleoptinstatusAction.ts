@@ -13,8 +13,8 @@ export interface msdynmkt_doubleoptinstatusResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdynmkt_doubleoptinstatusActionParameters {
-  msdynmkt_complianceid: string;
   DOI_Job_Status?: string;
+  msdynmkt_complianceid: string;
 }
 
 /**
@@ -29,8 +29,8 @@ export class msdynmkt_doubleoptinstatusAction implements Executable<msdynmkt_dou
     const url = `${baseUrl}/msdynmkt_doubleoptinstatus`;
 
     const body = requestBody({
-      msdynmkt_complianceid: this.parameters.msdynmkt_complianceid,
       DOI_Job_Status: this.parameters.DOI_Job_Status,
+      msdynmkt_complianceid: this.parameters.msdynmkt_complianceid,
     });
 
     return {

@@ -7,8 +7,8 @@ import { requestBody } from "./internal/requestBody.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_updatesequencetargetstepdataRequestParameters {
-  msdyn_sequencetargetstepid: string;
   msdyn_linkedactivityid?: string;
+  msdyn_sequencetargetstepid: string;
 }
 
 /**
@@ -30,8 +30,8 @@ export class msdyn_updatesequencetargetstepdataRequest
     const url = `${baseUrl}/msdyn_updatesequencetargetstepdata`;
 
     const body = requestBody({
-      msdyn_sequencetargetstepid: this.Parameters.msdyn_sequencetargetstepid,
       msdyn_linkedactivityid: this.Parameters.msdyn_linkedactivityid,
+      msdyn_sequencetargetstepid: this.Parameters.msdyn_sequencetargetstepid,
     });
 
     return {

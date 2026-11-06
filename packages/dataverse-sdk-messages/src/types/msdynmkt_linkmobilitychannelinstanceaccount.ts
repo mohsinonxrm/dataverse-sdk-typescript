@@ -2,29 +2,29 @@
  * msdynmkt_linkmobilitychannelinstanceaccount entity type
  */
 export interface msdynmkt_linkmobilitychannelinstanceaccount {
-  overriddencreatedon?: string;
-  timezoneruleversionnumber?: number;
+  _createdby_value?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdynmkt_baseurl?: string;
+  msdynmkt_gateid?: string;
+  msdynmkt_linkmobilitychannelinstanceaccountid?: string;
   msdynmkt_name?: string;
   msdynmkt_password?: string;
-  msdynmkt_linkmobilitychannelinstanceaccountid?: string;
-  _createdby_value?: string;
-  _ownerid_value?: string;
-  modifiedon?: string;
   msdynmkt_platformid?: string;
-  statuscode?: number;
-  createdon?: string;
-  statecode?: number;
-  msdynmkt_gateid?: string;
-  importsequencenumber?: number;
-  _owningteam_value?: string;
-  _modifiedonbehalfby_value?: string;
-  msdynmkt_username?: string;
-  _owningbusinessunit_value?: string;
-  _createdonbehalfby_value?: string;
-  _owninguser_value?: string;
   msdynmkt_platformpartnerid?: string;
-  _modifiedby_value?: string;
-  msdynmkt_baseurl?: string;
+  msdynmkt_username?: string;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
   utcconversiontimezonecode?: number;
   versionnumber?: number;
 }

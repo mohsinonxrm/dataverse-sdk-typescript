@@ -9,9 +9,9 @@ import type { msdyn_ConvertDateTimeOnCalendarTimeZoneResponse as msdyn_ConvertDa
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_ConvertDateTimeOnCalendarTimeZoneRequestParameters {
-  IsDateTimeTza: boolean;
   CalendarId: string;
   DateTime: string;
+  IsDateTimeTza: boolean;
 }
 
 /**
@@ -33,9 +33,9 @@ export class msdyn_ConvertDateTimeOnCalendarTimeZoneRequest
     const url = `${baseUrl}/msdyn_ConvertDateTimeOnCalendarTimeZone`;
 
     const body = requestBody({
-      IsDateTimeTza: this.Parameters.IsDateTimeTza,
       CalendarId: this.Parameters.CalendarId,
       DateTime: this.Parameters.DateTime,
+      IsDateTimeTza: this.Parameters.IsDateTimeTza,
     });
 
     return {

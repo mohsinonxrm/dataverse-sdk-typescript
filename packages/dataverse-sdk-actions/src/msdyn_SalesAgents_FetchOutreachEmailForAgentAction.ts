@@ -13,11 +13,12 @@ export interface msdyn_SalesAgents_FetchOutreachEmailForAgentResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesAgents_FetchOutreachEmailForAgentActionParameters {
-  msdyn_SalesAgentRunId?: string;
-  msdyn_RegardingEntityName: string;
-  msdyn_TrackingId?: string;
   msdyn_OutreachConfig?: string;
   msdyn_RegardingEntityId: string;
+  msdyn_RegardingEntityName: string;
+  msdyn_SalesAgentRunId?: string;
+  msdyn_TrackingId?: string;
+  msdyn_AgentProfileId?: string;
 }
 
 /**
@@ -34,11 +35,12 @@ export class msdyn_SalesAgents_FetchOutreachEmailForAgentAction implements Execu
     const url = `${baseUrl}/msdyn_SalesAgents_FetchOutreachEmailForAgent`;
 
     const body = requestBody({
-      msdyn_SalesAgentRunId: this.parameters.msdyn_SalesAgentRunId,
-      msdyn_RegardingEntityName: this.parameters.msdyn_RegardingEntityName,
-      msdyn_TrackingId: this.parameters.msdyn_TrackingId,
       msdyn_OutreachConfig: this.parameters.msdyn_OutreachConfig,
       msdyn_RegardingEntityId: this.parameters.msdyn_RegardingEntityId,
+      msdyn_RegardingEntityName: this.parameters.msdyn_RegardingEntityName,
+      msdyn_SalesAgentRunId: this.parameters.msdyn_SalesAgentRunId,
+      msdyn_TrackingId: this.parameters.msdyn_TrackingId,
+      msdyn_AgentProfileId: this.parameters.msdyn_AgentProfileId,
     });
 
     return {

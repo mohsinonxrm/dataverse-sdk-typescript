@@ -13,9 +13,9 @@ export interface msdyn_IngestAnalyticsDataCustomChannelsResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_IngestAnalyticsDataCustomChannelsActionParameters {
-  msdyn_linkedactivityid?: string;
   msdyn_eventname: string;
   msdyn_sequencestepid?: string;
+  msdyn_linkedactivityid?: string;
 }
 
 /**
@@ -32,9 +32,9 @@ export class msdyn_IngestAnalyticsDataCustomChannelsAction implements Executable
     const url = `${baseUrl}/msdyn_IngestAnalyticsDataCustomChannels`;
 
     const body = requestBody({
-      msdyn_linkedactivityid: this.parameters.msdyn_linkedactivityid,
       msdyn_eventname: this.parameters.msdyn_eventname,
       msdyn_sequencestepid: this.parameters.msdyn_sequencestepid,
+      msdyn_linkedactivityid: this.parameters.msdyn_linkedactivityid,
     });
 
     return {

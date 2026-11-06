@@ -2,27 +2,27 @@
  * transactioncurrency entity type
  */
 export interface transactioncurrency {
-  _createdonbehalfby_value?: string;
   _createdby_value?: string;
-  statuscode?: number;
-  _organizationid_value?: string;
-  currencyname?: string;
-  overriddencreatedon?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
   _modifiedonbehalfby_value?: string;
-  entityimage?: string;
-  exchangerate?: number;
+  _organizationid_value?: string;
+  createdon?: string;
+  currencyname?: string;
+  currencyprecision?: number;
   currencysymbol?: string;
   currencytype?: number;
-  entityimage_url?: string;
-  importsequencenumber?: number;
-  createdon?: string;
-  modifiedon?: string;
-  entityimageid?: string;
-  currencyprecision?: number;
+  entityimage?: string;
   entityimage_timestamp?: number;
-  transactioncurrencyid?: string;
-  statecode?: number;
+  entityimage_url?: string;
+  entityimageid?: string;
+  exchangerate?: number;
+  importsequencenumber?: number;
   isocurrencycode?: string;
+  modifiedon?: string;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  transactioncurrencyid?: string;
   versionnumber?: number;
-  _modifiedby_value?: string;
 }

@@ -2,21 +2,21 @@
  * msdyn_databaseversion entity type
  */
 export interface msdyn_databaseversion {
+  _createdby_value?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _organizationid_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
   msdyn_databaseversionid?: string;
+  msdyn_dbversion?: number;
+  msdyn_solutionname?: string;
+  overriddencreatedon?: string;
+  statecode?: number;
   statuscode?: number;
   timezoneruleversionnumber?: number;
-  overriddencreatedon?: string;
-  importsequencenumber?: number;
-  msdyn_solutionname?: string;
   utcconversiontimezonecode?: number;
-  _organizationid_value?: string;
-  _createdby_value?: string;
-  modifiedon?: string;
-  msdyn_dbversion?: number;
-  createdon?: string;
-  _createdonbehalfby_value?: string;
-  statecode?: number;
-  _modifiedonbehalfby_value?: string;
   versionnumber?: number;
-  _modifiedby_value?: string;
 }

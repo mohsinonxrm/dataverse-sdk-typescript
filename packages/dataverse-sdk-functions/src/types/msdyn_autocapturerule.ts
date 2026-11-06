@@ -2,26 +2,26 @@
  * msdyn_autocapturerule entity type
  */
 export interface msdyn_autocapturerule {
-  overriddencreatedon?: string;
-  versionnumber?: number;
-  modifiedon?: string;
-  _ownerid_value?: string;
-  msdyn_autocaptureruleid?: string;
   _createdby_value?: string;
-  _owninguser_value?: string;
-  utcconversiontimezonecode?: number;
-  statuscode?: number;
+  _createdonbehalfby_value?: string;
   _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  createdon?: string;
   importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_autocaptureruleid?: string;
+  msdyn_name?: string;
+  msdyn_ruledatasource?: string;
   msdyn_rulename?: string;
   msdyn_rulevalue?: string;
-  msdyn_ruledatasource?: string;
-  _owningbusinessunit_value?: string;
-  msdyn_name?: string;
-  _modifiedonbehalfby_value?: string;
+  overriddencreatedon?: string;
   statecode?: number;
-  createdon?: string;
-  _createdonbehalfby_value?: string;
+  statuscode?: number;
   timezoneruleversionnumber?: number;
-  _owningteam_value?: string;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

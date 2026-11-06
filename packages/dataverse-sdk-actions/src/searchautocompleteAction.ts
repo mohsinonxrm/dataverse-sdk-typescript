@@ -13,12 +13,12 @@ export interface searchautocompleteResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface searchautocompleteActionParameters {
-  propertybag?: string;
-  filter?: string;
   fuzzy?: boolean;
   options?: string;
   search: string;
   entities?: string;
+  propertybag?: string;
+  filter?: string;
 }
 
 /**
@@ -33,12 +33,12 @@ export class searchautocompleteAction implements Executable<searchautocompleteRe
     const url = `${baseUrl}/searchautocomplete`;
 
     const body = requestBody({
-      propertybag: this.parameters.propertybag,
-      filter: this.parameters.filter,
       fuzzy: this.parameters.fuzzy,
       options: this.parameters.options,
       search: this.parameters.search,
       entities: this.parameters.entities,
+      propertybag: this.parameters.propertybag,
+      filter: this.parameters.filter,
     });
 
     return {

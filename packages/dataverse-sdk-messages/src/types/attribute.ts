@@ -2,19 +2,19 @@
  * attribute entity type
  */
 export interface attribute {
+  attributeid?: string;
+  attributeof?: string;
+  attributetypeid?: string;
   componentstate?: number;
+  externalname?: string;
+  logicalname?: string;
+  managedpropertylogicalname?: string;
   managedpropertyparentattributename?: string;
+  name?: string;
+  overwritetime?: string;
   physicalname?: string;
   solutionid?: string;
-  attributeof?: string;
-  externalname?: string;
   tablecolumnname?: string;
-  versionnumber?: number;
-  logicalname?: string;
-  name?: string;
   validforreadapi?: boolean;
-  managedpropertylogicalname?: string;
-  overwritetime?: string;
-  attributetypeid?: string;
-  attributeid?: string;
+  versionnumber?: number;
 }

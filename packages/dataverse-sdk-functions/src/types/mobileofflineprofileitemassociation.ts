@@ -2,32 +2,32 @@
  * mobileofflineprofileitemassociation entity type
  */
 export interface mobileofflineprofileitemassociation {
-  componentstate?: number;
+  _createdby_value?: string;
+  _createdonbehalfby_value?: string;
+  _mobileofflineprofileitemid_value?: string;
   _modifiedby_value?: string;
   _modifiedonbehalfby_value?: string;
-  relationshipdisplayname?: string;
-  _createdby_value?: string;
-  solutionid?: string;
+  _organizationid_value?: string;
+  componentstate?: number;
   createdon?: string;
   introducedversion?: string;
-  mobileofflineprofileitemassociationidunique?: string;
-  name?: string;
-  stageid?: string;
-  overwritetime?: string;
   ismanaged?: boolean;
-  traversedpath?: string;
-  relationshipname?: string;
-  _organizationid_value?: string;
-  modifiedon?: string;
-  mobileofflineprofileitemassociationid?: string;
   isvalidated?: boolean;
-  _mobileofflineprofileitemid_value?: string;
-  versionnumber?: number;
-  relationshipid?: string;
+  mobileofflineprofileitemassociationid?: string;
+  mobileofflineprofileitemassociationidunique?: string;
+  modifiedon?: string;
+  name?: string;
+  overwritetime?: string;
   processid?: string;
   profileitemassociationentityfilter?: string;
   publishedon?: string;
-  _createdonbehalfby_value?: string;
   relationshipdata?: string;
+  relationshipdisplayname?: string;
+  relationshipid?: string;
+  relationshipname?: string;
   selectedrelationshipsschema?: number;
+  solutionid?: string;
+  stageid?: string;
+  traversedpath?: string;
+  versionnumber?: number;
 }

@@ -4,30 +4,30 @@ import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
  * recyclebinconfig entity type
  */
 export interface recyclebinconfig {
-  _createdonbehalfby_value?: string;
   _createdby_value?: string;
-  _organizationid_value?: string;
-  importsequencenumber?: number;
+  _createdonbehalfby_value?: string;
   _extensionofrecordid_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _organizationid_value?: string;
   bintablename?: string;
-  solutionid?: string;
-  utcconversiontimezonecode?: number;
-  timezoneruleversionnumber?: number;
   cleanupintervalindays?: number;
-  name?: string;
-  overwritetime?: string;
+  componentidunique?: string;
+  componentstate?: number;
   createdon?: string;
+  importsequencenumber?: number;
+  iscustomizable?: BooleanManagedProperty;
+  ismanaged?: boolean;
   isreadyforrecyclebin?: boolean;
   modifiedon?: string;
-  componentstate?: number;
+  name?: string;
   overriddencreatedon?: string;
+  overwritetime?: string;
   recyclebinconfigid?: string;
-  componentidunique?: string;
-  _modifiedonbehalfby_value?: string;
-  _modifiedby_value?: string;
-  versionnumber?: number;
-  ismanaged?: boolean;
+  solutionid?: string;
   statecode?: number;
   statuscode?: number;
-  iscustomizable?: BooleanManagedProperty;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

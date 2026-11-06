@@ -5,8 +5,8 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_GetSuggestedContacts action
  */
 export interface msdyn_GetSuggestedContactsResponse {
-  SuggestedContacts: string;
   IsUserLevelLocalized: boolean;
+  SuggestedContacts: string;
 }
 
 /**

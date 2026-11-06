@@ -5,12 +5,12 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_CheckForCustomizedSitemap action
  */
 export interface msdyn_CheckForCustomizedSitemapResponse {
+  Helplink: string;
   Message: string;
   ResultEntities: string;
-  ReturnStatus: number;
-  ReturnSeverity: number;
   ReturnLevel: number;
-  Helplink: string;
+  ReturnSeverity: number;
+  ReturnStatus: number;
 }
 
 /**

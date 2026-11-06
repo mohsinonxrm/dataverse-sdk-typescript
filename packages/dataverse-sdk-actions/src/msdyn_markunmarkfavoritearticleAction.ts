@@ -14,8 +14,8 @@ export interface msdyn_markunmarkfavoritearticleResponse {
  */
 export interface msdyn_markunmarkfavoritearticleActionParameters {
   msdyn_knowledgearticleid: string;
-  msdyn_userid: string;
   msdyn_actionname: string;
+  msdyn_userid: string;
 }
 
 /**
@@ -31,8 +31,8 @@ export class msdyn_markunmarkfavoritearticleAction implements Executable<msdyn_m
 
     const body = requestBody({
       msdyn_knowledgearticleid: this.parameters.msdyn_knowledgearticleid,
-      msdyn_userid: this.parameters.msdyn_userid,
       msdyn_actionname: this.parameters.msdyn_actionname,
+      msdyn_userid: this.parameters.msdyn_userid,
     });
 
     return {

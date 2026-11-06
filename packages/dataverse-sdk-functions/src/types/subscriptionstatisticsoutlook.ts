@@ -3,6 +3,6 @@
  */
 export interface subscriptionstatisticsoutlook {
   fullsyncrequired?: boolean;
-  subscriptionid?: string;
   objecttypecode?: number;
+  subscriptionid?: string;
 }

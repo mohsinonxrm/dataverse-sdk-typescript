@@ -10,9 +10,11 @@ import type { AnyEntityPayload } from "./types/EntityPayload.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_PredictFieldsBasedOnRulesRequestParameters {
+  msdyn_ScenarioName?: string;
+  msdyn_MatchingRuleId?: string;
+  msdyn_Context?: EntityReference | AnyEntityPayload;
   msdyn_Target: EntityReference | AnyEntityPayload;
   msdyn_ContextGenerationParameters?: string;
-  msdyn_Context?: EntityReference | AnyEntityPayload;
 }
 
 /**
@@ -34,9 +36,11 @@ export class msdyn_PredictFieldsBasedOnRulesRequest
     const url = `${baseUrl}/msdyn_PredictFieldsBasedOnRules`;
 
     const body = requestBody({
+      msdyn_ScenarioName: this.Parameters.msdyn_ScenarioName,
+      msdyn_MatchingRuleId: this.Parameters.msdyn_MatchingRuleId,
+      msdyn_Context: this.Parameters.msdyn_Context,
       msdyn_Target: this.Parameters.msdyn_Target,
       msdyn_ContextGenerationParameters: this.Parameters.msdyn_ContextGenerationParameters,
-      msdyn_Context: this.Parameters.msdyn_Context,
     });
 
     return {

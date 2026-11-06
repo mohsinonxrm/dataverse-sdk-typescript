@@ -8,6 +8,7 @@ import { requestBody } from "./internal/requestBody.js";
  */
 export interface RefreshChangesFromGitRequestParameters {
   SolutionUniqueName: string;
+  LastRefreshTime?: string;
 }
 
 /**
@@ -30,6 +31,7 @@ export class RefreshChangesFromGitRequest
 
     const body = requestBody({
       SolutionUniqueName: this.Parameters.SolutionUniqueName,
+      LastRefreshTime: this.Parameters.LastRefreshTime,
     });
 
     return {

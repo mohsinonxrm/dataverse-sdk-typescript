@@ -5,8 +5,8 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_RetrieveOutlookSchedules action
  */
 export interface msdyn_RetrieveOutlookSchedulesResponse {
-  Result: string;
   ExceptionMessage: string;
+  Result: string;
 }
 
 /**

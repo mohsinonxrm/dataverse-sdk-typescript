@@ -2,29 +2,29 @@
  * exportsolutionupload entity type
  */
 export interface exportsolutionupload {
-  _ownerid_value?: string;
-  solutionfile?: string;
-  modifiedon?: string;
-  versionnumber?: number;
-  name?: string;
-  _modifiedonbehalfby_value?: string;
-  _modifiedby_value?: string;
-  createdon?: string;
-  statuscode?: number;
-  importsequencenumber?: number;
-  _owningbusinessunit_value?: string;
-  timezoneruleversionnumber?: number;
-  solutionfile_name?: string;
-  utcconversiontimezonecode?: number;
-  statecode?: number;
-  _createdonbehalfby_value?: string;
-  _createdby_value?: string;
-  solutionuniquename?: string;
-  solutionfilename?: string;
-  _owninguser_value?: string;
   _asyncoperationid_value?: string;
-  exportsolutionuploadid?: string;
-  commitid?: string;
-  overriddencreatedon?: string;
+  _createdby_value?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
   _owningteam_value?: string;
+  _owninguser_value?: string;
+  commitid?: string;
+  createdon?: string;
+  exportsolutionuploadid?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  name?: string;
+  overriddencreatedon?: string;
+  solutionfile?: string;
+  solutionfile_name?: string;
+  solutionfilename?: string;
+  solutionuniquename?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

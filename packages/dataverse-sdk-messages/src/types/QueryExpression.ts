@@ -9,17 +9,17 @@ import type { QueryBase } from "./QueryBase.js";
  * QueryExpression complex type
  */
 export interface QueryExpression extends QueryBase {
+  ColumnSet?: ColumnSet;
+  Criteria?: FilterExpression;
+  DataSource?: string;
   Distinct?: boolean;
+  EntityName?: string;
+  ForceSeek?: string;
+  LinkEntities?: LinkEntity[];
   NoLock?: boolean;
-  SubQueryExpression?: QueryExpression;
+  Orders?: OrderExpression[];
   PageInfo?: PagingInfo;
   QueryHints?: string;
-  ForceSeek?: string;
-  DataSource?: string;
-  LinkEntities?: LinkEntity[];
-  Criteria?: FilterExpression;
-  Orders?: OrderExpression[];
-  EntityName?: string;
-  ColumnSet?: ColumnSet;
+  SubQueryExpression?: QueryExpression;
   TopCount?: number;
 }

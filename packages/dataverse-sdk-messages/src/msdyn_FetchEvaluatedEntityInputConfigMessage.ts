@@ -9,8 +9,9 @@ import type { msdyn_FetchEvaluatedEntityInputConfigResponse as msdyn_FetchEvalua
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_FetchEvaluatedEntityInputConfigRequestParameters {
-  regardingEntityId: string;
   regardingEntityLogicalName: string;
+  regardingEntityId: string;
+  ParticipantScope?: number;
 }
 
 /**
@@ -32,8 +33,9 @@ export class msdyn_FetchEvaluatedEntityInputConfigRequest
     const url = `${baseUrl}/msdyn_FetchEvaluatedEntityInputConfig`;
 
     const body = requestBody({
-      regardingEntityId: this.Parameters.regardingEntityId,
       regardingEntityLogicalName: this.Parameters.regardingEntityLogicalName,
+      regardingEntityId: this.Parameters.regardingEntityId,
+      ParticipantScope: this.Parameters.ParticipantScope,
     });
 
     return {

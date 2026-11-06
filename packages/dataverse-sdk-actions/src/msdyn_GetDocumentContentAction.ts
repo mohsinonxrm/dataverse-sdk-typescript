@@ -14,12 +14,12 @@ export interface msdyn_GetDocumentContentResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_GetDocumentContentActionParameters {
-  msdyn_documents: string;
   msdyn_activityId?: string;
-  msdyn_type: string;
+  msdyn_keywords?: string;
+  msdyn_documents: string;
   msdyn_userQuery?: string;
   msdyn_shouldUpload?: boolean;
-  msdyn_keywords?: string;
+  msdyn_type: string;
 }
 
 /**
@@ -34,12 +34,12 @@ export class msdyn_GetDocumentContentAction implements Executable<msdyn_GetDocum
     const url = `${baseUrl}/msdyn_GetDocumentContent`;
 
     const body = requestBody({
-      msdyn_documents: this.parameters.msdyn_documents,
       msdyn_activityId: this.parameters.msdyn_activityId,
-      msdyn_type: this.parameters.msdyn_type,
+      msdyn_keywords: this.parameters.msdyn_keywords,
+      msdyn_documents: this.parameters.msdyn_documents,
       msdyn_userQuery: this.parameters.msdyn_userQuery,
       msdyn_shouldUpload: this.parameters.msdyn_shouldUpload,
-      msdyn_keywords: this.parameters.msdyn_keywords,
+      msdyn_type: this.parameters.msdyn_type,
     });
 
     return {

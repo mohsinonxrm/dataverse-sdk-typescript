@@ -5,8 +5,8 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from ExportSolutionFromGit action
  */
 export interface ExportSolutionFromGitResponse {
-  SolutionZip: string;
   CommitId: string;
+  SolutionZip: string;
 }
 
 /**

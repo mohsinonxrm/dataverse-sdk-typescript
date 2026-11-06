@@ -7,9 +7,9 @@ import { requestBody } from "./internal/requestBody.js";
 export interface msdyn_CheckIfEmailResponseTemplateEntityTypeMatchResponse {
   Message: string;
   ResultEntities: string;
-  ReturnStatus: number;
-  ReturnSeverity: number;
   ReturnLevel: number;
+  ReturnSeverity: number;
+  ReturnStatus: number;
 }
 
 /**

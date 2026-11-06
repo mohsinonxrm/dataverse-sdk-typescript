@@ -5,8 +5,8 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_SnoozeEmailInfraActionCard action
  */
 export interface msdyn_SnoozeEmailInfraActionCardResponse {
-  Result: string;
   Error: string;
+  Result: string;
 }
 
 /**

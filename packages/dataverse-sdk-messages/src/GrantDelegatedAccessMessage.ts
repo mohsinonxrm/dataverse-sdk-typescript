@@ -10,8 +10,8 @@ import type { delegatedauthorization } from "./types/index.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface GrantDelegatedAccessRequestParameters {
-  target: EntityReference | AnyEntityPayload;
   delegatedauthorization: EntityReference | EntityPayload<delegatedauthorization>;
+  target: EntityReference | AnyEntityPayload;
   owneraccess: boolean;
 }
 
@@ -34,8 +34,8 @@ export class GrantDelegatedAccessRequest
     const url = `${baseUrl}/GrantDelegatedAccess`;
 
     const body = requestBody({
-      target: this.Parameters.target,
       delegatedauthorization: this.Parameters.delegatedauthorization,
+      target: this.Parameters.target,
       owneraccess: this.Parameters.owneraccess,
     });
 

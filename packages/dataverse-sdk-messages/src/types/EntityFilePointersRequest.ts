@@ -4,9 +4,9 @@ import type { ElasticEntitiesFilePointer } from "./ElasticEntitiesFilePointer.js
  * EntityFilePointersRequest complex type
  */
 export interface EntityFilePointersRequest {
-  ObjectTypeCode?: number;
-  FilePointers?: string[];
   ElasticEntitiesFilePointers?: ElasticEntitiesFilePointer[];
+  FilePointers?: string[];
+  ObjectTypeCode?: number;
   OrganizationId?: string;
   ScaleGroupId?: string;
 }

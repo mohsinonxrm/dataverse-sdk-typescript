@@ -2,23 +2,23 @@
  * bulkoperationlog entity type
  */
 export interface bulkoperationlog {
-  overriddencreatedon?: string;
-  errordescriptionformatted?: string;
-  utcconversiontimezonecode?: number;
-  errornumber?: number;
-  name?: string;
-  errornumberformatted?: string;
-  _campaignactivityid_value?: string;
-  importsequencenumber?: number;
-  _owningteam_value?: string;
-  versionnumber?: number;
-  _owninguser_value?: string;
-  _ownerid_value?: string;
-  additionalinfo?: string;
-  _regardingobjectid_value?: string;
-  _createdobjectid_value?: string;
-  _owningbusinessunit_value?: string;
   _bulkoperationid_value?: string;
+  _campaignactivityid_value?: string;
+  _createdobjectid_value?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  _regardingobjectid_value?: string;
+  additionalinfo?: string;
   bulkoperationlogid?: string;
+  errordescriptionformatted?: string;
+  errornumber?: number;
+  errornumberformatted?: string;
+  importsequencenumber?: number;
+  name?: string;
+  overriddencreatedon?: string;
   timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

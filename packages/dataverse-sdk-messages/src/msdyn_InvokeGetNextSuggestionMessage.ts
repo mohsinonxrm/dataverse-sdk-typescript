@@ -11,9 +11,12 @@ import type { msdyn_InvokeGetNextSuggestionResponse as msdyn_InvokeGetNextSugges
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_InvokeGetNextSuggestionRequestParameters {
-  Entity?: EntityReference | AnyEntityPayload;
-  CustomAgentResponse?: string;
   SourceContextEntity?: EntityReference | AnyEntityPayload;
+  AdditionalInformation?: string;
+  RunId?: string;
+  AutomationLevel?: string;
+  CustomAgentResponse?: string;
+  Entity?: EntityReference | AnyEntityPayload;
 }
 
 /**
@@ -35,9 +38,12 @@ export class msdyn_InvokeGetNextSuggestionRequest
     const url = `${baseUrl}/msdyn_InvokeGetNextSuggestion`;
 
     const body = requestBody({
-      Entity: this.Parameters.Entity,
-      CustomAgentResponse: this.Parameters.CustomAgentResponse,
       SourceContextEntity: this.Parameters.SourceContextEntity,
+      AdditionalInformation: this.Parameters.AdditionalInformation,
+      RunId: this.Parameters.RunId,
+      AutomationLevel: this.Parameters.AutomationLevel,
+      CustomAgentResponse: this.Parameters.CustomAgentResponse,
+      Entity: this.Parameters.Entity,
     });
 
     return {

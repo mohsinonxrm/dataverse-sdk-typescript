@@ -2,26 +2,26 @@
  * msdyn_conversationaggregatedinsights entity type
  */
 export interface msdyn_conversationaggregatedinsights {
-  msdyn_customerlongestmonologueinms?: number;
-  statecode?: number;
-  _modifiedby_value?: string;
-  versionnumber?: number;
-  _modifiedonbehalfby_value?: string;
-  utcconversiontimezonecode?: number;
-  _createdonbehalfby_value?: string;
-  msdyn_name?: string;
-  overriddencreatedon?: string;
-  msdyn_switchcount?: number;
-  _ownerid_value?: string;
-  timezoneruleversionnumber?: number;
-  importsequencenumber?: number;
   _createdby_value?: string;
-  createdon?: string;
-  _owninguser_value?: string;
-  msdyn_conversationaggregatedinsightsid?: string;
-  _owningteam_value?: string;
-  modifiedon?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _ownerid_value?: string;
   _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_conversationaggregatedinsightsid?: string;
   msdyn_conversationdurationinms?: number;
+  msdyn_customerlongestmonologueinms?: number;
+  msdyn_name?: string;
+  msdyn_switchcount?: number;
+  overriddencreatedon?: string;
+  statecode?: number;
   statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

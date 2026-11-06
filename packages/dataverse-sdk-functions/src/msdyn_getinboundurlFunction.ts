@@ -6,8 +6,8 @@ import { formatParameterAlias } from "./internal/odataLiteral.js";
  */
 export interface msdyn_getinboundurlResponse {
   inboundurl: string;
-  tenant: string;
   scopes: string[];
+  tenant: string;
 }
 
 /**

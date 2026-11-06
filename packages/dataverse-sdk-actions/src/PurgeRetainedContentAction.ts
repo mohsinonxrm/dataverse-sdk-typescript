@@ -6,8 +6,8 @@ import type { EntityRecordCountCollection } from "./types/index.js";
  * Response from PurgeRetainedContent action
  */
 export interface PurgeRetainedContentResponse {
-  HasMoreRecords: boolean;
   EntityCountCollection: EntityRecordCountCollection;
+  HasMoreRecords: boolean;
 }
 
 /**
@@ -18,6 +18,7 @@ export interface PurgeRetainedContentActionParameters {
   EntityName?: string;
   PageSize?: number;
   OperationId?: string;
+  IsMVPCalculatedFromRelatedEntities?: boolean;
   MaxVersionToPurge: number;
 }
 
@@ -36,6 +37,7 @@ export class PurgeRetainedContentAction implements Executable<PurgeRetainedConte
       EntityName: this.parameters.EntityName,
       PageSize: this.parameters.PageSize,
       OperationId: this.parameters.OperationId,
+      IsMVPCalculatedFromRelatedEntities: this.parameters.IsMVPCalculatedFromRelatedEntities,
       MaxVersionToPurge: this.parameters.MaxVersionToPurge,
     });
 

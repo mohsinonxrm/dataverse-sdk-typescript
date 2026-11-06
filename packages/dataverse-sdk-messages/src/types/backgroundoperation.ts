@@ -2,29 +2,29 @@
  * backgroundoperation entity type
  */
 export interface backgroundoperation {
-  ttlinseconds?: number;
-  name?: string;
-  endtime?: string;
-  displayname?: string;
-  errormessage?: string;
-  inputparameters?: string;
-  partitionid?: string;
-  starttime?: string;
-  runas?: string;
-  priority?: number;
-  createdon?: string;
-  versionnumber?: number;
-  outputparameters?: string;
-  errorcode?: number;
-  retrycount?: number;
-  _modifiedonbehalfby_value?: string;
-  importsequencenumber?: number;
-  backgroundoperationstatuscode?: number;
-  backgroundoperationstatecode?: number;
-  _modifiedby_value?: string;
-  modifiedon?: string;
   _createdby_value?: string;
-  overriddencreatedon?: string;
-  backgroundoperationid?: string;
   _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  backgroundoperationid?: string;
+  backgroundoperationstatecode?: number;
+  backgroundoperationstatuscode?: number;
+  createdon?: string;
+  displayname?: string;
+  endtime?: string;
+  errorcode?: number;
+  errormessage?: string;
+  importsequencenumber?: number;
+  inputparameters?: string;
+  modifiedon?: string;
+  name?: string;
+  outputparameters?: string;
+  overriddencreatedon?: string;
+  partitionid?: string;
+  priority?: number;
+  retrycount?: number;
+  runas?: string;
+  starttime?: string;
+  ttlinseconds?: number;
+  versionnumber?: number;
 }

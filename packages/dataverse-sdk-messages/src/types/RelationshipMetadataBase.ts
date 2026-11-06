@@ -9,14 +9,14 @@ import type { SecurityTypes } from "./SecurityTypes.js";
  * RelationshipMetadataBase entity type
  */
 export interface RelationshipMetadataBase extends MetadataBase {
+  IntroducedVersion?: string;
   IsCustomRelationship?: boolean;
   IsCustomizable?: BooleanManagedProperty;
+  IsManaged?: boolean;
   IsValidForAdvancedFind?: boolean;
+  RelationshipType: RelationshipType;
   SchemaName?: string;
   SecurityTypes?: SecurityTypes;
-  IsManaged?: boolean;
-  RelationshipType: RelationshipType;
-  IntroducedVersion?: string;
 }
 
 /**

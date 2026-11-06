@@ -14,9 +14,9 @@ export interface msdyn_SalesAgents_BatchUpdateSARStatesResponse {
  */
 export interface msdyn_SalesAgents_BatchUpdateSARStatesActionParameters {
   msdyn_StateCode: number;
+  msdyn_SalesAgentRunIds: string[];
   msdyn_StatusCode: number;
   msdyn_TrackingId?: string;
-  msdyn_SalesAgentRunIds: string[];
 }
 
 /**
@@ -32,9 +32,9 @@ export class msdyn_SalesAgents_BatchUpdateSARStatesAction implements Executable<
 
     const body = requestBody({
       msdyn_StateCode: this.parameters.msdyn_StateCode,
+      msdyn_SalesAgentRunIds: this.parameters.msdyn_SalesAgentRunIds,
       msdyn_StatusCode: this.parameters.msdyn_StatusCode,
       msdyn_TrackingId: this.parameters.msdyn_TrackingId,
-      msdyn_SalesAgentRunIds: this.parameters.msdyn_SalesAgentRunIds,
     });
 
     return {

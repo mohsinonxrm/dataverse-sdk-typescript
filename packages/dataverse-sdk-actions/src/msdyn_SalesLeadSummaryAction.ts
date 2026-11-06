@@ -5,12 +5,12 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_SalesLeadSummary action
  */
 export interface msdyn_SalesLeadSummaryResponse {
-  msdyn_sales_copilot_output: string;
-  msdyn_version: string;
-  msdyn_summary: string;
-  msdyn_summary_raw: string;
   msdyn_additionalDetails: string;
   msdyn_canUseCache: boolean;
+  msdyn_sales_copilot_output: string;
+  msdyn_summary: string;
+  msdyn_summary_raw: string;
+  msdyn_version: string;
 }
 
 /**
@@ -18,17 +18,17 @@ export interface msdyn_SalesLeadSummaryResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesLeadSummaryActionParameters {
-  msdyn_additionalParams?: string;
+  msdyn_id: string;
+  msdyn_sessionId?: string;
+  msdyn_skipHeader?: string;
+  msdyn_lastComputationTime?: string;
+  msdyn_responseFormat?: string;
   msdyn_activityId?: string;
+  msdyn_isMergedCatchupAndSummary?: boolean;
+  msdyn_additionalParams?: string;
   msdyn_doSuggestUpdates?: boolean;
   msdyn_parentContactId?: string;
-  msdyn_id: string;
-  msdyn_lastComputationTime?: string;
-  msdyn_isMergedCatchupAndSummary?: boolean;
-  msdyn_skipHeader?: string;
-  msdyn_sessionId?: string;
   msdyn_parentAccountId?: string;
-  msdyn_responseFormat?: string;
 }
 
 /**
@@ -43,17 +43,17 @@ export class msdyn_SalesLeadSummaryAction implements Executable<msdyn_SalesLeadS
     const url = `${baseUrl}/msdyn_SalesLeadSummary`;
 
     const body = requestBody({
-      msdyn_additionalParams: this.parameters.msdyn_additionalParams,
+      msdyn_id: this.parameters.msdyn_id,
+      msdyn_sessionId: this.parameters.msdyn_sessionId,
+      msdyn_skipHeader: this.parameters.msdyn_skipHeader,
+      msdyn_lastComputationTime: this.parameters.msdyn_lastComputationTime,
+      msdyn_responseFormat: this.parameters.msdyn_responseFormat,
       msdyn_activityId: this.parameters.msdyn_activityId,
+      msdyn_isMergedCatchupAndSummary: this.parameters.msdyn_isMergedCatchupAndSummary,
+      msdyn_additionalParams: this.parameters.msdyn_additionalParams,
       msdyn_doSuggestUpdates: this.parameters.msdyn_doSuggestUpdates,
       msdyn_parentContactId: this.parameters.msdyn_parentContactId,
-      msdyn_id: this.parameters.msdyn_id,
-      msdyn_lastComputationTime: this.parameters.msdyn_lastComputationTime,
-      msdyn_isMergedCatchupAndSummary: this.parameters.msdyn_isMergedCatchupAndSummary,
-      msdyn_skipHeader: this.parameters.msdyn_skipHeader,
-      msdyn_sessionId: this.parameters.msdyn_sessionId,
       msdyn_parentAccountId: this.parameters.msdyn_parentAccountId,
-      msdyn_responseFormat: this.parameters.msdyn_responseFormat,
     });
 
     return {

@@ -2,13 +2,13 @@
  * leadcompetitors entity type
  */
 export interface leadcompetitors {
-  versionnumber?: number;
+  competitorid?: string;
   importsequencenumber?: number;
+  leadcompetitorid?: string;
+  leadid?: string;
   name?: string;
   overriddencreatedon?: string;
   timezoneruleversionnumber?: number;
-  competitorid?: string;
-  leadcompetitorid?: string;
-  leadid?: string;
   utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

@@ -14,8 +14,9 @@ import type {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_MobileAppBuildRequestParameters {
-  msdyn_MobileApp: EntityReference | EntityPayload<msdyn_mobileapp>;
+  PipelineSuffix?: string;
   AppCenterApiToken?: string;
+  msdyn_MobileApp: EntityReference | EntityPayload<msdyn_mobileapp>;
 }
 
 /**
@@ -37,8 +38,9 @@ export class msdyn_MobileAppBuildRequest
     const url = `${baseUrl}/msdyn_MobileAppBuild`;
 
     const body = requestBody({
-      msdyn_MobileApp: this.Parameters.msdyn_MobileApp,
+      PipelineSuffix: this.Parameters.PipelineSuffix,
       AppCenterApiToken: this.Parameters.AppCenterApiToken,
+      msdyn_MobileApp: this.Parameters.msdyn_MobileApp,
     });
 
     return {

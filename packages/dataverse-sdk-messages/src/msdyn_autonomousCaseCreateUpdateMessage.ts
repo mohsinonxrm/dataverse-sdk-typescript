@@ -9,8 +9,8 @@ import type { msdyn_autonomousCaseCreateUpdateResponse as msdyn_autonomousCaseCr
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_autonomousCaseCreateUpdateRequestParameters {
-  autonomousCaseRequest: string;
   slot__conversation?: string[];
+  autonomousCaseRequest: string;
 }
 
 /**
@@ -32,8 +32,8 @@ export class msdyn_autonomousCaseCreateUpdateRequest
     const url = `${baseUrl}/msdyn_autonomousCaseCreateUpdate`;
 
     const body = requestBody({
-      autonomousCaseRequest: this.Parameters.autonomousCaseRequest,
       slot__conversation: this.Parameters.slot__conversation,
+      autonomousCaseRequest: this.Parameters.autonomousCaseRequest,
     });
 
     return {

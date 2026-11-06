@@ -4,23 +4,23 @@ import type { AppSettingDetails } from "./AppSettingDetails.js";
  * AppModuleInfo complex type
  */
 export interface AppModuleInfo {
-  AppId?: string;
   AppDisplayName?: string;
-  PublisherName?: string;
-  PublishedOn?: string;
+  AppId?: string;
+  AppSettingDetails?: AppSettingDetails[];
   AppUniqueName?: string;
-  AppVersion?: string;
-  Description?: string;
-  WebResourceUri?: string;
-  WelcomePageUri?: string;
-  CreatedOn?: string;
-  CreatedBy?: string;
-  ModifiedOn?: string;
-  ModifiedBy?: string;
   AppUri?: string;
-  IsDefault?: boolean;
+  AppVersion?: string;
   ClientType?: number;
+  CreatedBy?: string;
+  CreatedOn?: string;
+  Description?: string;
+  IsDefault?: boolean;
+  ModifiedBy?: string;
+  ModifiedOn?: string;
   NavigationType?: number;
   OptimizedFor?: string;
-  AppSettingDetails?: AppSettingDetails[];
+  PublishedOn?: string;
+  PublisherName?: string;
+  WebResourceUri?: string;
+  WelcomePageUri?: string;
 }

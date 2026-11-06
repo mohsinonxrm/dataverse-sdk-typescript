@@ -7,8 +7,8 @@ import type { AnyEntityPayload } from "./types/EntityPayload.js";
  * Response from ValidateRetentionConfig action
  */
 export interface ValidateRetentionConfigResponse {
-  IsValidationSuccessful: boolean;
   ErrorMessage: string;
+  IsValidationSuccessful: boolean;
 }
 
 /**

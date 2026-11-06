@@ -12,9 +12,9 @@ import type { msdyn_timetrackerapiResponse as msdyn_timetrackerapiResponseData }
  */
 export interface msdyn_timetrackerapiRequestParameters {
   timeTrackerRecordId?: string;
-  entitylogicalname: string;
-  entityid: string;
   timeTrackerRecord?: EntityReference | AnyEntityPayload;
+  entityid: string;
+  entitylogicalname: string;
 }
 
 /**
@@ -37,9 +37,9 @@ export class msdyn_timetrackerapiRequest
 
     const body = requestBody({
       timeTrackerRecordId: this.Parameters.timeTrackerRecordId,
-      entitylogicalname: this.Parameters.entitylogicalname,
-      entityid: this.Parameters.entityid,
       timeTrackerRecord: this.Parameters.timeTrackerRecord,
+      entityid: this.Parameters.entityid,
+      entitylogicalname: this.Parameters.entitylogicalname,
     });
 
     return {

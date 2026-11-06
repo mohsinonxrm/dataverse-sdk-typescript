@@ -8,10 +8,10 @@ import type { StageSolutionStatus } from "./StageSolutionStatus.js";
  * StageSolutionResults complex type
  */
 export interface StageSolutionResults {
-  StageSolutionUploadId?: string;
+  MissingDependencies?: MissingDependency[];
   SolutionComponentsDetails?: SolutionComponentDetails[];
   SolutionDetails?: SolutionDetails;
-  MissingDependencies?: MissingDependency[];
-  StageSolutionStatus?: StageSolutionStatus;
   SolutionValidationResults?: SolutionValidationResult[];
+  StageSolutionStatus?: StageSolutionStatus;
+  StageSolutionUploadId?: string;
 }

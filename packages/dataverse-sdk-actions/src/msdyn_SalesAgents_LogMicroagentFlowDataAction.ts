@@ -5,8 +5,8 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_SalesAgents_LogMicroagentFlowData action
  */
 export interface msdyn_SalesAgents_LogMicroagentFlowDataResponse {
-  isSuccess: boolean;
   errorMessage: string;
+  isSuccess: boolean;
 }
 
 /**
@@ -14,12 +14,12 @@ export interface msdyn_SalesAgents_LogMicroagentFlowDataResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesAgents_LogMicroagentFlowDataActionParameters {
-  msdyn_salesagentrunid: string;
   msdyn_agenttype: number;
   msdyn_salesagenttype?: number;
-  trackingId?: string;
+  msdyn_salesagentrunid: string;
   continueOnError?: boolean;
   data: string;
+  trackingId?: string;
 }
 
 /**
@@ -36,12 +36,12 @@ export class msdyn_SalesAgents_LogMicroagentFlowDataAction implements Executable
     const url = `${baseUrl}/msdyn_SalesAgents_LogMicroagentFlowData`;
 
     const body = requestBody({
-      msdyn_salesagentrunid: this.parameters.msdyn_salesagentrunid,
       msdyn_agenttype: this.parameters.msdyn_agenttype,
       msdyn_salesagenttype: this.parameters.msdyn_salesagenttype,
-      trackingId: this.parameters.trackingId,
+      msdyn_salesagentrunid: this.parameters.msdyn_salesagentrunid,
       continueOnError: this.parameters.continueOnError,
       data: this.parameters.data,
+      trackingId: this.parameters.trackingId,
     });
 
     return {

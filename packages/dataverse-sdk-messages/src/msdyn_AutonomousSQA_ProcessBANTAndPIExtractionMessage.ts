@@ -8,8 +8,8 @@ import { requestBody } from "./internal/requestBody.js";
  */
 export interface msdyn_AutonomousSQA_ProcessBANTAndPIExtractionRequestParameters {
   msdyn_Thread: string;
-  msdyn_SalesAgentRun: string;
   msdyn_TrackingId: string;
+  msdyn_SalesAgentRun: string;
 }
 
 /**
@@ -32,8 +32,8 @@ export class msdyn_AutonomousSQA_ProcessBANTAndPIExtractionRequest
 
     const body = requestBody({
       msdyn_Thread: this.Parameters.msdyn_Thread,
-      msdyn_SalesAgentRun: this.Parameters.msdyn_SalesAgentRun,
       msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
+      msdyn_SalesAgentRun: this.Parameters.msdyn_SalesAgentRun,
     });
 
     return {

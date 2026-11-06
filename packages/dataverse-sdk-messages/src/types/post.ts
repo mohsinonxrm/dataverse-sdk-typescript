@@ -2,21 +2,21 @@
  * post entity type
  */
 export interface post {
-  _createdonbehalfby_value?: string;
-  postid?: string;
-  _modifiedby_value?: string;
-  timezoneruleversionnumber?: number;
-  _organizationid_value?: string;
-  _regardingobjectownerid_value?: string;
-  text?: string;
-  utcconversiontimezonecode?: number;
   _createdby_value?: string;
-  largetext?: string;
-  _regardingobjectid_value?: string;
-  type?: number;
-  modifiedon?: string;
-  source?: number;
-  _regardingobjectowningbusinessunit_value?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
   _modifiedonbehalfby_value?: string;
+  _organizationid_value?: string;
+  _regardingobjectid_value?: string;
+  _regardingobjectownerid_value?: string;
+  _regardingobjectowningbusinessunit_value?: string;
   createdon?: string;
+  largetext?: string;
+  modifiedon?: string;
+  postid?: string;
+  source?: number;
+  text?: string;
+  timezoneruleversionnumber?: number;
+  type?: number;
+  utcconversiontimezonecode?: number;
 }

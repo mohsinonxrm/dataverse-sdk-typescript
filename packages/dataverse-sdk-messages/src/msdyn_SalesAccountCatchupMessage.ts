@@ -9,13 +9,13 @@ import type { msdyn_SalesAccountCatchupResponse as msdyn_SalesAccountCatchupResp
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesAccountCatchupRequestParameters {
-  msdyn_id: string;
   msdyn_sessionId?: string;
+  msdyn_additionalParams?: string;
+  msdyn_skipHeader?: string;
   msdyn_responseFormat?: string;
+  msdyn_id: string;
   msdyn_activityId?: string;
   msdyn_since?: string;
-  msdyn_skipHeader?: string;
-  msdyn_additionalParams?: string;
 }
 
 /**
@@ -37,13 +37,13 @@ export class msdyn_SalesAccountCatchupRequest
     const url = `${baseUrl}/msdyn_SalesAccountCatchup`;
 
     const body = requestBody({
-      msdyn_id: this.Parameters.msdyn_id,
       msdyn_sessionId: this.Parameters.msdyn_sessionId,
+      msdyn_additionalParams: this.Parameters.msdyn_additionalParams,
+      msdyn_skipHeader: this.Parameters.msdyn_skipHeader,
       msdyn_responseFormat: this.Parameters.msdyn_responseFormat,
+      msdyn_id: this.Parameters.msdyn_id,
       msdyn_activityId: this.Parameters.msdyn_activityId,
       msdyn_since: this.Parameters.msdyn_since,
-      msdyn_skipHeader: this.Parameters.msdyn_skipHeader,
-      msdyn_additionalParams: this.Parameters.msdyn_additionalParams,
     });
 
     return {

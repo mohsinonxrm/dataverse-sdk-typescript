@@ -10,8 +10,8 @@ import type { msdyn_SalesExternalServiceInvokeResponse as msdyn_SalesExternalSer
  */
 export interface msdyn_SalesExternalServiceInvokeRequestParameters {
   msdyn_entityName: string;
-  msdyn_activityId?: string;
   msdyn_id: string;
+  msdyn_activityId?: string;
 }
 
 /**
@@ -34,8 +34,8 @@ export class msdyn_SalesExternalServiceInvokeRequest
 
     const body = requestBody({
       msdyn_entityName: this.Parameters.msdyn_entityName,
-      msdyn_activityId: this.Parameters.msdyn_activityId,
       msdyn_id: this.Parameters.msdyn_id,
+      msdyn_activityId: this.Parameters.msdyn_activityId,
     });
 
     return {

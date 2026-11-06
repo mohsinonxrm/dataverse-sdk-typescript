@@ -2,28 +2,29 @@
  * msdyn_salesagenthandover entity type
  */
 export interface msdyn_salesagenthandover {
-  createdon?: string;
-  _owninguser_value?: string;
-  modifiedon?: string;
-  _ownerid_value?: string;
-  _msdyn_regardingid_value?: string;
-  overriddencreatedon?: string;
-  timezoneruleversionnumber?: number;
-  msdyn_handoveractions?: string;
-  _owningteam_value?: string;
-  msdyn_name?: string;
-  importsequencenumber?: number;
-  statecode?: number;
-  msdyn_salesagenthandovertarget?: number;
-  _owningbusinessunit_value?: string;
-  utcconversiontimezonecode?: number;
+  _createdby_value?: string;
+  _createdonbehalfby_value?: string;
   _modifiedby_value?: string;
   _modifiedonbehalfby_value?: string;
-  versionnumber?: number;
-  statuscode?: number;
-  msdyn_salesagenthandoverid?: string;
+  _msdyn_regardingid_value?: string;
   _msdyn_salesagentrun_value?: string;
-  _createdonbehalfby_value?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_handoveractions?: string;
   msdyn_handoverintent?: number;
-  _createdby_value?: string;
+  msdyn_leadrating?: number;
+  msdyn_name?: string;
+  msdyn_salesagenthandoverid?: string;
+  msdyn_salesagenthandovertarget?: number;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

@@ -13,8 +13,8 @@ export interface AIExtractResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface AIExtractActionParameters {
-  Text: string;
   Entity: string;
+  Text: string;
 }
 
 /**
@@ -29,8 +29,8 @@ export class AIExtractAction implements Executable<AIExtractResponse> {
     const url = `${baseUrl}/AIExtract`;
 
     const body = requestBody({
-      Text: this.parameters.Text,
       Entity: this.parameters.Entity,
+      Text: this.parameters.Text,
     });
 
     return {

@@ -9,9 +9,9 @@ import type { CCaaS_GetAvailabilityForConversationResponse as CCaaS_GetAvailabil
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_GetAvailabilityForConversationRequestParameters {
-  CustomContextItems?: string;
   ApiVersion: string;
   ConversationId?: string;
+  CustomContextItems?: string;
 }
 
 /**
@@ -33,9 +33,9 @@ export class CCaaS_GetAvailabilityForConversationRequest
     const url = `${baseUrl}/CCaaS_GetAvailabilityForConversation`;
 
     const body = requestBody({
-      CustomContextItems: this.Parameters.CustomContextItems,
       ApiVersion: this.Parameters.ApiVersion,
       ConversationId: this.Parameters.ConversationId,
+      CustomContextItems: this.Parameters.CustomContextItems,
     });
 
     return {

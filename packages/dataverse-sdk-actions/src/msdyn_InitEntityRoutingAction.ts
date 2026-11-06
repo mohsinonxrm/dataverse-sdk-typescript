@@ -13,14 +13,14 @@ export interface msdyn_InitEntityRoutingResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_InitEntityRoutingActionParameters {
-  IntentFamilyId?: string;
-  AppInsightsEnvInformation?: string;
-  IntentId?: string;
-  LiveWorkStreamId: string;
   AppInsightsAdditionalInformation?: string;
+  IntentId?: string;
   EntityLogicalName: string;
+  AppInsightsEnvInformation?: string;
+  IntentFamilyId?: string;
   IntentString?: string;
   IntentGroupId?: string;
+  LiveWorkStreamId: string;
   EntityRecordId: string;
 }
 
@@ -36,14 +36,14 @@ export class msdyn_InitEntityRoutingAction implements Executable<msdyn_InitEntit
     const url = `${baseUrl}/msdyn_InitEntityRouting`;
 
     const body = requestBody({
-      IntentFamilyId: this.parameters.IntentFamilyId,
-      AppInsightsEnvInformation: this.parameters.AppInsightsEnvInformation,
-      IntentId: this.parameters.IntentId,
-      LiveWorkStreamId: this.parameters.LiveWorkStreamId,
       AppInsightsAdditionalInformation: this.parameters.AppInsightsAdditionalInformation,
+      IntentId: this.parameters.IntentId,
       EntityLogicalName: this.parameters.EntityLogicalName,
+      AppInsightsEnvInformation: this.parameters.AppInsightsEnvInformation,
+      IntentFamilyId: this.parameters.IntentFamilyId,
       IntentString: this.parameters.IntentString,
       IntentGroupId: this.parameters.IntentGroupId,
+      LiveWorkStreamId: this.parameters.LiveWorkStreamId,
       EntityRecordId: this.parameters.EntityRecordId,
     });
 

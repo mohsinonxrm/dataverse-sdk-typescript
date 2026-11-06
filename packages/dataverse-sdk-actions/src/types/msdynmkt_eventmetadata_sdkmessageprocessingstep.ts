@@ -4,29 +4,29 @@ import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
  * msdynmkt_eventmetadata_sdkmessageprocessingstep entity type
  */
 export interface msdynmkt_eventmetadata_sdkmessageprocessingstep {
-  statuscode?: number;
+  _createdby_value?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _msdynmkt_eventmetadataid_value?: string;
+  _msdynmkt_sdkmessageprocessingstepid_value?: string;
+  _organizationid_value?: string;
+  componentidunique?: string;
+  componentstate?: number;
+  createdon?: string;
   importsequencenumber?: number;
+  iscustomizable?: BooleanManagedProperty;
+  ismanaged?: boolean;
+  modifiedon?: string;
+  msdynmkt_eventmetadata_sdkmessageprocessingstepid?: string;
   msdynmkt_name?: string;
   msdynmkt_uniquename?: string;
   overriddencreatedon?: string;
-  _organizationid_value?: string;
-  solutionid?: string;
-  _modifiedby_value?: string;
-  componentidunique?: string;
-  _createdonbehalfby_value?: string;
-  iscustomizable?: BooleanManagedProperty;
-  utcconversiontimezonecode?: number;
-  timezoneruleversionnumber?: number;
-  componentstate?: number;
-  _msdynmkt_sdkmessageprocessingstepid_value?: string;
-  ismanaged?: boolean;
-  msdynmkt_eventmetadata_sdkmessageprocessingstepid?: string;
-  statecode?: number;
-  _createdby_value?: string;
-  modifiedon?: string;
   overwritetime?: string;
+  solutionid?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
   versionnumber?: number;
-  _modifiedonbehalfby_value?: string;
-  createdon?: string;
-  _msdynmkt_eventmetadataid_value?: string;
 }

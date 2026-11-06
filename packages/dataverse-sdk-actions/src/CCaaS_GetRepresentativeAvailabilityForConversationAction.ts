@@ -5,15 +5,22 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from CCaaS_GetRepresentativeAvailabilityForConversation action
  */
 export interface CCaaS_GetRepresentativeAvailabilityForConversationResponse {
-  AverageWaitTimeInSeconds: number;
-  QueueId: string;
-  IsAgentAvailable: boolean;
-  NextTransitionTime: string;
-  StartTimeOfNextOperatingHour: string;
-  EndTimeOfNextOperatingHour: string;
   AverageWaitTime: number;
-  PositionInQueue: number;
+  AverageWaitTimeInSeconds: number;
+  EndTimeOfNextOperatingHour: string;
+  IsAgentAvailable: boolean;
+  IsOverflowing: boolean;
   IsQueueAvailable: boolean;
+  NextTransitionTime: string;
+  NumberOfExpertsAvailableInQueue: number;
+  OverflowAction: string;
+  OverflowChannel: string;
+  OverflowCondition: string;
+  OverflowSourceQueueId: string;
+  OverflowStage: string;
+  PositionInQueue: number;
+  QueueId: string;
+  StartTimeOfNextOperatingHour: string;
 }
 
 /**
@@ -21,9 +28,9 @@ export interface CCaaS_GetRepresentativeAvailabilityForConversationResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_GetRepresentativeAvailabilityForConversationActionParameters {
+  CustomContextItems?: string;
   ConversationId?: string;
   ApiVersion: string;
-  CustomContextItems?: string;
 }
 
 /**
@@ -40,9 +47,9 @@ export class CCaaS_GetRepresentativeAvailabilityForConversationAction implements
     const url = `${baseUrl}/CCaaS_GetRepresentativeAvailabilityForConversation`;
 
     const body = requestBody({
+      CustomContextItems: this.parameters.CustomContextItems,
       ConversationId: this.parameters.ConversationId,
       ApiVersion: this.parameters.ApiVersion,
-      CustomContextItems: this.parameters.CustomContextItems,
     });
 
     return {

@@ -5,13 +5,13 @@ import { formatParameterAlias } from "./internal/odataLiteral.js";
  * Response from CCaaS_GetPresence function
  */
 export interface CCaaS_GetPresenceResponse {
-  AgentName: string;
-  AgentId: string;
-  DisabledChannels: string[];
-  PresenceId: string;
   ActiveBrowserSessions: number;
+  AgentId: string;
+  AgentName: string;
   AllowedChannels: string[];
   CurrentPresenceStatusInfo: string;
+  DisabledChannels: string[];
+  PresenceId: string;
   Timestamp: number;
 }
 

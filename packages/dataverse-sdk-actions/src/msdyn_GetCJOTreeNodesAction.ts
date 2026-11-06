@@ -13,8 +13,8 @@ export interface msdyn_GetCJOTreeNodesResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_GetCJOTreeNodesActionParameters {
-  msdyn_startingnodeid: string;
   msdyn_cjodefinition: string;
+  msdyn_startingnodeid: string;
 }
 
 /**
@@ -29,8 +29,8 @@ export class msdyn_GetCJOTreeNodesAction implements Executable<msdyn_GetCJOTreeN
     const url = `${baseUrl}/msdyn_GetCJOTreeNodes`;
 
     const body = requestBody({
-      msdyn_startingnodeid: this.parameters.msdyn_startingnodeid,
       msdyn_cjodefinition: this.parameters.msdyn_cjodefinition,
+      msdyn_startingnodeid: this.parameters.msdyn_startingnodeid,
     });
 
     return {

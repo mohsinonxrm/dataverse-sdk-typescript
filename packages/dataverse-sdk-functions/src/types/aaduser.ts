@@ -2,24 +2,24 @@
  * aaduser entity type
  */
 export interface aaduser {
-  userprincipalname?: string;
-  jobtitle?: string;
-  usertype?: string;
-  companyname?: string;
-  streetaddress?: string;
-  accountenabled?: boolean;
-  id?: string;
-  createddatetime?: string;
-  surname?: string;
-  imaddresses?: string;
-  mail?: string;
-  displayname?: string;
   aaduserid?: string;
+  accountenabled?: boolean;
   businessphones?: string;
-  officelocation?: string;
+  city?: string;
+  companyname?: string;
+  createddatetime?: string;
+  displayname?: string;
   givenname?: string;
+  id?: string;
+  imaddresses?: string;
+  jobtitle?: string;
+  mail?: string;
   mobilephone?: string;
+  officelocation?: string;
   postalcode?: string;
   preferredlanguage?: string;
-  city?: string;
+  streetaddress?: string;
+  surname?: string;
+  userprincipalname?: string;
+  usertype?: string;
 }

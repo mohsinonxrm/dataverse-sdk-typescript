@@ -13,8 +13,8 @@ export interface msdyn_ExpandOperatingHoursForEntityCollectionResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_ExpandOperatingHoursForEntityCollectionActionParameters {
-  msdyn_EntityCollection: Record<string, unknown>[];
   msdyn_Start: string;
+  msdyn_EntityCollection: Record<string, unknown>[];
   msdyn_End: string;
 }
 
@@ -32,8 +32,8 @@ export class msdyn_ExpandOperatingHoursForEntityCollectionAction implements Exec
     const url = `${baseUrl}/msdyn_ExpandOperatingHoursForEntityCollection`;
 
     const body = requestBody({
-      msdyn_EntityCollection: this.parameters.msdyn_EntityCollection,
       msdyn_Start: this.parameters.msdyn_Start,
+      msdyn_EntityCollection: this.parameters.msdyn_EntityCollection,
       msdyn_End: this.parameters.msdyn_End,
     });
 

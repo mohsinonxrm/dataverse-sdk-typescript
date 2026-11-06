@@ -13,8 +13,8 @@ export interface CCaaS_InitiateQueueAssignmentResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_InitiateQueueAssignmentActionParameters {
-  ApiVersion: string;
   QueueId: string;
+  ApiVersion: string;
 }
 
 /**
@@ -36,8 +36,8 @@ export class CCaaS_InitiateQueueAssignmentAction implements Executable<CCaaS_Ini
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_InitiateQueueAssignment`;
 
     const body = requestBody({
-      ApiVersion: this.parameters.ApiVersion,
       QueueId: this.parameters.QueueId,
+      ApiVersion: this.parameters.ApiVersion,
     });
 
     return {

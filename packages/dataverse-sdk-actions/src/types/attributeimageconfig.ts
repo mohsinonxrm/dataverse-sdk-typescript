@@ -2,14 +2,14 @@
  * attributeimageconfig entity type
  */
 export interface attributeimageconfig {
-  componentidunique?: string;
-  parententitylogicalname?: string;
-  ismanaged?: boolean;
-  attributelogicalname?: string;
-  componentstate?: number;
-  versionnumber?: number;
   attributeimageconfigid?: string;
-  solutionid?: string;
-  overwritetime?: string;
+  attributelogicalname?: string;
   canstorefullimage?: boolean;
+  componentidunique?: string;
+  componentstate?: number;
+  ismanaged?: boolean;
+  overwritetime?: string;
+  parententitylogicalname?: string;
+  solutionid?: string;
+  versionnumber?: number;
 }

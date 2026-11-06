@@ -6,12 +6,12 @@ import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
 export interface botcomponent_aipluginoperation {
   aipluginoperationid?: string;
   botcomponent_aipluginoperationid?: string;
-  solutionid?: string;
-  iscustomizable?: BooleanManagedProperty;
-  versionnumber?: number;
-  componentstate?: number;
-  componentidunique?: string;
   botcomponentid?: string;
-  overwritetime?: string;
+  componentidunique?: string;
+  componentstate?: number;
+  iscustomizable?: BooleanManagedProperty;
   ismanaged?: boolean;
+  overwritetime?: string;
+  solutionid?: string;
+  versionnumber?: number;
 }

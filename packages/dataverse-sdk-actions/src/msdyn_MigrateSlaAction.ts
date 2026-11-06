@@ -5,8 +5,8 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_MigrateSla action
  */
 export interface msdyn_MigrateSlaResponse {
-  OutputString: string;
   Exception: string;
+  OutputString: string;
 }
 
 /**

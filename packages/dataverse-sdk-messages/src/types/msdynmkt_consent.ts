@@ -2,25 +2,25 @@
  * msdynmkt_consent entity type
  */
 export interface msdynmkt_consent {
-  modifiedon?: string;
-  msdynmkt_changesource?: number;
-  versionnumber?: number;
-  msdynmkt_allowtracking?: number;
-  msdynmkt_allowemail?: number;
-  overriddencreatedon?: string;
-  _createdonbehalfby_value?: string;
-  _organizationid_value?: string;
-  _modifiedby_value?: string;
-  timezoneruleversionnumber?: number;
-  msdynmkt_consentid?: string;
-  statuscode?: number;
-  createdon?: string;
-  msdynmkt_profileid?: string;
-  importsequencenumber?: number;
   _createdby_value?: string;
-  statecode?: number;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
   _modifiedonbehalfby_value?: string;
-  utcconversiontimezonecode?: number;
+  _organizationid_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdynmkt_allowemail?: number;
   msdynmkt_allowsms?: number;
+  msdynmkt_allowtracking?: number;
+  msdynmkt_changesource?: number;
+  msdynmkt_consentid?: string;
+  msdynmkt_profileid?: string;
   msdynmkt_reason?: number;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

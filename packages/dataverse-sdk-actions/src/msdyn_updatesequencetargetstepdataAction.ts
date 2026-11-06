@@ -13,8 +13,8 @@ export interface msdyn_updatesequencetargetstepdataResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_updatesequencetargetstepdataActionParameters {
-  msdyn_sequencetargetstepid: string;
   msdyn_linkedactivityid?: string;
+  msdyn_sequencetargetstepid: string;
 }
 
 /**
@@ -29,8 +29,8 @@ export class msdyn_updatesequencetargetstepdataAction implements Executable<msdy
     const url = `${baseUrl}/msdyn_updatesequencetargetstepdata`;
 
     const body = requestBody({
-      msdyn_sequencetargetstepid: this.parameters.msdyn_sequencetargetstepid,
       msdyn_linkedactivityid: this.parameters.msdyn_linkedactivityid,
+      msdyn_sequencetargetstepid: this.parameters.msdyn_sequencetargetstepid,
     });
 
     return {

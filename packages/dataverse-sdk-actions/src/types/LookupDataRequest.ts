@@ -5,10 +5,10 @@ import type { LookupEntityInfo } from "./LookupEntityInfo.js";
  * LookupDataRequest complex type
  */
 export interface LookupDataRequest {
-  LookupEntityByName?: LookupEntityInfo[];
-  EntityAndAttribute?: EntityAndAttribute;
   AppId?: string;
-  RelatedRecordId?: string;
+  EntityAndAttribute?: EntityAndAttribute;
+  LookupEntityByName?: LookupEntityInfo[];
   QueryString?: string;
+  RelatedRecordId?: string;
   ReturnMetadata?: boolean;
 }

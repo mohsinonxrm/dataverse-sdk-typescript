@@ -13,9 +13,9 @@ export interface msdyn_processsentimentresponseResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_processsentimentresponseActionParameters {
+  conversationId: string;
   emailId: string;
   copilotResponse: string[];
-  conversationId: string;
 }
 
 /**
@@ -30,9 +30,9 @@ export class msdyn_processsentimentresponseAction implements Executable<msdyn_pr
     const url = `${baseUrl}/msdyn_processsentimentresponse`;
 
     const body = requestBody({
+      conversationId: this.parameters.conversationId,
       emailId: this.parameters.emailId,
       copilotResponse: this.parameters.copilotResponse,
-      conversationId: this.parameters.conversationId,
     });
 
     return {

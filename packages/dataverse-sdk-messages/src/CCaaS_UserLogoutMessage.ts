@@ -9,8 +9,8 @@ import type { CCaaS_UserLogoutResponse as CCaaS_UserLogoutResponseData } from ".
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_UserLogoutRequestParameters {
-  ApiVersion: string;
   LogoutSource: number;
+  ApiVersion: string;
 }
 
 /**
@@ -32,8 +32,8 @@ export class CCaaS_UserLogoutRequest
     const url = `${baseUrl}/CCaaS_UserLogout`;
 
     const body = requestBody({
-      ApiVersion: this.Parameters.ApiVersion,
       LogoutSource: this.Parameters.LogoutSource,
+      ApiVersion: this.Parameters.ApiVersion,
     });
 
     return {

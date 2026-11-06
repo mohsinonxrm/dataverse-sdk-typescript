@@ -13,9 +13,9 @@ export interface CCaaS_SendAgentTypingIndicatorResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_SendAgentTypingIndicatorActionParameters {
-  AgentChatId: string;
   ApiVersion: string;
   AgentDisplayName: string;
+  AgentChatId: string;
 }
 
 /**
@@ -30,9 +30,9 @@ export class CCaaS_SendAgentTypingIndicatorAction implements Executable<CCaaS_Se
     const url = `${baseUrl}/CCaaS_SendAgentTypingIndicator`;
 
     const body = requestBody({
-      AgentChatId: this.parameters.AgentChatId,
       ApiVersion: this.parameters.ApiVersion,
       AgentDisplayName: this.parameters.AgentDisplayName,
+      AgentChatId: this.parameters.AgentChatId,
     });
 
     return {

@@ -4,7 +4,7 @@ Typed Web API functions for Dataverse. Functions are read-only operations that e
 
 ## Features
 
-- ✅ **229 typed functions** - Complete CSDL-generated coverage of all Dataverse Web API functions
+- ✅ **<!-- count:functions -->300<!-- /count --> typed functions** - Complete CSDL-generated coverage of all Dataverse Web API functions
 - ✅ **Parameter aliases** - Proper query string parameter handling per Microsoft guidance
 - ✅ **Type-safe responses** - Full TypeScript typing for request and response
 - ✅ **Common operations** - WhoAmI, InitializeFrom, CalculateRollupField, RetrieveMetadataChanges, and more
@@ -40,7 +40,7 @@ console.log("Organization:", response.OrganizationId);
 
 ## Function Categories
 
-The SDK includes **229 typed functions** organized into the following categories:
+The SDK includes **<!-- count:functions -->300<!-- /count --> typed functions** organized into the following categories:
 
 ### Platform Functions (Core Operations)
 
@@ -245,7 +245,7 @@ followed by a required parameter stays in its position and takes `undefined`.
 
 ## Complete Function Reference
 
-For a complete list of all 229 functions with descriptions and examples, see [docs/mapping/supported-functions.md](../../docs/mapping/supported-functions.md).
+For a complete list of all <!-- count:functions -->300<!-- /count --> functions with descriptions and examples, see [docs/mapping/supported-functions.md](../../docs/mapping/supported-functions.md).
 
 ## Architecture
 

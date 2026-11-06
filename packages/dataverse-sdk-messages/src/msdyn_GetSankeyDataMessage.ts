@@ -10,8 +10,8 @@ import type { msdyn_GetSankeyDataResponse as msdyn_GetSankeyDataResponseData } f
  */
 export interface msdyn_GetSankeyDataRequestParameters {
   msdyn_sequenceid: string;
-  msdyn_dateto: string;
   msdyn_datefrom: string;
+  msdyn_dateto: string;
 }
 
 /**
@@ -34,8 +34,8 @@ export class msdyn_GetSankeyDataRequest
 
     const body = requestBody({
       msdyn_sequenceid: this.Parameters.msdyn_sequenceid,
-      msdyn_dateto: this.Parameters.msdyn_dateto,
       msdyn_datefrom: this.Parameters.msdyn_datefrom,
+      msdyn_dateto: this.Parameters.msdyn_dateto,
     });
 
     return {

@@ -6,13 +6,13 @@ import { requestBody } from "./internal/requestBody.js";
  */
 export interface CCaaS_GetAvailabilityForSimulatedConversationResponse {
   AverageWaitTime: number;
-  StartTimeOfNextOperatingHour: string;
-  QueueId: string;
-  NextTransitionTime: string;
-  IsQueueAvailable: boolean;
   EndTimeOfNextOperatingHour: string;
-  PositionInQueue: number;
   IsAgentAvailable: boolean;
+  IsQueueAvailable: boolean;
+  NextTransitionTime: string;
+  PositionInQueue: number;
+  QueueId: string;
+  StartTimeOfNextOperatingHour: string;
 }
 
 /**
@@ -20,10 +20,10 @@ export interface CCaaS_GetAvailabilityForSimulatedConversationResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_GetAvailabilityForSimulatedConversationActionParameters {
-  LiveWorkStreamId?: string;
   CustomContextItems?: string;
-  ApiVersion: string;
   ChannelEngagementContext?: string;
+  ApiVersion: string;
+  LiveWorkStreamId?: string;
 }
 
 /**
@@ -40,10 +40,10 @@ export class CCaaS_GetAvailabilityForSimulatedConversationAction implements Exec
     const url = `${baseUrl}/CCaaS_GetAvailabilityForSimulatedConversation`;
 
     const body = requestBody({
-      LiveWorkStreamId: this.parameters.LiveWorkStreamId,
       CustomContextItems: this.parameters.CustomContextItems,
-      ApiVersion: this.parameters.ApiVersion,
       ChannelEngagementContext: this.parameters.ChannelEngagementContext,
+      ApiVersion: this.parameters.ApiVersion,
+      LiveWorkStreamId: this.parameters.LiveWorkStreamId,
     });
 
     return {

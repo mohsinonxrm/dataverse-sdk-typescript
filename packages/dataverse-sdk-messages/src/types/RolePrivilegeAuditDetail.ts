@@ -5,7 +5,7 @@ import type { RolePrivilege } from "./RolePrivilege.js";
  * RolePrivilegeAuditDetail complex type
  */
 export interface RolePrivilegeAuditDetail extends AuditDetail {
-  OldRolePrivileges?: RolePrivilege[];
-  NewRolePrivileges?: RolePrivilege[];
   InvalidNewPrivileges?: string[];
+  NewRolePrivileges?: RolePrivilege[];
+  OldRolePrivileges?: RolePrivilege[];
 }

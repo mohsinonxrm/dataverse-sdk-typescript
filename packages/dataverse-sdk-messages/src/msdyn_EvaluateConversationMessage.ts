@@ -9,12 +9,12 @@ import type { msdyn_EvaluateConversationResponse as msdyn_EvaluateConversationRe
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_EvaluateConversationRequestParameters {
-  CriteriaId: string;
-  ExtendedContext?: string;
+  AllowCrossGeo?: boolean;
   ConversationPayload?: string;
+  CriteriaId: string;
   LangLocale?: string;
   EvaluationId: string;
-  AllowCrossGeo?: boolean;
+  ExtendedContext?: string;
   RecordId?: string;
 }
 
@@ -37,12 +37,12 @@ export class msdyn_EvaluateConversationRequest
     const url = `${baseUrl}/msdyn_EvaluateConversation`;
 
     const body = requestBody({
-      CriteriaId: this.Parameters.CriteriaId,
-      ExtendedContext: this.Parameters.ExtendedContext,
+      AllowCrossGeo: this.Parameters.AllowCrossGeo,
       ConversationPayload: this.Parameters.ConversationPayload,
+      CriteriaId: this.Parameters.CriteriaId,
       LangLocale: this.Parameters.LangLocale,
       EvaluationId: this.Parameters.EvaluationId,
-      AllowCrossGeo: this.Parameters.AllowCrossGeo,
+      ExtendedContext: this.Parameters.ExtendedContext,
       RecordId: this.Parameters.RecordId,
     });
 

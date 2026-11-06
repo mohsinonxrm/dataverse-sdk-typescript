@@ -9,8 +9,8 @@ import type { msdyn_GetBoolFCSValueResponse as msdyn_GetBoolFCSValueResponseData
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_GetBoolFCSValueRequestParameters {
-  msdyn_BoolFCSKey: string;
   msdyn_BoolFCSNamespace: string;
+  msdyn_BoolFCSKey: string;
 }
 
 /**
@@ -32,8 +32,8 @@ export class msdyn_GetBoolFCSValueRequest
     const url = `${baseUrl}/msdyn_GetBoolFCSValue`;
 
     const body = requestBody({
-      msdyn_BoolFCSKey: this.Parameters.msdyn_BoolFCSKey,
       msdyn_BoolFCSNamespace: this.Parameters.msdyn_BoolFCSNamespace,
+      msdyn_BoolFCSKey: this.Parameters.msdyn_BoolFCSKey,
     });
 
     return {

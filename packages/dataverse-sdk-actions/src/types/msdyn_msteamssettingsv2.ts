@@ -2,30 +2,30 @@
  * msdyn_msteamssettingsv2 entity type
  */
 export interface msdyn_msteamssettingsv2 {
-  statuscode?: number;
-  msdyn_securityrolesettingforteamsmeetingintegration?: string;
-  importsequencenumber?: number;
-  _owningbusinessunit_value?: string;
-  msdyn_isdefaultentitysettingcreatedfortmi?: boolean;
-  timezoneruleversionnumber?: number;
-  _modifiedonbehalfby_value?: string;
-  msdyn_embedcollabteamsintegrationenabled?: boolean;
-  versionnumber?: number;
-  _modifiedby_value?: string;
-  msdyn_defaultteamschattitleenabled?: boolean;
-  modifiedon?: string;
-  msdyn_sensitivitylabelsettingenabled?: boolean;
-  msdyn_teamsappautoinstallenabled?: boolean;
-  msdyn_msteamssettingsv2id?: string;
-  msdyn_entitysettingforteamsmeetingintegration?: string;
-  msdyn_teamsmeetingintegrationenabled?: boolean;
   _createdby_value?: string;
-  createdon?: string;
-  msdyn_embedcollabserviceurl?: string;
-  msdyn_msteamssettingsname?: string;
-  utcconversiontimezonecode?: number;
-  msdyn_tabserviceurl?: string;
   _createdonbehalfby_value?: string;
-  statecode?: number;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _owningbusinessunit_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_defaultteamschattitleenabled?: boolean;
+  msdyn_embedcollabserviceurl?: string;
+  msdyn_embedcollabteamsintegrationenabled?: boolean;
+  msdyn_entitysettingforteamsmeetingintegration?: string;
+  msdyn_isdefaultentitysettingcreatedfortmi?: boolean;
+  msdyn_msteamssettingsname?: string;
+  msdyn_msteamssettingsv2id?: string;
+  msdyn_securityrolesettingforteamsmeetingintegration?: string;
+  msdyn_sensitivitylabelsettingenabled?: boolean;
+  msdyn_tabserviceurl?: string;
+  msdyn_teamsappautoinstallenabled?: boolean;
+  msdyn_teamsmeetingintegrationenabled?: boolean;
   overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

@@ -13,8 +13,8 @@ export interface msdyn_ActivateRoutingRuleResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_ActivateRoutingRuleActionParameters {
-  msdyn_ownerId: string;
   msdyn_routingRuleId: string;
+  msdyn_ownerId: string;
 }
 
 /**
@@ -29,8 +29,8 @@ export class msdyn_ActivateRoutingRuleAction implements Executable<msdyn_Activat
     const url = `${baseUrl}/msdyn_ActivateRoutingRule`;
 
     const body = requestBody({
-      msdyn_ownerId: this.parameters.msdyn_ownerId,
       msdyn_routingRuleId: this.parameters.msdyn_routingRuleId,
+      msdyn_ownerId: this.parameters.msdyn_ownerId,
     });
 
     return {

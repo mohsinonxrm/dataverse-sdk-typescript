@@ -9,8 +9,8 @@ import type { msdyn_dataprovideroperationsResponse as msdyn_dataprovideroperatio
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_dataprovideroperationsRequestParameters {
-  msdyn_recordid?: string;
   msdyn_payload?: string;
+  msdyn_recordid?: string;
   msdyn_httpmethod: string;
 }
 
@@ -33,8 +33,8 @@ export class msdyn_dataprovideroperationsRequest
     const url = `${baseUrl}/msdyn_dataprovideroperations`;
 
     const body = requestBody({
-      msdyn_recordid: this.Parameters.msdyn_recordid,
       msdyn_payload: this.Parameters.msdyn_payload,
+      msdyn_recordid: this.Parameters.msdyn_recordid,
       msdyn_httpmethod: this.Parameters.msdyn_httpmethod,
     });
 

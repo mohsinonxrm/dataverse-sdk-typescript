@@ -9,13 +9,13 @@ import type { msdynmkt_consentsubmissionResponse as msdynmkt_consentsubmissionRe
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdynmkt_consentsubmissionRequestParameters {
-  msdynmkt_preferencecenterid?: string;
+  msdynmkt_contactpointtype: number;
   msdynmkt_consentversion?: string;
   msdynmkt_purposeconsents: string;
   msdynmkt_trackingcontextid?: string;
-  msdynmkt_contactpointtype: number;
-  msdynmkt_contactpointvalue: string;
+  msdynmkt_preferencecenterid?: string;
   msdynmkt_topicconsents?: string;
+  msdynmkt_contactpointvalue: string;
 }
 
 /**
@@ -37,13 +37,13 @@ export class msdynmkt_consentsubmissionRequest
     const url = `${baseUrl}/msdynmkt_consentsubmission`;
 
     const body = requestBody({
-      msdynmkt_preferencecenterid: this.Parameters.msdynmkt_preferencecenterid,
+      msdynmkt_contactpointtype: this.Parameters.msdynmkt_contactpointtype,
       msdynmkt_consentversion: this.Parameters.msdynmkt_consentversion,
       msdynmkt_purposeconsents: this.Parameters.msdynmkt_purposeconsents,
       msdynmkt_trackingcontextid: this.Parameters.msdynmkt_trackingcontextid,
-      msdynmkt_contactpointtype: this.Parameters.msdynmkt_contactpointtype,
-      msdynmkt_contactpointvalue: this.Parameters.msdynmkt_contactpointvalue,
+      msdynmkt_preferencecenterid: this.Parameters.msdynmkt_preferencecenterid,
       msdynmkt_topicconsents: this.Parameters.msdynmkt_topicconsents,
+      msdynmkt_contactpointvalue: this.Parameters.msdynmkt_contactpointvalue,
     });
 
     return {

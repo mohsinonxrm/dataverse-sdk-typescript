@@ -15,8 +15,8 @@ export interface msdyn_upsertSalesRoutingDiagnosticResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_upsertSalesRoutingDiagnosticActionParameters {
-  TargetObject: EntityReference | AnyEntityPayload;
   Payload: string;
+  TargetObject: EntityReference | AnyEntityPayload;
   EventType: number;
 }
 
@@ -32,8 +32,8 @@ export class msdyn_upsertSalesRoutingDiagnosticAction implements Executable<msdy
     const url = `${baseUrl}/msdyn_upsertSalesRoutingDiagnostic`;
 
     const body = requestBody({
-      TargetObject: this.parameters.TargetObject,
       Payload: this.parameters.Payload,
+      TargetObject: this.parameters.TargetObject,
       EventType: this.parameters.EventType,
     });
 

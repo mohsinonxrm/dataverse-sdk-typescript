@@ -13,8 +13,8 @@ export interface msdyn_GetKnowledgeDraftAssistStreamResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_GetKnowledgeDraftAssistStreamActionParameters {
-  RequestPayload: string;
   Context?: string;
+  RequestPayload: string;
 }
 
 /**
@@ -29,8 +29,8 @@ export class msdyn_GetKnowledgeDraftAssistStreamAction implements Executable<msd
     const url = `${baseUrl}/msdyn_GetKnowledgeDraftAssistStream`;
 
     const body = requestBody({
-      RequestPayload: this.parameters.RequestPayload,
       Context: this.parameters.Context,
+      RequestPayload: this.parameters.RequestPayload,
     });
 
     return {

@@ -15,9 +15,10 @@ export interface AddToFeedbackLoopResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface AddToFeedbackLoopActionParameters {
+  predictionInput: EntityReference | AnyEntityPayload;
+  source?: string;
   inputName?: string;
   predictionOutput?: string;
-  predictionInput: EntityReference | AnyEntityPayload;
 }
 
 /**
@@ -39,9 +40,10 @@ export class AddToFeedbackLoopAction implements Executable<AddToFeedbackLoopResp
     const url = `${baseUrl}/msdyn_aimodels(${this.msdyn_aimodelId})/Microsoft.Dynamics.CRM.AddToFeedbackLoop`;
 
     const body = requestBody({
+      predictionInput: this.parameters.predictionInput,
+      source: this.parameters.source,
       inputName: this.parameters.inputName,
       predictionOutput: this.parameters.predictionOutput,
-      predictionInput: this.parameters.predictionInput,
     });
 
     return {

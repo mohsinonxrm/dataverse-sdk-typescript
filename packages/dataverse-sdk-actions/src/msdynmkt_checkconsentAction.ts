@@ -5,8 +5,8 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdynmkt_checkconsent action
  */
 export interface msdynmkt_checkconsentResponse {
-  msdynmkt_isconsentgiven: boolean;
   msdynmkt_errormessage: string;
+  msdynmkt_isconsentgiven: boolean;
   msdynmkt_issuccess: boolean;
   msdynmkt_reason: string;
 }
@@ -16,12 +16,12 @@ export interface msdynmkt_checkconsentResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdynmkt_checkconsentActionParameters {
-  msdynmkt_contactpoint: string;
   msdynmkt_owningbusinessunitid: string;
-  msdynmkt_purposeid: string;
-  msdynmkt_compliancesettingsid: string;
+  msdynmkt_contactpoint: string;
   msdynmkt_topicid: string;
+  msdynmkt_purposeid: string;
   msdynmkt_channeltype: string;
+  msdynmkt_compliancesettingsid: string;
 }
 
 /**
@@ -36,12 +36,12 @@ export class msdynmkt_checkconsentAction implements Executable<msdynmkt_checkcon
     const url = `${baseUrl}/msdynmkt_checkconsent`;
 
     const body = requestBody({
-      msdynmkt_contactpoint: this.parameters.msdynmkt_contactpoint,
       msdynmkt_owningbusinessunitid: this.parameters.msdynmkt_owningbusinessunitid,
-      msdynmkt_purposeid: this.parameters.msdynmkt_purposeid,
-      msdynmkt_compliancesettingsid: this.parameters.msdynmkt_compliancesettingsid,
+      msdynmkt_contactpoint: this.parameters.msdynmkt_contactpoint,
       msdynmkt_topicid: this.parameters.msdynmkt_topicid,
+      msdynmkt_purposeid: this.parameters.msdynmkt_purposeid,
       msdynmkt_channeltype: this.parameters.msdynmkt_channeltype,
+      msdynmkt_compliancesettingsid: this.parameters.msdynmkt_compliancesettingsid,
     });
 
     return {

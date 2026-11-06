@@ -2,25 +2,26 @@
  * retentionoperationdetail entity type
  */
 export interface retentionoperationdetail {
-  _retentionoperationid_value?: string;
-  entitylogicalname?: string;
-  overriddencreatedon?: string;
-  _modifiedby_value?: string;
-  name?: string;
   _createdby_value?: string;
-  _organizationid_value?: string;
-  utcconversiontimezonecode?: number;
-  createdon?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
   _modifiedonbehalfby_value?: string;
-  modifiedon?: string;
+  _organizationid_value?: string;
+  _retentionoperationid_value?: string;
+  createdon?: string;
+  entitylogicalname?: string;
   failedcount?: number;
-  statuscode?: number;
+  fnotablename?: string;
+  importsequencenumber?: number;
   isrootentity?: boolean;
-  versionnumber?: number;
+  modifiedon?: string;
+  name?: string;
+  overriddencreatedon?: string;
   retentioncount?: number;
   retentionoperationdetailid?: string;
-  _createdonbehalfby_value?: string;
   statecode?: number;
-  importsequencenumber?: number;
+  statuscode?: number;
   timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

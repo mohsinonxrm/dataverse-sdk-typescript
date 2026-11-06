@@ -13,8 +13,8 @@ export interface msdyn_GeneratePlatformSummaryResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_GeneratePlatformSummaryActionParameters {
-  ClientContext?: string;
   OtherData?: string;
+  ClientContext?: string;
 }
 
 /**
@@ -29,8 +29,8 @@ export class msdyn_GeneratePlatformSummaryAction implements Executable<msdyn_Gen
     const url = `${baseUrl}/msdyn_GeneratePlatformSummary`;
 
     const body = requestBody({
-      ClientContext: this.parameters.ClientContext,
       OtherData: this.parameters.OtherData,
+      ClientContext: this.parameters.ClientContext,
     });
 
     return {

@@ -2,25 +2,25 @@
  * msdyn_channelmessageattachment entity type
  */
 export interface msdyn_channelmessageattachment {
-  createdon?: string;
-  msdyn_name?: string;
-  versionnumber?: number;
+  _createdby_value?: string;
+  _createdonbehalfby_value?: string;
   _modifiedby_value?: string;
   _modifiedonbehalfby_value?: string;
-  msdyn_fileattachment_name?: string;
   _ownerid_value?: string;
-  _createdonbehalfby_value?: string;
-  _createdby_value?: string;
   _owningbusinessunit_value?: string;
-  _owninguser_value?: string;
-  modifiedon?: string;
-  timezoneruleversionnumber?: number;
-  statuscode?: number;
-  overriddencreatedon?: string;
-  msdyn_channelmessageattachmentid?: string;
   _owningteam_value?: string;
+  _owninguser_value?: string;
+  createdon?: string;
   importsequencenumber?: number;
-  utcconversiontimezonecode?: number;
-  statecode?: number;
+  modifiedon?: string;
+  msdyn_channelmessageattachmentid?: string;
   msdyn_fileattachment?: string;
+  msdyn_fileattachment_name?: string;
+  msdyn_name?: string;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

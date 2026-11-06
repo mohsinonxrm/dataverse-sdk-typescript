@@ -9,9 +9,9 @@ import type { msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecksRespon
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecksRequestParameters {
+  msdyn_SalesMacroAgentType?: number;
   msdyn_TrackingId?: string;
   msdyn_SalesAgentRun?: string;
-  msdyn_SalesMacroAgentType?: number;
 }
 
 /**
@@ -35,9 +35,9 @@ export class msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecksRequest
     const url = `${baseUrl}/msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecks`;
 
     const body = requestBody({
+      msdyn_SalesMacroAgentType: this.Parameters.msdyn_SalesMacroAgentType,
       msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
       msdyn_SalesAgentRun: this.Parameters.msdyn_SalesAgentRun,
-      msdyn_SalesMacroAgentType: this.Parameters.msdyn_SalesMacroAgentType,
     });
 
     return {

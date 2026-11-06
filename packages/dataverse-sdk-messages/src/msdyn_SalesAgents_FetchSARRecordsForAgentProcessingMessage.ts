@@ -9,9 +9,9 @@ import type { msdyn_SalesAgents_FetchSARRecordsForAgentProcessingResponse as msd
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesAgents_FetchSARRecordsForAgentProcessingRequestParameters {
-  msdyn_SalesAgentType: number;
-  msdyn_AgentType: number;
   msdyn_TrackingId?: string;
+  msdyn_AgentType: number;
+  msdyn_SalesAgentType: number;
   msdyn_Top?: number;
 }
 
@@ -34,9 +34,9 @@ export class msdyn_SalesAgents_FetchSARRecordsForAgentProcessingRequest
     const url = `${baseUrl}/msdyn_SalesAgents_FetchSARRecordsForAgentProcessing`;
 
     const body = requestBody({
-      msdyn_SalesAgentType: this.Parameters.msdyn_SalesAgentType,
-      msdyn_AgentType: this.Parameters.msdyn_AgentType,
       msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
+      msdyn_AgentType: this.Parameters.msdyn_AgentType,
+      msdyn_SalesAgentType: this.Parameters.msdyn_SalesAgentType,
       msdyn_Top: this.Parameters.msdyn_Top,
     });
 

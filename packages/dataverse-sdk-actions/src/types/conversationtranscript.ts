@@ -2,29 +2,29 @@
  * conversationtranscript entity type
  */
 export interface conversationtranscript {
-  schematype?: string;
-  versionnumber?: number;
-  name?: string;
-  schemaversion?: string;
-  modifiedon?: string;
-  statuscode?: number;
-  timezoneruleversionnumber?: number;
-  conversationtranscriptid?: string;
-  _owningteam_value?: string;
-  utcconversiontimezonecode?: number;
-  _owningbusinessunit_value?: string;
   _bot_conversationtranscriptid_value?: string;
-  _owninguser_value?: string;
+  _createdby_value?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
   _modifiedonbehalfby_value?: string;
-  statecode?: number;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  content?: string;
+  conversationstarttime?: string;
+  conversationtranscriptid?: string;
   createdon?: string;
   importsequencenumber?: number;
-  conversationstarttime?: string;
   metadata?: string;
-  _createdonbehalfby_value?: string;
+  modifiedon?: string;
+  name?: string;
   overriddencreatedon?: string;
-  _ownerid_value?: string;
-  _modifiedby_value?: string;
-  content?: string;
-  _createdby_value?: string;
+  schematype?: string;
+  schemaversion?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

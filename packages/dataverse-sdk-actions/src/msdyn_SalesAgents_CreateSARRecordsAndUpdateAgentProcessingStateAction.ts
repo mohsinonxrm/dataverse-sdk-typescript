@@ -13,9 +13,9 @@ export interface msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentProcessingState
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentProcessingStateActionParameters {
-  msdyn_TrackingId?: string;
   msdyn_SARRecordsToCreate: string;
   msdyn_SalesAgentType: number;
+  msdyn_TrackingId?: string;
 }
 
 /**
@@ -32,9 +32,9 @@ export class msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentProcessingStateActi
     const url = `${baseUrl}/msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentProcessingState`;
 
     const body = requestBody({
-      msdyn_TrackingId: this.parameters.msdyn_TrackingId,
       msdyn_SARRecordsToCreate: this.parameters.msdyn_SARRecordsToCreate,
       msdyn_SalesAgentType: this.parameters.msdyn_SalesAgentType,
+      msdyn_TrackingId: this.parameters.msdyn_TrackingId,
     });
 
     return {

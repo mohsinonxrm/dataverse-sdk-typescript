@@ -15,8 +15,9 @@ export interface msdyn_CreateSuggestedNextActionResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_CreateSuggestedNextActionActionParameters {
-  SuggestionSubtype: string;
   Entity?: EntityReference | AnyEntityPayload;
+  SuggestionSubtype: string;
+  RunId?: string;
   DraftEmailId: string;
   SuggestionType: string;
 }
@@ -33,8 +34,9 @@ export class msdyn_CreateSuggestedNextActionAction implements Executable<msdyn_C
     const url = `${baseUrl}/msdyn_CreateSuggestedNextAction`;
 
     const body = requestBody({
-      SuggestionSubtype: this.parameters.SuggestionSubtype,
       Entity: this.parameters.Entity,
+      SuggestionSubtype: this.parameters.SuggestionSubtype,
+      RunId: this.parameters.RunId,
       DraftEmailId: this.parameters.DraftEmailId,
       SuggestionType: this.parameters.SuggestionType,
     });

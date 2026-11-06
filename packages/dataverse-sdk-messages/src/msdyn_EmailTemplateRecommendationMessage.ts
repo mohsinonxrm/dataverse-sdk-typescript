@@ -14,15 +14,16 @@ export interface msdyn_EmailTemplateRecommendationRequestParameters {
   Headers?: number;
   customerIntent: string;
   filters?: string;
-  templateFiltersInString: string;
-  emailString: string;
-  isTemplateResponse?: boolean;
   transactionId: string;
   multiturnPayload?: string;
+  templateId?: string;
   emailContextData?: string;
+  templateFiltersInString: string;
+  entityReference?: EntityReference | AnyEntityPayload;
+  emailString: string;
+  isTemplateResponse?: boolean;
   copilotRequestParameters: string;
   emailId: string;
-  entityReference?: EntityReference | AnyEntityPayload;
 }
 
 /**
@@ -47,15 +48,16 @@ export class msdyn_EmailTemplateRecommendationRequest
       Headers: this.Parameters.Headers,
       customerIntent: this.Parameters.customerIntent,
       filters: this.Parameters.filters,
-      templateFiltersInString: this.Parameters.templateFiltersInString,
-      emailString: this.Parameters.emailString,
-      isTemplateResponse: this.Parameters.isTemplateResponse,
       transactionId: this.Parameters.transactionId,
       multiturnPayload: this.Parameters.multiturnPayload,
+      templateId: this.Parameters.templateId,
       emailContextData: this.Parameters.emailContextData,
+      templateFiltersInString: this.Parameters.templateFiltersInString,
+      entityReference: this.Parameters.entityReference,
+      emailString: this.Parameters.emailString,
+      isTemplateResponse: this.Parameters.isTemplateResponse,
       copilotRequestParameters: this.Parameters.copilotRequestParameters,
       emailId: this.Parameters.emailId,
-      entityReference: this.Parameters.entityReference,
     });
 
     return {

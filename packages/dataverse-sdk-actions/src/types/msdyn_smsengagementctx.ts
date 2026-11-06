@@ -2,29 +2,29 @@
  * msdyn_smsengagementctx entity type
  */
 export interface msdyn_smsengagementctx {
-  _owningbusinessunit_value?: string;
-  statuscode?: number;
-  createdon?: string;
-  msdyn_countrycode?: string;
-  modifiedon?: string;
-  _modifiedby_value?: string;
-  msdyn_orgphonenumber?: string;
-  _ownerid_value?: string;
-  statecode?: number;
   _createdby_value?: string;
-  versionnumber?: number;
-  _msdyn_liveworkitemid_value?: string;
-  msdyn_smsprovider?: number;
-  _owningteam_value?: string;
-  msdyn_name?: string;
-  msdyn_smsengagementid?: string;
-  utcconversiontimezonecode?: number;
-  importsequencenumber?: number;
-  msdyn_smsengagementctxid?: string;
-  timezoneruleversionnumber?: number;
-  overriddencreatedon?: string;
-  msdyn_customerphonenumber?: string;
-  _owninguser_value?: string;
-  _modifiedonbehalfby_value?: string;
   _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _msdyn_liveworkitemid_value?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_countrycode?: string;
+  msdyn_customerphonenumber?: string;
+  msdyn_name?: string;
+  msdyn_orgphonenumber?: string;
+  msdyn_smsengagementctxid?: string;
+  msdyn_smsengagementid?: string;
+  msdyn_smsprovider?: number;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

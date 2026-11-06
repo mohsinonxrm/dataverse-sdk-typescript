@@ -2,21 +2,21 @@
  * msdyn_similarentitiesfeatureimportance entity type
  */
 export interface msdyn_similarentitiesfeatureimportance {
-  modifiedon?: string;
-  statuscode?: number;
   _createdby_value?: string;
-  msdyn_featureimportance?: string;
-  importsequencenumber?: number;
-  _organizationid_value?: string;
-  utcconversiontimezonecode?: number;
-  _modifiedby_value?: string;
-  createdon?: string;
-  overriddencreatedon?: string;
-  versionnumber?: number;
-  msdyn_similarentitiesfeatureimportanceid?: string;
   _createdonbehalfby_value?: string;
-  statecode?: number;
+  _modifiedby_value?: string;
   _modifiedonbehalfby_value?: string;
-  timezoneruleversionnumber?: number;
+  _organizationid_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
   msdyn_entitytype?: string;
+  msdyn_featureimportance?: string;
+  msdyn_similarentitiesfeatureimportanceid?: string;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

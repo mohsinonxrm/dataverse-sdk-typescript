@@ -7,6 +7,7 @@ import type { AnyEntityPayload } from "./types/EntityPayload.js";
  * Response from msdyn_PerformChecksForEnrichRecord action
  */
 export interface msdyn_PerformChecksForEnrichRecordResponse {
+  msdyn_MatchingRuleId: string;
   msdyn_ShouldPerformEnrichRecord: boolean;
 }
 
@@ -16,6 +17,7 @@ export interface msdyn_PerformChecksForEnrichRecordResponse {
  */
 export interface msdyn_PerformChecksForEnrichRecordActionParameters {
   msdyn_Target: EntityReference | AnyEntityPayload;
+  msdyn_IncludeShadowRule?: boolean;
 }
 
 /**
@@ -31,6 +33,7 @@ export class msdyn_PerformChecksForEnrichRecordAction implements Executable<msdy
 
     const body = requestBody({
       msdyn_Target: this.parameters.msdyn_Target,
+      msdyn_IncludeShadowRule: this.parameters.msdyn_IncludeShadowRule,
     });
 
     return {

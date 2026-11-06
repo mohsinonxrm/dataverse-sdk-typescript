@@ -2,26 +2,26 @@
  * webwizard entity type
  */
 export interface webwizard {
+  _createdby_value?: string;
   _createdonbehalfby_value?: string;
-  name?: string;
-  _organizationid_value?: string;
-  createdon?: string;
-  webwizardidunique?: string;
-  modifiedon?: string;
-  versionnumber?: number;
-  isstaticpagesequence?: boolean;
-  ismanaged?: boolean;
   _modifiedby_value?: string;
   _modifiedonbehalfby_value?: string;
+  _organizationid_value?: string;
   accessprivileges?: string;
-  titleresourcestring?: string;
-  wizardpagewidth?: number;
   componentstate?: number;
-  webwizardid?: string;
-  startpagesequencenumber?: number;
-  wizardpageheight?: number;
+  createdon?: string;
   introducedversion?: string;
+  ismanaged?: boolean;
+  isstaticpagesequence?: boolean;
+  modifiedon?: string;
+  name?: string;
   overwritetime?: string;
   solutionid?: string;
-  _createdby_value?: string;
+  startpagesequencenumber?: number;
+  titleresourcestring?: string;
+  versionnumber?: number;
+  webwizardid?: string;
+  webwizardidunique?: string;
+  wizardpageheight?: number;
+  wizardpagewidth?: number;
 }

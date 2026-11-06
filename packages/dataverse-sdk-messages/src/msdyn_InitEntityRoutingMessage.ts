@@ -7,14 +7,14 @@ import { requestBody } from "./internal/requestBody.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_InitEntityRoutingRequestParameters {
-  IntentFamilyId?: string;
-  AppInsightsEnvInformation?: string;
-  IntentId?: string;
-  LiveWorkStreamId: string;
   AppInsightsAdditionalInformation?: string;
+  IntentId?: string;
   EntityLogicalName: string;
+  AppInsightsEnvInformation?: string;
+  IntentFamilyId?: string;
   IntentString?: string;
   IntentGroupId?: string;
+  LiveWorkStreamId: string;
   EntityRecordId: string;
 }
 
@@ -37,14 +37,14 @@ export class msdyn_InitEntityRoutingRequest
     const url = `${baseUrl}/msdyn_InitEntityRouting`;
 
     const body = requestBody({
-      IntentFamilyId: this.Parameters.IntentFamilyId,
-      AppInsightsEnvInformation: this.Parameters.AppInsightsEnvInformation,
-      IntentId: this.Parameters.IntentId,
-      LiveWorkStreamId: this.Parameters.LiveWorkStreamId,
       AppInsightsAdditionalInformation: this.Parameters.AppInsightsAdditionalInformation,
+      IntentId: this.Parameters.IntentId,
       EntityLogicalName: this.Parameters.EntityLogicalName,
+      AppInsightsEnvInformation: this.Parameters.AppInsightsEnvInformation,
+      IntentFamilyId: this.Parameters.IntentFamilyId,
       IntentString: this.Parameters.IntentString,
       IntentGroupId: this.Parameters.IntentGroupId,
+      LiveWorkStreamId: this.Parameters.LiveWorkStreamId,
       EntityRecordId: this.Parameters.EntityRecordId,
     });
 

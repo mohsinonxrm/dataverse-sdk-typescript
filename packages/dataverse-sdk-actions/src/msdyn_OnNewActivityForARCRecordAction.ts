@@ -15,8 +15,8 @@ export interface msdyn_OnNewActivityForARCRecordResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_OnNewActivityForARCRecordActionParameters {
-  msdyn_primaryEntityReference: EntityReference | AnyEntityPayload;
   msdyn_sourceEntityReference: EntityReference | AnyEntityPayload;
+  msdyn_primaryEntityReference: EntityReference | AnyEntityPayload;
 }
 
 /**
@@ -31,8 +31,8 @@ export class msdyn_OnNewActivityForARCRecordAction implements Executable<msdyn_O
     const url = `${baseUrl}/msdyn_OnNewActivityForARCRecord`;
 
     const body = requestBody({
-      msdyn_primaryEntityReference: this.parameters.msdyn_primaryEntityReference,
       msdyn_sourceEntityReference: this.parameters.msdyn_sourceEntityReference,
+      msdyn_primaryEntityReference: this.parameters.msdyn_primaryEntityReference,
     });
 
     return {

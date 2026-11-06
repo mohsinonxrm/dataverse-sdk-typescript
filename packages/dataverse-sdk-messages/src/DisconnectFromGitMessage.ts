@@ -1,6 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
+import type { DisconnectFromGitResponse as DisconnectFromGitResponseData } from "./types/index.js";
 
 /**
  * Parameters of the DisconnectFromGit message, by their CSDL names. A parameter the CSDL declares
@@ -43,8 +45,9 @@ export class DisconnectFromGitRequest
   }
 
   async parseResponse(response: Response): Promise<DisconnectFromGitResponse> {
-    // No return value (204 No Content)
-    return new DisconnectFromGitResponse();
+    // 204 No Content is an empty result
+    if (response.status === 204) return DisconnectFromGitResponse.fromResponse({});
+    return DisconnectFromGitResponse.fromResponse(await response.json());
   }
 }
 
@@ -52,11 +55,11 @@ export class DisconnectFromGitRequest
  * DisconnectFromGit response message
  */
 export class DisconnectFromGitResponse extends OrganizationResponse {
-  constructor() {
+  constructor(public result: DisconnectFromGitResponseData) {
     super("DisconnectFromGit");
   }
 
-  static fromResponse(_data: unknown): DisconnectFromGitResponse {
-    return new DisconnectFromGitResponse();
+  static fromResponse(data: unknown): DisconnectFromGitResponse {
+    return new DisconnectFromGitResponse(responseObject<DisconnectFromGitResponseData>(data));
   }
 }

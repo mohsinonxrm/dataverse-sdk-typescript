@@ -4,28 +4,28 @@ import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
  * kbarticletemplate entity type
  */
 export interface kbarticletemplate {
-  kbarticletemplateid?: string;
-  iscustomizable?: BooleanManagedProperty;
-  importsequencenumber?: number;
-  _modifiedby_value?: string;
-  languagecode?: number;
+  _createdby_value?: string;
   _createdonbehalfby_value?: string;
-  kbarticletemplateidunique?: string;
-  solutionid?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _organizationid_value?: string;
   componentstate?: number;
   createdon?: string;
-  structurexml?: string;
-  _modifiedonbehalfby_value?: string;
-  versionnumber?: number;
-  isactive?: boolean;
   description?: string;
-  ismanaged?: boolean;
   formatxml?: string;
-  title?: string;
+  importsequencenumber?: number;
+  introducedversion?: string;
+  isactive?: boolean;
+  iscustomizable?: BooleanManagedProperty;
+  ismanaged?: boolean;
+  kbarticletemplateid?: string;
+  kbarticletemplateidunique?: string;
+  languagecode?: number;
   modifiedon?: string;
   overriddencreatedon?: string;
-  introducedversion?: string;
-  _organizationid_value?: string;
-  _createdby_value?: string;
   overwritetime?: string;
+  solutionid?: string;
+  structurexml?: string;
+  title?: string;
+  versionnumber?: number;
 }

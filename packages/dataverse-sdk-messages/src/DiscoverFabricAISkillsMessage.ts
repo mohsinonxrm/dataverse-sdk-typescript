@@ -9,8 +9,8 @@ import type { DiscoverFabricAISkillsResponse as DiscoverFabricAISkillsResponseDa
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface DiscoverFabricAISkillsRequestParameters {
-  workspaceId: string;
   fabricEnvironment?: string;
+  workspaceId: string;
 }
 
 /**
@@ -32,8 +32,8 @@ export class DiscoverFabricAISkillsRequest
     const url = `${baseUrl}/DiscoverFabricAISkills`;
 
     const body = requestBody({
-      workspaceId: this.Parameters.workspaceId,
       fabricEnvironment: this.Parameters.fabricEnvironment,
+      workspaceId: this.Parameters.workspaceId,
     });
 
     return {

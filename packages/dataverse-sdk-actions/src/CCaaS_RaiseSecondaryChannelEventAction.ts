@@ -13,9 +13,9 @@ export interface CCaaS_RaiseSecondaryChannelEventResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_RaiseSecondaryChannelEventActionParameters {
+  ApiVersion: string;
   SecondaryChannelEventType: string;
   SecondaryChannelSessionId: string;
-  ApiVersion: string;
   SecondaryChannelType: string;
 }
 
@@ -38,9 +38,9 @@ export class CCaaS_RaiseSecondaryChannelEventAction implements Executable<CCaaS_
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_RaiseSecondaryChannelEvent`;
 
     const body = requestBody({
+      ApiVersion: this.parameters.ApiVersion,
       SecondaryChannelEventType: this.parameters.SecondaryChannelEventType,
       SecondaryChannelSessionId: this.parameters.SecondaryChannelSessionId,
-      ApiVersion: this.parameters.ApiVersion,
       SecondaryChannelType: this.parameters.SecondaryChannelType,
     });
 

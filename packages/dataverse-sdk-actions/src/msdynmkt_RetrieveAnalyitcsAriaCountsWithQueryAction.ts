@@ -5,9 +5,9 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdynmkt_RetrieveAnalyitcsAriaCountsWithQuery action
  */
 export interface msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryResponse {
-  msdynmkt_resultcode: number;
-  msdynmkt_error: string;
   msdynmkt_apiresponsedata: string;
+  msdynmkt_error: string;
+  msdynmkt_resultcode: number;
 }
 
 /**
@@ -15,9 +15,9 @@ export interface msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryActionParameters {
+  msdynmkt_ariacountsrequest: string;
   msdynmkt_primaryrecordid: string;
   msdynmkt_primaryrecordentityname: string;
-  msdynmkt_ariacountsrequest: string;
   msdynmkt_appname: string;
 }
 
@@ -35,9 +35,9 @@ export class msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryAction implements Exec
     const url = `${baseUrl}/msdynmkt_RetrieveAnalyitcsAriaCountsWithQuery`;
 
     const body = requestBody({
+      msdynmkt_ariacountsrequest: this.parameters.msdynmkt_ariacountsrequest,
       msdynmkt_primaryrecordid: this.parameters.msdynmkt_primaryrecordid,
       msdynmkt_primaryrecordentityname: this.parameters.msdynmkt_primaryrecordentityname,
-      msdynmkt_ariacountsrequest: this.parameters.msdynmkt_ariacountsrequest,
       msdynmkt_appname: this.parameters.msdynmkt_appname,
     });
 

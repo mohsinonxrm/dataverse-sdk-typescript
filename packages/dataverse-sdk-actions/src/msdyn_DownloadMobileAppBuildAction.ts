@@ -17,7 +17,9 @@ export interface msdyn_DownloadMobileAppBuildResponse {
  */
 export interface msdyn_DownloadMobileAppBuildActionParameters {
   BuildId?: string;
+  ArtifactType?: string;
   msdyn_MobileApp: EntityReference | EntityPayload<msdyn_mobileapp>;
+  PipelineId?: string;
 }
 
 /**
@@ -33,7 +35,9 @@ export class msdyn_DownloadMobileAppBuildAction implements Executable<msdyn_Down
 
     const body = requestBody({
       BuildId: this.parameters.BuildId,
+      ArtifactType: this.parameters.ArtifactType,
       msdyn_MobileApp: this.parameters.msdyn_MobileApp,
+      PipelineId: this.parameters.PipelineId,
     });
 
     return {

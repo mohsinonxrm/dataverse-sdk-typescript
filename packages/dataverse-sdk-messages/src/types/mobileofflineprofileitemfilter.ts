@@ -2,20 +2,20 @@
  * mobileofflineprofileitemfilter entity type
  */
 export interface mobileofflineprofileitemfilter {
-  returnedtypecode?: string;
-  modifiedon?: string;
-  versionnumber?: number;
-  mobileofflineprofileitemfilterid?: string;
-  createdon?: string;
   _mobileofflineprofileid_value?: string;
+  _organizationid_value?: string;
+  createdon?: string;
+  fetchxml?: string;
+  isactivity?: boolean;
+  isintersect?: boolean;
+  mobileofflineprofileitemfilterid?: string;
+  mobileofflineprofileitemid?: string;
+  modifiedon?: string;
   name?: string;
-  type?: number;
-  subtype?: number;
   offlinesql?: string;
   outerfetchXml?: string;
-  _organizationid_value?: string;
-  isactivity?: boolean;
-  mobileofflineprofileitemid?: string;
-  isintersect?: boolean;
-  fetchxml?: string;
+  returnedtypecode?: string;
+  subtype?: number;
+  type?: number;
+  versionnumber?: number;
 }

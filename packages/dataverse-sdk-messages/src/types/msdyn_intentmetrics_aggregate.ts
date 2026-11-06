@@ -3,20 +3,20 @@
  */
 export interface msdyn_intentmetrics_aggregate {
   _createdby_value?: string;
-  partitionid?: string;
   _createdonbehalfby_value?: string;
-  createdon?: string;
-  msdyn_aggregatedate?: string;
-  overriddencreatedon?: string;
-  msdyn_intentsolutionvolume?: number;
-  _modifiedonbehalfby_value?: string;
   _modifiedby_value?: string;
-  msdyn_intentmetrics_aggregateid?: string;
-  msdyn_intentid?: string;
-  msdyn_name?: string;
+  _modifiedonbehalfby_value?: string;
+  createdon?: string;
   importsequencenumber?: number;
-  versionnumber?: number;
-  msdyn_intentvolume?: number;
   modifiedon?: string;
+  msdyn_aggregatedate?: string;
+  msdyn_intentid?: string;
+  msdyn_intentmetrics_aggregateid?: string;
+  msdyn_intentsolutionvolume?: number;
+  msdyn_intentvolume?: number;
+  msdyn_name?: string;
+  overriddencreatedon?: string;
+  partitionid?: string;
   ttlinseconds?: number;
+  versionnumber?: number;
 }

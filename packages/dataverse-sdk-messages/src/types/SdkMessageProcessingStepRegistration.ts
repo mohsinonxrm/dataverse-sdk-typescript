@@ -4,18 +4,18 @@ import type { SdkMessageProcessingStepImageRegistration } from "./SdkMessageProc
  * SdkMessageProcessingStepRegistration complex type
  */
 export interface SdkMessageProcessingStepRegistration {
-  MessageName?: string;
-  PrimaryEntityName?: string;
-  SecondaryEntityName?: string;
+  CustomConfiguration?: string;
   Description?: string;
-  Stage?: number;
-  Mode?: number;
-  ImpersonatingUserId?: string;
-  SupportedDeployment?: number;
   FilteringAttributes?: string;
+  Images?: SdkMessageProcessingStepImageRegistration[];
+  ImpersonatingUserId?: string;
+  InvocationSource?: number;
+  MessageName?: string;
+  Mode?: number;
   PluginTypeFriendlyName?: string;
   PluginTypeName?: string;
-  CustomConfiguration?: string;
-  InvocationSource?: number;
-  Images?: SdkMessageProcessingStepImageRegistration[];
+  PrimaryEntityName?: string;
+  SecondaryEntityName?: string;
+  Stage?: number;
+  SupportedDeployment?: number;
 }

@@ -4,29 +4,29 @@ import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
  * metadataforarchival entity type
  */
 export interface metadataforarchival {
-  isreadyforarchival?: boolean;
-  componentidunique?: string;
-  _createdonbehalfby_value?: string;
-  statecode?: number;
-  createdon?: string;
-  _extensionofrecordid_value?: string;
   _createdby_value?: string;
-  importsequencenumber?: number;
-  overriddencreatedon?: string;
-  componentstate?: number;
-  modifiedon?: string;
-  ismanaged?: boolean;
-  isavailableforarchival?: boolean;
-  solutionid?: string;
-  _modifiedonbehalfby_value?: string;
+  _createdonbehalfby_value?: string;
+  _extensionofrecordid_value?: string;
   _modifiedby_value?: string;
-  versionnumber?: number;
-  name?: string;
+  _modifiedonbehalfby_value?: string;
+  _organizationid_value?: string;
+  componentidunique?: string;
+  componentstate?: number;
+  createdon?: string;
+  importsequencenumber?: number;
+  isavailableforarchival?: boolean;
   iscustomizable?: BooleanManagedProperty;
+  ismanaged?: boolean;
+  isreadyforarchival?: boolean;
+  metadataforarchivalid?: string;
+  modifiedon?: string;
+  name?: string;
+  overriddencreatedon?: string;
+  overwritetime?: string;
+  solutionid?: string;
+  statecode?: number;
   statuscode?: number;
   timezoneruleversionnumber?: number;
-  _organizationid_value?: string;
   utcconversiontimezonecode?: number;
-  overwritetime?: string;
-  metadataforarchivalid?: string;
+  versionnumber?: number;
 }

@@ -4,14 +4,14 @@ import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
  * msdyn_appconfiguration_applicationextension entity type
  */
 export interface msdyn_appconfiguration_applicationextension {
-  iscustomizable?: BooleanManagedProperty;
-  versionnumber?: number;
-  ismanaged?: boolean;
-  solutionid?: string;
   componentidunique?: string;
+  componentstate?: number;
+  iscustomizable?: BooleanManagedProperty;
+  ismanaged?: boolean;
   msdyn_appconfiguration_applicationextensionid?: string;
+  msdyn_appconfigurationid?: string;
   msdyn_applicationextensionid?: string;
   overwritetime?: string;
-  msdyn_appconfigurationid?: string;
-  componentstate?: number;
+  solutionid?: string;
+  versionnumber?: number;
 }

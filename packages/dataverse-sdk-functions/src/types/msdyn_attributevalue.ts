@@ -2,26 +2,26 @@
  * msdyn_attributevalue entity type
  */
 export interface msdyn_attributevalue {
-  msdyn_reviewstatus?: number;
   _createdby_value?: string;
-  _owningteam_value?: string;
   _createdonbehalfby_value?: string;
-  statuscode?: number;
-  importsequencenumber?: number;
-  _ownerid_value?: string;
-  msdyn_attributevalueid?: string;
-  _owninguser_value?: string;
-  utcconversiontimezonecode?: number;
   _modifiedby_value?: string;
-  timezoneruleversionnumber?: number;
-  _owningbusinessunit_value?: string;
   _modifiedonbehalfby_value?: string;
   _msdyn_parentattribute_value?: string;
-  versionnumber?: number;
-  msdyn_name?: string;
-  statecode?: number;
-  msdyn_linkedvalue?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
   createdon?: string;
-  overriddencreatedon?: string;
+  importsequencenumber?: number;
   modifiedon?: string;
+  msdyn_attributevalueid?: string;
+  msdyn_linkedvalue?: string;
+  msdyn_name?: string;
+  msdyn_reviewstatus?: number;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

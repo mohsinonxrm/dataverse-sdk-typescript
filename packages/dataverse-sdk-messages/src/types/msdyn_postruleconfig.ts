@@ -2,26 +2,26 @@
  * msdyn_postruleconfig entity type
  */
 export interface msdyn_postruleconfig {
-  timezoneruleversionnumber?: number;
-  importsequencenumber?: number;
-  versionnumber?: number;
-  _organizationid_value?: string;
-  utcconversiontimezonecode?: number;
-  msdyn_stepid?: string;
-  _msdyn_postconfigid_value?: string;
-  _modifiedby_value?: string;
-  msdyn_ruleid?: string;
-  _createdonbehalfby_value?: string;
-  modifiedon?: string;
-  msdyn_name?: string;
-  _modifiedonbehalfby_value?: string;
-  statuscode?: number;
-  msdyn_formatid?: string;
-  msdyn_posttoyammer?: boolean;
-  statecode?: number;
   _createdby_value?: string;
-  msdyn_postruleconfigid?: string;
-  overriddencreatedon?: string;
-  msdyn_rulesource?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _msdyn_postconfigid_value?: string;
+  _organizationid_value?: string;
   createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_formatid?: string;
+  msdyn_name?: string;
+  msdyn_postruleconfigid?: string;
+  msdyn_posttoyammer?: boolean;
+  msdyn_ruleid?: string;
+  msdyn_rulesource?: string;
+  msdyn_stepid?: string;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

@@ -7,8 +7,8 @@ import { requestBody } from "./internal/requestBody.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_CleanupCopilotAgentResponsesRequestParameters {
-  UntilMarker?: string;
   ConversationId?: string;
+  UntilMarker?: string;
 }
 
 /**
@@ -30,8 +30,8 @@ export class msdyn_CleanupCopilotAgentResponsesRequest
     const url = `${baseUrl}/msdyn_CleanupCopilotAgentResponses`;
 
     const body = requestBody({
-      UntilMarker: this.Parameters.UntilMarker,
       ConversationId: this.Parameters.ConversationId,
+      UntilMarker: this.Parameters.UntilMarker,
     });
 
     return {

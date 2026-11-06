@@ -9,12 +9,12 @@ import type { msdynmkt_checkconsentResponse as msdynmkt_checkconsentResponseData
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdynmkt_checkconsentRequestParameters {
-  msdynmkt_contactpoint: string;
   msdynmkt_owningbusinessunitid: string;
-  msdynmkt_purposeid: string;
-  msdynmkt_compliancesettingsid: string;
+  msdynmkt_contactpoint: string;
   msdynmkt_topicid: string;
+  msdynmkt_purposeid: string;
   msdynmkt_channeltype: string;
+  msdynmkt_compliancesettingsid: string;
 }
 
 /**
@@ -36,12 +36,12 @@ export class msdynmkt_checkconsentRequest
     const url = `${baseUrl}/msdynmkt_checkconsent`;
 
     const body = requestBody({
-      msdynmkt_contactpoint: this.Parameters.msdynmkt_contactpoint,
       msdynmkt_owningbusinessunitid: this.Parameters.msdynmkt_owningbusinessunitid,
-      msdynmkt_purposeid: this.Parameters.msdynmkt_purposeid,
-      msdynmkt_compliancesettingsid: this.Parameters.msdynmkt_compliancesettingsid,
+      msdynmkt_contactpoint: this.Parameters.msdynmkt_contactpoint,
       msdynmkt_topicid: this.Parameters.msdynmkt_topicid,
+      msdynmkt_purposeid: this.Parameters.msdynmkt_purposeid,
       msdynmkt_channeltype: this.Parameters.msdynmkt_channeltype,
+      msdynmkt_compliancesettingsid: this.Parameters.msdynmkt_compliancesettingsid,
     });
 
     return {

@@ -2,28 +2,28 @@
  * msdyn_preferredagent entity type
  */
 export interface msdyn_preferredagent {
-  overriddencreatedon?: string;
-  _owningbusinessunit_value?: string;
-  _createdonbehalfby_value?: string;
-  importsequencenumber?: number;
-  msdyn_preferencerating?: number;
-  _modifiedby_value?: string;
-  _msdyn_systemuserid_value?: string;
-  versionnumber?: number;
-  statecode?: number;
-  msdyn_temporarypreference?: boolean;
-  statuscode?: number;
-  msdyn_name?: string;
-  modifiedon?: string;
   _createdby_value?: string;
-  msdyn_recordtype?: number;
-  createdon?: string;
-  _owningteam_value?: string;
-  _ownerid_value?: string;
-  _owninguser_value?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
   _modifiedonbehalfby_value?: string;
-  utcconversiontimezonecode?: number;
-  msdyn_preferredagentid?: string;
-  timezoneruleversionnumber?: number;
   _msdyn_recordid_value?: string;
+  _msdyn_systemuserid_value?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_name?: string;
+  msdyn_preferencerating?: number;
+  msdyn_preferredagentid?: string;
+  msdyn_recordtype?: number;
+  msdyn_temporarypreference?: boolean;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

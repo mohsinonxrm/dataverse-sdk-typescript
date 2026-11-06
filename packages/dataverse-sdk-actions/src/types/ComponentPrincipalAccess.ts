@@ -6,7 +6,7 @@ import type { AnyEntityPayload } from "./EntityPayload.js";
  * ComponentPrincipalAccess complex type
  */
 export interface ComponentPrincipalAccess {
-  ShareAccessMask?: ShareAccessRights;
   RequestType?: number;
+  ShareAccessMask?: ShareAccessRights;
   SharePrincipal: EntityReference | AnyEntityPayload;
 }

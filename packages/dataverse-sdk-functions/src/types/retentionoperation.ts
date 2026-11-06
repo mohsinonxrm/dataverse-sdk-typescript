@@ -2,34 +2,36 @@
  * retentionoperation entity type
  */
 export interface retentionoperation {
-  utcconversiontimezonecode?: number;
   _createdby_value?: string;
-  asyncoperationid?: string;
-  endtime?: string;
-  _ownerid_value?: string;
-  lastmarkedversionnumber?: number;
-  statuscode?: number;
-  name?: string;
   _createdonbehalfby_value?: string;
-  versionnumber?: number;
-  _owningbusinessunit_value?: string;
-  criteria?: string;
-  timezoneruleversionnumber?: number;
-  statecode?: number;
-  _owningteam_value?: string;
-  modifiedon?: string;
-  _owninguser_value?: string;
-  importsequencenumber?: number;
+  _modifiedby_value?: string;
   _modifiedonbehalfby_value?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
   _retentionconfigid_value?: string;
-  retentioncount?: number;
+  additionaldetails?: string;
+  asyncoperationid?: string;
+  createdon?: string;
+  criteria?: string;
+  datasourcetype?: number;
+  endtime?: string;
   failedcount?: number;
+  fnotablename?: string;
+  importsequencenumber?: number;
+  lastmarkedversionnumber?: number;
+  modifiedon?: string;
+  name?: string;
   overriddencreatedon?: string;
   pagingcookie?: string;
-  createdon?: string;
+  retentioncount?: number;
   retentionoperationid?: string;
-  additionaldetails?: string;
-  _modifiedby_value?: string;
-  starttime?: string;
   rootentitylogicalname?: string;
+  starttime?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

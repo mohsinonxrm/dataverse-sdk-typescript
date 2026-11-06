@@ -8,9 +8,9 @@ import { requestBody } from "./internal/requestBody.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_GetCustomActionListRequestParameters {
+  correlationId: string;
   workflowId: string;
   entityName: string;
-  correlationId: string;
 }
 
 /**
@@ -32,9 +32,9 @@ export class msdyn_GetCustomActionListRequest
     const url = `${baseUrl}/msdyn_GetCustomActionList`;
 
     const body = requestBody({
+      correlationId: this.Parameters.correlationId,
       workflowId: this.Parameters.workflowId,
       entityName: this.Parameters.entityName,
-      correlationId: this.Parameters.correlationId,
     });
 
     return {

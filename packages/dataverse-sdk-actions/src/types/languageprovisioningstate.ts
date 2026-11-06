@@ -2,10 +2,10 @@
  * languageprovisioningstate entity type
  */
 export interface languageprovisioningstate {
-  solutionfileversion?: string;
-  languageprovisioningstateid?: string;
   applicationversion?: string;
   languageid?: number;
+  languageprovisioningstateid?: string;
   provisioningstage?: number;
+  solutionfileversion?: string;
   solutionuniquename?: string;
 }

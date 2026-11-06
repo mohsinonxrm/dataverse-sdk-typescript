@@ -2,10 +2,10 @@
  * subscriptionmanuallytrackedobject entity type
  */
 export interface subscriptionmanuallytrackedobject {
-  versionnumber?: number;
-  subscriptionid?: string;
   objectid?: string;
-  track?: boolean;
   objecttypecode?: string;
+  subscriptionid?: string;
   subscriptionmanuallytrackedobjectid?: string;
+  track?: boolean;
+  versionnumber?: number;
 }

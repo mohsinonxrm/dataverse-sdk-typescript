@@ -9,10 +9,10 @@ import type { msdyn_GetDynamicFieldsForActionTypeResponse as msdyn_GetDynamicFie
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_GetDynamicFieldsForActionTypeRequestParameters {
-  correlationId: string;
-  workflowId: string;
   secondaryActionType: string;
   actionType: string;
+  correlationId: string;
+  workflowId: string;
 }
 
 /**
@@ -34,10 +34,10 @@ export class msdyn_GetDynamicFieldsForActionTypeRequest
     const url = `${baseUrl}/msdyn_GetDynamicFieldsForActionType`;
 
     const body = requestBody({
-      correlationId: this.Parameters.correlationId,
-      workflowId: this.Parameters.workflowId,
       secondaryActionType: this.Parameters.secondaryActionType,
       actionType: this.Parameters.actionType,
+      correlationId: this.Parameters.correlationId,
+      workflowId: this.Parameters.workflowId,
     });
 
     return {

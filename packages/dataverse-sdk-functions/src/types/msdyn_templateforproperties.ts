@@ -2,24 +2,24 @@
  * msdyn_templateforproperties entity type
  */
 export interface msdyn_templateforproperties {
-  msdyn_type?: number;
-  createdon?: string;
-  _owningteam_value?: string;
-  _modifiedby_value?: string;
-  timezoneruleversionnumber?: number;
-  _modifiedonbehalfby_value?: string;
-  modifiedon?: string;
   _createdby_value?: string;
-  statecode?: number;
-  utcconversiontimezonecode?: number;
-  overriddencreatedon?: string;
-  importsequencenumber?: number;
-  _owninguser_value?: string;
-  versionnumber?: number;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
   _ownerid_value?: string;
   _owningbusinessunit_value?: string;
-  _createdonbehalfby_value?: string;
-  msdyn_templateforpropertiesid?: string;
-  statuscode?: number;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
   msdyn_name?: string;
+  msdyn_templateforpropertiesid?: string;
+  msdyn_type?: number;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

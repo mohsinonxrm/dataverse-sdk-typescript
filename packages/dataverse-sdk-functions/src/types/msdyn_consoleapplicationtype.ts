@@ -2,23 +2,23 @@
  * msdyn_consoleapplicationtype entity type
  */
 export interface msdyn_consoleapplicationtype {
-  _createdonbehalfby_value?: string;
-  _modifiedonbehalfby_value?: string;
-  msdyn_templateparameters?: string;
-  statecode?: number;
-  importsequencenumber?: number;
-  timezoneruleversionnumber?: number;
-  overriddencreatedon?: string;
-  msdyn_consoleapplicationtypeid?: string;
-  modifiedon?: string;
-  _organizationid_value?: string;
-  msdyn_displayname?: string;
   _createdby_value?: string;
-  statuscode?: number;
+  _createdonbehalfby_value?: string;
   _modifiedby_value?: string;
-  versionnumber?: number;
-  msdyn_name?: string;
-  utcconversiontimezonecode?: number;
-  msdyn_renderingorder?: number;
+  _modifiedonbehalfby_value?: string;
+  _organizationid_value?: string;
   createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_consoleapplicationtypeid?: string;
+  msdyn_displayname?: string;
+  msdyn_name?: string;
+  msdyn_renderingorder?: number;
+  msdyn_templateparameters?: string;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

@@ -2,29 +2,29 @@
  * plugintracelog entity type
  */
 export interface plugintracelog {
-  secureconfiguration?: string;
-  organizationid?: string;
-  persistencekey?: string;
   _createdby_value?: string;
-  performanceexecutionduration?: number;
-  createdon?: string;
-  requestid?: string;
-  plugintracelogid?: string;
-  performanceconstructorstarttime?: string;
-  correlationid?: string;
   _createdonbehalfby_value?: string;
-  pluginstepid?: string;
+  configuration?: string;
+  correlationid?: string;
+  createdon?: string;
+  depth?: number;
+  exceptiondetails?: string;
+  issystemcreated?: boolean;
+  messageblock?: string;
+  messagename?: string;
   mode?: number;
   operationtype?: number;
-  depth?: number;
+  organizationid?: string;
   performanceconstructorduration?: number;
+  performanceconstructorstarttime?: string;
+  performanceexecutionduration?: number;
   performanceexecutionstarttime?: string;
-  configuration?: string;
-  messagename?: string;
-  profile?: string;
+  persistencekey?: string;
+  pluginstepid?: string;
+  plugintracelogid?: string;
   primaryentity?: string;
+  profile?: string;
+  requestid?: string;
+  secureconfiguration?: string;
   typename?: string;
-  issystemcreated?: boolean;
-  exceptiondetails?: string;
-  messageblock?: string;
 }

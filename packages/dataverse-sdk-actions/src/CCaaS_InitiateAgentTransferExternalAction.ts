@@ -13,12 +13,12 @@ export interface CCaaS_InitiateAgentTransferExternalResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_InitiateAgentTransferExternalActionParameters {
-  ExternalParticipantChannel: string;
-  ExternalParticipantChannelType: string;
-  AgentName?: string;
-  ExternalReferenceId?: string;
   ExternalReferenceType?: string;
   ApiVersion: string;
+  ExternalReferenceId?: string;
+  AgentName?: string;
+  ExternalParticipantChannel: string;
+  ExternalParticipantChannelType: string;
 }
 
 /**
@@ -40,12 +40,12 @@ export class CCaaS_InitiateAgentTransferExternalAction implements Executable<CCa
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_InitiateAgentTransferExternal`;
 
     const body = requestBody({
-      ExternalParticipantChannel: this.parameters.ExternalParticipantChannel,
-      ExternalParticipantChannelType: this.parameters.ExternalParticipantChannelType,
-      AgentName: this.parameters.AgentName,
-      ExternalReferenceId: this.parameters.ExternalReferenceId,
       ExternalReferenceType: this.parameters.ExternalReferenceType,
       ApiVersion: this.parameters.ApiVersion,
+      ExternalReferenceId: this.parameters.ExternalReferenceId,
+      AgentName: this.parameters.AgentName,
+      ExternalParticipantChannel: this.parameters.ExternalParticipantChannel,
+      ExternalParticipantChannelType: this.parameters.ExternalParticipantChannelType,
     });
 
     return {

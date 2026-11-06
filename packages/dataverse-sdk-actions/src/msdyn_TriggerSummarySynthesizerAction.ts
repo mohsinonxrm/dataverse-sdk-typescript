@@ -5,8 +5,8 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_TriggerSummarySynthesizer action
  */
 export interface msdyn_TriggerSummarySynthesizerResponse {
-  IsSuccess: boolean;
   ErrorMessage: string;
+  IsSuccess: boolean;
 }
 
 /**

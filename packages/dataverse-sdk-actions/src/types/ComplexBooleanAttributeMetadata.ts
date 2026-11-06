@@ -7,6 +7,6 @@ import type { ComplexBooleanOptionSetMetadata } from "./ComplexBooleanOptionSetM
 export interface ComplexBooleanAttributeMetadata extends ComplexAttributeMetadata {
   DefaultValue?: boolean;
   FormulaDefinition?: string;
-  SourceTypeMask?: number;
   OptionSet?: ComplexBooleanOptionSetMetadata;
+  SourceTypeMask?: number;
 }

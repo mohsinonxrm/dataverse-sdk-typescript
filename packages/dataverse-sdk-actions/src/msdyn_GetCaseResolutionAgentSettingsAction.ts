@@ -15,7 +15,9 @@ export interface msdyn_GetCaseResolutionAgentSettingsResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_GetCaseResolutionAgentSettingsActionParameters {
+  RunId?: string;
   Entity?: EntityReference | AnyEntityPayload;
+  SkipEnablementChecks?: boolean;
 }
 
 /**
@@ -32,7 +34,9 @@ export class msdyn_GetCaseResolutionAgentSettingsAction implements Executable<ms
     const url = `${baseUrl}/msdyn_GetCaseResolutionAgentSettings`;
 
     const body = requestBody({
+      RunId: this.parameters.RunId,
       Entity: this.parameters.Entity,
+      SkipEnablementChecks: this.parameters.SkipEnablementChecks,
     });
 
     return {

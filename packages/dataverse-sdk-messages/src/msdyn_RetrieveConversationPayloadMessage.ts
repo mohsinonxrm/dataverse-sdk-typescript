@@ -10,6 +10,7 @@ import type { msdyn_RetrieveConversationPayloadResponse as msdyn_RetrieveConvers
  */
 export interface msdyn_RetrieveConversationPayloadRequestParameters {
   ConversationId: string;
+  ParticipantScope?: number;
 }
 
 /**
@@ -32,6 +33,7 @@ export class msdyn_RetrieveConversationPayloadRequest
 
     const body = requestBody({
       ConversationId: this.Parameters.ConversationId,
+      ParticipantScope: this.Parameters.ParticipantScope,
     });
 
     return {

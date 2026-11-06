@@ -7,10 +7,11 @@ import type { AnyEntityPayload } from "./types/EntityPayload.js";
  * Response from msdyn_EmailTemplateRecommendation action
  */
 export interface msdyn_EmailTemplateRecommendationResponse {
+  citations: string;
   diagnosticInfo: string;
   emailTemplates: string;
-  recommendedTemplate: string;
   generatedEmailString: string;
+  recommendedTemplate: string;
 }
 
 /**
@@ -21,15 +22,16 @@ export interface msdyn_EmailTemplateRecommendationActionParameters {
   Headers?: number;
   customerIntent: string;
   filters?: string;
-  templateFiltersInString: string;
-  emailString: string;
-  isTemplateResponse?: boolean;
   transactionId: string;
   multiturnPayload?: string;
+  templateId?: string;
   emailContextData?: string;
+  templateFiltersInString: string;
+  entityReference?: EntityReference | AnyEntityPayload;
+  emailString: string;
+  isTemplateResponse?: boolean;
   copilotRequestParameters: string;
   emailId: string;
-  entityReference?: EntityReference | AnyEntityPayload;
 }
 
 /**
@@ -47,15 +49,16 @@ export class msdyn_EmailTemplateRecommendationAction implements Executable<msdyn
       Headers: this.parameters.Headers,
       customerIntent: this.parameters.customerIntent,
       filters: this.parameters.filters,
-      templateFiltersInString: this.parameters.templateFiltersInString,
-      emailString: this.parameters.emailString,
-      isTemplateResponse: this.parameters.isTemplateResponse,
       transactionId: this.parameters.transactionId,
       multiturnPayload: this.parameters.multiturnPayload,
+      templateId: this.parameters.templateId,
       emailContextData: this.parameters.emailContextData,
+      templateFiltersInString: this.parameters.templateFiltersInString,
+      entityReference: this.parameters.entityReference,
+      emailString: this.parameters.emailString,
+      isTemplateResponse: this.parameters.isTemplateResponse,
       copilotRequestParameters: this.parameters.copilotRequestParameters,
       emailId: this.parameters.emailId,
-      entityReference: this.parameters.entityReference,
     });
 
     return {

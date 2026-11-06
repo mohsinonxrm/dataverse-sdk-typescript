@@ -9,12 +9,12 @@ import type { msdyn_DraftEmailForCaseResponse as msdyn_DraftEmailForCaseResponse
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_DraftEmailForCaseRequestParameters {
-  additionalInstructions?: string;
+  context_CaseId?: string;
+  senderName: string;
   context_CaseNotes?: string;
   context_CaseTitle?: string;
-  context_CaseId?: string;
   recipientName: string;
-  senderName: string;
+  additionalInstructions?: string;
 }
 
 /**
@@ -36,12 +36,12 @@ export class msdyn_DraftEmailForCaseRequest
     const url = `${baseUrl}/msdyn_DraftEmailForCase`;
 
     const body = requestBody({
-      additionalInstructions: this.Parameters.additionalInstructions,
+      context_CaseId: this.Parameters.context_CaseId,
+      senderName: this.Parameters.senderName,
       context_CaseNotes: this.Parameters.context_CaseNotes,
       context_CaseTitle: this.Parameters.context_CaseTitle,
-      context_CaseId: this.Parameters.context_CaseId,
       recipientName: this.Parameters.recipientName,
-      senderName: this.Parameters.senderName,
+      additionalInstructions: this.Parameters.additionalInstructions,
     });
 
     return {

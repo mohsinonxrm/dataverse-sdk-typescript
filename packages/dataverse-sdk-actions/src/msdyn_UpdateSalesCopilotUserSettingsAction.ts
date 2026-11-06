@@ -5,8 +5,8 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_UpdateSalesCopilotUserSettings action
  */
 export interface msdyn_UpdateSalesCopilotUserSettingsResponse {
-  msdyn_status: number;
   msdyn_error: string;
+  msdyn_status: number;
 }
 
 /**

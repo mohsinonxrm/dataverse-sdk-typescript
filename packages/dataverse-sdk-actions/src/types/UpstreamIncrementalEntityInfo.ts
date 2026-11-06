@@ -7,6 +7,6 @@ import type { UpstreamIncrementalEntityVersionInfo } from "./UpstreamIncremental
 export interface UpstreamIncrementalEntityInfo {
   DatasourceName?: string;
   EntityName?: string;
-  VersionInfo?: UpstreamIncrementalEntityVersionInfo;
   TimestampInfo?: UpstreamIncrementalEntityTimestampInfo;
+  VersionInfo?: UpstreamIncrementalEntityVersionInfo;
 }

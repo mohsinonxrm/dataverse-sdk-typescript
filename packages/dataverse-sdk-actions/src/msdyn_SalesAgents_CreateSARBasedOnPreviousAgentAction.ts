@@ -13,9 +13,9 @@ export interface msdyn_SalesAgents_CreateSARBasedOnPreviousAgentResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesAgents_CreateSARBasedOnPreviousAgentActionParameters {
-  msdyn_SalesAgentType: number;
   msdyn_PreviousSarRecordId: string;
   msdyn_TrackingId?: string;
+  msdyn_SalesAgentType: number;
 }
 
 /**
@@ -32,9 +32,9 @@ export class msdyn_SalesAgents_CreateSARBasedOnPreviousAgentAction implements Ex
     const url = `${baseUrl}/msdyn_SalesAgents_CreateSARBasedOnPreviousAgent`;
 
     const body = requestBody({
-      msdyn_SalesAgentType: this.parameters.msdyn_SalesAgentType,
       msdyn_PreviousSarRecordId: this.parameters.msdyn_PreviousSarRecordId,
       msdyn_TrackingId: this.parameters.msdyn_TrackingId,
+      msdyn_SalesAgentType: this.parameters.msdyn_SalesAgentType,
     });
 
     return {

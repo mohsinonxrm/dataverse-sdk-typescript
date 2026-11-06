@@ -15,8 +15,8 @@ export interface CCaaS_BroadcastMessageResponse {
 export interface CCaaS_BroadcastMessageActionParameters {
   Message: string;
   Title: string;
-  ApiVersion: string;
   ConversationIds: string[];
+  ApiVersion: string;
 }
 
 /**
@@ -33,8 +33,8 @@ export class CCaaS_BroadcastMessageAction implements Executable<CCaaS_BroadcastM
     const body = requestBody({
       Message: this.parameters.Message,
       Title: this.parameters.Title,
-      ApiVersion: this.parameters.ApiVersion,
       ConversationIds: this.parameters.ConversationIds,
+      ApiVersion: this.parameters.ApiVersion,
     });
 
     return {

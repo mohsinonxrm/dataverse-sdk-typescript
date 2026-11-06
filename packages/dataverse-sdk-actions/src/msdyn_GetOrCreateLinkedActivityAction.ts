@@ -5,8 +5,8 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_GetOrCreateLinkedActivity action
  */
 export interface msdyn_GetOrCreateLinkedActivityResponse {
-  LinkedActivityId: string;
   IsLinkedActivityCreated: boolean;
+  LinkedActivityId: string;
 }
 
 /**

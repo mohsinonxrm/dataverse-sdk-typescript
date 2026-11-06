@@ -2,23 +2,23 @@
  * searchattributesettings entity type
  */
 export interface searchattributesettings {
-  modifiedon?: string;
-  statecode?: number;
-  searchattributesettingsid?: string;
   _createdby_value?: string;
-  importsequencenumber?: number;
-  _modifiedby_value?: string;
-  attributename?: string;
   _createdonbehalfby_value?: string;
-  versionnumber?: number;
-  timezoneruleversionnumber?: number;
-  createdon?: string;
-  statuscode?: number;
-  name?: string;
+  _modifiedby_value?: string;
   _modifiedonbehalfby_value?: string;
-  overriddencreatedon?: string;
-  entityname?: string;
-  settings?: string;
   _organizationid_value?: string;
+  attributename?: string;
+  createdon?: string;
+  entityname?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  name?: string;
+  overriddencreatedon?: string;
+  searchattributesettingsid?: string;
+  settings?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
   utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

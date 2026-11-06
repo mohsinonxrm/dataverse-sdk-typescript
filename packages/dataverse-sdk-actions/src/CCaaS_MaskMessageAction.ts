@@ -13,10 +13,10 @@ export interface CCaaS_MaskMessageResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_MaskMessageActionParameters {
+  ConversationId: string;
   WidgetId: string;
   MessageId: string;
   ApiVersion: string;
-  ConversationId: string;
 }
 
 /**
@@ -31,10 +31,10 @@ export class CCaaS_MaskMessageAction implements Executable<CCaaS_MaskMessageResp
     const url = `${baseUrl}/CCaaS_MaskMessage`;
 
     const body = requestBody({
+      ConversationId: this.parameters.ConversationId,
       WidgetId: this.parameters.WidgetId,
       MessageId: this.parameters.MessageId,
       ApiVersion: this.parameters.ApiVersion,
-      ConversationId: this.parameters.ConversationId,
     });
 
     return {

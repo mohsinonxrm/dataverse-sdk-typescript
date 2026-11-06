@@ -6,8 +6,8 @@ import { requestBody } from "./internal/requestBody.js";
  */
 export interface PowerAutomateProxyResponse {
   HttpStatusCode: number;
-  ResponseHeaders: string;
   ResponseBody: string;
+  ResponseHeaders: string;
 }
 
 /**

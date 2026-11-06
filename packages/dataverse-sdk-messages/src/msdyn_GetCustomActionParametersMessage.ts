@@ -10,8 +10,8 @@ import type { msdyn_GetCustomActionParametersResponse as msdyn_GetCustomActionPa
  */
 export interface msdyn_GetCustomActionParametersRequestParameters {
   workflowId: string;
-  customAction: string;
   correlationId: string;
+  customAction: string;
 }
 
 /**
@@ -34,8 +34,8 @@ export class msdyn_GetCustomActionParametersRequest
 
     const body = requestBody({
       workflowId: this.Parameters.workflowId,
-      customAction: this.Parameters.customAction,
       correlationId: this.Parameters.correlationId,
+      customAction: this.Parameters.customAction,
     });
 
     return {

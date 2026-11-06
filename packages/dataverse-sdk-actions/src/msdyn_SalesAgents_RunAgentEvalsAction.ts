@@ -14,11 +14,11 @@ export interface msdyn_SalesAgents_RunAgentEvalsResponse {
  */
 export interface msdyn_SalesAgents_RunAgentEvalsActionParameters {
   msdyn_MicroAgent: string;
-  msdyn_AgentOutput: string;
-  msdyn_AgentInput: string;
-  msdyn_SalesAgent: string;
   msdyn_OrchestrationId: string;
+  msdyn_SalesAgent: string;
   msdyn_RecordId: string;
+  msdyn_AgentInput: string;
+  msdyn_AgentOutput: string;
 }
 
 /**
@@ -34,11 +34,11 @@ export class msdyn_SalesAgents_RunAgentEvalsAction implements Executable<msdyn_S
 
     const body = requestBody({
       msdyn_MicroAgent: this.parameters.msdyn_MicroAgent,
-      msdyn_AgentOutput: this.parameters.msdyn_AgentOutput,
-      msdyn_AgentInput: this.parameters.msdyn_AgentInput,
-      msdyn_SalesAgent: this.parameters.msdyn_SalesAgent,
       msdyn_OrchestrationId: this.parameters.msdyn_OrchestrationId,
+      msdyn_SalesAgent: this.parameters.msdyn_SalesAgent,
       msdyn_RecordId: this.parameters.msdyn_RecordId,
+      msdyn_AgentInput: this.parameters.msdyn_AgentInput,
+      msdyn_AgentOutput: this.parameters.msdyn_AgentOutput,
     });
 
     return {

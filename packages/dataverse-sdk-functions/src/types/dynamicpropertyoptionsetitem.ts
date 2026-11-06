@@ -2,25 +2,25 @@
  * dynamicpropertyoptionsetitem entity type
  */
 export interface dynamicpropertyoptionsetitem {
-  dynamicpropertyoptionname?: string;
-  _modifiedonbehalfby_value?: string;
-  _transactioncurrencyid_value?: string;
-  timezoneruleversionnumber?: number;
-  _modifiedby_value?: string;
-  dynamicpropertyoptionsetvalueid?: string;
-  importsequencenumber?: number;
-  exchangerate?: number;
-  _dynamicpropertyid_value?: string;
-  versionnumber?: number;
-  dynamicpropertyoptiondescription?: string;
-  createdon?: string;
-  overriddencreatedon?: string;
-  _organizationid_value?: string;
-  utcconversiontimezonecode?: number;
   _createdby_value?: string;
-  dmtimportstate?: number;
-  dynamicpropertyoptionvalue?: number;
   _createdonbehalfby_value?: string;
+  _dynamicpropertyid_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _organizationid_value?: string;
+  _transactioncurrencyid_value?: string;
+  createdon?: string;
+  dmtimportstate?: number;
+  dynamicpropertyoptiondescription?: string;
+  dynamicpropertyoptionname?: string;
+  dynamicpropertyoptionsetvalueid?: string;
   dynamicpropertyoptionsetvaluesequencenumber?: number;
+  dynamicpropertyoptionvalue?: number;
+  exchangerate?: number;
+  importsequencenumber?: number;
   modifiedon?: string;
+  overriddencreatedon?: string;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

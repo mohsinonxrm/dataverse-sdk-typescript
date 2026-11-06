@@ -13,11 +13,11 @@ export interface msdyn_editSalesSequenceExperimentStatusResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_editSalesSequenceExperimentStatusActionParameters {
-  msdyn_winnerOrDefault: string;
-  msdyn_experimentKey: string;
-  msdyn_expiryTime?: string;
-  msdyn_isDeactivated?: boolean;
   msdyn_experimentVersionRecordId: string;
+  msdyn_isDeactivated?: boolean;
+  msdyn_expiryTime?: string;
+  msdyn_experimentKey: string;
+  msdyn_winnerOrDefault: string;
 }
 
 /**
@@ -34,11 +34,11 @@ export class msdyn_editSalesSequenceExperimentStatusAction implements Executable
     const url = `${baseUrl}/msdyn_editSalesSequenceExperimentStatus`;
 
     const body = requestBody({
-      msdyn_winnerOrDefault: this.parameters.msdyn_winnerOrDefault,
-      msdyn_experimentKey: this.parameters.msdyn_experimentKey,
-      msdyn_expiryTime: this.parameters.msdyn_expiryTime,
-      msdyn_isDeactivated: this.parameters.msdyn_isDeactivated,
       msdyn_experimentVersionRecordId: this.parameters.msdyn_experimentVersionRecordId,
+      msdyn_isDeactivated: this.parameters.msdyn_isDeactivated,
+      msdyn_expiryTime: this.parameters.msdyn_expiryTime,
+      msdyn_experimentKey: this.parameters.msdyn_experimentKey,
+      msdyn_winnerOrDefault: this.parameters.msdyn_winnerOrDefault,
     });
 
     return {

@@ -13,11 +13,11 @@ export interface msdyn_AIBRealTimePredictResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_AIBRealTimePredictActionParameters {
-  Filters: string;
-  SuggestionFor: string;
-  Context: string;
-  Version: string;
   SuggestionType: string;
+  Filters: string;
+  Context: string;
+  SuggestionFor: string;
+  Version: string;
 }
 
 /**
@@ -32,11 +32,11 @@ export class msdyn_AIBRealTimePredictAction implements Executable<msdyn_AIBRealT
     const url = `${baseUrl}/msdyn_AIBRealTimePredict`;
 
     const body = requestBody({
-      Filters: this.parameters.Filters,
-      SuggestionFor: this.parameters.SuggestionFor,
-      Context: this.parameters.Context,
-      Version: this.parameters.Version,
       SuggestionType: this.parameters.SuggestionType,
+      Filters: this.parameters.Filters,
+      Context: this.parameters.Context,
+      SuggestionFor: this.parameters.SuggestionFor,
+      Version: this.parameters.Version,
     });
 
     return {

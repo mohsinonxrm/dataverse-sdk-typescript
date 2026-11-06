@@ -13,8 +13,8 @@ export interface msdyn_DCA_SendOutreachEmailResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_DCA_SendOutreachEmailActionParameters {
-  msdyn_TrackingId?: string;
   msdyn_SalesAgentRun: string;
+  msdyn_TrackingId?: string;
 }
 
 /**
@@ -29,8 +29,8 @@ export class msdyn_DCA_SendOutreachEmailAction implements Executable<msdyn_DCA_S
     const url = `${baseUrl}/msdyn_DCA_SendOutreachEmail`;
 
     const body = requestBody({
-      msdyn_TrackingId: this.parameters.msdyn_TrackingId,
       msdyn_SalesAgentRun: this.parameters.msdyn_SalesAgentRun,
+      msdyn_TrackingId: this.parameters.msdyn_TrackingId,
     });
 
     return {

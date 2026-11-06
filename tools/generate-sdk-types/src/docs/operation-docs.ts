@@ -152,12 +152,20 @@ export function renderOperationBlocks(markdown: string, root: string): string {
       // Blank lines around the list, as prettier formats it
       return `<!-- operations:${kind}\n${spec}-->\n\n${lines.join("\n")}\n\n<!-- /operations -->`;
     })
-    .replace(COUNT, (_count, kind: OperationKind) => {
-      return `<!-- count:${kind} -->${operationCount(root, kind).toLocaleString("en-US")}<!-- /count -->`;
+    .replace(COUNT, (_count, kind: OperationKind | "operations") => {
+      // `operations`: the three packages together (#293)
+      const count =
+        kind === "operations"
+          ? (["actions", "functions", "messages"] as const).reduce(
+              (sum, k) => sum + operationCount(root, k),
+              0
+            )
+          : operationCount(root, kind);
+      return `<!-- count:${kind} -->${count.toLocaleString("en-US")}<!-- /count -->`;
     });
 }
 
-const COUNT = /<!-- count:(actions|functions|messages) -->[^<]*<!-- \/count -->/g;
+const COUNT = /<!-- count:(actions|functions|messages|operations) -->[^<]*<!-- \/count -->/g;
 
 /** How many operation classes a package exports: one per operation file its index re-exports. */
 export function operationCount(root: string, kind: OperationKind): number {
@@ -169,6 +177,8 @@ export function operationCount(root: string, kind: OperationKind): number {
 
 /** The docs about the operation packages, relative to the repository root. */
 export const OPERATION_DOCS = [
+  "README.md",
+  "docs/SDK-USAGE-PATTERNS.md",
   "docs/mapping/bulk-vs-batch.md",
   "docs/mapping/message-to-webapi.md",
   "docs/mapping/supported-actions.md",

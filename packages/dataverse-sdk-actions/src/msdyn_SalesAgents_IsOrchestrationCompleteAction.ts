@@ -16,6 +16,7 @@ export interface msdyn_SalesAgents_IsOrchestrationCompleteActionParameters {
   msdyn_TrackingId?: string;
   msdyn_AgentType: number;
   msdyn_SalesAgentType: number;
+  msdyn_MacroAgentOrchestrationId?: string;
 }
 
 /**
@@ -35,6 +36,7 @@ export class msdyn_SalesAgents_IsOrchestrationCompleteAction implements Executab
       msdyn_TrackingId: this.parameters.msdyn_TrackingId,
       msdyn_AgentType: this.parameters.msdyn_AgentType,
       msdyn_SalesAgentType: this.parameters.msdyn_SalesAgentType,
+      msdyn_MacroAgentOrchestrationId: this.parameters.msdyn_MacroAgentOrchestrationId,
     });
 
     return {

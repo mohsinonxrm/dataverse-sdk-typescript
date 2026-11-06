@@ -13,8 +13,8 @@ export interface msdynmkt_getdigitalassetcdnurlv2Response {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdynmkt_getdigitalassetcdnurlv2ActionParameters {
-  msdynmkt_filetype: string;
   msdynmkt_fileid: string;
+  msdynmkt_filetype: string;
 }
 
 /**
@@ -29,8 +29,8 @@ export class msdynmkt_getdigitalassetcdnurlv2Action implements Executable<msdynm
     const url = `${baseUrl}/msdynmkt_getdigitalassetcdnurlv2`;
 
     const body = requestBody({
-      msdynmkt_filetype: this.parameters.msdynmkt_filetype,
       msdynmkt_fileid: this.parameters.msdynmkt_fileid,
+      msdynmkt_filetype: this.parameters.msdynmkt_filetype,
     });
 
     return {

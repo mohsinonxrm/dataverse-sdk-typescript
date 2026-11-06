@@ -14,10 +14,11 @@ export interface msdyn_SalesAgents_SendEmailReplyResponse {
  */
 export interface msdyn_SalesAgents_SendEmailReplyActionParameters {
   msdyn_TrackingId?: string;
-  msdyn_ParentActivityId: string;
-  msdyn_AgentProfileId: string;
   msdyn_Emailbody: string;
   msdyn_IsDelayedSend?: boolean;
+  msdyn_AgentProfileId: string;
+  msdyn_ParentActivityId: string;
+  msdyn_IsEmailFollowed?: boolean;
 }
 
 /**
@@ -33,10 +34,11 @@ export class msdyn_SalesAgents_SendEmailReplyAction implements Executable<msdyn_
 
     const body = requestBody({
       msdyn_TrackingId: this.parameters.msdyn_TrackingId,
-      msdyn_ParentActivityId: this.parameters.msdyn_ParentActivityId,
-      msdyn_AgentProfileId: this.parameters.msdyn_AgentProfileId,
       msdyn_Emailbody: this.parameters.msdyn_Emailbody,
       msdyn_IsDelayedSend: this.parameters.msdyn_IsDelayedSend,
+      msdyn_AgentProfileId: this.parameters.msdyn_AgentProfileId,
+      msdyn_ParentActivityId: this.parameters.msdyn_ParentActivityId,
+      msdyn_IsEmailFollowed: this.parameters.msdyn_IsEmailFollowed,
     });
 
     return {

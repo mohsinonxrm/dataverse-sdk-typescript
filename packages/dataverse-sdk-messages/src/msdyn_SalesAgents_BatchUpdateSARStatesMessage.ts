@@ -8,9 +8,9 @@ import { requestBody } from "./internal/requestBody.js";
  */
 export interface msdyn_SalesAgents_BatchUpdateSARStatesRequestParameters {
   msdyn_StateCode: number;
+  msdyn_SalesAgentRunIds: string[];
   msdyn_StatusCode: number;
   msdyn_TrackingId?: string;
-  msdyn_SalesAgentRunIds: string[];
 }
 
 /**
@@ -33,9 +33,9 @@ export class msdyn_SalesAgents_BatchUpdateSARStatesRequest
 
     const body = requestBody({
       msdyn_StateCode: this.Parameters.msdyn_StateCode,
+      msdyn_SalesAgentRunIds: this.Parameters.msdyn_SalesAgentRunIds,
       msdyn_StatusCode: this.Parameters.msdyn_StatusCode,
       msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
-      msdyn_SalesAgentRunIds: this.Parameters.msdyn_SalesAgentRunIds,
     });
 
     return {

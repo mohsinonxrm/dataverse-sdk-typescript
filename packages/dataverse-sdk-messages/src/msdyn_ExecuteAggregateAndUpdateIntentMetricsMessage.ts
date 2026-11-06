@@ -9,13 +9,13 @@ import type { msdyn_ExecuteAggregateAndUpdateIntentMetricsResponse as msdyn_Exec
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_ExecuteAggregateAndUpdateIntentMetricsRequestParameters {
-  msdyn_trackingdate: string;
-  msdyn_shouldupdateintents?: boolean;
-  msdyn_pagenumber: number;
   msdyn_batchsize?: number;
-  msdyn_parallelexecutions?: number;
-  msdyn_pagingcookie?: string;
+  msdyn_pagenumber: number;
   msdyn_trackingid: string;
+  msdyn_shouldupdateintents?: boolean;
+  msdyn_trackingdate: string;
+  msdyn_pagingcookie?: string;
+  msdyn_parallelexecutions?: number;
 }
 
 /**
@@ -37,13 +37,13 @@ export class msdyn_ExecuteAggregateAndUpdateIntentMetricsRequest
     const url = `${baseUrl}/msdyn_ExecuteAggregateAndUpdateIntentMetrics`;
 
     const body = requestBody({
-      msdyn_trackingdate: this.Parameters.msdyn_trackingdate,
-      msdyn_shouldupdateintents: this.Parameters.msdyn_shouldupdateintents,
-      msdyn_pagenumber: this.Parameters.msdyn_pagenumber,
       msdyn_batchsize: this.Parameters.msdyn_batchsize,
-      msdyn_parallelexecutions: this.Parameters.msdyn_parallelexecutions,
-      msdyn_pagingcookie: this.Parameters.msdyn_pagingcookie,
+      msdyn_pagenumber: this.Parameters.msdyn_pagenumber,
       msdyn_trackingid: this.Parameters.msdyn_trackingid,
+      msdyn_shouldupdateintents: this.Parameters.msdyn_shouldupdateintents,
+      msdyn_trackingdate: this.Parameters.msdyn_trackingdate,
+      msdyn_pagingcookie: this.Parameters.msdyn_pagingcookie,
+      msdyn_parallelexecutions: this.Parameters.msdyn_parallelexecutions,
     });
 
     return {

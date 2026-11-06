@@ -9,10 +9,10 @@ import type { msdyn_get_required_fieldsResponse as msdyn_get_required_fieldsResp
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_get_required_fieldsRequestParameters {
-  table_id: string;
-  dataset_value: string;
   connection_id: string;
   connector_id: string;
+  table_id: string;
+  dataset_value: string;
 }
 
 /**
@@ -34,10 +34,10 @@ export class msdyn_get_required_fieldsRequest
     const url = `${baseUrl}/msdyn_get_required_fields`;
 
     const body = requestBody({
-      table_id: this.Parameters.table_id,
-      dataset_value: this.Parameters.dataset_value,
       connection_id: this.Parameters.connection_id,
       connector_id: this.Parameters.connector_id,
+      table_id: this.Parameters.table_id,
+      dataset_value: this.Parameters.dataset_value,
     });
 
     return {

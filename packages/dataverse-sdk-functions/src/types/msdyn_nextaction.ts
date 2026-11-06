@@ -2,26 +2,26 @@
  * msdyn_nextaction entity type
  */
 export interface msdyn_nextaction {
+  _createdby_value?: string;
+  _createdonbehalfby_value?: string;
   _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _msdyn_regarding_value?: string;
+  _organizationid_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
   modifiedon?: string;
+  msdyn_actiondata?: string;
+  msdyn_actiontype?: number;
   msdyn_isfullautonomous?: boolean;
+  msdyn_name?: string;
+  msdyn_nextactionid?: string;
+  msdyn_validfrom?: string;
+  msdyn_validto?: string;
+  overriddencreatedon?: string;
   statecode?: number;
   statuscode?: number;
-  _organizationid_value?: string;
-  msdyn_name?: string;
-  _createdonbehalfby_value?: string;
-  overriddencreatedon?: string;
-  _createdby_value?: string;
-  _msdyn_regarding_value?: string;
-  msdyn_actiontype?: number;
-  _modifiedonbehalfby_value?: string;
-  msdyn_validto?: string;
-  utcconversiontimezonecode?: number;
-  msdyn_nextactionid?: string;
-  importsequencenumber?: number;
   timezoneruleversionnumber?: number;
-  msdyn_actiondata?: string;
-  msdyn_validfrom?: string;
+  utcconversiontimezonecode?: number;
   versionnumber?: number;
-  createdon?: string;
 }

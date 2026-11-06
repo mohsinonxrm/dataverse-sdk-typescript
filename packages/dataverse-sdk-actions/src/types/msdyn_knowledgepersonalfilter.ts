@@ -2,27 +2,27 @@
  * msdyn_knowledgepersonalfilter entity type
  */
 export interface msdyn_knowledgepersonalfilter {
-  timezoneruleversionnumber?: number;
-  _owningteam_value?: string;
-  msdyn_attributename?: string;
-  _owninguser_value?: string;
-  createdon?: string;
-  _owningbusinessunit_value?: string;
   _createdby_value?: string;
-  msdyn_knowledgepersonalfilterid?: string;
-  statuscode?: number;
-  _ownerid_value?: string;
-  overriddencreatedon?: string;
-  msdyn_enabled?: boolean;
-  importsequencenumber?: number;
-  msdyn_preferredvalues?: string;
-  statecode?: number;
-  versionnumber?: number;
-  _modifiedonbehalfby_value?: string;
-  msdyn_name?: string;
-  utcconversiontimezonecode?: number;
-  modifiedon?: string;
-  msdyn_entityname?: string;
   _createdonbehalfby_value?: string;
   _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_attributename?: string;
+  msdyn_enabled?: boolean;
+  msdyn_entityname?: string;
+  msdyn_knowledgepersonalfilterid?: string;
+  msdyn_name?: string;
+  msdyn_preferredvalues?: string;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

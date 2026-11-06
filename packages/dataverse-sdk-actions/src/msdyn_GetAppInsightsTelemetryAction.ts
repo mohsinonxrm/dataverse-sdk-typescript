@@ -13,9 +13,9 @@ export interface msdyn_GetAppInsightsTelemetryResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_GetAppInsightsTelemetryActionParameters {
-  msdyn_Query: string;
   msdyn_Timespan?: string;
   msdyn_LiveWorkItemIds?: string;
+  msdyn_Query: string;
 }
 
 /**
@@ -30,9 +30,9 @@ export class msdyn_GetAppInsightsTelemetryAction implements Executable<msdyn_Get
     const url = `${baseUrl}/msdyn_GetAppInsightsTelemetry`;
 
     const body = requestBody({
-      msdyn_Query: this.parameters.msdyn_Query,
       msdyn_Timespan: this.parameters.msdyn_Timespan,
       msdyn_LiveWorkItemIds: this.parameters.msdyn_LiveWorkItemIds,
+      msdyn_Query: this.parameters.msdyn_Query,
     });
 
     return {

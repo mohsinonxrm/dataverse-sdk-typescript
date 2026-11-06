@@ -14,8 +14,8 @@ import type {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_MobileAppBuildStatusRequestParameters {
-  OperationId: string;
   msdyn_MobileApp: EntityReference | EntityPayload<msdyn_mobileapp>;
+  OperationId: string;
 }
 
 /**
@@ -37,8 +37,8 @@ export class msdyn_MobileAppBuildStatusRequest
     const url = `${baseUrl}/msdyn_MobileAppBuildStatus`;
 
     const body = requestBody({
-      OperationId: this.Parameters.OperationId,
       msdyn_MobileApp: this.Parameters.msdyn_MobileApp,
+      OperationId: this.Parameters.OperationId,
     });
 
     return {

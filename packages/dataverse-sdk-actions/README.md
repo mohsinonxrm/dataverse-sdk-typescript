@@ -4,7 +4,7 @@ Typed Web API actions for Dataverse. Actions are operations with side effects th
 
 ## Features
 
-- ✅ **1,356 typed actions** - Complete CSDL-generated coverage of all Dataverse Web API actions
+- ✅ **<!-- count:actions -->1,556<!-- /count --> typed actions** - Complete CSDL-generated coverage of all Dataverse Web API actions
 - ✅ **Business operations** - ExecuteWorkflow, WinOpportunity, Merge, and hundreds more
 - ✅ **Bulk operations** - CreateMultiple, UpdateMultiple, UpsertMultiple, DeleteMultiple
 - ✅ **File operations** - Chunked upload/download with InitializeFileBlocksUpload, UploadBlock, CommitFileBlocksUpload
@@ -84,7 +84,7 @@ await client.execute(
 
 ## Action Categories
 
-The package has <!-- count:actions -->1,360<!-- /count --> typed actions, including solution-specific ones
+The package has <!-- count:actions -->1,556<!-- /count --> typed actions, including solution-specific ones
 (`msdyn_*`, `msdynmkt_*`, `CCaaS_*`, …) for the solutions installed in the org it was generated
 from. This list is generated from the package source (`pnpm --filter generate-sdk-types docs`);
 [supported-actions.md](../../docs/mapping/supported-actions.md) has more. There is no `Assign` or

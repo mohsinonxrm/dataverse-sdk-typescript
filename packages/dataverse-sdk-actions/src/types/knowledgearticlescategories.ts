@@ -2,8 +2,8 @@
  * knowledgearticlescategories entity type
  */
 export interface knowledgearticlescategories {
-  knowledgearticlecategoryid?: string;
   categoryid?: string;
+  knowledgearticlecategoryid?: string;
   knowledgearticleid?: string;
   versionnumber?: number;
 }

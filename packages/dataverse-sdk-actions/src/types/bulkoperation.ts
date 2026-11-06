@@ -5,15 +5,16 @@ import type { activitypointer } from "./activitypointer.js";
  */
 export interface bulkoperation extends activitypointer {
   bulkoperationnumber?: string;
+  createdrecordtypecode?: number;
+  errornumber?: number;
+  failurecount?: number;
   importsequencenumber?: number;
+  operationtypecode?: number;
+  overriddencreatedon?: string;
   parameters?: string;
+  parametersv2?: string;
   successcount?: number;
   targetedrecordtypecode?: number;
-  operationtypecode?: number;
-  workflowinfo?: string;
   targetmemberscount?: number;
-  overriddencreatedon?: string;
-  errornumber?: number;
-  createdrecordtypecode?: number;
-  failurecount?: number;
+  workflowinfo?: string;
 }

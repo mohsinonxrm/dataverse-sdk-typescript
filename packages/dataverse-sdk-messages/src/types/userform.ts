@@ -2,23 +2,23 @@
  * userform entity type
  */
 export interface userform {
-  _owningbusinessunit_value?: string;
-  type?: number;
+  _createdby_value?: string;
+  _createdonbehalfby_value?: string;
   _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
   _ownerid_value?: string;
-  objecttypecode?: string;
-  istabletenabled?: boolean;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  createdon?: string;
   description?: string;
   formjson?: string;
-  _modifiedonbehalfby_value?: string;
-  _createdonbehalfby_value?: string;
-  _owningteam_value?: string;
   formxml?: string;
+  istabletenabled?: boolean;
   modifiedon?: string;
-  versionnumber?: number;
   name?: string;
-  _owninguser_value?: string;
-  _createdby_value?: string;
-  createdon?: string;
+  objecttypecode?: string;
+  type?: number;
   userformid?: string;
+  versionnumber?: number;
 }

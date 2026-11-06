@@ -5,9 +5,9 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_SalesMeetingPreparation action
  */
 export interface msdyn_SalesMeetingPreparationResponse {
+  msdyn_summary: string;
   msdyn_summary_raw: string;
   msdyn_version: string;
-  msdyn_summary: string;
 }
 
 /**
@@ -15,10 +15,10 @@ export interface msdyn_SalesMeetingPreparationResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesMeetingPreparationActionParameters {
-  msdyn_sessionId?: string;
-  msdyn_activityId?: string;
-  msdyn_id: string;
   msdyn_responseFormat?: string;
+  msdyn_activityId?: string;
+  msdyn_sessionId?: string;
+  msdyn_id: string;
 }
 
 /**
@@ -33,10 +33,10 @@ export class msdyn_SalesMeetingPreparationAction implements Executable<msdyn_Sal
     const url = `${baseUrl}/msdyn_SalesMeetingPreparation`;
 
     const body = requestBody({
-      msdyn_sessionId: this.parameters.msdyn_sessionId,
-      msdyn_activityId: this.parameters.msdyn_activityId,
-      msdyn_id: this.parameters.msdyn_id,
       msdyn_responseFormat: this.parameters.msdyn_responseFormat,
+      msdyn_activityId: this.parameters.msdyn_activityId,
+      msdyn_sessionId: this.parameters.msdyn_sessionId,
+      msdyn_id: this.parameters.msdyn_id,
     });
 
     return {

@@ -9,8 +9,9 @@ import type { msdyn_KnowledgeHarvestFetchDataResponse as msdyn_KnowledgeHarvestF
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_KnowledgeHarvestFetchDataRequestParameters {
-  msdyn_entityId: string;
+  msdyn_additionalInformation?: string;
   msdyn_entityName: string;
+  msdyn_entityId: string;
 }
 
 /**
@@ -32,8 +33,9 @@ export class msdyn_KnowledgeHarvestFetchDataRequest
     const url = `${baseUrl}/msdyn_KnowledgeHarvestFetchData`;
 
     const body = requestBody({
-      msdyn_entityId: this.Parameters.msdyn_entityId,
+      msdyn_additionalInformation: this.Parameters.msdyn_additionalInformation,
       msdyn_entityName: this.Parameters.msdyn_entityName,
+      msdyn_entityId: this.Parameters.msdyn_entityId,
     });
 
     return {

@@ -11,17 +11,23 @@ import type { msdyn_CreateAutonomousEmailResponse as msdyn_CreateAutonomousEmail
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_CreateAutonomousEmailRequestParameters {
-  SourceContextEntity?: EntityReference | AnyEntityPayload;
-  Entity?: EntityReference | AnyEntityPayload;
-  StandardizedIntent?: string;
-  IntentFamilyId?: string;
-  FallbackEmailTemplateId?: string;
-  SuggestionType: string;
-  SenderEntity: EntityReference | AnyEntityPayload;
-  SuggestionSubtype: string;
-  UseCopilotRecommendedTemplate?: boolean;
-  SuggestionResponse?: string;
   AutomationLevel?: string;
+  SuggestionResponse?: string;
+  CustomAgentEmailTemplateGroupId?: string;
+  Entity?: EntityReference | AnyEntityPayload;
+  SuggestionType: string;
+  FallbackEmailTemplateId?: string;
+  UseCopilotRecommendedTemplate?: boolean;
+  LanguageLocale?: string;
+  SenderEntity: EntityReference | AnyEntityPayload;
+  Tools?: string;
+  ScenarioName?: string;
+  CustomAgentEmailTemplateId?: string;
+  RunId?: string;
+  IntentFamilyId?: string;
+  SuggestionSubtype: string;
+  StandardizedIntent?: string;
+  SourceContextEntity?: EntityReference | AnyEntityPayload;
 }
 
 /**
@@ -43,17 +49,23 @@ export class msdyn_CreateAutonomousEmailRequest
     const url = `${baseUrl}/msdyn_CreateAutonomousEmail`;
 
     const body = requestBody({
-      SourceContextEntity: this.Parameters.SourceContextEntity,
-      Entity: this.Parameters.Entity,
-      StandardizedIntent: this.Parameters.StandardizedIntent,
-      IntentFamilyId: this.Parameters.IntentFamilyId,
-      FallbackEmailTemplateId: this.Parameters.FallbackEmailTemplateId,
-      SuggestionType: this.Parameters.SuggestionType,
-      SenderEntity: this.Parameters.SenderEntity,
-      SuggestionSubtype: this.Parameters.SuggestionSubtype,
-      UseCopilotRecommendedTemplate: this.Parameters.UseCopilotRecommendedTemplate,
-      SuggestionResponse: this.Parameters.SuggestionResponse,
       AutomationLevel: this.Parameters.AutomationLevel,
+      SuggestionResponse: this.Parameters.SuggestionResponse,
+      CustomAgentEmailTemplateGroupId: this.Parameters.CustomAgentEmailTemplateGroupId,
+      Entity: this.Parameters.Entity,
+      SuggestionType: this.Parameters.SuggestionType,
+      FallbackEmailTemplateId: this.Parameters.FallbackEmailTemplateId,
+      UseCopilotRecommendedTemplate: this.Parameters.UseCopilotRecommendedTemplate,
+      LanguageLocale: this.Parameters.LanguageLocale,
+      SenderEntity: this.Parameters.SenderEntity,
+      Tools: this.Parameters.Tools,
+      ScenarioName: this.Parameters.ScenarioName,
+      CustomAgentEmailTemplateId: this.Parameters.CustomAgentEmailTemplateId,
+      RunId: this.Parameters.RunId,
+      IntentFamilyId: this.Parameters.IntentFamilyId,
+      SuggestionSubtype: this.Parameters.SuggestionSubtype,
+      StandardizedIntent: this.Parameters.StandardizedIntent,
+      SourceContextEntity: this.Parameters.SourceContextEntity,
     });
 
     return {

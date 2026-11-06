@@ -2,26 +2,26 @@
  * msdyn_csadminconfig entity type
  */
 export interface msdyn_csadminconfig {
-  importsequencenumber?: number;
-  msdyn_setupstatus?: number;
-  _createdonbehalfby_value?: string;
-  overriddencreatedon?: string;
-  msdyn_configdata?: string;
-  utcconversiontimezonecode?: number;
-  statecode?: number;
-  modifiedon?: string;
-  msdyn_configtype?: number;
-  _modifiedby_value?: string;
-  timezoneruleversionnumber?: number;
-  _ownerid_value?: string;
-  _owninguser_value?: string;
   _createdby_value?: string;
-  _owningbusinessunit_value?: string;
-  msdyn_csadminconfigid?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
   _modifiedonbehalfby_value?: string;
-  statuscode?: number;
-  versionnumber?: number;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
   _owningteam_value?: string;
-  msdyn_name?: string;
+  _owninguser_value?: string;
   createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_configdata?: string;
+  msdyn_configtype?: number;
+  msdyn_csadminconfigid?: string;
+  msdyn_name?: string;
+  msdyn_setupstatus?: number;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

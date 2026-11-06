@@ -9,10 +9,10 @@ import type { msdyn_SalesAgents_GetEngageAgentInputPayloadResponse as msdyn_Sale
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesAgents_GetEngageAgentInputPayloadRequestParameters {
-  msdyn_Thread?: string;
   msdyn_SalesAgentRun?: string;
   msdyn_SalesMacroAgentType: number;
   msdyn_TrackingId?: string;
+  msdyn_Thread?: string;
 }
 
 /**
@@ -34,10 +34,10 @@ export class msdyn_SalesAgents_GetEngageAgentInputPayloadRequest
     const url = `${baseUrl}/msdyn_SalesAgents_GetEngageAgentInputPayload`;
 
     const body = requestBody({
-      msdyn_Thread: this.Parameters.msdyn_Thread,
       msdyn_SalesAgentRun: this.Parameters.msdyn_SalesAgentRun,
       msdyn_SalesMacroAgentType: this.Parameters.msdyn_SalesMacroAgentType,
       msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
+      msdyn_Thread: this.Parameters.msdyn_Thread,
     });
 
     return {

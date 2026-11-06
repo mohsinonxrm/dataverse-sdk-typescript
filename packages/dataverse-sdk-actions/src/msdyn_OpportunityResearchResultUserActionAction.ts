@@ -5,8 +5,8 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_OpportunityResearchResultUserAction action
  */
 export interface msdyn_OpportunityResearchResultUserActionResponse {
-  Timestamp: string;
   Success: boolean;
+  Timestamp: string;
 }
 
 /**
@@ -15,10 +15,11 @@ export interface msdyn_OpportunityResearchResultUserActionResponse {
  */
 export interface msdyn_OpportunityResearchResultUserActionActionParameters {
   Id: string;
+  MacroAgentOrchestrationId: string;
   Action: string;
   Topic: string;
-  MacroAgentOrchestrationId: string;
   OpportunityId: string;
+  IsCallFromNba?: boolean;
 }
 
 /**
@@ -36,10 +37,11 @@ export class msdyn_OpportunityResearchResultUserActionAction implements Executab
 
     const body = requestBody({
       Id: this.parameters.Id,
+      MacroAgentOrchestrationId: this.parameters.MacroAgentOrchestrationId,
       Action: this.parameters.Action,
       Topic: this.parameters.Topic,
-      MacroAgentOrchestrationId: this.parameters.MacroAgentOrchestrationId,
       OpportunityId: this.parameters.OpportunityId,
+      IsCallFromNba: this.parameters.IsCallFromNba,
     });
 
     return {

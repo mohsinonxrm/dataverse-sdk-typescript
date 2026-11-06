@@ -4,14 +4,14 @@ import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
  * workflowcardconnections entity type
  */
 export interface workflowcardconnections {
-  solutionid?: string;
-  componentidunique?: string;
-  overwritetime?: string;
   cardid?: string;
-  ismanaged?: boolean;
+  componentidunique?: string;
   componentstate?: number;
   iscustomizable?: BooleanManagedProperty;
+  ismanaged?: boolean;
+  overwritetime?: string;
+  solutionid?: string;
   versionnumber?: number;
-  workflowid?: string;
   workflowcardconnectionsid?: string;
+  workflowid?: string;
 }

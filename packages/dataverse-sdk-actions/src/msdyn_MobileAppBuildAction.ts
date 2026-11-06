@@ -16,8 +16,9 @@ export interface msdyn_MobileAppBuildResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_MobileAppBuildActionParameters {
-  msdyn_MobileApp: EntityReference | EntityPayload<msdyn_mobileapp>;
+  PipelineSuffix?: string;
   AppCenterApiToken?: string;
+  msdyn_MobileApp: EntityReference | EntityPayload<msdyn_mobileapp>;
 }
 
 /**
@@ -32,8 +33,9 @@ export class msdyn_MobileAppBuildAction implements Executable<msdyn_MobileAppBui
     const url = `${baseUrl}/msdyn_MobileAppBuild`;
 
     const body = requestBody({
-      msdyn_MobileApp: this.parameters.msdyn_MobileApp,
+      PipelineSuffix: this.parameters.PipelineSuffix,
       AppCenterApiToken: this.parameters.AppCenterApiToken,
+      msdyn_MobileApp: this.parameters.msdyn_MobileApp,
     });
 
     return {

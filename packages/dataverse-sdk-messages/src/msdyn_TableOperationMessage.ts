@@ -9,8 +9,8 @@ import type { msdyn_TableOperationResponse as msdyn_TableOperationResponseData }
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_TableOperationRequestParameters {
-  EntityNames?: string;
   Scenario: string;
+  EntityNames?: string;
 }
 
 /**
@@ -32,8 +32,8 @@ export class msdyn_TableOperationRequest
     const url = `${baseUrl}/msdyn_TableOperation`;
 
     const body = requestBody({
-      EntityNames: this.Parameters.EntityNames,
       Scenario: this.Parameters.Scenario,
+      EntityNames: this.Parameters.EntityNames,
     });
 
     return {

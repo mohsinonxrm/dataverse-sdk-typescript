@@ -13,15 +13,15 @@ export interface copilotquerytextcontextResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface copilotquerytextcontextActionParameters {
-  totalResultCount?: boolean;
-  orderBy?: string;
   searchMode?: string;
-  entityParameters?: string;
   skip?: number;
-  top?: number;
-  options?: string;
   searchType?: string;
+  entityParameters?: string;
+  top?: number;
+  orderBy?: string;
+  options?: string;
   searchText: string;
+  totalResultCount?: boolean;
 }
 
 /**
@@ -36,15 +36,15 @@ export class copilotquerytextcontextAction implements Executable<copilotquerytex
     const url = `${baseUrl}/copilotquerytextcontext`;
 
     const body = requestBody({
-      totalResultCount: this.parameters.totalResultCount,
-      orderBy: this.parameters.orderBy,
       searchMode: this.parameters.searchMode,
-      entityParameters: this.parameters.entityParameters,
       skip: this.parameters.skip,
-      top: this.parameters.top,
-      options: this.parameters.options,
       searchType: this.parameters.searchType,
+      entityParameters: this.parameters.entityParameters,
+      top: this.parameters.top,
+      orderBy: this.parameters.orderBy,
+      options: this.parameters.options,
       searchText: this.parameters.searchText,
+      totalResultCount: this.parameters.totalResultCount,
     });
 
     return {

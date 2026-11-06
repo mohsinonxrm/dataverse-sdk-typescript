@@ -5,11 +5,11 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_CheckReqWebResourceOnSystemForm action
  */
 export interface msdyn_CheckReqWebResourceOnSystemFormResponse {
-  ReturnStatus: number;
-  ResultEntities: string;
-  Message: string;
-  ReturnSeverity: number;
   HelpLink: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnSeverity: number;
+  ReturnStatus: number;
 }
 
 /**

@@ -13,8 +13,8 @@ export interface msdyn_GetBoolFCSValueResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_GetBoolFCSValueActionParameters {
-  msdyn_BoolFCSKey: string;
   msdyn_BoolFCSNamespace: string;
+  msdyn_BoolFCSKey: string;
 }
 
 /**
@@ -29,8 +29,8 @@ export class msdyn_GetBoolFCSValueAction implements Executable<msdyn_GetBoolFCSV
     const url = `${baseUrl}/msdyn_GetBoolFCSValue`;
 
     const body = requestBody({
-      msdyn_BoolFCSKey: this.parameters.msdyn_BoolFCSKey,
       msdyn_BoolFCSNamespace: this.parameters.msdyn_BoolFCSNamespace,
+      msdyn_BoolFCSKey: this.parameters.msdyn_BoolFCSKey,
     });
 
     return {

@@ -13,8 +13,8 @@ export interface msdynmkt_contactablefieldsactionResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdynmkt_contactablefieldsactionActionParameters {
-  msdynmkt_contactpointtypes: string;
   msdynmkt_entitytypes: string;
+  msdynmkt_contactpointtypes: string;
 }
 
 /**
@@ -29,8 +29,8 @@ export class msdynmkt_contactablefieldsactionAction implements Executable<msdynm
     const url = `${baseUrl}/msdynmkt_contactablefieldsaction`;
 
     const body = requestBody({
-      msdynmkt_contactpointtypes: this.parameters.msdynmkt_contactpointtypes,
       msdynmkt_entitytypes: this.parameters.msdynmkt_entitytypes,
+      msdynmkt_contactpointtypes: this.parameters.msdynmkt_contactpointtypes,
     });
 
     return {

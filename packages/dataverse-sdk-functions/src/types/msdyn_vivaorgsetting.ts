@@ -2,28 +2,28 @@
  * msdyn_vivaorgsetting entity type
  */
 export interface msdyn_vivaorgsetting {
-  _modifiedonbehalfby_value?: string;
-  msdyn_producttype?: number;
   _createdby_value?: string;
-  statecode?: number;
   _createdonbehalfby_value?: string;
-  msdyn_orgid?: string;
-  statuscode?: number;
-  utcconversiontimezonecode?: number;
-  msdyn_spserviceurl?: string;
   _modifiedby_value?: string;
-  msdyn_environmentmode?: string;
-  modifiedon?: string;
-  msdyn_vivaorgsettingid?: string;
-  importsequencenumber?: number;
-  msdyn_settingscreatedby?: string;
-  msdyn_name?: string;
+  _modifiedonbehalfby_value?: string;
   _organizationid_value?: string;
   createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_environmentmode?: string;
   msdyn_featurename?: string;
-  versionnumber?: number;
-  timezoneruleversionnumber?: number;
-  msdyn_settingsmodifiedby?: string;
-  overriddencreatedon?: string;
+  msdyn_name?: string;
+  msdyn_orgid?: string;
   msdyn_orgsettings?: string;
+  msdyn_producttype?: number;
+  msdyn_settingscreatedby?: string;
+  msdyn_settingsmodifiedby?: string;
+  msdyn_spserviceurl?: string;
+  msdyn_vivaorgsettingid?: string;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

@@ -2,25 +2,25 @@
  * msdyn_activeicdextension entity type
  */
 export interface msdyn_activeicdextension {
-  _createdonbehalfby_value?: string;
-  importsequencenumber?: number;
   _createdby_value?: string;
-  _msdyn_icdextensionid_value?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
   _modifiedonbehalfby_value?: string;
-  msdyn_activeicdextensionid?: string;
-  modifiedon?: string;
-  _owningbusinessunit_value?: string;
-  msdyn_name?: string;
   _msdyn_entityid_value?: string;
+  _msdyn_icdextensionid_value?: string;
   _ownerid_value?: string;
-  overriddencreatedon?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
   _owninguser_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_activeicdextensionid?: string;
+  msdyn_name?: string;
+  overriddencreatedon?: string;
   statecode?: number;
   statuscode?: number;
-  createdon?: string;
   timezoneruleversionnumber?: number;
-  _modifiedby_value?: string;
   utcconversiontimezonecode?: number;
-  _owningteam_value?: string;
   versionnumber?: number;
 }

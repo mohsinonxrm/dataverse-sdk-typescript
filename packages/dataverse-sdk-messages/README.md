@@ -4,7 +4,7 @@ Organization Service messages for Dataverse, providing typed request/response pa
 
 ## Features
 
-- ✅ **1,356+ typed messages** - Complete coverage of all Dataverse Organization Service messages
+- ✅ **<!-- count:messages -->1,556<!-- /count --> typed messages** - Complete coverage of all Dataverse Organization Service messages
 - ✅ **Direct exports** - All message classes exported directly (e.g., `ExecuteWorkflowRequest`, `WinOpportunityRequest`)
 - ✅ **Request/response pairs** - Full type safety for all message parameters and returns
 - ✅ **Web API mapping** - Messages map to corresponding Web API actions, functions, or HTTP operations
@@ -19,7 +19,7 @@ pnpm add @mohsinonxrm/dataverse-sdk-messages @mohsinonxrm/dataverse-sdk-xrm
 
 ## Overview
 
-This package provides 1,356+ typed message classes that wrap Web API actions and functions. Each message:
+This package provides <!-- count:messages -->1,556<!-- /count --> typed message classes that wrap Web API actions and functions. Each message:
 
 - Extends `OrganizationRequest` base class
 - Implements `Executable<TResponse>` interface
@@ -30,7 +30,7 @@ Messages execute via `OrganizationService.execute()` from `@mohsinonxrm/datavers
 
 ## Message Categories
 
-The package has <!-- count:messages -->1,360<!-- /count --> typed messages: a `<Name>Request` /
+The package has <!-- count:messages -->1,556<!-- /count --> typed messages: a `<Name>Request` /
 `<Name>Response` pair for each Web API **action** in the `$metadata` it was generated from,
 including solution-specific ones (`msdyn_*`, `msdynmkt_*`, `CCaaS_*`, …). This list is generated
 from the package source (`pnpm --filter generate-sdk-types docs`);

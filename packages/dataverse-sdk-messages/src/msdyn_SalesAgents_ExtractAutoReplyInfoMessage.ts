@@ -9,11 +9,11 @@ import type { msdyn_SalesAgents_ExtractAutoReplyInfoResponse as msdyn_SalesAgent
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesAgents_ExtractAutoReplyInfoRequestParameters {
-  msdyn_TrackingId?: string;
   msdyn_SalesAgentRun?: string;
+  msdyn_TrackingId?: string;
   msdyn_AuthType?: number;
-  msdyn_SalesMacroAgentType: number;
   msdyn_Thread?: string;
+  msdyn_SalesMacroAgentType: number;
 }
 
 /**
@@ -35,11 +35,11 @@ export class msdyn_SalesAgents_ExtractAutoReplyInfoRequest
     const url = `${baseUrl}/msdyn_SalesAgents_ExtractAutoReplyInfo`;
 
     const body = requestBody({
-      msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
       msdyn_SalesAgentRun: this.Parameters.msdyn_SalesAgentRun,
+      msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
       msdyn_AuthType: this.Parameters.msdyn_AuthType,
-      msdyn_SalesMacroAgentType: this.Parameters.msdyn_SalesMacroAgentType,
       msdyn_Thread: this.Parameters.msdyn_Thread,
+      msdyn_SalesMacroAgentType: this.Parameters.msdyn_SalesMacroAgentType,
     });
 
     return {

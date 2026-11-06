@@ -2,29 +2,29 @@
  * msdyn_digitalsellingactivetask entity type
  */
 export interface msdyn_digitalsellingactivetask {
-  createdon?: string;
-  _modifiedonbehalfby_value?: string;
-  _modifiedby_value?: string;
-  overriddencreatedon?: string;
-  msdyn_retentiontimeindays?: number;
-  importsequencenumber?: number;
-  msdyn_name?: string;
   _createdby_value?: string;
-  msdyn_currentstate?: number;
-  msdyn_tasktype?: number;
-  _organizationid_value?: string;
-  utcconversiontimezonecode?: number;
   _createdonbehalfby_value?: string;
-  timezoneruleversionnumber?: number;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _organizationid_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
   msdyn_correlationid?: string;
-  versionnumber?: number;
-  msdyn_inputtime?: string;
+  msdyn_currentstate?: number;
+  msdyn_customapiname?: string;
+  msdyn_digitalsellingactivetaskid?: string;
   msdyn_entitytype?: string;
   msdyn_inputparameters?: string;
-  msdyn_customapiname?: string;
-  statuscode?: number;
-  msdyn_digitalsellingactivetaskid?: string;
-  statecode?: number;
-  modifiedon?: string;
+  msdyn_inputtime?: string;
+  msdyn_name?: string;
   msdyn_recordid?: string;
+  msdyn_retentiontimeindays?: number;
+  msdyn_tasktype?: number;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

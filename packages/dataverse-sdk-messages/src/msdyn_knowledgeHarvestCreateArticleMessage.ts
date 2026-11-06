@@ -9,10 +9,11 @@ import type { msdyn_knowledgeHarvestCreateArticleResponse as msdyn_knowledgeHarv
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_knowledgeHarvestCreateArticleRequestParameters {
-  msdyn_knowledgeHarvestJobId: string;
   msdyn_entityName: string;
   msdyn_entityId: string;
+  msdyn_additionalInformation?: string;
   msdyn_payload: string;
+  msdyn_knowledgeHarvestJobId: string;
 }
 
 /**
@@ -34,10 +35,11 @@ export class msdyn_knowledgeHarvestCreateArticleRequest
     const url = `${baseUrl}/msdyn_knowledgeHarvestCreateArticle`;
 
     const body = requestBody({
-      msdyn_knowledgeHarvestJobId: this.Parameters.msdyn_knowledgeHarvestJobId,
       msdyn_entityName: this.Parameters.msdyn_entityName,
       msdyn_entityId: this.Parameters.msdyn_entityId,
+      msdyn_additionalInformation: this.Parameters.msdyn_additionalInformation,
       msdyn_payload: this.Parameters.msdyn_payload,
+      msdyn_knowledgeHarvestJobId: this.Parameters.msdyn_knowledgeHarvestJobId,
     });
 
     return {

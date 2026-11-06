@@ -2,13 +2,13 @@
  * competitorsalesliterature entity type
  */
 export interface competitorsalesliterature {
-  competitorsalesliteratureid?: string;
-  name?: string;
-  importsequencenumber?: number;
-  versionnumber?: number;
   competitorid?: string;
+  competitorsalesliteratureid?: string;
+  importsequencenumber?: number;
+  name?: string;
   overriddencreatedon?: string;
-  timezoneruleversionnumber?: number;
   salesliteratureid?: string;
+  timezoneruleversionnumber?: number;
   utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

@@ -2,8 +2,8 @@
  * systemusersyncmappingprofiles entity type
  */
 export interface systemusersyncmappingprofiles {
-  systemuserid?: string;
   syncattributemappingprofileid?: string;
+  systemuserid?: string;
   systemusersyncmappingprofileid?: string;
   versionnumber?: number;
 }

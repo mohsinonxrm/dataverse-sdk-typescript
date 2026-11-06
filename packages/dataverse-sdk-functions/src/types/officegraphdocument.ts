@@ -2,34 +2,34 @@
  * officegraphdocument entity type
  */
 export interface officegraphdocument {
-  _transactioncurrencyid_value?: string;
-  documentid?: string;
-  _modifiedonbehalfby_value?: string;
-  officegraphdocumentid?: string;
-  readurl?: string;
-  fileextension?: string;
-  createdby?: string;
-  rank?: number;
-  viewcount?: number;
-  sitetitle?: string;
-  title?: string;
-  authornames?: string;
-  timezoneruleversionnumber?: number;
   _createdonbehalfby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _organizationid_value?: string;
+  _transactioncurrencyid_value?: string;
+  authornames?: string;
+  createdby?: string;
   createdtime?: string;
+  documentid?: string;
+  documentlastmodifiedby?: string;
   documentlastmodifiedon?: string;
-  previewimageurl?: string;
   documentpreviewmetadata?: string;
+  exchangerate?: number;
+  fileextension?: string;
+  filetype?: string;
   modifiedby?: string;
   modifiedtime?: string;
-  versionnumber?: number;
-  _organizationid_value?: string;
-  secondaryfileextension?: string;
+  officegraphdocumentid?: string;
+  previewimageurl?: string;
   querytype?: number;
-  weblocationurl?: string;
-  filetype?: string;
+  rank?: number;
+  readurl?: string;
+  secondaryfileextension?: string;
+  sitetitle?: string;
   siteurl?: string;
-  exchangerate?: number;
+  timezoneruleversionnumber?: number;
+  title?: string;
   utcconversiontimezonecode?: number;
-  documentlastmodifiedby?: string;
+  versionnumber?: number;
+  viewcount?: number;
+  weblocationurl?: string;
 }

@@ -14,8 +14,8 @@ export interface msdyn_SalesAgents_CreateSARRecordsResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesAgents_CreateSARRecordsActionParameters {
-  msdyn_InputPayload: string;
   msdyn_TrackingId?: string;
+  msdyn_InputPayload: string;
 }
 
 /**
@@ -30,8 +30,8 @@ export class msdyn_SalesAgents_CreateSARRecordsAction implements Executable<msdy
     const url = `${baseUrl}/msdyn_SalesAgents_CreateSARRecords`;
 
     const body = requestBody({
-      msdyn_InputPayload: this.parameters.msdyn_InputPayload,
       msdyn_TrackingId: this.parameters.msdyn_TrackingId,
+      msdyn_InputPayload: this.parameters.msdyn_InputPayload,
     });
 
     return {

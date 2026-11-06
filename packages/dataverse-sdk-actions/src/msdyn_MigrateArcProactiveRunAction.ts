@@ -4,8 +4,8 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * Response from msdyn_MigrateArcProactiveRun action
  */
 export interface msdyn_MigrateArcProactiveRunResponse {
-  OutputString: string;
   Exception: string;
+  OutputString: string;
 }
 
 /**

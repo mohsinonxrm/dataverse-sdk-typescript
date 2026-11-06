@@ -15,10 +15,10 @@ export interface msdyn_CreateAutonomousEmailWrapperResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_CreateAutonomousEmailWrapperActionParameters {
-  SenderEntity?: EntityReference | AnyEntityPayload;
+  SourceContextEntity?: EntityReference | AnyEntityPayload;
   Entity: EntityReference | AnyEntityPayload;
   NextSuggestion: string;
-  SourceContextEntity?: EntityReference | AnyEntityPayload;
+  SenderEntity?: EntityReference | AnyEntityPayload;
 }
 
 /**
@@ -33,10 +33,10 @@ export class msdyn_CreateAutonomousEmailWrapperAction implements Executable<msdy
     const url = `${baseUrl}/msdyn_CreateAutonomousEmailWrapper`;
 
     const body = requestBody({
-      SenderEntity: this.parameters.SenderEntity,
+      SourceContextEntity: this.parameters.SourceContextEntity,
       Entity: this.parameters.Entity,
       NextSuggestion: this.parameters.NextSuggestion,
-      SourceContextEntity: this.parameters.SourceContextEntity,
+      SenderEntity: this.parameters.SenderEntity,
     });
 
     return {

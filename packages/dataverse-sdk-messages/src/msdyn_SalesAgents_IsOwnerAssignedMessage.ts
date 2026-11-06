@@ -9,9 +9,9 @@ import type { msdyn_SalesAgents_IsOwnerAssignedResponse as msdyn_SalesAgents_IsO
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesAgents_IsOwnerAssignedRequestParameters {
+  msdyn_TrackingId?: string;
   msdyn_HandoverContext?: string;
   msdyn_SalesAgentRun: string;
-  msdyn_TrackingId?: string;
 }
 
 /**
@@ -33,9 +33,9 @@ export class msdyn_SalesAgents_IsOwnerAssignedRequest
     const url = `${baseUrl}/msdyn_SalesAgents_IsOwnerAssigned`;
 
     const body = requestBody({
+      msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
       msdyn_HandoverContext: this.Parameters.msdyn_HandoverContext,
       msdyn_SalesAgentRun: this.Parameters.msdyn_SalesAgentRun,
-      msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
     });
 
     return {

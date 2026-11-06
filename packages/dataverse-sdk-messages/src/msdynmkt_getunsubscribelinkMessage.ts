@@ -9,17 +9,17 @@ import type { msdynmkt_getunsubscribelinkResponse as msdynmkt_getunsubscribelink
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdynmkt_getunsubscribelinkRequestParameters {
-  msdynmkt_purposeid: string;
-  msdynmkt_sourcemessageentityname?: string;
-  msdynmkt_messagetemplateid: string;
-  msdynmkt_owningbusinessunitid?: string;
-  msdynmkt_entitytype: string;
-  msdynmkt_entityid: string;
-  msdynmkt_contactpoint: string;
-  msdynmkt_oneclickunsubscribelink?: boolean;
-  msdynmkt_compliancesettingsid: string;
-  msdynmkt_topicid?: string;
   msdynmkt_sourceapplication?: string;
+  msdynmkt_entityid: string;
+  msdynmkt_owningbusinessunitid?: string;
+  msdynmkt_topicid?: string;
+  msdynmkt_oneclickunsubscribelink?: boolean;
+  msdynmkt_contactpoint: string;
+  msdynmkt_messagetemplateid: string;
+  msdynmkt_compliancesettingsid: string;
+  msdynmkt_purposeid: string;
+  msdynmkt_entitytype: string;
+  msdynmkt_sourcemessageentityname?: string;
 }
 
 /**
@@ -41,17 +41,17 @@ export class msdynmkt_getunsubscribelinkRequest
     const url = `${baseUrl}/msdynmkt_getunsubscribelink`;
 
     const body = requestBody({
-      msdynmkt_purposeid: this.Parameters.msdynmkt_purposeid,
-      msdynmkt_sourcemessageentityname: this.Parameters.msdynmkt_sourcemessageentityname,
-      msdynmkt_messagetemplateid: this.Parameters.msdynmkt_messagetemplateid,
-      msdynmkt_owningbusinessunitid: this.Parameters.msdynmkt_owningbusinessunitid,
-      msdynmkt_entitytype: this.Parameters.msdynmkt_entitytype,
-      msdynmkt_entityid: this.Parameters.msdynmkt_entityid,
-      msdynmkt_contactpoint: this.Parameters.msdynmkt_contactpoint,
-      msdynmkt_oneclickunsubscribelink: this.Parameters.msdynmkt_oneclickunsubscribelink,
-      msdynmkt_compliancesettingsid: this.Parameters.msdynmkt_compliancesettingsid,
-      msdynmkt_topicid: this.Parameters.msdynmkt_topicid,
       msdynmkt_sourceapplication: this.Parameters.msdynmkt_sourceapplication,
+      msdynmkt_entityid: this.Parameters.msdynmkt_entityid,
+      msdynmkt_owningbusinessunitid: this.Parameters.msdynmkt_owningbusinessunitid,
+      msdynmkt_topicid: this.Parameters.msdynmkt_topicid,
+      msdynmkt_oneclickunsubscribelink: this.Parameters.msdynmkt_oneclickunsubscribelink,
+      msdynmkt_contactpoint: this.Parameters.msdynmkt_contactpoint,
+      msdynmkt_messagetemplateid: this.Parameters.msdynmkt_messagetemplateid,
+      msdynmkt_compliancesettingsid: this.Parameters.msdynmkt_compliancesettingsid,
+      msdynmkt_purposeid: this.Parameters.msdynmkt_purposeid,
+      msdynmkt_entitytype: this.Parameters.msdynmkt_entitytype,
+      msdynmkt_sourcemessageentityname: this.Parameters.msdynmkt_sourcemessageentityname,
     });
 
     return {

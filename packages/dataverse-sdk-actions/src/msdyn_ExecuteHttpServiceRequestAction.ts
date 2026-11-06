@@ -5,8 +5,8 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_ExecuteHttpServiceRequest action
  */
 export interface msdyn_ExecuteHttpServiceRequestResponse {
-  msdyn_StatusCode: string;
   msdyn_Response: string;
+  msdyn_StatusCode: string;
 }
 
 /**
@@ -15,10 +15,10 @@ export interface msdyn_ExecuteHttpServiceRequestResponse {
  */
 export interface msdyn_ExecuteHttpServiceRequestActionParameters {
   msdyn_RequestType: string;
-  msdyn_RequestUrl: string;
+  msdyn_Method: string;
   msdyn_CloudServiceApplicationType: number;
   msdyn_RequestBody?: string;
-  msdyn_Method: string;
+  msdyn_RequestUrl: string;
 }
 
 /**
@@ -34,10 +34,10 @@ export class msdyn_ExecuteHttpServiceRequestAction implements Executable<msdyn_E
 
     const body = requestBody({
       msdyn_RequestType: this.parameters.msdyn_RequestType,
-      msdyn_RequestUrl: this.parameters.msdyn_RequestUrl,
+      msdyn_Method: this.parameters.msdyn_Method,
       msdyn_CloudServiceApplicationType: this.parameters.msdyn_CloudServiceApplicationType,
       msdyn_RequestBody: this.parameters.msdyn_RequestBody,
-      msdyn_Method: this.parameters.msdyn_Method,
+      msdyn_RequestUrl: this.parameters.msdyn_RequestUrl,
     });
 
     return {

@@ -7,6 +7,7 @@ import type { AnyEntityPayload } from "./types/EntityPayload.js";
  * Response from msdyn_CRACaseClosure action
  */
 export interface msdyn_CRACaseClosureResponse {
+  msdyn_IsCaseResolved: boolean;
   msdyn_Status: string;
 }
 
@@ -15,12 +16,16 @@ export interface msdyn_CRACaseClosureResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_CRACaseClosureActionParameters {
+  msdyn_Entity: EntityReference | AnyEntityPayload;
   msdyn_ShouldResolveCase: boolean;
   msdyn_AutomationLevel: string;
-  msdyn_McsConversationId: string;
-  msdyn_IncomingEmailId: string;
   msdyn_IsMonitoringActive: boolean;
-  msdyn_Entity: EntityReference | AnyEntityPayload;
+  msdyn_SuggestionType?: string;
+  msdyn_IsCRAShadowMode?: boolean;
+  msdyn_IncomingEmailId: string;
+  msdyn_IsCustomAgentClosure?: boolean;
+  msdyn_SuggestionSubtype?: string;
+  msdyn_McsConversationId: string;
 }
 
 /**
@@ -35,12 +40,16 @@ export class msdyn_CRACaseClosureAction implements Executable<msdyn_CRACaseClosu
     const url = `${baseUrl}/msdyn_CRACaseClosure`;
 
     const body = requestBody({
+      msdyn_Entity: this.parameters.msdyn_Entity,
       msdyn_ShouldResolveCase: this.parameters.msdyn_ShouldResolveCase,
       msdyn_AutomationLevel: this.parameters.msdyn_AutomationLevel,
-      msdyn_McsConversationId: this.parameters.msdyn_McsConversationId,
-      msdyn_IncomingEmailId: this.parameters.msdyn_IncomingEmailId,
       msdyn_IsMonitoringActive: this.parameters.msdyn_IsMonitoringActive,
-      msdyn_Entity: this.parameters.msdyn_Entity,
+      msdyn_SuggestionType: this.parameters.msdyn_SuggestionType,
+      msdyn_IsCRAShadowMode: this.parameters.msdyn_IsCRAShadowMode,
+      msdyn_IncomingEmailId: this.parameters.msdyn_IncomingEmailId,
+      msdyn_IsCustomAgentClosure: this.parameters.msdyn_IsCustomAgentClosure,
+      msdyn_SuggestionSubtype: this.parameters.msdyn_SuggestionSubtype,
+      msdyn_McsConversationId: this.parameters.msdyn_McsConversationId,
     });
 
     return {

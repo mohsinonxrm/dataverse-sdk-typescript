@@ -9,10 +9,10 @@ import type { AISummarizeRecordResponse as AISummarizeRecordResponseData } from 
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface AISummarizeRecordRequestParameters {
-  Id: string;
-  EntityLogicalName: string;
   RecordContext?: string;
   IsMergedCatchupAndSummary?: boolean;
+  EntityLogicalName: string;
+  Id: string;
 }
 
 /**
@@ -34,10 +34,10 @@ export class AISummarizeRecordRequest
     const url = `${baseUrl}/AISummarizeRecord`;
 
     const body = requestBody({
-      Id: this.Parameters.Id,
-      EntityLogicalName: this.Parameters.EntityLogicalName,
       RecordContext: this.Parameters.RecordContext,
       IsMergedCatchupAndSummary: this.Parameters.IsMergedCatchupAndSummary,
+      EntityLogicalName: this.Parameters.EntityLogicalName,
+      Id: this.Parameters.Id,
     });
 
     return {

@@ -9,10 +9,10 @@ import type { msdyn_SalesAgents_ProcessEngageAgentResponseResponse as msdyn_Sale
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesAgents_ProcessEngageAgentResponseRequestParameters {
-  msdyn_Thread?: string;
-  msdyn_TrackingId?: string;
-  msdyn_SalesMacroAgentType: number;
   msdyn_SalesAgentRun?: string;
+  msdyn_Thread?: string;
+  msdyn_SalesMacroAgentType: number;
+  msdyn_TrackingId?: string;
   msdyn_EngageAgentActivities: string;
 }
 
@@ -35,10 +35,10 @@ export class msdyn_SalesAgents_ProcessEngageAgentResponseRequest
     const url = `${baseUrl}/msdyn_SalesAgents_ProcessEngageAgentResponse`;
 
     const body = requestBody({
-      msdyn_Thread: this.Parameters.msdyn_Thread,
-      msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
-      msdyn_SalesMacroAgentType: this.Parameters.msdyn_SalesMacroAgentType,
       msdyn_SalesAgentRun: this.Parameters.msdyn_SalesAgentRun,
+      msdyn_Thread: this.Parameters.msdyn_Thread,
+      msdyn_SalesMacroAgentType: this.Parameters.msdyn_SalesMacroAgentType,
+      msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
       msdyn_EngageAgentActivities: this.Parameters.msdyn_EngageAgentActivities,
     });
 

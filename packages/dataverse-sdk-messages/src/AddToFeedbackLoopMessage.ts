@@ -9,9 +9,10 @@ import type { AnyEntityPayload } from "./types/EntityPayload.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface AddToFeedbackLoopRequestParameters {
+  predictionInput: EntityReference | AnyEntityPayload;
+  source?: string;
   inputName?: string;
   predictionOutput?: string;
-  predictionInput: EntityReference | AnyEntityPayload;
 }
 
 /**
@@ -39,9 +40,10 @@ export class AddToFeedbackLoopRequest
     const url = `${baseUrl}/msdyn_aimodels(${this.msdyn_aimodelId})/Microsoft.Dynamics.CRM.AddToFeedbackLoop`;
 
     const body = requestBody({
+      predictionInput: this.Parameters.predictionInput,
+      source: this.Parameters.source,
       inputName: this.Parameters.inputName,
       predictionOutput: this.Parameters.predictionOutput,
-      predictionInput: this.Parameters.predictionInput,
     });
 
     return {

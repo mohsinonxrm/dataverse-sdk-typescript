@@ -2,26 +2,26 @@
  * msdyn_postconfig entity type
  */
 export interface msdyn_postconfig {
-  _modifiedby_value?: string;
-  msdyn_configurewall?: boolean;
-  msdyn_followingviewid?: string;
-  modifiedon?: string;
-  msdyn_followingviewid2?: string;
-  utcconversiontimezonecode?: number;
-  _organizationid_value?: string;
-  _createdonbehalfby_value?: string;
-  statecode?: number;
-  overriddencreatedon?: string;
-  timezoneruleversionnumber?: number;
   _createdby_value?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
   _modifiedonbehalfby_value?: string;
-  msdyn_entityname?: string;
-  msdyn_entitydisplayname?: string;
-  msdyn_status?: string;
-  importsequencenumber?: number;
-  versionnumber?: number;
-  msdyn_otc?: number;
-  statuscode?: number;
+  _organizationid_value?: string;
   createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_configurewall?: boolean;
+  msdyn_entitydisplayname?: string;
+  msdyn_entityname?: string;
+  msdyn_followingviewid?: string;
+  msdyn_followingviewid2?: string;
+  msdyn_otc?: number;
   msdyn_postconfigid?: string;
+  msdyn_status?: string;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

@@ -2,14 +2,14 @@
  * languagelocale entity type
  */
 export interface languagelocale {
-  region?: string;
-  languagelocaleid?: string;
-  language?: string;
+  _organizationid_value?: string;
   code?: string;
-  versionnumber?: number;
+  language?: string;
+  languagelocaleid?: string;
+  localeid?: number;
+  name?: string;
+  region?: string;
   statecode?: number;
   statuscode?: number;
-  _organizationid_value?: string;
-  name?: string;
-  localeid?: number;
+  versionnumber?: number;
 }

@@ -7,8 +7,8 @@ import { requestBody } from "./internal/requestBody.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_GetCopilotServiceStreamRequestParameters {
-  RequestPayload?: string;
   Context: string;
+  RequestPayload?: string;
 }
 
 /**
@@ -30,8 +30,8 @@ export class msdyn_GetCopilotServiceStreamRequest
     const url = `${baseUrl}/msdyn_GetCopilotServiceStream`;
 
     const body = requestBody({
-      RequestPayload: this.Parameters.RequestPayload,
       Context: this.Parameters.Context,
+      RequestPayload: this.Parameters.RequestPayload,
     });
 
     return {

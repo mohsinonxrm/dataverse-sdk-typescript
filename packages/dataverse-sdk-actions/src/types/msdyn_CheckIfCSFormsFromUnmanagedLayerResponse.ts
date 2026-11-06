@@ -2,9 +2,9 @@
  * msdyn_CheckIfCSFormsFromUnmanagedLayerResponse complex type
  */
 export interface msdyn_CheckIfCSFormsFromUnmanagedLayerResponse {
-  ReturnStatus?: number;
-  ResultEntities?: string;
-  Message?: string;
-  ReturnSeverity?: number;
   HelpLink?: string;
+  Message?: string;
+  ResultEntities?: string;
+  ReturnSeverity?: number;
+  ReturnStatus?: number;
 }

@@ -5,8 +5,8 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_GetGPT3Prediction action
  */
 export interface msdyn_GetGPT3PredictionResponse {
-  msdyn_status: number;
   msdyn_prediction: string;
+  msdyn_status: number;
 }
 
 /**

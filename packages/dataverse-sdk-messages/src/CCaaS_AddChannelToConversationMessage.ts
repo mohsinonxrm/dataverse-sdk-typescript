@@ -9,10 +9,10 @@ import type { CCaaS_AddChannelToConversationResponse as CCaaS_AddChannelToConver
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_AddChannelToConversationRequestParameters {
-  AgentId?: string;
-  ChannelType: string;
-  DestinationPhoneNumber?: string;
   ApiVersion: string;
+  ChannelType: string;
+  AgentId?: string;
+  DestinationPhoneNumber?: string;
 }
 
 /**
@@ -40,10 +40,10 @@ export class CCaaS_AddChannelToConversationRequest
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_AddChannelToConversation`;
 
     const body = requestBody({
-      AgentId: this.Parameters.AgentId,
-      ChannelType: this.Parameters.ChannelType,
-      DestinationPhoneNumber: this.Parameters.DestinationPhoneNumber,
       ApiVersion: this.Parameters.ApiVersion,
+      ChannelType: this.Parameters.ChannelType,
+      AgentId: this.Parameters.AgentId,
+      DestinationPhoneNumber: this.Parameters.DestinationPhoneNumber,
     });
 
     return {

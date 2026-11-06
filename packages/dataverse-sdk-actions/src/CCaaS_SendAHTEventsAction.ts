@@ -5,8 +5,8 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from CCaaS_SendAHTEvents action
  */
 export interface CCaaS_SendAHTEventsResponse {
-  Status: string;
   Message: string;
+  Status: string;
 }
 
 /**

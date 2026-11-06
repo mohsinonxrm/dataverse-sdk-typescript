@@ -14,6 +14,7 @@ import type { msdyn_copilottranscript } from "./msdyn_copilottranscript.js";
 import type { msdyn_ocliveworkitem } from "./msdyn_ocliveworkitem.js";
 import type { msdyn_ocoutboundmessage } from "./msdyn_ocoutboundmessage.js";
 import type { msdyn_ocsession } from "./msdyn_ocsession.js";
+import type { msdyn_ocvoicemail } from "./msdyn_ocvoicemail.js";
 import type { msfp_alert } from "./msfp_alert.js";
 import type { msfp_surveyinvite } from "./msfp_surveyinvite.js";
 import type { msfp_surveyresponse } from "./msfp_surveyresponse.js";
@@ -30,64 +31,64 @@ import type { task } from "./task.js";
  * activitypointer entity type
  */
 export interface activitypointer {
-  _transactioncurrencyid_value?: string;
-  _slainvokedid_value?: string;
   _createdby_value?: string;
-  onholdtime?: number;
-  _ownerid_value?: string;
-  leftvoicemail?: boolean;
-  _owningteam_value?: string;
-  scheduleddurationminutes?: number;
-  description?: string;
-  deliverylastattemptedon?: string;
-  exchangerate?: number;
-  isbilled?: boolean;
-  instancetypecode?: number;
-  senton?: string;
-  processid?: string;
-  _owningbusinessunit_value?: string;
-  traversedpath?: string;
-  scheduledstart?: string;
-  descriptionblobid?: string;
-  activityadditionalparams?: string;
-  subject?: string;
-  _modifiedby_value?: string;
-  _serviceid_value?: string;
-  sortdate?: string;
-  descriptionblobid_name?: string;
-  community?: number;
-  versionnumber?: number;
   _createdonbehalfby_value?: string;
-  formattedscheduledstart?: string;
-  _regardingobjectid_value?: string;
-  actualdurationminutes?: number;
-  lastonholdtime?: string;
-  isworkflowcreated?: boolean;
-  scheduledend?: string;
-  isregularactivity?: boolean;
-  exchangeweblink?: string;
-  _slaid_value?: string;
-  _owninguser_value?: string;
-  ismapiprivate?: boolean;
-  activityid?: string;
-  formattedscheduledend?: string;
-  exchangeitemid?: string;
-  _sendermailboxid_value?: string;
-  stageid?: string;
-  seriesid?: string;
-  modifiedon?: string;
-  createdon?: string;
-  postponeactivityprocessinguntil?: string;
-  activitytypecode?: string;
-  statuscode?: number;
-  statecode?: number;
+  _modifiedby_value?: string;
   _modifiedonbehalfby_value?: string;
-  actualstart?: string;
-  prioritycode?: number;
-  deliveryprioritycode?: number;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  _regardingobjectid_value?: string;
+  _sendermailboxid_value?: string;
+  _serviceid_value?: string;
+  _slaid_value?: string;
+  _slainvokedid_value?: string;
+  _transactioncurrencyid_value?: string;
+  activityadditionalparams?: string;
+  activityid?: string;
+  activitytypecode?: string;
+  actualdurationminutes?: number;
   actualend?: string;
+  actualstart?: string;
+  community?: number;
+  createdon?: string;
+  deliverylastattemptedon?: string;
+  deliveryprioritycode?: number;
+  description?: string;
+  descriptionblobid?: string;
+  descriptionblobid_name?: string;
+  exchangeitemid?: string;
+  exchangerate?: number;
+  exchangeweblink?: string;
+  formattedscheduledend?: string;
+  formattedscheduledstart?: string;
+  instancetypecode?: number;
+  isbilled?: boolean;
+  ismapiprivate?: boolean;
+  isregularactivity?: boolean;
+  isworkflowcreated?: boolean;
+  lastonholdtime?: string;
+  leftvoicemail?: boolean;
+  modifiedon?: string;
+  onholdtime?: number;
+  postponeactivityprocessinguntil?: string;
+  prioritycode?: number;
+  processid?: string;
+  scheduleddurationminutes?: number;
+  scheduledend?: string;
+  scheduledstart?: string;
+  senton?: string;
+  seriesid?: string;
+  sortdate?: string;
+  stageid?: string;
+  statecode?: number;
+  statuscode?: number;
+  subject?: string;
   timezoneruleversionnumber?: number;
+  traversedpath?: string;
   utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }
 
 /**
@@ -111,6 +112,7 @@ export type TypedActivitypointer =
   | (msdyn_ocliveworkitem & { "@odata.type": "Microsoft.Dynamics.CRM.msdyn_ocliveworkitem" })
   | (msdyn_ocoutboundmessage & { "@odata.type": "Microsoft.Dynamics.CRM.msdyn_ocoutboundmessage" })
   | (msdyn_ocsession & { "@odata.type": "Microsoft.Dynamics.CRM.msdyn_ocsession" })
+  | (msdyn_ocvoicemail & { "@odata.type": "Microsoft.Dynamics.CRM.msdyn_ocvoicemail" })
   | (msfp_alert & { "@odata.type": "Microsoft.Dynamics.CRM.msfp_alert" })
   | (msfp_surveyinvite & { "@odata.type": "Microsoft.Dynamics.CRM.msfp_surveyinvite" })
   | (msfp_surveyresponse & { "@odata.type": "Microsoft.Dynamics.CRM.msfp_surveyresponse" })

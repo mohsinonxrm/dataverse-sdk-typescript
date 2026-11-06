@@ -9,10 +9,11 @@ import type { msdyn_SalesAgents_FetchRecordsForAgentProcessingResponse as msdyn_
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesAgents_FetchRecordsForAgentProcessingRequestParameters {
-  msdyn_Top?: number;
-  msdyn_SalesAgentType: number;
+  msdyn_AgentProfileId?: string;
   msdyn_NextLink?: string;
+  msdyn_SalesAgentType: number;
   msdyn_TrackingId?: string;
+  msdyn_Top?: number;
 }
 
 /**
@@ -34,10 +35,11 @@ export class msdyn_SalesAgents_FetchRecordsForAgentProcessingRequest
     const url = `${baseUrl}/msdyn_SalesAgents_FetchRecordsForAgentProcessing`;
 
     const body = requestBody({
-      msdyn_Top: this.Parameters.msdyn_Top,
-      msdyn_SalesAgentType: this.Parameters.msdyn_SalesAgentType,
+      msdyn_AgentProfileId: this.Parameters.msdyn_AgentProfileId,
       msdyn_NextLink: this.Parameters.msdyn_NextLink,
+      msdyn_SalesAgentType: this.Parameters.msdyn_SalesAgentType,
       msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
+      msdyn_Top: this.Parameters.msdyn_Top,
     });
 
     return {

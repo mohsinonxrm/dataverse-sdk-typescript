@@ -7,9 +7,9 @@ import type { AnyEntityPayload } from "./types/EntityPayload.js";
  * Response from msdyn_SiteMapRepair action
  */
 export interface msdyn_SiteMapRepairResponse {
-  ResolvedRecordsCount: number;
-  ResolutionState: number;
   HelpLink: string;
+  ResolutionState: number;
+  ResolvedRecordsCount: number;
 }
 
 /**

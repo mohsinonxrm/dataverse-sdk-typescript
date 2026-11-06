@@ -4,22 +4,22 @@ import type { DependentOptionSetMetadata } from "./DependentOptionSetMetadata.js
  * DependentAttributeMetadata complex type
  */
 export interface DependentAttributeMetadata {
-  AttributeId?: string;
-  LogicalName?: string;
-  DisplayName?: string;
-  AttributeType?: string;
   AttributeFormatType?: string;
+  AttributeId?: string;
+  AttributeOf?: string;
+  AttributeType?: string;
+  DisplayName?: string;
   EntityName?: string;
   IsCustomAttribute?: boolean;
+  IsRangeBased?: boolean;
   IsValidForAdvancedFind?: boolean;
   IsValidForGrid?: boolean;
-  YomiOf?: string;
-  AttributeOf?: string;
-  OptionSet?: DependentOptionSetMetadata;
-  Targets?: string[];
-  IsRangeBased?: boolean;
-  MinValue?: number;
-  MaxValue?: number;
-  Precision?: number;
+  LogicalName?: string;
   MaxLength?: number;
+  MaxValue?: number;
+  MinValue?: number;
+  OptionSet?: DependentOptionSetMetadata;
+  Precision?: number;
+  Targets?: string[];
+  YomiOf?: string;
 }

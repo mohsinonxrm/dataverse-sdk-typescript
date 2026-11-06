@@ -7,8 +7,8 @@ import { requestBody } from "./internal/requestBody.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_ActivateRoutingRuleRequestParameters {
-  msdyn_ownerId: string;
   msdyn_routingRuleId: string;
+  msdyn_ownerId: string;
 }
 
 /**
@@ -30,8 +30,8 @@ export class msdyn_ActivateRoutingRuleRequest
     const url = `${baseUrl}/msdyn_ActivateRoutingRule`;
 
     const body = requestBody({
-      msdyn_ownerId: this.Parameters.msdyn_ownerId,
       msdyn_routingRuleId: this.Parameters.msdyn_routingRuleId,
+      msdyn_ownerId: this.Parameters.msdyn_ownerId,
     });
 
     return {

@@ -2,26 +2,26 @@
  * msdyn_qualificationagenttrigger entity type
  */
 export interface msdyn_qualificationagenttrigger {
-  _ownerid_value?: string;
-  msdyn_input?: string;
-  msdyn_leadid?: string;
-  createdon?: string;
-  msdyn_name?: string;
+  _createdby_value?: string;
+  _createdonbehalfby_value?: string;
   _modifiedby_value?: string;
   _modifiedonbehalfby_value?: string;
-  _owningteam_value?: string;
-  modifiedon?: string;
-  _owninguser_value?: string;
-  overriddencreatedon?: string;
-  versionnumber?: number;
-  msdyn_retrycount?: number;
-  statuscode?: number;
+  _ownerid_value?: string;
   _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  createdon?: string;
   importsequencenumber?: number;
-  _createdonbehalfby_value?: string;
+  modifiedon?: string;
+  msdyn_input?: string;
+  msdyn_leadid?: string;
+  msdyn_name?: string;
+  msdyn_qualificationagenttriggerid?: string;
+  msdyn_retrycount?: number;
+  overriddencreatedon?: string;
   statecode?: number;
+  statuscode?: number;
   timezoneruleversionnumber?: number;
   utcconversiontimezonecode?: number;
-  msdyn_qualificationagenttriggerid?: string;
-  _createdby_value?: string;
+  versionnumber?: number;
 }

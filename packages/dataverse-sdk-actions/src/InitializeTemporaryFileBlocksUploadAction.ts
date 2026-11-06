@@ -5,8 +5,8 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from InitializeTemporaryFileBlocksUpload action
  */
 export interface InitializeTemporaryFileBlocksUploadResponse {
-  RecordId: string;
   FileContinuationToken: string;
+  RecordId: string;
 }
 
 /**

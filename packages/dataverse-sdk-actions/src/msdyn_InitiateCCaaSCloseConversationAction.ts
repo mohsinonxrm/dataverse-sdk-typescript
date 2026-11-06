@@ -14,8 +14,8 @@ export interface msdyn_InitiateCCaaSCloseConversationResponse {
  */
 export interface msdyn_InitiateCCaaSCloseConversationActionParameters {
   SessionId: string;
-  InitiatingUser: string;
   LiveWorkItemId: string;
+  InitiatingUser: string;
 }
 
 /**
@@ -31,8 +31,8 @@ export class msdyn_InitiateCCaaSCloseConversationAction implements Executable<ms
 
     const body = requestBody({
       SessionId: this.parameters.SessionId,
-      InitiatingUser: this.parameters.InitiatingUser,
       LiveWorkItemId: this.parameters.LiveWorkItemId,
+      InitiatingUser: this.parameters.InitiatingUser,
     });
 
     return {

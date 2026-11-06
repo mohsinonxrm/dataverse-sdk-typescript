@@ -10,8 +10,8 @@ import type {
  * Response from CreatePolymorphicLookupAttribute action
  */
 export interface CreatePolymorphicLookupAttributeResponse {
-  RelationshipIds: string[];
   AttributeId: string;
+  RelationshipIds: string[];
 }
 
 /**

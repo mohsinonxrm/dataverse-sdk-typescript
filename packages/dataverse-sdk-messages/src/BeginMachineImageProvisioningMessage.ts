@@ -11,9 +11,9 @@ import type { BeginMachineImageProvisioningResponse as BeginMachineImageProvisio
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface BeginMachineImageProvisioningRequestParameters {
+  sharedImageGalleryDestination: EntityReference | AnyEntityPayload;
   vmImageDescription?: string;
   vmImageName: string;
-  sharedImageGalleryDestination: EntityReference | AnyEntityPayload;
   machineImageSource: EntityReference | AnyEntityPayload;
 }
 
@@ -36,9 +36,9 @@ export class BeginMachineImageProvisioningRequest
     const url = `${baseUrl}/BeginMachineImageProvisioning`;
 
     const body = requestBody({
+      sharedImageGalleryDestination: this.Parameters.sharedImageGalleryDestination,
       vmImageDescription: this.Parameters.vmImageDescription,
       vmImageName: this.Parameters.vmImageName,
-      sharedImageGalleryDestination: this.Parameters.sharedImageGalleryDestination,
       machineImageSource: this.Parameters.machineImageSource,
     });
 

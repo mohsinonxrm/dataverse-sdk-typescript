@@ -6,6 +6,7 @@ import { requestBody } from "./internal/requestBody.js";
  */
 export interface msdyn_CaseClassificationResponse {
   Response4: string;
+  usage: string;
 }
 
 /**

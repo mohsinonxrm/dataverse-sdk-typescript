@@ -19,9 +19,11 @@ export interface msdyn_PredictFieldsBasedOnRulesResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_PredictFieldsBasedOnRulesActionParameters {
+  msdyn_ScenarioName?: string;
+  msdyn_MatchingRuleId?: string;
+  msdyn_Context?: EntityReference | AnyEntityPayload;
   msdyn_Target: EntityReference | AnyEntityPayload;
   msdyn_ContextGenerationParameters?: string;
-  msdyn_Context?: EntityReference | AnyEntityPayload;
 }
 
 /**
@@ -36,9 +38,11 @@ export class msdyn_PredictFieldsBasedOnRulesAction implements Executable<msdyn_P
     const url = `${baseUrl}/msdyn_PredictFieldsBasedOnRules`;
 
     const body = requestBody({
+      msdyn_ScenarioName: this.parameters.msdyn_ScenarioName,
+      msdyn_MatchingRuleId: this.parameters.msdyn_MatchingRuleId,
+      msdyn_Context: this.parameters.msdyn_Context,
       msdyn_Target: this.parameters.msdyn_Target,
       msdyn_ContextGenerationParameters: this.parameters.msdyn_ContextGenerationParameters,
-      msdyn_Context: this.parameters.msdyn_Context,
     });
 
     return {

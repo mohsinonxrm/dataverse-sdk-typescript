@@ -5,8 +5,8 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from install action
  */
 export interface installResponse {
-  flowTriggerUri: string;
   connectionId: string;
+  flowTriggerUri: string;
   stringifiedConnectionObject: string;
 }
 

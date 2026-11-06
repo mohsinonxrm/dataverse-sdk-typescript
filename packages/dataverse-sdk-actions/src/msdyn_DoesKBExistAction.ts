@@ -6,6 +6,7 @@ import { requestBody } from "./internal/requestBody.js";
  */
 export interface msdyn_DoesKBExistResponse {
   Response: string;
+  usage: string;
 }
 
 /**
@@ -13,6 +14,7 @@ export interface msdyn_DoesKBExistResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_DoesKBExistActionParameters {
+  HarvestWorkItemResponse: string;
   CSCopilotRequest: string;
 }
 
@@ -28,6 +30,7 @@ export class msdyn_DoesKBExistAction implements Executable<msdyn_DoesKBExistResp
     const url = `${baseUrl}/msdyn_DoesKBExist`;
 
     const body = requestBody({
+      HarvestWorkItemResponse: this.parameters.HarvestWorkItemResponse,
       CSCopilotRequest: this.parameters.CSCopilotRequest,
     });
 

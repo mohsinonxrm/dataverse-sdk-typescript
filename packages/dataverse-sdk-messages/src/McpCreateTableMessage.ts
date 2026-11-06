@@ -9,10 +9,11 @@ import type { McpCreateTableResponse as McpCreateTableResponseData } from "./typ
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface McpCreateTableRequestParameters {
-  displayname?: string;
   item: string;
-  tablename: string;
+  displayname?: string;
   description?: string;
+  tablename: string;
+  publisherprefix?: string;
 }
 
 /**
@@ -34,10 +35,11 @@ export class McpCreateTableRequest
     const url = `${baseUrl}/McpCreateTable`;
 
     const body = requestBody({
-      displayname: this.Parameters.displayname,
       item: this.Parameters.item,
-      tablename: this.Parameters.tablename,
+      displayname: this.Parameters.displayname,
       description: this.Parameters.description,
+      tablename: this.Parameters.tablename,
+      publisherprefix: this.Parameters.publisherprefix,
     });
 
     return {

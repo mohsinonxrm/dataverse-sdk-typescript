@@ -13,11 +13,12 @@ export interface msdyn_StoreQualityEvaluationResultResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_StoreQualityEvaluationResultActionParameters {
+  EvaluationMethod?: number;
+  Status: string;
+  RepresentativeId?: string;
   CriteriaVersionNumber: number;
   EvaluationId: string;
-  EvaluationMethod?: number;
   EvaluationInsight?: string;
-  Status: string;
 }
 
 /**
@@ -32,11 +33,12 @@ export class msdyn_StoreQualityEvaluationResultAction implements Executable<msdy
     const url = `${baseUrl}/msdyn_StoreQualityEvaluationResult`;
 
     const body = requestBody({
+      EvaluationMethod: this.parameters.EvaluationMethod,
+      Status: this.parameters.Status,
+      RepresentativeId: this.parameters.RepresentativeId,
       CriteriaVersionNumber: this.parameters.CriteriaVersionNumber,
       EvaluationId: this.parameters.EvaluationId,
-      EvaluationMethod: this.parameters.EvaluationMethod,
       EvaluationInsight: this.parameters.EvaluationInsight,
-      Status: this.parameters.Status,
     });
 
     return {

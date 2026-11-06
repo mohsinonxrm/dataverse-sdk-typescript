@@ -2,5 +2,6 @@
  * msdyn_CRACaseClosureResponse complex type
  */
 export interface msdyn_CRACaseClosureResponse {
+  msdyn_IsCaseResolved?: boolean;
   msdyn_Status?: string;
 }

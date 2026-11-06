@@ -5,8 +5,8 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_GetAnalyticsReportToken action
  */
 export interface msdyn_GetAnalyticsReportTokenResponse {
-  Token: string;
   Expiration: string;
+  Token: string;
 }
 
 /**

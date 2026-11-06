@@ -1,0 +1,70 @@
+import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
+
+/**
+ * msdyn_aidescriptionrun entity type
+ */
+export interface msdyn_aidescriptionrun {
+  _createdby_value?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _msdyn_aidescoptimizationrunid_value?: string;
+  _msdyn_aisimulationrunid_value?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  componentidunique?: string;
+  componentstate?: number;
+  createdon?: string;
+  importsequencenumber?: number;
+  iscustomizable?: BooleanManagedProperty;
+  ismanaged?: boolean;
+  modifiedon?: string;
+  msdyn_adminfilterxml?: string;
+  msdyn_aidescriptionrunid?: string;
+  msdyn_completedon?: string;
+  msdyn_confusioninsightjson?: string;
+  msdyn_correlationid?: string;
+  msdyn_currentround?: number;
+  msdyn_dataprepjson?: string;
+  msdyn_entitylogicalname?: string;
+  msdyn_errordetails?: string;
+  msdyn_failedcount?: number;
+  msdyn_fieldlogicalname?: string;
+  msdyn_fieldsjson?: string;
+  msdyn_filtercriteriajson?: string;
+  msdyn_finalaccuracyjson?: string;
+  msdyn_intermediatelog?: string;
+  msdyn_isactivedraft?: boolean;
+  msdyn_language?: string;
+  msdyn_maxrounds?: number;
+  msdyn_name?: string;
+  msdyn_optimizeoptionsjson?: string;
+  msdyn_plateaudetected?: boolean;
+  msdyn_preflightreportjson?: string;
+  msdyn_previousaidescriptionrun?: string;
+  msdyn_processedcount?: number;
+  msdyn_processstatusmsg?: string;
+  msdyn_progresspercent?: number;
+  msdyn_publishedmode?: boolean;
+  msdyn_resultjson?: string;
+  msdyn_roundhistoryjson?: string;
+  msdyn_runtype?: number;
+  msdyn_sourcesimulationrunid?: string;
+  msdyn_startedon?: string;
+  msdyn_status?: number;
+  msdyn_successcount?: number;
+  msdyn_targetaccuracy?: number;
+  msdyn_targetattributename?: string;
+  msdyn_targetentity?: string;
+  msdyn_totalvaluecount?: number;
+  overriddencreatedon?: string;
+  overwritetime?: string;
+  solutionid?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
+}

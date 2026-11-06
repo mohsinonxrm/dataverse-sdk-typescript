@@ -2,15 +2,15 @@
  * ribbonmetadatatoprocess entity type
  */
 export interface ribbonmetadatatoprocess {
-  createdon?: string;
-  solutionname?: string;
-  processedon?: string;
-  exceptionmessage?: string;
-  entityname?: string;
-  retrycount?: number;
   completedon?: string;
-  status?: number;
+  createdon?: string;
+  entityname?: string;
+  exceptionmessage?: string;
+  isdbupdate?: number;
+  processedon?: string;
+  retrycount?: number;
   ribbonmetadatarowid?: string;
   solutionid?: string;
-  isdbupdate?: number;
+  solutionname?: string;
+  status?: number;
 }

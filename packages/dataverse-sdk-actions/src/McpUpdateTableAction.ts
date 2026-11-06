@@ -6,6 +6,7 @@ import { requestBody } from "./internal/requestBody.js";
  */
 export interface McpUpdateTableResponse {
   successMessage: string;
+  usage: string;
 }
 
 /**
@@ -13,10 +14,10 @@ export interface McpUpdateTableResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface McpUpdateTableActionParameters {
-  newDisplayName?: string;
-  tablename: string;
-  item: string;
   description?: string;
+  newDisplayName?: string;
+  item: string;
+  tablename: string;
 }
 
 /**
@@ -31,10 +32,10 @@ export class McpUpdateTableAction implements Executable<McpUpdateTableResponse> 
     const url = `${baseUrl}/McpUpdateTable`;
 
     const body = requestBody({
-      newDisplayName: this.parameters.newDisplayName,
-      tablename: this.parameters.tablename,
-      item: this.parameters.item,
       description: this.parameters.description,
+      newDisplayName: this.parameters.newDisplayName,
+      item: this.parameters.item,
+      tablename: this.parameters.tablename,
     });
 
     return {

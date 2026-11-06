@@ -5,8 +5,8 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from _RetrieveActivitiesByResources action
  */
 export interface _RetrieveActivitiesByResourcesResponse {
-  Result: string;
   ExceptionMessage: string;
+  Result: string;
 }
 
 /**

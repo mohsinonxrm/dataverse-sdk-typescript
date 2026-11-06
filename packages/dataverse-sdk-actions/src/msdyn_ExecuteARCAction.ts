@@ -7,8 +7,8 @@ import type { AnyEntityPayload } from "./types/EntityPayload.js";
  * Response from msdyn_ExecuteARC action
  */
 export interface msdyn_ExecuteARCResponse {
-  FlowName: string;
   ErrorMessage: string;
+  FlowName: string;
 }
 
 /**

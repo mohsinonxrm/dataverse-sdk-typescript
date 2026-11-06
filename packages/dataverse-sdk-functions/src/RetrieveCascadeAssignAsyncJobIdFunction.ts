@@ -5,8 +5,8 @@ import { formatParameterAlias } from "./internal/odataLiteral.js";
  * Response from RetrieveCascadeAssignAsyncJobId function
  */
 export interface RetrieveCascadeAssignAsyncJobIdResponse {
-  AsyncJobName: string;
   AsyncJobId: string;
+  AsyncJobName: string;
 }
 
 /**

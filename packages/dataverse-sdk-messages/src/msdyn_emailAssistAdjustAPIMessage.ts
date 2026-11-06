@@ -9,10 +9,10 @@ import type { msdyn_emailAssistAdjustAPIResponse as msdyn_emailAssistAdjustAPIRe
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_emailAssistAdjustAPIRequestParameters {
-  emailInput: string;
-  caller: string;
   knobsConfigurations: string;
+  emailInput: string;
   requestId: string;
+  caller: string;
   copilotOption: string;
 }
 
@@ -35,10 +35,10 @@ export class msdyn_emailAssistAdjustAPIRequest
     const url = `${baseUrl}/msdyn_emailAssistAdjustAPI`;
 
     const body = requestBody({
-      emailInput: this.Parameters.emailInput,
-      caller: this.Parameters.caller,
       knobsConfigurations: this.Parameters.knobsConfigurations,
+      emailInput: this.Parameters.emailInput,
       requestId: this.Parameters.requestId,
+      caller: this.Parameters.caller,
       copilotOption: this.Parameters.copilotOption,
     });
 

@@ -6,8 +6,8 @@ import type { email } from "./types/index.js";
  * Response from CheckIncomingEmail function
  */
 export interface CheckIncomingEmailResponse {
-  ShouldDeliver: boolean;
   ReasonCode: number;
+  ShouldDeliver: boolean;
 }
 
 /**

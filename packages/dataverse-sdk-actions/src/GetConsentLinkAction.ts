@@ -5,14 +5,14 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from GetConsentLink action
  */
 export interface GetConsentLinkResponse {
-  principalId: string;
-  customParameters: string;
-  redirectUrl: string;
-  firstPartyLoginUri: string;
   consentLink: string;
-  tenantId: string;
-  principalType: string;
+  customParameters: string;
+  firstPartyLoginUri: string;
   parameterConsentLinks: string;
+  principalId: string;
+  principalType: string;
+  redirectUrl: string;
+  tenantId: string;
 }
 
 /**

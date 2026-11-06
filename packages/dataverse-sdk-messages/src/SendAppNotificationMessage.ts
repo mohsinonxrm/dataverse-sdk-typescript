@@ -11,15 +11,15 @@ import type { SendAppNotificationResponse as SendAppNotificationResponseData } f
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface SendAppNotificationRequestParameters {
+  Body?: string;
+  OverrideContent?: EntityReference | AnyEntityPayload;
+  Actions?: EntityReference | AnyEntityPayload;
   Recipient: EntityReference | AnyEntityPayload;
+  IconType?: number;
   Expiry?: number;
   Priority?: number;
-  OverrideContent?: EntityReference | AnyEntityPayload;
-  Title: string;
-  IconType?: number;
-  Body?: string;
-  Actions?: EntityReference | AnyEntityPayload;
   ToastType?: number;
+  Title: string;
 }
 
 /**
@@ -41,15 +41,15 @@ export class SendAppNotificationRequest
     const url = `${baseUrl}/SendAppNotification`;
 
     const body = requestBody({
+      Body: this.Parameters.Body,
+      OverrideContent: this.Parameters.OverrideContent,
+      Actions: this.Parameters.Actions,
       Recipient: this.Parameters.Recipient,
+      IconType: this.Parameters.IconType,
       Expiry: this.Parameters.Expiry,
       Priority: this.Parameters.Priority,
-      OverrideContent: this.Parameters.OverrideContent,
-      Title: this.Parameters.Title,
-      IconType: this.Parameters.IconType,
-      Body: this.Parameters.Body,
-      Actions: this.Parameters.Actions,
       ToastType: this.Parameters.ToastType,
+      Title: this.Parameters.Title,
     });
 
     return {

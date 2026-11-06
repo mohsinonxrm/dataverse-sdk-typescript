@@ -4,10 +4,10 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * Response from msdyn_ProvisionUnifiedRouting action
  */
 export interface msdyn_ProvisionUnifiedRoutingResponse {
-  msdyn_responseCode: string;
   msdyn_customMessage: string;
-  msdyn_serviceRequestId: string;
   msdyn_errorCode: string;
+  msdyn_responseCode: string;
+  msdyn_serviceRequestId: string;
 }
 
 /**

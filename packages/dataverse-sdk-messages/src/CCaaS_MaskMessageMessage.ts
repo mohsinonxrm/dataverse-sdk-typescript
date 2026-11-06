@@ -9,10 +9,10 @@ import type { CCaaS_MaskMessageResponse as CCaaS_MaskMessageResponseData } from 
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_MaskMessageRequestParameters {
+  ConversationId: string;
   WidgetId: string;
   MessageId: string;
   ApiVersion: string;
-  ConversationId: string;
 }
 
 /**
@@ -34,10 +34,10 @@ export class CCaaS_MaskMessageRequest
     const url = `${baseUrl}/CCaaS_MaskMessage`;
 
     const body = requestBody({
+      ConversationId: this.Parameters.ConversationId,
       WidgetId: this.Parameters.WidgetId,
       MessageId: this.Parameters.MessageId,
       ApiVersion: this.Parameters.ApiVersion,
-      ConversationId: this.Parameters.ConversationId,
     });
 
     return {

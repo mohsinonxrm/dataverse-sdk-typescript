@@ -2,8 +2,8 @@
  * indexattributes entity type
  */
 export interface indexattributes {
-  indexid?: string;
   indexattributeid?: string;
-  versionnumber?: number;
+  indexid?: string;
   recordid?: number;
+  versionnumber?: number;
 }

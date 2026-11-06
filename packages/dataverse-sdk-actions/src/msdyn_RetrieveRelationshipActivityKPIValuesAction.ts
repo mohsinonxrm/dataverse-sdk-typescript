@@ -7,9 +7,9 @@ import type { AnyEntityPayload } from "./types/EntityPayload.js";
  * Response from msdyn_RetrieveRelationshipActivityKPIValues action
  */
 export interface msdyn_RetrieveRelationshipActivityKPIValuesResponse {
-  LastModifiedOn: string;
   ErrorList: string;
   KPIValues: string;
+  LastModifiedOn: string;
 }
 
 /**

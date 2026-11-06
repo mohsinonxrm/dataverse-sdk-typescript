@@ -2,8 +2,8 @@
  * aitags_msdyncrm_keyword_msdyncrm_file entity type
  */
 export interface aitags_msdyncrm_keyword_msdyncrm_file {
-  versionnumber?: number;
+  aitags_msdyncrm_keyword_msdyncrm_fileid?: string;
   msdyncrm_fileid?: string;
   msdyncrm_keywordid?: string;
-  aitags_msdyncrm_keyword_msdyncrm_fileid?: string;
+  versionnumber?: number;
 }

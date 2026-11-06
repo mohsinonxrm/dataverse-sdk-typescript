@@ -2,26 +2,26 @@
  * msdyn_requirementgroup entity type
  */
 export interface msdyn_requirementgroup {
-  timezoneruleversionnumber?: number;
-  _ownerid_value?: string;
-  _owningteam_value?: string;
-  _modifiedby_value?: string;
-  utcconversiontimezonecode?: number;
-  _createdonbehalfby_value?: string;
-  importsequencenumber?: number;
-  msdyn_autogrouptype?: number;
-  modifiedon?: string;
-  overriddencreatedon?: string;
-  _modifiedonbehalfby_value?: string;
-  versionnumber?: number;
-  _owninguser_value?: string;
-  msdyn_name?: string;
-  _msdyn_requirementgrouptemplateid_value?: string;
-  msdyn_istemplate?: boolean;
-  statuscode?: number;
-  statecode?: number;
-  msdyn_requirementgroupid?: string;
   _createdby_value?: string;
-  createdon?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _msdyn_requirementgrouptemplateid_value?: string;
+  _ownerid_value?: string;
   _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_autogrouptype?: number;
+  msdyn_istemplate?: boolean;
+  msdyn_name?: string;
+  msdyn_requirementgroupid?: string;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

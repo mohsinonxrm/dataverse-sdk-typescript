@@ -4,14 +4,14 @@ import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
  * connectionroleassociation entity type
  */
 export interface connectionroleassociation {
-  ismanaged?: boolean;
   associatedconnectionroleid?: string;
-  versionnumber?: number;
-  connectionroleassociationid?: string;
-  solutionid?: string;
   componentidunique?: string;
-  iscustomizable?: BooleanManagedProperty;
   componentstate?: number;
+  connectionroleassociationid?: string;
   connectionroleid?: string;
+  iscustomizable?: BooleanManagedProperty;
+  ismanaged?: boolean;
   overwritetime?: string;
+  solutionid?: string;
+  versionnumber?: number;
 }

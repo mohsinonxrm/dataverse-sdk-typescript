@@ -7,9 +7,9 @@ import { requestBody } from "./internal/requestBody.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_JoinLinkedChatConversationRequestParameters {
-  msdyn_UserId?: string;
-  msdyn_RegardingEntityId: string;
   msdyn_TeamsConversationId: string;
+  msdyn_RegardingEntityId: string;
+  msdyn_UserId?: string;
 }
 
 /**
@@ -31,9 +31,9 @@ export class msdyn_JoinLinkedChatConversationRequest
     const url = `${baseUrl}/msdyn_JoinLinkedChatConversation`;
 
     const body = requestBody({
-      msdyn_UserId: this.Parameters.msdyn_UserId,
-      msdyn_RegardingEntityId: this.Parameters.msdyn_RegardingEntityId,
       msdyn_TeamsConversationId: this.Parameters.msdyn_TeamsConversationId,
+      msdyn_RegardingEntityId: this.Parameters.msdyn_RegardingEntityId,
+      msdyn_UserId: this.Parameters.msdyn_UserId,
     });
 
     return {

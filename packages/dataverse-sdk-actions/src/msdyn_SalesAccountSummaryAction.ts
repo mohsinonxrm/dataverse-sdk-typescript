@@ -6,8 +6,8 @@ import { requestBody } from "./internal/requestBody.js";
  */
 export interface msdyn_SalesAccountSummaryResponse {
   msdyn_additionalDetails: string;
-  msdyn_sales_copilot_output: string;
   msdyn_canUseCache: boolean;
+  msdyn_sales_copilot_output: string;
   msdyn_summary: string;
   msdyn_summary_raw: string;
   msdyn_version: string;
@@ -18,14 +18,14 @@ export interface msdyn_SalesAccountSummaryResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesAccountSummaryActionParameters {
+  msdyn_additionalParams?: string;
+  msdyn_activityId?: string;
+  msdyn_id: string;
+  msdyn_isMergedCatchupAndSummary?: boolean;
+  msdyn_skipHeader?: string;
   msdyn_sessionId?: string;
   msdyn_lastComputationTime?: string;
-  msdyn_activityId?: string;
-  msdyn_isMergedCatchupAndSummary?: boolean;
-  msdyn_additionalParams?: string;
   msdyn_responseFormat?: string;
-  msdyn_id: string;
-  msdyn_skipHeader?: string;
 }
 
 /**
@@ -40,14 +40,14 @@ export class msdyn_SalesAccountSummaryAction implements Executable<msdyn_SalesAc
     const url = `${baseUrl}/msdyn_SalesAccountSummary`;
 
     const body = requestBody({
+      msdyn_additionalParams: this.parameters.msdyn_additionalParams,
+      msdyn_activityId: this.parameters.msdyn_activityId,
+      msdyn_id: this.parameters.msdyn_id,
+      msdyn_isMergedCatchupAndSummary: this.parameters.msdyn_isMergedCatchupAndSummary,
+      msdyn_skipHeader: this.parameters.msdyn_skipHeader,
       msdyn_sessionId: this.parameters.msdyn_sessionId,
       msdyn_lastComputationTime: this.parameters.msdyn_lastComputationTime,
-      msdyn_activityId: this.parameters.msdyn_activityId,
-      msdyn_isMergedCatchupAndSummary: this.parameters.msdyn_isMergedCatchupAndSummary,
-      msdyn_additionalParams: this.parameters.msdyn_additionalParams,
       msdyn_responseFormat: this.parameters.msdyn_responseFormat,
-      msdyn_id: this.parameters.msdyn_id,
-      msdyn_skipHeader: this.parameters.msdyn_skipHeader,
     });
 
     return {

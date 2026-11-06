@@ -5,12 +5,12 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_SalesAgents_ProcessEngageAgentResponse action
  */
 export interface msdyn_SalesAgents_ProcessEngageAgentResponseResponse {
-  msdyn_IsUnsubscribe: boolean;
   msdyn_AreAllFollowUpsCompleted: boolean;
-  msdyn_Explanation: string;
   msdyn_EmailBody: string;
+  msdyn_Explanation: string;
   msdyn_IsAwaitingResponse: boolean;
   msdyn_IsStuck: boolean;
+  msdyn_IsUnsubscribe: boolean;
 }
 
 /**
@@ -18,10 +18,10 @@ export interface msdyn_SalesAgents_ProcessEngageAgentResponseResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesAgents_ProcessEngageAgentResponseActionParameters {
-  msdyn_Thread?: string;
-  msdyn_TrackingId?: string;
-  msdyn_SalesMacroAgentType: number;
   msdyn_SalesAgentRun?: string;
+  msdyn_Thread?: string;
+  msdyn_SalesMacroAgentType: number;
+  msdyn_TrackingId?: string;
   msdyn_EngageAgentActivities: string;
 }
 
@@ -39,10 +39,10 @@ export class msdyn_SalesAgents_ProcessEngageAgentResponseAction implements Execu
     const url = `${baseUrl}/msdyn_SalesAgents_ProcessEngageAgentResponse`;
 
     const body = requestBody({
-      msdyn_Thread: this.parameters.msdyn_Thread,
-      msdyn_TrackingId: this.parameters.msdyn_TrackingId,
-      msdyn_SalesMacroAgentType: this.parameters.msdyn_SalesMacroAgentType,
       msdyn_SalesAgentRun: this.parameters.msdyn_SalesAgentRun,
+      msdyn_Thread: this.parameters.msdyn_Thread,
+      msdyn_SalesMacroAgentType: this.parameters.msdyn_SalesMacroAgentType,
+      msdyn_TrackingId: this.parameters.msdyn_TrackingId,
       msdyn_EngageAgentActivities: this.parameters.msdyn_EngageAgentActivities,
     });
 

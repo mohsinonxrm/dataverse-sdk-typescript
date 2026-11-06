@@ -7,14 +7,14 @@ import { requestBody } from "./internal/requestBody.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_AutonomousSQA_UpdateSalesAgentRunRequestParameters {
-  msdyn_IsNonRetryableError?: boolean;
   msdyn_IsSalesAgentRunComplete?: boolean;
-  msdyn_SalesAgentRun?: string;
-  msdyn_TrackingId?: string;
-  msdyn_HasAgentRunFailed?: boolean;
-  msdyn_IsAgentThrottled?: boolean;
-  msdyn_RetryAfterDate?: string;
   msdyn_HasAgentRunStarted?: boolean;
+  msdyn_RetryAfterDate?: string;
+  msdyn_SalesAgentRun?: string;
+  msdyn_HasAgentRunFailed?: boolean;
+  msdyn_TrackingId?: string;
+  msdyn_IsAgentThrottled?: boolean;
+  msdyn_IsNonRetryableError?: boolean;
   msdyn_SalesMacroAgentType?: number;
 }
 
@@ -37,14 +37,14 @@ export class msdyn_AutonomousSQA_UpdateSalesAgentRunRequest
     const url = `${baseUrl}/msdyn_AutonomousSQA_UpdateSalesAgentRun`;
 
     const body = requestBody({
-      msdyn_IsNonRetryableError: this.Parameters.msdyn_IsNonRetryableError,
       msdyn_IsSalesAgentRunComplete: this.Parameters.msdyn_IsSalesAgentRunComplete,
-      msdyn_SalesAgentRun: this.Parameters.msdyn_SalesAgentRun,
-      msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
-      msdyn_HasAgentRunFailed: this.Parameters.msdyn_HasAgentRunFailed,
-      msdyn_IsAgentThrottled: this.Parameters.msdyn_IsAgentThrottled,
-      msdyn_RetryAfterDate: this.Parameters.msdyn_RetryAfterDate,
       msdyn_HasAgentRunStarted: this.Parameters.msdyn_HasAgentRunStarted,
+      msdyn_RetryAfterDate: this.Parameters.msdyn_RetryAfterDate,
+      msdyn_SalesAgentRun: this.Parameters.msdyn_SalesAgentRun,
+      msdyn_HasAgentRunFailed: this.Parameters.msdyn_HasAgentRunFailed,
+      msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
+      msdyn_IsAgentThrottled: this.Parameters.msdyn_IsAgentThrottled,
+      msdyn_IsNonRetryableError: this.Parameters.msdyn_IsNonRetryableError,
       msdyn_SalesMacroAgentType: this.Parameters.msdyn_SalesMacroAgentType,
     });
 

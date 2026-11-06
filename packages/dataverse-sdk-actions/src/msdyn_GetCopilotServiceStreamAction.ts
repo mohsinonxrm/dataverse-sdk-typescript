@@ -13,8 +13,8 @@ export interface msdyn_GetCopilotServiceStreamResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_GetCopilotServiceStreamActionParameters {
-  RequestPayload?: string;
   Context: string;
+  RequestPayload?: string;
 }
 
 /**
@@ -29,8 +29,8 @@ export class msdyn_GetCopilotServiceStreamAction implements Executable<msdyn_Get
     const url = `${baseUrl}/msdyn_GetCopilotServiceStream`;
 
     const body = requestBody({
-      RequestPayload: this.parameters.RequestPayload,
       Context: this.parameters.Context,
+      RequestPayload: this.parameters.RequestPayload,
     });
 
     return {

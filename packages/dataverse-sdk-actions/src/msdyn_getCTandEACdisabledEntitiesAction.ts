@@ -13,8 +13,8 @@ export interface msdyn_getCTandEACdisabledEntitiesResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_getCTandEACdisabledEntitiesActionParameters {
-  msdyn_entityName: string;
   msdyn_entityList: string;
+  msdyn_entityName: string;
 }
 
 /**
@@ -29,8 +29,8 @@ export class msdyn_getCTandEACdisabledEntitiesAction implements Executable<msdyn
     const url = `${baseUrl}/msdyn_getCTandEACdisabledEntities`;
 
     const body = requestBody({
-      msdyn_entityName: this.parameters.msdyn_entityName,
       msdyn_entityList: this.parameters.msdyn_entityList,
+      msdyn_entityName: this.parameters.msdyn_entityName,
     });
 
     return {

@@ -2,24 +2,24 @@
  * msdynmkt_byoacschannelinstance entity type
  */
 export interface msdynmkt_byoacschannelinstance {
-  timezoneruleversionnumber?: number;
-  msdynmkt_type?: number;
-  _ownerid_value?: string;
-  versionnumber?: number;
-  msdynmkt_byoacschannelinstanceid?: string;
-  _owningbusinessunit_value?: string;
+  _createdby_value?: string;
+  _createdonbehalfby_value?: string;
   _modifiedby_value?: string;
-  modifiedon?: string;
-  statecode?: number;
+  _modifiedonbehalfby_value?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
   createdon?: string;
   importsequencenumber?: number;
-  _modifiedonbehalfby_value?: string;
-  _owningteam_value?: string;
-  _createdby_value?: string;
-  _owninguser_value?: string;
-  overriddencreatedon?: string;
-  _createdonbehalfby_value?: string;
+  modifiedon?: string;
+  msdynmkt_byoacschannelinstanceid?: string;
   msdynmkt_name?: string;
-  utcconversiontimezonecode?: number;
+  msdynmkt_type?: number;
+  overriddencreatedon?: string;
+  statecode?: number;
   statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

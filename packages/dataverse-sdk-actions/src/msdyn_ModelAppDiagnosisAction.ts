@@ -8,11 +8,11 @@ import type { appmodule } from "./types/index.js";
  * Response from msdyn_ModelAppDiagnosis action
  */
 export interface msdyn_ModelAppDiagnosisResponse {
-  Message: string;
-  ReturnStatus: number;
-  ResultEntities: string;
-  RepairIssueType: string;
   HelpLink: string;
+  Message: string;
+  RepairIssueType: string;
+  ResultEntities: string;
+  ReturnStatus: number;
 }
 
 /**

@@ -7,8 +7,8 @@ import type { AnyEntityPayload } from "./types/EntityPayload.js";
  * Response from CommitAttachmentBlocksUpload action
  */
 export interface CommitAttachmentBlocksUploadResponse {
-  FileSizeInBytes: number;
   ActivityMimeAttachmentId: string;
+  FileSizeInBytes: number;
 }
 
 /**

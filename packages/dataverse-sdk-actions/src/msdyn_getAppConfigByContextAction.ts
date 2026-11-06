@@ -5,8 +5,8 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_getAppConfigByContext action
  */
 export interface msdyn_getAppConfigByContextResponse {
-  AppConfigurations: string;
   AppConfigurationAssignment: string;
+  AppConfigurations: string;
 }
 
 /**

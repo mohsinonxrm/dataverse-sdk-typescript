@@ -13,9 +13,9 @@ export interface msdyn_IntentServiceAPICallProxyResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_IntentServiceAPICallProxyActionParameters {
-  IntentServiceEntityType?: string;
-  IntentServiceRequestPayload?: string;
   IntentServiceRequestPayloadForTelemetry: string;
+  IntentServiceRequestPayload?: string;
+  IntentServiceEntityType?: string;
 }
 
 /**
@@ -30,10 +30,10 @@ export class msdyn_IntentServiceAPICallProxyAction implements Executable<msdyn_I
     const url = `${baseUrl}/msdyn_IntentServiceAPICallProxy`;
 
     const body = requestBody({
-      IntentServiceEntityType: this.parameters.IntentServiceEntityType,
-      IntentServiceRequestPayload: this.parameters.IntentServiceRequestPayload,
       IntentServiceRequestPayloadForTelemetry:
         this.parameters.IntentServiceRequestPayloadForTelemetry,
+      IntentServiceRequestPayload: this.parameters.IntentServiceRequestPayload,
+      IntentServiceEntityType: this.parameters.IntentServiceEntityType,
     });
 
     return {

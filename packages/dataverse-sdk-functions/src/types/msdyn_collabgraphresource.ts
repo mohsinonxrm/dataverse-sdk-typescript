@@ -2,20 +2,20 @@
  * msdyn_collabgraphresource entity type
  */
 export interface msdyn_collabgraphresource {
-  statecode?: number;
-  modifiedon?: string;
-  createdon?: string;
-  _modifiedonbehalfby_value?: string;
-  overriddencreatedon?: string;
-  versionnumber?: number;
-  msdyn_graphresourceid?: string;
-  utcconversiontimezonecode?: number;
-  _modifiedby_value?: string;
-  statuscode?: number;
-  importsequencenumber?: number;
-  msdyn_graphresourcename?: string;
   _createdby_value?: string;
-  timezoneruleversionnumber?: number;
   _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
   msdyn_collabgraphresourceid?: string;
+  msdyn_graphresourceid?: string;
+  msdyn_graphresourcename?: string;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

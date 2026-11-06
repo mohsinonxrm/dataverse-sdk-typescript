@@ -6,6 +6,7 @@ import { requestBody } from "./internal/requestBody.js";
  */
 export interface msdyn_RetrieveConversationPayloadResponse {
   ConversationPayload: string;
+  Representative: string;
 }
 
 /**
@@ -14,6 +15,7 @@ export interface msdyn_RetrieveConversationPayloadResponse {
  */
 export interface msdyn_RetrieveConversationPayloadActionParameters {
   ConversationId: string;
+  ParticipantScope?: number;
 }
 
 /**
@@ -29,6 +31,7 @@ export class msdyn_RetrieveConversationPayloadAction implements Executable<msdyn
 
     const body = requestBody({
       ConversationId: this.parameters.ConversationId,
+      ParticipantScope: this.parameters.ParticipantScope,
     });
 
     return {

@@ -22,9 +22,25 @@ This tool generates the **SDK's internal types**:
 4. **Typed Functions** → `packages/dataverse-sdk-functions/src/`
    - All Web API functions (bound and unbound)
 
-## Prerequisites
+## Regenerating the packages (no org needed)
 
-1. **Dataverse v9.2 environment** with Sales + Customer Service installed
+The actions, functions and messages packages are generated from the committed snapshot
+[`metadata/dataverse-metadata.xml`](metadata/README.md) (#293):
+
+```bash
+pnpm --filter generate-sdk-types regen
+```
+
+It purges and rewrites the three packages' `src/`, formats them, and updates the generated docs
+(operation lists and `<!-- count:… -->` blocks). CI runs it and fails on any diff, so change the
+generator and commit the regenerated packages together. [`metadata/README.md`](metadata/README.md)
+says which org the snapshot came from and how to refresh it (`pnpm --filter generate-sdk-types
+snapshot`, the only step that needs an org).
+
+## Prerequisites (live `$metadata` only)
+
+1. **Dataverse v9.2 environment** with the Dynamics 365 apps listed in
+   [`metadata/README.md`](metadata/README.md)
 2. **Azure AD app registration** with client credentials
 3. **API permissions**: `user_impersonation` or appropriate access
 
@@ -44,6 +60,9 @@ This tool generates the **SDK's internal types**:
    AZURE_TENANT_ID=your-tenant-id
    AZURE_CLIENT_SECRET=your-client-secret
    ```
+
+   `DATAVERSE_TENANT_ID`, `DATAVERSE_CLIENT_ID` and `DATAVERSE_CLIENT_SECRET` (the integration
+   tests' names) work too.
 
 3. Install dependencies (from repo root):
    ```bash
@@ -91,7 +110,9 @@ Options:
   -c, --config <path>   Path to config file (default: sdk-gen.config.json)
   --url <url>           Dataverse URL (overrides .env)
   --dry-run             Preview what would be generated without writing files
-  --save-csdl           Also save the fetched $metadata to ./dataverse-metadata.xml
+  --save-csdl [path]    Also save the fetched $metadata, in snapshot form (default: ./dataverse-metadata.xml)
+  --from-csdl <path>    Generate from a saved CSDL file instead of the live $metadata (no network)
+  --csdl-only           With --save-csdl: only fetch and save, generate nothing
   --purge               Delete the existing output before generating
   -h, --help            Display help
 
@@ -106,6 +127,7 @@ Examples:
   generate-sdk-types metadata actions   # Generate metadata + actions only
   generate-sdk-types --dry-run          # Preview without writing
   generate-sdk-types actions --save-csdl  # Generate actions and keep the $metadata used
+  generate-sdk-types --from-csdl metadata/dataverse-metadata.xml actions  # Offline
 ```
 
 Without a config file the tool reads `DATAVERSE_URL`, `AZURE_TENANT_ID`, `AZURE_CLIENT_ID` and
@@ -155,6 +177,9 @@ format with `prettier --ignore-path /dev/null`), and excluded from lint.
 ```
 src/
   cli.ts                  # Commander CLI entry point
+  regen-cli.ts            # `regen`: the three packages and the docs from the snapshot
+  docs-cli.ts             # `docs`: the generated docs only
+  snapshot.ts             # The snapshot form of $metadata (sorted, one element per line)
   index.ts                # Programmatic API
   config.ts               # Configuration schema (Zod)
 
@@ -166,6 +191,7 @@ src/
 
   parsers/
     edmx-parser.ts        # Parse CSDL XML from $metadata
+    canonical.ts          # Sort the parsed schema, so the output doesn't depend on fetch order
     csdl-types.ts         # TypeScript types for CSDL structure
 
   generators/complex-types-generator.ts  # types/ folder of messages, actions and functions
@@ -192,19 +218,20 @@ node dist/cli.js --help
 
 ## Maintenance Notes
 
-- **Source of truth**: Dataverse v9.2 `$metadata` with Sales + Customer Service
-- **Run frequency**: When Microsoft updates Web API schema or adds new actions/functions
-- **Git workflow**: Generated files should be committed to repo
-- **Versioning**: When regenerating, review diffs carefully for breaking changes. A fresh
-  `$metadata` adds and removes operations and parameters, and reorders
-  `types/` properties, so a full regeneration is a large, partly breaking diff. Generator fixes
-  have instead been applied to the committed files with a script, checked to be byte-identical to
-  the new generator's output on the same `$metadata`.
-- **Docs**: after regenerating the actions, functions or messages packages, run
+- **Source of truth**: the committed snapshot, `metadata/dataverse-metadata.xml` (#293). The
+  output depends only on it: the generator sorts the parsed schema (`src/parsers/canonical.ts`),
+  writes no timestamps, and `regen` formats with the repository's prettier config, so
+  regenerating twice gives identical files.
+- **Run frequency**: refresh the snapshot when Microsoft updates the Web API schema or adds
+  actions and functions; run `regen` whenever the generator changes.
+- **Git workflow**: generated files are committed, and CI checks they match `regen`'s output.
+- **Versioning**: a refreshed snapshot adds and removes operations and parameters. Review the
+  diff for breaking changes and list removed operations in the PR and the changeset.
+- **Docs**: `regen` also updates the docs. To update only them, run
   `pnpm --filter generate-sdk-types build && pnpm --filter generate-sdk-types docs`. It rewrites the
-  operation lists (`<!-- operations:… -->` blocks) and counts in the packages' READMEs and
-  `docs/mapping/*` from the package source; `test/operation-docs.test.ts` fails while one is stale
-  or a doc names a class no package exports.
+  operation lists (`<!-- operations:… -->` blocks) and counts (`<!-- count:actions -->…<!-- /count -->`)
+  in the packages' READMEs and `docs/mapping/*` from the package source;
+  `test/operation-docs.test.ts` fails while one is stale or a doc names a class no package exports.
 - **CI**: `.github/workflows/generate-metadata-types.yml` (manual) regenerates the metadata types
   and opens a PR for review.
 

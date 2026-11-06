@@ -2,9 +2,9 @@
  * subscriptionsyncentryoffline entity type
  */
 export interface subscriptionsyncentryoffline {
-  syncstate?: number;
-  objecttypecode?: number;
   objectid?: string;
+  objecttypecode?: number;
   subscriptionid?: string;
+  syncstate?: number;
   versionnumber?: number;
 }

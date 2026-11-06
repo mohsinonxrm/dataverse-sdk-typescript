@@ -5,8 +5,8 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_ConditionXmlConversion action
  */
 export interface msdyn_ConditionXmlConversionResponse {
-  OutputString: string;
   Exception: string;
+  OutputString: string;
 }
 
 /**

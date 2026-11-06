@@ -4,14 +4,14 @@ import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
  * msdyn_notificationtemplate_notificationfield entity type
  */
 export interface msdyn_notificationtemplate_notificationfield {
-  iscustomizable?: BooleanManagedProperty;
-  msdyn_notificationtemplateid?: string;
-  overwritetime?: string;
   componentidunique?: string;
   componentstate?: number;
-  msdyn_notificationtemplate_notificationfieldid?: string;
+  iscustomizable?: BooleanManagedProperty;
   ismanaged?: boolean;
-  solutionid?: string;
   msdyn_notificationfieldid?: string;
+  msdyn_notificationtemplate_notificationfieldid?: string;
+  msdyn_notificationtemplateid?: string;
+  overwritetime?: string;
+  solutionid?: string;
   versionnumber?: number;
 }

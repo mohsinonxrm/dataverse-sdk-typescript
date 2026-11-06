@@ -4,14 +4,14 @@ import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
  * applicationuserprofile entity type
  */
 export interface applicationuserprofile {
-  solutionid?: string;
-  overwritetime?: string;
-  componentidunique?: string;
   applicationuserid?: string;
-  ismanaged?: boolean;
-  componentstate?: number;
   applicationuserprofileid?: string;
-  iscustomizable?: BooleanManagedProperty;
+  componentidunique?: string;
+  componentstate?: number;
   fieldsecurityprofileid?: string;
+  iscustomizable?: BooleanManagedProperty;
+  ismanaged?: boolean;
+  overwritetime?: string;
+  solutionid?: string;
   versionnumber?: number;
 }

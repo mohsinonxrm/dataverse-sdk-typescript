@@ -9,10 +9,10 @@ import type { McpUpdateTableResponse as McpUpdateTableResponseData } from "./typ
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface McpUpdateTableRequestParameters {
-  newDisplayName?: string;
-  tablename: string;
-  item: string;
   description?: string;
+  newDisplayName?: string;
+  item: string;
+  tablename: string;
 }
 
 /**
@@ -34,10 +34,10 @@ export class McpUpdateTableRequest
     const url = `${baseUrl}/McpUpdateTable`;
 
     const body = requestBody({
-      newDisplayName: this.Parameters.newDisplayName,
-      tablename: this.Parameters.tablename,
-      item: this.Parameters.item,
       description: this.Parameters.description,
+      newDisplayName: this.Parameters.newDisplayName,
+      item: this.Parameters.item,
+      tablename: this.Parameters.tablename,
     });
 
     return {

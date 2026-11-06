@@ -4,29 +4,29 @@ import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
  * sdkmessageprocessingstepimage entity type
  */
 export interface sdkmessageprocessingstepimage {
-  componentstate?: number;
+  _createdby_value?: string;
   _createdonbehalfby_value?: string;
-  entityalias?: string;
-  introducedversion?: string;
-  ismanaged?: boolean;
-  _modifiedonbehalfby_value?: string;
-  _sdkmessageprocessingstepid_value?: string;
-  sdkmessageprocessingstepimageidunique?: string;
   _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _organizationid_value?: string;
+  _sdkmessageprocessingstepid_value?: string;
+  attributes?: string;
+  componentstate?: number;
+  createdon?: string;
   customizationlevel?: number;
   description?: string;
-  name?: string;
-  iscustomizable?: BooleanManagedProperty;
-  attributes?: string;
-  versionnumber?: number;
-  messagepropertyname?: string;
-  sdkmessageprocessingstepimageid?: string;
-  modifiedon?: string;
-  createdon?: string;
-  solutionid?: string;
-  overwritetime?: string;
+  entityalias?: string;
   imagetype?: number;
-  _organizationid_value?: string;
+  introducedversion?: string;
+  iscustomizable?: BooleanManagedProperty;
+  ismanaged?: boolean;
+  messagepropertyname?: string;
+  modifiedon?: string;
+  name?: string;
+  overwritetime?: string;
   relatedattributename?: string;
-  _createdby_value?: string;
+  sdkmessageprocessingstepimageid?: string;
+  sdkmessageprocessingstepimageidunique?: string;
+  solutionid?: string;
+  versionnumber?: number;
 }

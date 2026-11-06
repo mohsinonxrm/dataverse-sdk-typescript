@@ -2,25 +2,25 @@
  * columnmapping entity type
  */
 export interface columnmapping {
-  processcode?: number;
-  createdon?: string;
-  sourceattributename?: string;
-  statuscode?: number;
-  _createdonbehalfby_value?: string;
-  solutionid?: string;
-  _importmapid_value?: string;
-  componentstate?: number;
   _createdby_value?: string;
-  _modifiedonbehalfby_value?: string;
-  overwritetime?: string;
-  statecode?: number;
-  ismanaged?: boolean;
-  columnmappingidunique?: string;
+  _createdonbehalfby_value?: string;
+  _importmapid_value?: string;
   _modifiedby_value?: string;
-  modifiedon?: string;
-  targetattributename?: string;
-  introducedversion?: string;
+  _modifiedonbehalfby_value?: string;
   columnmappingid?: string;
+  columnmappingidunique?: string;
+  componentstate?: number;
+  createdon?: string;
+  introducedversion?: string;
+  ismanaged?: boolean;
+  modifiedon?: string;
+  overwritetime?: string;
+  processcode?: number;
+  solutionid?: string;
+  sourceattributename?: string;
   sourceentityname?: string;
+  statecode?: number;
+  statuscode?: number;
+  targetattributename?: string;
   targetentityname?: string;
 }

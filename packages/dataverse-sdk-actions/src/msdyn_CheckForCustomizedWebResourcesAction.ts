@@ -5,12 +5,12 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_CheckForCustomizedWebResources action
  */
 export interface msdyn_CheckForCustomizedWebResourcesResponse {
+  HelpLink: string;
   Message: string;
   ResultEntities: string;
-  ReturnStatus: number;
-  ReturnSeverity: number;
   ReturnLevel: number;
-  HelpLink: string;
+  ReturnSeverity: number;
+  ReturnStatus: number;
 }
 
 /**

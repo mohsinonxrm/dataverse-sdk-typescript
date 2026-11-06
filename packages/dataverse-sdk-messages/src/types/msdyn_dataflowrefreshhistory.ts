@@ -2,33 +2,33 @@
  * msdyn_dataflowrefreshhistory entity type
  */
 export interface msdyn_dataflowrefreshhistory {
-  _modifiedonbehalfby_value?: string;
-  _modifiedby_value?: string;
-  importsequencenumber?: number;
-  msdyn_jobid?: string;
-  msdyn_dataflowrefreshhistoryid?: string;
-  _owningteam_value?: string;
-  msdyn_starttime?: string;
-  msdyn_name?: string;
-  msdyn_dataflowname?: string;
-  statecode?: number;
   _createdby_value?: string;
-  versionnumber?: number;
-  createdon?: string;
   _createdonbehalfby_value?: string;
-  _owningbusinessunit_value?: string;
-  msdyn_transactionid?: string;
-  msdyn_requestid?: string;
-  msdyn_errorinfojson?: string;
-  utcconversiontimezonecode?: number;
-  _owninguser_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
   _ownerid_value?: string;
-  msdyn_refreshstatus?: string;
-  timezoneruleversionnumber?: number;
-  msdyn_refreshtype?: string;
-  msdyn_endtime?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
   modifiedon?: string;
   msdyn_dataflowid?: string;
-  statuscode?: number;
+  msdyn_dataflowname?: string;
+  msdyn_dataflowrefreshhistoryid?: string;
+  msdyn_endtime?: string;
+  msdyn_errorinfojson?: string;
+  msdyn_jobid?: string;
+  msdyn_name?: string;
+  msdyn_refreshstatus?: string;
+  msdyn_refreshtype?: string;
+  msdyn_requestid?: string;
+  msdyn_starttime?: string;
+  msdyn_transactionid?: string;
   overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

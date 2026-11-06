@@ -5,9 +5,9 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_InvokeEvaluationAction action
  */
 export interface msdyn_InvokeEvaluationActionResponse {
+  Metadata: string;
   Result: string;
   Status: string;
-  Metadata: string;
 }
 
 /**
@@ -16,8 +16,8 @@ export interface msdyn_InvokeEvaluationActionResponse {
  */
 export interface msdyn_InvokeEvaluationActionActionParameters {
   AdditionalContext?: string;
-  ActionPayload: string;
   ActionType: string;
+  ActionPayload: string;
 }
 
 /**
@@ -33,8 +33,8 @@ export class msdyn_InvokeEvaluationActionAction implements Executable<msdyn_Invo
 
     const body = requestBody({
       AdditionalContext: this.parameters.AdditionalContext,
-      ActionPayload: this.parameters.ActionPayload,
       ActionType: this.parameters.ActionType,
+      ActionPayload: this.parameters.ActionPayload,
     });
 
     return {

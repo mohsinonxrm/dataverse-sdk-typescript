@@ -5,8 +5,8 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_CreateEntity action
  */
 export interface msdyn_CreateEntityResponse {
-  SampleDataIngestionErrors: string;
   EntityId: string;
+  SampleDataIngestionErrors: string;
 }
 
 /**
@@ -14,13 +14,13 @@ export interface msdyn_CreateEntityResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_CreateEntityActionParameters {
-  UseUserSettings?: boolean;
-  ConnectionInfo?: string;
-  FileInfo?: string;
   PreviewData?: string;
   IsToExistingTable?: boolean;
-  SampleData?: string;
+  UseUserSettings?: boolean;
+  ConnectionInfo?: string;
   EntityDefinition: string;
+  SampleData?: string;
+  FileInfo?: string;
 }
 
 /**
@@ -35,13 +35,13 @@ export class msdyn_CreateEntityAction implements Executable<msdyn_CreateEntityRe
     const url = `${baseUrl}/msdyn_CreateEntity`;
 
     const body = requestBody({
-      UseUserSettings: this.parameters.UseUserSettings,
-      ConnectionInfo: this.parameters.ConnectionInfo,
-      FileInfo: this.parameters.FileInfo,
       PreviewData: this.parameters.PreviewData,
       IsToExistingTable: this.parameters.IsToExistingTable,
-      SampleData: this.parameters.SampleData,
+      UseUserSettings: this.parameters.UseUserSettings,
+      ConnectionInfo: this.parameters.ConnectionInfo,
       EntityDefinition: this.parameters.EntityDefinition,
+      SampleData: this.parameters.SampleData,
+      FileInfo: this.parameters.FileInfo,
     });
 
     return {

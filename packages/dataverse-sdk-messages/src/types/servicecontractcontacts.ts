@@ -2,14 +2,14 @@
  * servicecontractcontacts entity type
  */
 export interface servicecontractcontacts {
-  timezoneruleversionnumber?: number;
-  contractid?: string;
-  servicelevel?: number;
-  utcconversiontimezonecode?: number;
   contactid?: string;
+  contractid?: string;
   importsequencenumber?: number;
-  overriddencreatedon?: string;
-  versionnumber?: number;
   name?: string;
+  overriddencreatedon?: string;
   servicecontractcontactid?: string;
+  servicelevel?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

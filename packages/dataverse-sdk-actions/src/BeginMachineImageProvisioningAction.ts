@@ -7,8 +7,8 @@ import type { AnyEntityPayload } from "./types/EntityPayload.js";
  * Response from BeginMachineImageProvisioning action
  */
 export interface BeginMachineImageProvisioningResponse {
-  flowMachineImageVersionId: string;
   flowMachineImageId: string;
+  flowMachineImageVersionId: string;
 }
 
 /**
@@ -16,9 +16,9 @@ export interface BeginMachineImageProvisioningResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface BeginMachineImageProvisioningActionParameters {
+  sharedImageGalleryDestination: EntityReference | AnyEntityPayload;
   vmImageDescription?: string;
   vmImageName: string;
-  sharedImageGalleryDestination: EntityReference | AnyEntityPayload;
   machineImageSource: EntityReference | AnyEntityPayload;
 }
 
@@ -34,9 +34,9 @@ export class BeginMachineImageProvisioningAction implements Executable<BeginMach
     const url = `${baseUrl}/BeginMachineImageProvisioning`;
 
     const body = requestBody({
+      sharedImageGalleryDestination: this.parameters.sharedImageGalleryDestination,
       vmImageDescription: this.parameters.vmImageDescription,
       vmImageName: this.parameters.vmImageName,
-      sharedImageGalleryDestination: this.parameters.sharedImageGalleryDestination,
       machineImageSource: this.parameters.machineImageSource,
     });
 

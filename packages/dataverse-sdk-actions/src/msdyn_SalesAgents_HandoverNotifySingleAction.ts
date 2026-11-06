@@ -14,8 +14,8 @@ export interface msdyn_SalesAgents_HandoverNotifySingleResponse {
  */
 export interface msdyn_SalesAgents_HandoverNotifySingleActionParameters {
   msdyn_SalesAgentRun: string;
-  msdyn_TrackingId?: string;
   msdyn_HandoverContext?: string;
+  msdyn_TrackingId?: string;
 }
 
 /**
@@ -31,8 +31,8 @@ export class msdyn_SalesAgents_HandoverNotifySingleAction implements Executable<
 
     const body = requestBody({
       msdyn_SalesAgentRun: this.parameters.msdyn_SalesAgentRun,
-      msdyn_TrackingId: this.parameters.msdyn_TrackingId,
       msdyn_HandoverContext: this.parameters.msdyn_HandoverContext,
+      msdyn_TrackingId: this.parameters.msdyn_TrackingId,
     });
 
     return {

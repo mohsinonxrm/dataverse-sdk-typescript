@@ -5,6 +5,7 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_FetchEvaluatedEntityInputConfig action
  */
 export interface msdyn_FetchEvaluatedEntityInputConfigResponse {
+  Representative: string;
   entity_data: string;
 }
 
@@ -13,8 +14,9 @@ export interface msdyn_FetchEvaluatedEntityInputConfigResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_FetchEvaluatedEntityInputConfigActionParameters {
-  regardingEntityId: string;
   regardingEntityLogicalName: string;
+  regardingEntityId: string;
+  ParticipantScope?: number;
 }
 
 /**
@@ -29,8 +31,9 @@ export class msdyn_FetchEvaluatedEntityInputConfigAction implements Executable<m
     const url = `${baseUrl}/msdyn_FetchEvaluatedEntityInputConfig`;
 
     const body = requestBody({
-      regardingEntityId: this.parameters.regardingEntityId,
       regardingEntityLogicalName: this.parameters.regardingEntityLogicalName,
+      regardingEntityId: this.parameters.regardingEntityId,
+      ParticipantScope: this.parameters.ParticipantScope,
     });
 
     return {

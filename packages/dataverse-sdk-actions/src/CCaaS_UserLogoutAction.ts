@@ -13,8 +13,8 @@ export interface CCaaS_UserLogoutResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_UserLogoutActionParameters {
-  ApiVersion: string;
   LogoutSource: number;
+  ApiVersion: string;
 }
 
 /**
@@ -29,8 +29,8 @@ export class CCaaS_UserLogoutAction implements Executable<CCaaS_UserLogoutRespon
     const url = `${baseUrl}/CCaaS_UserLogout`;
 
     const body = requestBody({
-      ApiVersion: this.parameters.ApiVersion,
       LogoutSource: this.parameters.LogoutSource,
+      ApiVersion: this.parameters.ApiVersion,
     });
 
     return {

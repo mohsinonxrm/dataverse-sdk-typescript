@@ -10,8 +10,8 @@ import type {
  * Response from CreateCustomerRelationships action
  */
 export interface CreateCustomerRelationshipsResponse {
-  RelationshipIds: string[];
   AttributeId: string;
+  RelationshipIds: string[];
 }
 
 /**

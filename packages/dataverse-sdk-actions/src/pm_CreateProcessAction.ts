@@ -14,9 +14,9 @@ export interface pm_CreateProcessResponse {
  */
 export interface pm_CreateProcessActionParameters {
   reportData?: string;
-  inputDataBinding: string;
-  name: string;
   description?: string;
+  name: string;
+  inputDataBinding: string;
 }
 
 /**
@@ -32,9 +32,9 @@ export class pm_CreateProcessAction implements Executable<pm_CreateProcessRespon
 
     const body = requestBody({
       reportData: this.parameters.reportData,
-      inputDataBinding: this.parameters.inputDataBinding,
-      name: this.parameters.name,
       description: this.parameters.description,
+      name: this.parameters.name,
+      inputDataBinding: this.parameters.inputDataBinding,
     });
 
     return {

@@ -9,12 +9,12 @@ import type { msdyn_GetExtractsFromContentResponse as msdyn_GetExtractsFromConte
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_GetExtractsFromContentRequestParameters {
-  msdyn_activityId?: string;
+  msdyn_extractOperationInputParams?: string;
   msdyn_userQuery?: string;
+  msdyn_keywords?: string;
   msdyn_source?: string;
   msdyn_top?: number;
-  msdyn_extractOperationInputParams?: string;
-  msdyn_keywords?: string;
+  msdyn_activityId?: string;
 }
 
 /**
@@ -36,12 +36,12 @@ export class msdyn_GetExtractsFromContentRequest
     const url = `${baseUrl}/msdyn_GetExtractsFromContent`;
 
     const body = requestBody({
-      msdyn_activityId: this.Parameters.msdyn_activityId,
+      msdyn_extractOperationInputParams: this.Parameters.msdyn_extractOperationInputParams,
       msdyn_userQuery: this.Parameters.msdyn_userQuery,
+      msdyn_keywords: this.Parameters.msdyn_keywords,
       msdyn_source: this.Parameters.msdyn_source,
       msdyn_top: this.Parameters.msdyn_top,
-      msdyn_extractOperationInputParams: this.Parameters.msdyn_extractOperationInputParams,
-      msdyn_keywords: this.Parameters.msdyn_keywords,
+      msdyn_activityId: this.Parameters.msdyn_activityId,
     });
 
     return {

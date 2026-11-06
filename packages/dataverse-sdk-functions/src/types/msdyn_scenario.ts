@@ -2,30 +2,30 @@
  * msdyn_scenario entity type
  */
 export interface msdyn_scenario {
-  timezoneruleversionnumber?: number;
-  _msdyn_workstreamid_value?: string;
   _createdby_value?: string;
-  statecode?: number;
-  _msdyn_sessiontemplate_value?: string;
-  utcconversiontimezonecode?: number;
-  statuscode?: number;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _msdyn_channelid_value?: string;
   _msdyn_notificationtemplate_value?: string;
+  _msdyn_parentscenarioid_value?: string;
+  _msdyn_sessiontemplate_value?: string;
+  _msdyn_workstreamid_value?: string;
   _ownerid_value?: string;
   _owningbusinessunit_value?: string;
-  _modifiedby_value?: string;
-  createdon?: string;
-  _msdyn_parentscenarioid_value?: string;
-  msdyn_scenarioid?: string;
-  _msdyn_channelid_value?: string;
-  _createdonbehalfby_value?: string;
-  modifiedon?: string;
-  versionnumber?: number;
-  _modifiedonbehalfby_value?: string;
-  msdyn_type?: boolean;
-  _owninguser_value?: string;
   _owningteam_value?: string;
-  msdyn_name?: string;
+  _owninguser_value?: string;
+  createdon?: string;
   importsequencenumber?: number;
+  modifiedon?: string;
   msdyn_displayname?: string;
+  msdyn_name?: string;
+  msdyn_scenarioid?: string;
+  msdyn_type?: boolean;
   overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

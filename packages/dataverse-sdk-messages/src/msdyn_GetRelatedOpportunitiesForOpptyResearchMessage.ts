@@ -9,8 +9,8 @@ import type { msdyn_GetRelatedOpportunitiesForOpptyResearchResponse as msdyn_Get
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_GetRelatedOpportunitiesForOpptyResearchRequestParameters {
-  msdyn_TopCount: number;
   msdyn_OpportunityId: string;
+  msdyn_TopCount: number;
 }
 
 /**
@@ -32,8 +32,8 @@ export class msdyn_GetRelatedOpportunitiesForOpptyResearchRequest
     const url = `${baseUrl}/msdyn_GetRelatedOpportunitiesForOpptyResearch`;
 
     const body = requestBody({
-      msdyn_TopCount: this.Parameters.msdyn_TopCount,
       msdyn_OpportunityId: this.Parameters.msdyn_OpportunityId,
+      msdyn_TopCount: this.Parameters.msdyn_TopCount,
     });
 
     return {

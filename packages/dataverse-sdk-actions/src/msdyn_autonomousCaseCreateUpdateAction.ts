@@ -13,8 +13,8 @@ export interface msdyn_autonomousCaseCreateUpdateResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_autonomousCaseCreateUpdateActionParameters {
-  autonomousCaseRequest: string;
   slot__conversation?: string[];
+  autonomousCaseRequest: string;
 }
 
 /**
@@ -29,8 +29,8 @@ export class msdyn_autonomousCaseCreateUpdateAction implements Executable<msdyn_
     const url = `${baseUrl}/msdyn_autonomousCaseCreateUpdate`;
 
     const body = requestBody({
-      autonomousCaseRequest: this.parameters.autonomousCaseRequest,
       slot__conversation: this.parameters.slot__conversation,
+      autonomousCaseRequest: this.parameters.autonomousCaseRequest,
     });
 
     return {

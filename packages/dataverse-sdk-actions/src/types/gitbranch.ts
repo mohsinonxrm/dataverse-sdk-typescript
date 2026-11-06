@@ -2,11 +2,11 @@
  * gitbranch entity type
  */
 export interface gitbranch {
-  organizationname?: string;
-  gitcommitid?: string;
-  projectname?: string;
-  gitbranchid?: string;
   branchname?: string;
-  upstreambranchname?: string;
+  gitbranchid?: string;
+  gitcommitid?: string;
+  organizationname?: string;
+  projectname?: string;
   repositoryname?: string;
+  upstreambranchname?: string;
 }

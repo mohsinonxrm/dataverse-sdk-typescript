@@ -13,8 +13,8 @@ export interface msdyn_RetrieveEmailNBAResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_RetrieveEmailNBAActionParameters {
-  msdyn_RegardingEntityIds: string;
   msdyn_RegardingLogicalName: string;
+  msdyn_RegardingEntityIds: string;
 }
 
 /**
@@ -29,8 +29,8 @@ export class msdyn_RetrieveEmailNBAAction implements Executable<msdyn_RetrieveEm
     const url = `${baseUrl}/msdyn_RetrieveEmailNBA`;
 
     const body = requestBody({
-      msdyn_RegardingEntityIds: this.parameters.msdyn_RegardingEntityIds,
       msdyn_RegardingLogicalName: this.parameters.msdyn_RegardingLogicalName,
+      msdyn_RegardingEntityIds: this.parameters.msdyn_RegardingEntityIds,
     });
 
     return {

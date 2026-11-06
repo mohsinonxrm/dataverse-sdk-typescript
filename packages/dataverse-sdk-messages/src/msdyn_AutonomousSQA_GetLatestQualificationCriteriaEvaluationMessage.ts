@@ -9,9 +9,9 @@ import type { msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationRespon
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationRequestParameters {
-  msdyn_SalesAgentRun: string;
   msdyn_QueueAgentRunRequestTimestamp: string;
   msdyn_TrackingId: string;
+  msdyn_SalesAgentRun: string;
 }
 
 /**
@@ -35,9 +35,9 @@ export class msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationRequest
     const url = `${baseUrl}/msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluation`;
 
     const body = requestBody({
-      msdyn_SalesAgentRun: this.Parameters.msdyn_SalesAgentRun,
       msdyn_QueueAgentRunRequestTimestamp: this.Parameters.msdyn_QueueAgentRunRequestTimestamp,
       msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
+      msdyn_SalesAgentRun: this.Parameters.msdyn_SalesAgentRun,
     });
 
     return {

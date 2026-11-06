@@ -7,10 +7,10 @@ import type { AnyEntityPayload } from "./types/EntityPayload.js";
  * Response from Predict action
  */
 export interface PredictResponse {
-  response: string;
   overrideHttpStatusCode: string;
   overrideLocation: string;
   overrideRetryAfter: string;
+  response: string;
 }
 
 /**

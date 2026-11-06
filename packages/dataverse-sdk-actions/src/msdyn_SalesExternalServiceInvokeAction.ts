@@ -5,9 +5,9 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_SalesExternalServiceInvoke action
  */
 export interface msdyn_SalesExternalServiceInvokeResponse {
-  msdyn_summary_raw: string;
-  msdyn_summary: string;
   msdyn_additionalDetails: string;
+  msdyn_summary: string;
+  msdyn_summary_raw: string;
 }
 
 /**
@@ -16,8 +16,8 @@ export interface msdyn_SalesExternalServiceInvokeResponse {
  */
 export interface msdyn_SalesExternalServiceInvokeActionParameters {
   msdyn_entityName: string;
-  msdyn_activityId?: string;
   msdyn_id: string;
+  msdyn_activityId?: string;
 }
 
 /**
@@ -33,8 +33,8 @@ export class msdyn_SalesExternalServiceInvokeAction implements Executable<msdyn_
 
     const body = requestBody({
       msdyn_entityName: this.parameters.msdyn_entityName,
-      msdyn_activityId: this.parameters.msdyn_activityId,
       msdyn_id: this.parameters.msdyn_id,
+      msdyn_activityId: this.parameters.msdyn_activityId,
     });
 
     return {

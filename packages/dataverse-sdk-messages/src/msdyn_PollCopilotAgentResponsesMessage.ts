@@ -9,8 +9,8 @@ import type { msdyn_PollCopilotAgentResponsesResponse as msdyn_PollCopilotAgentR
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_PollCopilotAgentResponsesRequestParameters {
-  StartMarker?: string;
   ConversationId: string;
+  StartMarker?: string;
 }
 
 /**
@@ -32,8 +32,8 @@ export class msdyn_PollCopilotAgentResponsesRequest
     const url = `${baseUrl}/msdyn_PollCopilotAgentResponses`;
 
     const body = requestBody({
-      StartMarker: this.Parameters.StartMarker,
       ConversationId: this.Parameters.ConversationId,
+      StartMarker: this.Parameters.StartMarker,
     });
 
     return {

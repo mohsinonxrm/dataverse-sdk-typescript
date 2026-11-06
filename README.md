@@ -41,13 +41,13 @@ The SDK is organized as a monorepo with focused, composable packages:
 
 ### Operations
 
-| Package                                                                        | Description                                                      | Status      |
-| ------------------------------------------------------------------------------ | ---------------------------------------------------------------- | ----------- |
-| **[@mohsinonxrm/dataverse-sdk-actions](./packages/dataverse-sdk-actions)**     | Typed Web API actions (POST operations with side effects)        | ✅ Complete |
-| **[@mohsinonxrm/dataverse-sdk-functions](./packages/dataverse-sdk-functions)** | Typed Web API functions (GET operations without side effects)    | ✅ Complete |
-| **[@mohsinonxrm/dataverse-sdk-messages](./packages/dataverse-sdk-messages)**   | 1,356+ typed Organization Service messages (direct exports)      | ✅ Complete |
-| **[@mohsinonxrm/dataverse-sdk-metadata](./packages/dataverse-sdk-metadata)**   | Strict metadata typing (EntityMetadata, AttributeMetadata, etc.) | ✅ Complete |
-| **[@mohsinonxrm/dataverse-sdk-files](./packages/dataverse-sdk-files)**         | File/image column operations with chunked upload/download        | ✅ Complete |
+| Package                                                                        | Description                                                                                      | Status      |
+| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ | ----------- |
+| **[@mohsinonxrm/dataverse-sdk-actions](./packages/dataverse-sdk-actions)**     | Typed Web API actions (POST operations with side effects)                                        | ✅ Complete |
+| **[@mohsinonxrm/dataverse-sdk-functions](./packages/dataverse-sdk-functions)** | Typed Web API functions (GET operations without side effects)                                    | ✅ Complete |
+| **[@mohsinonxrm/dataverse-sdk-messages](./packages/dataverse-sdk-messages)**   | <!-- count:messages -->1,556<!-- /count --> typed Organization Service messages (direct exports) | ✅ Complete |
+| **[@mohsinonxrm/dataverse-sdk-metadata](./packages/dataverse-sdk-metadata)**   | Strict metadata typing (EntityMetadata, AttributeMetadata, etc.)                                 | ✅ Complete |
+| **[@mohsinonxrm/dataverse-sdk-files](./packages/dataverse-sdk-files)**         | File/image column operations with chunked upload/download                                        | ✅ Complete |
 
 ### Tools & Utilities
 
@@ -650,7 +650,7 @@ pnpm --filter @mohsinonxrm/dataverse-sdk-core test:watch
 - ✅ $batch operations with change sets
 - ✅ OrganizationService facade
 - ✅ Typed actions/functions (minimal set)
-- ✅ Messages (1,356+ typed Organization Service messages)
+- ✅ Messages (<!-- count:messages -->1,556<!-- /count --> typed Organization Service messages)
 - ✅ Metadata operations with strict typing
 - ✅ File/image column operations (chunked)
 - ✅ Bulk operations (CreateMultiple, UpdateMultiple, etc.)

@@ -4,14 +4,14 @@ import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
  * cardentityconnections entity type
  */
 export interface cardentityconnections {
-  solutionid?: string;
-  ismanaged?: boolean;
-  overwritetime?: string;
-  versionnumber?: number;
   cardentityconnectionsid?: string;
-  iscustomizable?: BooleanManagedProperty;
-  entityid?: string;
-  componentstate?: number;
   cardid?: string;
   componentidunique?: string;
+  componentstate?: number;
+  entityid?: string;
+  iscustomizable?: BooleanManagedProperty;
+  ismanaged?: boolean;
+  overwritetime?: string;
+  solutionid?: string;
+  versionnumber?: number;
 }

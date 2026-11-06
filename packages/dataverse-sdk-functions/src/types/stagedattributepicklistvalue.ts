@@ -2,25 +2,25 @@
  * stagedattributepicklistvalue entity type
  */
 export interface stagedattributepicklistvalue {
-  solutionid?: string;
-  metadatadescription?: string;
-  _modifiedonbehalfby_value?: string;
-  statuscode?: number;
-  stagedattributepicklistvalueid?: string;
-  name?: string;
-  utcconversiontimezonecode?: number;
-  _modifiedby_value?: string;
-  versionnumber?: number;
+  _createdby_value?: string;
   _createdonbehalfby_value?: string;
-  overwritetime?: string;
-  importsequencenumber?: number;
-  modifiedon?: string;
-  optionsetid?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
   componentstate?: number;
+  createdon?: string;
+  importsequencenumber?: number;
+  metadatadescription?: string;
+  modifiedon?: string;
+  name?: string;
+  optionsetid?: string;
   overriddencreatedon?: string;
+  overwritetime?: string;
+  solutionid?: string;
+  stagedattributepicklistvalueid?: string;
   stagingexecutioncontextid?: string;
   statecode?: number;
-  createdon?: string;
+  statuscode?: number;
   timezoneruleversionnumber?: number;
-  _createdby_value?: string;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

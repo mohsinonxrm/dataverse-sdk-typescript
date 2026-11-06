@@ -5,9 +5,9 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_GetAnswerFromDocuments action
  */
 export interface msdyn_GetAnswerFromDocumentsResponse {
-  msdyn_citations: string;
-  msdyn_answerRaw: string;
   msdyn_answer: string;
+  msdyn_answerRaw: string;
+  msdyn_citations: string;
 }
 
 /**

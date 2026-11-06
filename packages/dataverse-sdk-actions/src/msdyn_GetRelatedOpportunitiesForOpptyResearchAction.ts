@@ -11,8 +11,8 @@ export interface msdyn_GetRelatedOpportunitiesForOpptyResearchResponse {}
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_GetRelatedOpportunitiesForOpptyResearchActionParameters {
-  msdyn_TopCount: number;
   msdyn_OpportunityId: string;
+  msdyn_TopCount: number;
 }
 
 /**
@@ -29,8 +29,8 @@ export class msdyn_GetRelatedOpportunitiesForOpptyResearchAction implements Exec
     const url = `${baseUrl}/msdyn_GetRelatedOpportunitiesForOpptyResearch`;
 
     const body = requestBody({
-      msdyn_TopCount: this.parameters.msdyn_TopCount,
       msdyn_OpportunityId: this.parameters.msdyn_OpportunityId,
+      msdyn_TopCount: this.parameters.msdyn_TopCount,
     });
 
     return {

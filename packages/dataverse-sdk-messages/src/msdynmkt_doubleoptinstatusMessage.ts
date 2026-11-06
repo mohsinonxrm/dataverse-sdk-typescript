@@ -9,8 +9,8 @@ import type { msdynmkt_doubleoptinstatusResponse as msdynmkt_doubleoptinstatusRe
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdynmkt_doubleoptinstatusRequestParameters {
-  msdynmkt_complianceid: string;
   DOI_Job_Status?: string;
+  msdynmkt_complianceid: string;
 }
 
 /**
@@ -32,8 +32,8 @@ export class msdynmkt_doubleoptinstatusRequest
     const url = `${baseUrl}/msdynmkt_doubleoptinstatus`;
 
     const body = requestBody({
-      msdynmkt_complianceid: this.Parameters.msdynmkt_complianceid,
       DOI_Job_Status: this.Parameters.DOI_Job_Status,
+      msdynmkt_complianceid: this.Parameters.msdynmkt_complianceid,
     });
 
     return {

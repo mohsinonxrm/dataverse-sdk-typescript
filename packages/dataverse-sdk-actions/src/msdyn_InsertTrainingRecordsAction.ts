@@ -5,8 +5,8 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_InsertTrainingRecords action
  */
 export interface msdyn_InsertTrainingRecordsResponse {
-  recordsSkipped: number;
   recordsInserted: number;
+  recordsSkipped: number;
 }
 
 /**

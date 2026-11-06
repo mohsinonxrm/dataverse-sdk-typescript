@@ -2,27 +2,27 @@
  * msdyn_actioncardstataggregation entity type
  */
 export interface msdyn_actioncardstataggregation {
-  msdyn_actioncardstataggregationid?: string;
-  _owningteam_value?: string;
-  timezoneruleversionnumber?: number;
-  _owningbusinessunit_value?: string;
-  msdyn_name?: string;
-  _createdonbehalfby_value?: string;
-  createdon?: string;
-  _modifiedby_value?: string;
-  msdyn_value?: number;
-  _modifiedonbehalfby_value?: string;
-  statuscode?: number;
   _createdby_value?: string;
-  modifiedon?: string;
-  msdyn_datapoint?: string;
-  statecode?: number;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
   _msdyn_cardtypeid_value?: string;
   _ownerid_value?: string;
-  overriddencreatedon?: string;
-  msdyn_usercount?: number;
-  versionnumber?: number;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
   _owninguser_value?: string;
+  createdon?: string;
   importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_actioncardstataggregationid?: string;
+  msdyn_datapoint?: string;
+  msdyn_name?: string;
+  msdyn_usercount?: number;
+  msdyn_value?: number;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
   utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

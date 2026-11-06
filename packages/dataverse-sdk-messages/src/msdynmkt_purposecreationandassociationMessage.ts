@@ -9,15 +9,15 @@ import type { AnyEntityPayload } from "./types/EntityPayload.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdynmkt_purposecreationandassociationRequestParameters {
-  msdynmkt_customenforcementmodel: number;
-  msdynmkt_purposeid?: string;
-  msdynmkt_enforcementmodel: number;
   msdynmkt_name: string;
-  msdynmkt_compliancesettings4: EntityReference | AnyEntityPayload;
-  msdynmkt_purpose_id: string;
-  msdynmkt_smsenforcementmodel: number;
+  msdynmkt_customenforcementmodel: number;
   msdynmkt_voiceenforcementmodel: number;
   msdynmkt_type: number;
+  msdynmkt_enforcementmodel: number;
+  msdynmkt_smsenforcementmodel: number;
+  msdynmkt_purpose_id: string;
+  msdynmkt_compliancesettings4: EntityReference | AnyEntityPayload;
+  msdynmkt_purposeid?: string;
 }
 
 /**
@@ -39,15 +39,15 @@ export class msdynmkt_purposecreationandassociationRequest
     const url = `${baseUrl}/msdynmkt_purposecreationandassociation`;
 
     const body = requestBody({
-      msdynmkt_customenforcementmodel: this.Parameters.msdynmkt_customenforcementmodel,
-      msdynmkt_purposeid: this.Parameters.msdynmkt_purposeid,
-      msdynmkt_enforcementmodel: this.Parameters.msdynmkt_enforcementmodel,
       msdynmkt_name: this.Parameters.msdynmkt_name,
-      msdynmkt_compliancesettings4: this.Parameters.msdynmkt_compliancesettings4,
-      msdynmkt_purpose_id: this.Parameters.msdynmkt_purpose_id,
-      msdynmkt_smsenforcementmodel: this.Parameters.msdynmkt_smsenforcementmodel,
+      msdynmkt_customenforcementmodel: this.Parameters.msdynmkt_customenforcementmodel,
       msdynmkt_voiceenforcementmodel: this.Parameters.msdynmkt_voiceenforcementmodel,
       msdynmkt_type: this.Parameters.msdynmkt_type,
+      msdynmkt_enforcementmodel: this.Parameters.msdynmkt_enforcementmodel,
+      msdynmkt_smsenforcementmodel: this.Parameters.msdynmkt_smsenforcementmodel,
+      msdynmkt_purpose_id: this.Parameters.msdynmkt_purpose_id,
+      msdynmkt_compliancesettings4: this.Parameters.msdynmkt_compliancesettings4,
+      msdynmkt_purposeid: this.Parameters.msdynmkt_purposeid,
     });
 
     return {

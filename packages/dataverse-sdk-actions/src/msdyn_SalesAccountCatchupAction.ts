@@ -6,9 +6,9 @@ import { requestBody } from "./internal/requestBody.js";
  */
 export interface msdyn_SalesAccountCatchupResponse {
   msdyn_sales_copilot_output: string;
-  msdyn_version: string;
   msdyn_summary: string;
   msdyn_summary_raw: string;
+  msdyn_version: string;
 }
 
 /**
@@ -16,13 +16,13 @@ export interface msdyn_SalesAccountCatchupResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesAccountCatchupActionParameters {
-  msdyn_id: string;
   msdyn_sessionId?: string;
+  msdyn_additionalParams?: string;
+  msdyn_skipHeader?: string;
   msdyn_responseFormat?: string;
+  msdyn_id: string;
   msdyn_activityId?: string;
   msdyn_since?: string;
-  msdyn_skipHeader?: string;
-  msdyn_additionalParams?: string;
 }
 
 /**
@@ -37,13 +37,13 @@ export class msdyn_SalesAccountCatchupAction implements Executable<msdyn_SalesAc
     const url = `${baseUrl}/msdyn_SalesAccountCatchup`;
 
     const body = requestBody({
-      msdyn_id: this.parameters.msdyn_id,
       msdyn_sessionId: this.parameters.msdyn_sessionId,
+      msdyn_additionalParams: this.parameters.msdyn_additionalParams,
+      msdyn_skipHeader: this.parameters.msdyn_skipHeader,
       msdyn_responseFormat: this.parameters.msdyn_responseFormat,
+      msdyn_id: this.parameters.msdyn_id,
       msdyn_activityId: this.parameters.msdyn_activityId,
       msdyn_since: this.parameters.msdyn_since,
-      msdyn_skipHeader: this.parameters.msdyn_skipHeader,
-      msdyn_additionalParams: this.parameters.msdyn_additionalParams,
     });
 
     return {

@@ -2,25 +2,26 @@
  * sourcecontrolcomponentpayload entity type
  */
 export interface sourcecontrolcomponentpayload {
-  componentpayloadingit_name?: string;
-  componentid?: string;
-  name?: string;
-  ttlinseconds?: number;
-  importsequencenumber?: number;
-  versionnumber?: number;
-  componentpayload_name?: string;
-  lastsynchashid?: string;
-  _modifiedonbehalfby_value?: string;
-  sourcecontrolcomponentpayloadid?: string;
-  _modifiedby_value?: string;
-  _createdonbehalfby_value?: string;
-  githashid?: string;
-  componentpayload?: string;
-  createdon?: string;
-  overriddencreatedon?: string;
   _createdby_value?: string;
-  referringsolutions?: string;
-  modifiedon?: string;
-  partitionid?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  componentid?: string;
+  componentpayload?: string;
+  componentpayload_name?: string;
   componentpayloadingit?: string;
+  componentpayloadingit_name?: string;
+  createdon?: string;
+  envhashid?: string;
+  githashid?: string;
+  importsequencenumber?: number;
+  lastsynchashid?: string;
+  modifiedon?: string;
+  name?: string;
+  overriddencreatedon?: string;
+  partitionid?: string;
+  referringsolutions?: string;
+  sourcecontrolcomponentpayloadid?: string;
+  ttlinseconds?: number;
+  versionnumber?: number;
 }

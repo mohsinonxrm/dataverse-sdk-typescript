@@ -7,8 +7,8 @@ import type { AnyEntityPayload } from "./types/EntityPayload.js";
  * Response from msdynmkt_consentprovidervalidate action
  */
 export interface msdynmkt_consentprovidervalidateResponse {
-  message: string;
   issuccess: boolean;
+  message: string;
 }
 
 /**

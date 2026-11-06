@@ -1,18 +1,18 @@
 # Supported Operations - Complete Reference
 
-This document provides a complete reference of all **2,941 typed operations** available in the Dataverse TypeScript SDK.
+This document provides a complete reference of all **<!-- count:operations -->3,412<!-- /count --> typed operations** available in the Dataverse TypeScript SDK.
 
 ## Overview
 
 The SDK provides comprehensive coverage of Dataverse Web API operations through three complementary packages:
 
-| Package                                  | Count | Description                            | HTTP Method |
-| ---------------------------------------- | ----- | -------------------------------------- | ----------- |
-| **@mohsinonxrm/dataverse-sdk-functions** | 229   | Read-only operations (query, retrieve) | GET         |
-| **@mohsinonxrm/dataverse-sdk-actions**   | 1,356 | Operations with side effects           | POST        |
-| **@mohsinonxrm/dataverse-sdk-messages**  | 1,356 | Organization Service message pattern   | Varies      |
+| Package                                  | Count                                       | Description                            | HTTP Method |
+| ---------------------------------------- | ------------------------------------------- | -------------------------------------- | ----------- |
+| **@mohsinonxrm/dataverse-sdk-functions** | <!-- count:functions -->300<!-- /count -->  | Read-only operations (query, retrieve) | GET         |
+| **@mohsinonxrm/dataverse-sdk-actions**   | <!-- count:actions -->1,556<!-- /count -->  | Operations with side effects           | POST        |
+| **@mohsinonxrm/dataverse-sdk-messages**  | <!-- count:messages -->1,556<!-- /count --> | Organization Service message pattern   | Varies      |
 
-**Total Coverage:** 2,941 typed operations
+**Total Coverage:** <!-- count:operations -->3,412<!-- /count --> typed operations
 
 ## Two Front Doors
 
@@ -104,18 +104,18 @@ await service.execute(new PublishAllXmlRequest());
 - FullTextSearchKnowledgeArticle
 - CreateKnowledgeArticleVersion
 
-### Field Service Module (msdyn\_\*)
+### Universal Resource Scheduling (msdyn\_\*)
 
 **Resource Scheduling:**
 
 - msdyn_BookRequirementGroup
 - msdyn_SearchResourceAvailability
 - msdyn_CancelBookings
-
-**Work Orders:**
-
-- msdyn_CreateWorkOrder
 - msdyn_CascadeCrewBookings
+
+The packages are generated from an org without Field Service, so its operations (work orders,
+agreements, `msdyn_CreateWorkOrder`, …) aren't included; see the
+[migration guide](../migration-2.0.md).
 
 ### Marketing Module (msdynmkt\_\*)
 
@@ -128,12 +128,12 @@ await service.execute(new PublishAllXmlRequest());
 
 Many operations require specific Dynamics 365 applications to be installed:
 
-| Prefix       | Solution Required      | Description                                      |
-| ------------ | ---------------------- | ------------------------------------------------ |
-| `msdyn_*`    | Dynamics 365 (varies)  | Field Service, Project Service Automation, Sales |
-| `msdynmkt_*` | Dynamics 365 Marketing | Marketing automation                             |
-| `CCaaS_*`    | Customer Service       | Omnichannel for Customer Service                 |
-| `adx_*`      | Power Pages            | Portal operations                                |
+| Prefix       | Solution Required      | Description                                  |
+| ------------ | ---------------------- | -------------------------------------------- |
+| `msdyn_*`    | Dynamics 365 (varies)  | Sales, Customer Service, Resource Scheduling |
+| `msdynmkt_*` | Dynamics 365 Marketing | Marketing automation                         |
+| `CCaaS_*`    | Customer Service       | Omnichannel for Customer Service             |
+| `adx_*`      | Power Pages            | Portal operations                            |
 
 **Note:** Platform operations (no prefix) are available in all Dataverse environments.
 
@@ -233,9 +233,9 @@ const accounts = await service.retrieveMultiple("accounts", {
 
 ## Detailed References
 
-- [Supported Functions (229)](./supported-functions.md) - Complete list of all GET operations
-- [Supported Actions (1,356)](./supported-actions.md) - Complete list of all POST operations
-- [Supported Messages (1,356)](./supported-messages.md) - Complete list of all Organization Service messages
+- [Supported Functions (<!-- count:functions -->300<!-- /count -->)](./supported-functions.md) - Complete list of all GET operations
+- [Supported Actions (<!-- count:actions -->1,556<!-- /count -->)](./supported-actions.md) - Complete list of all POST operations
+- [Supported Messages (<!-- count:messages -->1,556<!-- /count -->)](./supported-messages.md) - Complete list of all Organization Service messages
 
 ## When to Use Each Approach
 

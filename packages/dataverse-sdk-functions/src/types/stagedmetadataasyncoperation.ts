@@ -2,24 +2,24 @@
  * stagedmetadataasyncoperation entity type
  */
 export interface stagedmetadataasyncoperation {
-  utcconversiontimezonecode?: number;
-  name?: string;
-  _createdonbehalfby_value?: string;
   _createdby_value?: string;
-  _modifiedonbehalfby_value?: string;
-  componenttype?: number;
-  timezoneruleversionnumber?: number;
-  overriddencreatedon?: string;
-  statuscode?: number;
-  statecode?: number;
-  versionnumber?: number;
-  modifiedon?: string;
-  importsequencenumber?: number;
-  asyncoperationid?: string;
-  asyncjobstatus?: number;
-  stagedmetadataasyncoperationid?: string;
-  createdon?: string;
+  _createdonbehalfby_value?: string;
   _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  asyncjobstatus?: number;
+  asyncoperationid?: string;
+  componenttype?: number;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  name?: string;
   objectid?: string;
+  overriddencreatedon?: string;
+  stagedmetadataasyncoperationid?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
   unprocesseddependencies?: string;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

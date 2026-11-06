@@ -2,21 +2,21 @@
  * documenttemplate entity type
  */
 export interface documenttemplate {
+  _createdby_value?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _organizationid_value?: string;
+  associatedentitytypecode?: string;
+  clientdata?: string;
+  content?: string;
+  createdon?: string;
+  description?: string;
+  documenttemplateid?: string;
   documenttype?: number;
+  languagecode?: number;
   modifiedon?: string;
   name?: string;
-  _modifiedonbehalfby_value?: string;
-  _createdby_value?: string;
-  associatedentitytypecode?: string;
-  documenttemplateid?: string;
-  clientdata?: string;
-  versionnumber?: number;
-  description?: string;
-  createdon?: string;
-  _organizationid_value?: string;
   status?: boolean;
-  content?: string;
-  _modifiedby_value?: string;
-  languagecode?: number;
-  _createdonbehalfby_value?: string;
+  versionnumber?: number;
 }

@@ -13,8 +13,8 @@ export interface AIClassifyResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface AIClassifyActionParameters {
-  Categories: string[];
   Text: string;
+  Categories: string[];
 }
 
 /**
@@ -29,8 +29,8 @@ export class AIClassifyAction implements Executable<AIClassifyResponse> {
     const url = `${baseUrl}/AIClassify`;
 
     const body = requestBody({
-      Categories: this.parameters.Categories,
       Text: this.parameters.Text,
+      Categories: this.parameters.Categories,
     });
 
     return {

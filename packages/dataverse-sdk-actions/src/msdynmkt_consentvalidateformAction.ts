@@ -13,11 +13,11 @@ export interface msdynmkt_consentvalidateformResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdynmkt_consentvalidateformActionParameters {
+  complianceProfileId?: string;
+  formBusinessUnitId?: string;
+  isDoubleOptInForciblyDisabled?: boolean;
   msdynmkt_editorname: string;
   validationType?: number;
-  formBusinessUnitId?: string;
-  complianceProfileId?: string;
-  isDoubleOptInForciblyDisabled?: boolean;
   msdynmkt_formhtml: string;
 }
 
@@ -33,11 +33,11 @@ export class msdynmkt_consentvalidateformAction implements Executable<msdynmkt_c
     const url = `${baseUrl}/msdynmkt_consentvalidateform`;
 
     const body = requestBody({
+      complianceProfileId: this.parameters.complianceProfileId,
+      formBusinessUnitId: this.parameters.formBusinessUnitId,
+      isDoubleOptInForciblyDisabled: this.parameters.isDoubleOptInForciblyDisabled,
       msdynmkt_editorname: this.parameters.msdynmkt_editorname,
       validationType: this.parameters.validationType,
-      formBusinessUnitId: this.parameters.formBusinessUnitId,
-      complianceProfileId: this.parameters.complianceProfileId,
-      isDoubleOptInForciblyDisabled: this.parameters.isDoubleOptInForciblyDisabled,
       msdynmkt_formhtml: this.parameters.msdynmkt_formhtml,
     });
 

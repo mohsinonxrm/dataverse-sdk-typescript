@@ -2,24 +2,24 @@
  * stagedoptionset entity type
  */
 export interface stagedoptionset {
-  timezoneruleversionnumber?: number;
-  createdon?: string;
-  stagedoptionsetid?: string;
   _createdby_value?: string;
-  name?: string;
-  _modifiedby_value?: string;
-  modifiedon?: string;
-  statecode?: number;
-  _modifiedonbehalfby_value?: string;
-  importsequencenumber?: number;
-  overwritetime?: string;
-  stagingexecutioncontextid?: string;
-  solutionid?: string;
   _createdonbehalfby_value?: string;
-  utcconversiontimezonecode?: number;
-  overriddencreatedon?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
   componentstate?: number;
-  versionnumber?: number;
+  createdon?: string;
+  importsequencenumber?: number;
   metadatadescription?: string;
+  modifiedon?: string;
+  name?: string;
+  overriddencreatedon?: string;
+  overwritetime?: string;
+  solutionid?: string;
+  stagedoptionsetid?: string;
+  stagingexecutioncontextid?: string;
+  statecode?: number;
   statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

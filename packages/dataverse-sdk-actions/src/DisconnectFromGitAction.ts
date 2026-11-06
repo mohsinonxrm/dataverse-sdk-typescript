@@ -5,7 +5,7 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from DisconnectFromGit action
  */
 export interface DisconnectFromGitResponse {
-  // No content returned
+  Response: string;
 }
 
 /**

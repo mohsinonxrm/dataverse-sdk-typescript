@@ -13,10 +13,10 @@ export interface CCaaS_NotifyAgentResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_NotifyAgentActionParameters {
+  AgentIds: string[];
+  Message: string;
   ApiVersion: string;
   Title: string;
-  Message: string;
-  AgentIds: string[];
 }
 
 /**
@@ -31,10 +31,10 @@ export class CCaaS_NotifyAgentAction implements Executable<CCaaS_NotifyAgentResp
     const url = `${baseUrl}/CCaaS_NotifyAgent`;
 
     const body = requestBody({
+      AgentIds: this.parameters.AgentIds,
+      Message: this.parameters.Message,
       ApiVersion: this.parameters.ApiVersion,
       Title: this.parameters.Title,
-      Message: this.parameters.Message,
-      AgentIds: this.parameters.AgentIds,
     });
 
     return {

@@ -2,10 +2,10 @@
  * msdyn_CheckForCustomizedSitemapResponse complex type
  */
 export interface msdyn_CheckForCustomizedSitemapResponse {
+  Helplink?: string;
   Message?: string;
   ResultEntities?: string;
-  ReturnStatus?: number;
-  ReturnSeverity?: number;
   ReturnLevel?: number;
-  Helplink?: string;
+  ReturnSeverity?: number;
+  ReturnStatus?: number;
 }

@@ -14,13 +14,13 @@ export interface GenerateAutomatedPluginResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface GenerateAutomatedPluginActionParameters {
-  Stage: number;
-  Context?: string;
   SolutionUniqueName?: string;
-  Expression: string;
-  EntityLogicalName: string;
-  MessageName: string;
   Name: string;
+  MessageName: string;
+  Stage: number;
+  EntityLogicalName: string;
+  Expression: string;
+  Context?: string;
 }
 
 /**
@@ -35,13 +35,13 @@ export class GenerateAutomatedPluginAction implements Executable<GenerateAutomat
     const url = `${baseUrl}/GenerateAutomatedPlugin`;
 
     const body = requestBody({
-      Stage: this.parameters.Stage,
-      Context: this.parameters.Context,
       SolutionUniqueName: this.parameters.SolutionUniqueName,
-      Expression: this.parameters.Expression,
-      EntityLogicalName: this.parameters.EntityLogicalName,
-      MessageName: this.parameters.MessageName,
       Name: this.parameters.Name,
+      MessageName: this.parameters.MessageName,
+      Stage: this.parameters.Stage,
+      EntityLogicalName: this.parameters.EntityLogicalName,
+      Expression: this.parameters.Expression,
+      Context: this.parameters.Context,
     });
 
     return {

@@ -9,10 +9,10 @@ import type { CCaaS_GetAvailabilityForSimulatedConversationResponse as CCaaS_Get
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_GetAvailabilityForSimulatedConversationRequestParameters {
-  LiveWorkStreamId?: string;
   CustomContextItems?: string;
-  ApiVersion: string;
   ChannelEngagementContext?: string;
+  ApiVersion: string;
+  LiveWorkStreamId?: string;
 }
 
 /**
@@ -34,10 +34,10 @@ export class CCaaS_GetAvailabilityForSimulatedConversationRequest
     const url = `${baseUrl}/CCaaS_GetAvailabilityForSimulatedConversation`;
 
     const body = requestBody({
-      LiveWorkStreamId: this.Parameters.LiveWorkStreamId,
       CustomContextItems: this.Parameters.CustomContextItems,
-      ApiVersion: this.Parameters.ApiVersion,
       ChannelEngagementContext: this.Parameters.ChannelEngagementContext,
+      ApiVersion: this.Parameters.ApiVersion,
+      LiveWorkStreamId: this.Parameters.LiveWorkStreamId,
     });
 
     return {

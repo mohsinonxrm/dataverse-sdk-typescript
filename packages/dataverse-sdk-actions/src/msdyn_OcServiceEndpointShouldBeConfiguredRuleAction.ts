@@ -4,9 +4,9 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * Response from msdyn_OcServiceEndpointShouldBeConfiguredRule action
  */
 export interface msdyn_OcServiceEndpointShouldBeConfiguredRuleResponse {
-  ReturnStatus: number;
-  ResultEntities: string;
   Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
 }
 
 /**

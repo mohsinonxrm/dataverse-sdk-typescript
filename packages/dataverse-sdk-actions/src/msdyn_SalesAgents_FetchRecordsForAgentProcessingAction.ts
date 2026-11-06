@@ -5,8 +5,8 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_SalesAgents_FetchRecordsForAgentProcessing action
  */
 export interface msdyn_SalesAgents_FetchRecordsForAgentProcessingResponse {
-  msdyn_Records: string;
   msdyn_ODataNextLink: string;
+  msdyn_Records: string;
 }
 
 /**
@@ -14,10 +14,11 @@ export interface msdyn_SalesAgents_FetchRecordsForAgentProcessingResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesAgents_FetchRecordsForAgentProcessingActionParameters {
-  msdyn_Top?: number;
-  msdyn_SalesAgentType: number;
+  msdyn_AgentProfileId?: string;
   msdyn_NextLink?: string;
+  msdyn_SalesAgentType: number;
   msdyn_TrackingId?: string;
+  msdyn_Top?: number;
 }
 
 /**
@@ -34,10 +35,11 @@ export class msdyn_SalesAgents_FetchRecordsForAgentProcessingAction implements E
     const url = `${baseUrl}/msdyn_SalesAgents_FetchRecordsForAgentProcessing`;
 
     const body = requestBody({
-      msdyn_Top: this.parameters.msdyn_Top,
-      msdyn_SalesAgentType: this.parameters.msdyn_SalesAgentType,
+      msdyn_AgentProfileId: this.parameters.msdyn_AgentProfileId,
       msdyn_NextLink: this.parameters.msdyn_NextLink,
+      msdyn_SalesAgentType: this.parameters.msdyn_SalesAgentType,
       msdyn_TrackingId: this.parameters.msdyn_TrackingId,
+      msdyn_Top: this.parameters.msdyn_Top,
     });
 
     return {

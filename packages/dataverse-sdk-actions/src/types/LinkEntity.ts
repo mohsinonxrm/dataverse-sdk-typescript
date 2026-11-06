@@ -7,15 +7,15 @@ import type { OrderExpression } from "./OrderExpression.js";
  * LinkEntity complex type
  */
 export interface LinkEntity {
-  LinkFromAttributeName?: string;
-  LinkFromEntityName?: string;
-  LinkToEntityName?: string;
-  LinkToAttributeName?: string;
-  JoinOperator?: JoinOperator;
-  LinkCriteria?: FilterExpression;
-  LinkEntities?: LinkEntity[];
   Columns?: ColumnSet;
   EntityAlias?: string;
   ForceSeek?: string;
+  JoinOperator?: JoinOperator;
+  LinkCriteria?: FilterExpression;
+  LinkEntities?: LinkEntity[];
+  LinkFromAttributeName?: string;
+  LinkFromEntityName?: string;
+  LinkToAttributeName?: string;
+  LinkToEntityName?: string;
   Orders?: OrderExpression[];
 }

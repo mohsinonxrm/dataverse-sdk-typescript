@@ -13,8 +13,8 @@ export interface RemoveCertificateCredentialResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface RemoveCertificateCredentialActionParameters {
-  certificateCredentialId?: string;
   entityId: string;
+  certificateCredentialId?: string;
   entityLogicalName: string;
 }
 
@@ -30,8 +30,8 @@ export class RemoveCertificateCredentialAction implements Executable<RemoveCerti
     const url = `${baseUrl}/RemoveCertificateCredential`;
 
     const body = requestBody({
-      certificateCredentialId: this.parameters.certificateCredentialId,
       entityId: this.parameters.entityId,
+      certificateCredentialId: this.parameters.certificateCredentialId,
       entityLogicalName: this.parameters.entityLogicalName,
     });
 

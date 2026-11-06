@@ -9,15 +9,15 @@ import type { copilotquerytextcontextResponse as copilotquerytextcontextResponse
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface copilotquerytextcontextRequestParameters {
-  totalResultCount?: boolean;
-  orderBy?: string;
   searchMode?: string;
-  entityParameters?: string;
   skip?: number;
-  top?: number;
-  options?: string;
   searchType?: string;
+  entityParameters?: string;
+  top?: number;
+  orderBy?: string;
+  options?: string;
   searchText: string;
+  totalResultCount?: boolean;
 }
 
 /**
@@ -39,15 +39,15 @@ export class copilotquerytextcontextRequest
     const url = `${baseUrl}/copilotquerytextcontext`;
 
     const body = requestBody({
-      totalResultCount: this.Parameters.totalResultCount,
-      orderBy: this.Parameters.orderBy,
       searchMode: this.Parameters.searchMode,
-      entityParameters: this.Parameters.entityParameters,
       skip: this.Parameters.skip,
-      top: this.Parameters.top,
-      options: this.Parameters.options,
       searchType: this.Parameters.searchType,
+      entityParameters: this.Parameters.entityParameters,
+      top: this.Parameters.top,
+      orderBy: this.Parameters.orderBy,
+      options: this.Parameters.options,
       searchText: this.Parameters.searchText,
+      totalResultCount: this.Parameters.totalResultCount,
     });
 
     return {

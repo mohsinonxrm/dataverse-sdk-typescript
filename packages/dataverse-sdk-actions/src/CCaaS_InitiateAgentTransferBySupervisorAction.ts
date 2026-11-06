@@ -13,8 +13,8 @@ export interface CCaaS_InitiateAgentTransferBySupervisorResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_InitiateAgentTransferBySupervisorActionParameters {
-  AgentId: string;
   ApiVersion: string;
+  AgentId: string;
 }
 
 /**
@@ -36,8 +36,8 @@ export class CCaaS_InitiateAgentTransferBySupervisorAction implements Executable
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_InitiateAgentTransferBySupervisor`;
 
     const body = requestBody({
-      AgentId: this.parameters.AgentId,
       ApiVersion: this.parameters.ApiVersion,
+      AgentId: this.parameters.AgentId,
     });
 
     return {

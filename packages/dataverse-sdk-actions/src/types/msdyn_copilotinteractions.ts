@@ -2,29 +2,29 @@
  * msdyn_copilotinteractions entity type
  */
 export interface msdyn_copilotinteractions {
-  _modifiedonbehalfby_value?: string;
   _createdby_value?: string;
-  utcconversiontimezonecode?: number;
-  msdyn_copilotname?: string;
-  statecode?: number;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
   _owningteam_value?: string;
   _owninguser_value?: string;
-  versionnumber?: number;
-  modifiedon?: string;
   createdon?: string;
-  overriddencreatedon?: string;
-  msdyn_outcome?: string;
-  _createdonbehalfby_value?: string;
-  msdyn_engineversion?: string;
-  msdyn_customerid?: string;
-  _modifiedby_value?: string;
-  msdyn_context?: string;
   importsequencenumber?: number;
-  timezoneruleversionnumber?: number;
-  msdyn_result?: string;
-  _owningbusinessunit_value?: string;
-  msdyn_name?: string;
-  statuscode?: number;
+  modifiedon?: string;
+  msdyn_context?: string;
   msdyn_copilotinteractionsid?: string;
-  _ownerid_value?: string;
+  msdyn_copilotname?: string;
+  msdyn_customerid?: string;
+  msdyn_engineversion?: string;
+  msdyn_name?: string;
+  msdyn_outcome?: string;
+  msdyn_result?: string;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

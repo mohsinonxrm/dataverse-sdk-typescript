@@ -2,19 +2,19 @@
  * componentchangesetpayload entity type
  */
 export interface componentchangesetpayload {
+  _createdby_value?: string;
   _createdonbehalfby_value?: string;
   _modifiedby_value?: string;
-  createdon?: string;
-  payload?: string;
-  versionnumber?: number;
   _modifiedonbehalfby_value?: string;
-  name?: string;
-  ttlinseconds?: number;
   componentchangesetpayloadid?: string;
-  _createdby_value?: string;
-  partitionid?: string;
-  overriddencreatedon?: string;
+  createdon?: string;
   importsequencenumber?: number;
   modifiedon?: string;
+  name?: string;
+  overriddencreatedon?: string;
+  partitionid?: string;
+  payload?: string;
   payload_name?: string;
+  ttlinseconds?: number;
+  versionnumber?: number;
 }

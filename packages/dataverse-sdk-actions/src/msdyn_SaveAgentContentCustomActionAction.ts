@@ -5,10 +5,10 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_SaveAgentContentCustomAction action
  */
 export interface msdyn_SaveAgentContentCustomActionResponse {
-  Response: string;
-  IsSuccess: boolean;
-  StatusCode: number;
   ErrorMessage: string;
+  IsSuccess: boolean;
+  Response: string;
+  StatusCode: number;
 }
 
 /**

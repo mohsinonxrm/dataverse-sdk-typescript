@@ -9,10 +9,10 @@ import type { RelationshipQueryExpression } from "./RelationshipQueryExpression.
  * EntityQueryExpression complex type
  */
 export interface EntityQueryExpression {
-  LabelQuery?: LabelQueryExpression;
   AttributeQuery?: AttributeQueryExpression;
-  RelationshipQuery?: RelationshipQueryExpression;
-  KeyQuery?: EntityKeyQueryExpression;
   Criteria?: MetadataFilterExpression;
+  KeyQuery?: EntityKeyQueryExpression;
+  LabelQuery?: LabelQueryExpression;
   Properties?: MetadataPropertiesExpression;
+  RelationshipQuery?: RelationshipQueryExpression;
 }

@@ -13,11 +13,11 @@ export interface msdyn_GetKeywordsResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_GetKeywordsActionParameters {
-  msdyn_entityType?: string;
   msdyn_activityId?: string;
+  msdyn_entityType?: string;
   msdyn_queryLocale?: string;
-  msdyn_userquery: string;
   msdyn_entityName?: string;
+  msdyn_userquery: string;
 }
 
 /**
@@ -32,11 +32,11 @@ export class msdyn_GetKeywordsAction implements Executable<msdyn_GetKeywordsResp
     const url = `${baseUrl}/msdyn_GetKeywords`;
 
     const body = requestBody({
-      msdyn_entityType: this.parameters.msdyn_entityType,
       msdyn_activityId: this.parameters.msdyn_activityId,
+      msdyn_entityType: this.parameters.msdyn_entityType,
       msdyn_queryLocale: this.parameters.msdyn_queryLocale,
-      msdyn_userquery: this.parameters.msdyn_userquery,
       msdyn_entityName: this.parameters.msdyn_entityName,
+      msdyn_userquery: this.parameters.msdyn_userquery,
     });
 
     return {

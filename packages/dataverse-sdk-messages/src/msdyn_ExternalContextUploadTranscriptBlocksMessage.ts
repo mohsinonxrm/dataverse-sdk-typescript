@@ -9,8 +9,8 @@ import type { msdyn_ExternalContextUploadTranscriptBlocksResponse as msdyn_Exter
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_ExternalContextUploadTranscriptBlocksRequestParameters {
-  FileContinuationToken: string;
   Transcript: string;
+  FileContinuationToken: string;
 }
 
 /**
@@ -38,8 +38,8 @@ export class msdyn_ExternalContextUploadTranscriptBlocksRequest
     const url = `${baseUrl}/msdyn_ocexternalcontexts(${this.msdyn_ocexternalcontextId})/Microsoft.Dynamics.CRM.msdyn_ExternalContextUploadTranscriptBlocks`;
 
     const body = requestBody({
-      FileContinuationToken: this.Parameters.FileContinuationToken,
       Transcript: this.Parameters.Transcript,
+      FileContinuationToken: this.Parameters.FileContinuationToken,
     });
 
     return {

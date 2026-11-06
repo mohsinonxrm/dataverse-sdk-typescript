@@ -14,8 +14,8 @@ export interface msdyn_GetMLPredictionResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_GetMLPredictionActionParameters {
-  msdyn_predictiontype: number;
   msdyn_input: string;
+  msdyn_predictiontype: number;
 }
 
 /**
@@ -30,8 +30,8 @@ export class msdyn_GetMLPredictionAction implements Executable<msdyn_GetMLPredic
     const url = `${baseUrl}/msdyn_GetMLPrediction`;
 
     const body = requestBody({
-      msdyn_predictiontype: this.parameters.msdyn_predictiontype,
       msdyn_input: this.parameters.msdyn_input,
+      msdyn_predictiontype: this.parameters.msdyn_predictiontype,
     });
 
     return {

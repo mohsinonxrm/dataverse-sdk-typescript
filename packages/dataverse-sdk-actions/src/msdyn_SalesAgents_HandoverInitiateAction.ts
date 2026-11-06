@@ -13,12 +13,12 @@ export interface msdyn_SalesAgents_HandoverInitiateResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesAgents_HandoverInitiateActionParameters {
-  msdyn_AssignTo?: number;
+  msdyn_TrackingId?: string;
   msdyn_HandoverIntent?: number;
-  msdyn_GetHandoverDetailsInfo?: string;
+  msdyn_AssignTo?: number;
   msdyn_SalesAgentRun: string;
   msdyn_HandoverTarget?: number;
-  msdyn_TrackingId?: string;
+  msdyn_GetHandoverDetailsInfo?: string;
 }
 
 /**
@@ -33,12 +33,12 @@ export class msdyn_SalesAgents_HandoverInitiateAction implements Executable<msdy
     const url = `${baseUrl}/msdyn_SalesAgents_HandoverInitiate`;
 
     const body = requestBody({
-      msdyn_AssignTo: this.parameters.msdyn_AssignTo,
+      msdyn_TrackingId: this.parameters.msdyn_TrackingId,
       msdyn_HandoverIntent: this.parameters.msdyn_HandoverIntent,
-      msdyn_GetHandoverDetailsInfo: this.parameters.msdyn_GetHandoverDetailsInfo,
+      msdyn_AssignTo: this.parameters.msdyn_AssignTo,
       msdyn_SalesAgentRun: this.parameters.msdyn_SalesAgentRun,
       msdyn_HandoverTarget: this.parameters.msdyn_HandoverTarget,
-      msdyn_TrackingId: this.parameters.msdyn_TrackingId,
+      msdyn_GetHandoverDetailsInfo: this.parameters.msdyn_GetHandoverDetailsInfo,
     });
 
     return {

@@ -5,10 +5,10 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from QuestionAnalytics action
  */
 export interface QuestionAnalyticsResponse {
-  value: string;
-  pagingCookie: string;
   moreRecords: boolean;
   page: number;
+  pagingCookie: string;
+  value: string;
 }
 
 /**
@@ -16,12 +16,12 @@ export interface QuestionAnalyticsResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface QuestionAnalyticsActionParameters {
-  botId: string;
-  page?: number;
-  endDateTime: string;
   startDateTime: string;
-  state: string;
   count?: number;
+  botId: string;
+  state: string;
+  endDateTime: string;
+  page?: number;
 }
 
 /**
@@ -36,12 +36,12 @@ export class QuestionAnalyticsAction implements Executable<QuestionAnalyticsResp
     const url = `${baseUrl}/QuestionAnalytics`;
 
     const body = requestBody({
-      botId: this.parameters.botId,
-      page: this.parameters.page,
-      endDateTime: this.parameters.endDateTime,
       startDateTime: this.parameters.startDateTime,
-      state: this.parameters.state,
       count: this.parameters.count,
+      botId: this.parameters.botId,
+      state: this.parameters.state,
+      endDateTime: this.parameters.endDateTime,
+      page: this.parameters.page,
     });
 
     return {

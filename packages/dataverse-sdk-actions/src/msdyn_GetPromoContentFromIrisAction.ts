@@ -15,11 +15,11 @@ export interface msdyn_GetPromoContentFromIrisResponse {
 export interface msdyn_GetPromoContentFromIrisActionParameters {
   msdyn_country?: string;
   msdyn_placementId?: number;
-  msdyn_irisUrl?: string;
-  msdyn_pageType?: string;
-  msdyn_isAdmin?: boolean;
   msdyn_pageName?: string;
   msdyn_locale?: string;
+  msdyn_pageType?: string;
+  msdyn_isAdmin?: boolean;
+  msdyn_irisUrl?: string;
 }
 
 /**
@@ -36,11 +36,11 @@ export class msdyn_GetPromoContentFromIrisAction implements Executable<msdyn_Get
     const body = requestBody({
       msdyn_country: this.parameters.msdyn_country,
       msdyn_placementId: this.parameters.msdyn_placementId,
-      msdyn_irisUrl: this.parameters.msdyn_irisUrl,
-      msdyn_pageType: this.parameters.msdyn_pageType,
-      msdyn_isAdmin: this.parameters.msdyn_isAdmin,
       msdyn_pageName: this.parameters.msdyn_pageName,
       msdyn_locale: this.parameters.msdyn_locale,
+      msdyn_pageType: this.parameters.msdyn_pageType,
+      msdyn_isAdmin: this.parameters.msdyn_isAdmin,
+      msdyn_irisUrl: this.parameters.msdyn_irisUrl,
     });
 
     return {

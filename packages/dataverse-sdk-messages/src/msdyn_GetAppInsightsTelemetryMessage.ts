@@ -9,9 +9,9 @@ import type { msdyn_GetAppInsightsTelemetryResponse as msdyn_GetAppInsightsTelem
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_GetAppInsightsTelemetryRequestParameters {
-  msdyn_Query: string;
   msdyn_Timespan?: string;
   msdyn_LiveWorkItemIds?: string;
+  msdyn_Query: string;
 }
 
 /**
@@ -33,9 +33,9 @@ export class msdyn_GetAppInsightsTelemetryRequest
     const url = `${baseUrl}/msdyn_GetAppInsightsTelemetry`;
 
     const body = requestBody({
-      msdyn_Query: this.Parameters.msdyn_Query,
       msdyn_Timespan: this.Parameters.msdyn_Timespan,
       msdyn_LiveWorkItemIds: this.Parameters.msdyn_LiveWorkItemIds,
+      msdyn_Query: this.Parameters.msdyn_Query,
     });
 
     return {

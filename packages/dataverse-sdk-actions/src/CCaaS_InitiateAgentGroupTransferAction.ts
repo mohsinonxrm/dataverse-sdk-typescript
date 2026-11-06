@@ -13,10 +13,10 @@ export interface CCaaS_InitiateAgentGroupTransferResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CCaaS_InitiateAgentGroupTransferActionParameters {
-  AgentGroupId: string;
-  ApiVersion: string;
   IntentId?: string;
+  ApiVersion: string;
   IntentGroupId?: string;
+  AgentGroupId: string;
   IntentFamilyId?: string;
 }
 
@@ -39,10 +39,10 @@ export class CCaaS_InitiateAgentGroupTransferAction implements Executable<CCaaS_
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_InitiateAgentGroupTransfer`;
 
     const body = requestBody({
-      AgentGroupId: this.parameters.AgentGroupId,
-      ApiVersion: this.parameters.ApiVersion,
       IntentId: this.parameters.IntentId,
+      ApiVersion: this.parameters.ApiVersion,
       IntentGroupId: this.parameters.IntentGroupId,
+      AgentGroupId: this.parameters.AgentGroupId,
       IntentFamilyId: this.parameters.IntentFamilyId,
     });
 

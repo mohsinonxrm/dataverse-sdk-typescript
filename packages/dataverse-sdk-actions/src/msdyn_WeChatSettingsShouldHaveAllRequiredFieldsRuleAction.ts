@@ -4,9 +4,9 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * Response from msdyn_WeChatSettingsShouldHaveAllRequiredFieldsRule action
  */
 export interface msdyn_WeChatSettingsShouldHaveAllRequiredFieldsRuleResponse {
-  ReturnStatus: number;
-  ResultEntities: string;
   Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
 }
 
 /**

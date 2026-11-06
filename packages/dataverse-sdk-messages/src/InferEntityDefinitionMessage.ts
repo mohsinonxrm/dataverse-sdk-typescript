@@ -9,17 +9,17 @@ import type { InferEntityDefinitionResponse as InferEntityDefinitionResponseData
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface InferEntityDefinitionRequestParameters {
+  FileInfo?: string;
+  ParseSampleData?: boolean;
+  RecordId: string;
   LanguageCode?: number;
+  EntitiesCollection?: string;
   UseUserSettings?: boolean;
+  EntityDefinition?: string;
+  SourceTimeZone?: string;
   UserContext?: string;
   SolutionPrefix: string;
   PreviewData?: string;
-  SourceTimeZone?: string;
-  ParseSampleData?: boolean;
-  FileInfo?: string;
-  RecordId: string;
-  EntityDefinition?: string;
-  EntitiesCollection?: string;
 }
 
 /**
@@ -41,17 +41,17 @@ export class InferEntityDefinitionRequest
     const url = `${baseUrl}/InferEntityDefinition`;
 
     const body = requestBody({
+      FileInfo: this.Parameters.FileInfo,
+      ParseSampleData: this.Parameters.ParseSampleData,
+      RecordId: this.Parameters.RecordId,
       LanguageCode: this.Parameters.LanguageCode,
+      EntitiesCollection: this.Parameters.EntitiesCollection,
       UseUserSettings: this.Parameters.UseUserSettings,
+      EntityDefinition: this.Parameters.EntityDefinition,
+      SourceTimeZone: this.Parameters.SourceTimeZone,
       UserContext: this.Parameters.UserContext,
       SolutionPrefix: this.Parameters.SolutionPrefix,
       PreviewData: this.Parameters.PreviewData,
-      SourceTimeZone: this.Parameters.SourceTimeZone,
-      ParseSampleData: this.Parameters.ParseSampleData,
-      FileInfo: this.Parameters.FileInfo,
-      RecordId: this.Parameters.RecordId,
-      EntityDefinition: this.Parameters.EntityDefinition,
-      EntitiesCollection: this.Parameters.EntitiesCollection,
     });
 
     return {

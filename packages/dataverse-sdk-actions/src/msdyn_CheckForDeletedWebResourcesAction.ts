@@ -5,10 +5,10 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_CheckForDeletedWebResources action
  */
 export interface msdyn_CheckForDeletedWebResourcesResponse {
+  HelpLink: string;
   Message: string;
   ResultEntities: string;
   ReturnStatus: number;
-  HelpLink: string;
 }
 
 /**

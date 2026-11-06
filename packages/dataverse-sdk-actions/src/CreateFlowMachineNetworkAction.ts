@@ -13,12 +13,12 @@ export interface CreateFlowMachineNetworkResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface CreateFlowMachineNetworkActionParameters {
-  subnet: string;
   type: string;
-  extendedproperties?: string;
-  supportedscenario: string;
+  subnet: string;
   name: string;
   description?: string;
+  supportedscenario: string;
+  extendedproperties?: string;
 }
 
 /**
@@ -35,12 +35,12 @@ export class CreateFlowMachineNetworkAction implements Executable<CreateFlowMach
     const url = `${baseUrl}/flowmachinenetworks/Microsoft.Dynamics.CRM.CreateFlowMachineNetwork`;
 
     const body = requestBody({
-      subnet: this.parameters.subnet,
       type: this.parameters.type,
-      extendedproperties: this.parameters.extendedproperties,
-      supportedscenario: this.parameters.supportedscenario,
+      subnet: this.parameters.subnet,
       name: this.parameters.name,
       description: this.parameters.description,
+      supportedscenario: this.parameters.supportedscenario,
+      extendedproperties: this.parameters.extendedproperties,
     });
 
     return {

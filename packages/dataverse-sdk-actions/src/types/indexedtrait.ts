@@ -3,27 +3,27 @@
  */
 export interface indexedtrait {
   _createdby_value?: string;
-  _ownerid_value?: string;
-  name?: string;
-  _owninguser_value?: string;
-  properties?: string;
   _createdonbehalfby_value?: string;
-  userid?: string;
-  _owningteam_value?: string;
   _modifiedby_value?: string;
   _modifiedonbehalfby_value?: string;
-  indexedtraitid?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
   alternativekey?: string;
+  createdon?: string;
+  detailedcontents?: string;
+  filtercriteria?: string;
+  importsequencenumber?: number;
+  indexedtraitid?: string;
   modifiedon?: string;
-  searchcontents?: string;
+  name?: string;
   overriddencreatedon?: string;
   partitionid?: string;
+  properties?: string;
+  searchcontents?: string;
   traittype?: string;
   ttlinseconds?: number;
+  userid?: string;
   versionnumber?: number;
-  importsequencenumber?: number;
-  detailedcontents?: string;
-  _owningbusinessunit_value?: string;
-  createdon?: string;
-  filtercriteria?: string;
 }

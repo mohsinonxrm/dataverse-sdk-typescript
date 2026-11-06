@@ -5,10 +5,10 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_SalesLeadCatchup action
  */
 export interface msdyn_SalesLeadCatchupResponse {
-  msdyn_summary_raw: string;
-  msdyn_summary: string;
-  msdyn_version: string;
   msdyn_sales_copilot_output: string;
+  msdyn_summary: string;
+  msdyn_summary_raw: string;
+  msdyn_version: string;
 }
 
 /**
@@ -16,13 +16,13 @@ export interface msdyn_SalesLeadCatchupResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesLeadCatchupActionParameters {
-  msdyn_since?: string;
-  msdyn_sessionId?: string;
-  msdyn_responseFormat?: string;
   msdyn_additionalParams?: string;
+  msdyn_sessionId?: string;
+  msdyn_id: string;
   msdyn_activityId?: string;
   msdyn_skipHeader?: string;
-  msdyn_id: string;
+  msdyn_since?: string;
+  msdyn_responseFormat?: string;
 }
 
 /**
@@ -37,13 +37,13 @@ export class msdyn_SalesLeadCatchupAction implements Executable<msdyn_SalesLeadC
     const url = `${baseUrl}/msdyn_SalesLeadCatchup`;
 
     const body = requestBody({
-      msdyn_since: this.parameters.msdyn_since,
-      msdyn_sessionId: this.parameters.msdyn_sessionId,
-      msdyn_responseFormat: this.parameters.msdyn_responseFormat,
       msdyn_additionalParams: this.parameters.msdyn_additionalParams,
+      msdyn_sessionId: this.parameters.msdyn_sessionId,
+      msdyn_id: this.parameters.msdyn_id,
       msdyn_activityId: this.parameters.msdyn_activityId,
       msdyn_skipHeader: this.parameters.msdyn_skipHeader,
-      msdyn_id: this.parameters.msdyn_id,
+      msdyn_since: this.parameters.msdyn_since,
+      msdyn_responseFormat: this.parameters.msdyn_responseFormat,
     });
 
     return {

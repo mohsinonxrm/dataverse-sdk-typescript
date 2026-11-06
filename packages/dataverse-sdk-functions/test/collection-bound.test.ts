@@ -40,6 +40,7 @@ const RETRIEVE_UNPUBLISHED_MULTIPLE: Array<[string, string]> = [
   ["appconfig", "appconfigs"],
   ["appconfiginstance", "appconfiginstances"],
   ["appmodule", "appmodules"],
+  ["computeruseagent", "computeruseagents"],
   ["customcontroldefaultconfig", "customcontroldefaultconfigs"],
   ["desktopflowbinary", "desktopflowbinaries"],
   ["mobileofflineprofile", "mobileofflineprofiles"],
@@ -66,6 +67,7 @@ describe("#69: collection-bound functions", () => {
       GetAllTimeZonesWithDisplayNameFunction:
         "/timezonedefinitions/Microsoft.Dynamics.CRM.GetAllTimeZonesWithDisplayName",
       GetDefaultPriceLevelFunction: "/pricelevels/Microsoft.Dynamics.CRM.GetDefaultPriceLevel",
+      GetNextRunsFunction: "/flowtriggers/Microsoft.Dynamics.CRM.GetNextRuns",
       RetrieveFilteredFormsFunction: "/systemforms/Microsoft.Dynamics.CRM.RetrieveFilteredForms",
       RetrievePersonalWallFunction: "/posts/Microsoft.Dynamics.CRM.RetrievePersonalWall",
       RetrievePrivilegeSetFunction: "/privileges/Microsoft.Dynamics.CRM.RetrievePrivilegeSet",

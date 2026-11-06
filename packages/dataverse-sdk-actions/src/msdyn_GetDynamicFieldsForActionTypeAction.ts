@@ -13,10 +13,10 @@ export interface msdyn_GetDynamicFieldsForActionTypeResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_GetDynamicFieldsForActionTypeActionParameters {
-  correlationId: string;
-  workflowId: string;
   secondaryActionType: string;
   actionType: string;
+  correlationId: string;
+  workflowId: string;
 }
 
 /**
@@ -31,10 +31,10 @@ export class msdyn_GetDynamicFieldsForActionTypeAction implements Executable<msd
     const url = `${baseUrl}/msdyn_GetDynamicFieldsForActionType`;
 
     const body = requestBody({
-      correlationId: this.parameters.correlationId,
-      workflowId: this.parameters.workflowId,
       secondaryActionType: this.parameters.secondaryActionType,
       actionType: this.parameters.actionType,
+      correlationId: this.parameters.correlationId,
+      workflowId: this.parameters.workflowId,
     });
 
     return {

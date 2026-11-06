@@ -10,10 +10,10 @@ import type { msdyn_SalesAnswerFromDocumentsResponse as msdyn_SalesAnswerFromDoc
  */
 export interface msdyn_SalesAnswerFromDocumentsRequestParameters {
   msdyn_queryLocale?: string;
-  msdyn_responseFormat?: string;
-  msdyn_userQuery: string;
-  msdyn_additionalParameters?: string;
   msdyn_activityId?: string;
+  msdyn_responseFormat?: string;
+  msdyn_additionalParameters?: string;
+  msdyn_userQuery: string;
 }
 
 /**
@@ -36,10 +36,10 @@ export class msdyn_SalesAnswerFromDocumentsRequest
 
     const body = requestBody({
       msdyn_queryLocale: this.Parameters.msdyn_queryLocale,
-      msdyn_responseFormat: this.Parameters.msdyn_responseFormat,
-      msdyn_userQuery: this.Parameters.msdyn_userQuery,
-      msdyn_additionalParameters: this.Parameters.msdyn_additionalParameters,
       msdyn_activityId: this.Parameters.msdyn_activityId,
+      msdyn_responseFormat: this.Parameters.msdyn_responseFormat,
+      msdyn_additionalParameters: this.Parameters.msdyn_additionalParameters,
+      msdyn_userQuery: this.Parameters.msdyn_userQuery,
     });
 
     return {

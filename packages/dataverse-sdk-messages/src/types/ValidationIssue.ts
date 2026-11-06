@@ -5,14 +5,14 @@ import type { ErrorType } from "./ErrorType.js";
  * ValidationIssue complex type
  */
 export interface ValidationIssue {
+  CRMErrorCode?: number;
+  ComponentId?: string;
+  ComponentSubType?: number;
+  ComponentType?: number;
+  DisplayName?: string;
   ErrorType?: ErrorType;
   Message?: string;
-  DisplayName?: string;
-  ComponentId?: string;
-  ComponentType?: number;
-  ComponentSubType?: number;
   ParentEntityId?: string;
   ParentEntityName?: string;
   RequiredComponents?: Component[];
-  CRMErrorCode?: number;
 }

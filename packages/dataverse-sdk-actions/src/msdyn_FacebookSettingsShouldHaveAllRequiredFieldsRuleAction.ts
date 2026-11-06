@@ -4,9 +4,9 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * Response from msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRule action
  */
 export interface msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRuleResponse {
-  ReturnStatus: number;
-  ResultEntities: string;
   Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
 }
 
 /**

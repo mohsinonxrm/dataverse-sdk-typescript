@@ -2,7 +2,7 @@
 
 > **Package**: `@mohsinonxrm/dataverse-sdk-messages`
 >
-> **Coverage**: <!-- count:messages -->1,360<!-- /count --> typed messages, one per Web API action in the `$metadata` the package was generated from. The lists below are generated from the package source by `pnpm --filter generate-sdk-types docs`, so every class, constructor and route shown exists.
+> **Coverage**: <!-- count:messages -->1,556<!-- /count --> typed messages, one per Web API action in the `$metadata` the package was generated from. The lists below are generated from the package source by `pnpm --filter generate-sdk-types docs`, so every class, constructor and route shown exists.
 
 ---
 
@@ -101,7 +101,7 @@ ExportToExcel: Export a view's rows as an .xlsx file (base64).
 - `new UpsertMultipleRequest(entitySetName, { Targets })` (`POST /{entitySetName}/Microsoft.Dynamics.CRM.UpsertMultiple`): Create or update records of one table in one request.
 - `new ExecuteWorkflowRequest(workflowId, { EntityId, InputArguments? })` (`POST /workflows({workflowId})/Microsoft.Dynamics.CRM.ExecuteWorkflow`): Run an on-demand workflow on a record; `result` is the `asyncoperation`.
 - `new MergeRequest({ Target, Subordinate, UpdateContent?, PerformParentingChecks })` (`POST /Merge`): Merge a subordinate record into a target.
-- `new BulkDeleteRequest({ QuerySet?, JobName, SendEmailNotification, ToRecipients, CCRecipients, RecurrencePattern, StartDateTime, SourceImportId?, RunNow? })` (`POST /BulkDelete`): Start an asynchronous bulk delete job.
+- `new BulkDeleteRequest({ QuerySet?, JobName, SendEmailNotification, ToRecipients, CCRecipients, RecurrencePattern, StartDateTime, SourceImportId?, RunNow?, Options? })` (`POST /BulkDelete`): Start an asynchronous bulk delete job.
 - `new ExportToExcelRequest({ View, FetchXml, LayoutXml, QueryApi, QueryParameters })` (`POST /ExportToExcel`): Export a view's rows as an .xlsx file (base64).
 
 <!-- /operations -->

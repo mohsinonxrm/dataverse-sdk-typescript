@@ -14,9 +14,9 @@ export interface msdynmkt_GetDataverseTableMetadataItemsResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdynmkt_GetDataverseTableMetadataItemsActionParameters {
-  msdynmkt_GetDataverseTableMetadataItems_request_LanguageCode?: number;
-  msdynmkt_GetDataverseTableMetadataItems_request_SourceLogicalNames: string[];
   msdynmkt_GetDataverseTableMetadataItems_request_UseLazyLoading?: boolean;
+  msdynmkt_GetDataverseTableMetadataItems_request_SourceLogicalNames: string[];
+  msdynmkt_GetDataverseTableMetadataItems_request_LanguageCode?: number;
 }
 
 /**
@@ -33,12 +33,12 @@ export class msdynmkt_GetDataverseTableMetadataItemsAction implements Executable
     const url = `${baseUrl}/msdynmkt_GetDataverseTableMetadataItems`;
 
     const body = requestBody({
-      msdynmkt_GetDataverseTableMetadataItems_request_LanguageCode:
-        this.parameters.msdynmkt_GetDataverseTableMetadataItems_request_LanguageCode,
-      msdynmkt_GetDataverseTableMetadataItems_request_SourceLogicalNames:
-        this.parameters.msdynmkt_GetDataverseTableMetadataItems_request_SourceLogicalNames,
       msdynmkt_GetDataverseTableMetadataItems_request_UseLazyLoading:
         this.parameters.msdynmkt_GetDataverseTableMetadataItems_request_UseLazyLoading,
+      msdynmkt_GetDataverseTableMetadataItems_request_SourceLogicalNames:
+        this.parameters.msdynmkt_GetDataverseTableMetadataItems_request_SourceLogicalNames,
+      msdynmkt_GetDataverseTableMetadataItems_request_LanguageCode:
+        this.parameters.msdynmkt_GetDataverseTableMetadataItems_request_LanguageCode,
     });
 
     return {

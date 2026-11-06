@@ -2,26 +2,26 @@
  * msdyn_salesinsightssettings entity type
  */
 export interface msdyn_salesinsightssettings {
-  _modifiedby_value?: string;
-  _owningbusinessunit_value?: string;
-  utcconversiontimezonecode?: number;
-  _owninguser_value?: string;
-  _modifiedonbehalfby_value?: string;
-  overriddencreatedon?: string;
-  msdyn_islicensepurchased?: boolean;
+  _createdby_value?: string;
   _createdonbehalfby_value?: string;
-  modifiedon?: string;
-  msdyn_salesinsightssettingsid?: string;
-  statecode?: number;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
   _ownerid_value?: string;
-  msdyn_name?: string;
-  statuscode?: number;
-  createdon?: string;
+  _owningbusinessunit_value?: string;
   _owningteam_value?: string;
-  versionnumber?: number;
-  timezoneruleversionnumber?: number;
+  _owninguser_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_islicensepurchased?: boolean;
   msdyn_isoctpreviewenabled?: boolean;
   msdyn_ispreviewenabled?: boolean;
-  _createdby_value?: string;
-  importsequencenumber?: number;
+  msdyn_name?: string;
+  msdyn_salesinsightssettingsid?: string;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

@@ -10,6 +10,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { parseEdmx } from "../src/parsers/edmx-parser.js";
+import { canonicalizeCsdl } from "../src/parsers/canonical.js";
 import { generateActions } from "../src/generators/actions-generator.js";
 import { generateFunctions } from "../src/generators/functions-generator.js";
 import { generateMessages } from "../src/generators/messages-generator.js";
@@ -355,10 +356,10 @@ new CalculateRollupFunction({ FieldName: "revenue" });
 });
 
 /**
- * The committed packages were ported to options objects by a script, not regenerated (the live
- * org's $metadata has drifted from the snapshot they came from). These operations, cut from a live
- * $metadata into `fixtures/operations-metadata.xml`, must regenerate to the committed files byte for
- * byte (after prettier, as committed).
+ * These operations, cut from a live $metadata into `fixtures/operations-metadata.xml`, must
+ * regenerate to the committed files byte for byte (after prettier, as committed). Since #293 the
+ * whole packages are regenerated from the committed snapshot and CI checks every file; this keeps
+ * a quick local check, with the schema in the generator's canonical order as `regen` uses it.
  */
 describe("#96: the committed packages", () => {
   const FILES = {
@@ -389,7 +390,7 @@ describe("#96: the committed packages", () => {
       new URL("./fixtures/operations-metadata.xml", import.meta.url),
       "utf8"
     );
-    const csdl = parseEdmx(xml);
+    const csdl = canonicalizeCsdl(parseEdmx(xml));
     await generateActions(csdl, join(live, "actions"), false);
     await generateFunctions(csdl, join(live, "functions"), false);
     await generateMessages(csdl, join(live, "messages"), false);

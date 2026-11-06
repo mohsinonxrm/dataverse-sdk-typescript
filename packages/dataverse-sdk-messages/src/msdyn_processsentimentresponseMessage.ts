@@ -9,9 +9,9 @@ import type { msdyn_processsentimentresponseResponse as msdyn_processsentimentre
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_processsentimentresponseRequestParameters {
+  conversationId: string;
   emailId: string;
   copilotResponse: string[];
-  conversationId: string;
 }
 
 /**
@@ -33,9 +33,9 @@ export class msdyn_processsentimentresponseRequest
     const url = `${baseUrl}/msdyn_processsentimentresponse`;
 
     const body = requestBody({
+      conversationId: this.Parameters.conversationId,
       emailId: this.Parameters.emailId,
       copilotResponse: this.Parameters.copilotResponse,
-      conversationId: this.Parameters.conversationId,
     });
 
     return {

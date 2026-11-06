@@ -2,25 +2,25 @@
  * msdyn_ocbotchannelregistrationsecret entity type
  */
 export interface msdyn_ocbotchannelregistrationsecret {
-  _owninguser_value?: string;
+  _createdby_value?: string;
   _createdonbehalfby_value?: string;
-  statuscode?: number;
-  _ownerid_value?: string;
-  createdon?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
   _msdyn_ocbotchannelregistrationid_value?: string;
-  timezoneruleversionnumber?: number;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
   modifiedon?: string;
+  msdyn_name?: string;
   msdyn_ocbotchannelregistrationsecretid?: string;
   msdyn_securemsappsecret?: string;
-  _createdby_value?: string;
-  importsequencenumber?: number;
-  statecode?: number;
-  _owningbusinessunit_value?: string;
   overriddencreatedon?: string;
-  versionnumber?: number;
-  _modifiedby_value?: string;
-  msdyn_name?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
   utcconversiontimezonecode?: number;
-  _modifiedonbehalfby_value?: string;
-  _owningteam_value?: string;
+  versionnumber?: number;
 }

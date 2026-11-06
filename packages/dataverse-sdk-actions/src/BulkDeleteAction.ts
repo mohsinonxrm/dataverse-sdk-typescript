@@ -3,7 +3,7 @@ import type { EntityReference } from "./types/EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
-import type { QueryExpression, activityparty } from "./types/index.js";
+import type { BulkDeleteOptions, QueryExpression, activityparty } from "./types/index.js";
 
 /**
  * Response from BulkDelete action
@@ -26,6 +26,7 @@ export interface BulkDeleteActionParameters {
   StartDateTime: string;
   SourceImportId?: string;
   RunNow?: boolean;
+  Options?: BulkDeleteOptions;
 }
 
 /**
@@ -49,6 +50,7 @@ export class BulkDeleteAction implements Executable<BulkDeleteResponse> {
       StartDateTime: this.parameters.StartDateTime,
       SourceImportId: this.parameters.SourceImportId,
       RunNow: this.parameters.RunNow,
+      Options: this.parameters.Options,
     });
 
     return {

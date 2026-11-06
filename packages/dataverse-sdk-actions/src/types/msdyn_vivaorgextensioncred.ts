@@ -2,28 +2,28 @@
  * msdyn_vivaorgextensioncred entity type
  */
 export interface msdyn_vivaorgextensioncred {
-  msdyn_producttype?: number;
-  msdyn_settingsmodifiedby?: string;
-  msdyn_orgid?: string;
-  msdyn_vivaorgextensioncredid?: string;
-  statuscode?: number;
-  modifiedon?: string;
-  _createdonbehalfby_value?: string;
-  importsequencenumber?: number;
-  msdyn_extensionsecret?: string;
-  statecode?: number;
-  timezoneruleversionnumber?: number;
-  _modifiedonbehalfby_value?: string;
-  msdyn_extensionclientid?: string;
-  createdon?: string;
-  utcconversiontimezonecode?: number;
   _createdby_value?: string;
-  msdyn_name?: string;
-  versionnumber?: number;
-  msdyn_extensionproperties?: string;
+  _createdonbehalfby_value?: string;
   _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
   _organizationid_value?: string;
-  overriddencreatedon?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_extensionclientid?: string;
   msdyn_extensionname?: string;
+  msdyn_extensionproperties?: string;
+  msdyn_extensionsecret?: string;
+  msdyn_name?: string;
+  msdyn_orgid?: string;
+  msdyn_producttype?: number;
   msdyn_settingscreatedby?: string;
+  msdyn_settingsmodifiedby?: string;
+  msdyn_vivaorgextensioncredid?: string;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

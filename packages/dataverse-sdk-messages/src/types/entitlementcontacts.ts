@@ -2,13 +2,13 @@
  * entitlementcontacts entity type
  */
 export interface entitlementcontacts {
-  entitlementcontactid?: string;
-  versionnumber?: number;
-  timezoneruleversionnumber?: number;
   contactid?: string;
-  utcconversiontimezonecode?: number;
+  entitlementcontactid?: string;
   entitlementid?: string;
+  importsequencenumber?: number;
   name?: string;
   overriddencreatedon?: string;
-  importsequencenumber?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

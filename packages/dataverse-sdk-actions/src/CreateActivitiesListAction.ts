@@ -27,6 +27,7 @@ export interface CreateActivitiesListActionParameters {
   sendEmail: boolean;
   PostWorkflowEvent: boolean;
   QueueId?: string;
+  ExtendedActivityParameters?: string;
 }
 
 /**
@@ -51,6 +52,7 @@ export class CreateActivitiesListAction implements Executable<CreateActivitiesLi
       sendEmail: this.parameters.sendEmail,
       PostWorkflowEvent: this.parameters.PostWorkflowEvent,
       QueueId: this.parameters.QueueId,
+      ExtendedActivityParameters: this.parameters.ExtendedActivityParameters,
     });
 
     return {

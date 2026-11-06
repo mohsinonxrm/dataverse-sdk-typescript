@@ -9,11 +9,11 @@ import type { msdyn_AIBRealTimePredictResponse as msdyn_AIBRealTimePredictRespon
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_AIBRealTimePredictRequestParameters {
-  Filters: string;
-  SuggestionFor: string;
-  Context: string;
-  Version: string;
   SuggestionType: string;
+  Filters: string;
+  Context: string;
+  SuggestionFor: string;
+  Version: string;
 }
 
 /**
@@ -35,11 +35,11 @@ export class msdyn_AIBRealTimePredictRequest
     const url = `${baseUrl}/msdyn_AIBRealTimePredict`;
 
     const body = requestBody({
-      Filters: this.Parameters.Filters,
-      SuggestionFor: this.Parameters.SuggestionFor,
-      Context: this.Parameters.Context,
-      Version: this.Parameters.Version,
       SuggestionType: this.Parameters.SuggestionType,
+      Filters: this.Parameters.Filters,
+      Context: this.Parameters.Context,
+      SuggestionFor: this.Parameters.SuggestionFor,
+      Version: this.Parameters.Version,
     });
 
     return {

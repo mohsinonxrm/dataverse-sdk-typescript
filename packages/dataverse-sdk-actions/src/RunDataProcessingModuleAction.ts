@@ -14,12 +14,12 @@ export interface RunDataProcessingModuleResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface RunDataProcessingModuleActionParameters {
-  EndPoints?: string[];
-  JobArguments?: string[];
+  UpstreamResults?: string[];
   ScalarInputs?: string[];
   CallbackUri?: string;
+  EndPoints?: string[];
+  JobArguments?: string[];
   DataProcessingConfigurationId: string;
-  UpstreamResults?: string[];
 }
 
 /**
@@ -34,12 +34,12 @@ export class RunDataProcessingModuleAction implements Executable<RunDataProcessi
     const url = `${baseUrl}/RunDataProcessingModule`;
 
     const body = requestBody({
-      EndPoints: this.parameters.EndPoints,
-      JobArguments: this.parameters.JobArguments,
+      UpstreamResults: this.parameters.UpstreamResults,
       ScalarInputs: this.parameters.ScalarInputs,
       CallbackUri: this.parameters.CallbackUri,
+      EndPoints: this.parameters.EndPoints,
+      JobArguments: this.parameters.JobArguments,
       DataProcessingConfigurationId: this.parameters.DataProcessingConfigurationId,
-      UpstreamResults: this.parameters.UpstreamResults,
     });
 
     return {

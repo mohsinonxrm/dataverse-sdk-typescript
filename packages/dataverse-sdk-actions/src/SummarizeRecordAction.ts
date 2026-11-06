@@ -14,9 +14,9 @@ export interface SummarizeRecordResponse {
  */
 export interface SummarizeRecordActionParameters {
   Id: string;
-  EntityLogicalName: string;
-  RecordContext?: string;
   IsMergedCatchupAndSummary?: boolean;
+  RecordContext?: string;
+  EntityLogicalName: string;
 }
 
 /**
@@ -32,9 +32,9 @@ export class SummarizeRecordAction implements Executable<SummarizeRecordResponse
 
     const body = requestBody({
       Id: this.parameters.Id,
-      EntityLogicalName: this.parameters.EntityLogicalName,
-      RecordContext: this.parameters.RecordContext,
       IsMergedCatchupAndSummary: this.parameters.IsMergedCatchupAndSummary,
+      RecordContext: this.parameters.RecordContext,
+      EntityLogicalName: this.parameters.EntityLogicalName,
     });
 
     return {

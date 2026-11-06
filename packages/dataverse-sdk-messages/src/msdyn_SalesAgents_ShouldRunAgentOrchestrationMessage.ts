@@ -11,6 +11,7 @@ import type { msdyn_SalesAgents_ShouldRunAgentOrchestrationResponse as msdyn_Sal
 export interface msdyn_SalesAgents_ShouldRunAgentOrchestrationRequestParameters {
   msdyn_SalesAgentType: number;
   msdyn_TrackingId?: string;
+  msdyn_AgentProfileId?: string;
 }
 
 /**
@@ -34,6 +35,7 @@ export class msdyn_SalesAgents_ShouldRunAgentOrchestrationRequest
     const body = requestBody({
       msdyn_SalesAgentType: this.Parameters.msdyn_SalesAgentType,
       msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
+      msdyn_AgentProfileId: this.Parameters.msdyn_AgentProfileId,
     });
 
     return {

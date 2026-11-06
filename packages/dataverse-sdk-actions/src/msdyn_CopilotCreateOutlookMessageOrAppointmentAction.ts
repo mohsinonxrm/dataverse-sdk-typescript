@@ -15,10 +15,10 @@ export interface msdyn_CopilotCreateOutlookMessageOrAppointmentResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_CopilotCreateOutlookMessageOrAppointmentActionParameters {
-  msdyn_messageId?: string;
-  msdyn_correlationId?: string;
   msdyn_outlookItemType: string;
   msdyn_outlookPayload: string;
+  msdyn_messageId?: string;
+  msdyn_correlationId?: string;
 }
 
 /**
@@ -35,10 +35,10 @@ export class msdyn_CopilotCreateOutlookMessageOrAppointmentAction implements Exe
     const url = `${baseUrl}/msdyn_CopilotCreateOutlookMessageOrAppointment`;
 
     const body = requestBody({
-      msdyn_messageId: this.parameters.msdyn_messageId,
-      msdyn_correlationId: this.parameters.msdyn_correlationId,
       msdyn_outlookItemType: this.parameters.msdyn_outlookItemType,
       msdyn_outlookPayload: this.parameters.msdyn_outlookPayload,
+      msdyn_messageId: this.parameters.msdyn_messageId,
+      msdyn_correlationId: this.parameters.msdyn_correlationId,
     });
 
     return {

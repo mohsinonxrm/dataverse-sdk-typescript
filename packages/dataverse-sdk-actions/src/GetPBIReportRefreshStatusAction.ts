@@ -5,9 +5,9 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from GetPBIReportRefreshStatus action
  */
 export interface GetPBIReportRefreshStatusResponse {
-  ReportRefreshStatusState: string;
   ReportRefreshStatusEndTime: string;
   ReportRefreshStatusStartTime: string;
+  ReportRefreshStatusState: string;
 }
 
 /**

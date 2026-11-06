@@ -2,32 +2,32 @@
  * stagedentity entity type
  */
 export interface stagedentity {
+  _createdby_value?: string;
   _createdonbehalfby_value?: string;
-  timezoneruleversionnumber?: number;
-  modifiedon?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  collectionname?: string;
+  createdon?: string;
+  dataproviderid?: string;
+  datasourceid?: string;
+  entitydescription?: string;
   entitysetname?: string;
   externalcollectionname?: string;
-  entitydescription?: string;
-  _modifiedonbehalfby_value?: string;
-  utcconversiontimezonecode?: number;
-  logicalname?: string;
-  originallocalizedescription?: string;
   externalname?: string;
+  importsequencenumber?: number;
+  logicalcollectionname?: string;
+  logicalname?: string;
+  modifiedon?: string;
+  name?: string;
+  originallocalizedcollectioname?: string;
+  originallocalizedescription?: string;
+  originallocalizedname?: string;
+  overriddencreatedon?: string;
+  physicalname?: string;
+  stagedentityid?: string;
   statecode?: number;
   statuscode?: number;
-  originallocalizedcollectioname?: string;
-  overriddencreatedon?: string;
-  importsequencenumber?: number;
-  name?: string;
-  originallocalizedname?: string;
-  stagedentityid?: string;
-  _modifiedby_value?: string;
-  _createdby_value?: string;
-  collectionname?: string;
-  datasourceid?: string;
-  logicalcollectionname?: string;
-  createdon?: string;
-  physicalname?: string;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
   versionnumber?: number;
-  dataproviderid?: string;
 }

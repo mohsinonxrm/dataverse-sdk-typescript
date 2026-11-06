@@ -9,12 +9,12 @@ import type { msdyn_DraftFollowupEmailWithTemplateResponse as msdyn_DraftFollowu
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_DraftFollowupEmailWithTemplateRequestParameters {
-  AgentMonitoringId: string;
-  IncidentEntityName: string;
-  TemplateId: string;
-  IncidentId: string;
   AgentActivityId: string;
+  IncidentId: string;
+  TemplateId: string;
+  AgentMonitoringId: string;
   EmailAssistInput: string;
+  IncidentEntityName: string;
 }
 
 /**
@@ -36,12 +36,12 @@ export class msdyn_DraftFollowupEmailWithTemplateRequest
     const url = `${baseUrl}/msdyn_DraftFollowupEmailWithTemplate`;
 
     const body = requestBody({
-      AgentMonitoringId: this.Parameters.AgentMonitoringId,
-      IncidentEntityName: this.Parameters.IncidentEntityName,
-      TemplateId: this.Parameters.TemplateId,
-      IncidentId: this.Parameters.IncidentId,
       AgentActivityId: this.Parameters.AgentActivityId,
+      IncidentId: this.Parameters.IncidentId,
+      TemplateId: this.Parameters.TemplateId,
+      AgentMonitoringId: this.Parameters.AgentMonitoringId,
       EmailAssistInput: this.Parameters.EmailAssistInput,
+      IncidentEntityName: this.Parameters.IncidentEntityName,
     });
 
     return {

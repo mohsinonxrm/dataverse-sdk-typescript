@@ -2,13 +2,13 @@
  * productsalesliterature entity type
  */
 export interface productsalesliterature {
+  importsequencenumber?: number;
+  name?: string;
+  overriddencreatedon?: string;
+  productid?: string;
+  productsalesliteratureid?: string;
   salesliteratureid?: string;
   timezoneruleversionnumber?: number;
-  productid?: string;
-  versionnumber?: number;
-  name?: string;
-  productsalesliteratureid?: string;
-  overriddencreatedon?: string;
-  importsequencenumber?: number;
   utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

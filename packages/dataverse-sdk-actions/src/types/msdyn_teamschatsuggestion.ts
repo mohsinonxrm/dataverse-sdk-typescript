@@ -2,24 +2,24 @@
  * msdyn_teamschatsuggestion entity type
  */
 export interface msdyn_teamschatsuggestion {
-  importsequencenumber?: number;
-  msdyn_teamschatsuggestionname?: string;
-  _createdonbehalfby_value?: string;
-  msdyn_suggestions?: string;
-  createdon?: string;
   _createdby_value?: string;
-  msdyn_computedon?: string;
-  timezoneruleversionnumber?: number;
-  msdyn_teamschatsuggestionid?: string;
+  _createdonbehalfby_value?: string;
   _modifiedby_value?: string;
-  msdyn_regardingobjectid?: string;
-  overriddencreatedon?: string;
-  utcconversiontimezonecode?: number;
-  modifiedon?: string;
-  versionnumber?: number;
-  msdyn_regardingobjectname?: string;
-  msdyn_computationstate?: number;
-  statuscode?: number;
-  statecode?: number;
   _modifiedonbehalfby_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_computationstate?: number;
+  msdyn_computedon?: string;
+  msdyn_regardingobjectid?: string;
+  msdyn_regardingobjectname?: string;
+  msdyn_suggestions?: string;
+  msdyn_teamschatsuggestionid?: string;
+  msdyn_teamschatsuggestionname?: string;
+  overriddencreatedon?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

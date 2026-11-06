@@ -2,13 +2,13 @@
  * AppOverridableSettingInfo complex type
  */
 export interface AppOverridableSettingInfo {
-  AppUniqueName?: string;
   AppDisplayName?: string;
   AppId?: string;
-  OverriddenValue?: string;
-  OverriddenPublishedValue?: string;
   AppSettingId?: string;
+  AppUniqueName?: string;
   IsCustomizable?: boolean;
   IsManaged?: boolean;
   IsPublished?: boolean;
+  OverriddenPublishedValue?: string;
+  OverriddenValue?: string;
 }

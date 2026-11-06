@@ -5,9 +5,9 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from GenerateInstantPlugin action
  */
 export interface GenerateInstantPluginResponse {
-  msdyn_functionid: string;
   CustomApiId: string;
   FxExpressionId: string;
+  msdyn_functionid: string;
 }
 
 /**
@@ -15,13 +15,13 @@ export interface GenerateInstantPluginResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface GenerateInstantPluginActionParameters {
-  SolutionUniqueName?: string;
-  Expression: string;
-  Context?: string;
-  Description: string;
-  EntityLogicalName?: string;
   Parameters?: string;
+  Expression: string;
+  Description: string;
   Name: string;
+  Context?: string;
+  SolutionUniqueName?: string;
+  EntityLogicalName?: string;
 }
 
 /**
@@ -36,13 +36,13 @@ export class GenerateInstantPluginAction implements Executable<GenerateInstantPl
     const url = `${baseUrl}/GenerateInstantPlugin`;
 
     const body = requestBody({
-      SolutionUniqueName: this.parameters.SolutionUniqueName,
-      Expression: this.parameters.Expression,
-      Context: this.parameters.Context,
-      Description: this.parameters.Description,
-      EntityLogicalName: this.parameters.EntityLogicalName,
       Parameters: this.parameters.Parameters,
+      Expression: this.parameters.Expression,
+      Description: this.parameters.Description,
       Name: this.parameters.Name,
+      Context: this.parameters.Context,
+      SolutionUniqueName: this.parameters.SolutionUniqueName,
+      EntityLogicalName: this.parameters.EntityLogicalName,
     });
 
     return {

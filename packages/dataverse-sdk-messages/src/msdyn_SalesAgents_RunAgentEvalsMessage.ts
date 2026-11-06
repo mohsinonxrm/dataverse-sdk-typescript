@@ -10,11 +10,11 @@ import type { msdyn_SalesAgents_RunAgentEvalsResponse as msdyn_SalesAgents_RunAg
  */
 export interface msdyn_SalesAgents_RunAgentEvalsRequestParameters {
   msdyn_MicroAgent: string;
-  msdyn_AgentOutput: string;
-  msdyn_AgentInput: string;
-  msdyn_SalesAgent: string;
   msdyn_OrchestrationId: string;
+  msdyn_SalesAgent: string;
   msdyn_RecordId: string;
+  msdyn_AgentInput: string;
+  msdyn_AgentOutput: string;
 }
 
 /**
@@ -37,11 +37,11 @@ export class msdyn_SalesAgents_RunAgentEvalsRequest
 
     const body = requestBody({
       msdyn_MicroAgent: this.Parameters.msdyn_MicroAgent,
-      msdyn_AgentOutput: this.Parameters.msdyn_AgentOutput,
-      msdyn_AgentInput: this.Parameters.msdyn_AgentInput,
-      msdyn_SalesAgent: this.Parameters.msdyn_SalesAgent,
       msdyn_OrchestrationId: this.Parameters.msdyn_OrchestrationId,
+      msdyn_SalesAgent: this.Parameters.msdyn_SalesAgent,
       msdyn_RecordId: this.Parameters.msdyn_RecordId,
+      msdyn_AgentInput: this.Parameters.msdyn_AgentInput,
+      msdyn_AgentOutput: this.Parameters.msdyn_AgentOutput,
     });
 
     return {

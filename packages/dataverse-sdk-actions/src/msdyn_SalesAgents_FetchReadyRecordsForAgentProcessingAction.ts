@@ -14,9 +14,10 @@ export interface msdyn_SalesAgents_FetchReadyRecordsForAgentProcessingResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesAgents_FetchReadyRecordsForAgentProcessingActionParameters {
-  msdyn_SalesAgentType: number;
-  msdyn_Top?: number;
   msdyn_TrackingId?: string;
+  msdyn_Top?: number;
+  msdyn_SalesAgentType: number;
+  msdyn_AgentProfileIds?: string;
 }
 
 /**
@@ -33,9 +34,10 @@ export class msdyn_SalesAgents_FetchReadyRecordsForAgentProcessingAction impleme
     const url = `${baseUrl}/msdyn_SalesAgents_FetchReadyRecordsForAgentProcessing`;
 
     const body = requestBody({
-      msdyn_SalesAgentType: this.parameters.msdyn_SalesAgentType,
-      msdyn_Top: this.parameters.msdyn_Top,
       msdyn_TrackingId: this.parameters.msdyn_TrackingId,
+      msdyn_Top: this.parameters.msdyn_Top,
+      msdyn_SalesAgentType: this.parameters.msdyn_SalesAgentType,
+      msdyn_AgentProfileIds: this.parameters.msdyn_AgentProfileIds,
     });
 
     return {

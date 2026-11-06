@@ -2,15 +2,15 @@
  * principalobjectaccess entity type
  */
 export interface principalobjectaccess {
-  timezoneruleversionnumber?: number;
-  changedon?: string;
-  principalid?: string;
-  versionnumber?: number;
-  utcconversiontimezonecode?: number;
-  principalobjectaccessid?: string;
-  objecttypecode?: string;
-  objectid?: string;
-  principaltypecode?: string;
-  inheritedaccessrightsmask?: number;
   accessrightsmask?: number;
+  changedon?: string;
+  inheritedaccessrightsmask?: number;
+  objectid?: string;
+  objecttypecode?: string;
+  principalid?: string;
+  principalobjectaccessid?: string;
+  principaltypecode?: string;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

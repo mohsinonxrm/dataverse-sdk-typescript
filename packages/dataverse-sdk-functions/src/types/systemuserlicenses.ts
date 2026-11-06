@@ -2,7 +2,7 @@
  * systemuserlicenses entity type
  */
 export interface systemuserlicenses {
-  systemuserid?: string;
   licenseid?: string;
+  systemuserid?: string;
   systemuserlicenseid?: string;
 }

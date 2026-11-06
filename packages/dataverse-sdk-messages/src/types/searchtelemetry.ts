@@ -2,16 +2,16 @@
  * searchtelemetry entity type
  */
 export interface searchtelemetry {
+  correlationid?: string;
+  createdon?: string;
+  eyesonanalyticsallowed?: boolean;
   feedbackdata?: string;
+  partitionid?: string;
+  requestid?: string;
+  scenarioname?: string;
+  searchtelemetryid?: string;
   sessionid?: string;
   ttlinseconds?: number;
-  requestid?: string;
-  searchtelemetryid?: string;
   userquery?: string;
-  eyesonanalyticsallowed?: boolean;
-  scenarioname?: string;
   versionnumber?: number;
-  createdon?: string;
-  correlationid?: string;
-  partitionid?: string;
 }

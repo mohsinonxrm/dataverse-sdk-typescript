@@ -4,11 +4,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * Response from msdyn_CheckAnyUserIsIntegrationUser action
  */
 export interface msdyn_CheckAnyUserIsIntegrationUserResponse {
-  ReturnStatus: number;
-  ResultEntities: string;
-  Message: string;
-  ReturnSeverity: number;
   HelpLink: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnSeverity: number;
+  ReturnStatus: number;
 }
 
 /**

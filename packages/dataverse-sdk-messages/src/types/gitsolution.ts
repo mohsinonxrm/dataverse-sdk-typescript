@@ -2,12 +2,12 @@
  * gitsolution entity type
  */
 export interface gitsolution {
-  gitsolutionid?: string;
-  solutionname?: string;
-  projectname?: string;
   branchname?: string;
+  gitsolutionid?: string;
   organizationname?: string;
-  solutionversion?: string;
-  rootfolderpath?: string;
+  projectname?: string;
   repositoryname?: string;
+  rootfolderpath?: string;
+  solutionname?: string;
+  solutionversion?: string;
 }

@@ -14,15 +14,15 @@ export interface searchqueryResponse {
  */
 export interface searchqueryActionParameters {
   options?: string;
-  filter?: string;
-  propertybag?: string;
-  entities?: string;
-  search: string;
-  facets?: string;
-  skip?: number;
-  count?: boolean;
-  top?: number;
   orderby?: string;
+  facets?: string;
+  entities?: string;
+  filter?: string;
+  top?: number;
+  search: string;
+  count?: boolean;
+  propertybag?: string;
+  skip?: number;
   semanticquery?: string;
 }
 
@@ -39,15 +39,15 @@ export class searchqueryAction implements Executable<searchqueryResponse> {
 
     const body = requestBody({
       options: this.parameters.options,
-      filter: this.parameters.filter,
-      propertybag: this.parameters.propertybag,
-      entities: this.parameters.entities,
-      search: this.parameters.search,
-      facets: this.parameters.facets,
-      skip: this.parameters.skip,
-      count: this.parameters.count,
-      top: this.parameters.top,
       orderby: this.parameters.orderby,
+      facets: this.parameters.facets,
+      entities: this.parameters.entities,
+      filter: this.parameters.filter,
+      top: this.parameters.top,
+      search: this.parameters.search,
+      count: this.parameters.count,
+      propertybag: this.parameters.propertybag,
+      skip: this.parameters.skip,
       semanticquery: this.parameters.semanticquery,
     });
 

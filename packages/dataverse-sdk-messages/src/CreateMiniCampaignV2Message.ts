@@ -23,6 +23,7 @@ export interface CreateMiniCampaignV2RequestParameters {
   OwnerTypeCode: number;
   sendEmail: boolean;
   QueueId?: string;
+  ExtendedActivityParameters?: string;
 }
 
 /**
@@ -58,6 +59,7 @@ export class CreateMiniCampaignV2Request
       OwnerTypeCode: this.Parameters.OwnerTypeCode,
       sendEmail: this.Parameters.sendEmail,
       QueueId: this.Parameters.QueueId,
+      ExtendedActivityParameters: this.Parameters.ExtendedActivityParameters,
     });
 
     return {

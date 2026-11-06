@@ -2,22 +2,22 @@
  * msdyn_sabatchruninstance entity type
  */
 export interface msdyn_sabatchruninstance {
+  _createdby_value?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _msdyn_saruninstanceid_value?: string;
+  _organizationid_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
   modifiedon?: string;
   msdyn_name?: string;
-  _modifiedonbehalfby_value?: string;
-  _createdby_value?: string;
-  createdon?: string;
-  statuscode?: number;
-  _createdonbehalfby_value?: string;
-  versionnumber?: number;
+  msdyn_runinfo?: string;
   msdyn_sabatchruninstanceid?: string;
   overriddencreatedon?: string;
-  importsequencenumber?: number;
-  utcconversiontimezonecode?: number;
-  _msdyn_saruninstanceid_value?: string;
-  msdyn_runinfo?: string;
   statecode?: number;
-  _modifiedby_value?: string;
-  _organizationid_value?: string;
+  statuscode?: number;
   timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

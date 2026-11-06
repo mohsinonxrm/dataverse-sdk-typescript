@@ -9,8 +9,8 @@ import type { msdynmkt_getdigitalassetcdnurlv2Response as msdynmkt_getdigitalass
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdynmkt_getdigitalassetcdnurlv2RequestParameters {
-  msdynmkt_filetype: string;
   msdynmkt_fileid: string;
+  msdynmkt_filetype: string;
 }
 
 /**
@@ -32,8 +32,8 @@ export class msdynmkt_getdigitalassetcdnurlv2Request
     const url = `${baseUrl}/msdynmkt_getdigitalassetcdnurlv2`;
 
     const body = requestBody({
-      msdynmkt_filetype: this.Parameters.msdynmkt_filetype,
       msdynmkt_fileid: this.Parameters.msdynmkt_fileid,
+      msdynmkt_filetype: this.Parameters.msdynmkt_filetype,
     });
 
     return {

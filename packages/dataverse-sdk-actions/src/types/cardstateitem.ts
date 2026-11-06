@@ -2,22 +2,22 @@
  * cardstateitem entity type
  */
 export interface cardstateitem {
-  createdon?: string;
   _createdby_value?: string;
-  cardid?: string;
-  data?: string;
-  versionnumber?: number;
-  name?: string;
-  cardinstanceid?: string;
   _createdonbehalfby_value?: string;
-  partitionid?: string;
   _modifiedby_value?: string;
-  cardstateitemid?: string;
-  scope?: string;
   _modifiedonbehalfby_value?: string;
+  cache?: string;
+  cardid?: string;
+  cardinstanceid?: string;
+  cardstateitemid?: string;
+  createdon?: string;
+  data?: string;
   importsequencenumber?: number;
   modifiedon?: string;
-  ttlinseconds?: number;
+  name?: string;
   overriddencreatedon?: string;
-  cache?: string;
+  partitionid?: string;
+  scope?: string;
+  ttlinseconds?: number;
+  versionnumber?: number;
 }

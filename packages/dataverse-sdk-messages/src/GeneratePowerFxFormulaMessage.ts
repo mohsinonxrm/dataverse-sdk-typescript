@@ -10,9 +10,9 @@ import type { AnyEntityPayload } from "./types/EntityPayload.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface GeneratePowerFxFormulaRequestParameters {
-  OperationId: string;
-  ParameterValues?: EntityReference | AnyEntityPayload;
   ConnectionReference: EntityReference | AnyEntityPayload;
+  ParameterValues?: EntityReference | AnyEntityPayload;
+  OperationId: string;
 }
 
 /**
@@ -34,9 +34,9 @@ export class GeneratePowerFxFormulaRequest
     const url = `${baseUrl}/GeneratePowerFxFormula`;
 
     const body = requestBody({
-      OperationId: this.Parameters.OperationId,
-      ParameterValues: this.Parameters.ParameterValues,
       ConnectionReference: this.Parameters.ConnectionReference,
+      ParameterValues: this.Parameters.ParameterValues,
+      OperationId: this.Parameters.OperationId,
     });
 
     return {

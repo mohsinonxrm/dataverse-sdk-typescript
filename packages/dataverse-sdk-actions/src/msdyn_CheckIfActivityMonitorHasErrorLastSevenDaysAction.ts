@@ -4,10 +4,10 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * Response from msdyn_CheckIfActivityMonitorHasErrorLastSevenDays action
  */
 export interface msdyn_CheckIfActivityMonitorHasErrorLastSevenDaysResponse {
+  HelpLink: string;
   Message: string;
   ResultEntities: string;
   ReturnStatus: number;
-  HelpLink: string;
 }
 
 /**

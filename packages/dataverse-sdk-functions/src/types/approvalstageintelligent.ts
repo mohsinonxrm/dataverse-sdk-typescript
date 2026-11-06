@@ -2,32 +2,32 @@
  * approvalstageintelligent entity type
  */
 export interface approvalstageintelligent {
-  _ownerid_value?: string;
-  createdon?: string;
-  _owningbusinessunit_value?: string;
-  _modifiedby_value?: string;
-  versionnumber?: number;
-  timezoneruleversionnumber?: number;
-  inputs_name?: string;
-  _createdby_value?: string;
-  overriddencreatedon?: string;
-  predictionresponse?: string;
-  nextsteps?: string;
-  nextstepsresult?: number;
-  approvalstageintelligentid?: string;
-  nextstepsresultvalue?: string;
-  _owninguser_value?: string;
-  statecode?: number;
   _approval_value?: string;
-  statuscode?: number;
-  predictionrationale?: string;
-  aimodelid?: string;
+  _createdby_value?: string;
   _createdonbehalfby_value?: string;
-  utcconversiontimezonecode?: number;
-  importsequencenumber?: number;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
   _owningteam_value?: string;
+  _owninguser_value?: string;
+  aimodelid?: string;
+  approvalstageintelligentid?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  inputs?: string;
+  inputs_name?: string;
   modifiedon?: string;
   name?: string;
-  inputs?: string;
-  _modifiedonbehalfby_value?: string;
+  nextsteps?: string;
+  nextstepsresult?: number;
+  nextstepsresultvalue?: string;
+  overriddencreatedon?: string;
+  predictionrationale?: string;
+  predictionresponse?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

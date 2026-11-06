@@ -2,13 +2,13 @@
  * relationship entity type
  */
 export interface relationship {
-  relationshipid?: string;
-  versionnumber?: number;
   cascadearchive?: number;
+  componentstate?: number;
   entitykeyid?: string;
   isrelationshipattributedenormalized?: boolean;
   name?: string;
   overwritetime?: string;
-  componentstate?: number;
+  relationshipid?: string;
   solutionid?: string;
+  versionnumber?: number;
 }

@@ -5,13 +5,13 @@ import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
  */
 export interface botcomponent_dvtablesearch {
   botcomponent_dvtablesearchid?: string;
-  overwritetime?: string;
+  botcomponentid?: string;
+  componentidunique?: string;
+  componentstate?: number;
   dvtablesearchid?: string;
   iscustomizable?: BooleanManagedProperty;
   ismanaged?: boolean;
-  componentstate?: number;
-  componentidunique?: string;
-  botcomponentid?: string;
-  versionnumber?: number;
+  overwritetime?: string;
   solutionid?: string;
+  versionnumber?: number;
 }

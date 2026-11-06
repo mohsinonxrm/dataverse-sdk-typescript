@@ -7,8 +7,8 @@ import { requestBody } from "./internal/requestBody.js";
 export interface msdyn_SalesAdaptiveCardResponseResponse {
   msdyn_additionalDetails: string;
   msdyn_summary: string;
-  msdyn_version: string;
   msdyn_summary_raw: string;
+  msdyn_version: string;
 }
 
 /**
@@ -16,9 +16,9 @@ export interface msdyn_SalesAdaptiveCardResponseResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_SalesAdaptiveCardResponseActionParameters {
-  msdyn_query?: string;
-  msdyn_id?: string;
   msdyn_scenario: number;
+  msdyn_id?: string;
+  msdyn_query?: string;
 }
 
 /**
@@ -33,9 +33,9 @@ export class msdyn_SalesAdaptiveCardResponseAction implements Executable<msdyn_S
     const url = `${baseUrl}/msdyn_SalesAdaptiveCardResponse`;
 
     const body = requestBody({
-      msdyn_query: this.parameters.msdyn_query,
-      msdyn_id: this.parameters.msdyn_id,
       msdyn_scenario: this.parameters.msdyn_scenario,
+      msdyn_id: this.parameters.msdyn_id,
+      msdyn_query: this.parameters.msdyn_query,
     });
 
     return {

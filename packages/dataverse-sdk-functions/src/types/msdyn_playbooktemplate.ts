@@ -2,29 +2,29 @@
  * msdyn_playbooktemplate entity type
  */
 export interface msdyn_playbooktemplate {
-  msdyn_fullentitylist?: string;
-  timezoneruleversionnumber?: number;
-  _ownerid_value?: string;
-  _owninguser_value?: string;
-  msdyn_relatedentitylist?: string;
   _createdby_value?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _msdyn_categoryid_value?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_description?: string;
+  msdyn_estimatedduration?: number;
+  msdyn_fullentitylist?: string;
+  msdyn_name?: string;
   msdyn_playbooktemplateid?: string;
-  utcconversiontimezonecode?: number;
+  msdyn_relatedentitylist?: string;
+  msdyn_trackprogress?: boolean;
   overriddencreatedon?: string;
   statecode?: number;
-  modifiedon?: string;
-  _modifiedby_value?: string;
-  _msdyn_categoryid_value?: string;
-  createdon?: string;
   statuscode?: number;
-  msdyn_estimatedduration?: number;
-  _owningteam_value?: string;
-  _createdonbehalfby_value?: string;
-  importsequencenumber?: number;
-  _owningbusinessunit_value?: string;
-  msdyn_trackprogress?: boolean;
-  msdyn_name?: string;
-  _modifiedonbehalfby_value?: string;
-  msdyn_description?: string;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
   versionnumber?: number;
 }

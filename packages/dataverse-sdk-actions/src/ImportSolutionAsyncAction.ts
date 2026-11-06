@@ -7,8 +7,8 @@ import type { LayerDesiredOrder, SolutionParameters } from "./types/index.js";
  * Response from ImportSolutionAsync action
  */
 export interface ImportSolutionAsyncResponse {
-  ImportJobKey: string;
   AsyncOperationId: string;
+  ImportJobKey: string;
 }
 
 /**

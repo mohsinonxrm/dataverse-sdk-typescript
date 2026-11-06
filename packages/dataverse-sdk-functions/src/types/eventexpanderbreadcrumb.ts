@@ -2,31 +2,31 @@
  * eventexpanderbreadcrumb entity type
  */
 export interface eventexpanderbreadcrumb {
-  friendlymessage?: string;
-  errorcode?: number;
   _createdby_value?: string;
-  datablobid?: string;
-  partitionid?: string;
-  correlationid?: string;
-  data?: string;
-  operationtype?: number;
-  retrycount?: number;
   _createdonbehalfby_value?: string;
-  versionnumber?: number;
-  startedon?: string;
-  breadcrumbstatuscode?: number;
-  _modifiedonbehalfby_value?: string;
-  overriddencreatedon?: string;
-  workload?: string;
-  breadcrumbstatecode?: number;
-  eventexpanderbreadcrumbid?: string;
-  name?: string;
   _modifiedby_value?: string;
-  expanderstarttime?: string;
-  modifiedon?: string;
-  ttlinseconds?: number;
+  _modifiedonbehalfby_value?: string;
+  breadcrumbstatecode?: number;
+  breadcrumbstatuscode?: number;
   completedon?: string;
-  postponeuntil?: string;
+  correlationid?: string;
   createdon?: string;
+  data?: string;
+  datablobid?: string;
+  errorcode?: number;
+  eventexpanderbreadcrumbid?: string;
+  expanderstarttime?: string;
+  friendlymessage?: string;
   importsequencenumber?: number;
+  modifiedon?: string;
+  name?: string;
+  operationtype?: number;
+  overriddencreatedon?: string;
+  partitionid?: string;
+  postponeuntil?: string;
+  retrycount?: number;
+  startedon?: string;
+  ttlinseconds?: number;
+  versionnumber?: number;
+  workload?: string;
 }

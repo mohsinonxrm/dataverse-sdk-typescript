@@ -2,26 +2,26 @@
  * trait entity type
  */
 export interface trait {
-  name?: string;
-  modifiedon?: string;
+  _createdby_value?: string;
   _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
+  _owningteam_value?: string;
+  _owninguser_value?: string;
+  alternativekey?: string;
+  contents?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  name?: string;
+  overriddencreatedon?: string;
+  partitionid?: string;
   properties?: string;
+  traitid?: string;
+  traittype?: string;
   ttlinseconds?: number;
   userid?: string;
-  _owningbusinessunit_value?: string;
-  contents?: string;
-  _owninguser_value?: string;
-  createdon?: string;
-  _modifiedonbehalfby_value?: string;
-  _createdby_value?: string;
-  importsequencenumber?: number;
-  traitid?: string;
-  alternativekey?: string;
-  overriddencreatedon?: string;
-  traittype?: string;
   versionnumber?: number;
-  _owningteam_value?: string;
-  _ownerid_value?: string;
-  partitionid?: string;
-  _modifiedby_value?: string;
 }

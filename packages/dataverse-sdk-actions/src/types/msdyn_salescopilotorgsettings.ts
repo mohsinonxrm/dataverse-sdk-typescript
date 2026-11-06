@@ -2,23 +2,23 @@
  * msdyn_salescopilotorgsettings entity type
  */
 export interface msdyn_salescopilotorgsettings {
-  msdyn_featurename?: string;
-  createdon?: string;
-  overriddencreatedon?: string;
-  _createdonbehalfby_value?: string;
-  versionnumber?: number;
   _createdby_value?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _organizationid_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_entitylogicalname?: string;
+  msdyn_featurename?: string;
+  msdyn_name?: string;
   msdyn_salescopilotorgsettingsid?: string;
   msdyn_settingsdata?: string;
-  modifiedon?: string;
-  _modifiedonbehalfby_value?: string;
-  statuscode?: number;
+  overriddencreatedon?: string;
   statecode?: number;
-  _organizationid_value?: string;
-  _modifiedby_value?: string;
-  msdyn_name?: string;
-  msdyn_entitylogicalname?: string;
-  utcconversiontimezonecode?: number;
+  statuscode?: number;
   timezoneruleversionnumber?: number;
-  importsequencenumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

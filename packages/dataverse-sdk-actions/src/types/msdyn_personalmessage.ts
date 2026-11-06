@@ -2,26 +2,26 @@
  * msdyn_personalmessage entity type
  */
 export interface msdyn_personalmessage {
-  _modifiedby_value?: string;
-  msdyn_message?: string;
-  _createdonbehalfby_value?: string;
-  _ownerid_value?: string;
   _createdby_value?: string;
-  timezoneruleversionnumber?: number;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
   _owningteam_value?: string;
-  overriddencreatedon?: string;
-  importsequencenumber?: number;
   _owninguser_value?: string;
-  msdyn_title?: string;
-  utcconversiontimezonecode?: number;
-  msdyn_personalmessageid?: string;
+  createdon?: string;
+  importsequencenumber?: number;
   modifiedon?: string;
   msdyn_locale_field?: number;
-  _owningbusinessunit_value?: string;
-  createdon?: string;
-  statuscode?: number;
-  _modifiedonbehalfby_value?: string;
-  versionnumber?: number;
+  msdyn_message?: string;
+  msdyn_personalmessageid?: string;
   msdyn_tagscontrolfield?: string;
+  msdyn_title?: string;
+  overriddencreatedon?: string;
   statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

@@ -5,9 +5,9 @@ import type { AnyEntityPayload } from "./EntityPayload.js";
  * QuickTestResponse complex type
  */
 export interface QuickTestResponse {
-  response?: string;
   overrideHttpStatusCode?: string;
   overrideLocation?: string;
   overrideRetryAfter?: string;
+  response?: string;
   responsev2: EntityReference | AnyEntityPayload;
 }

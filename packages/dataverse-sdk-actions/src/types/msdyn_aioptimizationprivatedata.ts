@@ -2,27 +2,27 @@
  * msdyn_aioptimizationprivatedata entity type
  */
 export interface msdyn_aioptimizationprivatedata {
-  modifiedon?: string;
-  statecode?: number;
-  timezoneruleversionnumber?: number;
-  versionnumber?: number;
   _createdby_value?: string;
-  statuscode?: number;
-  _owningbusinessunit_value?: string;
-  msdyn_tests_name?: string;
-  importsequencenumber?: number;
-  createdon?: string;
-  _ownerid_value?: string;
-  msdyn_tests?: string;
-  msdyn_name?: string;
+  _createdonbehalfby_value?: string;
   _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _ownerid_value?: string;
+  _owningbusinessunit_value?: string;
   _owningteam_value?: string;
+  _owninguser_value?: string;
+  createdon?: string;
+  importsequencenumber?: number;
+  modifiedon?: string;
+  msdyn_aioptimizationprivatedataid?: string;
   msdyn_currentgradient?: string;
   msdyn_currenttestscores?: string;
-  _modifiedonbehalfby_value?: string;
-  utcconversiontimezonecode?: number;
+  msdyn_name?: string;
+  msdyn_tests?: string;
+  msdyn_tests_name?: string;
   overriddencreatedon?: string;
-  msdyn_aioptimizationprivatedataid?: string;
-  _createdonbehalfby_value?: string;
-  _owninguser_value?: string;
+  statecode?: number;
+  statuscode?: number;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

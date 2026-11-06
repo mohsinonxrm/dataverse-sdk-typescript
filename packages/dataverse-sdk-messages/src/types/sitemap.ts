@@ -3,26 +3,26 @@
  */
 export interface sitemap {
   _createdby_value?: string;
+  _createdonbehalfby_value?: string;
   _modifiedby_value?: string;
   _modifiedonbehalfby_value?: string;
-  _createdonbehalfby_value?: string;
-  sitemapxmlmanaged?: string;
+  _organizationid_value?: string;
+  componentstate?: number;
   createdon?: string;
+  enablecollapsiblegroups?: boolean;
+  isappaware?: boolean;
+  ismanaged?: boolean;
+  modifiedon?: string;
+  overwritetime?: string;
+  showhome?: boolean;
   showpinned?: boolean;
   showrecents?: boolean;
-  sitemapnameunique?: string;
-  overwritetime?: string;
-  componentstate?: number;
-  sitemapxml?: string;
-  versionnumber?: number;
-  isappaware?: boolean;
-  modifiedon?: string;
-  ismanaged?: boolean;
-  sitemapidunique?: string;
   sitemapid?: string;
-  solutionid?: string;
-  enablecollapsiblegroups?: boolean;
-  _organizationid_value?: string;
+  sitemapidunique?: string;
   sitemapname?: string;
-  showhome?: boolean;
+  sitemapnameunique?: string;
+  sitemapxml?: string;
+  sitemapxmlmanaged?: string;
+  solutionid?: string;
+  versionnumber?: number;
 }

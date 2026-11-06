@@ -9,8 +9,8 @@ import type { msdynmkt_contactablefieldsactionResponse as msdynmkt_contactablefi
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdynmkt_contactablefieldsactionRequestParameters {
-  msdynmkt_contactpointtypes: string;
   msdynmkt_entitytypes: string;
+  msdynmkt_contactpointtypes: string;
 }
 
 /**
@@ -32,8 +32,8 @@ export class msdynmkt_contactablefieldsactionRequest
     const url = `${baseUrl}/msdynmkt_contactablefieldsaction`;
 
     const body = requestBody({
-      msdynmkt_contactpointtypes: this.Parameters.msdynmkt_contactpointtypes,
       msdynmkt_entitytypes: this.Parameters.msdynmkt_entitytypes,
+      msdynmkt_contactpointtypes: this.Parameters.msdynmkt_contactpointtypes,
     });
 
     return {

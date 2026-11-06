@@ -13,12 +13,12 @@ export interface msdyn_DraftEmailForCaseResponse {
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_DraftEmailForCaseActionParameters {
-  additionalInstructions?: string;
+  context_CaseId?: string;
+  senderName: string;
   context_CaseNotes?: string;
   context_CaseTitle?: string;
-  context_CaseId?: string;
   recipientName: string;
-  senderName: string;
+  additionalInstructions?: string;
 }
 
 /**
@@ -33,12 +33,12 @@ export class msdyn_DraftEmailForCaseAction implements Executable<msdyn_DraftEmai
     const url = `${baseUrl}/msdyn_DraftEmailForCase`;
 
     const body = requestBody({
-      additionalInstructions: this.parameters.additionalInstructions,
+      context_CaseId: this.parameters.context_CaseId,
+      senderName: this.parameters.senderName,
       context_CaseNotes: this.parameters.context_CaseNotes,
       context_CaseTitle: this.parameters.context_CaseTitle,
-      context_CaseId: this.parameters.context_CaseId,
       recipientName: this.parameters.recipientName,
-      senderName: this.parameters.senderName,
+      additionalInstructions: this.parameters.additionalInstructions,
     });
 
     return {

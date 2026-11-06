@@ -5,8 +5,8 @@ import { requestBody } from "./internal/requestBody.js";
  * Response from msdyn_CreateSuggestedActivity action
  */
 export interface msdyn_CreateSuggestedActivityResponse {
-  id: string;
   failedRecordCount: string;
+  id: string;
 }
 
 /**

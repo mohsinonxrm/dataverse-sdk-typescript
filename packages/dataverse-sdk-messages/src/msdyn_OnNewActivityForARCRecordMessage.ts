@@ -9,8 +9,8 @@ import type { AnyEntityPayload } from "./types/EntityPayload.js";
  * nullable is optional, and left out of the request when it's undefined.
  */
 export interface msdyn_OnNewActivityForARCRecordRequestParameters {
-  msdyn_primaryEntityReference: EntityReference | AnyEntityPayload;
   msdyn_sourceEntityReference: EntityReference | AnyEntityPayload;
+  msdyn_primaryEntityReference: EntityReference | AnyEntityPayload;
 }
 
 /**
@@ -32,8 +32,8 @@ export class msdyn_OnNewActivityForARCRecordRequest
     const url = `${baseUrl}/msdyn_OnNewActivityForARCRecord`;
 
     const body = requestBody({
-      msdyn_primaryEntityReference: this.Parameters.msdyn_primaryEntityReference,
       msdyn_sourceEntityReference: this.Parameters.msdyn_sourceEntityReference,
+      msdyn_primaryEntityReference: this.Parameters.msdyn_primaryEntityReference,
     });
 
     return {

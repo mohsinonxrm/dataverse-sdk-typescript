@@ -4,26 +4,26 @@ import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
  * connectionrole entity type
  */
 export interface connectionrole {
+  _createdby_value?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
   _organizationid_value?: string;
-  importsequencenumber?: number;
+  category?: number;
+  componentstate?: number;
+  connectionroleid?: string;
+  connectionroleidunique?: string;
   createdon?: string;
   description?: string;
-  overwritetime?: string;
-  _modifiedby_value?: string;
+  importsequencenumber?: number;
+  introducedversion?: string;
   iscustomizable?: BooleanManagedProperty;
+  ismanaged?: boolean;
   modifiedon?: string;
   name?: string;
+  overwritetime?: string;
   solutionid?: string;
-  _modifiedonbehalfby_value?: string;
-  category?: number;
-  connectionroleidunique?: string;
   statecode?: number;
-  versionnumber?: number;
-  connectionroleid?: string;
-  componentstate?: number;
-  ismanaged?: boolean;
   statuscode?: number;
-  _createdonbehalfby_value?: string;
-  introducedversion?: string;
-  _createdby_value?: string;
+  versionnumber?: number;
 }
