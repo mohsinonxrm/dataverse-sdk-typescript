@@ -1,37 +1,23 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { AttributePrivilege } from "./types/index.js";
+import {
+  RetrievePrincipalAttributePrivileges_teamFunction,
+  type RetrievePrincipalAttributePrivileges_teamResponse,
+} from "./RetrievePrincipalAttributePrivileges_teamFunction.js";
 
 /**
- * Response from RetrievePrincipalAttributePrivileges function
+ * @deprecated Use `RetrievePrincipalAttributePrivileges_teamFunction`. `RetrievePrincipalAttributePrivileges` has a class per binding (#75);
+ * this name kept the one bound to team.
  */
-export interface RetrievePrincipalAttributePrivilegesResponse {
-  AttributePrivileges: AttributePrivilege[];
-}
-
+export const RetrievePrincipalAttributePrivilegesFunction =
+  RetrievePrincipalAttributePrivileges_teamFunction;
 /**
- * RetrievePrincipalAttributePrivileges function
- *
- * Bound function
- * Binding parameter: entity (mscrm.team)
+ * @deprecated Use `RetrievePrincipalAttributePrivileges_teamFunction`. `RetrievePrincipalAttributePrivileges` has a class per binding (#75);
+ * this name kept the one bound to team.
  */
-export class RetrievePrincipalAttributePrivilegesFunction implements Executable<RetrievePrincipalAttributePrivilegesResponse> {
-  constructor(public readonly teamId: string) {}
-
-  toRequestInformation(baseUrl: string): RequestInformation {
-    // Bound function
-    let url = `${baseUrl}/teams(${this.teamId})/Microsoft.Dynamics.CRM.RetrievePrincipalAttributePrivileges`;
-
-    return {
-      method: "GET",
-      url,
-      headers: {
-        Accept: "application/json",
-      },
-    };
-  }
-
-  async parseResponse(response: Response): Promise<RetrievePrincipalAttributePrivilegesResponse> {
-    const data = await response.json();
-    return data as RetrievePrincipalAttributePrivilegesResponse;
-  }
-}
+export type RetrievePrincipalAttributePrivilegesFunction =
+  RetrievePrincipalAttributePrivileges_teamFunction;
+/**
+ * @deprecated Use `RetrievePrincipalAttributePrivileges_teamResponse`. `RetrievePrincipalAttributePrivileges` has a class per binding (#75);
+ * this name kept the one bound to team.
+ */
+export type RetrievePrincipalAttributePrivilegesResponse =
+  RetrievePrincipalAttributePrivileges_teamResponse;

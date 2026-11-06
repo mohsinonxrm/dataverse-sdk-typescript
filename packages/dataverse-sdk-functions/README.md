@@ -184,6 +184,28 @@ const metadataFunc = new RetrieveMetadataChangesFunction({
 const response = await client.execute(metadataFunc);
 ```
 
+## Overloads (one class per binding)
+
+When `$metadata` declares an operation several times with different bindings, each binding has its
+own class: `<Name>_<table>Function`, with `_collection` for a collection binding. An unbound
+overload keeps the plain name. A name with no unbound overload is still exported under the plain
+name, as a `@deprecated` alias of the binding it exported before.
+
+```typescript
+import {
+  RetrievePrincipalAccess_systemuserFunction,
+  RetrievePrincipalAccess_teamFunction,
+  createEntityReference,
+} from "@mohsinonxrm/dataverse-sdk-functions";
+
+const target = createEntityReference("account", accountId);
+// GET /systemusers(<userId>)/Microsoft.Dynamics.CRM.RetrievePrincipalAccess(Target=@p1)
+const { AccessRights } = await client.execute(
+  new RetrievePrincipalAccess_systemuserFunction(userId, target)
+);
+await client.execute(new RetrievePrincipalAccess_teamFunction(teamId, target));
+```
+
 ## Parameter Values
 
 Each parameter is sent as the OData literal of its CSDL type:

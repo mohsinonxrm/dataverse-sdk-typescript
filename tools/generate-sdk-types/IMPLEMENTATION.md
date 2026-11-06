@@ -273,6 +273,18 @@ package root.
   without `@odata.type` (HTTP 400, "The property 'EntityName' does not exist on type
   'Microsoft.Dynamics.CRM.QueryBase'").
 
+### Overloads and supplemental operations (#75)
+
+- `src/utils/overloads.ts`: an operation name declared with several bindings gets a class per
+  binding, `<Name>_<table>` (`_collection` for a collection binding), as `packages/dataverse-sdk-generator`
+  does (#202). An unbound overload keeps the plain name. A name with no unbound overload keeps a
+  plain-name file that re-exports the last binding (the one the plain name used to be) as
+  `@deprecated` aliases. A definition that still collides gets `_2`, `_3`, … and a warning, so
+  nothing is overwritten silently.
+- `src/supplemental/supplemental-metadata.ts`: operations Dataverse runs but leaves out of
+  `$metadata` (`ExportToExcel`), as EDMX. `generateTargets` merges them into the CSDL for the
+  actions, functions and messages targets; an org's own definition of the same name wins.
+
 ### Namespace Filtering
 
 All generators filter to `Microsoft.Dynamics.CRM` namespace:

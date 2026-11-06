@@ -487,6 +487,7 @@ export type { ExportSolutionFromGitAsyncResponse } from "./ExportSolutionFromGit
 export type { ExportSolutionFromGitResponse } from "./ExportSolutionFromGitResponse.js";
 export type { ExportSolutionResponse } from "./ExportSolutionResponse.js";
 export type { exportsolutionupload } from "./exportsolutionupload.js";
+export type { ExportToExcelResponse } from "./ExportToExcelResponse.js";
 export type { ExportTranslationResponse } from "./ExportTranslationResponse.js";
 export type { ExtractKeyPhrasesResponse } from "./ExtractKeyPhrasesResponse.js";
 export type { ExtractTextEntitiesResponse } from "./ExtractTextEntitiesResponse.js";

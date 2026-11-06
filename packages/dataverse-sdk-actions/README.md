@@ -463,6 +463,44 @@ const action = new CommitFileBlocksUploadAction(
 await client.execute(action);
 ```
 
+## Overloads (one class per binding)
+
+When `$metadata` declares an operation several times with different bindings, each binding has its
+own class: `<Name>_<table>Action`, with `_collection` for a collection binding. An unbound
+overload keeps the plain name. A name with no unbound overload is still exported under the plain
+name, as a `@deprecated` alias of the binding it exported before.
+
+```typescript
+import {
+  AddItemCampaign_listAction,
+  createEntityReference,
+} from "@mohsinonxrm/dataverse-sdk-actions";
+
+// POST /lists(<listId>)/Microsoft.Dynamics.CRM.AddItemCampaign
+await client.execute(
+  new AddItemCampaign_listAction(listId, createEntityReference("campaign", campaignId))
+);
+```
+
+## Export to Excel
+
+`ExportToExcel` isn't in `$metadata`, but Dataverse runs it; the generator adds it from a
+supplemental definition. All five parameters are required. `ExcelFile` is the .xlsx file, base64.
+
+```typescript
+import { ExportToExcelAction, createEntityReference } from "@mohsinonxrm/dataverse-sdk-actions";
+
+const { ExcelFile } = await client.execute(
+  new ExportToExcelAction(
+    createEntityReference("savedquery", viewId), // or "userquery"
+    fetchXml,
+    layoutXml,
+    "", // QueryApi
+    { Arguments: { Count: 0, IsReadOnly: true, Keys: [], Values: [] } } // no query parameters ({} is rejected)
+  )
+);
+```
+
 ## Architecture
 
 ### Actions vs Functions

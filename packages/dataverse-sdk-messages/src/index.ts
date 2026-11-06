@@ -98,6 +98,22 @@ export {
 } from "./AddComponentToSolutionAsyncMessage.js";
 export { AddItemCampaignRequest, AddItemCampaignResponse } from "./AddItemCampaignMessage.js";
 export {
+  AddItemCampaign_campaignRequest,
+  AddItemCampaign_campaignResponse,
+} from "./AddItemCampaign_campaignMessage.js";
+export {
+  AddItemCampaign_listRequest,
+  AddItemCampaign_listResponse,
+} from "./AddItemCampaign_listMessage.js";
+export {
+  AddItemCampaign_productRequest,
+  AddItemCampaign_productResponse,
+} from "./AddItemCampaign_productMessage.js";
+export {
+  AddItemCampaign_salesliteratureRequest,
+  AddItemCampaign_salesliteratureResponse,
+} from "./AddItemCampaign_salesliteratureMessage.js";
+export {
   AddItemCampaignActivityRequest,
   AddItemCampaignActivityResponse,
 } from "./AddItemCampaignActivityMessage.js";
@@ -635,6 +651,7 @@ export {
   ExportSolutionFromGitAsyncRequest,
   ExportSolutionFromGitAsyncResponse,
 } from "./ExportSolutionFromGitAsyncMessage.js";
+export { ExportToExcelRequest, ExportToExcelResponse } from "./ExportToExcelMessage.js";
 export { ExportTranslationRequest, ExportTranslationResponse } from "./ExportTranslationMessage.js";
 export { ExtractKeyPhrasesRequest, ExtractKeyPhrasesResponse } from "./ExtractKeyPhrasesMessage.js";
 export {

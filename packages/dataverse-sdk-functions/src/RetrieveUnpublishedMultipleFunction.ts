@@ -1,35 +1,23 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { aipluginoperationparameter } from "./types/index.js";
+import {
+  RetrieveUnpublishedMultiple_aipluginoperationparameter_collectionFunction,
+  type RetrieveUnpublishedMultiple_aipluginoperationparameter_collectionResponse,
+} from "./RetrieveUnpublishedMultiple_aipluginoperationparameter_collectionFunction.js";
 
 /**
- * Response from RetrieveUnpublishedMultiple function
+ * @deprecated Use `RetrieveUnpublishedMultiple_aipluginoperationparameter_collectionFunction`. `RetrieveUnpublishedMultiple` has a class per binding (#75);
+ * this name kept the one bound to a collection of aipluginoperationparameter.
  */
-export interface RetrieveUnpublishedMultipleResponse {
-  value: aipluginoperationparameter[];
-}
-
+export const RetrieveUnpublishedMultipleFunction =
+  RetrieveUnpublishedMultiple_aipluginoperationparameter_collectionFunction;
 /**
- * RetrieveUnpublishedMultiple function
- *
- * Bound function
- * Binding parameter: entityset (Collection(mscrm.aipluginoperationparameter))
+ * @deprecated Use `RetrieveUnpublishedMultiple_aipluginoperationparameter_collectionFunction`. `RetrieveUnpublishedMultiple` has a class per binding (#75);
+ * this name kept the one bound to a collection of aipluginoperationparameter.
  */
-export class RetrieveUnpublishedMultipleFunction implements Executable<RetrieveUnpublishedMultipleResponse> {
-  toRequestInformation(baseUrl: string): RequestInformation {
-    // Bound function (entity collection)
-    let url = `${baseUrl}/aipluginoperationparameters/Microsoft.Dynamics.CRM.RetrieveUnpublishedMultiple`;
-
-    return {
-      method: "GET",
-      url,
-      headers: {
-        Accept: "application/json",
-      },
-    };
-  }
-
-  async parseResponse(response: Response): Promise<RetrieveUnpublishedMultipleResponse> {
-    const data = await response.json();
-    return data as RetrieveUnpublishedMultipleResponse;
-  }
-}
+export type RetrieveUnpublishedMultipleFunction =
+  RetrieveUnpublishedMultiple_aipluginoperationparameter_collectionFunction;
+/**
+ * @deprecated Use `RetrieveUnpublishedMultiple_aipluginoperationparameter_collectionResponse`. `RetrieveUnpublishedMultiple` has a class per binding (#75);
+ * this name kept the one bound to a collection of aipluginoperationparameter.
+ */
+export type RetrieveUnpublishedMultipleResponse =
+  RetrieveUnpublishedMultiple_aipluginoperationparameter_collectionResponse;

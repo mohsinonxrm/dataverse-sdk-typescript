@@ -21,6 +21,7 @@ import {
   entityParameterType,
 } from "../utils/entity-payload.js";
 import { entityReferenceSource } from "../utils/entity-reference.js";
+import { deprecatedAliasSource, operationNames } from "../utils/overloads.js";
 import { polymorphicParameterType } from "../utils/polymorphism.js";
 import { collectionBinding, ENTITY_SET_PARAM } from "../utils/binding.js";
 
@@ -201,14 +202,23 @@ export async function generateMessages(
 
   // Generate all messages
   console.log(`\n  Generating ${String(allActions.length)} Web API action messages...`);
+  // Overloads with different bindings each get their own classes (#75)
+  const { stems, aliases } = operationNames(allActions);
   for (const action of allActions) {
-    const content = generateMessageClass(csdl, action);
-    const filename = `${action.name}Message.ts`;
+    const stem = stems.get(action) ?? action.name;
+    const content = generateMessageClass(csdl, action, stem);
+    const filename = `${stem}Message.ts`;
     await writeTypeScriptFile(join(absolutePath, filename), content);
+  }
+  for (const alias of aliases) {
+    await writeTypeScriptFile(
+      join(absolutePath, `${alias.name}Message.ts`),
+      deprecatedAliasSource(alias, "Message", ["Request", "Response"], ["Request", "Response"])
+    );
   }
 
   // Generate index
-  const indexContent = generateMessagesIndex(allActions);
+  const indexContent = generateMessagesIndex(allActions, stems, aliases);
   await writeTypeScriptFile(join(absolutePath, "index.ts"), indexContent);
   console.log(`  ✅ Generated index.ts`);
 
@@ -218,9 +228,9 @@ export async function generateMessages(
 /**
  * Generate TypeScript class for a message (request + response).
  */
-function generateMessageClass(csdl: CsdlSchema, action: CsdlAction): string {
-  const requestClassName = `${action.name}Request`;
-  const responseClassName = `${action.name}Response`;
+function generateMessageClass(csdl: CsdlSchema, action: CsdlAction, stem = action.name): string {
+  const requestClassName = `${stem}Request`;
+  const responseClassName = `${stem}Response`;
 
   // System entities that are filtered out and should be treated as 'any'
   const systemEntities = ["crmbaseentity", "principal", "crmmodelbaseentity", "expando"];
@@ -526,9 +536,11 @@ function generateParseResponse(action: CsdlAction, responseClassName: string): s
 /**
  * Generate index.ts for messages.
  */
-function generateMessagesIndex(actions: CsdlAction[]): string {
-  const sorted = actions.sort((a, b) => a.name.localeCompare(b.name));
-
+function generateMessagesIndex(
+  operations: CsdlAction[],
+  stems: Map<CsdlAction, string>,
+  aliases: ReadonlyArray<{ name: string }>
+): string {
   let code = `/**\n`;
   code += ` * Web API Action Messages\n`;
   code += ` *\n`;
@@ -548,13 +560,13 @@ function generateMessagesIndex(actions: CsdlAction[]): string {
   // Export all message classes
   code += `// Message classes\n`;
 
-  // Dedupe by action name (handle overloads for bound actions)
-  const seen = new Set<string>();
-  for (const action of sorted) {
-    if (!seen.has(action.name)) {
-      code += `export { ${action.name}Request, ${action.name}Response } from './${action.name}Message.js';\n`;
-      seen.add(action.name);
-    }
+  // One export per class: overloads have their own (#75), plus the deprecated plain-name aliases
+  const entries = [
+    ...operations.map((op) => stems.get(op) ?? op.name),
+    ...aliases.map((a) => a.name),
+  ].sort((a, b) => a.localeCompare(b));
+  for (const stem of entries) {
+    code += `export { ${stem}Request, ${stem}Response } from './${stem}Message.js';\n`;
   }
 
   return code;

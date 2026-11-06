@@ -25,6 +25,34 @@ function collectionBoundFunctions(): string[] {
 
 type FunctionClass = new (...args: unknown[]) => Executable<unknown>;
 
+/**
+ * RetrieveUnpublishedMultiple is bound to many tables; each binding has its own class (#75), and
+ * the plain name is a deprecated alias of the one it exported before. [table, entity set]
+ */
+const RETRIEVE_UNPUBLISHED_MULTIPLE: Array<[string, string]> = [
+  ["aiplugin", "aiplugins"],
+  ["aipluginconversationstarter", "aipluginconversationstarters"],
+  ["aipluginconversationstartermapping", "aipluginconversationstartermappings"],
+  ["aipluginoperation", "aipluginoperations"],
+  ["aipluginoperationparameter", "aipluginoperationparameters"],
+  ["aipluginoperationresponsetemplate", "aipluginoperationresponsetemplates"],
+  ["aiplugintitle", "aiplugintitles"],
+  ["appconfig", "appconfigs"],
+  ["appconfiginstance", "appconfiginstances"],
+  ["appmodule", "appmodules"],
+  ["customcontroldefaultconfig", "customcontroldefaultconfigs"],
+  ["desktopflowbinary", "desktopflowbinaries"],
+  ["mobileofflineprofile", "mobileofflineprofiles"],
+  ["mobileofflineprofileitem", "mobileofflineprofileitems"],
+  ["navigationsetting", "navigationsettings"],
+  ["savedquery", "savedqueries"],
+  ["savedqueryvisualization", "savedqueryvisualizations"],
+  ["sitemap", "sitemaps"],
+  ["systemform", "systemforms"],
+  ["webresource", "webresourceset"],
+  ["workflow", "workflows"],
+];
+
 describe("#69: collection-bound functions", () => {
   it("every collection-bound function is called on its entity set", () => {
     const urls: Record<string, string> = {};
@@ -44,14 +72,26 @@ describe("#69: collection-bound functions", () => {
       RetrieveRecordWallFunction: "/posts/Microsoft.Dynamics.CRM.RetrieveRecordWall",
       RetrieveTimelineWallRecordsFunction:
         "/activitypointers/Microsoft.Dynamics.CRM.RetrieveTimelineWallRecords",
-      RetrieveUnpublishedMultipleFunction:
-        "/aipluginoperationparameters/Microsoft.Dynamics.CRM.RetrieveUnpublishedMultiple",
+      ...Object.fromEntries(
+        RETRIEVE_UNPUBLISHED_MULTIPLE.map(([table, set]) => [
+          `RetrieveUnpublishedMultiple_${table}_collectionFunction`,
+          `/${set}/Microsoft.Dynamics.CRM.RetrieveUnpublishedMultiple`,
+        ])
+      ),
       SearchByBodyKbArticleFunction: "/kbarticles/Microsoft.Dynamics.CRM.SearchByBodyKbArticle",
       SearchByKeywordsKbArticleFunction:
         "/kbarticles/Microsoft.Dynamics.CRM.SearchByKeywordsKbArticle",
       SearchByTitleKbArticleFunction: "/kbarticles/Microsoft.Dynamics.CRM.SearchByTitleKbArticle",
       UtcTimeFromLocalTimeFunction: "/resourcegroups/Microsoft.Dynamics.CRM.UtcTimeFromLocalTime",
     });
+  });
+
+  it("the deprecated plain RetrieveUnpublishedMultipleFunction keeps its old binding", () => {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- checking the alias itself
+    const Fn = functions.RetrieveUnpublishedMultipleFunction;
+    expect(Fn).toBe(
+      functions.RetrieveUnpublishedMultiple_aipluginoperationparameter_collectionFunction
+    );
   });
 
   it("RetrievePrivilegeSet reaches /privileges/Microsoft.Dynamics.CRM.RetrievePrivilegeSet", async () => {

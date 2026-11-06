@@ -135,6 +135,22 @@ export {
   type GetQuantityDecimalResponse,
 } from "./GetQuantityDecimalFunction.js";
 export {
+  GetQuantityDecimal_invoiceFunction,
+  type GetQuantityDecimal_invoiceResponse,
+} from "./GetQuantityDecimal_invoiceFunction.js";
+export {
+  GetQuantityDecimal_opportunityFunction,
+  type GetQuantityDecimal_opportunityResponse,
+} from "./GetQuantityDecimal_opportunityFunction.js";
+export {
+  GetQuantityDecimal_quoteFunction,
+  type GetQuantityDecimal_quoteResponse,
+} from "./GetQuantityDecimal_quoteFunction.js";
+export {
+  GetQuantityDecimal_salesorderFunction,
+  type GetQuantityDecimal_salesorderResponse,
+} from "./GetQuantityDecimal_salesorderFunction.js";
+export {
   GetReportHistoryLimitFunction,
   type GetReportHistoryLimitResponse,
 } from "./GetReportHistoryLimitFunction.js";
@@ -351,6 +367,14 @@ export {
   RetrieveAbsoluteAndSiteCollectionUrlFunction,
   type RetrieveAbsoluteAndSiteCollectionUrlResponse,
 } from "./RetrieveAbsoluteAndSiteCollectionUrlFunction.js";
+export {
+  RetrieveAbsoluteAndSiteCollectionUrl_sharepointdocumentlocationFunction,
+  type RetrieveAbsoluteAndSiteCollectionUrl_sharepointdocumentlocationResponse,
+} from "./RetrieveAbsoluteAndSiteCollectionUrl_sharepointdocumentlocationFunction.js";
+export {
+  RetrieveAbsoluteAndSiteCollectionUrl_sharepointsiteFunction,
+  type RetrieveAbsoluteAndSiteCollectionUrl_sharepointsiteResponse,
+} from "./RetrieveAbsoluteAndSiteCollectionUrl_sharepointsiteFunction.js";
 export {
   RetrieveAccessOriginFunction,
   type RetrieveAccessOriginResponse,
@@ -573,17 +597,53 @@ export {
   type RetrievePrincipalAccessResponse,
 } from "./RetrievePrincipalAccessFunction.js";
 export {
+  RetrievePrincipalAccess_organizationFunction,
+  type RetrievePrincipalAccess_organizationResponse,
+} from "./RetrievePrincipalAccess_organizationFunction.js";
+export {
+  RetrievePrincipalAccess_systemuserFunction,
+  type RetrievePrincipalAccess_systemuserResponse,
+} from "./RetrievePrincipalAccess_systemuserFunction.js";
+export {
+  RetrievePrincipalAccess_teamFunction,
+  type RetrievePrincipalAccess_teamResponse,
+} from "./RetrievePrincipalAccess_teamFunction.js";
+export {
   RetrievePrincipalAccessInfoFunction,
   type RetrievePrincipalAccessInfoResponse,
 } from "./RetrievePrincipalAccessInfoFunction.js";
+export {
+  RetrievePrincipalAccessInfo_systemuserFunction,
+  type RetrievePrincipalAccessInfo_systemuserResponse,
+} from "./RetrievePrincipalAccessInfo_systemuserFunction.js";
+export {
+  RetrievePrincipalAccessInfo_teamFunction,
+  type RetrievePrincipalAccessInfo_teamResponse,
+} from "./RetrievePrincipalAccessInfo_teamFunction.js";
 export {
   RetrievePrincipalAttributePrivilegesFunction,
   type RetrievePrincipalAttributePrivilegesResponse,
 } from "./RetrievePrincipalAttributePrivilegesFunction.js";
 export {
+  RetrievePrincipalAttributePrivileges_systemuserFunction,
+  type RetrievePrincipalAttributePrivileges_systemuserResponse,
+} from "./RetrievePrincipalAttributePrivileges_systemuserFunction.js";
+export {
+  RetrievePrincipalAttributePrivileges_teamFunction,
+  type RetrievePrincipalAttributePrivileges_teamResponse,
+} from "./RetrievePrincipalAttributePrivileges_teamFunction.js";
+export {
   RetrievePrincipalSyncAttributeMappingsFunction,
   type RetrievePrincipalSyncAttributeMappingsResponse,
 } from "./RetrievePrincipalSyncAttributeMappingsFunction.js";
+export {
+  RetrievePrincipalSyncAttributeMappings_systemuserFunction,
+  type RetrievePrincipalSyncAttributeMappings_systemuserResponse,
+} from "./RetrievePrincipalSyncAttributeMappings_systemuserFunction.js";
+export {
+  RetrievePrincipalSyncAttributeMappings_teamFunction,
+  type RetrievePrincipalSyncAttributeMappings_teamResponse,
+} from "./RetrievePrincipalSyncAttributeMappings_teamFunction.js";
 export {
   RetrievePrivilegeSetFunction,
   type RetrievePrivilegeSetResponse,
@@ -596,6 +656,22 @@ export {
   RetrieveProductPropertiesFunction,
   type RetrieveProductPropertiesResponse,
 } from "./RetrieveProductPropertiesFunction.js";
+export {
+  RetrieveProductProperties_invoicedetailFunction,
+  type RetrieveProductProperties_invoicedetailResponse,
+} from "./RetrieveProductProperties_invoicedetailFunction.js";
+export {
+  RetrieveProductProperties_opportunityproductFunction,
+  type RetrieveProductProperties_opportunityproductResponse,
+} from "./RetrieveProductProperties_opportunityproductFunction.js";
+export {
+  RetrieveProductProperties_quotedetailFunction,
+  type RetrieveProductProperties_quotedetailResponse,
+} from "./RetrieveProductProperties_quotedetailFunction.js";
+export {
+  RetrieveProductProperties_salesorderdetailFunction,
+  type RetrieveProductProperties_salesorderdetailResponse,
+} from "./RetrieveProductProperties_salesorderdetailFunction.js";
 export {
   RetrieveProvisionedLanguagePackVersionFunction,
   type RetrieveProvisionedLanguagePackVersionResponse,
@@ -657,9 +733,177 @@ export {
   type RetrieveUnpublishedResponse,
 } from "./RetrieveUnpublishedFunction.js";
 export {
+  RetrieveUnpublished_aipluginFunction,
+  type RetrieveUnpublished_aipluginResponse,
+} from "./RetrieveUnpublished_aipluginFunction.js";
+export {
+  RetrieveUnpublished_aipluginconversationstarterFunction,
+  type RetrieveUnpublished_aipluginconversationstarterResponse,
+} from "./RetrieveUnpublished_aipluginconversationstarterFunction.js";
+export {
+  RetrieveUnpublished_aipluginconversationstartermappingFunction,
+  type RetrieveUnpublished_aipluginconversationstartermappingResponse,
+} from "./RetrieveUnpublished_aipluginconversationstartermappingFunction.js";
+export {
+  RetrieveUnpublished_aipluginoperationFunction,
+  type RetrieveUnpublished_aipluginoperationResponse,
+} from "./RetrieveUnpublished_aipluginoperationFunction.js";
+export {
+  RetrieveUnpublished_aipluginoperationparameterFunction,
+  type RetrieveUnpublished_aipluginoperationparameterResponse,
+} from "./RetrieveUnpublished_aipluginoperationparameterFunction.js";
+export {
+  RetrieveUnpublished_aipluginoperationresponsetemplateFunction,
+  type RetrieveUnpublished_aipluginoperationresponsetemplateResponse,
+} from "./RetrieveUnpublished_aipluginoperationresponsetemplateFunction.js";
+export {
+  RetrieveUnpublished_aiplugintitleFunction,
+  type RetrieveUnpublished_aiplugintitleResponse,
+} from "./RetrieveUnpublished_aiplugintitleFunction.js";
+export {
+  RetrieveUnpublished_appconfigFunction,
+  type RetrieveUnpublished_appconfigResponse,
+} from "./RetrieveUnpublished_appconfigFunction.js";
+export {
+  RetrieveUnpublished_appconfiginstanceFunction,
+  type RetrieveUnpublished_appconfiginstanceResponse,
+} from "./RetrieveUnpublished_appconfiginstanceFunction.js";
+export {
+  RetrieveUnpublished_appmoduleFunction,
+  type RetrieveUnpublished_appmoduleResponse,
+} from "./RetrieveUnpublished_appmoduleFunction.js";
+export {
+  RetrieveUnpublished_customcontroldefaultconfigFunction,
+  type RetrieveUnpublished_customcontroldefaultconfigResponse,
+} from "./RetrieveUnpublished_customcontroldefaultconfigFunction.js";
+export {
+  RetrieveUnpublished_desktopflowbinaryFunction,
+  type RetrieveUnpublished_desktopflowbinaryResponse,
+} from "./RetrieveUnpublished_desktopflowbinaryFunction.js";
+export {
+  RetrieveUnpublished_mobileofflineprofileFunction,
+  type RetrieveUnpublished_mobileofflineprofileResponse,
+} from "./RetrieveUnpublished_mobileofflineprofileFunction.js";
+export {
+  RetrieveUnpublished_mobileofflineprofileitemFunction,
+  type RetrieveUnpublished_mobileofflineprofileitemResponse,
+} from "./RetrieveUnpublished_mobileofflineprofileitemFunction.js";
+export {
+  RetrieveUnpublished_navigationsettingFunction,
+  type RetrieveUnpublished_navigationsettingResponse,
+} from "./RetrieveUnpublished_navigationsettingFunction.js";
+export {
+  RetrieveUnpublished_savedqueryFunction,
+  type RetrieveUnpublished_savedqueryResponse,
+} from "./RetrieveUnpublished_savedqueryFunction.js";
+export {
+  RetrieveUnpublished_savedqueryvisualizationFunction,
+  type RetrieveUnpublished_savedqueryvisualizationResponse,
+} from "./RetrieveUnpublished_savedqueryvisualizationFunction.js";
+export {
+  RetrieveUnpublished_sitemapFunction,
+  type RetrieveUnpublished_sitemapResponse,
+} from "./RetrieveUnpublished_sitemapFunction.js";
+export {
+  RetrieveUnpublished_systemformFunction,
+  type RetrieveUnpublished_systemformResponse,
+} from "./RetrieveUnpublished_systemformFunction.js";
+export {
+  RetrieveUnpublished_webresourceFunction,
+  type RetrieveUnpublished_webresourceResponse,
+} from "./RetrieveUnpublished_webresourceFunction.js";
+export {
+  RetrieveUnpublished_workflowFunction,
+  type RetrieveUnpublished_workflowResponse,
+} from "./RetrieveUnpublished_workflowFunction.js";
+export {
   RetrieveUnpublishedMultipleFunction,
   type RetrieveUnpublishedMultipleResponse,
 } from "./RetrieveUnpublishedMultipleFunction.js";
+export {
+  RetrieveUnpublishedMultiple_aiplugin_collectionFunction,
+  type RetrieveUnpublishedMultiple_aiplugin_collectionResponse,
+} from "./RetrieveUnpublishedMultiple_aiplugin_collectionFunction.js";
+export {
+  RetrieveUnpublishedMultiple_aipluginconversationstarter_collectionFunction,
+  type RetrieveUnpublishedMultiple_aipluginconversationstarter_collectionResponse,
+} from "./RetrieveUnpublishedMultiple_aipluginconversationstarter_collectionFunction.js";
+export {
+  RetrieveUnpublishedMultiple_aipluginconversationstartermapping_collectionFunction,
+  type RetrieveUnpublishedMultiple_aipluginconversationstartermapping_collectionResponse,
+} from "./RetrieveUnpublishedMultiple_aipluginconversationstartermapping_collectionFunction.js";
+export {
+  RetrieveUnpublishedMultiple_aipluginoperation_collectionFunction,
+  type RetrieveUnpublishedMultiple_aipluginoperation_collectionResponse,
+} from "./RetrieveUnpublishedMultiple_aipluginoperation_collectionFunction.js";
+export {
+  RetrieveUnpublishedMultiple_aipluginoperationparameter_collectionFunction,
+  type RetrieveUnpublishedMultiple_aipluginoperationparameter_collectionResponse,
+} from "./RetrieveUnpublishedMultiple_aipluginoperationparameter_collectionFunction.js";
+export {
+  RetrieveUnpublishedMultiple_aipluginoperationresponsetemplate_collectionFunction,
+  type RetrieveUnpublishedMultiple_aipluginoperationresponsetemplate_collectionResponse,
+} from "./RetrieveUnpublishedMultiple_aipluginoperationresponsetemplate_collectionFunction.js";
+export {
+  RetrieveUnpublishedMultiple_aiplugintitle_collectionFunction,
+  type RetrieveUnpublishedMultiple_aiplugintitle_collectionResponse,
+} from "./RetrieveUnpublishedMultiple_aiplugintitle_collectionFunction.js";
+export {
+  RetrieveUnpublishedMultiple_appconfig_collectionFunction,
+  type RetrieveUnpublishedMultiple_appconfig_collectionResponse,
+} from "./RetrieveUnpublishedMultiple_appconfig_collectionFunction.js";
+export {
+  RetrieveUnpublishedMultiple_appconfiginstance_collectionFunction,
+  type RetrieveUnpublishedMultiple_appconfiginstance_collectionResponse,
+} from "./RetrieveUnpublishedMultiple_appconfiginstance_collectionFunction.js";
+export {
+  RetrieveUnpublishedMultiple_appmodule_collectionFunction,
+  type RetrieveUnpublishedMultiple_appmodule_collectionResponse,
+} from "./RetrieveUnpublishedMultiple_appmodule_collectionFunction.js";
+export {
+  RetrieveUnpublishedMultiple_customcontroldefaultconfig_collectionFunction,
+  type RetrieveUnpublishedMultiple_customcontroldefaultconfig_collectionResponse,
+} from "./RetrieveUnpublishedMultiple_customcontroldefaultconfig_collectionFunction.js";
+export {
+  RetrieveUnpublishedMultiple_desktopflowbinary_collectionFunction,
+  type RetrieveUnpublishedMultiple_desktopflowbinary_collectionResponse,
+} from "./RetrieveUnpublishedMultiple_desktopflowbinary_collectionFunction.js";
+export {
+  RetrieveUnpublishedMultiple_mobileofflineprofile_collectionFunction,
+  type RetrieveUnpublishedMultiple_mobileofflineprofile_collectionResponse,
+} from "./RetrieveUnpublishedMultiple_mobileofflineprofile_collectionFunction.js";
+export {
+  RetrieveUnpublishedMultiple_mobileofflineprofileitem_collectionFunction,
+  type RetrieveUnpublishedMultiple_mobileofflineprofileitem_collectionResponse,
+} from "./RetrieveUnpublishedMultiple_mobileofflineprofileitem_collectionFunction.js";
+export {
+  RetrieveUnpublishedMultiple_navigationsetting_collectionFunction,
+  type RetrieveUnpublishedMultiple_navigationsetting_collectionResponse,
+} from "./RetrieveUnpublishedMultiple_navigationsetting_collectionFunction.js";
+export {
+  RetrieveUnpublishedMultiple_savedquery_collectionFunction,
+  type RetrieveUnpublishedMultiple_savedquery_collectionResponse,
+} from "./RetrieveUnpublishedMultiple_savedquery_collectionFunction.js";
+export {
+  RetrieveUnpublishedMultiple_savedqueryvisualization_collectionFunction,
+  type RetrieveUnpublishedMultiple_savedqueryvisualization_collectionResponse,
+} from "./RetrieveUnpublishedMultiple_savedqueryvisualization_collectionFunction.js";
+export {
+  RetrieveUnpublishedMultiple_sitemap_collectionFunction,
+  type RetrieveUnpublishedMultiple_sitemap_collectionResponse,
+} from "./RetrieveUnpublishedMultiple_sitemap_collectionFunction.js";
+export {
+  RetrieveUnpublishedMultiple_systemform_collectionFunction,
+  type RetrieveUnpublishedMultiple_systemform_collectionResponse,
+} from "./RetrieveUnpublishedMultiple_systemform_collectionFunction.js";
+export {
+  RetrieveUnpublishedMultiple_webresource_collectionFunction,
+  type RetrieveUnpublishedMultiple_webresource_collectionResponse,
+} from "./RetrieveUnpublishedMultiple_webresource_collectionFunction.js";
+export {
+  RetrieveUnpublishedMultiple_workflow_collectionFunction,
+  type RetrieveUnpublishedMultiple_workflow_collectionResponse,
+} from "./RetrieveUnpublishedMultiple_workflow_collectionFunction.js";
 export {
   RetrieveUserApplicationLicenseAccessFunction,
   type RetrieveUserApplicationLicenseAccessResponse,
