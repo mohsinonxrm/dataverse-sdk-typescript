@@ -884,6 +884,9 @@ User Code (typed result)
 - **Retry-Attempt header:** Added to retried requests for server-side diagnostics (turn off with
   `diagnosticHeaders: { retryAttempt: false }`)
 - **Stream content:** Not retried (detected via Content-Type header)
+- **Discarded responses:** the body of a response that is retried is cancelled at once, so the
+  connection goes back to the pool instead of waiting for garbage collection. The response you
+  get back (success, or the last failure when retries run out) is never read by the retry logic.
 
 #### Adaptive Concurrency
 
