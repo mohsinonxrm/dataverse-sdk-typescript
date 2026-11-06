@@ -241,9 +241,10 @@ node dist/cli.js --help
   in the packages' READMEs and `docs/mapping/*` from the package source;
   `test/operation-docs.test.ts` fails while one is stale or a doc names a class no package exports.
 - **CI**: the `regen` drift check covers every generated file, the metadata types and the entity
-  tables included (#295). `.github/workflows/generate-metadata-types.yml` (manual) regenerates the
-  metadata types from a live `$metadata` instead of the snapshot; refreshing the snapshot
-  (`metadata/README.md`) now does that for every package at once.
+  tables included (#295). It reads only the snapshot and never calls an org.
+  `.github/workflows/refresh-metadata-snapshot.yml` (manual) refreshes the snapshot from the dev
+  org (`snapshot`, then `regen`) and opens a PR, which the drift check then passes; the review
+  steps in [`metadata/README.md`](metadata/README.md) still apply.
 
 ## Troubleshooting
 

@@ -47,7 +47,10 @@ Attribute values and text are unchanged. The file holds no hostname, tenant, org
 
 ## Refreshing it
 
-Only a maintainer does this, by hand. CI never calls an org.
+Only a maintainer does this. CI never calls an org. Steps 1 and 2 can also run in GitHub
+Actions: run the manual "Refresh $metadata Snapshot" workflow
+(`.github/workflows/refresh-metadata-snapshot.yml`) with the issue number. It uses the dev org's
+repository secrets, runs both commands and opens a PR; steps 3 and 4 are left for the PR.
 
 1. Use an org with the apps above (or say in the PR which apps changed). The generator signs in
    with client credentials: set `DATAVERSE_URL` and `AZURE_TENANT_ID`, `AZURE_CLIENT_ID`,

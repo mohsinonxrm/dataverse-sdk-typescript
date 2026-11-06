@@ -1,0 +1,82 @@
+name: Refresh $metadata Snapshot
+# Manual. Fetches the dev org's $metadata into the committed snapshot
+# (tools/generate-sdk-types/metadata/dataverse-metadata.xml), regenerates every generated package
+# from it with `regen`, and opens a PR. That keeps CI's "Generated packages match the $metadata
+# snapshot" check green on the PR: the packages are exactly what `regen` makes from the new
+# snapshot. See tools/generate-sdk-types/metadata/README.md ("Refreshing it").
+on:
+  workflow_dispatch:
+    inputs:
+      issue:
+        description: "Issue number the refresh is for (the PR links it: 'Refs #N')"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: dev
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      # The generator imports the core and auth packages, so build it with its dependencies.
+      - name: Build the generator
+        run: pnpm turbo run build --filter=generate-sdk-types
+      - name: Fetch the $metadata snapshot
+        # The generator reads DATAVERSE_URL and the AZURE_* names; the repository secrets are the
+        # DATAVERSE_* ones the integration tests use.
+        env:
+          DATAVERSE_URL: ${{ secrets.DATAVERSE_URL }}
+          AZURE_TENANT_ID: ${{ secrets.DATAVERSE_TENANT_ID }}
+          AZURE_CLIENT_ID: ${{ secrets.DATAVERSE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.DATAVERSE_CLIENT_SECRET }}
+        run: pnpm --filter generate-sdk-types snapshot
+      # Purges and rewrites every generated package and the generated docs, formatted. Reads only
+      # the snapshot.
+      - name: Regenerate from the snapshot
+        run: pnpm --filter generate-sdk-types regen
+      # The same check CI runs on the snapshot: the sorted form, and no org names in it.
+      - name: Check the snapshot
+        run: pnpm --filter generate-sdk-types exec vitest run test/snapshot.test.ts
+      - name: Create PR with the refreshed snapshot
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          base: dev
+          commit-message: "chore(generator): refresh the $metadata snapshot and regenerate"
+          branch: "auto/refresh-metadata-snapshot"
+          delete-branch: true
+          title: "chore(generator): refresh the $metadata snapshot and regenerate"
+          body: |
+            Refs #${{ inputs.issue }}
+
+            Automated PR: the dev org's `$metadata`, saved to
+            `tools/generate-sdk-types/metadata/dataverse-metadata.xml` with
+            `pnpm --filter generate-sdk-types snapshot`, and every generated package and doc
+            regenerated from it with `pnpm --filter generate-sdk-types regen`.
+            Triggered by: workflow_dispatch
+
+            Before merging (`tools/generate-sdk-types/metadata/README.md`, "Refreshing it"):
+            - [ ] Check the snapshot for anything that names the org: a new table with the org's
+                  own publisher prefix belongs in `ORG_SPECIFIC_PREFIXES` (then run `snapshot`
+                  and `regen` again).
+            - [ ] Update "Where it comes from" in `metadata/README.md` (date, Dataverse version,
+                  apps).
+            - [ ] Add a changeset, and list the operations and types added and removed here. A
+                  removed operation is a breaking change for anyone who uses it.
+
+            A PR opened with `GITHUB_TOKEN` doesn't start other workflows, so CI hasn't run on
+            it yet: push the commits above to the branch to run it.
+          labels: "automated,generated"
