@@ -25,10 +25,10 @@ import {
 import type {
   EntityMetadataCreate,
   EntityMetadata,
-  ComplexStringAttributeMetadata,
-  ComplexIntegerAttributeMetadata,
+  StringAttributeMetadataCreate,
+  IntegerAttributeMetadataCreate,
   OneToManyRelationshipMetadata,
-  ComplexOptionSetMetadata,
+  OptionSetMetadataCreate,
 } from "@mohsinonxrm/dataverse-sdk-metadata";
 
 // Load environment variables
@@ -104,6 +104,7 @@ async function demo1A_CreateEntityHttpFirst(
   console.log(chalk.gray("Using client.api() directly with typed payloads..."));
 
   const entityDefinition: EntityMetadataCreate = {
+    "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
     SchemaName: `${schemaPrefix}_project`,
     DisplayName: {
       LocalizedLabels: [{ Label: "Project", LanguageCode: 1033 }],
@@ -127,15 +128,11 @@ async function demo1A_CreateEntityHttpFirst(
   const startTime = Date.now();
 
   // Direct HTTP POST to /EntityDefinitions
-  // Add @odata.type at runtime for Web API
   const response = await client
     .api("/EntityDefinitions")
     .header("Content-Type", "application/json")
     .preferRaw("return=representation")
-    .post<EntityMetadata>({
-      "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
-      ...entityDefinition,
-    });
+    .post<EntityMetadata>(entityDefinition);
 
   const duration = ((Date.now() - startTime) / 1000).toFixed(2);
   const metadataId = response.MetadataId;
@@ -152,23 +149,21 @@ async function demo1A_CreateEntityHttpFirst(
   // Now add primary name attribute (required for custom entities)
   console.log(chalk.gray("\nAdding primary name column..."));
 
-  const primaryNameAttr: ComplexStringAttributeMetadata = {
+  const primaryNameAttr: StringAttributeMetadataCreate = {
+    "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
     SchemaName: `${schemaPrefix}_Name`,
     DisplayName: {
       LocalizedLabels: [{ Label: "Project Name", LanguageCode: 1033 }],
     },
     RequiredLevel: { Value: AttributeRequiredLevel.None },
     MaxLength: 100,
+    IsPrimaryName: true,
   };
 
   await client
     .api(`/EntityDefinitions(LogicalName='${schemaPrefix}_project')/Attributes`)
     .header("Content-Type", "application/json")
-    .post({
-      "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
-      ...primaryNameAttr,
-      IsPrimaryName: true,
-    });
+    .post(primaryNameAttr);
 
   console.log(chalk.green("  ✓ Primary name column added"));
 
@@ -186,6 +181,7 @@ async function demo1B_CreateEntityMetadataClient(
   console.log(chalk.gray("Using MetadataClient typed methods..."));
 
   const entityDefinition: EntityMetadataCreate = {
+    "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
     SchemaName: `${schemaPrefix}_milestone`,
     DisplayName: {
       LocalizedLabels: [{ Label: "Milestone", LanguageCode: 1033 }],
@@ -209,11 +205,7 @@ async function demo1B_CreateEntityMetadataClient(
   const startTime = Date.now();
 
   // Using MetadataClient wrapper method
-  const metadataId = await metadataClient.createEntityDefinition({
-    "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
-    ...entityDefinition,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any);
+  const metadataId = await metadataClient.createEntityDefinition(entityDefinition);
 
   const duration = ((Date.now() - startTime) / 1000).toFixed(2);
 
@@ -228,21 +220,18 @@ async function demo1B_CreateEntityMetadataClient(
   // Add primary name attribute
   console.log(chalk.gray("\nAdding primary name column..."));
 
-  const primaryNameAttr: ComplexStringAttributeMetadata = {
+  const primaryNameAttr: StringAttributeMetadataCreate = {
+    "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
     SchemaName: `${schemaPrefix}_Name`,
     DisplayName: {
       LocalizedLabels: [{ Label: "Milestone Name", LanguageCode: 1033 }],
     },
     RequiredLevel: { Value: AttributeRequiredLevel.None },
     MaxLength: 100,
+    IsPrimaryName: true,
   };
 
-  await metadataClient.createAttributeDefinition(`${schemaPrefix}_milestone`, {
-    "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
-    ...primaryNameAttr,
-    IsPrimaryName: true,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any);
+  await metadataClient.createAttributeDefinition(`${schemaPrefix}_milestone`, primaryNameAttr);
 
   console.log(chalk.green("  ✓ Primary name column added"));
 
@@ -260,7 +249,8 @@ async function demo2A_AddAttributeHttpFirst(
   console.log(chalk.bold.blue("\n════ Demo 2A: Add Attribute (HTTP-First) ════\n"));
   console.log(chalk.gray("Adding description column via client.api()..."));
 
-  const attributeDefinition: ComplexStringAttributeMetadata = {
+  const attributeDefinition: StringAttributeMetadataCreate = {
+    "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
     SchemaName: `${schemaPrefix}_Description`,
     DisplayName: {
       LocalizedLabels: [{ Label: "Description", LanguageCode: 1033 }],
@@ -277,10 +267,7 @@ async function demo2A_AddAttributeHttpFirst(
   await client
     .api(`/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes`)
     .header("Content-Type", "application/json")
-    .post({
-      "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
-      ...attributeDefinition,
-    });
+    .post(attributeDefinition);
 
   console.log(chalk.green("✓ Attribute created (HTTP POST)"));
   console.log(chalk.gray(`  Logical Name: ${schemaPrefix.toLowerCase()}_description`));
@@ -299,7 +286,8 @@ async function demo2B_AddAttributeMetadataClient(
   console.log(chalk.bold.blue("\n════ Demo 2B: Add Attribute (MetadataClient) ════\n"));
   console.log(chalk.gray("Adding priority column via MetadataClient..."));
 
-  const attributeDefinition: ComplexIntegerAttributeMetadata = {
+  const attributeDefinition: IntegerAttributeMetadataCreate = {
+    "@odata.type": "Microsoft.Dynamics.CRM.IntegerAttributeMetadata",
     SchemaName: `${schemaPrefix}_Priority`,
     DisplayName: {
       LocalizedLabels: [{ Label: "Priority", LanguageCode: 1033 }],
@@ -309,11 +297,7 @@ async function demo2B_AddAttributeMetadataClient(
     MaxValue: 10,
   };
 
-  await metadataClient.createAttributeDefinition(entityLogicalName, {
-    "@odata.type": "Microsoft.Dynamics.CRM.IntegerAttributeMetadata",
-    ...attributeDefinition,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any);
+  await metadataClient.createAttributeDefinition(entityLogicalName, attributeDefinition);
 
   console.log(chalk.green("✓ Attribute created (MetadataClient)"));
   console.log(chalk.gray(`  Logical Name: ${schemaPrefix.toLowerCase()}_priority`));
@@ -457,7 +441,8 @@ async function demo5_CreateGlobalChoice(
   console.log(chalk.bold.blue("\n════ Demo 5: Create Global Choice (MetadataClient) ════\n"));
   console.log(chalk.gray("Creating project type global choice..."));
 
-  const optionSet: ComplexOptionSetMetadata = {
+  const optionSet: OptionSetMetadataCreate = {
+    "@odata.type": "Microsoft.Dynamics.CRM.OptionSetMetadata",
     Name: `${schemaPrefix}_projecttype`,
     DisplayName: {
       LocalizedLabels: [{ Label: "Project Type", LanguageCode: 1033 }],
@@ -483,11 +468,7 @@ async function demo5_CreateGlobalChoice(
     ],
   };
 
-  const metadataId = await metadataClient.createGlobalOptionSet({
-    "@odata.type": "Microsoft.Dynamics.CRM.OptionSetMetadata",
-    ...optionSet,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any);
+  const metadataId = await metadataClient.createGlobalOptionSet(optionSet);
 
   console.log(chalk.green("✓ Global choice created"));
   console.log(chalk.gray(`  Metadata ID: ${metadataId}`));
