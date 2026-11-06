@@ -249,7 +249,7 @@ async function winOpportunityDemo(
 
   // Create test opportunity
   console.log("Creating test opportunity...");
-  const opportunityId: string = await orgService.create("opportunities", {
+  const opportunityId = await orgService.create("opportunities", {
     name: "Test Opportunity for Win",
     estimatedvalue: 75000,
     estimatedclosedate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
