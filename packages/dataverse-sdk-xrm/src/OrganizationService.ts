@@ -169,6 +169,26 @@ export class OrganizationService {
    * });
    * ```
    */
+  create(
+    entitySetName: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    entity: Record<string, any>,
+    options?: CreateOptions & { returnRepresentation?: false }
+  ): Promise<string>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  create<T = any>(
+    entitySetName: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    entity: Record<string, any>,
+    options: CreateOptions & { returnRepresentation: true }
+  ): Promise<T>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  create<T = any>(
+    entitySetName: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    entity: Record<string, any>,
+    options?: CreateOptions
+  ): Promise<string | T>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async create<T = any>(
     entitySetName: string,
