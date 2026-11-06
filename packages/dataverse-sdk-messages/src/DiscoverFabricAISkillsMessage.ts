@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { DiscoverFabricAISkillsResponse as DiscoverFabricAISkillsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the DiscoverFabricAISkills message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class DiscoverFabricAISkillsRequest
   }
 
   async parseResponse(response: Response): Promise<DiscoverFabricAISkillsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return DiscoverFabricAISkillsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return DiscoverFabricAISkillsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the DiscoverFabricAISkills action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface DiscoverFabricAISkillsResult {
+  "@odata.context"?: string;
+  fabricAISkills: string;
+}
+
+/**
  * DiscoverFabricAISkills response message
+ *
+ * `result` is the value the DiscoverFabricAISkills action returns (see {@link DiscoverFabricAISkillsResult}).
  */
 export class DiscoverFabricAISkillsResponse extends OrganizationResponse {
-  constructor(public result: DiscoverFabricAISkillsResponseData) {
+  constructor(public result: DiscoverFabricAISkillsResult) {
     super("DiscoverFabricAISkills");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): DiscoverFabricAISkillsResponse {
-    return new DiscoverFabricAISkillsResponse(
-      responseObject<DiscoverFabricAISkillsResponseData>(data)
-    );
+    return new DiscoverFabricAISkillsResponse(data as DiscoverFabricAISkillsResult);
   }
 }

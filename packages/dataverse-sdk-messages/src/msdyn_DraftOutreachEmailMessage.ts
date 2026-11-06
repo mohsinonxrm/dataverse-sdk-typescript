@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_DraftOutreachEmailResponse as msdyn_DraftOutreachEmailResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_DraftOutreachEmail message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,35 @@ export class msdyn_DraftOutreachEmailRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_DraftOutreachEmailResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_DraftOutreachEmailResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_DraftOutreachEmailResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_DraftOutreachEmail action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_DraftOutreachEmailResult {
+  "@odata.context"?: string;
+  ErrorMessage: string;
+  IsSuccess: string;
+  Result: string;
+}
+
+/**
  * msdyn_DraftOutreachEmail response message
+ *
+ * `result` is the value the msdyn_DraftOutreachEmail action returns (see {@link msdyn_DraftOutreachEmailResult}).
  */
 export class msdyn_DraftOutreachEmailResponse extends OrganizationResponse {
-  constructor(public result: msdyn_DraftOutreachEmailResponseData) {
+  constructor(public result: msdyn_DraftOutreachEmailResult) {
     super("msdyn_DraftOutreachEmail");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_DraftOutreachEmailResponse {
-    return new msdyn_DraftOutreachEmailResponse(
-      responseObject<msdyn_DraftOutreachEmailResponseData>(data)
-    );
+    return new msdyn_DraftOutreachEmailResponse(data as msdyn_DraftOutreachEmailResult);
   }
 }

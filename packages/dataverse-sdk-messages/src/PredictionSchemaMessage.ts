@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { PredictionSchemaResponse as PredictionSchemaResponseData } from "./types/index.js";
 
 /**
  * Parameters of the PredictionSchema message, by their CSDL names. A parameter the CSDL declares
@@ -53,21 +51,33 @@ export class PredictionSchemaRequest
   }
 
   async parseResponse(response: Response): Promise<PredictionSchemaResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return PredictionSchemaResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return PredictionSchemaResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the PredictionSchema action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface PredictionSchemaResult {
+  "@odata.context"?: string;
+  response: string;
+}
+
+/**
  * PredictionSchema response message
+ *
+ * `result` is the value the PredictionSchema action returns (see {@link PredictionSchemaResult}).
  */
 export class PredictionSchemaResponse extends OrganizationResponse {
-  constructor(public result: PredictionSchemaResponseData) {
+  constructor(public result: PredictionSchemaResult) {
     super("PredictionSchema");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): PredictionSchemaResponse {
-    return new PredictionSchemaResponse(responseObject<PredictionSchemaResponseData>(data));
+    return new PredictionSchemaResponse(data as PredictionSchemaResult);
   }
 }

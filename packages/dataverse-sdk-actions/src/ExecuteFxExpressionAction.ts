@@ -4,15 +4,17 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from ExecuteFxExpression action
+ * Response from the ExecuteFxExpression action.
  *
- * The response is the entity itself, not wrapped in `value`.
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface ExecuteFxExpressionResponse {
+export type ExecuteFxExpressionResponse = {
   "@odata.context"?: string;
   "@odata.etag"?: string;
+  "@odata.type"?: string;
   [column: string]: unknown;
-}
+} | null;
 
 /**
  * Parameters of the ExecuteFxExpression action, by their CSDL names. A parameter the CSDL declares
@@ -56,8 +58,9 @@ export class ExecuteFxExpressionAction implements Executable<ExecuteFxExpression
   }
 
   async parseResponse(response: Response): Promise<ExecuteFxExpressionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ExecuteFxExpressionResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
     return (await response.json()) as ExecuteFxExpressionResponse;
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetAgentAssistStreamResponse as msdyn_GetAgentAssistStreamResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetAgentAssistStream message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class msdyn_GetAgentAssistStreamRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAgentAssistStreamResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetAgentAssistStreamResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetAgentAssistStreamResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetAgentAssistStream action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetAgentAssistStreamResult {
+  "@odata.context"?: string;
+  Result: string[];
+}
+
+/**
  * msdyn_GetAgentAssistStream response message
+ *
+ * `result` is the value the msdyn_GetAgentAssistStream action returns (see {@link msdyn_GetAgentAssistStreamResult}).
  */
 export class msdyn_GetAgentAssistStreamResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetAgentAssistStreamResponseData) {
+  constructor(public result: msdyn_GetAgentAssistStreamResult) {
     super("msdyn_GetAgentAssistStream");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetAgentAssistStreamResponse {
-    return new msdyn_GetAgentAssistStreamResponse(
-      responseObject<msdyn_GetAgentAssistStreamResponseData>(data)
-    );
+    return new msdyn_GetAgentAssistStreamResponse(data as msdyn_GetAgentAssistStreamResult);
   }
 }

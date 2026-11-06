@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_OverflowMigrationAPI action
+ * Response from the msdyn_OverflowMigrationAPI action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_OverflowMigrationAPIResponse {
-  // No content returned
-}
+export type msdyn_OverflowMigrationAPIResponse = void;
 
 /**
  * msdyn_OverflowMigrationAPI action
@@ -25,9 +25,8 @@ export class msdyn_OverflowMigrationAPIAction implements Executable<msdyn_Overfl
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_OverflowMigrationAPIResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_OverflowMigrationAPIResponse;
-    return (await response.json()) as msdyn_OverflowMigrationAPIResponse;
+  parseResponse(_response: Response): Promise<msdyn_OverflowMigrationAPIResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

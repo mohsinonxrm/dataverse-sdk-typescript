@@ -50,11 +50,9 @@ export class CCaaS_InitiateAgentTransferBySupervisorRequest
     };
   }
 
-  async parseResponse(
-    response: Response
-  ): Promise<CCaaS_InitiateAgentTransferBySupervisorResponse> {
+  parseResponse(_response: Response): Promise<CCaaS_InitiateAgentTransferBySupervisorResponse> {
     // No return value (204 No Content)
-    return new CCaaS_InitiateAgentTransferBySupervisorResponse();
+    return Promise.resolve(new CCaaS_InitiateAgentTransferBySupervisorResponse());
   }
 }
 
@@ -66,7 +64,7 @@ export class CCaaS_InitiateAgentTransferBySupervisorResponse extends Organizatio
     super("CCaaS_InitiateAgentTransferBySupervisor");
   }
 
-  static fromResponse(_data: unknown): CCaaS_InitiateAgentTransferBySupervisorResponse {
+  static fromResponse(_data?: unknown): CCaaS_InitiateAgentTransferBySupervisorResponse {
     return new CCaaS_InitiateAgentTransferBySupervisorResponse();
   }
 }

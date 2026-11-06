@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetAppInsightsTelemetryResponse as msdyn_GetAppInsightsTelemetryResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetAppInsightsTelemetry message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,33 @@ export class msdyn_GetAppInsightsTelemetryRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAppInsightsTelemetryResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetAppInsightsTelemetryResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetAppInsightsTelemetryResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetAppInsightsTelemetry action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetAppInsightsTelemetryResult {
+  "@odata.context"?: string;
+  msdyn_Response: string;
+}
+
+/**
  * msdyn_GetAppInsightsTelemetry response message
+ *
+ * `result` is the value the msdyn_GetAppInsightsTelemetry action returns (see {@link msdyn_GetAppInsightsTelemetryResult}).
  */
 export class msdyn_GetAppInsightsTelemetryResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetAppInsightsTelemetryResponseData) {
+  constructor(public result: msdyn_GetAppInsightsTelemetryResult) {
     super("msdyn_GetAppInsightsTelemetry");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetAppInsightsTelemetryResponse {
-    return new msdyn_GetAppInsightsTelemetryResponse(
-      responseObject<msdyn_GetAppInsightsTelemetryResponseData>(data)
-    );
+    return new msdyn_GetAppInsightsTelemetryResponse(data as msdyn_GetAppInsightsTelemetryResult);
   }
 }

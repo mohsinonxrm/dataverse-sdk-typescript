@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_InvokeQEADVCopilotActionResponse as msdyn_InvokeQEADVCopilotActionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_InvokeQEADVCopilotAction message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,33 @@ export class msdyn_InvokeQEADVCopilotActionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_InvokeQEADVCopilotActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_InvokeQEADVCopilotActionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_InvokeQEADVCopilotActionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_InvokeQEADVCopilotAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_InvokeQEADVCopilotActionResult {
+  "@odata.context"?: string;
+  msdyn_invokeqeadvcopilotactionresponse: string;
+}
+
+/**
  * msdyn_InvokeQEADVCopilotAction response message
+ *
+ * `result` is the value the msdyn_InvokeQEADVCopilotAction action returns (see {@link msdyn_InvokeQEADVCopilotActionResult}).
  */
 export class msdyn_InvokeQEADVCopilotActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_InvokeQEADVCopilotActionResponseData) {
+  constructor(public result: msdyn_InvokeQEADVCopilotActionResult) {
     super("msdyn_InvokeQEADVCopilotAction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_InvokeQEADVCopilotActionResponse {
-    return new msdyn_InvokeQEADVCopilotActionResponse(
-      responseObject<msdyn_InvokeQEADVCopilotActionResponseData>(data)
-    );
+    return new msdyn_InvokeQEADVCopilotActionResponse(data as msdyn_InvokeQEADVCopilotActionResult);
   }
 }

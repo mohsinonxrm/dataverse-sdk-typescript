@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_SyncKnowledgeManagementSettingsV2 action
+ * Response from the msdyn_SyncKnowledgeManagementSettingsV2 action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_SyncKnowledgeManagementSettingsV2Response {
-  // No content returned
-}
+export type msdyn_SyncKnowledgeManagementSettingsV2Response = void;
 
 /**
  * msdyn_SyncKnowledgeManagementSettingsV2 action
@@ -25,11 +25,8 @@ export class msdyn_SyncKnowledgeManagementSettingsV2Action implements Executable
     };
   }
 
-  async parseResponse(
-    response: Response
-  ): Promise<msdyn_SyncKnowledgeManagementSettingsV2Response> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_SyncKnowledgeManagementSettingsV2Response;
-    return (await response.json()) as msdyn_SyncKnowledgeManagementSettingsV2Response;
+  parseResponse(_response: Response): Promise<msdyn_SyncKnowledgeManagementSettingsV2Response> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

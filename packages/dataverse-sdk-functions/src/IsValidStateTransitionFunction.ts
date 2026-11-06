@@ -3,9 +3,12 @@ import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 
 /**
- * Response from IsValidStateTransition function
+ * Response from the IsValidStateTransition function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface IsValidStateTransitionResponse {
+  "@odata.context"?: string;
   IsValid: boolean;
 }
 
@@ -62,8 +65,7 @@ export class IsValidStateTransitionFunction implements Executable<IsValidStateTr
   }
 
   async parseResponse(response: Response): Promise<IsValidStateTransitionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as IsValidStateTransitionResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as IsValidStateTransitionResponse;
   }
 }

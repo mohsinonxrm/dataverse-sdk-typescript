@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseValue } from "./internal/responseData.js";
 
 /**
  * RetrievePowerAppsConnectorApis request message
@@ -28,23 +27,40 @@ export class RetrievePowerAppsConnectorApisRequest
   }
 
   async parseResponse(response: Response): Promise<RetrievePowerAppsConnectorApisResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return RetrievePowerAppsConnectorApisResponse.fromResponse({});
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204)
+      return RetrievePowerAppsConnectorApisResponse.fromResponse(undefined);
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
     return RetrievePowerAppsConnectorApisResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the RetrievePowerAppsConnectorApis action.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
+ */
+export type RetrievePowerAppsConnectorApisResult = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
+
+/**
  * RetrievePowerAppsConnectorApis response message
+ *
+ * `result` is the value the RetrievePowerAppsConnectorApis action returns (see {@link RetrievePowerAppsConnectorApisResult}).
  */
 export class RetrievePowerAppsConnectorApisResponse extends OrganizationResponse {
-  constructor(public result: Record<string, unknown>[]) {
+  constructor(public result: RetrievePowerAppsConnectorApisResult) {
     super("RetrievePowerAppsConnectorApis");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): RetrievePowerAppsConnectorApisResponse {
     return new RetrievePowerAppsConnectorApisResponse(
-      responseValue<Record<string, unknown>[]>(data)
+      data === undefined ? [] : (data as { value: RetrievePowerAppsConnectorApisResult }).value
     );
   }
 }

@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResponse as msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_AutonomousSQA_GetEngageAndReadinessAgentResult message, by their CSDL names. A parameter the CSDL declares
@@ -51,9 +49,7 @@ export class msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResponse.fromResponse(
       await response.json()
     );
@@ -61,16 +57,29 @@ export class msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultRequest
 }
 
 /**
+ * Response from the msdyn_AutonomousSQA_GetEngageAndReadinessAgentResult action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResult {
+  "@odata.context"?: string;
+  msdyn_Response: string;
+}
+
+/**
  * msdyn_AutonomousSQA_GetEngageAndReadinessAgentResult response message
+ *
+ * `result` is the value the msdyn_AutonomousSQA_GetEngageAndReadinessAgentResult action returns (see {@link msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResult}).
  */
 export class msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResponse extends OrganizationResponse {
-  constructor(public result: msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResponseData) {
+  constructor(public result: msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResult) {
     super("msdyn_AutonomousSQA_GetEngageAndReadinessAgentResult");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResponse {
     return new msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResponse(
-      responseObject<msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResponseData>(data)
+      data as msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResult
     );
   }
 }

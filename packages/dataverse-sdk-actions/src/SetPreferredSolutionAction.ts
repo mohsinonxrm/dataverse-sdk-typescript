@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from SetPreferredSolution action
+ * Response from the SetPreferredSolution action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface SetPreferredSolutionResponse {
-  // No content returned
-}
+export type SetPreferredSolutionResponse = void;
 
 /**
  * Parameters of the SetPreferredSolution action, by their CSDL names. A parameter the CSDL declares
@@ -41,9 +41,8 @@ export class SetPreferredSolutionAction implements Executable<SetPreferredSoluti
     };
   }
 
-  async parseResponse(response: Response): Promise<SetPreferredSolutionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as SetPreferredSolutionResponse;
-    return (await response.json()) as SetPreferredSolutionResponse;
+  parseResponse(_response: Response): Promise<SetPreferredSolutionResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

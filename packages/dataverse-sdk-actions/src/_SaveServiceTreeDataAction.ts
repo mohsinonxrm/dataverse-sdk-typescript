@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from _SaveServiceTreeData action
+ * Response from the _SaveServiceTreeData action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface _SaveServiceTreeDataResponse {
+  "@odata.context"?: string;
   Error: string;
   UpdatedRootNode: string;
 }
@@ -45,8 +48,7 @@ export class _SaveServiceTreeDataAction implements Executable<_SaveServiceTreeDa
   }
 
   async parseResponse(response: Response): Promise<_SaveServiceTreeDataResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as _SaveServiceTreeDataResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as _SaveServiceTreeDataResponse;
   }
 }

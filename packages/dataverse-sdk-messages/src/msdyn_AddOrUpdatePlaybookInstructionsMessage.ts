@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_AddOrUpdatePlaybookInstructionsResponse as msdyn_AddOrUpdatePlaybookInstructionsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_AddOrUpdatePlaybookInstructions message, by their CSDL names. A parameter the CSDL declares
@@ -45,24 +43,36 @@ export class msdyn_AddOrUpdatePlaybookInstructionsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_AddOrUpdatePlaybookInstructionsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_AddOrUpdatePlaybookInstructionsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_AddOrUpdatePlaybookInstructionsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_AddOrUpdatePlaybookInstructions action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_AddOrUpdatePlaybookInstructionsResult {
+  "@odata.context"?: string;
+  msdyn_ErrorResult: string;
+  msdyn_SuccessResult: boolean;
+}
+
+/**
  * msdyn_AddOrUpdatePlaybookInstructions response message
+ *
+ * `result` is the value the msdyn_AddOrUpdatePlaybookInstructions action returns (see {@link msdyn_AddOrUpdatePlaybookInstructionsResult}).
  */
 export class msdyn_AddOrUpdatePlaybookInstructionsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_AddOrUpdatePlaybookInstructionsResponseData) {
+  constructor(public result: msdyn_AddOrUpdatePlaybookInstructionsResult) {
     super("msdyn_AddOrUpdatePlaybookInstructions");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_AddOrUpdatePlaybookInstructionsResponse {
     return new msdyn_AddOrUpdatePlaybookInstructionsResponse(
-      responseObject<msdyn_AddOrUpdatePlaybookInstructionsResponseData>(data)
+      data as msdyn_AddOrUpdatePlaybookInstructionsResult
     );
   }
 }

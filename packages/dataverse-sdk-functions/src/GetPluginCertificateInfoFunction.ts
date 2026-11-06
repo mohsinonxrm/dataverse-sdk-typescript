@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from GetPluginCertificateInfo function
+ * Response from the GetPluginCertificateInfo function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface GetPluginCertificateInfoResponse {
+  "@odata.context"?: string;
   CertificateHash: string;
   CertificateSegment: string;
   CertificateSegmentV2: string;
@@ -60,8 +63,7 @@ export class GetPluginCertificateInfoFunction implements Executable<GetPluginCer
   }
 
   async parseResponse(response: Response): Promise<GetPluginCertificateInfoResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as GetPluginCertificateInfoResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as GetPluginCertificateInfoResponse;
   }
 }

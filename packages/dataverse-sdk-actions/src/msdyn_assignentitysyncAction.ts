@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_assignentitysync action
+ * Response from the msdyn_assignentitysync action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_assignentitysyncResponse {
+  "@odata.context"?: string;
   AssignmentPassed: boolean;
 }
 
@@ -46,8 +49,7 @@ export class msdyn_assignentitysyncAction implements Executable<msdyn_assignenti
   }
 
   async parseResponse(response: Response): Promise<msdyn_assignentitysyncResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_assignentitysyncResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_assignentitysyncResponse;
   }
 }

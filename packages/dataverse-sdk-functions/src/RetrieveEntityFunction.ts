@@ -3,9 +3,12 @@ import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { ComplexEntityMetadata, EntityFilters } from "./types/index.js";
 
 /**
- * Response from RetrieveEntity function
+ * Response from the RetrieveEntity function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveEntityResponse {
+  "@odata.context"?: string;
   EntityMetadata: ComplexEntityMetadata;
 }
 
@@ -74,8 +77,7 @@ export class RetrieveEntityFunction implements Executable<RetrieveEntityResponse
   }
 
   async parseResponse(response: Response): Promise<RetrieveEntityResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveEntityResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RetrieveEntityResponse;
   }
 }

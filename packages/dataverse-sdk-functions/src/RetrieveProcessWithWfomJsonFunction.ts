@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from RetrieveProcessWithWfomJson function
+ * Response from the RetrieveProcessWithWfomJson function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveProcessWithWfomJsonResponse {
+  "@odata.context"?: string;
   WfomJson: string;
 }
 
@@ -32,8 +35,7 @@ export class RetrieveProcessWithWfomJsonFunction implements Executable<RetrieveP
   }
 
   async parseResponse(response: Response): Promise<RetrieveProcessWithWfomJsonResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveProcessWithWfomJsonResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RetrieveProcessWithWfomJsonResponse;
   }
 }

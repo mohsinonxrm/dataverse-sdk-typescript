@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_CreateEvaluationsForTriggerResponse as msdyn_CreateEvaluationsForTriggerResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CreateEvaluationsForTrigger message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,35 @@ export class msdyn_CreateEvaluationsForTriggerRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateEvaluationsForTriggerResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_CreateEvaluationsForTriggerResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CreateEvaluationsForTriggerResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CreateEvaluationsForTrigger action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CreateEvaluationsForTriggerResult {
+  "@odata.context"?: string;
+  msdyn_EvaluationIds: string;
+}
+
+/**
  * msdyn_CreateEvaluationsForTrigger response message
+ *
+ * `result` is the value the msdyn_CreateEvaluationsForTrigger action returns (see {@link msdyn_CreateEvaluationsForTriggerResult}).
  */
 export class msdyn_CreateEvaluationsForTriggerResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CreateEvaluationsForTriggerResponseData) {
+  constructor(public result: msdyn_CreateEvaluationsForTriggerResult) {
     super("msdyn_CreateEvaluationsForTrigger");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CreateEvaluationsForTriggerResponse {
     return new msdyn_CreateEvaluationsForTriggerResponse(
-      responseObject<msdyn_CreateEvaluationsForTriggerResponseData>(data)
+      data as msdyn_CreateEvaluationsForTriggerResult
     );
   }
 }

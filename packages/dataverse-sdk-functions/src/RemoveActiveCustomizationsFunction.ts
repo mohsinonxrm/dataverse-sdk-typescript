@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from RemoveActiveCustomizations function
+ * Response from the RemoveActiveCustomizations function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RemoveActiveCustomizationsResponse {
+  "@odata.context"?: string;
   Result: boolean;
 }
 
@@ -56,8 +59,7 @@ export class RemoveActiveCustomizationsFunction implements Executable<RemoveActi
   }
 
   async parseResponse(response: Response): Promise<RemoveActiveCustomizationsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RemoveActiveCustomizationsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RemoveActiveCustomizationsResponse;
   }
 }

@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from PvaCreateContentSnapshot action
+ * Response from the PvaCreateContentSnapshot action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface PvaCreateContentSnapshotResponse {
+  "@odata.context"?: string;
   SnapshotId: string;
 }
 
@@ -32,8 +35,7 @@ export class PvaCreateContentSnapshotAction implements Executable<PvaCreateConte
   }
 
   async parseResponse(response: Response): Promise<PvaCreateContentSnapshotResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as PvaCreateContentSnapshotResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as PvaCreateContentSnapshotResponse;
   }
 }

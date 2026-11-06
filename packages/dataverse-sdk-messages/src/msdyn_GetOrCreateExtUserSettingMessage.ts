@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_GetOrCreateExtUserSettingResponse as msdyn_GetOrCreateExtUserSettingResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetOrCreateExtUserSetting request message
@@ -29,23 +27,35 @@ export class msdyn_GetOrCreateExtUserSettingRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetOrCreateExtUserSettingResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetOrCreateExtUserSettingResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetOrCreateExtUserSettingResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetOrCreateExtUserSetting action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetOrCreateExtUserSettingResult {
+  "@odata.context"?: string;
+  ExtUserSettingRecordId: string;
+}
+
+/**
  * msdyn_GetOrCreateExtUserSetting response message
+ *
+ * `result` is the value the msdyn_GetOrCreateExtUserSetting action returns (see {@link msdyn_GetOrCreateExtUserSettingResult}).
  */
 export class msdyn_GetOrCreateExtUserSettingResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetOrCreateExtUserSettingResponseData) {
+  constructor(public result: msdyn_GetOrCreateExtUserSettingResult) {
     super("msdyn_GetOrCreateExtUserSetting");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetOrCreateExtUserSettingResponse {
     return new msdyn_GetOrCreateExtUserSettingResponse(
-      responseObject<msdyn_GetOrCreateExtUserSettingResponseData>(data)
+      data as msdyn_GetOrCreateExtUserSettingResult
     );
   }
 }

@@ -52,9 +52,9 @@ export class msdyn_SendRecordEventUpdateRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_SendRecordEventUpdateResponse> {
+  parseResponse(_response: Response): Promise<msdyn_SendRecordEventUpdateResponse> {
     // No return value (204 No Content)
-    return new msdyn_SendRecordEventUpdateResponse();
+    return Promise.resolve(new msdyn_SendRecordEventUpdateResponse());
   }
 }
 
@@ -66,7 +66,7 @@ export class msdyn_SendRecordEventUpdateResponse extends OrganizationResponse {
     super("msdyn_SendRecordEventUpdate");
   }
 
-  static fromResponse(_data: unknown): msdyn_SendRecordEventUpdateResponse {
+  static fromResponse(_data?: unknown): msdyn_SendRecordEventUpdateResponse {
     return new msdyn_SendRecordEventUpdateResponse();
   }
 }

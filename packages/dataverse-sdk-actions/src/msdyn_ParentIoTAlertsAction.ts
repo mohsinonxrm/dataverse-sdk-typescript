@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_ParentIoTAlerts action
+ * Response from the msdyn_ParentIoTAlerts action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_ParentIoTAlertsResponse {
-  // No content returned
-}
+export type msdyn_ParentIoTAlertsResponse = void;
 
 /**
  * Parameters of the msdyn_ParentIoTAlerts action, by their CSDL names. A parameter the CSDL declares
@@ -48,9 +48,8 @@ export class msdyn_ParentIoTAlertsAction implements Executable<msdyn_ParentIoTAl
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ParentIoTAlertsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_ParentIoTAlertsResponse;
-    return (await response.json()) as msdyn_ParentIoTAlertsResponse;
+  parseResponse(_response: Response): Promise<msdyn_ParentIoTAlertsResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

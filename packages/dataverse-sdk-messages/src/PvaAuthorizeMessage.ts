@@ -52,9 +52,9 @@ export class PvaAuthorizeRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<PvaAuthorizeResponse> {
+  parseResponse(_response: Response): Promise<PvaAuthorizeResponse> {
     // No return value (204 No Content)
-    return new PvaAuthorizeResponse();
+    return Promise.resolve(new PvaAuthorizeResponse());
   }
 }
 
@@ -66,7 +66,7 @@ export class PvaAuthorizeResponse extends OrganizationResponse {
     super("PvaAuthorize");
   }
 
-  static fromResponse(_data: unknown): PvaAuthorizeResponse {
+  static fromResponse(_data?: unknown): PvaAuthorizeResponse {
     return new PvaAuthorizeResponse();
   }
 }

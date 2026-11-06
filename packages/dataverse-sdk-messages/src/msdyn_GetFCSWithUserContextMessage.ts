@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetFCSWithUserContextResponse as msdyn_GetFCSWithUserContextResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetFCSWithUserContext message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,33 @@ export class msdyn_GetFCSWithUserContextRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetFCSWithUserContextResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetFCSWithUserContextResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetFCSWithUserContextResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetFCSWithUserContext action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetFCSWithUserContextResult {
+  "@odata.context"?: string;
+  msdyn_GetFCSWithUserContextOutput: string;
+}
+
+/**
  * msdyn_GetFCSWithUserContext response message
+ *
+ * `result` is the value the msdyn_GetFCSWithUserContext action returns (see {@link msdyn_GetFCSWithUserContextResult}).
  */
 export class msdyn_GetFCSWithUserContextResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetFCSWithUserContextResponseData) {
+  constructor(public result: msdyn_GetFCSWithUserContextResult) {
     super("msdyn_GetFCSWithUserContext");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetFCSWithUserContextResponse {
-    return new msdyn_GetFCSWithUserContextResponse(
-      responseObject<msdyn_GetFCSWithUserContextResponseData>(data)
-    );
+    return new msdyn_GetFCSWithUserContextResponse(data as msdyn_GetFCSWithUserContextResult);
   }
 }

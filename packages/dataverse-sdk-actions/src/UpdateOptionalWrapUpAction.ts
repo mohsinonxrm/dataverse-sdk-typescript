@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from UpdateOptionalWrapUp action
+ * Response from the UpdateOptionalWrapUp action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface UpdateOptionalWrapUpResponse {
-  // No content returned
-}
+export type UpdateOptionalWrapUpResponse = void;
 
 /**
  * Parameters of the UpdateOptionalWrapUp action, by their CSDL names. A parameter the CSDL declares
@@ -50,9 +50,8 @@ export class UpdateOptionalWrapUpAction implements Executable<UpdateOptionalWrap
     };
   }
 
-  async parseResponse(response: Response): Promise<UpdateOptionalWrapUpResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as UpdateOptionalWrapUpResponse;
-    return (await response.json()) as UpdateOptionalWrapUpResponse;
+  parseResponse(_response: Response): Promise<UpdateOptionalWrapUpResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

@@ -42,9 +42,9 @@ export class msdyn_ResetOmnichannelProviderRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ResetOmnichannelProviderResponse> {
+  parseResponse(_response: Response): Promise<msdyn_ResetOmnichannelProviderResponse> {
     // No return value (204 No Content)
-    return new msdyn_ResetOmnichannelProviderResponse();
+    return Promise.resolve(new msdyn_ResetOmnichannelProviderResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_ResetOmnichannelProviderResponse extends OrganizationResponse
     super("msdyn_ResetOmnichannelProvider");
   }
 
-  static fromResponse(_data: unknown): msdyn_ResetOmnichannelProviderResponse {
+  static fromResponse(_data?: unknown): msdyn_ResetOmnichannelProviderResponse {
     return new msdyn_ResetOmnichannelProviderResponse();
   }
 }

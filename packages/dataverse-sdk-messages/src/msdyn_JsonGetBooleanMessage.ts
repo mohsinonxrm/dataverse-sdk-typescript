@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_JsonGetBooleanResponse as msdyn_JsonGetBooleanResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_JsonGetBoolean message, by their CSDL names. A parameter the CSDL declares
@@ -49,21 +47,33 @@ export class msdyn_JsonGetBooleanRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_JsonGetBooleanResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_JsonGetBooleanResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_JsonGetBooleanResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_JsonGetBoolean action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_JsonGetBooleanResult {
+  "@odata.context"?: string;
+  Value: boolean;
+}
+
+/**
  * msdyn_JsonGetBoolean response message
+ *
+ * `result` is the value the msdyn_JsonGetBoolean action returns (see {@link msdyn_JsonGetBooleanResult}).
  */
 export class msdyn_JsonGetBooleanResponse extends OrganizationResponse {
-  constructor(public result: msdyn_JsonGetBooleanResponseData) {
+  constructor(public result: msdyn_JsonGetBooleanResult) {
     super("msdyn_JsonGetBoolean");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_JsonGetBooleanResponse {
-    return new msdyn_JsonGetBooleanResponse(responseObject<msdyn_JsonGetBooleanResponseData>(data));
+    return new msdyn_JsonGetBooleanResponse(data as msdyn_JsonGetBooleanResult);
   }
 }

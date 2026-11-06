@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from UpdateAccountCredentials action
+ * Response from the UpdateAccountCredentials action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface UpdateAccountCredentialsResponse {
-  // No content returned
-}
+export type UpdateAccountCredentialsResponse = void;
 
 /**
  * Parameters of the UpdateAccountCredentials action, by their CSDL names. A parameter the CSDL declares
@@ -48,9 +48,8 @@ export class UpdateAccountCredentialsAction implements Executable<UpdateAccountC
     };
   }
 
-  async parseResponse(response: Response): Promise<UpdateAccountCredentialsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as UpdateAccountCredentialsResponse;
-    return (await response.json()) as UpdateAccountCredentialsResponse;
+  parseResponse(_response: Response): Promise<UpdateAccountCredentialsResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

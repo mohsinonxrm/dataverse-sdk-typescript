@@ -48,9 +48,9 @@ export class UpdateSolutionComponentRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<UpdateSolutionComponentResponse> {
+  parseResponse(_response: Response): Promise<UpdateSolutionComponentResponse> {
     // No return value (204 No Content)
-    return new UpdateSolutionComponentResponse();
+    return Promise.resolve(new UpdateSolutionComponentResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class UpdateSolutionComponentResponse extends OrganizationResponse {
     super("UpdateSolutionComponent");
   }
 
-  static fromResponse(_data: unknown): UpdateSolutionComponentResponse {
+  static fromResponse(_data?: unknown): UpdateSolutionComponentResponse {
     return new UpdateSolutionComponentResponse();
   }
 }

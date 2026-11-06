@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_AutoCloseExpiredConversations action
+ * Response from the msdyn_AutoCloseExpiredConversations action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_AutoCloseExpiredConversationsResponse {
-  // No content returned
-}
+export type msdyn_AutoCloseExpiredConversationsResponse = void;
 
 /**
  * msdyn_AutoCloseExpiredConversations action
@@ -25,9 +25,8 @@ export class msdyn_AutoCloseExpiredConversationsAction implements Executable<msd
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_AutoCloseExpiredConversationsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_AutoCloseExpiredConversationsResponse;
-    return (await response.json()) as msdyn_AutoCloseExpiredConversationsResponse;
+  parseResponse(_response: Response): Promise<msdyn_AutoCloseExpiredConversationsResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

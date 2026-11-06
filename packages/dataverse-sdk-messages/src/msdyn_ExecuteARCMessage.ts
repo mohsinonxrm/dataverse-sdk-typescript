@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { msdyn_ExecuteARCResponse as msdyn_ExecuteARCResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_ExecuteARC message, by their CSDL names. A parameter the CSDL declares
@@ -49,21 +47,34 @@ export class msdyn_ExecuteARCRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ExecuteARCResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_ExecuteARCResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_ExecuteARCResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_ExecuteARC action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_ExecuteARCResult {
+  "@odata.context"?: string;
+  ErrorMessage: string;
+  FlowName: string;
+}
+
+/**
  * msdyn_ExecuteARC response message
+ *
+ * `result` is the value the msdyn_ExecuteARC action returns (see {@link msdyn_ExecuteARCResult}).
  */
 export class msdyn_ExecuteARCResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ExecuteARCResponseData) {
+  constructor(public result: msdyn_ExecuteARCResult) {
     super("msdyn_ExecuteARC");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_ExecuteARCResponse {
-    return new msdyn_ExecuteARCResponse(responseObject<msdyn_ExecuteARCResponseData>(data));
+    return new msdyn_ExecuteARCResponse(data as msdyn_ExecuteARCResult);
   }
 }

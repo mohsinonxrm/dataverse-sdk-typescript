@@ -29,9 +29,9 @@ export class msdyn_UpdateSurveyBotTopicsRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_UpdateSurveyBotTopicsResponse> {
+  parseResponse(_response: Response): Promise<msdyn_UpdateSurveyBotTopicsResponse> {
     // No return value (204 No Content)
-    return new msdyn_UpdateSurveyBotTopicsResponse();
+    return Promise.resolve(new msdyn_UpdateSurveyBotTopicsResponse());
   }
 }
 
@@ -43,7 +43,7 @@ export class msdyn_UpdateSurveyBotTopicsResponse extends OrganizationResponse {
     super("msdyn_UpdateSurveyBotTopics");
   }
 
-  static fromResponse(_data: unknown): msdyn_UpdateSurveyBotTopicsResponse {
+  static fromResponse(_data?: unknown): msdyn_UpdateSurveyBotTopicsResponse {
     return new msdyn_UpdateSurveyBotTopicsResponse();
   }
 }

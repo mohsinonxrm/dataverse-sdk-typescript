@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_CheckOrgSettingOOBPriceCalculationEnabledResponse as msdyn_CheckOrgSettingOOBPriceCalculationEnabledResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckOrgSettingOOBPriceCalculationEnabled request message
@@ -31,9 +29,7 @@ export class msdyn_CheckOrgSettingOOBPriceCalculationEnabledRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckOrgSettingOOBPriceCalculationEnabledResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_CheckOrgSettingOOBPriceCalculationEnabledResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CheckOrgSettingOOBPriceCalculationEnabledResponse.fromResponse(
       await response.json()
     );
@@ -41,16 +37,33 @@ export class msdyn_CheckOrgSettingOOBPriceCalculationEnabledRequest
 }
 
 /**
+ * Response from the msdyn_CheckOrgSettingOOBPriceCalculationEnabled action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CheckOrgSettingOOBPriceCalculationEnabledResult {
+  "@odata.context"?: string;
+  HelpLink: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnSeverity: number;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_CheckOrgSettingOOBPriceCalculationEnabled response message
+ *
+ * `result` is the value the msdyn_CheckOrgSettingOOBPriceCalculationEnabled action returns (see {@link msdyn_CheckOrgSettingOOBPriceCalculationEnabledResult}).
  */
 export class msdyn_CheckOrgSettingOOBPriceCalculationEnabledResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckOrgSettingOOBPriceCalculationEnabledResponseData) {
+  constructor(public result: msdyn_CheckOrgSettingOOBPriceCalculationEnabledResult) {
     super("msdyn_CheckOrgSettingOOBPriceCalculationEnabled");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CheckOrgSettingOOBPriceCalculationEnabledResponse {
     return new msdyn_CheckOrgSettingOOBPriceCalculationEnabledResponse(
-      responseObject<msdyn_CheckOrgSettingOOBPriceCalculationEnabledResponseData>(data)
+      data as msdyn_CheckOrgSettingOOBPriceCalculationEnabledResult
     );
   }
 }

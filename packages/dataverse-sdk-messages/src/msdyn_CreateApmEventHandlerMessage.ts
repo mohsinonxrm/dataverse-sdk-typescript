@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_CreateApmEventHandlerResponse as msdyn_CreateApmEventHandlerResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CreateApmEventHandler message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,33 @@ export class msdyn_CreateApmEventHandlerRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateApmEventHandlerResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_CreateApmEventHandlerResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CreateApmEventHandlerResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CreateApmEventHandler action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CreateApmEventHandlerResult {
+  "@odata.context"?: string;
+  UpdateAppModuleResponse: string;
+}
+
+/**
  * msdyn_CreateApmEventHandler response message
+ *
+ * `result` is the value the msdyn_CreateApmEventHandler action returns (see {@link msdyn_CreateApmEventHandlerResult}).
  */
 export class msdyn_CreateApmEventHandlerResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CreateApmEventHandlerResponseData) {
+  constructor(public result: msdyn_CreateApmEventHandlerResult) {
     super("msdyn_CreateApmEventHandler");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CreateApmEventHandlerResponse {
-    return new msdyn_CreateApmEventHandlerResponse(
-      responseObject<msdyn_CreateApmEventHandlerResponseData>(data)
-    );
+    return new msdyn_CreateApmEventHandlerResponse(data as msdyn_CreateApmEventHandlerResult);
   }
 }

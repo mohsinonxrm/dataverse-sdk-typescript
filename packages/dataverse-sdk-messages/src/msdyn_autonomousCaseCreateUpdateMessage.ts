@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_autonomousCaseCreateUpdateResponse as msdyn_autonomousCaseCreateUpdateResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_autonomousCaseCreateUpdate message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,35 @@ export class msdyn_autonomousCaseCreateUpdateRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_autonomousCaseCreateUpdateResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_autonomousCaseCreateUpdateResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_autonomousCaseCreateUpdateResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_autonomousCaseCreateUpdate action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_autonomousCaseCreateUpdateResult {
+  "@odata.context"?: string;
+  autonomousCaseResponse: string;
+}
+
+/**
  * msdyn_autonomousCaseCreateUpdate response message
+ *
+ * `result` is the value the msdyn_autonomousCaseCreateUpdate action returns (see {@link msdyn_autonomousCaseCreateUpdateResult}).
  */
 export class msdyn_autonomousCaseCreateUpdateResponse extends OrganizationResponse {
-  constructor(public result: msdyn_autonomousCaseCreateUpdateResponseData) {
+  constructor(public result: msdyn_autonomousCaseCreateUpdateResult) {
     super("msdyn_autonomousCaseCreateUpdate");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_autonomousCaseCreateUpdateResponse {
     return new msdyn_autonomousCaseCreateUpdateResponse(
-      responseObject<msdyn_autonomousCaseCreateUpdateResponseData>(data)
+      data as msdyn_autonomousCaseCreateUpdateResult
     );
   }
 }

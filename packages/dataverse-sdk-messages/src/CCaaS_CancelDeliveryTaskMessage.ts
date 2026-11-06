@@ -44,9 +44,9 @@ export class CCaaS_CancelDeliveryTaskRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_CancelDeliveryTaskResponse> {
+  parseResponse(_response: Response): Promise<CCaaS_CancelDeliveryTaskResponse> {
     // No return value (204 No Content)
-    return new CCaaS_CancelDeliveryTaskResponse();
+    return Promise.resolve(new CCaaS_CancelDeliveryTaskResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class CCaaS_CancelDeliveryTaskResponse extends OrganizationResponse {
     super("CCaaS_CancelDeliveryTask");
   }
 
-  static fromResponse(_data: unknown): CCaaS_CancelDeliveryTaskResponse {
+  static fromResponse(_data?: unknown): CCaaS_CancelDeliveryTaskResponse {
     return new CCaaS_CancelDeliveryTaskResponse();
   }
 }

@@ -46,9 +46,9 @@ export class CCaaS_CreateProactiveSimpleJourneyRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_CreateProactiveSimpleJourneyResponse> {
+  parseResponse(_response: Response): Promise<CCaaS_CreateProactiveSimpleJourneyResponse> {
     // No return value (204 No Content)
-    return new CCaaS_CreateProactiveSimpleJourneyResponse();
+    return Promise.resolve(new CCaaS_CreateProactiveSimpleJourneyResponse());
   }
 }
 
@@ -60,7 +60,7 @@ export class CCaaS_CreateProactiveSimpleJourneyResponse extends OrganizationResp
     super("CCaaS_CreateProactiveSimpleJourney");
   }
 
-  static fromResponse(_data: unknown): CCaaS_CreateProactiveSimpleJourneyResponse {
+  static fromResponse(_data?: unknown): CCaaS_CreateProactiveSimpleJourneyResponse {
     return new CCaaS_CreateProactiveSimpleJourneyResponse();
   }
 }

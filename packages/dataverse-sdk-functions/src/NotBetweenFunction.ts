@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from NotBetween function
+ * Response from the NotBetween function.
+ *
+ * The value, read from the `value` of the response body.
  */
-export interface NotBetweenResponse {
-  value: boolean;
-}
+export type NotBetweenResponse = boolean;
 
 /**
  * Parameters of the NotBetween function, by their CSDL names. A parameter the CSDL declares
@@ -53,8 +53,7 @@ export class NotBetweenFunction implements Executable<NotBetweenResponse> {
   }
 
   async parseResponse(response: Response): Promise<NotBetweenResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as NotBetweenResponse;
-    return (await response.json()) as NotBetweenResponse;
+    // A primitive comes wrapped: { "@odata.context": "…", "value": … }
+    return ((await response.json()) as { value: NotBetweenResponse }).value;
   }
 }

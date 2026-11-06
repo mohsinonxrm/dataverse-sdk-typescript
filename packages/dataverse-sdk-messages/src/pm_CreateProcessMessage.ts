@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { pm_CreateProcessResponse as pm_CreateProcessResponseData } from "./types/index.js";
 
 /**
  * Parameters of the pm_CreateProcess message, by their CSDL names. A parameter the CSDL declares
@@ -51,21 +49,33 @@ export class pm_CreateProcessRequest
   }
 
   async parseResponse(response: Response): Promise<pm_CreateProcessResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return pm_CreateProcessResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return pm_CreateProcessResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the pm_CreateProcess action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface pm_CreateProcessResult {
+  "@odata.context"?: string;
+  processId: string;
+}
+
+/**
  * pm_CreateProcess response message
+ *
+ * `result` is the value the pm_CreateProcess action returns (see {@link pm_CreateProcessResult}).
  */
 export class pm_CreateProcessResponse extends OrganizationResponse {
-  constructor(public result: pm_CreateProcessResponseData) {
+  constructor(public result: pm_CreateProcessResult) {
     super("pm_CreateProcess");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): pm_CreateProcessResponse {
-    return new pm_CreateProcessResponse(responseObject<pm_CreateProcessResponseData>(data));
+    return new pm_CreateProcessResponse(data as pm_CreateProcessResult);
   }
 }

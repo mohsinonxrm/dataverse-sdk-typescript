@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_ExternalContextUploadTranscriptBlocksResponse as msdyn_ExternalContextUploadTranscriptBlocksResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_ExternalContextUploadTranscriptBlocks message, by their CSDL names. A parameter the CSDL declares
@@ -55,24 +53,35 @@ export class msdyn_ExternalContextUploadTranscriptBlocksRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_ExternalContextUploadTranscriptBlocksResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_ExternalContextUploadTranscriptBlocksResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_ExternalContextUploadTranscriptBlocksResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_ExternalContextUploadTranscriptBlocks action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_ExternalContextUploadTranscriptBlocksResult {
+  "@odata.context"?: string;
+  BlockList: string[];
+}
+
+/**
  * msdyn_ExternalContextUploadTranscriptBlocks response message
+ *
+ * `result` is the value the msdyn_ExternalContextUploadTranscriptBlocks action returns (see {@link msdyn_ExternalContextUploadTranscriptBlocksResult}).
  */
 export class msdyn_ExternalContextUploadTranscriptBlocksResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ExternalContextUploadTranscriptBlocksResponseData) {
+  constructor(public result: msdyn_ExternalContextUploadTranscriptBlocksResult) {
     super("msdyn_ExternalContextUploadTranscriptBlocks");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_ExternalContextUploadTranscriptBlocksResponse {
     return new msdyn_ExternalContextUploadTranscriptBlocksResponse(
-      responseObject<msdyn_ExternalContextUploadTranscriptBlocksResponseData>(data)
+      data as msdyn_ExternalContextUploadTranscriptBlocksResult
     );
   }
 }

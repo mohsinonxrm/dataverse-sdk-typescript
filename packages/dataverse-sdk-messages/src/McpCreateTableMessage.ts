@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { McpCreateTableResponse as McpCreateTableResponseData } from "./types/index.js";
 
 /**
  * Parameters of the McpCreateTable message, by their CSDL names. A parameter the CSDL declares
@@ -53,21 +51,34 @@ export class McpCreateTableRequest
   }
 
   async parseResponse(response: Response): Promise<McpCreateTableResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return McpCreateTableResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return McpCreateTableResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the McpCreateTable action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface McpCreateTableResult {
+  "@odata.context"?: string;
+  successMessage: string;
+  usage: string;
+}
+
+/**
  * McpCreateTable response message
+ *
+ * `result` is the value the McpCreateTable action returns (see {@link McpCreateTableResult}).
  */
 export class McpCreateTableResponse extends OrganizationResponse {
-  constructor(public result: McpCreateTableResponseData) {
+  constructor(public result: McpCreateTableResult) {
     super("McpCreateTable");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): McpCreateTableResponse {
-    return new McpCreateTableResponse(responseObject<McpCreateTableResponseData>(data));
+    return new McpCreateTableResponse(data as McpCreateTableResult);
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { PredictByReferenceResponse as PredictByReferenceResponseData } from "./types/index.js";
 
 /**
  * Parameters of the PredictByReference message, by their CSDL names. A parameter the CSDL declares
@@ -53,21 +51,33 @@ export class PredictByReferenceRequest
   }
 
   async parseResponse(response: Response): Promise<PredictByReferenceResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return PredictByReferenceResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return PredictByReferenceResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the PredictByReference action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface PredictByReferenceResult {
+  "@odata.context"?: string;
+  response: string;
+}
+
+/**
  * PredictByReference response message
+ *
+ * `result` is the value the PredictByReference action returns (see {@link PredictByReferenceResult}).
  */
 export class PredictByReferenceResponse extends OrganizationResponse {
-  constructor(public result: PredictByReferenceResponseData) {
+  constructor(public result: PredictByReferenceResult) {
     super("PredictByReference");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): PredictByReferenceResponse {
-    return new PredictByReferenceResponse(responseObject<PredictByReferenceResponseData>(data));
+    return new PredictByReferenceResponse(data as PredictByReferenceResult);
   }
 }

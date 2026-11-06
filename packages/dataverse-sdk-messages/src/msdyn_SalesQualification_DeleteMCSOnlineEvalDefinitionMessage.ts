@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesQualification_DeleteMCSOnlineEvalDefinitionResponse as msdyn_SalesQualification_DeleteMCSOnlineEvalDefinitionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesQualification_DeleteMCSOnlineEvalDefinition message, by their CSDL names. A parameter the CSDL declares
@@ -49,9 +47,7 @@ export class msdyn_SalesQualification_DeleteMCSOnlineEvalDefinitionRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesQualification_DeleteMCSOnlineEvalDefinitionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_SalesQualification_DeleteMCSOnlineEvalDefinitionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesQualification_DeleteMCSOnlineEvalDefinitionResponse.fromResponse(
       await response.json()
     );
@@ -59,18 +55,32 @@ export class msdyn_SalesQualification_DeleteMCSOnlineEvalDefinitionRequest
 }
 
 /**
+ * Response from the msdyn_SalesQualification_DeleteMCSOnlineEvalDefinition action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesQualification_DeleteMCSOnlineEvalDefinitionResult {
+  "@odata.context"?: string;
+  ErrorMessage: string;
+  IsSuccess: boolean;
+}
+
+/**
  * msdyn_SalesQualification_DeleteMCSOnlineEvalDefinition response message
+ *
+ * `result` is the value the msdyn_SalesQualification_DeleteMCSOnlineEvalDefinition action returns (see {@link msdyn_SalesQualification_DeleteMCSOnlineEvalDefinitionResult}).
  */
 export class msdyn_SalesQualification_DeleteMCSOnlineEvalDefinitionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesQualification_DeleteMCSOnlineEvalDefinitionResponseData) {
+  constructor(public result: msdyn_SalesQualification_DeleteMCSOnlineEvalDefinitionResult) {
     super("msdyn_SalesQualification_DeleteMCSOnlineEvalDefinition");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(
     data: unknown
   ): msdyn_SalesQualification_DeleteMCSOnlineEvalDefinitionResponse {
     return new msdyn_SalesQualification_DeleteMCSOnlineEvalDefinitionResponse(
-      responseObject<msdyn_SalesQualification_DeleteMCSOnlineEvalDefinitionResponseData>(data)
+      data as msdyn_SalesQualification_DeleteMCSOnlineEvalDefinitionResult
     );
   }
 }

@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_TeamsChannelCleanup action
+ * Response from the msdyn_TeamsChannelCleanup action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_TeamsChannelCleanupResponse {
-  // No content returned
-}
+export type msdyn_TeamsChannelCleanupResponse = void;
 
 /**
  * msdyn_TeamsChannelCleanup action
@@ -25,9 +25,8 @@ export class msdyn_TeamsChannelCleanupAction implements Executable<msdyn_TeamsCh
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_TeamsChannelCleanupResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_TeamsChannelCleanupResponse;
-    return (await response.json()) as msdyn_TeamsChannelCleanupResponse;
+  parseResponse(_response: Response): Promise<msdyn_TeamsChannelCleanupResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

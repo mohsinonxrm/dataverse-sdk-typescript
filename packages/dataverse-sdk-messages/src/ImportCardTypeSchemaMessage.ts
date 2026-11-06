@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { ImportCardTypeSchemaResponse as ImportCardTypeSchemaResponseData } from "./types/index.js";
 
 /**
  * Parameters of the ImportCardTypeSchema message, by their CSDL names. A parameter the CSDL declares
@@ -45,21 +43,33 @@ export class ImportCardTypeSchemaRequest
   }
 
   async parseResponse(response: Response): Promise<ImportCardTypeSchemaResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return ImportCardTypeSchemaResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return ImportCardTypeSchemaResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the ImportCardTypeSchema action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface ImportCardTypeSchemaResult {
+  "@odata.context"?: string;
+  GUID: string;
+}
+
+/**
  * ImportCardTypeSchema response message
+ *
+ * `result` is the value the ImportCardTypeSchema action returns (see {@link ImportCardTypeSchemaResult}).
  */
 export class ImportCardTypeSchemaResponse extends OrganizationResponse {
-  constructor(public result: ImportCardTypeSchemaResponseData) {
+  constructor(public result: ImportCardTypeSchemaResult) {
     super("ImportCardTypeSchema");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): ImportCardTypeSchemaResponse {
-    return new ImportCardTypeSchemaResponse(responseObject<ImportCardTypeSchemaResponseData>(data));
+    return new ImportCardTypeSchemaResponse(data as ImportCardTypeSchemaResult);
   }
 }

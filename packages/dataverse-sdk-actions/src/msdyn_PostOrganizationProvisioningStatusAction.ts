@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_PostOrganizationProvisioningStatus action
+ * Response from the msdyn_PostOrganizationProvisioningStatus action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_PostOrganizationProvisioningStatusResponse {
-  // No content returned
-}
+export type msdyn_PostOrganizationProvisioningStatusResponse = void;
 
 /**
  * Parameters of the msdyn_PostOrganizationProvisioningStatus action, by their CSDL names. A parameter the CSDL declares
@@ -47,11 +47,8 @@ export class msdyn_PostOrganizationProvisioningStatusAction implements Executabl
     };
   }
 
-  async parseResponse(
-    response: Response
-  ): Promise<msdyn_PostOrganizationProvisioningStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_PostOrganizationProvisioningStatusResponse;
-    return (await response.json()) as msdyn_PostOrganizationProvisioningStatusResponse;
+  parseResponse(_response: Response): Promise<msdyn_PostOrganizationProvisioningStatusResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

@@ -2,14 +2,13 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import type { product } from "./types/index.js";
 
 /**
- * Response from CloneProduct action
+ * Response from the CloneProduct action.
  *
- * The response is the entity itself, not wrapped in `value`.
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface CloneProductResponse extends product {
-  "@odata.context"?: string;
-  "@odata.etag"?: string;
-}
+export type CloneProductResponse =
+  (product & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string }) | null;
 
 /**
  * CloneProduct action
@@ -36,8 +35,9 @@ export class CloneProductAction implements Executable<CloneProductResponse> {
   }
 
   async parseResponse(response: Response): Promise<CloneProductResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CloneProductResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
     return (await response.json()) as CloneProductResponse;
   }
 }

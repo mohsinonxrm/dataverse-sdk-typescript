@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from RetrieveVersion function
+ * Response from the RetrieveVersion function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveVersionResponse {
+  "@odata.context"?: string;
   Version: string;
 }
 
@@ -26,8 +29,7 @@ export class RetrieveVersionFunction implements Executable<RetrieveVersionRespon
   }
 
   async parseResponse(response: Response): Promise<RetrieveVersionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveVersionResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RetrieveVersionResponse;
   }
 }

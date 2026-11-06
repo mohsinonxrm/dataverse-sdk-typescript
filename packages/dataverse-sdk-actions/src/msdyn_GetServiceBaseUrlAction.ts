@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_GetServiceBaseUrl action
+ * Response from the msdyn_GetServiceBaseUrl action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetServiceBaseUrlResponse {
+  "@odata.context"?: string;
   BaseUrl: string;
 }
 
@@ -44,8 +47,7 @@ export class msdyn_GetServiceBaseUrlAction implements Executable<msdyn_GetServic
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetServiceBaseUrlResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_GetServiceBaseUrlResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_GetServiceBaseUrlResponse;
   }
 }

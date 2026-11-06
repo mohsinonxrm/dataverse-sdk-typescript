@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CreateFlowCredentialApplicationResponse as CreateFlowCredentialApplicationResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CreateFlowCredentialApplication message, by their CSDL names. A parameter the CSDL declares
@@ -59,23 +57,35 @@ export class CreateFlowCredentialApplicationRequest
   }
 
   async parseResponse(response: Response): Promise<CreateFlowCredentialApplicationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CreateFlowCredentialApplicationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CreateFlowCredentialApplicationResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CreateFlowCredentialApplication action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CreateFlowCredentialApplicationResult {
+  "@odata.context"?: string;
+  flowCredentialApplicationId: string;
+}
+
+/**
  * CreateFlowCredentialApplication response message
+ *
+ * `result` is the value the CreateFlowCredentialApplication action returns (see {@link CreateFlowCredentialApplicationResult}).
  */
 export class CreateFlowCredentialApplicationResponse extends OrganizationResponse {
-  constructor(public result: CreateFlowCredentialApplicationResponseData) {
+  constructor(public result: CreateFlowCredentialApplicationResult) {
     super("CreateFlowCredentialApplication");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CreateFlowCredentialApplicationResponse {
     return new CreateFlowCredentialApplicationResponse(
-      responseObject<CreateFlowCredentialApplicationResponseData>(data)
+      data as CreateFlowCredentialApplicationResult
     );
   }
 }

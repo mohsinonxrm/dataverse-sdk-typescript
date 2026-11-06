@@ -48,9 +48,9 @@ export class msdyn_GDPROptoutContactRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_GDPROptoutContactResponse> {
+  parseResponse(_response: Response): Promise<msdyn_GDPROptoutContactResponse> {
     // No return value (204 No Content)
-    return new msdyn_GDPROptoutContactResponse();
+    return Promise.resolve(new msdyn_GDPROptoutContactResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class msdyn_GDPROptoutContactResponse extends OrganizationResponse {
     super("msdyn_GDPROptoutContact");
   }
 
-  static fromResponse(_data: unknown): msdyn_GDPROptoutContactResponse {
+  static fromResponse(_data?: unknown): msdyn_GDPROptoutContactResponse {
     return new msdyn_GDPROptoutContactResponse();
   }
 }

@@ -4,11 +4,11 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from ReassignObjectsSystemUser action
+ * Response from the ReassignObjectsSystemUser action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface ReassignObjectsSystemUserResponse {
-  // No content returned
-}
+export type ReassignObjectsSystemUserResponse = void;
 
 /**
  * Parameters of the ReassignObjectsSystemUser action, by their CSDL names. A parameter the CSDL declares
@@ -52,9 +52,8 @@ export class ReassignObjectsSystemUserAction implements Executable<ReassignObjec
     };
   }
 
-  async parseResponse(response: Response): Promise<ReassignObjectsSystemUserResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ReassignObjectsSystemUserResponse;
-    return (await response.json()) as ReassignObjectsSystemUserResponse;
+  parseResponse(_response: Response): Promise<ReassignObjectsSystemUserResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

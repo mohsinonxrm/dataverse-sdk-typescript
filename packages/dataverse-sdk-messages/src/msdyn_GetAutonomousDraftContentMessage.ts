@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { msdyn_GetAutonomousDraftContentResponse as msdyn_GetAutonomousDraftContentResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetAutonomousDraftContent message, by their CSDL names. A parameter the CSDL declares
@@ -67,23 +65,37 @@ export class msdyn_GetAutonomousDraftContentRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAutonomousDraftContentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetAutonomousDraftContentResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetAutonomousDraftContentResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetAutonomousDraftContent action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetAutonomousDraftContentResult {
+  "@odata.context"?: string;
+  Body: string;
+  Subject: string;
+  usage: string;
+}
+
+/**
  * msdyn_GetAutonomousDraftContent response message
+ *
+ * `result` is the value the msdyn_GetAutonomousDraftContent action returns (see {@link msdyn_GetAutonomousDraftContentResult}).
  */
 export class msdyn_GetAutonomousDraftContentResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetAutonomousDraftContentResponseData) {
+  constructor(public result: msdyn_GetAutonomousDraftContentResult) {
     super("msdyn_GetAutonomousDraftContent");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetAutonomousDraftContentResponse {
     return new msdyn_GetAutonomousDraftContentResponse(
-      responseObject<msdyn_GetAutonomousDraftContentResponseData>(data)
+      data as msdyn_GetAutonomousDraftContentResult
     );
   }
 }

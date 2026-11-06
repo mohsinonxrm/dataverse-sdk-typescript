@@ -1,12 +1,16 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 
 /**
- * Response from msdynmkt_RetrieveAllFeatureConfigurations action
+ * Response from the msdynmkt_RetrieveAllFeatureConfigurations action.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface msdynmkt_RetrieveAllFeatureConfigurationsResponse {
-  value: EntityReference[];
-}
+export type msdynmkt_RetrieveAllFeatureConfigurationsResponse = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
 
 /**
  * msdynmkt_RetrieveAllFeatureConfigurations action
@@ -29,8 +33,10 @@ export class msdynmkt_RetrieveAllFeatureConfigurationsAction implements Executab
   async parseResponse(
     response: Response
   ): Promise<msdynmkt_RetrieveAllFeatureConfigurationsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdynmkt_RetrieveAllFeatureConfigurationsResponse;
-    return (await response.json()) as msdynmkt_RetrieveAllFeatureConfigurationsResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return ((await response.json()) as { value: msdynmkt_RetrieveAllFeatureConfigurationsResponse })
+      .value;
   }
 }

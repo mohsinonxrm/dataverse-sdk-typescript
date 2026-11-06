@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CCaaS_BroadcastMessageResponse as CCaaS_BroadcastMessageResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CCaaS_BroadcastMessage message, by their CSDL names. A parameter the CSDL declares
@@ -51,23 +49,33 @@ export class CCaaS_BroadcastMessageRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_BroadcastMessageResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CCaaS_BroadcastMessageResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CCaaS_BroadcastMessageResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CCaaS_BroadcastMessage action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CCaaS_BroadcastMessageResult {
+  "@odata.context"?: string;
+  BulkActionId: string;
+}
+
+/**
  * CCaaS_BroadcastMessage response message
+ *
+ * `result` is the value the CCaaS_BroadcastMessage action returns (see {@link CCaaS_BroadcastMessageResult}).
  */
 export class CCaaS_BroadcastMessageResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_BroadcastMessageResponseData) {
+  constructor(public result: CCaaS_BroadcastMessageResult) {
     super("CCaaS_BroadcastMessage");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CCaaS_BroadcastMessageResponse {
-    return new CCaaS_BroadcastMessageResponse(
-      responseObject<CCaaS_BroadcastMessageResponseData>(data)
-    );
+    return new CCaaS_BroadcastMessageResponse(data as CCaaS_BroadcastMessageResult);
   }
 }

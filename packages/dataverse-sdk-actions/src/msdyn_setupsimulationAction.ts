@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_setupsimulation action
+ * Response from the msdyn_setupsimulation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_setupsimulationResponse {
+  "@odata.context"?: string;
   message: string;
   statuscode: number;
 }
@@ -27,8 +30,7 @@ export class msdyn_setupsimulationAction implements Executable<msdyn_setupsimula
   }
 
   async parseResponse(response: Response): Promise<msdyn_setupsimulationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_setupsimulationResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_setupsimulationResponse;
   }
 }

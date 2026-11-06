@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { _DownloademailasattachmentResponse as _DownloademailasattachmentResponseData } from "./types/index.js";
 
 /**
  * Parameters of the _Downloademailasattachment message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class _DownloademailasattachmentRequest
   }
 
   async parseResponse(response: Response): Promise<_DownloademailasattachmentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return _DownloademailasattachmentResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return _DownloademailasattachmentResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the _Downloademailasattachment action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface _DownloademailasattachmentResult {
+  "@odata.context"?: string;
+  emailRecordData: string;
+}
+
+/**
  * _Downloademailasattachment response message
+ *
+ * `result` is the value the _Downloademailasattachment action returns (see {@link _DownloademailasattachmentResult}).
  */
 export class _DownloademailasattachmentResponse extends OrganizationResponse {
-  constructor(public result: _DownloademailasattachmentResponseData) {
+  constructor(public result: _DownloademailasattachmentResult) {
     super("_Downloademailasattachment");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): _DownloademailasattachmentResponse {
-    return new _DownloademailasattachmentResponse(
-      responseObject<_DownloademailasattachmentResponseData>(data)
-    );
+    return new _DownloademailasattachmentResponse(data as _DownloademailasattachmentResult);
   }
 }

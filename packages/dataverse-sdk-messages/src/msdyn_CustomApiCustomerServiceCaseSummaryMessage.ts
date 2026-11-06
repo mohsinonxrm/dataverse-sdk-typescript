@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_CustomApiCustomerServiceCaseSummaryResponse as msdyn_CustomApiCustomerServiceCaseSummaryResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CustomApiCustomerServiceCaseSummary message, by their CSDL names. A parameter the CSDL declares
@@ -47,24 +45,35 @@ export class msdyn_CustomApiCustomerServiceCaseSummaryRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CustomApiCustomerServiceCaseSummaryResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_CustomApiCustomerServiceCaseSummaryResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CustomApiCustomerServiceCaseSummaryResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CustomApiCustomerServiceCaseSummary action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CustomApiCustomerServiceCaseSummaryResult {
+  "@odata.context"?: string;
+  msdyn_CaseSummary: string;
+}
+
+/**
  * msdyn_CustomApiCustomerServiceCaseSummary response message
+ *
+ * `result` is the value the msdyn_CustomApiCustomerServiceCaseSummary action returns (see {@link msdyn_CustomApiCustomerServiceCaseSummaryResult}).
  */
 export class msdyn_CustomApiCustomerServiceCaseSummaryResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CustomApiCustomerServiceCaseSummaryResponseData) {
+  constructor(public result: msdyn_CustomApiCustomerServiceCaseSummaryResult) {
     super("msdyn_CustomApiCustomerServiceCaseSummary");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CustomApiCustomerServiceCaseSummaryResponse {
     return new msdyn_CustomApiCustomerServiceCaseSummaryResponse(
-      responseObject<msdyn_CustomApiCustomerServiceCaseSummaryResponseData>(data)
+      data as msdyn_CustomApiCustomerServiceCaseSummaryResult
     );
   }
 }

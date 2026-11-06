@@ -45,9 +45,9 @@ export class ValidateSavedQueryRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<ValidateSavedQueryResponse> {
+  parseResponse(_response: Response): Promise<ValidateSavedQueryResponse> {
     // No return value (204 No Content)
-    return new ValidateSavedQueryResponse();
+    return Promise.resolve(new ValidateSavedQueryResponse());
   }
 }
 
@@ -59,7 +59,7 @@ export class ValidateSavedQueryResponse extends OrganizationResponse {
     super("ValidateSavedQuery");
   }
 
-  static fromResponse(_data: unknown): ValidateSavedQueryResponse {
+  static fromResponse(_data?: unknown): ValidateSavedQueryResponse {
     return new ValidateSavedQueryResponse();
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_CreateEvaluationRecordsForPlanResponse as msdyn_CreateEvaluationRecordsForPlanResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CreateEvaluationRecordsForPlan message, by their CSDL names. A parameter the CSDL declares
@@ -47,24 +45,35 @@ export class msdyn_CreateEvaluationRecordsForPlanRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateEvaluationRecordsForPlanResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_CreateEvaluationRecordsForPlanResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CreateEvaluationRecordsForPlanResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CreateEvaluationRecordsForPlan action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CreateEvaluationRecordsForPlanResult {
+  "@odata.context"?: string;
+  createdEvaluationRecords: string;
+}
+
+/**
  * msdyn_CreateEvaluationRecordsForPlan response message
+ *
+ * `result` is the value the msdyn_CreateEvaluationRecordsForPlan action returns (see {@link msdyn_CreateEvaluationRecordsForPlanResult}).
  */
 export class msdyn_CreateEvaluationRecordsForPlanResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CreateEvaluationRecordsForPlanResponseData) {
+  constructor(public result: msdyn_CreateEvaluationRecordsForPlanResult) {
     super("msdyn_CreateEvaluationRecordsForPlan");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CreateEvaluationRecordsForPlanResponse {
     return new msdyn_CreateEvaluationRecordsForPlanResponse(
-      responseObject<msdyn_CreateEvaluationRecordsForPlanResponseData>(data)
+      data as msdyn_CreateEvaluationRecordsForPlanResult
     );
   }
 }

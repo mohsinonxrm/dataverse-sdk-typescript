@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from SetAutoNumberSeed action
+ * Response from the SetAutoNumberSeed action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface SetAutoNumberSeedResponse {
-  // No content returned
-}
+export type SetAutoNumberSeedResponse = void;
 
 /**
  * Parameters of the SetAutoNumberSeed action, by their CSDL names. A parameter the CSDL declares
@@ -45,9 +45,8 @@ export class SetAutoNumberSeedAction implements Executable<SetAutoNumberSeedResp
     };
   }
 
-  async parseResponse(response: Response): Promise<SetAutoNumberSeedResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as SetAutoNumberSeedResponse;
-    return (await response.json()) as SetAutoNumberSeedResponse;
+  parseResponse(_response: Response): Promise<SetAutoNumberSeedResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

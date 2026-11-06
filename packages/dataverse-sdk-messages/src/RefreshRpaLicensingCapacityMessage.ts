@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { RefreshRpaLicensingCapacityResponse as RefreshRpaLicensingCapacityResponseData } from "./types/index.js";
 
 /**
  * RefreshRpaLicensingCapacity request message
@@ -29,23 +27,33 @@ export class RefreshRpaLicensingCapacityRequest
   }
 
   async parseResponse(response: Response): Promise<RefreshRpaLicensingCapacityResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return RefreshRpaLicensingCapacityResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return RefreshRpaLicensingCapacityResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the RefreshRpaLicensingCapacity action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface RefreshRpaLicensingCapacityResult {
+  "@odata.context"?: string;
+  response: string;
+}
+
+/**
  * RefreshRpaLicensingCapacity response message
+ *
+ * `result` is the value the RefreshRpaLicensingCapacity action returns (see {@link RefreshRpaLicensingCapacityResult}).
  */
 export class RefreshRpaLicensingCapacityResponse extends OrganizationResponse {
-  constructor(public result: RefreshRpaLicensingCapacityResponseData) {
+  constructor(public result: RefreshRpaLicensingCapacityResult) {
     super("RefreshRpaLicensingCapacity");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): RefreshRpaLicensingCapacityResponse {
-    return new RefreshRpaLicensingCapacityResponse(
-      responseObject<RefreshRpaLicensingCapacityResponseData>(data)
-    );
+    return new RefreshRpaLicensingCapacityResponse(data as RefreshRpaLicensingCapacityResult);
   }
 }

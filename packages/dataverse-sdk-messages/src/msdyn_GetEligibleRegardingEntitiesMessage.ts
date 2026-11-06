@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseValue } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
 
 /**
@@ -46,23 +45,40 @@ export class msdyn_GetEligibleRegardingEntitiesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetEligibleRegardingEntitiesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetEligibleRegardingEntitiesResponse.fromResponse({});
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204)
+      return msdyn_GetEligibleRegardingEntitiesResponse.fromResponse(undefined);
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
     return msdyn_GetEligibleRegardingEntitiesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetEligibleRegardingEntities action.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
+ */
+export type msdyn_GetEligibleRegardingEntitiesResult = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
+
+/**
  * msdyn_GetEligibleRegardingEntities response message
+ *
+ * `result` is the value the msdyn_GetEligibleRegardingEntities action returns (see {@link msdyn_GetEligibleRegardingEntitiesResult}).
  */
 export class msdyn_GetEligibleRegardingEntitiesResponse extends OrganizationResponse {
-  constructor(public result: Record<string, unknown>[]) {
+  constructor(public result: msdyn_GetEligibleRegardingEntitiesResult) {
     super("msdyn_GetEligibleRegardingEntities");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetEligibleRegardingEntitiesResponse {
     return new msdyn_GetEligibleRegardingEntitiesResponse(
-      responseValue<Record<string, unknown>[]>(data)
+      data === undefined ? [] : (data as { value: msdyn_GetEligibleRegardingEntitiesResult }).value
     );
   }
 }

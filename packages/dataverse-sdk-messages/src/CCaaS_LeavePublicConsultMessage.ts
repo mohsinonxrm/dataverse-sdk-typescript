@@ -48,9 +48,9 @@ export class CCaaS_LeavePublicConsultRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_LeavePublicConsultResponse> {
+  parseResponse(_response: Response): Promise<CCaaS_LeavePublicConsultResponse> {
     // No return value (204 No Content)
-    return new CCaaS_LeavePublicConsultResponse();
+    return Promise.resolve(new CCaaS_LeavePublicConsultResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class CCaaS_LeavePublicConsultResponse extends OrganizationResponse {
     super("CCaaS_LeavePublicConsult");
   }
 
-  static fromResponse(_data: unknown): CCaaS_LeavePublicConsultResponse {
+  static fromResponse(_data?: unknown): CCaaS_LeavePublicConsultResponse {
     return new CCaaS_LeavePublicConsultResponse();
   }
 }

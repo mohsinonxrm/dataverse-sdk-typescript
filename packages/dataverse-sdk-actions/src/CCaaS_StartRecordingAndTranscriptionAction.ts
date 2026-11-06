@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CCaaS_StartRecordingAndTranscription action
+ * Response from the CCaaS_StartRecordingAndTranscription action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface CCaaS_StartRecordingAndTranscriptionResponse {
-  // No content returned
-}
+export type CCaaS_StartRecordingAndTranscriptionResponse = void;
 
 /**
  * Parameters of the CCaaS_StartRecordingAndTranscription action, by their CSDL names. A parameter the CSDL declares
@@ -56,9 +56,8 @@ export class CCaaS_StartRecordingAndTranscriptionAction implements Executable<CC
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_StartRecordingAndTranscriptionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CCaaS_StartRecordingAndTranscriptionResponse;
-    return (await response.json()) as CCaaS_StartRecordingAndTranscriptionResponse;
+  parseResponse(_response: Response): Promise<CCaaS_StartRecordingAndTranscriptionResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

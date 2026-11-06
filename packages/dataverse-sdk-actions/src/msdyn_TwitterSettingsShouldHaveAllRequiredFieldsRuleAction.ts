@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_TwitterSettingsShouldHaveAllRequiredFieldsRule action
+ * Response from the msdyn_TwitterSettingsShouldHaveAllRequiredFieldsRule action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_TwitterSettingsShouldHaveAllRequiredFieldsRuleResponse {
+  "@odata.context"?: string;
   Message: string;
   ResultEntities: string;
   ReturnStatus: number;
@@ -30,9 +33,7 @@ export class msdyn_TwitterSettingsShouldHaveAllRequiredFieldsRuleAction implemen
   async parseResponse(
     response: Response
   ): Promise<msdyn_TwitterSettingsShouldHaveAllRequiredFieldsRuleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return {} as msdyn_TwitterSettingsShouldHaveAllRequiredFieldsRuleResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_TwitterSettingsShouldHaveAllRequiredFieldsRuleResponse;
   }
 }

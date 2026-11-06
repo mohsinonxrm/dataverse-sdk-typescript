@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_CreateAISimulationRunResponse as msdyn_CreateAISimulationRunResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CreateAISimulationRun message, by their CSDL names. A parameter the CSDL declares
@@ -61,23 +59,34 @@ export class msdyn_CreateAISimulationRunRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateAISimulationRunResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_CreateAISimulationRunResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CreateAISimulationRunResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CreateAISimulationRun action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CreateAISimulationRunResult {
+  "@odata.context"?: string;
+  Result: string;
+  SimulationRunId: string;
+}
+
+/**
  * msdyn_CreateAISimulationRun response message
+ *
+ * `result` is the value the msdyn_CreateAISimulationRun action returns (see {@link msdyn_CreateAISimulationRunResult}).
  */
 export class msdyn_CreateAISimulationRunResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CreateAISimulationRunResponseData) {
+  constructor(public result: msdyn_CreateAISimulationRunResult) {
     super("msdyn_CreateAISimulationRun");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CreateAISimulationRunResponse {
-    return new msdyn_CreateAISimulationRunResponse(
-      responseObject<msdyn_CreateAISimulationRunResponseData>(data)
-    );
+    return new msdyn_CreateAISimulationRunResponse(data as msdyn_CreateAISimulationRunResult);
   }
 }

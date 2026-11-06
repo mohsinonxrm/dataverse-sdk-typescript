@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from UpdateFlowMachineNetwork action
+ * Response from the UpdateFlowMachineNetwork action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface UpdateFlowMachineNetworkResponse {
-  // No content returned
-}
+export type UpdateFlowMachineNetworkResponse = void;
 
 /**
  * Parameters of the UpdateFlowMachineNetwork action, by their CSDL names. A parameter the CSDL declares
@@ -52,9 +52,8 @@ export class UpdateFlowMachineNetworkAction implements Executable<UpdateFlowMach
     };
   }
 
-  async parseResponse(response: Response): Promise<UpdateFlowMachineNetworkResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as UpdateFlowMachineNetworkResponse;
-    return (await response.json()) as UpdateFlowMachineNetworkResponse;
+  parseResponse(_response: Response): Promise<UpdateFlowMachineNetworkResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesQualification_GetMCSOnlineEvalDefinitionsResponse as msdyn_SalesQualification_GetMCSOnlineEvalDefinitionsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesQualification_GetMCSOnlineEvalDefinitions message, by their CSDL names. A parameter the CSDL declares
@@ -47,9 +45,7 @@ export class msdyn_SalesQualification_GetMCSOnlineEvalDefinitionsRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesQualification_GetMCSOnlineEvalDefinitionsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_SalesQualification_GetMCSOnlineEvalDefinitionsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesQualification_GetMCSOnlineEvalDefinitionsResponse.fromResponse(
       await response.json()
     );
@@ -57,16 +53,31 @@ export class msdyn_SalesQualification_GetMCSOnlineEvalDefinitionsRequest
 }
 
 /**
+ * Response from the msdyn_SalesQualification_GetMCSOnlineEvalDefinitions action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesQualification_GetMCSOnlineEvalDefinitionsResult {
+  "@odata.context"?: string;
+  DefinitionsJson: string;
+  ErrorMessage: string;
+  IsSuccess: boolean;
+}
+
+/**
  * msdyn_SalesQualification_GetMCSOnlineEvalDefinitions response message
+ *
+ * `result` is the value the msdyn_SalesQualification_GetMCSOnlineEvalDefinitions action returns (see {@link msdyn_SalesQualification_GetMCSOnlineEvalDefinitionsResult}).
  */
 export class msdyn_SalesQualification_GetMCSOnlineEvalDefinitionsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesQualification_GetMCSOnlineEvalDefinitionsResponseData) {
+  constructor(public result: msdyn_SalesQualification_GetMCSOnlineEvalDefinitionsResult) {
     super("msdyn_SalesQualification_GetMCSOnlineEvalDefinitions");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesQualification_GetMCSOnlineEvalDefinitionsResponse {
     return new msdyn_SalesQualification_GetMCSOnlineEvalDefinitionsResponse(
-      responseObject<msdyn_SalesQualification_GetMCSOnlineEvalDefinitionsResponseData>(data)
+      data as msdyn_SalesQualification_GetMCSOnlineEvalDefinitionsResult
     );
   }
 }

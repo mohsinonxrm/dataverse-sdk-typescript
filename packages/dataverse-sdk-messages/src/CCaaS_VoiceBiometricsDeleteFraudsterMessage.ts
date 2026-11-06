@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CCaaS_VoiceBiometricsDeleteFraudsterResponse as CCaaS_VoiceBiometricsDeleteFraudsterResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CCaaS_VoiceBiometricsDeleteFraudster message, by their CSDL names. A parameter the CSDL declares
@@ -51,24 +49,40 @@ export class CCaaS_VoiceBiometricsDeleteFraudsterRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_VoiceBiometricsDeleteFraudsterResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return CCaaS_VoiceBiometricsDeleteFraudsterResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CCaaS_VoiceBiometricsDeleteFraudsterResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CCaaS_VoiceBiometricsDeleteFraudster action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CCaaS_VoiceBiometricsDeleteFraudsterResult {
+  "@odata.context"?: string;
+  BadRequestReason: string;
+  Deleted: string[];
+  ErrorMessage: string;
+  Failed: string[];
+  NotFound: string[];
+  StatusCode: string;
+}
+
+/**
  * CCaaS_VoiceBiometricsDeleteFraudster response message
+ *
+ * `result` is the value the CCaaS_VoiceBiometricsDeleteFraudster action returns (see {@link CCaaS_VoiceBiometricsDeleteFraudsterResult}).
  */
 export class CCaaS_VoiceBiometricsDeleteFraudsterResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_VoiceBiometricsDeleteFraudsterResponseData) {
+  constructor(public result: CCaaS_VoiceBiometricsDeleteFraudsterResult) {
     super("CCaaS_VoiceBiometricsDeleteFraudster");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CCaaS_VoiceBiometricsDeleteFraudsterResponse {
     return new CCaaS_VoiceBiometricsDeleteFraudsterResponse(
-      responseObject<CCaaS_VoiceBiometricsDeleteFraudsterResponseData>(data)
+      data as CCaaS_VoiceBiometricsDeleteFraudsterResult
     );
   }
 }

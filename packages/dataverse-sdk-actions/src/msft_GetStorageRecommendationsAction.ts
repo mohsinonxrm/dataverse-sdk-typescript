@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msft_GetStorageRecommendations action
+ * Response from the msft_GetStorageRecommendations action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msft_GetStorageRecommendationsResponse {
+  "@odata.context"?: string;
   CleanupOpportunityByEntity: string;
   Recommendations: string;
   TotalCleanupOpportunity: number;
@@ -44,8 +47,7 @@ export class msft_GetStorageRecommendationsAction implements Executable<msft_Get
   }
 
   async parseResponse(response: Response): Promise<msft_GetStorageRecommendationsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msft_GetStorageRecommendationsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msft_GetStorageRecommendationsResponse;
   }
 }

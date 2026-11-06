@@ -5,14 +5,14 @@ import type { EntityPayload } from "./types/EntityPayload.js";
 import type { systemform } from "./types/index.js";
 
 /**
- * Response from CopySystemForm action
+ * Response from the CopySystemForm action.
  *
- * The response is the entity itself, not wrapped in `value`.
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface CopySystemFormResponse extends systemform {
-  "@odata.context"?: string;
-  "@odata.etag"?: string;
-}
+export type CopySystemFormResponse =
+  | (systemform & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string })
+  | null;
 
 /**
  * Parameters of the CopySystemForm action, by their CSDL names. A parameter the CSDL declares
@@ -55,8 +55,9 @@ export class CopySystemFormAction implements Executable<CopySystemFormResponse> 
   }
 
   async parseResponse(response: Response): Promise<CopySystemFormResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CopySystemFormResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
     return (await response.json()) as CopySystemFormResponse;
   }
 }

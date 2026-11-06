@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_TryClaimOptimizeWorkItemResponse as msdyn_TryClaimOptimizeWorkItemResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_TryClaimOptimizeWorkItem message, by their CSDL names. A parameter the CSDL declares
@@ -51,23 +49,35 @@ export class msdyn_TryClaimOptimizeWorkItemRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_TryClaimOptimizeWorkItemResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_TryClaimOptimizeWorkItemResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_TryClaimOptimizeWorkItemResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_TryClaimOptimizeWorkItem action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_TryClaimOptimizeWorkItemResult {
+  "@odata.context"?: string;
+  Claimed: boolean;
+  DispatchJson: string;
+  ResultJson: string;
+}
+
+/**
  * msdyn_TryClaimOptimizeWorkItem response message
+ *
+ * `result` is the value the msdyn_TryClaimOptimizeWorkItem action returns (see {@link msdyn_TryClaimOptimizeWorkItemResult}).
  */
 export class msdyn_TryClaimOptimizeWorkItemResponse extends OrganizationResponse {
-  constructor(public result: msdyn_TryClaimOptimizeWorkItemResponseData) {
+  constructor(public result: msdyn_TryClaimOptimizeWorkItemResult) {
     super("msdyn_TryClaimOptimizeWorkItem");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_TryClaimOptimizeWorkItemResponse {
-    return new msdyn_TryClaimOptimizeWorkItemResponse(
-      responseObject<msdyn_TryClaimOptimizeWorkItemResponseData>(data)
-    );
+    return new msdyn_TryClaimOptimizeWorkItemResponse(data as msdyn_TryClaimOptimizeWorkItemResult);
   }
 }

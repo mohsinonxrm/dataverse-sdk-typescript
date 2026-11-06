@@ -42,9 +42,9 @@ export class msdyn_TriggerForecastPredictionsRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_TriggerForecastPredictionsResponse> {
+  parseResponse(_response: Response): Promise<msdyn_TriggerForecastPredictionsResponse> {
     // No return value (204 No Content)
-    return new msdyn_TriggerForecastPredictionsResponse();
+    return Promise.resolve(new msdyn_TriggerForecastPredictionsResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_TriggerForecastPredictionsResponse extends OrganizationRespon
     super("msdyn_TriggerForecastPredictions");
   }
 
-  static fromResponse(_data: unknown): msdyn_TriggerForecastPredictionsResponse {
+  static fromResponse(_data?: unknown): msdyn_TriggerForecastPredictionsResponse {
     return new msdyn_TriggerForecastPredictionsResponse();
   }
 }

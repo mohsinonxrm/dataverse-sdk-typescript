@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_updatesequencetargetstepdata action
+ * Response from the msdyn_updatesequencetargetstepdata action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_updatesequencetargetstepdataResponse {
-  // No content returned
-}
+export type msdyn_updatesequencetargetstepdataResponse = void;
 
 /**
  * Parameters of the msdyn_updatesequencetargetstepdata action, by their CSDL names. A parameter the CSDL declares
@@ -43,9 +43,8 @@ export class msdyn_updatesequencetargetstepdataAction implements Executable<msdy
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_updatesequencetargetstepdataResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_updatesequencetargetstepdataResponse;
-    return (await response.json()) as msdyn_updatesequencetargetstepdataResponse;
+  parseResponse(_response: Response): Promise<msdyn_updatesequencetargetstepdataResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

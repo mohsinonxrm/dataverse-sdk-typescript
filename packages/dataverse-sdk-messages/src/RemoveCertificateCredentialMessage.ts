@@ -46,9 +46,9 @@ export class RemoveCertificateCredentialRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<RemoveCertificateCredentialResponse> {
+  parseResponse(_response: Response): Promise<RemoveCertificateCredentialResponse> {
     // No return value (204 No Content)
-    return new RemoveCertificateCredentialResponse();
+    return Promise.resolve(new RemoveCertificateCredentialResponse());
   }
 }
 
@@ -60,7 +60,7 @@ export class RemoveCertificateCredentialResponse extends OrganizationResponse {
     super("RemoveCertificateCredential");
   }
 
-  static fromResponse(_data: unknown): RemoveCertificateCredentialResponse {
+  static fromResponse(_data?: unknown): RemoveCertificateCredentialResponse {
     return new RemoveCertificateCredentialResponse();
   }
 }

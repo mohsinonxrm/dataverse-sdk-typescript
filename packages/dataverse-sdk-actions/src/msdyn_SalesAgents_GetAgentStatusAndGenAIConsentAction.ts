@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_SalesAgents_GetAgentStatusAndGenAIConsent action
+ * Response from the msdyn_SalesAgents_GetAgentStatusAndGenAIConsent action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_SalesAgents_GetAgentStatusAndGenAIConsentResponse {
+  "@odata.context"?: string;
   ResponseJson: string;
 }
 
@@ -46,9 +49,7 @@ export class msdyn_SalesAgents_GetAgentStatusAndGenAIConsentAction implements Ex
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_GetAgentStatusAndGenAIConsentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return {} as msdyn_SalesAgents_GetAgentStatusAndGenAIConsentResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_SalesAgents_GetAgentStatusAndGenAIConsentResponse;
   }
 }

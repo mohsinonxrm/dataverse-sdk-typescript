@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from ProvisionLanguageAsync action
+ * Response from the ProvisionLanguageAsync action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface ProvisionLanguageAsyncResponse {
+  "@odata.context"?: string;
   AsyncOperationId: string;
 }
 
@@ -42,8 +45,7 @@ export class ProvisionLanguageAsyncAction implements Executable<ProvisionLanguag
   }
 
   async parseResponse(response: Response): Promise<ProvisionLanguageAsyncResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ProvisionLanguageAsyncResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as ProvisionLanguageAsyncResponse;
   }
 }

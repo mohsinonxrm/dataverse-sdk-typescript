@@ -55,9 +55,9 @@ export class SetBusinessSystemUserRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<SetBusinessSystemUserResponse> {
+  parseResponse(_response: Response): Promise<SetBusinessSystemUserResponse> {
     // No return value (204 No Content)
-    return new SetBusinessSystemUserResponse();
+    return Promise.resolve(new SetBusinessSystemUserResponse());
   }
 }
 
@@ -69,7 +69,7 @@ export class SetBusinessSystemUserResponse extends OrganizationResponse {
     super("SetBusinessSystemUser");
   }
 
-  static fromResponse(_data: unknown): SetBusinessSystemUserResponse {
+  static fromResponse(_data?: unknown): SetBusinessSystemUserResponse {
     return new SetBusinessSystemUserResponse();
   }
 }

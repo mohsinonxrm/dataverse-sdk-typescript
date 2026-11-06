@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_ExternalContextCommitTranscriptUploadResponse as msdyn_ExternalContextCommitTranscriptUploadResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_ExternalContextCommitTranscriptUpload message, by their CSDL names. A parameter the CSDL declares
@@ -55,24 +53,35 @@ export class msdyn_ExternalContextCommitTranscriptUploadRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_ExternalContextCommitTranscriptUploadResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_ExternalContextCommitTranscriptUploadResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_ExternalContextCommitTranscriptUploadResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_ExternalContextCommitTranscriptUpload action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_ExternalContextCommitTranscriptUploadResult {
+  "@odata.context"?: string;
+  FileId: string;
+}
+
+/**
  * msdyn_ExternalContextCommitTranscriptUpload response message
+ *
+ * `result` is the value the msdyn_ExternalContextCommitTranscriptUpload action returns (see {@link msdyn_ExternalContextCommitTranscriptUploadResult}).
  */
 export class msdyn_ExternalContextCommitTranscriptUploadResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ExternalContextCommitTranscriptUploadResponseData) {
+  constructor(public result: msdyn_ExternalContextCommitTranscriptUploadResult) {
     super("msdyn_ExternalContextCommitTranscriptUpload");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_ExternalContextCommitTranscriptUploadResponse {
     return new msdyn_ExternalContextCommitTranscriptUploadResponse(
-      responseObject<msdyn_ExternalContextCommitTranscriptUploadResponseData>(data)
+      data as msdyn_ExternalContextCommitTranscriptUploadResult
     );
   }
 }

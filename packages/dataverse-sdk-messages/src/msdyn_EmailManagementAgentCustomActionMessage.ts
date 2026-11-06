@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_EmailManagementAgentCustomActionResponse as msdyn_EmailManagementAgentCustomActionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_EmailManagementAgentCustomAction message, by their CSDL names. A parameter the CSDL declares
@@ -47,24 +45,35 @@ export class msdyn_EmailManagementAgentCustomActionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_EmailManagementAgentCustomActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_EmailManagementAgentCustomActionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_EmailManagementAgentCustomActionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_EmailManagementAgentCustomAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_EmailManagementAgentCustomActionResult {
+  "@odata.context"?: string;
+  status: string;
+}
+
+/**
  * msdyn_EmailManagementAgentCustomAction response message
+ *
+ * `result` is the value the msdyn_EmailManagementAgentCustomAction action returns (see {@link msdyn_EmailManagementAgentCustomActionResult}).
  */
 export class msdyn_EmailManagementAgentCustomActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_EmailManagementAgentCustomActionResponseData) {
+  constructor(public result: msdyn_EmailManagementAgentCustomActionResult) {
     super("msdyn_EmailManagementAgentCustomAction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_EmailManagementAgentCustomActionResponse {
     return new msdyn_EmailManagementAgentCustomActionResponse(
-      responseObject<msdyn_EmailManagementAgentCustomActionResponseData>(data)
+      data as msdyn_EmailManagementAgentCustomActionResult
     );
   }
 }

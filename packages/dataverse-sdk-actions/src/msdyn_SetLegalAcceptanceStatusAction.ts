@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_SetLegalAcceptanceStatus action
+ * Response from the msdyn_SetLegalAcceptanceStatus action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_SetLegalAcceptanceStatusResponse {
-  // No content returned
-}
+export type msdyn_SetLegalAcceptanceStatusResponse = void;
 
 /**
  * Parameters of the msdyn_SetLegalAcceptanceStatus action, by their CSDL names. A parameter the CSDL declares
@@ -41,9 +41,8 @@ export class msdyn_SetLegalAcceptanceStatusAction implements Executable<msdyn_Se
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_SetLegalAcceptanceStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_SetLegalAcceptanceStatusResponse;
-    return (await response.json()) as msdyn_SetLegalAcceptanceStatusResponse;
+  parseResponse(_response: Response): Promise<msdyn_SetLegalAcceptanceStatusResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

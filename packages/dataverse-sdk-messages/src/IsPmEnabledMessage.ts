@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { IsPmEnabledResponse as IsPmEnabledResponseData } from "./types/index.js";
 
 /**
  * IsPmEnabled request message
@@ -29,21 +27,33 @@ export class IsPmEnabledRequest
   }
 
   async parseResponse(response: Response): Promise<IsPmEnabledResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return IsPmEnabledResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return IsPmEnabledResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the IsPmEnabled action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface IsPmEnabledResult {
+  "@odata.context"?: string;
+  response: string;
+}
+
+/**
  * IsPmEnabled response message
+ *
+ * `result` is the value the IsPmEnabled action returns (see {@link IsPmEnabledResult}).
  */
 export class IsPmEnabledResponse extends OrganizationResponse {
-  constructor(public result: IsPmEnabledResponseData) {
+  constructor(public result: IsPmEnabledResult) {
     super("IsPmEnabled");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): IsPmEnabledResponse {
-    return new IsPmEnabledResponse(responseObject<IsPmEnabledResponseData>(data));
+    return new IsPmEnabledResponse(data as IsPmEnabledResult);
   }
 }

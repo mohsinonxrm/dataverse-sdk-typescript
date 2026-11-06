@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_CancelOptimizeResponse as msdyn_CancelOptimizeResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CancelOptimize message, by their CSDL names. A parameter the CSDL declares
@@ -45,21 +43,35 @@ export class msdyn_CancelOptimizeRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CancelOptimizeResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_CancelOptimizeResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CancelOptimizeResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CancelOptimize action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CancelOptimizeResult {
+  "@odata.context"?: string;
+  msdyn_Response: string;
+  msdyn_Restored: string;
+  msdyn_Status: string;
+}
+
+/**
  * msdyn_CancelOptimize response message
+ *
+ * `result` is the value the msdyn_CancelOptimize action returns (see {@link msdyn_CancelOptimizeResult}).
  */
 export class msdyn_CancelOptimizeResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CancelOptimizeResponseData) {
+  constructor(public result: msdyn_CancelOptimizeResult) {
     super("msdyn_CancelOptimize");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CancelOptimizeResponse {
-    return new msdyn_CancelOptimizeResponse(responseObject<msdyn_CancelOptimizeResponseData>(data));
+    return new msdyn_CancelOptimizeResponse(data as msdyn_CancelOptimizeResult);
   }
 }

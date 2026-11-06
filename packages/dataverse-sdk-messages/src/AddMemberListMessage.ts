@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { AddMemberListResponse as AddMemberListResponseData } from "./types/index.js";
 
 /**
  * Parameters of the AddMemberList message, by their CSDL names. A parameter the CSDL declares
@@ -51,21 +49,33 @@ export class AddMemberListRequest
   }
 
   async parseResponse(response: Response): Promise<AddMemberListResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return AddMemberListResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return AddMemberListResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the AddMemberList action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface AddMemberListResult {
+  "@odata.context"?: string;
+  Id: string;
+}
+
+/**
  * AddMemberList response message
+ *
+ * `result` is the value the AddMemberList action returns (see {@link AddMemberListResult}).
  */
 export class AddMemberListResponse extends OrganizationResponse {
-  constructor(public result: AddMemberListResponseData) {
+  constructor(public result: AddMemberListResult) {
     super("AddMemberList");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): AddMemberListResponse {
-    return new AddMemberListResponse(responseObject<AddMemberListResponseData>(data));
+    return new AddMemberListResponse(data as AddMemberListResult);
   }
 }

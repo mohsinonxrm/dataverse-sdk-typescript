@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_OpportunityResearchResultUserAction action
+ * Response from the msdyn_OpportunityResearchResultUserAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_OpportunityResearchResultUserActionResponse {
+  "@odata.context"?: string;
   Success: boolean;
   Timestamp: string;
 }
@@ -57,8 +60,7 @@ export class msdyn_OpportunityResearchResultUserActionAction implements Executab
   async parseResponse(
     response: Response
   ): Promise<msdyn_OpportunityResearchResultUserActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_OpportunityResearchResultUserActionResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_OpportunityResearchResultUserActionResponse;
   }
 }

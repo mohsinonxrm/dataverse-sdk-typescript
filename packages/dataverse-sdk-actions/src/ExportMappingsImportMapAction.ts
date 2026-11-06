@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from ExportMappingsImportMap action
+ * Response from the ExportMappingsImportMap action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface ExportMappingsImportMapResponse {
+  "@odata.context"?: string;
   MappingsXml: string;
 }
 
@@ -49,8 +52,7 @@ export class ExportMappingsImportMapAction implements Executable<ExportMappingsI
   }
 
   async parseResponse(response: Response): Promise<ExportMappingsImportMapResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ExportMappingsImportMapResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as ExportMappingsImportMapResponse;
   }
 }

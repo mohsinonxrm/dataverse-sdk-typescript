@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_ConnectSequenceResponse as msdyn_ConnectSequenceResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_ConnectSequence message, by their CSDL names. A parameter the CSDL declares
@@ -61,23 +59,33 @@ export class msdyn_ConnectSequenceRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ConnectSequenceResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_ConnectSequenceResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_ConnectSequenceResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_ConnectSequence action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_ConnectSequenceResult {
+  "@odata.context"?: string;
+  SequenceTargetId: string;
+}
+
+/**
  * msdyn_ConnectSequence response message
+ *
+ * `result` is the value the msdyn_ConnectSequence action returns (see {@link msdyn_ConnectSequenceResult}).
  */
 export class msdyn_ConnectSequenceResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ConnectSequenceResponseData) {
+  constructor(public result: msdyn_ConnectSequenceResult) {
     super("msdyn_ConnectSequence");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_ConnectSequenceResponse {
-    return new msdyn_ConnectSequenceResponse(
-      responseObject<msdyn_ConnectSequenceResponseData>(data)
-    );
+    return new msdyn_ConnectSequenceResponse(data as msdyn_ConnectSequenceResult);
   }
 }

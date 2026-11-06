@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CCaaS_ProvisionCallbackAgent action
+ * Response from the CCaaS_ProvisionCallbackAgent action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CCaaS_ProvisionCallbackAgentResponse {
+  "@odata.context"?: string;
   BotId: string;
 }
 
@@ -42,8 +45,7 @@ export class CCaaS_ProvisionCallbackAgentAction implements Executable<CCaaS_Prov
   }
 
   async parseResponse(response: Response): Promise<CCaaS_ProvisionCallbackAgentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CCaaS_ProvisionCallbackAgentResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as CCaaS_ProvisionCallbackAgentResponse;
   }
 }

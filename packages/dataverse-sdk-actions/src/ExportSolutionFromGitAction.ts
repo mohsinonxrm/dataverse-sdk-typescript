@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from ExportSolutionFromGit action
+ * Response from the ExportSolutionFromGit action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface ExportSolutionFromGitResponse {
+  "@odata.context"?: string;
   CommitId: string;
   SolutionZip: string;
 }
@@ -49,8 +52,7 @@ export class ExportSolutionFromGitAction implements Executable<ExportSolutionFro
   }
 
   async parseResponse(response: Response): Promise<ExportSolutionFromGitResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ExportSolutionFromGitResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as ExportSolutionFromGitResponse;
   }
 }

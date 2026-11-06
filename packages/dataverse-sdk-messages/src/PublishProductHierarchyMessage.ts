@@ -29,9 +29,9 @@ export class PublishProductHierarchyRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<PublishProductHierarchyResponse> {
+  parseResponse(_response: Response): Promise<PublishProductHierarchyResponse> {
     // No return value (204 No Content)
-    return new PublishProductHierarchyResponse();
+    return Promise.resolve(new PublishProductHierarchyResponse());
   }
 }
 
@@ -43,7 +43,7 @@ export class PublishProductHierarchyResponse extends OrganizationResponse {
     super("PublishProductHierarchy");
   }
 
-  static fromResponse(_data: unknown): PublishProductHierarchyResponse {
+  static fromResponse(_data?: unknown): PublishProductHierarchyResponse {
     return new PublishProductHierarchyResponse();
   }
 }

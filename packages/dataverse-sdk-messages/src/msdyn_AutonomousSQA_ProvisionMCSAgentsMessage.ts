@@ -42,9 +42,9 @@ export class msdyn_AutonomousSQA_ProvisionMCSAgentsRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_AutonomousSQA_ProvisionMCSAgentsResponse> {
+  parseResponse(_response: Response): Promise<msdyn_AutonomousSQA_ProvisionMCSAgentsResponse> {
     // No return value (204 No Content)
-    return new msdyn_AutonomousSQA_ProvisionMCSAgentsResponse();
+    return Promise.resolve(new msdyn_AutonomousSQA_ProvisionMCSAgentsResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_AutonomousSQA_ProvisionMCSAgentsResponse extends Organization
     super("msdyn_AutonomousSQA_ProvisionMCSAgents");
   }
 
-  static fromResponse(_data: unknown): msdyn_AutonomousSQA_ProvisionMCSAgentsResponse {
+  static fromResponse(_data?: unknown): msdyn_AutonomousSQA_ProvisionMCSAgentsResponse {
     return new msdyn_AutonomousSQA_ProvisionMCSAgentsResponse();
   }
 }

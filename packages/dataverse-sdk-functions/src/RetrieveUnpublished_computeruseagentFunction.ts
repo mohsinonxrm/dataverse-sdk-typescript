@@ -2,14 +2,18 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import type { computeruseagent } from "./types/index.js";
 
 /**
- * Response from RetrieveUnpublished function
+ * Response from the RetrieveUnpublished function.
  *
- * The response is the entity itself, not wrapped in `value`.
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface RetrieveUnpublished_computeruseagentResponse extends computeruseagent {
-  "@odata.context"?: string;
-  "@odata.etag"?: string;
-}
+export type RetrieveUnpublished_computeruseagentResponse =
+  | (computeruseagent & {
+      "@odata.context"?: string;
+      "@odata.etag"?: string;
+      "@odata.type"?: string;
+    })
+  | null;
 
 /**
  * RetrieveUnpublished function
@@ -36,8 +40,9 @@ export class RetrieveUnpublished_computeruseagentFunction implements Executable<
   }
 
   async parseResponse(response: Response): Promise<RetrieveUnpublished_computeruseagentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveUnpublished_computeruseagentResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
     return (await response.json()) as RetrieveUnpublished_computeruseagentResponse;
   }
 }

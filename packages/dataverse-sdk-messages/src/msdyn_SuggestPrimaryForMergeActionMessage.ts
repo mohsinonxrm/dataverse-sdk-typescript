@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
 
 /**
@@ -44,23 +43,41 @@ export class msdyn_SuggestPrimaryForMergeActionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SuggestPrimaryForMergeActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_SuggestPrimaryForMergeActionResponse.fromResponse({});
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204)
+      return msdyn_SuggestPrimaryForMergeActionResponse.fromResponse(undefined);
+    // The body is the record, with its annotations
     return msdyn_SuggestPrimaryForMergeActionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SuggestPrimaryForMergeAction action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
+ */
+export type msdyn_SuggestPrimaryForMergeActionResult = {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+} | null;
+
+/**
  * msdyn_SuggestPrimaryForMergeAction response message
+ *
+ * `result` is the value the msdyn_SuggestPrimaryForMergeAction action returns (see {@link msdyn_SuggestPrimaryForMergeActionResult}).
  */
 export class msdyn_SuggestPrimaryForMergeActionResponse extends OrganizationResponse {
-  constructor(public result: Record<string, unknown>) {
+  constructor(public result: msdyn_SuggestPrimaryForMergeActionResult) {
     super("msdyn_SuggestPrimaryForMergeAction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SuggestPrimaryForMergeActionResponse {
     return new msdyn_SuggestPrimaryForMergeActionResponse(
-      responseObject<Record<string, unknown>>(data)
+      (data ?? null) as msdyn_SuggestPrimaryForMergeActionResult
     );
   }
 }

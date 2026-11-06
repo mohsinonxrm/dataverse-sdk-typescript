@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_UpgradeTelemetryResponse as msdyn_UpgradeTelemetryResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_UpgradeTelemetry message, by their CSDL names. A parameter the CSDL declares
@@ -67,23 +65,33 @@ export class msdyn_UpgradeTelemetryRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_UpgradeTelemetryResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_UpgradeTelemetryResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_UpgradeTelemetryResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_UpgradeTelemetry action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_UpgradeTelemetryResult {
+  "@odata.context"?: string;
+  output: string;
+}
+
+/**
  * msdyn_UpgradeTelemetry response message
+ *
+ * `result` is the value the msdyn_UpgradeTelemetry action returns (see {@link msdyn_UpgradeTelemetryResult}).
  */
 export class msdyn_UpgradeTelemetryResponse extends OrganizationResponse {
-  constructor(public result: msdyn_UpgradeTelemetryResponseData) {
+  constructor(public result: msdyn_UpgradeTelemetryResult) {
     super("msdyn_UpgradeTelemetry");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_UpgradeTelemetryResponse {
-    return new msdyn_UpgradeTelemetryResponse(
-      responseObject<msdyn_UpgradeTelemetryResponseData>(data)
-    );
+    return new msdyn_UpgradeTelemetryResponse(data as msdyn_UpgradeTelemetryResult);
   }
 }

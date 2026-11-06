@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from UnlockInvoicePricing action
+ * Response from the UnlockInvoicePricing action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface UnlockInvoicePricingResponse {
-  // No content returned
-}
+export type UnlockInvoicePricingResponse = void;
 
 /**
  * Parameters of the UnlockInvoicePricing action, by their CSDL names. A parameter the CSDL declares
@@ -41,9 +41,8 @@ export class UnlockInvoicePricingAction implements Executable<UnlockInvoicePrici
     };
   }
 
-  async parseResponse(response: Response): Promise<UnlockInvoicePricingResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as UnlockInvoicePricingResponse;
-    return (await response.json()) as UnlockInvoicePricingResponse;
+  parseResponse(_response: Response): Promise<UnlockInvoicePricingResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

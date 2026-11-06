@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdynmkt_getunsubscribelink action
+ * Response from the msdynmkt_getunsubscribelink action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdynmkt_getunsubscribelinkResponse {
+  "@odata.context"?: string;
   msdynmkt_companyaddress: string;
   msdynmkt_errormessage: string;
   msdynmkt_issuccess: boolean;
@@ -65,8 +68,7 @@ export class msdynmkt_getunsubscribelinkAction implements Executable<msdynmkt_ge
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_getunsubscribelinkResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdynmkt_getunsubscribelinkResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdynmkt_getunsubscribelinkResponse;
   }
 }

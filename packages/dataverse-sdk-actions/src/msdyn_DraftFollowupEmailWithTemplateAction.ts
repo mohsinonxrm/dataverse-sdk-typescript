@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_DraftFollowupEmailWithTemplate action
+ * Response from the msdyn_DraftFollowupEmailWithTemplate action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_DraftFollowupEmailWithTemplateResponse {
+  "@odata.context"?: string;
   DraftedFollowupEmail: string;
 }
 
@@ -52,8 +55,7 @@ export class msdyn_DraftFollowupEmailWithTemplateAction implements Executable<ms
   }
 
   async parseResponse(response: Response): Promise<msdyn_DraftFollowupEmailWithTemplateResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_DraftFollowupEmailWithTemplateResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_DraftFollowupEmailWithTemplateResponse;
   }
 }

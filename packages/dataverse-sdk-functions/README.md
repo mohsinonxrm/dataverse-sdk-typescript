@@ -38,6 +38,31 @@ console.log("Business Unit:", response.BusinessUnitId);
 console.log("Organization:", response.OrganizationId);
 ```
 
+## Return Values
+
+`client.execute()` resolves the value the function returns, not the OData envelope around it.
+Each class's `<Name>Response` type is exactly that value (#300):
+
+| Return type in `$metadata`                       | Web API response                                          | Value                                                       |
+| ------------------------------------------------ | --------------------------------------------------------- | ----------------------------------------------------------- |
+| none                                             | `204 No Content`                                          | `undefined` (`<Name>Response` is `void`)                    |
+| primitive or enum (`Edm.Boolean`, …)             | `{ "@odata.context", "value": … }`                        | the value (an enum is its member name)                      |
+| collection (`Collection(mscrm.role)`, …)         | `{ "@odata.context", "value": [ … ] }`, or 204 when unset | the array, each record with `@odata.etag`; `[]` for a 204   |
+| complex type (`mscrm.WhoAmIResponse`)            | the properties, with `@odata.context`                     | the body, with `@odata.context`                             |
+| entity (`mscrm.asyncoperation`, `crmbaseentity`) | the record, with its annotations, or 204 when unset       | the record (`@odata.etag`, `@odata.type`); `null` for a 204 |
+
+Dataverse answers `204 No Content` for an entity or entity-collection output that wasn't set,
+although `$metadata` declares the return `Nullable="false"`, so an entity return is
+`<Entity> | null`. `@odata.type` says which table a `crmbaseentity` record is.
+
+```typescript
+const roles = await client.execute(new RetrieveAadUserRolesFunction({ DirectoryObjectId: id }));
+console.log(roles.map((r) => r.name)); // role records, not { value }
+
+const solution = await client.execute(new GetPreferredSolutionFunction());
+console.log(solution?.uniquename, solution?.["@odata.etag"]);
+```
+
 ## Function Categories
 
 The SDK includes **<!-- count:functions -->300<!-- /count --> typed functions** organized into the following categories:
@@ -140,6 +165,7 @@ console.log("Current User:", {
 
 ```typescript
 interface WhoAmIResponse {
+  "@odata.context"?: string;
   UserId: string; // GUID of the current user
   BusinessUnitId: string; // GUID of the user's business unit
   OrganizationId: string; // GUID of the organization

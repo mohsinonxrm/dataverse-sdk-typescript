@@ -58,9 +58,9 @@ export class msdyn_InitEntityRoutingRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_InitEntityRoutingResponse> {
+  parseResponse(_response: Response): Promise<msdyn_InitEntityRoutingResponse> {
     // No return value (204 No Content)
-    return new msdyn_InitEntityRoutingResponse();
+    return Promise.resolve(new msdyn_InitEntityRoutingResponse());
   }
 }
 
@@ -72,7 +72,7 @@ export class msdyn_InitEntityRoutingResponse extends OrganizationResponse {
     super("msdyn_InitEntityRouting");
   }
 
-  static fromResponse(_data: unknown): msdyn_InitEntityRoutingResponse {
+  static fromResponse(_data?: unknown): msdyn_InitEntityRoutingResponse {
     return new msdyn_InitEntityRoutingResponse();
   }
 }

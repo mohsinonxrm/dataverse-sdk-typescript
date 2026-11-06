@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_ExecuteSIRequestResponse as msdyn_ExecuteSIRequestResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_ExecuteSIRequest message, by their CSDL names. A parameter the CSDL declares
@@ -51,23 +49,33 @@ export class msdyn_ExecuteSIRequestRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ExecuteSIRequestResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_ExecuteSIRequestResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_ExecuteSIRequestResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_ExecuteSIRequest action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_ExecuteSIRequestResult {
+  "@odata.context"?: string;
+  Response: string;
+}
+
+/**
  * msdyn_ExecuteSIRequest response message
+ *
+ * `result` is the value the msdyn_ExecuteSIRequest action returns (see {@link msdyn_ExecuteSIRequestResult}).
  */
 export class msdyn_ExecuteSIRequestResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ExecuteSIRequestResponseData) {
+  constructor(public result: msdyn_ExecuteSIRequestResult) {
     super("msdyn_ExecuteSIRequest");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_ExecuteSIRequestResponse {
-    return new msdyn_ExecuteSIRequestResponse(
-      responseObject<msdyn_ExecuteSIRequestResponseData>(data)
-    );
+    return new msdyn_ExecuteSIRequestResponse(data as msdyn_ExecuteSIRequestResult);
   }
 }

@@ -6,11 +6,11 @@ import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { PrincipalAccess } from "./types/index.js";
 
 /**
- * Response from ModifyAccess action
+ * Response from the ModifyAccess action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface ModifyAccessResponse {
-  // No content returned
-}
+export type ModifyAccessResponse = void;
 
 /**
  * Parameters of the ModifyAccess action, by their CSDL names. A parameter the CSDL declares
@@ -47,9 +47,8 @@ export class ModifyAccessAction implements Executable<ModifyAccessResponse> {
     };
   }
 
-  async parseResponse(response: Response): Promise<ModifyAccessResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ModifyAccessResponse;
-    return (await response.json()) as ModifyAccessResponse;
+  parseResponse(_response: Response): Promise<ModifyAccessResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

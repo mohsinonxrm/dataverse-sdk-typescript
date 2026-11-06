@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import type { product, uom } from "./types/index.js";
 
 /**
- * Response from GetQuantityDecimal function
+ * Response from the GetQuantityDecimal function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface GetQuantityDecimal_salesorderResponse {
+  "@odata.context"?: string;
   Quantity: number;
 }
 
@@ -60,8 +63,7 @@ export class GetQuantityDecimal_salesorderFunction implements Executable<GetQuan
   }
 
   async parseResponse(response: Response): Promise<GetQuantityDecimal_salesorderResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as GetQuantityDecimal_salesorderResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as GetQuantityDecimal_salesorderResponse;
   }
 }

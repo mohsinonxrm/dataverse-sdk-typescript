@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from _ServiceCalendarAction action
+ * Response from the _ServiceCalendarAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface _ServiceCalendarActionResponse {
+  "@odata.context"?: string;
   OutputParameter: string;
 }
 
@@ -44,8 +47,7 @@ export class _ServiceCalendarActionAction implements Executable<_ServiceCalendar
   }
 
   async parseResponse(response: Response): Promise<_ServiceCalendarActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as _ServiceCalendarActionResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as _ServiceCalendarActionResponse;
   }
 }

@@ -1,8 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { BulkRetainResponse as BulkRetainResponseData } from "./types/index.js";
+import type { EntityRecordCountCollection } from "./types/index.js";
 
 /**
  * Parameters of the BulkRetain message, by their CSDL names. A parameter the CSDL declares
@@ -53,21 +52,37 @@ export class BulkRetainRequest
   }
 
   async parseResponse(response: Response): Promise<BulkRetainResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return BulkRetainResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return BulkRetainResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the BulkRetain action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface BulkRetainResult {
+  "@odata.context"?: string;
+  EntityCountCollection: EntityRecordCountCollection;
+  FailedRecords: number;
+  HasMoreRecords: boolean;
+  MaxMarkedVersion: number;
+  PagingCookie: string;
+}
+
+/**
  * BulkRetain response message
+ *
+ * `result` is the value the BulkRetain action returns (see {@link BulkRetainResult}).
  */
 export class BulkRetainResponse extends OrganizationResponse {
-  constructor(public result: BulkRetainResponseData) {
+  constructor(public result: BulkRetainResult) {
     super("BulkRetain");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): BulkRetainResponse {
-    return new BulkRetainResponse(responseObject<BulkRetainResponseData>(data));
+    return new BulkRetainResponse(data as BulkRetainResult);
   }
 }

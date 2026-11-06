@@ -42,9 +42,9 @@ export class msdyn_sendFeedbackRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_sendFeedbackResponse> {
+  parseResponse(_response: Response): Promise<msdyn_sendFeedbackResponse> {
     // No return value (204 No Content)
-    return new msdyn_sendFeedbackResponse();
+    return Promise.resolve(new msdyn_sendFeedbackResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_sendFeedbackResponse extends OrganizationResponse {
     super("msdyn_sendFeedback");
   }
 
-  static fromResponse(_data: unknown): msdyn_sendFeedbackResponse {
+  static fromResponse(_data?: unknown): msdyn_sendFeedbackResponse {
     return new msdyn_sendFeedbackResponse();
   }
 }

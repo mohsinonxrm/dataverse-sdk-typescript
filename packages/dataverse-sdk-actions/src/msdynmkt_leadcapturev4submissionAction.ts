@@ -4,11 +4,11 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdynmkt_leadcapturev4submission action
+ * Response from the msdynmkt_leadcapturev4submission action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdynmkt_leadcapturev4submissionResponse {
-  // No content returned
-}
+export type msdynmkt_leadcapturev4submissionResponse = void;
 
 /**
  * Parameters of the msdynmkt_leadcapturev4submission action, by their CSDL names. A parameter the CSDL declares
@@ -47,9 +47,8 @@ export class msdynmkt_leadcapturev4submissionAction implements Executable<msdynm
     };
   }
 
-  async parseResponse(response: Response): Promise<msdynmkt_leadcapturev4submissionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdynmkt_leadcapturev4submissionResponse;
-    return (await response.json()) as msdynmkt_leadcapturev4submissionResponse;
+  parseResponse(_response: Response): Promise<msdynmkt_leadcapturev4submissionResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

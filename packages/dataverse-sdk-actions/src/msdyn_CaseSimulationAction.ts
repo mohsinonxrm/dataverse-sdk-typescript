@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_CaseSimulation action
+ * Response from the msdyn_CaseSimulation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_CaseSimulationResponse {
+  "@odata.context"?: string;
   msdyn_AccuracyPercentage: number;
   msdyn_HasMoreRecords: string;
   msdyn_NeedThrottling: string;
@@ -47,8 +50,7 @@ export class msdyn_CaseSimulationAction implements Executable<msdyn_CaseSimulati
   }
 
   async parseResponse(response: Response): Promise<msdyn_CaseSimulationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_CaseSimulationResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_CaseSimulationResponse;
   }
 }

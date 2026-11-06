@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from ListChildDesktopFlows action
+ * Response from the ListChildDesktopFlows action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface ListChildDesktopFlowsResponse {
+  "@odata.context"?: string;
   childFlows: string;
 }
 
@@ -32,8 +35,7 @@ export class ListChildDesktopFlowsAction implements Executable<ListChildDesktopF
   }
 
   async parseResponse(response: Response): Promise<ListChildDesktopFlowsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ListChildDesktopFlowsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as ListChildDesktopFlowsResponse;
   }
 }

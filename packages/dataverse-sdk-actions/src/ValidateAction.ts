@@ -3,9 +3,12 @@ import { requestBody } from "./internal/requestBody.js";
 import type { TypedActivitypointer, ValidationResult } from "./types/index.js";
 
 /**
- * Response from Validate action
+ * Response from the Validate action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface ValidateResponse {
+  "@odata.context"?: string;
   Result: ValidationResult[];
 }
 
@@ -43,8 +46,7 @@ export class ValidateAction implements Executable<ValidateResponse> {
   }
 
   async parseResponse(response: Response): Promise<ValidateResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ValidateResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as ValidateResponse;
   }
 }

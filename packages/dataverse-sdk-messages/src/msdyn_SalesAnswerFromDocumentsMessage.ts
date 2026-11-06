@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesAnswerFromDocumentsResponse as msdyn_SalesAnswerFromDocumentsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesAnswerFromDocuments message, by their CSDL names. A parameter the CSDL declares
@@ -53,23 +51,33 @@ export class msdyn_SalesAnswerFromDocumentsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAnswerFromDocumentsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_SalesAnswerFromDocumentsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesAnswerFromDocumentsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SalesAnswerFromDocuments action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesAnswerFromDocumentsResult {
+  "@odata.context"?: string;
+  msdyn_sales_copilot_output: string;
+}
+
+/**
  * msdyn_SalesAnswerFromDocuments response message
+ *
+ * `result` is the value the msdyn_SalesAnswerFromDocuments action returns (see {@link msdyn_SalesAnswerFromDocumentsResult}).
  */
 export class msdyn_SalesAnswerFromDocumentsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAnswerFromDocumentsResponseData) {
+  constructor(public result: msdyn_SalesAnswerFromDocumentsResult) {
     super("msdyn_SalesAnswerFromDocuments");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesAnswerFromDocumentsResponse {
-    return new msdyn_SalesAnswerFromDocumentsResponse(
-      responseObject<msdyn_SalesAnswerFromDocumentsResponseData>(data)
-    );
+    return new msdyn_SalesAnswerFromDocumentsResponse(data as msdyn_SalesAnswerFromDocumentsResult);
   }
 }

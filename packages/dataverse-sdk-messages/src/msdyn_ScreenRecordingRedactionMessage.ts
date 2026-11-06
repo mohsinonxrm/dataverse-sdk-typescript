@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_ScreenRecordingRedactionResponse as msdyn_ScreenRecordingRedactionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_ScreenRecordingRedaction message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,33 @@ export class msdyn_ScreenRecordingRedactionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ScreenRecordingRedactionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_ScreenRecordingRedactionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_ScreenRecordingRedactionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_ScreenRecordingRedaction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_ScreenRecordingRedactionResult {
+  "@odata.context"?: string;
+  ResponseData: string;
+}
+
+/**
  * msdyn_ScreenRecordingRedaction response message
+ *
+ * `result` is the value the msdyn_ScreenRecordingRedaction action returns (see {@link msdyn_ScreenRecordingRedactionResult}).
  */
 export class msdyn_ScreenRecordingRedactionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ScreenRecordingRedactionResponseData) {
+  constructor(public result: msdyn_ScreenRecordingRedactionResult) {
     super("msdyn_ScreenRecordingRedaction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_ScreenRecordingRedactionResponse {
-    return new msdyn_ScreenRecordingRedactionResponse(
-      responseObject<msdyn_ScreenRecordingRedactionResponseData>(data)
-    );
+    return new msdyn_ScreenRecordingRedactionResponse(data as msdyn_ScreenRecordingRedactionResult);
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetResourcePopupDetailsResponse as msdyn_GetResourcePopupDetailsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetResourcePopupDetails message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,33 @@ export class msdyn_GetResourcePopupDetailsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetResourcePopupDetailsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetResourcePopupDetailsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetResourcePopupDetailsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetResourcePopupDetails action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetResourcePopupDetailsResult {
+  "@odata.context"?: string;
+  ResourceDetails: string;
+}
+
+/**
  * msdyn_GetResourcePopupDetails response message
+ *
+ * `result` is the value the msdyn_GetResourcePopupDetails action returns (see {@link msdyn_GetResourcePopupDetailsResult}).
  */
 export class msdyn_GetResourcePopupDetailsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetResourcePopupDetailsResponseData) {
+  constructor(public result: msdyn_GetResourcePopupDetailsResult) {
     super("msdyn_GetResourcePopupDetails");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetResourcePopupDetailsResponse {
-    return new msdyn_GetResourcePopupDetailsResponse(
-      responseObject<msdyn_GetResourcePopupDetailsResponseData>(data)
-    );
+    return new msdyn_GetResourcePopupDetailsResponse(data as msdyn_GetResourcePopupDetailsResult);
   }
 }

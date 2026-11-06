@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msft_DataEngineIndexMgmt_CreateIndexResponse as msft_DataEngineIndexMgmt_CreateIndexResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msft_DataEngineIndexMgmt_CreateIndex message, by their CSDL names. A parameter the CSDL declares
@@ -49,24 +47,35 @@ export class msft_DataEngineIndexMgmt_CreateIndexRequest
   }
 
   async parseResponse(response: Response): Promise<msft_DataEngineIndexMgmt_CreateIndexResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msft_DataEngineIndexMgmt_CreateIndexResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msft_DataEngineIndexMgmt_CreateIndexResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msft_DataEngineIndexMgmt_CreateIndex action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msft_DataEngineIndexMgmt_CreateIndexResult {
+  "@odata.context"?: string;
+  CreateIndex_CreateResult: boolean;
+}
+
+/**
  * msft_DataEngineIndexMgmt_CreateIndex response message
+ *
+ * `result` is the value the msft_DataEngineIndexMgmt_CreateIndex action returns (see {@link msft_DataEngineIndexMgmt_CreateIndexResult}).
  */
 export class msft_DataEngineIndexMgmt_CreateIndexResponse extends OrganizationResponse {
-  constructor(public result: msft_DataEngineIndexMgmt_CreateIndexResponseData) {
+  constructor(public result: msft_DataEngineIndexMgmt_CreateIndexResult) {
     super("msft_DataEngineIndexMgmt_CreateIndex");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msft_DataEngineIndexMgmt_CreateIndexResponse {
     return new msft_DataEngineIndexMgmt_CreateIndexResponse(
-      responseObject<msft_DataEngineIndexMgmt_CreateIndexResponseData>(data)
+      data as msft_DataEngineIndexMgmt_CreateIndexResult
     );
   }
 }

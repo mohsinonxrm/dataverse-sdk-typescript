@@ -1,13 +1,17 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from InstantiateTemplate action
+ * Response from the InstantiateTemplate action.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface InstantiateTemplateResponse {
-  value: EntityReference[];
-}
+export type InstantiateTemplateResponse = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
 
 /**
  * Parameters of the InstantiateTemplate action, by their CSDL names. A parameter the CSDL declares
@@ -47,8 +51,9 @@ export class InstantiateTemplateAction implements Executable<InstantiateTemplate
   }
 
   async parseResponse(response: Response): Promise<InstantiateTemplateResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as InstantiateTemplateResponse;
-    return (await response.json()) as InstantiateTemplateResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return ((await response.json()) as { value: InstantiateTemplateResponse }).value;
   }
 }

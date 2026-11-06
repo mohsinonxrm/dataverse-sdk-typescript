@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_DraftFollowupEmailWithTemplateResponse as msdyn_DraftFollowupEmailWithTemplateResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_DraftFollowupEmailWithTemplate message, by their CSDL names. A parameter the CSDL declares
@@ -55,24 +53,35 @@ export class msdyn_DraftFollowupEmailWithTemplateRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_DraftFollowupEmailWithTemplateResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_DraftFollowupEmailWithTemplateResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_DraftFollowupEmailWithTemplateResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_DraftFollowupEmailWithTemplate action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_DraftFollowupEmailWithTemplateResult {
+  "@odata.context"?: string;
+  DraftedFollowupEmail: string;
+}
+
+/**
  * msdyn_DraftFollowupEmailWithTemplate response message
+ *
+ * `result` is the value the msdyn_DraftFollowupEmailWithTemplate action returns (see {@link msdyn_DraftFollowupEmailWithTemplateResult}).
  */
 export class msdyn_DraftFollowupEmailWithTemplateResponse extends OrganizationResponse {
-  constructor(public result: msdyn_DraftFollowupEmailWithTemplateResponseData) {
+  constructor(public result: msdyn_DraftFollowupEmailWithTemplateResult) {
     super("msdyn_DraftFollowupEmailWithTemplate");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_DraftFollowupEmailWithTemplateResponse {
     return new msdyn_DraftFollowupEmailWithTemplateResponse(
-      responseObject<msdyn_DraftFollowupEmailWithTemplateResponseData>(data)
+      data as msdyn_DraftFollowupEmailWithTemplateResult
     );
   }
 }

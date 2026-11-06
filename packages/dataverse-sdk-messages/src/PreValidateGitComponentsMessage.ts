@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { PreValidateGitComponentsResponse as PreValidateGitComponentsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the PreValidateGitComponents message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class PreValidateGitComponentsRequest
   }
 
   async parseResponse(response: Response): Promise<PreValidateGitComponentsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return PreValidateGitComponentsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return PreValidateGitComponentsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the PreValidateGitComponents action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface PreValidateGitComponentsResult {
+  "@odata.context"?: string;
+  ValidationMessages: string;
+}
+
+/**
  * PreValidateGitComponents response message
+ *
+ * `result` is the value the PreValidateGitComponents action returns (see {@link PreValidateGitComponentsResult}).
  */
 export class PreValidateGitComponentsResponse extends OrganizationResponse {
-  constructor(public result: PreValidateGitComponentsResponseData) {
+  constructor(public result: PreValidateGitComponentsResult) {
     super("PreValidateGitComponents");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): PreValidateGitComponentsResponse {
-    return new PreValidateGitComponentsResponse(
-      responseObject<PreValidateGitComponentsResponseData>(data)
-    );
+    return new PreValidateGitComponentsResponse(data as PreValidateGitComponentsResult);
   }
 }

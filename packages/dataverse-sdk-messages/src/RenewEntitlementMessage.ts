@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { entitlement } from "./types/index.js";
 
@@ -51,21 +50,35 @@ export class RenewEntitlementRequest
   }
 
   async parseResponse(response: Response): Promise<RenewEntitlementResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return RenewEntitlementResponse.fromResponse({});
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return RenewEntitlementResponse.fromResponse(undefined);
+    // The body is the record, with its annotations
     return RenewEntitlementResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the RenewEntitlement action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
+ */
+export type RenewEntitlementResult =
+  | (entitlement & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string })
+  | null;
+
+/**
  * RenewEntitlement response message
+ *
+ * `result` is the value the RenewEntitlement action returns (see {@link RenewEntitlementResult}).
  */
 export class RenewEntitlementResponse extends OrganizationResponse {
-  constructor(public result: entitlement) {
+  constructor(public result: RenewEntitlementResult) {
     super("RenewEntitlement");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): RenewEntitlementResponse {
-    return new RenewEntitlementResponse(responseObject<entitlement>(data));
+    return new RenewEntitlementResponse((data ?? null) as RenewEntitlementResult);
   }
 }

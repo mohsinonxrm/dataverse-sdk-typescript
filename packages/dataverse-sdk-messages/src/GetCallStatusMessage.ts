@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { GetCallStatusResponse as GetCallStatusResponseData } from "./types/index.js";
 
 /**
  * Parameters of the GetCallStatus message, by their CSDL names. A parameter the CSDL declares
@@ -47,21 +45,34 @@ export class GetCallStatusRequest
   }
 
   async parseResponse(response: Response): Promise<GetCallStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return GetCallStatusResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return GetCallStatusResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the GetCallStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface GetCallStatusResult {
+  "@odata.context"?: string;
+  ConversationId: string;
+  Status: string;
+}
+
+/**
  * GetCallStatus response message
+ *
+ * `result` is the value the GetCallStatus action returns (see {@link GetCallStatusResult}).
  */
 export class GetCallStatusResponse extends OrganizationResponse {
-  constructor(public result: GetCallStatusResponseData) {
+  constructor(public result: GetCallStatusResult) {
     super("GetCallStatus");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): GetCallStatusResponse {
-    return new GetCallStatusResponse(responseObject<GetCallStatusResponseData>(data));
+    return new GetCallStatusResponse(data as GetCallStatusResult);
   }
 }

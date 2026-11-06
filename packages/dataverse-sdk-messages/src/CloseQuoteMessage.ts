@@ -47,9 +47,9 @@ export class CloseQuoteRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CloseQuoteResponse> {
+  parseResponse(_response: Response): Promise<CloseQuoteResponse> {
     // No return value (204 No Content)
-    return new CloseQuoteResponse();
+    return Promise.resolve(new CloseQuoteResponse());
   }
 }
 
@@ -61,7 +61,7 @@ export class CloseQuoteResponse extends OrganizationResponse {
     super("CloseQuote");
   }
 
-  static fromResponse(_data: unknown): CloseQuoteResponse {
+  static fromResponse(_data?: unknown): CloseQuoteResponse {
     return new CloseQuoteResponse();
   }
 }

@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRuleResponse as msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRule request message
@@ -31,9 +29,7 @@ export class msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRuleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRuleResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRuleResponse.fromResponse(
       await response.json()
     );
@@ -41,18 +37,33 @@ export class msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRuleRequest
 }
 
 /**
+ * Response from the msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRule action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRuleResult {
+  "@odata.context"?: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRule response message
+ *
+ * `result` is the value the msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRule action returns (see {@link msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRuleResult}).
  */
 export class msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRuleResponseData) {
+  constructor(public result: msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRuleResult) {
     super("msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRule");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(
     data: unknown
   ): msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRuleResponse {
     return new msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRuleResponse(
-      responseObject<msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRuleResponseData>(data)
+      data as msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRuleResult
     );
   }
 }

@@ -26,9 +26,9 @@ export class QueueUpdateRibbonClientMetadataRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<QueueUpdateRibbonClientMetadataResponse> {
+  parseResponse(_response: Response): Promise<QueueUpdateRibbonClientMetadataResponse> {
     // No return value (204 No Content)
-    return new QueueUpdateRibbonClientMetadataResponse();
+    return Promise.resolve(new QueueUpdateRibbonClientMetadataResponse());
   }
 }
 
@@ -40,7 +40,7 @@ export class QueueUpdateRibbonClientMetadataResponse extends OrganizationRespons
     super("QueueUpdateRibbonClientMetadata");
   }
 
-  static fromResponse(_data: unknown): QueueUpdateRibbonClientMetadataResponse {
+  static fromResponse(_data?: unknown): QueueUpdateRibbonClientMetadataResponse {
     return new QueueUpdateRibbonClientMetadataResponse();
   }
 }

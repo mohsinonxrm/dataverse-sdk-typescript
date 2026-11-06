@@ -8,9 +8,12 @@ import type {
 } from "./types/index.js";
 
 /**
- * Response from RetrieveMetadataChanges function
+ * Response from the RetrieveMetadataChanges function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveMetadataChangesResponse {
+  "@odata.context"?: string;
   DeletedMetadata: DeletedMetadataCollection;
   EntityMetadata: ComplexEntityMetadata[];
   ServerVersionStamp: string;
@@ -86,8 +89,7 @@ export class RetrieveMetadataChangesFunction implements Executable<RetrieveMetad
   }
 
   async parseResponse(response: Response): Promise<RetrieveMetadataChangesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveMetadataChangesResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RetrieveMetadataChangesResponse;
   }
 }

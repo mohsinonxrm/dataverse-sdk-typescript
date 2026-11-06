@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { TriggerDesktopFlowRunCallbackResponse as TriggerDesktopFlowRunCallbackResponseData } from "./types/index.js";
 
 /**
  * TriggerDesktopFlowRunCallback request message
@@ -32,23 +30,33 @@ export class TriggerDesktopFlowRunCallbackRequest
   }
 
   async parseResponse(response: Response): Promise<TriggerDesktopFlowRunCallbackResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return TriggerDesktopFlowRunCallbackResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return TriggerDesktopFlowRunCallbackResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the TriggerDesktopFlowRunCallback action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface TriggerDesktopFlowRunCallbackResult {
+  "@odata.context"?: string;
+  callbackHttpResponseCode: number;
+}
+
+/**
  * TriggerDesktopFlowRunCallback response message
+ *
+ * `result` is the value the TriggerDesktopFlowRunCallback action returns (see {@link TriggerDesktopFlowRunCallbackResult}).
  */
 export class TriggerDesktopFlowRunCallbackResponse extends OrganizationResponse {
-  constructor(public result: TriggerDesktopFlowRunCallbackResponseData) {
+  constructor(public result: TriggerDesktopFlowRunCallbackResult) {
     super("TriggerDesktopFlowRunCallback");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): TriggerDesktopFlowRunCallbackResponse {
-    return new TriggerDesktopFlowRunCallbackResponse(
-      responseObject<TriggerDesktopFlowRunCallbackResponseData>(data)
-    );
+    return new TriggerDesktopFlowRunCallbackResponse(data as TriggerDesktopFlowRunCallbackResult);
   }
 }

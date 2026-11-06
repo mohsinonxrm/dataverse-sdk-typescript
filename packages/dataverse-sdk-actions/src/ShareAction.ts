@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from Share action
+ * Response from the Share action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface ShareResponse {
+  "@odata.context"?: string;
   sharingresponse: string;
 }
 
@@ -51,8 +54,7 @@ export class ShareAction implements Executable<ShareResponse> {
   }
 
   async parseResponse(response: Response): Promise<ShareResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ShareResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as ShareResponse;
   }
 }

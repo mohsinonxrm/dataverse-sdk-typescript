@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetSIPackageStatusResponse as msdyn_GetSIPackageStatusResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetSIPackageStatus message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,33 @@ export class msdyn_GetSIPackageStatusRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSIPackageStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetSIPackageStatusResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetSIPackageStatusResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetSIPackageStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetSIPackageStatusResult {
+  "@odata.context"?: string;
+  SIPackageStatus: string;
+}
+
+/**
  * msdyn_GetSIPackageStatus response message
+ *
+ * `result` is the value the msdyn_GetSIPackageStatus action returns (see {@link msdyn_GetSIPackageStatusResult}).
  */
 export class msdyn_GetSIPackageStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetSIPackageStatusResponseData) {
+  constructor(public result: msdyn_GetSIPackageStatusResult) {
     super("msdyn_GetSIPackageStatus");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetSIPackageStatusResponse {
-    return new msdyn_GetSIPackageStatusResponse(
-      responseObject<msdyn_GetSIPackageStatusResponseData>(data)
-    );
+    return new msdyn_GetSIPackageStatusResponse(data as msdyn_GetSIPackageStatusResult);
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesLeadCatchupResponse as msdyn_SalesLeadCatchupResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesLeadCatchup message, by their CSDL names. A parameter the CSDL declares
@@ -57,23 +55,36 @@ export class msdyn_SalesLeadCatchupRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesLeadCatchupResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_SalesLeadCatchupResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesLeadCatchupResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SalesLeadCatchup action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesLeadCatchupResult {
+  "@odata.context"?: string;
+  msdyn_sales_copilot_output: string;
+  msdyn_summary: string;
+  msdyn_summary_raw: string;
+  msdyn_version: string;
+}
+
+/**
  * msdyn_SalesLeadCatchup response message
+ *
+ * `result` is the value the msdyn_SalesLeadCatchup action returns (see {@link msdyn_SalesLeadCatchupResult}).
  */
 export class msdyn_SalesLeadCatchupResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesLeadCatchupResponseData) {
+  constructor(public result: msdyn_SalesLeadCatchupResult) {
     super("msdyn_SalesLeadCatchup");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesLeadCatchupResponse {
-    return new msdyn_SalesLeadCatchupResponse(
-      responseObject<msdyn_SalesLeadCatchupResponseData>(data)
-    );
+    return new msdyn_SalesLeadCatchupResponse(data as msdyn_SalesLeadCatchupResult);
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_TelephonyPhoneNumberReservationStatusActionResponse as msdyn_TelephonyPhoneNumberReservationStatusActionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_TelephonyPhoneNumberReservationStatusAction message, by their CSDL names. A parameter the CSDL declares
@@ -47,9 +45,7 @@ export class msdyn_TelephonyPhoneNumberReservationStatusActionRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_TelephonyPhoneNumberReservationStatusActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_TelephonyPhoneNumberReservationStatusActionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_TelephonyPhoneNumberReservationStatusActionResponse.fromResponse(
       await response.json()
     );
@@ -57,16 +53,29 @@ export class msdyn_TelephonyPhoneNumberReservationStatusActionRequest
 }
 
 /**
+ * Response from the msdyn_TelephonyPhoneNumberReservationStatusAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_TelephonyPhoneNumberReservationStatusActionResult {
+  "@odata.context"?: string;
+  ActionResult: string;
+}
+
+/**
  * msdyn_TelephonyPhoneNumberReservationStatusAction response message
+ *
+ * `result` is the value the msdyn_TelephonyPhoneNumberReservationStatusAction action returns (see {@link msdyn_TelephonyPhoneNumberReservationStatusActionResult}).
  */
 export class msdyn_TelephonyPhoneNumberReservationStatusActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_TelephonyPhoneNumberReservationStatusActionResponseData) {
+  constructor(public result: msdyn_TelephonyPhoneNumberReservationStatusActionResult) {
     super("msdyn_TelephonyPhoneNumberReservationStatusAction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_TelephonyPhoneNumberReservationStatusActionResponse {
     return new msdyn_TelephonyPhoneNumberReservationStatusActionResponse(
-      responseObject<msdyn_TelephonyPhoneNumberReservationStatusActionResponseData>(data)
+      data as msdyn_TelephonyPhoneNumberReservationStatusActionResult
     );
   }
 }

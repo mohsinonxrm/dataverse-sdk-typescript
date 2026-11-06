@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_ValidateCustomMessagingApplicationResponse as msdyn_ValidateCustomMessagingApplicationResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_ValidateCustomMessagingApplication message, by their CSDL names. A parameter the CSDL declares
@@ -51,24 +49,36 @@ export class msdyn_ValidateCustomMessagingApplicationRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_ValidateCustomMessagingApplicationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_ValidateCustomMessagingApplicationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_ValidateCustomMessagingApplicationResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_ValidateCustomMessagingApplication action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_ValidateCustomMessagingApplicationResult {
+  "@odata.context"?: string;
+  IsValidBCR: boolean;
+  LastValidatedDate: string;
+}
+
+/**
  * msdyn_ValidateCustomMessagingApplication response message
+ *
+ * `result` is the value the msdyn_ValidateCustomMessagingApplication action returns (see {@link msdyn_ValidateCustomMessagingApplicationResult}).
  */
 export class msdyn_ValidateCustomMessagingApplicationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ValidateCustomMessagingApplicationResponseData) {
+  constructor(public result: msdyn_ValidateCustomMessagingApplicationResult) {
     super("msdyn_ValidateCustomMessagingApplication");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_ValidateCustomMessagingApplicationResponse {
     return new msdyn_ValidateCustomMessagingApplicationResponse(
-      responseObject<msdyn_ValidateCustomMessagingApplicationResponseData>(data)
+      data as msdyn_ValidateCustomMessagingApplicationResult
     );
   }
 }

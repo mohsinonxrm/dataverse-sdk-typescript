@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdynmkt_checkconsentResponse as msdynmkt_checkconsentResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdynmkt_checkconsent message, by their CSDL names. A parameter the CSDL declares
@@ -55,23 +53,36 @@ export class msdynmkt_checkconsentRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_checkconsentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdynmkt_checkconsentResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdynmkt_checkconsentResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdynmkt_checkconsent action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdynmkt_checkconsentResult {
+  "@odata.context"?: string;
+  msdynmkt_errormessage: string;
+  msdynmkt_isconsentgiven: boolean;
+  msdynmkt_issuccess: boolean;
+  msdynmkt_reason: string;
+}
+
+/**
  * msdynmkt_checkconsent response message
+ *
+ * `result` is the value the msdynmkt_checkconsent action returns (see {@link msdynmkt_checkconsentResult}).
  */
 export class msdynmkt_checkconsentResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_checkconsentResponseData) {
+  constructor(public result: msdynmkt_checkconsentResult) {
     super("msdynmkt_checkconsent");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdynmkt_checkconsentResponse {
-    return new msdynmkt_checkconsentResponse(
-      responseObject<msdynmkt_checkconsentResponseData>(data)
-    );
+    return new msdynmkt_checkconsentResponse(data as msdynmkt_checkconsentResult);
   }
 }

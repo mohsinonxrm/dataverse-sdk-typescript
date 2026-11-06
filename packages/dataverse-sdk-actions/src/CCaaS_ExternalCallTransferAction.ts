@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CCaaS_ExternalCallTransfer action
+ * Response from the CCaaS_ExternalCallTransfer action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface CCaaS_ExternalCallTransferResponse {
-  // No content returned
-}
+export type CCaaS_ExternalCallTransferResponse = void;
 
 /**
  * Parameters of the CCaaS_ExternalCallTransfer action, by their CSDL names. A parameter the CSDL declares
@@ -56,9 +56,8 @@ export class CCaaS_ExternalCallTransferAction implements Executable<CCaaS_Extern
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_ExternalCallTransferResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CCaaS_ExternalCallTransferResponse;
-    return (await response.json()) as CCaaS_ExternalCallTransferResponse;
+  parseResponse(_response: Response): Promise<CCaaS_ExternalCallTransferResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CCaaS_StartSecondaryChannel action
+ * Response from the CCaaS_StartSecondaryChannel action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface CCaaS_StartSecondaryChannelResponse {
-  // No content returned
-}
+export type CCaaS_StartSecondaryChannelResponse = void;
 
 /**
  * Parameters of the CCaaS_StartSecondaryChannel action, by their CSDL names. A parameter the CSDL declares
@@ -50,9 +50,8 @@ export class CCaaS_StartSecondaryChannelAction implements Executable<CCaaS_Start
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_StartSecondaryChannelResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CCaaS_StartSecondaryChannelResponse;
-    return (await response.json()) as CCaaS_StartSecondaryChannelResponse;
+  parseResponse(_response: Response): Promise<CCaaS_StartSecondaryChannelResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

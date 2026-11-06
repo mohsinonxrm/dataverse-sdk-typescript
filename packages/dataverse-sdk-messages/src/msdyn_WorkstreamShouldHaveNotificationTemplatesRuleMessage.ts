@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_WorkstreamShouldHaveNotificationTemplatesRuleResponse as msdyn_WorkstreamShouldHaveNotificationTemplatesRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_WorkstreamShouldHaveNotificationTemplatesRule request message
@@ -31,9 +29,7 @@ export class msdyn_WorkstreamShouldHaveNotificationTemplatesRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_WorkstreamShouldHaveNotificationTemplatesRuleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_WorkstreamShouldHaveNotificationTemplatesRuleResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_WorkstreamShouldHaveNotificationTemplatesRuleResponse.fromResponse(
       await response.json()
     );
@@ -41,16 +37,31 @@ export class msdyn_WorkstreamShouldHaveNotificationTemplatesRuleRequest
 }
 
 /**
+ * Response from the msdyn_WorkstreamShouldHaveNotificationTemplatesRule action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_WorkstreamShouldHaveNotificationTemplatesRuleResult {
+  "@odata.context"?: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_WorkstreamShouldHaveNotificationTemplatesRule response message
+ *
+ * `result` is the value the msdyn_WorkstreamShouldHaveNotificationTemplatesRule action returns (see {@link msdyn_WorkstreamShouldHaveNotificationTemplatesRuleResult}).
  */
 export class msdyn_WorkstreamShouldHaveNotificationTemplatesRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_WorkstreamShouldHaveNotificationTemplatesRuleResponseData) {
+  constructor(public result: msdyn_WorkstreamShouldHaveNotificationTemplatesRuleResult) {
     super("msdyn_WorkstreamShouldHaveNotificationTemplatesRule");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_WorkstreamShouldHaveNotificationTemplatesRuleResponse {
     return new msdyn_WorkstreamShouldHaveNotificationTemplatesRuleResponse(
-      responseObject<msdyn_WorkstreamShouldHaveNotificationTemplatesRuleResponseData>(data)
+      data as msdyn_WorkstreamShouldHaveNotificationTemplatesRuleResult
     );
   }
 }

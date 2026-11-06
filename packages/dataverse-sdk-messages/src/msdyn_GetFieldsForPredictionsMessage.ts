@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_GetFieldsForPredictionsResponse as msdyn_GetFieldsForPredictionsResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetFieldsForPredictions request message
@@ -29,23 +27,34 @@ export class msdyn_GetFieldsForPredictionsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetFieldsForPredictionsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetFieldsForPredictionsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetFieldsForPredictionsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetFieldsForPredictions action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetFieldsForPredictionsResult {
+  "@odata.context"?: string;
+  FieldsForPrediction: string;
+  SettingsConfiguration: string;
+}
+
+/**
  * msdyn_GetFieldsForPredictions response message
+ *
+ * `result` is the value the msdyn_GetFieldsForPredictions action returns (see {@link msdyn_GetFieldsForPredictionsResult}).
  */
 export class msdyn_GetFieldsForPredictionsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetFieldsForPredictionsResponseData) {
+  constructor(public result: msdyn_GetFieldsForPredictionsResult) {
     super("msdyn_GetFieldsForPredictions");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetFieldsForPredictionsResponse {
-    return new msdyn_GetFieldsForPredictionsResponse(
-      responseObject<msdyn_GetFieldsForPredictionsResponseData>(data)
-    );
+    return new msdyn_GetFieldsForPredictionsResponse(data as msdyn_GetFieldsForPredictionsResult);
   }
 }

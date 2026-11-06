@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_WKWGDPRDeleteStatusResponse as msdyn_WKWGDPRDeleteStatusResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_WKWGDPRDeleteStatus message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,33 @@ export class msdyn_WKWGDPRDeleteStatusRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_WKWGDPRDeleteStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_WKWGDPRDeleteStatusResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_WKWGDPRDeleteStatusResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_WKWGDPRDeleteStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_WKWGDPRDeleteStatusResult {
+  "@odata.context"?: string;
+  Response: string;
+}
+
+/**
  * msdyn_WKWGDPRDeleteStatus response message
+ *
+ * `result` is the value the msdyn_WKWGDPRDeleteStatus action returns (see {@link msdyn_WKWGDPRDeleteStatusResult}).
  */
 export class msdyn_WKWGDPRDeleteStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_WKWGDPRDeleteStatusResponseData) {
+  constructor(public result: msdyn_WKWGDPRDeleteStatusResult) {
     super("msdyn_WKWGDPRDeleteStatus");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_WKWGDPRDeleteStatusResponse {
-    return new msdyn_WKWGDPRDeleteStatusResponse(
-      responseObject<msdyn_WKWGDPRDeleteStatusResponseData>(data)
-    );
+    return new msdyn_WKWGDPRDeleteStatusResponse(data as msdyn_WKWGDPRDeleteStatusResult);
   }
 }

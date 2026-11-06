@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CCaaS_GetQueuesAWTResponse as CCaaS_GetQueuesAWTResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CCaaS_GetQueuesAWT message, by their CSDL names. A parameter the CSDL declares
@@ -47,21 +45,33 @@ export class CCaaS_GetQueuesAWTRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_GetQueuesAWTResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CCaaS_GetQueuesAWTResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CCaaS_GetQueuesAWTResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CCaaS_GetQueuesAWT action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CCaaS_GetQueuesAWTResult {
+  "@odata.context"?: string;
+  Queues: string;
+}
+
+/**
  * CCaaS_GetQueuesAWT response message
+ *
+ * `result` is the value the CCaaS_GetQueuesAWT action returns (see {@link CCaaS_GetQueuesAWTResult}).
  */
 export class CCaaS_GetQueuesAWTResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_GetQueuesAWTResponseData) {
+  constructor(public result: CCaaS_GetQueuesAWTResult) {
     super("CCaaS_GetQueuesAWT");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CCaaS_GetQueuesAWTResponse {
-    return new CCaaS_GetQueuesAWTResponse(responseObject<CCaaS_GetQueuesAWTResponseData>(data));
+    return new CCaaS_GetQueuesAWTResponse(data as CCaaS_GetQueuesAWTResult);
   }
 }

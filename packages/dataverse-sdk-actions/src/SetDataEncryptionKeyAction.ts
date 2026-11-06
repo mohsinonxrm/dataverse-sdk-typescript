@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from SetDataEncryptionKey action
+ * Response from the SetDataEncryptionKey action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface SetDataEncryptionKeyResponse {
-  // No content returned
-}
+export type SetDataEncryptionKeyResponse = void;
 
 /**
  * Parameters of the SetDataEncryptionKey action, by their CSDL names. A parameter the CSDL declares
@@ -43,9 +43,8 @@ export class SetDataEncryptionKeyAction implements Executable<SetDataEncryptionK
     };
   }
 
-  async parseResponse(response: Response): Promise<SetDataEncryptionKeyResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as SetDataEncryptionKeyResponse;
-    return (await response.json()) as SetDataEncryptionKeyResponse;
+  parseResponse(_response: Response): Promise<SetDataEncryptionKeyResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

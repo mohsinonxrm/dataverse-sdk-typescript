@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_InitiateCCaaSCloseConversation action
+ * Response from the msdyn_InitiateCCaaSCloseConversation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_InitiateCCaaSCloseConversationResponse {
+  "@odata.context"?: string;
   msdyn_InitiateCCaaSCloseConversationAPIResponse: string;
 }
 
@@ -46,8 +49,7 @@ export class msdyn_InitiateCCaaSCloseConversationAction implements Executable<ms
   }
 
   async parseResponse(response: Response): Promise<msdyn_InitiateCCaaSCloseConversationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_InitiateCCaaSCloseConversationResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_InitiateCCaaSCloseConversationResponse;
   }
 }

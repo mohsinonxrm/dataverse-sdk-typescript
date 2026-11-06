@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CCaaS_BulkQueueAssignmentResponse as CCaaS_BulkQueueAssignmentResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CCaaS_BulkQueueAssignment message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,33 @@ export class CCaaS_BulkQueueAssignmentRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_BulkQueueAssignmentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CCaaS_BulkQueueAssignmentResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CCaaS_BulkQueueAssignmentResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CCaaS_BulkQueueAssignment action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CCaaS_BulkQueueAssignmentResult {
+  "@odata.context"?: string;
+  BulkActionId: string;
+}
+
+/**
  * CCaaS_BulkQueueAssignment response message
+ *
+ * `result` is the value the CCaaS_BulkQueueAssignment action returns (see {@link CCaaS_BulkQueueAssignmentResult}).
  */
 export class CCaaS_BulkQueueAssignmentResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_BulkQueueAssignmentResponseData) {
+  constructor(public result: CCaaS_BulkQueueAssignmentResult) {
     super("CCaaS_BulkQueueAssignment");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CCaaS_BulkQueueAssignmentResponse {
-    return new CCaaS_BulkQueueAssignmentResponse(
-      responseObject<CCaaS_BulkQueueAssignmentResponseData>(data)
-    );
+    return new CCaaS_BulkQueueAssignmentResponse(data as CCaaS_BulkQueueAssignmentResult);
   }
 }

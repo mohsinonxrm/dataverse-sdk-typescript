@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CCaaS_VoiceprintCustomerDataDeleteResponse as CCaaS_VoiceprintCustomerDataDeleteResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CCaaS_VoiceprintCustomerDataDelete message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,37 @@ export class CCaaS_VoiceprintCustomerDataDeleteRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_VoiceprintCustomerDataDeleteResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CCaaS_VoiceprintCustomerDataDeleteResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CCaaS_VoiceprintCustomerDataDeleteResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CCaaS_VoiceprintCustomerDataDelete action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CCaaS_VoiceprintCustomerDataDeleteResult {
+  "@odata.context"?: string;
+  AffectedCount: number;
+  ErrorMessage: string;
+  StatusCode: string;
+}
+
+/**
  * CCaaS_VoiceprintCustomerDataDelete response message
+ *
+ * `result` is the value the CCaaS_VoiceprintCustomerDataDelete action returns (see {@link CCaaS_VoiceprintCustomerDataDeleteResult}).
  */
 export class CCaaS_VoiceprintCustomerDataDeleteResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_VoiceprintCustomerDataDeleteResponseData) {
+  constructor(public result: CCaaS_VoiceprintCustomerDataDeleteResult) {
     super("CCaaS_VoiceprintCustomerDataDelete");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CCaaS_VoiceprintCustomerDataDeleteResponse {
     return new CCaaS_VoiceprintCustomerDataDeleteResponse(
-      responseObject<CCaaS_VoiceprintCustomerDataDeleteResponseData>(data)
+      data as CCaaS_VoiceprintCustomerDataDeleteResult
     );
   }
 }

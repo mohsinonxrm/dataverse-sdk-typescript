@@ -46,9 +46,9 @@ export class UploadBlockRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<UploadBlockResponse> {
+  parseResponse(_response: Response): Promise<UploadBlockResponse> {
     // No return value (204 No Content)
-    return new UploadBlockResponse();
+    return Promise.resolve(new UploadBlockResponse());
   }
 }
 
@@ -60,7 +60,7 @@ export class UploadBlockResponse extends OrganizationResponse {
     super("UploadBlock");
   }
 
-  static fromResponse(_data: unknown): UploadBlockResponse {
+  static fromResponse(_data?: unknown): UploadBlockResponse {
     return new UploadBlockResponse();
   }
 }

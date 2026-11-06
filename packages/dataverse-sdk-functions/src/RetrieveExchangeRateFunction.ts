@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from RetrieveExchangeRate function
+ * Response from the RetrieveExchangeRate function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveExchangeRateResponse {
+  "@odata.context"?: string;
   ExchangeRate: number;
 }
 
@@ -48,8 +51,7 @@ export class RetrieveExchangeRateFunction implements Executable<RetrieveExchange
   }
 
   async parseResponse(response: Response): Promise<RetrieveExchangeRateResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveExchangeRateResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RetrieveExchangeRateResponse;
   }
 }

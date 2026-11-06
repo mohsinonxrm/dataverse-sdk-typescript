@@ -50,9 +50,9 @@ export class CCaaS_InitiateQueueAssignmentRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_InitiateQueueAssignmentResponse> {
+  parseResponse(_response: Response): Promise<CCaaS_InitiateQueueAssignmentResponse> {
     // No return value (204 No Content)
-    return new CCaaS_InitiateQueueAssignmentResponse();
+    return Promise.resolve(new CCaaS_InitiateQueueAssignmentResponse());
   }
 }
 
@@ -64,7 +64,7 @@ export class CCaaS_InitiateQueueAssignmentResponse extends OrganizationResponse 
     super("CCaaS_InitiateQueueAssignment");
   }
 
-  static fromResponse(_data: unknown): CCaaS_InitiateQueueAssignmentResponse {
+  static fromResponse(_data?: unknown): CCaaS_InitiateQueueAssignmentResponse {
     return new CCaaS_InitiateQueueAssignmentResponse();
   }
 }

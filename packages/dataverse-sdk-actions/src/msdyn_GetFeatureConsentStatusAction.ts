@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_GetFeatureConsentStatus action
+ * Response from the msdyn_GetFeatureConsentStatus action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_GetFeatureConsentStatusResponse {
-  // No content returned
-}
+export type msdyn_GetFeatureConsentStatusResponse = void;
 
 /**
  * Parameters of the msdyn_GetFeatureConsentStatus action, by their CSDL names. A parameter the CSDL declares
@@ -41,9 +41,8 @@ export class msdyn_GetFeatureConsentStatusAction implements Executable<msdyn_Get
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_GetFeatureConsentStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_GetFeatureConsentStatusResponse;
-    return (await response.json()) as msdyn_GetFeatureConsentStatusResponse;
+  parseResponse(_response: Response): Promise<msdyn_GetFeatureConsentStatusResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdynmkt_getunsubscribelinkResponse as msdynmkt_getunsubscribelinkResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdynmkt_getunsubscribelink message, by their CSDL names. A parameter the CSDL declares
@@ -65,23 +63,36 @@ export class msdynmkt_getunsubscribelinkRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_getunsubscribelinkResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdynmkt_getunsubscribelinkResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdynmkt_getunsubscribelinkResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdynmkt_getunsubscribelink action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdynmkt_getunsubscribelinkResult {
+  "@odata.context"?: string;
+  msdynmkt_companyaddress: string;
+  msdynmkt_errormessage: string;
+  msdynmkt_issuccess: boolean;
+  msdynmkt_unsubscribelink: string;
+}
+
+/**
  * msdynmkt_getunsubscribelink response message
+ *
+ * `result` is the value the msdynmkt_getunsubscribelink action returns (see {@link msdynmkt_getunsubscribelinkResult}).
  */
 export class msdynmkt_getunsubscribelinkResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_getunsubscribelinkResponseData) {
+  constructor(public result: msdynmkt_getunsubscribelinkResult) {
     super("msdynmkt_getunsubscribelink");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdynmkt_getunsubscribelinkResponse {
-    return new msdynmkt_getunsubscribelinkResponse(
-      responseObject<msdynmkt_getunsubscribelinkResponseData>(data)
-    );
+    return new msdynmkt_getunsubscribelinkResponse(data as msdynmkt_getunsubscribelinkResult);
   }
 }

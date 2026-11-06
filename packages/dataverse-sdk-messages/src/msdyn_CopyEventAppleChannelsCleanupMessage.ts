@@ -26,9 +26,9 @@ export class msdyn_CopyEventAppleChannelsCleanupRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_CopyEventAppleChannelsCleanupResponse> {
+  parseResponse(_response: Response): Promise<msdyn_CopyEventAppleChannelsCleanupResponse> {
     // No return value (204 No Content)
-    return new msdyn_CopyEventAppleChannelsCleanupResponse();
+    return Promise.resolve(new msdyn_CopyEventAppleChannelsCleanupResponse());
   }
 }
 
@@ -40,7 +40,7 @@ export class msdyn_CopyEventAppleChannelsCleanupResponse extends OrganizationRes
     super("msdyn_CopyEventAppleChannelsCleanup");
   }
 
-  static fromResponse(_data: unknown): msdyn_CopyEventAppleChannelsCleanupResponse {
+  static fromResponse(_data?: unknown): msdyn_CopyEventAppleChannelsCleanupResponse {
     return new msdyn_CopyEventAppleChannelsCleanupResponse();
   }
 }

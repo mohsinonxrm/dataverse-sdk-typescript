@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { msdyn_SalesDataQualityAgent_ProcessRCSInputResponse as msdyn_SalesDataQualityAgent_ProcessRCSInputResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesDataQualityAgent_ProcessRCSInput message, by their CSDL names. A parameter the CSDL declares
@@ -49,24 +47,37 @@ export class msdyn_SalesDataQualityAgent_ProcessRCSInputRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesDataQualityAgent_ProcessRCSInputResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_SalesDataQualityAgent_ProcessRCSInputResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesDataQualityAgent_ProcessRCSInputResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SalesDataQualityAgent_ProcessRCSInput action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesDataQualityAgent_ProcessRCSInputResult {
+  "@odata.context"?: string;
+  msdyn_Emails: string;
+  msdyn_Opportunities: string;
+  msdyn_ShouldUseStaticRules: boolean;
+}
+
+/**
  * msdyn_SalesDataQualityAgent_ProcessRCSInput response message
+ *
+ * `result` is the value the msdyn_SalesDataQualityAgent_ProcessRCSInput action returns (see {@link msdyn_SalesDataQualityAgent_ProcessRCSInputResult}).
  */
 export class msdyn_SalesDataQualityAgent_ProcessRCSInputResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesDataQualityAgent_ProcessRCSInputResponseData) {
+  constructor(public result: msdyn_SalesDataQualityAgent_ProcessRCSInputResult) {
     super("msdyn_SalesDataQualityAgent_ProcessRCSInput");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesDataQualityAgent_ProcessRCSInputResponse {
     return new msdyn_SalesDataQualityAgent_ProcessRCSInputResponse(
-      responseObject<msdyn_SalesDataQualityAgent_ProcessRCSInputResponseData>(data)
+      data as msdyn_SalesDataQualityAgent_ProcessRCSInputResult
     );
   }
 }

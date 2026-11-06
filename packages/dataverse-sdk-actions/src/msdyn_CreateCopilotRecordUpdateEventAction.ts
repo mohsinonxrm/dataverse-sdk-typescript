@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_CreateCopilotRecordUpdateEvent action
+ * Response from the msdyn_CreateCopilotRecordUpdateEvent action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_CreateCopilotRecordUpdateEventResponse {
+  "@odata.context"?: string;
   CopilotEventRecordGuid: string;
   RecordCreatedSuccessfully: boolean;
 }
@@ -47,8 +50,7 @@ export class msdyn_CreateCopilotRecordUpdateEventAction implements Executable<ms
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateCopilotRecordUpdateEventResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_CreateCopilotRecordUpdateEventResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_CreateCopilotRecordUpdateEventResponse;
   }
 }

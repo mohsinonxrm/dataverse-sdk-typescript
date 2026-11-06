@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_CustomerServiceSolutionHealthRulesRegistrationResponse as msdyn_CustomerServiceSolutionHealthRulesRegistrationResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CustomerServiceSolutionHealthRulesRegistration message, by their CSDL names. A parameter the CSDL declares
@@ -49,9 +47,7 @@ export class msdyn_CustomerServiceSolutionHealthRulesRegistrationRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CustomerServiceSolutionHealthRulesRegistrationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_CustomerServiceSolutionHealthRulesRegistrationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CustomerServiceSolutionHealthRulesRegistrationResponse.fromResponse(
       await response.json()
     );
@@ -59,16 +55,31 @@ export class msdyn_CustomerServiceSolutionHealthRulesRegistrationRequest
 }
 
 /**
+ * Response from the msdyn_CustomerServiceSolutionHealthRulesRegistration action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CustomerServiceSolutionHealthRulesRegistrationResult {
+  "@odata.context"?: string;
+  Message: string;
+  ReturnStatus: string;
+  RuleId: string;
+}
+
+/**
  * msdyn_CustomerServiceSolutionHealthRulesRegistration response message
+ *
+ * `result` is the value the msdyn_CustomerServiceSolutionHealthRulesRegistration action returns (see {@link msdyn_CustomerServiceSolutionHealthRulesRegistrationResult}).
  */
 export class msdyn_CustomerServiceSolutionHealthRulesRegistrationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CustomerServiceSolutionHealthRulesRegistrationResponseData) {
+  constructor(public result: msdyn_CustomerServiceSolutionHealthRulesRegistrationResult) {
     super("msdyn_CustomerServiceSolutionHealthRulesRegistration");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CustomerServiceSolutionHealthRulesRegistrationResponse {
     return new msdyn_CustomerServiceSolutionHealthRulesRegistrationResponse(
-      responseObject<msdyn_CustomerServiceSolutionHealthRulesRegistrationResponseData>(data)
+      data as msdyn_CustomerServiceSolutionHealthRulesRegistrationResult
     );
   }
 }

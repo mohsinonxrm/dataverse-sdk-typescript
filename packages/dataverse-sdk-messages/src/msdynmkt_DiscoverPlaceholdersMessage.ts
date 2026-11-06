@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdynmkt_DiscoverPlaceholdersResponse as msdynmkt_DiscoverPlaceholdersResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdynmkt_DiscoverPlaceholders message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,33 @@ export class msdynmkt_DiscoverPlaceholdersRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_DiscoverPlaceholdersResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdynmkt_DiscoverPlaceholdersResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdynmkt_DiscoverPlaceholdersResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdynmkt_DiscoverPlaceholders action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdynmkt_DiscoverPlaceholdersResult {
+  "@odata.context"?: string;
+  DiscoverPlaceholdersResult: string;
+}
+
+/**
  * msdynmkt_DiscoverPlaceholders response message
+ *
+ * `result` is the value the msdynmkt_DiscoverPlaceholders action returns (see {@link msdynmkt_DiscoverPlaceholdersResult}).
  */
 export class msdynmkt_DiscoverPlaceholdersResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_DiscoverPlaceholdersResponseData) {
+  constructor(public result: msdynmkt_DiscoverPlaceholdersResult) {
     super("msdynmkt_DiscoverPlaceholders");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdynmkt_DiscoverPlaceholdersResponse {
-    return new msdynmkt_DiscoverPlaceholdersResponse(
-      responseObject<msdynmkt_DiscoverPlaceholdersResponseData>(data)
-    );
+    return new msdynmkt_DiscoverPlaceholdersResponse(data as msdynmkt_DiscoverPlaceholdersResult);
   }
 }

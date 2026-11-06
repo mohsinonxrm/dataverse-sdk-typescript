@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_ExecuteSandboxRequestResponse as msdyn_ExecuteSandboxRequestResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_ExecuteSandboxRequest message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class msdyn_ExecuteSandboxRequestRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ExecuteSandboxRequestResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_ExecuteSandboxRequestResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_ExecuteSandboxRequestResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_ExecuteSandboxRequest action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_ExecuteSandboxRequestResult {
+  "@odata.context"?: string;
+  Response: string;
+}
+
+/**
  * msdyn_ExecuteSandboxRequest response message
+ *
+ * `result` is the value the msdyn_ExecuteSandboxRequest action returns (see {@link msdyn_ExecuteSandboxRequestResult}).
  */
 export class msdyn_ExecuteSandboxRequestResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ExecuteSandboxRequestResponseData) {
+  constructor(public result: msdyn_ExecuteSandboxRequestResult) {
     super("msdyn_ExecuteSandboxRequest");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_ExecuteSandboxRequestResponse {
-    return new msdyn_ExecuteSandboxRequestResponse(
-      responseObject<msdyn_ExecuteSandboxRequestResponseData>(data)
-    );
+    return new msdyn_ExecuteSandboxRequestResponse(data as msdyn_ExecuteSandboxRequestResult);
   }
 }

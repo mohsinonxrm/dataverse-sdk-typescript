@@ -78,6 +78,11 @@ const RESERVED_WORDS = new Set([
 
 const IDENTIFIER = /^[A-Za-z_$][\w$]*$/;
 
+/** Annotations at the top of an entity response (#300). */
+const ENTITY_ANNOTATIONS = `"@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string`;
+/** Annotations on each record of an entity collection (#300). */
+const RECORD_ANNOTATIONS = `"@odata.etag"?: string; "@odata.type"?: string`;
+
 /** A name usable as a type, class or variable name (`import` becomes `_import`). */
 export function toSafeIdentifier(name: string): string {
   let safe = name.replace(/[^\w$]/g, "_");
@@ -402,21 +407,122 @@ export * from './metadata${suffix}.js';
       identifier: toSafeIdentifier,
       literal: (value: unknown) => JSON.stringify(value),
       doc: (text: string | undefined) => toDocText(text ?? ""),
-      returnsBody: (type: TypeScriptType) => this.returnsBody(type),
     };
   }
 
   /**
-   * Whether an operation's response body is the return value itself (a complex type or an
-   * entity). Primitive, enum and collection results come wrapped as `{ "value": ... }`.
+   * How an operation's response is typed and read (#300). The same contract as the in-repo
+   * generator (tools/generate-sdk-types, utils/operation-return.ts): `execute()` resolves the
+   * value the operation returns, not the OData envelope around it.
+   *
+   * - no return type: `void` (the Web API answers 204 No Content);
+   * - a primitive or an enum: the `value` of the body (an enum value is its member name);
+   * - a collection: the `value` of the body, `[]` for a 204 (an output that wasn't set); each
+   *   record keeps its `@odata.etag` and `@odata.type`;
+   * - a complex type: the body itself, with its `@odata.context`;
+   * - an entity: the body itself, with its annotations, or `null` for a 204 (an entity output
+   *   that wasn't set: Dataverse answers 204 although the CSDL says `Nullable="false"`).
+   *
+   * The value's type is declared as `<Class>Response`.
    */
-  private returnsBody(type: TypeScriptType): boolean {
-    if (type.isArray || !type.reference) return false;
-    const name = type.reference;
-    return (
-      this.model.AllEntityTypeNames.has(name) ||
-      this.model.ComplexTypes.some((c) => c.Name === name)
-    );
+  private operationReturn(
+    returnType: TypeScriptType | undefined,
+    folder: Folder,
+    imports: ImportCollector,
+    className: string,
+    label: string
+  ): { responseType: string; responseDeclaration: string; parseResponse: string } {
+    if (!returnType) {
+      return {
+        responseType: "void",
+        responseDeclaration: "",
+        parseResponse:
+          "  parseResponse(_response: Response): Promise<void> {\n" +
+          "    // No return value: the Web API answers 204 No Content\n" +
+          "    return Promise.resolve();\n" +
+          "  }\n",
+      };
+    }
+
+    const name = `${className}Response`;
+    const ref = returnType.reference;
+    let element: "primitive" | "enum" | "entity" | "complex" = "primitive";
+    if (ref !== undefined) {
+      if (this.model.EnumTypes.some((e) => e.Name === ref)) element = "enum";
+      else if (this.model.AllEntityTypeNames.has(ref)) element = "entity";
+      else if (this.model.ComplexTypes.some((c) => c.Name === ref)) element = "complex";
+    }
+    // The TypeScript name of the element type, imported (an entity that isn't generated is IEntity)
+    const resolved = (): string =>
+      ref === undefined ? returnType.name : this.resolveReference(ref, folder, imports);
+
+    let doc = `/**\n * Response from the ${toDocText(label)}.\n *\n`;
+    let declaration: string;
+    let kind: "primitive" | "collection" | "complex" | "entity";
+    if (returnType.isArray) {
+      kind = "collection";
+      let item: string;
+      if (element === "enum") item = "string";
+      else if (element === "entity") item = `${resolved()} & { ${RECORD_ANNOTATIONS} }`;
+      else item = resolved();
+      doc += " * The collection, read from the `value` of the response body.\n";
+      if (element === "entity") {
+        doc += " * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.\n";
+      }
+      const array = /^[\w$]+$/.test(item) ? `${item}[]` : `Array<${item}>`;
+      declaration = `export type ${name} = ${array};\n`;
+    } else if (element === "entity") {
+      kind = "entity";
+      doc +=
+        " * The record: the response body itself, with its annotations (not wrapped in `value`).\n";
+      doc +=
+        " * `null` when the Web API answers 204 No Content (an entity output that wasn't set).\n";
+      declaration = `export type ${name} = (${resolved()} & { ${ENTITY_ANNOTATIONS} }) | null;\n`;
+    } else if (element === "complex") {
+      kind = "complex";
+      doc += " * The response body itself, with its `@odata.context` (not wrapped in `value`).\n";
+      declaration = `export interface ${name} extends ${resolved()} {\n  "@odata.context"?: string;\n}\n`;
+    } else {
+      kind = "primitive";
+      doc += " * The value, read from the `value` of the response body.\n";
+      if (element === "enum") {
+        doc += ' * An enum value is its member name (names separated by ", " for flags).\n';
+      }
+      declaration = `export type ${name} = ${element === "enum" ? "string" : resolved()};\n`;
+    }
+
+    const wrapped = `((await response.json()) as { value: ${name} }).value`;
+    const body = `(await response.json()) as ${name}`;
+    let parse = `  async parseResponse(response: Response): Promise<${name}> {\n`;
+    switch (kind) {
+      case "primitive":
+        parse += '    // A primitive comes wrapped: { "@odata.context": "…", "value": … }\n';
+        parse += `    return ${wrapped};\n`;
+        break;
+      case "collection":
+        parse += "    // An output that wasn't set answers 204 No Content: an empty collection\n";
+        parse += "    if (response.status === 204) return [];\n";
+        parse += '    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }\n';
+        parse += `    return ${wrapped};\n`;
+        break;
+      case "complex":
+        parse += "    // The body is the complex value, with its @odata.context\n";
+        parse += `    return ${body};\n`;
+        break;
+      case "entity":
+        parse += "    // An entity output that wasn't set answers 204 No Content\n";
+        parse += "    if (response.status === 204) return null;\n";
+        parse += "    // The body is the record, with its annotations\n";
+        parse += `    return ${body};\n`;
+        break;
+    }
+    parse += "  }\n";
+
+    return {
+      responseType: name,
+      responseDeclaration: `${doc} */\n${declaration}`,
+      parseResponse: parse,
+    };
   }
 
   /**
@@ -514,6 +620,13 @@ export * from './metadata${suffix}.js';
     ];
 
     return {
+      ...this.operationReturn(
+        op.ReturnType,
+        folder,
+        imports,
+        className,
+        `${op.Name} ${isFunction ? "function" : "action"}`
+      ),
       bindingDoc,
       constructorArguments,
       operationPath,

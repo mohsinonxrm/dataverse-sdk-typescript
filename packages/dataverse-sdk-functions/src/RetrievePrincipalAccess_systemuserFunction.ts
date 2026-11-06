@@ -4,9 +4,12 @@ import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtim
 import type { AccessRights } from "./types/index.js";
 
 /**
- * Response from RetrievePrincipalAccess function
+ * Response from the RetrievePrincipalAccess function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrievePrincipalAccess_systemuserResponse {
+  "@odata.context"?: string;
   AccessRights: AccessRights;
 }
 
@@ -60,8 +63,7 @@ export class RetrievePrincipalAccess_systemuserFunction implements Executable<Re
   }
 
   async parseResponse(response: Response): Promise<RetrievePrincipalAccess_systemuserResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrievePrincipalAccess_systemuserResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RetrievePrincipalAccess_systemuserResponse;
   }
 }

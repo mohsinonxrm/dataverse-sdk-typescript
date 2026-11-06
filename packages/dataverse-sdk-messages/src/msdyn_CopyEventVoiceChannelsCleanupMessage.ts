@@ -26,9 +26,9 @@ export class msdyn_CopyEventVoiceChannelsCleanupRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_CopyEventVoiceChannelsCleanupResponse> {
+  parseResponse(_response: Response): Promise<msdyn_CopyEventVoiceChannelsCleanupResponse> {
     // No return value (204 No Content)
-    return new msdyn_CopyEventVoiceChannelsCleanupResponse();
+    return Promise.resolve(new msdyn_CopyEventVoiceChannelsCleanupResponse());
   }
 }
 
@@ -40,7 +40,7 @@ export class msdyn_CopyEventVoiceChannelsCleanupResponse extends OrganizationRes
     super("msdyn_CopyEventVoiceChannelsCleanup");
   }
 
-  static fromResponse(_data: unknown): msdyn_CopyEventVoiceChannelsCleanupResponse {
+  static fromResponse(_data?: unknown): msdyn_CopyEventVoiceChannelsCleanupResponse {
     return new msdyn_CopyEventVoiceChannelsCleanupResponse();
   }
 }

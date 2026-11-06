@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from PublishAllXmlAsync action
+ * Response from the PublishAllXmlAsync action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface PublishAllXmlAsyncResponse {
+  "@odata.context"?: string;
   AsyncOperationId: string;
 }
 
@@ -26,8 +29,7 @@ export class PublishAllXmlAsyncAction implements Executable<PublishAllXmlAsyncRe
   }
 
   async parseResponse(response: Response): Promise<PublishAllXmlAsyncResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as PublishAllXmlAsyncResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as PublishAllXmlAsyncResponse;
   }
 }

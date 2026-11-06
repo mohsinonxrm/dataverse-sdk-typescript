@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CCaaS_GetCallStateResponse as CCaaS_GetCallStateResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CCaaS_GetCallState message, by their CSDL names. A parameter the CSDL declares
@@ -57,21 +55,37 @@ export class CCaaS_GetCallStateRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_GetCallStateResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CCaaS_GetCallStateResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CCaaS_GetCallStateResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CCaaS_GetCallState action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CCaaS_GetCallStateResult {
+  "@odata.context"?: string;
+  callId: string;
+  conversationId: string;
+  participants: string;
+  recordingState: string;
+  transcriptionState: string;
+}
+
+/**
  * CCaaS_GetCallState response message
+ *
+ * `result` is the value the CCaaS_GetCallState action returns (see {@link CCaaS_GetCallStateResult}).
  */
 export class CCaaS_GetCallStateResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_GetCallStateResponseData) {
+  constructor(public result: CCaaS_GetCallStateResult) {
     super("CCaaS_GetCallState");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CCaaS_GetCallStateResponse {
-    return new CCaaS_GetCallStateResponse(responseObject<CCaaS_GetCallStateResponseData>(data));
+    return new CCaaS_GetCallStateResponse(data as CCaaS_GetCallStateResult);
   }
 }

@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CCaaS_GetAvailabilityForSimulatedConversation action
+ * Response from the CCaaS_GetAvailabilityForSimulatedConversation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CCaaS_GetAvailabilityForSimulatedConversationResponse {
+  "@odata.context"?: string;
   AverageWaitTime: number;
   EndTimeOfNextOperatingHour: string;
   IsAgentAvailable: boolean;
@@ -59,8 +62,7 @@ export class CCaaS_GetAvailabilityForSimulatedConversationAction implements Exec
   async parseResponse(
     response: Response
   ): Promise<CCaaS_GetAvailabilityForSimulatedConversationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CCaaS_GetAvailabilityForSimulatedConversationResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as CCaaS_GetAvailabilityForSimulatedConversationResponse;
   }
 }

@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
@@ -53,21 +52,35 @@ export class AddItemCampaign_listRequest
   }
 
   async parseResponse(response: Response): Promise<AddItemCampaign_listResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return AddItemCampaign_listResponse.fromResponse({});
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return AddItemCampaign_listResponse.fromResponse(undefined);
+    // The body is the record, with its annotations
     return AddItemCampaign_listResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the AddItemCampaign action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
+ */
+export type AddItemCampaign_listResult =
+  | (campaignitem & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string })
+  | null;
+
+/**
  * AddItemCampaign response message
+ *
+ * `result` is the value the AddItemCampaign action returns (see {@link AddItemCampaign_listResult}).
  */
 export class AddItemCampaign_listResponse extends OrganizationResponse {
-  constructor(public result: campaignitem) {
+  constructor(public result: AddItemCampaign_listResult) {
     super("AddItemCampaign");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): AddItemCampaign_listResponse {
-    return new AddItemCampaign_listResponse(responseObject<campaignitem>(data));
+    return new AddItemCampaign_listResponse((data ?? null) as AddItemCampaign_listResult);
   }
 }

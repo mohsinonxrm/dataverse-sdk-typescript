@@ -48,9 +48,9 @@ export class msdyn_BusinessClosureSaveRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_BusinessClosureSaveResponse> {
+  parseResponse(_response: Response): Promise<msdyn_BusinessClosureSaveResponse> {
     // No return value (204 No Content)
-    return new msdyn_BusinessClosureSaveResponse();
+    return Promise.resolve(new msdyn_BusinessClosureSaveResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class msdyn_BusinessClosureSaveResponse extends OrganizationResponse {
     super("msdyn_BusinessClosureSave");
   }
 
-  static fromResponse(_data: unknown): msdyn_BusinessClosureSaveResponse {
+  static fromResponse(_data?: unknown): msdyn_BusinessClosureSaveResponse {
     return new msdyn_BusinessClosureSaveResponse();
   }
 }

@@ -49,9 +49,9 @@ export class SetLocLabelsRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<SetLocLabelsResponse> {
+  parseResponse(_response: Response): Promise<SetLocLabelsResponse> {
     // No return value (204 No Content)
-    return new SetLocLabelsResponse();
+    return Promise.resolve(new SetLocLabelsResponse());
   }
 }
 
@@ -63,7 +63,7 @@ export class SetLocLabelsResponse extends OrganizationResponse {
     super("SetLocLabels");
   }
 
-  static fromResponse(_data: unknown): SetLocLabelsResponse {
+  static fromResponse(_data?: unknown): SetLocLabelsResponse {
     return new SetLocLabelsResponse();
   }
 }

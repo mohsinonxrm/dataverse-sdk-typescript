@@ -46,11 +46,9 @@ export class msdyn_UpdateNewEntityAdditionOptedStatusRequest
     };
   }
 
-  async parseResponse(
-    response: Response
-  ): Promise<msdyn_UpdateNewEntityAdditionOptedStatusResponse> {
+  parseResponse(_response: Response): Promise<msdyn_UpdateNewEntityAdditionOptedStatusResponse> {
     // No return value (204 No Content)
-    return new msdyn_UpdateNewEntityAdditionOptedStatusResponse();
+    return Promise.resolve(new msdyn_UpdateNewEntityAdditionOptedStatusResponse());
   }
 }
 
@@ -62,7 +60,7 @@ export class msdyn_UpdateNewEntityAdditionOptedStatusResponse extends Organizati
     super("msdyn_UpdateNewEntityAdditionOptedStatus");
   }
 
-  static fromResponse(_data: unknown): msdyn_UpdateNewEntityAdditionOptedStatusResponse {
+  static fromResponse(_data?: unknown): msdyn_UpdateNewEntityAdditionOptedStatusResponse {
     return new msdyn_UpdateNewEntityAdditionOptedStatusResponse();
   }
 }

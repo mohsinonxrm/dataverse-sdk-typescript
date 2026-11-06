@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetResourceBookingFormParametersResponse as msdyn_GetResourceBookingFormParametersResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetResourceBookingFormParameters message, by their CSDL names. A parameter the CSDL declares
@@ -47,24 +45,35 @@ export class msdyn_GetResourceBookingFormParametersRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetResourceBookingFormParametersResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_GetResourceBookingFormParametersResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetResourceBookingFormParametersResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetResourceBookingFormParameters action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetResourceBookingFormParametersResult {
+  "@odata.context"?: string;
+  ResourceBookingFormParameters: string;
+}
+
+/**
  * msdyn_GetResourceBookingFormParameters response message
+ *
+ * `result` is the value the msdyn_GetResourceBookingFormParameters action returns (see {@link msdyn_GetResourceBookingFormParametersResult}).
  */
 export class msdyn_GetResourceBookingFormParametersResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetResourceBookingFormParametersResponseData) {
+  constructor(public result: msdyn_GetResourceBookingFormParametersResult) {
     super("msdyn_GetResourceBookingFormParameters");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetResourceBookingFormParametersResponse {
     return new msdyn_GetResourceBookingFormParametersResponse(
-      responseObject<msdyn_GetResourceBookingFormParametersResponseData>(data)
+      data as msdyn_GetResourceBookingFormParametersResult
     );
   }
 }

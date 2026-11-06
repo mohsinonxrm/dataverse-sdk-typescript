@@ -4,9 +4,12 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdyn_CheckForDuplicatesAction action
+ * Response from the msdyn_CheckForDuplicatesAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_CheckForDuplicatesActionResponse {
+  "@odata.context"?: string;
   DuplicateRecordCount: number;
   IsDuplicateDetectionEnabled: boolean;
 }
@@ -45,8 +48,7 @@ export class msdyn_CheckForDuplicatesActionAction implements Executable<msdyn_Ch
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckForDuplicatesActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_CheckForDuplicatesActionResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_CheckForDuplicatesActionResponse;
   }
 }

@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_CreateAISimulationRun action
+ * Response from the msdyn_CreateAISimulationRun action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_CreateAISimulationRunResponse {
+  "@odata.context"?: string;
   Result: string;
   SimulationRunId: string;
 }
@@ -59,8 +62,7 @@ export class msdyn_CreateAISimulationRunAction implements Executable<msdyn_Creat
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateAISimulationRunResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_CreateAISimulationRunResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_CreateAISimulationRunResponse;
   }
 }

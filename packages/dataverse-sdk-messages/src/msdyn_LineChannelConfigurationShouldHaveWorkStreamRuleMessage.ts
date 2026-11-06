@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_LineChannelConfigurationShouldHaveWorkStreamRuleResponse as msdyn_LineChannelConfigurationShouldHaveWorkStreamRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_LineChannelConfigurationShouldHaveWorkStreamRule request message
@@ -31,9 +29,7 @@ export class msdyn_LineChannelConfigurationShouldHaveWorkStreamRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_LineChannelConfigurationShouldHaveWorkStreamRuleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_LineChannelConfigurationShouldHaveWorkStreamRuleResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_LineChannelConfigurationShouldHaveWorkStreamRuleResponse.fromResponse(
       await response.json()
     );
@@ -41,18 +37,33 @@ export class msdyn_LineChannelConfigurationShouldHaveWorkStreamRuleRequest
 }
 
 /**
+ * Response from the msdyn_LineChannelConfigurationShouldHaveWorkStreamRule action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_LineChannelConfigurationShouldHaveWorkStreamRuleResult {
+  "@odata.context"?: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_LineChannelConfigurationShouldHaveWorkStreamRule response message
+ *
+ * `result` is the value the msdyn_LineChannelConfigurationShouldHaveWorkStreamRule action returns (see {@link msdyn_LineChannelConfigurationShouldHaveWorkStreamRuleResult}).
  */
 export class msdyn_LineChannelConfigurationShouldHaveWorkStreamRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_LineChannelConfigurationShouldHaveWorkStreamRuleResponseData) {
+  constructor(public result: msdyn_LineChannelConfigurationShouldHaveWorkStreamRuleResult) {
     super("msdyn_LineChannelConfigurationShouldHaveWorkStreamRule");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(
     data: unknown
   ): msdyn_LineChannelConfigurationShouldHaveWorkStreamRuleResponse {
     return new msdyn_LineChannelConfigurationShouldHaveWorkStreamRuleResponse(
-      responseObject<msdyn_LineChannelConfigurationShouldHaveWorkStreamRuleResponseData>(data)
+      data as msdyn_LineChannelConfigurationShouldHaveWorkStreamRuleResult
     );
   }
 }

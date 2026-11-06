@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from ImportSolutions action
+ * Response from the ImportSolutions action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface ImportSolutionsResponse {
-  // No content returned
-}
+export type ImportSolutionsResponse = void;
 
 /**
  * Parameters of the ImportSolutions action, by their CSDL names. A parameter the CSDL declares
@@ -53,9 +53,8 @@ export class ImportSolutionsAction implements Executable<ImportSolutionsResponse
     };
   }
 
-  async parseResponse(response: Response): Promise<ImportSolutionsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ImportSolutionsResponse;
-    return (await response.json()) as ImportSolutionsResponse;
+  parseResponse(_response: Response): Promise<ImportSolutionsResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

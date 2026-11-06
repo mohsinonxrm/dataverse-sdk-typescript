@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_executeemailsentimentbot action
+ * Response from the msdyn_executeemailsentimentbot action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_executeemailsentimentbotResponse {
+  "@odata.context"?: string;
   emailSentimentResponse: string;
 }
 
@@ -44,8 +47,7 @@ export class msdyn_executeemailsentimentbotAction implements Executable<msdyn_ex
   }
 
   async parseResponse(response: Response): Promise<msdyn_executeemailsentimentbotResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_executeemailsentimentbotResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_executeemailsentimentbotResponse;
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msft_GetStorageRecommendationsResponse as msft_GetStorageRecommendationsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msft_GetStorageRecommendations message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,35 @@ export class msft_GetStorageRecommendationsRequest
   }
 
   async parseResponse(response: Response): Promise<msft_GetStorageRecommendationsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msft_GetStorageRecommendationsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msft_GetStorageRecommendationsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msft_GetStorageRecommendations action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msft_GetStorageRecommendationsResult {
+  "@odata.context"?: string;
+  CleanupOpportunityByEntity: string;
+  Recommendations: string;
+  TotalCleanupOpportunity: number;
+}
+
+/**
  * msft_GetStorageRecommendations response message
+ *
+ * `result` is the value the msft_GetStorageRecommendations action returns (see {@link msft_GetStorageRecommendationsResult}).
  */
 export class msft_GetStorageRecommendationsResponse extends OrganizationResponse {
-  constructor(public result: msft_GetStorageRecommendationsResponseData) {
+  constructor(public result: msft_GetStorageRecommendationsResult) {
     super("msft_GetStorageRecommendations");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msft_GetStorageRecommendationsResponse {
-    return new msft_GetStorageRecommendationsResponse(
-      responseObject<msft_GetStorageRecommendationsResponseData>(data)
-    );
+    return new msft_GetStorageRecommendationsResponse(data as msft_GetStorageRecommendationsResult);
   }
 }

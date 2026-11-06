@@ -1,13 +1,9 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
-import type {
-  AddUserToRecordTeamResponse as AddUserToRecordTeamResponseData,
-  teamtemplate,
-} from "./types/index.js";
+import type { teamtemplate } from "./types/index.js";
 
 /**
  * Parameters of the AddUserToRecordTeam message, by their CSDL names. A parameter the CSDL declares
@@ -58,21 +54,33 @@ export class AddUserToRecordTeamRequest
   }
 
   async parseResponse(response: Response): Promise<AddUserToRecordTeamResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return AddUserToRecordTeamResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return AddUserToRecordTeamResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the AddUserToRecordTeam action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface AddUserToRecordTeamResult {
+  "@odata.context"?: string;
+  AccessTeamId: string;
+}
+
+/**
  * AddUserToRecordTeam response message
+ *
+ * `result` is the value the AddUserToRecordTeam action returns (see {@link AddUserToRecordTeamResult}).
  */
 export class AddUserToRecordTeamResponse extends OrganizationResponse {
-  constructor(public result: AddUserToRecordTeamResponseData) {
+  constructor(public result: AddUserToRecordTeamResult) {
     super("AddUserToRecordTeam");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): AddUserToRecordTeamResponse {
-    return new AddUserToRecordTeamResponse(responseObject<AddUserToRecordTeamResponseData>(data));
+    return new AddUserToRecordTeamResponse(data as AddUserToRecordTeamResult);
   }
 }

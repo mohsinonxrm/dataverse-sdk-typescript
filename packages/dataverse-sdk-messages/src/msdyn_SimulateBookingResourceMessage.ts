@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseValue } from "./internal/responseData.js";
 import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
@@ -108,23 +107,40 @@ export class msdyn_SimulateBookingResourceRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SimulateBookingResourceResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_SimulateBookingResourceResponse.fromResponse({});
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204)
+      return msdyn_SimulateBookingResourceResponse.fromResponse(undefined);
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
     return msdyn_SimulateBookingResourceResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SimulateBookingResource action.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
+ */
+export type msdyn_SimulateBookingResourceResult = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
+
+/**
  * msdyn_SimulateBookingResource response message
+ *
+ * `result` is the value the msdyn_SimulateBookingResource action returns (see {@link msdyn_SimulateBookingResourceResult}).
  */
 export class msdyn_SimulateBookingResourceResponse extends OrganizationResponse {
-  constructor(public result: Record<string, unknown>[]) {
+  constructor(public result: msdyn_SimulateBookingResourceResult) {
     super("msdyn_SimulateBookingResource");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SimulateBookingResourceResponse {
     return new msdyn_SimulateBookingResourceResponse(
-      responseValue<Record<string, unknown>[]>(data)
+      data === undefined ? [] : (data as { value: msdyn_SimulateBookingResourceResult }).value
     );
   }
 }

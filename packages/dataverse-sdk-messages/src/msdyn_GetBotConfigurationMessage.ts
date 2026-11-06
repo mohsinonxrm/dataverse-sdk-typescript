@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetBotConfigurationResponse as msdyn_GetBotConfigurationResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetBotConfiguration message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,38 @@ export class msdyn_GetBotConfigurationRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetBotConfigurationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetBotConfigurationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetBotConfigurationResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetBotConfiguration action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetBotConfigurationResult {
+  "@odata.context"?: string;
+  ConfigRelativeUrl: string;
+  ConfigurationState: number;
+  ErrorCode: number;
+  ErrorDescription: string;
+  IsConfigured: boolean;
+  RecordId: string;
+}
+
+/**
  * msdyn_GetBotConfiguration response message
+ *
+ * `result` is the value the msdyn_GetBotConfiguration action returns (see {@link msdyn_GetBotConfigurationResult}).
  */
 export class msdyn_GetBotConfigurationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetBotConfigurationResponseData) {
+  constructor(public result: msdyn_GetBotConfigurationResult) {
     super("msdyn_GetBotConfiguration");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetBotConfigurationResponse {
-    return new msdyn_GetBotConfigurationResponse(
-      responseObject<msdyn_GetBotConfigurationResponseData>(data)
-    );
+    return new msdyn_GetBotConfigurationResponse(data as msdyn_GetBotConfigurationResult);
   }
 }

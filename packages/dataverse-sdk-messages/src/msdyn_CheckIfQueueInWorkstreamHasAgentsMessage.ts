@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_CheckIfQueueInWorkstreamHasAgentsResponse as msdyn_CheckIfQueueInWorkstreamHasAgentsResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckIfQueueInWorkstreamHasAgents request message
@@ -31,24 +29,37 @@ export class msdyn_CheckIfQueueInWorkstreamHasAgentsRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckIfQueueInWorkstreamHasAgentsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_CheckIfQueueInWorkstreamHasAgentsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CheckIfQueueInWorkstreamHasAgentsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CheckIfQueueInWorkstreamHasAgents action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CheckIfQueueInWorkstreamHasAgentsResult {
+  "@odata.context"?: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_CheckIfQueueInWorkstreamHasAgents response message
+ *
+ * `result` is the value the msdyn_CheckIfQueueInWorkstreamHasAgents action returns (see {@link msdyn_CheckIfQueueInWorkstreamHasAgentsResult}).
  */
 export class msdyn_CheckIfQueueInWorkstreamHasAgentsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfQueueInWorkstreamHasAgentsResponseData) {
+  constructor(public result: msdyn_CheckIfQueueInWorkstreamHasAgentsResult) {
     super("msdyn_CheckIfQueueInWorkstreamHasAgents");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CheckIfQueueInWorkstreamHasAgentsResponse {
     return new msdyn_CheckIfQueueInWorkstreamHasAgentsResponse(
-      responseObject<msdyn_CheckIfQueueInWorkstreamHasAgentsResponseData>(data)
+      data as msdyn_CheckIfQueueInWorkstreamHasAgentsResult
     );
   }
 }

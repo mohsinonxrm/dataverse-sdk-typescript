@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_DoesKBExistResponse as msdyn_DoesKBExistResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_DoesKBExist message, by their CSDL names. A parameter the CSDL declares
@@ -47,21 +45,34 @@ export class msdyn_DoesKBExistRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_DoesKBExistResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_DoesKBExistResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_DoesKBExistResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_DoesKBExist action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_DoesKBExistResult {
+  "@odata.context"?: string;
+  Response: string;
+  usage: string;
+}
+
+/**
  * msdyn_DoesKBExist response message
+ *
+ * `result` is the value the msdyn_DoesKBExist action returns (see {@link msdyn_DoesKBExistResult}).
  */
 export class msdyn_DoesKBExistResponse extends OrganizationResponse {
-  constructor(public result: msdyn_DoesKBExistResponseData) {
+  constructor(public result: msdyn_DoesKBExistResult) {
     super("msdyn_DoesKBExist");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_DoesKBExistResponse {
-    return new msdyn_DoesKBExistResponse(responseObject<msdyn_DoesKBExistResponseData>(data));
+    return new msdyn_DoesKBExistResponse(data as msdyn_DoesKBExistResult);
   }
 }

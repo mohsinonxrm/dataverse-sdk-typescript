@@ -50,9 +50,9 @@ export class CCaaS_EndSessionRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_EndSessionResponse> {
+  parseResponse(_response: Response): Promise<CCaaS_EndSessionResponse> {
     // No return value (204 No Content)
-    return new CCaaS_EndSessionResponse();
+    return Promise.resolve(new CCaaS_EndSessionResponse());
   }
 }
 
@@ -64,7 +64,7 @@ export class CCaaS_EndSessionResponse extends OrganizationResponse {
     super("CCaaS_EndSession");
   }
 
-  static fromResponse(_data: unknown): CCaaS_EndSessionResponse {
+  static fromResponse(_data?: unknown): CCaaS_EndSessionResponse {
     return new CCaaS_EndSessionResponse();
   }
 }

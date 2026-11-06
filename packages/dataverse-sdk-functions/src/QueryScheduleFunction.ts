@@ -3,9 +3,12 @@ import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { TimeCode, TimeInfo } from "./types/index.js";
 
 /**
- * Response from QuerySchedule function
+ * Response from the QuerySchedule function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface QueryScheduleResponse {
+  "@odata.context"?: string;
   TimeInfos: TimeInfo[];
 }
 
@@ -64,8 +67,7 @@ export class QueryScheduleFunction implements Executable<QueryScheduleResponse> 
   }
 
   async parseResponse(response: Response): Promise<QueryScheduleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as QueryScheduleResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as QueryScheduleResponse;
   }
 }

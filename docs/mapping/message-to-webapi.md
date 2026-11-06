@@ -54,7 +54,7 @@ Microsoft recommends using **parameter aliases** for function parameters to avoi
 ### 2.2 ExecuteWorkflow
 
 - Web API: **ExecuteWorkflow action** (bound to `workflow`) returns `asyncoperation`.
-- Messages: `ExecuteWorkflowRequest` → `ExecuteWorkflowResponse.result.asyncoperationid`.
+- Messages: `ExecuteWorkflowRequest` → `ExecuteWorkflowResponse.result?.asyncoperationid` (the record, or `null` for a 204).
 - Actions: `ExecuteWorkflowAction`.
 
 ### 2.3 WinOpportunity (Sales)
@@ -140,7 +140,7 @@ import {
 const response = await service.execute<ExecuteWorkflowResponse>(
   new ExecuteWorkflowRequest(workflowId, { EntityId: recordId }) // InputArguments is optional
 );
-console.log("Async Operation ID:", response.result.asyncoperationid);
+console.log("Async Operation ID:", response.result?.asyncoperationid);
 ```
 
 ### 5.4 Generic OrganizationRequest

@@ -4,9 +4,12 @@ import { enumBody } from "./internal/enumBody.js";
 import type { LayerDesiredOrder, SolutionParameters } from "./types/index.js";
 
 /**
- * Response from StageAndUpgrade action
+ * Response from the StageAndUpgrade action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface StageAndUpgradeResponse {
+  "@odata.context"?: string;
   SolutionId: string;
 }
 
@@ -66,8 +69,7 @@ export class StageAndUpgradeAction implements Executable<StageAndUpgradeResponse
   }
 
   async parseResponse(response: Response): Promise<StageAndUpgradeResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as StageAndUpgradeResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as StageAndUpgradeResponse;
   }
 }

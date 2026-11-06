@@ -44,11 +44,11 @@ export class msdyn_EvaluateMasterEntityRoutingConfigurationRequest
     };
   }
 
-  async parseResponse(
-    response: Response
+  parseResponse(
+    _response: Response
   ): Promise<msdyn_EvaluateMasterEntityRoutingConfigurationResponse> {
     // No return value (204 No Content)
-    return new msdyn_EvaluateMasterEntityRoutingConfigurationResponse();
+    return Promise.resolve(new msdyn_EvaluateMasterEntityRoutingConfigurationResponse());
   }
 }
 
@@ -60,7 +60,7 @@ export class msdyn_EvaluateMasterEntityRoutingConfigurationResponse extends Orga
     super("msdyn_EvaluateMasterEntityRoutingConfiguration");
   }
 
-  static fromResponse(_data: unknown): msdyn_EvaluateMasterEntityRoutingConfigurationResponse {
+  static fromResponse(_data?: unknown): msdyn_EvaluateMasterEntityRoutingConfigurationResponse {
     return new msdyn_EvaluateMasterEntityRoutingConfigurationResponse();
   }
 }

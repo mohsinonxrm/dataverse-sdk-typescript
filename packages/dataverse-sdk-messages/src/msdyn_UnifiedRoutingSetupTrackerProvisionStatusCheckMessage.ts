@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheckResponse as msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheckResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheck message, by their CSDL names. A parameter the CSDL declares
@@ -47,9 +45,7 @@ export class msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheckRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheckResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheckResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheckResponse.fromResponse(
       await response.json()
     );
@@ -57,16 +53,29 @@ export class msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheckRequest
 }
 
 /**
+ * Response from the msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheck action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheckResult {
+  "@odata.context"?: string;
+  Status: boolean;
+}
+
+/**
  * msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheck response message
+ *
+ * `result` is the value the msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheck action returns (see {@link msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheckResult}).
  */
 export class msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheckResponse extends OrganizationResponse {
-  constructor(public result: msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheckResponseData) {
+  constructor(public result: msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheckResult) {
     super("msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheck");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheckResponse {
     return new msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheckResponse(
-      responseObject<msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheckResponseData>(data)
+      data as msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheckResult
     );
   }
 }

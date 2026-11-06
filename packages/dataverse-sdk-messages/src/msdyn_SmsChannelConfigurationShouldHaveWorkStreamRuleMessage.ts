@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_SmsChannelConfigurationShouldHaveWorkStreamRuleResponse as msdyn_SmsChannelConfigurationShouldHaveWorkStreamRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_SmsChannelConfigurationShouldHaveWorkStreamRule request message
@@ -31,9 +29,7 @@ export class msdyn_SmsChannelConfigurationShouldHaveWorkStreamRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SmsChannelConfigurationShouldHaveWorkStreamRuleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_SmsChannelConfigurationShouldHaveWorkStreamRuleResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SmsChannelConfigurationShouldHaveWorkStreamRuleResponse.fromResponse(
       await response.json()
     );
@@ -41,18 +37,33 @@ export class msdyn_SmsChannelConfigurationShouldHaveWorkStreamRuleRequest
 }
 
 /**
+ * Response from the msdyn_SmsChannelConfigurationShouldHaveWorkStreamRule action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SmsChannelConfigurationShouldHaveWorkStreamRuleResult {
+  "@odata.context"?: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_SmsChannelConfigurationShouldHaveWorkStreamRule response message
+ *
+ * `result` is the value the msdyn_SmsChannelConfigurationShouldHaveWorkStreamRule action returns (see {@link msdyn_SmsChannelConfigurationShouldHaveWorkStreamRuleResult}).
  */
 export class msdyn_SmsChannelConfigurationShouldHaveWorkStreamRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SmsChannelConfigurationShouldHaveWorkStreamRuleResponseData) {
+  constructor(public result: msdyn_SmsChannelConfigurationShouldHaveWorkStreamRuleResult) {
     super("msdyn_SmsChannelConfigurationShouldHaveWorkStreamRule");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(
     data: unknown
   ): msdyn_SmsChannelConfigurationShouldHaveWorkStreamRuleResponse {
     return new msdyn_SmsChannelConfigurationShouldHaveWorkStreamRuleResponse(
-      responseObject<msdyn_SmsChannelConfigurationShouldHaveWorkStreamRuleResponseData>(data)
+      data as msdyn_SmsChannelConfigurationShouldHaveWorkStreamRuleResult
     );
   }
 }

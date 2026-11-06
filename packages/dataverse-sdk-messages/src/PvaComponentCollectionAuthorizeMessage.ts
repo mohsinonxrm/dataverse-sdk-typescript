@@ -52,9 +52,9 @@ export class PvaComponentCollectionAuthorizeRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<PvaComponentCollectionAuthorizeResponse> {
+  parseResponse(_response: Response): Promise<PvaComponentCollectionAuthorizeResponse> {
     // No return value (204 No Content)
-    return new PvaComponentCollectionAuthorizeResponse();
+    return Promise.resolve(new PvaComponentCollectionAuthorizeResponse());
   }
 }
 
@@ -66,7 +66,7 @@ export class PvaComponentCollectionAuthorizeResponse extends OrganizationRespons
     super("PvaComponentCollectionAuthorize");
   }
 
-  static fromResponse(_data: unknown): PvaComponentCollectionAuthorizeResponse {
+  static fromResponse(_data?: unknown): PvaComponentCollectionAuthorizeResponse {
     return new PvaComponentCollectionAuthorizeResponse();
   }
 }

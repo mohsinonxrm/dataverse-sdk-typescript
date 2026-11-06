@@ -56,9 +56,9 @@ export class CCaaS_InitiateExternalTransferRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_InitiateExternalTransferResponse> {
+  parseResponse(_response: Response): Promise<CCaaS_InitiateExternalTransferResponse> {
     // No return value (204 No Content)
-    return new CCaaS_InitiateExternalTransferResponse();
+    return Promise.resolve(new CCaaS_InitiateExternalTransferResponse());
   }
 }
 
@@ -70,7 +70,7 @@ export class CCaaS_InitiateExternalTransferResponse extends OrganizationResponse
     super("CCaaS_InitiateExternalTransfer");
   }
 
-  static fromResponse(_data: unknown): CCaaS_InitiateExternalTransferResponse {
+  static fromResponse(_data?: unknown): CCaaS_InitiateExternalTransferResponse {
     return new CCaaS_InitiateExternalTransferResponse();
   }
 }

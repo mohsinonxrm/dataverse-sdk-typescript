@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetSubjectHierarchyDataResponse as msdyn_GetSubjectHierarchyDataResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetSubjectHierarchyData message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,33 @@ export class msdyn_GetSubjectHierarchyDataRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSubjectHierarchyDataResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetSubjectHierarchyDataResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetSubjectHierarchyDataResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetSubjectHierarchyData action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetSubjectHierarchyDataResult {
+  "@odata.context"?: string;
+  output: string;
+}
+
+/**
  * msdyn_GetSubjectHierarchyData response message
+ *
+ * `result` is the value the msdyn_GetSubjectHierarchyData action returns (see {@link msdyn_GetSubjectHierarchyDataResult}).
  */
 export class msdyn_GetSubjectHierarchyDataResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetSubjectHierarchyDataResponseData) {
+  constructor(public result: msdyn_GetSubjectHierarchyDataResult) {
     super("msdyn_GetSubjectHierarchyData");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetSubjectHierarchyDataResponse {
-    return new msdyn_GetSubjectHierarchyDataResponse(
-      responseObject<msdyn_GetSubjectHierarchyDataResponseData>(data)
-    );
+    return new msdyn_GetSubjectHierarchyDataResponse(data as msdyn_GetSubjectHierarchyDataResult);
   }
 }

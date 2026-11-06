@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesCopilotNBASkillInfraSetupResponse as msdyn_SalesCopilotNBASkillInfraSetupResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesCopilotNBASkillInfraSetup message, by their CSDL names. A parameter the CSDL declares
@@ -45,24 +43,35 @@ export class msdyn_SalesCopilotNBASkillInfraSetupRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesCopilotNBASkillInfraSetupResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_SalesCopilotNBASkillInfraSetupResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesCopilotNBASkillInfraSetupResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SalesCopilotNBASkillInfraSetup action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesCopilotNBASkillInfraSetupResult {
+  "@odata.context"?: string;
+  msdyn_result: string;
+}
+
+/**
  * msdyn_SalesCopilotNBASkillInfraSetup response message
+ *
+ * `result` is the value the msdyn_SalesCopilotNBASkillInfraSetup action returns (see {@link msdyn_SalesCopilotNBASkillInfraSetupResult}).
  */
 export class msdyn_SalesCopilotNBASkillInfraSetupResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesCopilotNBASkillInfraSetupResponseData) {
+  constructor(public result: msdyn_SalesCopilotNBASkillInfraSetupResult) {
     super("msdyn_SalesCopilotNBASkillInfraSetup");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesCopilotNBASkillInfraSetupResponse {
     return new msdyn_SalesCopilotNBASkillInfraSetupResponse(
-      responseObject<msdyn_SalesCopilotNBASkillInfraSetupResponseData>(data)
+      data as msdyn_SalesCopilotNBASkillInfraSetupResult
     );
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetAnswerFromDocumentsResponse as msdyn_GetAnswerFromDocumentsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetAnswerFromDocuments message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,35 @@ export class msdyn_GetAnswerFromDocumentsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAnswerFromDocumentsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetAnswerFromDocumentsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetAnswerFromDocumentsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetAnswerFromDocuments action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetAnswerFromDocumentsResult {
+  "@odata.context"?: string;
+  msdyn_answer: string;
+  msdyn_answerRaw: string;
+  msdyn_citations: string;
+}
+
+/**
  * msdyn_GetAnswerFromDocuments response message
+ *
+ * `result` is the value the msdyn_GetAnswerFromDocuments action returns (see {@link msdyn_GetAnswerFromDocumentsResult}).
  */
 export class msdyn_GetAnswerFromDocumentsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetAnswerFromDocumentsResponseData) {
+  constructor(public result: msdyn_GetAnswerFromDocumentsResult) {
     super("msdyn_GetAnswerFromDocuments");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetAnswerFromDocumentsResponse {
-    return new msdyn_GetAnswerFromDocumentsResponse(
-      responseObject<msdyn_GetAnswerFromDocumentsResponseData>(data)
-    );
+    return new msdyn_GetAnswerFromDocumentsResponse(data as msdyn_GetAnswerFromDocumentsResult);
   }
 }

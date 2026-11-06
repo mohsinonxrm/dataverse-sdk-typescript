@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_ExternalContextInitiateTranscriptUploadResponse as msdyn_ExternalContextInitiateTranscriptUploadResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_ExternalContextInitiateTranscriptUpload message, by their CSDL names. A parameter the CSDL declares
@@ -53,9 +51,7 @@ export class msdyn_ExternalContextInitiateTranscriptUploadRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_ExternalContextInitiateTranscriptUploadResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_ExternalContextInitiateTranscriptUploadResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_ExternalContextInitiateTranscriptUploadResponse.fromResponse(
       await response.json()
     );
@@ -63,16 +59,30 @@ export class msdyn_ExternalContextInitiateTranscriptUploadRequest
 }
 
 /**
+ * Response from the msdyn_ExternalContextInitiateTranscriptUpload action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_ExternalContextInitiateTranscriptUploadResult {
+  "@odata.context"?: string;
+  BlockList: string[];
+  FileContinuationToken: string;
+}
+
+/**
  * msdyn_ExternalContextInitiateTranscriptUpload response message
+ *
+ * `result` is the value the msdyn_ExternalContextInitiateTranscriptUpload action returns (see {@link msdyn_ExternalContextInitiateTranscriptUploadResult}).
  */
 export class msdyn_ExternalContextInitiateTranscriptUploadResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ExternalContextInitiateTranscriptUploadResponseData) {
+  constructor(public result: msdyn_ExternalContextInitiateTranscriptUploadResult) {
     super("msdyn_ExternalContextInitiateTranscriptUpload");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_ExternalContextInitiateTranscriptUploadResponse {
     return new msdyn_ExternalContextInitiateTranscriptUploadResponse(
-      responseObject<msdyn_ExternalContextInitiateTranscriptUploadResponseData>(data)
+      data as msdyn_ExternalContextInitiateTranscriptUploadResult
     );
   }
 }

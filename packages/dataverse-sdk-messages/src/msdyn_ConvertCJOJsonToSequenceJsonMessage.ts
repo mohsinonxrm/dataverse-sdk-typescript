@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_ConvertCJOJsonToSequenceJsonResponse as msdyn_ConvertCJOJsonToSequenceJsonResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_ConvertCJOJsonToSequenceJson message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,35 @@ export class msdyn_ConvertCJOJsonToSequenceJsonRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ConvertCJOJsonToSequenceJsonResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_ConvertCJOJsonToSequenceJsonResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_ConvertCJOJsonToSequenceJsonResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_ConvertCJOJsonToSequenceJson action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_ConvertCJOJsonToSequenceJsonResult {
+  "@odata.context"?: string;
+  Result: boolean;
+}
+
+/**
  * msdyn_ConvertCJOJsonToSequenceJson response message
+ *
+ * `result` is the value the msdyn_ConvertCJOJsonToSequenceJson action returns (see {@link msdyn_ConvertCJOJsonToSequenceJsonResult}).
  */
 export class msdyn_ConvertCJOJsonToSequenceJsonResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ConvertCJOJsonToSequenceJsonResponseData) {
+  constructor(public result: msdyn_ConvertCJOJsonToSequenceJsonResult) {
     super("msdyn_ConvertCJOJsonToSequenceJson");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_ConvertCJOJsonToSequenceJsonResponse {
     return new msdyn_ConvertCJOJsonToSequenceJsonResponse(
-      responseObject<msdyn_ConvertCJOJsonToSequenceJsonResponseData>(data)
+      data as msdyn_ConvertCJOJsonToSequenceJsonResult
     );
   }
 }

@@ -42,9 +42,9 @@ export class SetPreferredSolutionRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<SetPreferredSolutionResponse> {
+  parseResponse(_response: Response): Promise<SetPreferredSolutionResponse> {
     // No return value (204 No Content)
-    return new SetPreferredSolutionResponse();
+    return Promise.resolve(new SetPreferredSolutionResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class SetPreferredSolutionResponse extends OrganizationResponse {
     super("SetPreferredSolution");
   }
 
-  static fromResponse(_data: unknown): SetPreferredSolutionResponse {
+  static fromResponse(_data?: unknown): SetPreferredSolutionResponse {
     return new SetPreferredSolutionResponse();
   }
 }

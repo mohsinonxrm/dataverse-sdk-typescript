@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { GenerateInstantPluginResponse as GenerateInstantPluginResponseData } from "./types/index.js";
 
 /**
  * Parameters of the GenerateInstantPlugin message, by their CSDL names. A parameter the CSDL declares
@@ -57,23 +55,35 @@ export class GenerateInstantPluginRequest
   }
 
   async parseResponse(response: Response): Promise<GenerateInstantPluginResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return GenerateInstantPluginResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return GenerateInstantPluginResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the GenerateInstantPlugin action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface GenerateInstantPluginResult {
+  "@odata.context"?: string;
+  CustomApiId: string;
+  FxExpressionId: string;
+  msdyn_functionid: string;
+}
+
+/**
  * GenerateInstantPlugin response message
+ *
+ * `result` is the value the GenerateInstantPlugin action returns (see {@link GenerateInstantPluginResult}).
  */
 export class GenerateInstantPluginResponse extends OrganizationResponse {
-  constructor(public result: GenerateInstantPluginResponseData) {
+  constructor(public result: GenerateInstantPluginResult) {
     super("GenerateInstantPlugin");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): GenerateInstantPluginResponse {
-    return new GenerateInstantPluginResponse(
-      responseObject<GenerateInstantPluginResponseData>(data)
-    );
+    return new GenerateInstantPluginResponse(data as GenerateInstantPluginResult);
   }
 }

@@ -1,11 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type {
-  BulkRemoveActiveCustomizationsAsyncResponse as BulkRemoveActiveCustomizationsAsyncResponseData,
-  BulkRemoveActiveCustomizationsParameters,
-} from "./types/index.js";
+import type { BulkRemoveActiveCustomizationsParameters } from "./types/index.js";
 
 /**
  * Parameters of the BulkRemoveActiveCustomizationsAsync message, by their CSDL names. A parameter the CSDL declares
@@ -49,24 +45,35 @@ export class BulkRemoveActiveCustomizationsAsyncRequest
   }
 
   async parseResponse(response: Response): Promise<BulkRemoveActiveCustomizationsAsyncResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return BulkRemoveActiveCustomizationsAsyncResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return BulkRemoveActiveCustomizationsAsyncResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the BulkRemoveActiveCustomizationsAsync action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface BulkRemoveActiveCustomizationsAsyncResult {
+  "@odata.context"?: string;
+  AsyncOperationId: string;
+}
+
+/**
  * BulkRemoveActiveCustomizationsAsync response message
+ *
+ * `result` is the value the BulkRemoveActiveCustomizationsAsync action returns (see {@link BulkRemoveActiveCustomizationsAsyncResult}).
  */
 export class BulkRemoveActiveCustomizationsAsyncResponse extends OrganizationResponse {
-  constructor(public result: BulkRemoveActiveCustomizationsAsyncResponseData) {
+  constructor(public result: BulkRemoveActiveCustomizationsAsyncResult) {
     super("BulkRemoveActiveCustomizationsAsync");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): BulkRemoveActiveCustomizationsAsyncResponse {
     return new BulkRemoveActiveCustomizationsAsyncResponse(
-      responseObject<BulkRemoveActiveCustomizationsAsyncResponseData>(data)
+      data as BulkRemoveActiveCustomizationsAsyncResult
     );
   }
 }

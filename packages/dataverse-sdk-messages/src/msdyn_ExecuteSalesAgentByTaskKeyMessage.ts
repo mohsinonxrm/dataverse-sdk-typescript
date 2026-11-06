@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_ExecuteSalesAgentByTaskKeyResponse as msdyn_ExecuteSalesAgentByTaskKeyResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_ExecuteSalesAgentByTaskKey message, by their CSDL names. A parameter the CSDL declares
@@ -51,23 +49,37 @@ export class msdyn_ExecuteSalesAgentByTaskKeyRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ExecuteSalesAgentByTaskKeyResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_ExecuteSalesAgentByTaskKeyResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_ExecuteSalesAgentByTaskKeyResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_ExecuteSalesAgentByTaskKey action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_ExecuteSalesAgentByTaskKeyResult {
+  "@odata.context"?: string;
+  msdyn_ErrorMessage: string;
+  msdyn_IsSuccess: boolean;
+  msdyn_TaskResponse: string;
+}
+
+/**
  * msdyn_ExecuteSalesAgentByTaskKey response message
+ *
+ * `result` is the value the msdyn_ExecuteSalesAgentByTaskKey action returns (see {@link msdyn_ExecuteSalesAgentByTaskKeyResult}).
  */
 export class msdyn_ExecuteSalesAgentByTaskKeyResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ExecuteSalesAgentByTaskKeyResponseData) {
+  constructor(public result: msdyn_ExecuteSalesAgentByTaskKeyResult) {
     super("msdyn_ExecuteSalesAgentByTaskKey");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_ExecuteSalesAgentByTaskKeyResponse {
     return new msdyn_ExecuteSalesAgentByTaskKeyResponse(
-      responseObject<msdyn_ExecuteSalesAgentByTaskKeyResponseData>(data)
+      data as msdyn_ExecuteSalesAgentByTaskKeyResult
     );
   }
 }

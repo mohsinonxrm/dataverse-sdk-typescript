@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_CheckForDeletedWebResourcesResponse as msdyn_CheckForDeletedWebResourcesResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CheckForDeletedWebResources message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,38 @@ export class msdyn_CheckForDeletedWebResourcesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckForDeletedWebResourcesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_CheckForDeletedWebResourcesResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CheckForDeletedWebResourcesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CheckForDeletedWebResources action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CheckForDeletedWebResourcesResult {
+  "@odata.context"?: string;
+  HelpLink: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_CheckForDeletedWebResources response message
+ *
+ * `result` is the value the msdyn_CheckForDeletedWebResources action returns (see {@link msdyn_CheckForDeletedWebResourcesResult}).
  */
 export class msdyn_CheckForDeletedWebResourcesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckForDeletedWebResourcesResponseData) {
+  constructor(public result: msdyn_CheckForDeletedWebResourcesResult) {
     super("msdyn_CheckForDeletedWebResources");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CheckForDeletedWebResourcesResponse {
     return new msdyn_CheckForDeletedWebResourcesResponse(
-      responseObject<msdyn_CheckForDeletedWebResourcesResponseData>(data)
+      data as msdyn_CheckForDeletedWebResourcesResult
     );
   }
 }

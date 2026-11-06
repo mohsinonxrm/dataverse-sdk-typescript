@@ -49,9 +49,9 @@ export class msdyn_OnClosureAgentClosedCaseRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_OnClosureAgentClosedCaseResponse> {
+  parseResponse(_response: Response): Promise<msdyn_OnClosureAgentClosedCaseResponse> {
     // No return value (204 No Content)
-    return new msdyn_OnClosureAgentClosedCaseResponse();
+    return Promise.resolve(new msdyn_OnClosureAgentClosedCaseResponse());
   }
 }
 
@@ -63,7 +63,7 @@ export class msdyn_OnClosureAgentClosedCaseResponse extends OrganizationResponse
     super("msdyn_OnClosureAgentClosedCase");
   }
 
-  static fromResponse(_data: unknown): msdyn_OnClosureAgentClosedCaseResponse {
+  static fromResponse(_data?: unknown): msdyn_OnClosureAgentClosedCaseResponse {
     return new msdyn_OnClosureAgentClosedCaseResponse();
   }
 }

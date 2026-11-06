@@ -42,9 +42,9 @@ export class msdyn_EnableUnifiedRoutingRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_EnableUnifiedRoutingResponse> {
+  parseResponse(_response: Response): Promise<msdyn_EnableUnifiedRoutingResponse> {
     // No return value (204 No Content)
-    return new msdyn_EnableUnifiedRoutingResponse();
+    return Promise.resolve(new msdyn_EnableUnifiedRoutingResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_EnableUnifiedRoutingResponse extends OrganizationResponse {
     super("msdyn_EnableUnifiedRouting");
   }
 
-  static fromResponse(_data: unknown): msdyn_EnableUnifiedRoutingResponse {
+  static fromResponse(_data?: unknown): msdyn_EnableUnifiedRoutingResponse {
     return new msdyn_EnableUnifiedRoutingResponse();
   }
 }

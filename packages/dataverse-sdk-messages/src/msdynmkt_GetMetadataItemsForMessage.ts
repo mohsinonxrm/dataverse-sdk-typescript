@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseValue } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
 
 /**
@@ -48,21 +47,40 @@ export class msdynmkt_GetMetadataItemsForRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_GetMetadataItemsForResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdynmkt_GetMetadataItemsForResponse.fromResponse({});
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204)
+      return msdynmkt_GetMetadataItemsForResponse.fromResponse(undefined);
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
     return msdynmkt_GetMetadataItemsForResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdynmkt_GetMetadataItemsFor action.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
+ */
+export type msdynmkt_GetMetadataItemsForResult = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
+
+/**
  * msdynmkt_GetMetadataItemsFor response message
+ *
+ * `result` is the value the msdynmkt_GetMetadataItemsFor action returns (see {@link msdynmkt_GetMetadataItemsForResult}).
  */
 export class msdynmkt_GetMetadataItemsForResponse extends OrganizationResponse {
-  constructor(public result: Record<string, unknown>[]) {
+  constructor(public result: msdynmkt_GetMetadataItemsForResult) {
     super("msdynmkt_GetMetadataItemsFor");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdynmkt_GetMetadataItemsForResponse {
-    return new msdynmkt_GetMetadataItemsForResponse(responseValue<Record<string, unknown>[]>(data));
+    return new msdynmkt_GetMetadataItemsForResponse(
+      data === undefined ? [] : (data as { value: msdynmkt_GetMetadataItemsForResult }).value
+    );
   }
 }

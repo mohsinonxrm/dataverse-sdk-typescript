@@ -29,9 +29,9 @@ export class msdyn_TrainModelRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_TrainModelResponse> {
+  parseResponse(_response: Response): Promise<msdyn_TrainModelResponse> {
     // No return value (204 No Content)
-    return new msdyn_TrainModelResponse();
+    return Promise.resolve(new msdyn_TrainModelResponse());
   }
 }
 
@@ -43,7 +43,7 @@ export class msdyn_TrainModelResponse extends OrganizationResponse {
     super("msdyn_TrainModel");
   }
 
-  static fromResponse(_data: unknown): msdyn_TrainModelResponse {
+  static fromResponse(_data?: unknown): msdyn_TrainModelResponse {
     return new msdyn_TrainModelResponse();
   }
 }

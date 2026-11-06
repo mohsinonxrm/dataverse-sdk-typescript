@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_ProvisionAnalyticsResponse as msdyn_ProvisionAnalyticsResponseData } from "./types/index.js";
 
 /**
  * msdyn_ProvisionAnalytics request message
@@ -29,23 +27,33 @@ export class msdyn_ProvisionAnalyticsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ProvisionAnalyticsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_ProvisionAnalyticsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_ProvisionAnalyticsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_ProvisionAnalytics action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_ProvisionAnalyticsResult {
+  "@odata.context"?: string;
+  msdyn_response: string;
+}
+
+/**
  * msdyn_ProvisionAnalytics response message
+ *
+ * `result` is the value the msdyn_ProvisionAnalytics action returns (see {@link msdyn_ProvisionAnalyticsResult}).
  */
 export class msdyn_ProvisionAnalyticsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ProvisionAnalyticsResponseData) {
+  constructor(public result: msdyn_ProvisionAnalyticsResult) {
     super("msdyn_ProvisionAnalytics");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_ProvisionAnalyticsResponse {
-    return new msdyn_ProvisionAnalyticsResponse(
-      responseObject<msdyn_ProvisionAnalyticsResponseData>(data)
-    );
+    return new msdyn_ProvisionAnalyticsResponse(data as msdyn_ProvisionAnalyticsResult);
   }
 }

@@ -26,9 +26,9 @@ export class msdyn_OverflowMigrationAPIRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_OverflowMigrationAPIResponse> {
+  parseResponse(_response: Response): Promise<msdyn_OverflowMigrationAPIResponse> {
     // No return value (204 No Content)
-    return new msdyn_OverflowMigrationAPIResponse();
+    return Promise.resolve(new msdyn_OverflowMigrationAPIResponse());
   }
 }
 
@@ -40,7 +40,7 @@ export class msdyn_OverflowMigrationAPIResponse extends OrganizationResponse {
     super("msdyn_OverflowMigrationAPI");
   }
 
-  static fromResponse(_data: unknown): msdyn_OverflowMigrationAPIResponse {
+  static fromResponse(_data?: unknown): msdyn_OverflowMigrationAPIResponse {
     return new msdyn_OverflowMigrationAPIResponse();
   }
 }

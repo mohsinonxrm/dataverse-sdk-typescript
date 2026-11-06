@@ -54,9 +54,9 @@ export class msdyn_SendMCSSurveyRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_SendMCSSurveyResponse> {
+  parseResponse(_response: Response): Promise<msdyn_SendMCSSurveyResponse> {
     // No return value (204 No Content)
-    return new msdyn_SendMCSSurveyResponse();
+    return Promise.resolve(new msdyn_SendMCSSurveyResponse());
   }
 }
 
@@ -68,7 +68,7 @@ export class msdyn_SendMCSSurveyResponse extends OrganizationResponse {
     super("msdyn_SendMCSSurvey");
   }
 
-  static fromResponse(_data: unknown): msdyn_SendMCSSurveyResponse {
+  static fromResponse(_data?: unknown): msdyn_SendMCSSurveyResponse {
     return new msdyn_SendMCSSurveyResponse();
   }
 }

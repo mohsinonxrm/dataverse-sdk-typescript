@@ -48,9 +48,9 @@ export class CCaaS_CreateOperationRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_CreateOperationResponse> {
+  parseResponse(_response: Response): Promise<CCaaS_CreateOperationResponse> {
     // No return value (204 No Content)
-    return new CCaaS_CreateOperationResponse();
+    return Promise.resolve(new CCaaS_CreateOperationResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class CCaaS_CreateOperationResponse extends OrganizationResponse {
     super("CCaaS_CreateOperation");
   }
 
-  static fromResponse(_data: unknown): CCaaS_CreateOperationResponse {
+  static fromResponse(_data?: unknown): CCaaS_CreateOperationResponse {
     return new CCaaS_CreateOperationResponse();
   }
 }

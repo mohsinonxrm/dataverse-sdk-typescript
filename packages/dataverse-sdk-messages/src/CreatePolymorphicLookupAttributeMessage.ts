@@ -1,12 +1,10 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type {
   ComplexLookupAttributeMetadata,
   ComplexOneToManyRelationshipMetadata,
-  CreatePolymorphicLookupAttributeResponse as CreatePolymorphicLookupAttributeResponseData,
 } from "./types/index.js";
 
 /**
@@ -57,23 +55,36 @@ export class CreatePolymorphicLookupAttributeRequest
   }
 
   async parseResponse(response: Response): Promise<CreatePolymorphicLookupAttributeResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CreatePolymorphicLookupAttributeResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CreatePolymorphicLookupAttributeResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CreatePolymorphicLookupAttribute action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CreatePolymorphicLookupAttributeResult {
+  "@odata.context"?: string;
+  AttributeId: string;
+  RelationshipIds: string[];
+}
+
+/**
  * CreatePolymorphicLookupAttribute response message
+ *
+ * `result` is the value the CreatePolymorphicLookupAttribute action returns (see {@link CreatePolymorphicLookupAttributeResult}).
  */
 export class CreatePolymorphicLookupAttributeResponse extends OrganizationResponse {
-  constructor(public result: CreatePolymorphicLookupAttributeResponseData) {
+  constructor(public result: CreatePolymorphicLookupAttributeResult) {
     super("CreatePolymorphicLookupAttribute");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CreatePolymorphicLookupAttributeResponse {
     return new CreatePolymorphicLookupAttributeResponse(
-      responseObject<CreatePolymorphicLookupAttributeResponseData>(data)
+      data as CreatePolymorphicLookupAttributeResult
     );
   }
 }

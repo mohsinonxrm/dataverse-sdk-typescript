@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_RetrieveCustomMessagingApplicationSecret action
+ * Response from the msdyn_RetrieveCustomMessagingApplicationSecret action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_RetrieveCustomMessagingApplicationSecretResponse {
+  "@odata.context"?: string;
   CustomMessagingBCRMSAppSecret: string;
 }
 
@@ -51,9 +54,7 @@ export class msdyn_RetrieveCustomMessagingApplicationSecretAction implements Exe
   async parseResponse(
     response: Response
   ): Promise<msdyn_RetrieveCustomMessagingApplicationSecretResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return {} as msdyn_RetrieveCustomMessagingApplicationSecretResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_RetrieveCustomMessagingApplicationSecretResponse;
   }
 }

@@ -51,9 +51,9 @@ export class CopyMembersListRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CopyMembersListResponse> {
+  parseResponse(_response: Response): Promise<CopyMembersListResponse> {
     // No return value (204 No Content)
-    return new CopyMembersListResponse();
+    return Promise.resolve(new CopyMembersListResponse());
   }
 }
 
@@ -65,7 +65,7 @@ export class CopyMembersListResponse extends OrganizationResponse {
     super("CopyMembersList");
   }
 
-  static fromResponse(_data: unknown): CopyMembersListResponse {
+  static fromResponse(_data?: unknown): CopyMembersListResponse {
     return new CopyMembersListResponse();
   }
 }

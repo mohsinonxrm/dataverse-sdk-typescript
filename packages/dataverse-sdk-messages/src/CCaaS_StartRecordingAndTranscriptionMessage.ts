@@ -56,9 +56,9 @@ export class CCaaS_StartRecordingAndTranscriptionRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_StartRecordingAndTranscriptionResponse> {
+  parseResponse(_response: Response): Promise<CCaaS_StartRecordingAndTranscriptionResponse> {
     // No return value (204 No Content)
-    return new CCaaS_StartRecordingAndTranscriptionResponse();
+    return Promise.resolve(new CCaaS_StartRecordingAndTranscriptionResponse());
   }
 }
 
@@ -70,7 +70,7 @@ export class CCaaS_StartRecordingAndTranscriptionResponse extends OrganizationRe
     super("CCaaS_StartRecordingAndTranscription");
   }
 
-  static fromResponse(_data: unknown): CCaaS_StartRecordingAndTranscriptionResponse {
+  static fromResponse(_data?: unknown): CCaaS_StartRecordingAndTranscriptionResponse {
     return new CCaaS_StartRecordingAndTranscriptionResponse();
   }
 }

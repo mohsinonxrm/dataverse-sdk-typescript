@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_FacebookPageConfigurationShouldHaveWorkStreamRule action
+ * Response from the msdyn_FacebookPageConfigurationShouldHaveWorkStreamRule action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_FacebookPageConfigurationShouldHaveWorkStreamRuleResponse {
+  "@odata.context"?: string;
   Message: string;
   ResultEntities: string;
   ReturnStatus: number;
@@ -30,9 +33,7 @@ export class msdyn_FacebookPageConfigurationShouldHaveWorkStreamRuleAction imple
   async parseResponse(
     response: Response
   ): Promise<msdyn_FacebookPageConfigurationShouldHaveWorkStreamRuleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return {} as msdyn_FacebookPageConfigurationShouldHaveWorkStreamRuleResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_FacebookPageConfigurationShouldHaveWorkStreamRuleResponse;
   }
 }

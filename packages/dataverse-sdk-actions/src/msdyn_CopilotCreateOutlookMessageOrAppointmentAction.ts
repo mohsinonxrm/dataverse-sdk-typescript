@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_CopilotCreateOutlookMessageOrAppointment action
+ * Response from the msdyn_CopilotCreateOutlookMessageOrAppointment action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_CopilotCreateOutlookMessageOrAppointmentResponse {
+  "@odata.context"?: string;
   msdyn_error: string;
   msdyn_outlookResponse: string;
   msdyn_status: number;
@@ -54,9 +57,7 @@ export class msdyn_CopilotCreateOutlookMessageOrAppointmentAction implements Exe
   async parseResponse(
     response: Response
   ): Promise<msdyn_CopilotCreateOutlookMessageOrAppointmentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return {} as msdyn_CopilotCreateOutlookMessageOrAppointmentResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_CopilotCreateOutlookMessageOrAppointmentResponse;
   }
 }

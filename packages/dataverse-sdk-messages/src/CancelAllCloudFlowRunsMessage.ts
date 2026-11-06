@@ -29,9 +29,9 @@ export class CancelAllCloudFlowRunsRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CancelAllCloudFlowRunsResponse> {
+  parseResponse(_response: Response): Promise<CancelAllCloudFlowRunsResponse> {
     // No return value (204 No Content)
-    return new CancelAllCloudFlowRunsResponse();
+    return Promise.resolve(new CancelAllCloudFlowRunsResponse());
   }
 }
 
@@ -43,7 +43,7 @@ export class CancelAllCloudFlowRunsResponse extends OrganizationResponse {
     super("CancelAllCloudFlowRuns");
   }
 
-  static fromResponse(_data: unknown): CancelAllCloudFlowRunsResponse {
+  static fromResponse(_data?: unknown): CancelAllCloudFlowRunsResponse {
     return new CancelAllCloudFlowRunsResponse();
   }
 }

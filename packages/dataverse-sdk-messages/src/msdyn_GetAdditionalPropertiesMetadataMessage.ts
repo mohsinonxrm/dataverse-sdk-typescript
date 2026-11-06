@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetAdditionalPropertiesMetadataResponse as msdyn_GetAdditionalPropertiesMetadataResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetAdditionalPropertiesMetadata message, by their CSDL names. A parameter the CSDL declares
@@ -45,24 +43,35 @@ export class msdyn_GetAdditionalPropertiesMetadataRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAdditionalPropertiesMetadataResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_GetAdditionalPropertiesMetadataResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetAdditionalPropertiesMetadataResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetAdditionalPropertiesMetadata action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetAdditionalPropertiesMetadataResult {
+  "@odata.context"?: string;
+  Metadata: string;
+}
+
+/**
  * msdyn_GetAdditionalPropertiesMetadata response message
+ *
+ * `result` is the value the msdyn_GetAdditionalPropertiesMetadata action returns (see {@link msdyn_GetAdditionalPropertiesMetadataResult}).
  */
 export class msdyn_GetAdditionalPropertiesMetadataResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetAdditionalPropertiesMetadataResponseData) {
+  constructor(public result: msdyn_GetAdditionalPropertiesMetadataResult) {
     super("msdyn_GetAdditionalPropertiesMetadata");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetAdditionalPropertiesMetadataResponse {
     return new msdyn_GetAdditionalPropertiesMetadataResponse(
-      responseObject<msdyn_GetAdditionalPropertiesMetadataResponseData>(data)
+      data as msdyn_GetAdditionalPropertiesMetadataResult
     );
   }
 }

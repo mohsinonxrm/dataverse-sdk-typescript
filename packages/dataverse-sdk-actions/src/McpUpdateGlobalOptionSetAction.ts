@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from McpUpdateGlobalOptionSet action
+ * Response from the McpUpdateGlobalOptionSet action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface McpUpdateGlobalOptionSetResponse {
+  "@odata.context"?: string;
   definition: string;
 }
 
@@ -48,8 +51,7 @@ export class McpUpdateGlobalOptionSetAction implements Executable<McpUpdateGloba
   }
 
   async parseResponse(response: Response): Promise<McpUpdateGlobalOptionSetResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as McpUpdateGlobalOptionSetResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as McpUpdateGlobalOptionSetResponse;
   }
 }

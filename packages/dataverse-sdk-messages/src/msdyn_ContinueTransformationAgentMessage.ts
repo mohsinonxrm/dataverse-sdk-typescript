@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_ContinueTransformationAgentResponse as msdyn_ContinueTransformationAgentResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_ContinueTransformationAgent message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,38 @@ export class msdyn_ContinueTransformationAgentRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ContinueTransformationAgentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_ContinueTransformationAgentResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_ContinueTransformationAgentResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_ContinueTransformationAgent action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_ContinueTransformationAgentResult {
+  "@odata.context"?: string;
+  msdyn_action: string;
+  msdyn_activities: string;
+  msdyn_conversationid: string;
+  msdyn_response: string;
+}
+
+/**
  * msdyn_ContinueTransformationAgent response message
+ *
+ * `result` is the value the msdyn_ContinueTransformationAgent action returns (see {@link msdyn_ContinueTransformationAgentResult}).
  */
 export class msdyn_ContinueTransformationAgentResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ContinueTransformationAgentResponseData) {
+  constructor(public result: msdyn_ContinueTransformationAgentResult) {
     super("msdyn_ContinueTransformationAgent");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_ContinueTransformationAgentResponse {
     return new msdyn_ContinueTransformationAgentResponse(
-      responseObject<msdyn_ContinueTransformationAgentResponseData>(data)
+      data as msdyn_ContinueTransformationAgentResult
     );
   }
 }

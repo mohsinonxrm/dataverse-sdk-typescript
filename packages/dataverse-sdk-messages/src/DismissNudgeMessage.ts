@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { DismissNudgeResponse as DismissNudgeResponseData } from "./types/index.js";
 
 /**
  * Parameters of the DismissNudge message, by their CSDL names. A parameter the CSDL declares
@@ -53,21 +51,33 @@ export class DismissNudgeRequest
   }
 
   async parseResponse(response: Response): Promise<DismissNudgeResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return DismissNudgeResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return DismissNudgeResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the DismissNudge action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface DismissNudgeResult {
+  "@odata.context"?: string;
+  Message: string;
+}
+
+/**
  * DismissNudge response message
+ *
+ * `result` is the value the DismissNudge action returns (see {@link DismissNudgeResult}).
  */
 export class DismissNudgeResponse extends OrganizationResponse {
-  constructor(public result: DismissNudgeResponseData) {
+  constructor(public result: DismissNudgeResult) {
     super("DismissNudge");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): DismissNudgeResponse {
-    return new DismissNudgeResponse(responseObject<DismissNudgeResponseData>(data));
+    return new DismissNudgeResponse(data as DismissNudgeResult);
   }
 }

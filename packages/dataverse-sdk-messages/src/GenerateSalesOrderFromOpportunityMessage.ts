@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { ColumnSet } from "./types/index.js";
@@ -48,23 +47,41 @@ export class GenerateSalesOrderFromOpportunityRequest
   }
 
   async parseResponse(response: Response): Promise<GenerateSalesOrderFromOpportunityResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return GenerateSalesOrderFromOpportunityResponse.fromResponse({});
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204)
+      return GenerateSalesOrderFromOpportunityResponse.fromResponse(undefined);
+    // The body is the record, with its annotations
     return GenerateSalesOrderFromOpportunityResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the GenerateSalesOrderFromOpportunity action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
+ */
+export type GenerateSalesOrderFromOpportunityResult = {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+} | null;
+
+/**
  * GenerateSalesOrderFromOpportunity response message
+ *
+ * `result` is the value the GenerateSalesOrderFromOpportunity action returns (see {@link GenerateSalesOrderFromOpportunityResult}).
  */
 export class GenerateSalesOrderFromOpportunityResponse extends OrganizationResponse {
-  constructor(public result: Record<string, unknown>) {
+  constructor(public result: GenerateSalesOrderFromOpportunityResult) {
     super("GenerateSalesOrderFromOpportunity");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): GenerateSalesOrderFromOpportunityResponse {
     return new GenerateSalesOrderFromOpportunityResponse(
-      responseObject<Record<string, unknown>>(data)
+      (data ?? null) as GenerateSalesOrderFromOpportunityResult
     );
   }
 }

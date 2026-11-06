@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdynmkt_optoutofchannelcommunication action
+ * Response from the msdynmkt_optoutofchannelcommunication action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdynmkt_optoutofchannelcommunicationResponse {
-  // No content returned
-}
+export type msdynmkt_optoutofchannelcommunicationResponse = void;
 
 /**
  * Parameters of the msdynmkt_optoutofchannelcommunication action, by their CSDL names. A parameter the CSDL declares
@@ -43,9 +43,8 @@ export class msdynmkt_optoutofchannelcommunicationAction implements Executable<m
     };
   }
 
-  async parseResponse(response: Response): Promise<msdynmkt_optoutofchannelcommunicationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdynmkt_optoutofchannelcommunicationResponse;
-    return (await response.json()) as msdynmkt_optoutofchannelcommunicationResponse;
+  parseResponse(_response: Response): Promise<msdynmkt_optoutofchannelcommunicationResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

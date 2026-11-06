@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_IoTCheckIfRecordExistsInEntity action
+ * Response from the msdyn_IoTCheckIfRecordExistsInEntity action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_IoTCheckIfRecordExistsInEntityResponse {
+  "@odata.context"?: string;
   IsRecordExists: boolean;
 }
 
@@ -44,8 +47,7 @@ export class msdyn_IoTCheckIfRecordExistsInEntityAction implements Executable<ms
   }
 
   async parseResponse(response: Response): Promise<msdyn_IoTCheckIfRecordExistsInEntityResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_IoTCheckIfRecordExistsInEntityResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_IoTCheckIfRecordExistsInEntityResponse;
   }
 }

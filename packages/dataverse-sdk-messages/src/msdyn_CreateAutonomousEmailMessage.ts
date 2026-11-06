@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { msdyn_CreateAutonomousEmailResponse as msdyn_CreateAutonomousEmailResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CreateAutonomousEmail message, by their CSDL names. A parameter the CSDL declares
@@ -79,23 +77,33 @@ export class msdyn_CreateAutonomousEmailRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateAutonomousEmailResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_CreateAutonomousEmailResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CreateAutonomousEmailResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CreateAutonomousEmail action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CreateAutonomousEmailResult {
+  "@odata.context"?: string;
+  Result: string;
+}
+
+/**
  * msdyn_CreateAutonomousEmail response message
+ *
+ * `result` is the value the msdyn_CreateAutonomousEmail action returns (see {@link msdyn_CreateAutonomousEmailResult}).
  */
 export class msdyn_CreateAutonomousEmailResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CreateAutonomousEmailResponseData) {
+  constructor(public result: msdyn_CreateAutonomousEmailResult) {
     super("msdyn_CreateAutonomousEmail");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CreateAutonomousEmailResponse {
-    return new msdyn_CreateAutonomousEmailResponse(
-      responseObject<msdyn_CreateAutonomousEmailResponseData>(data)
-    );
+    return new msdyn_CreateAutonomousEmailResponse(data as msdyn_CreateAutonomousEmailResult);
   }
 }

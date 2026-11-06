@@ -44,9 +44,9 @@ export class msdyn_StartODOSDeprovisioningRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_StartODOSDeprovisioningResponse> {
+  parseResponse(_response: Response): Promise<msdyn_StartODOSDeprovisioningResponse> {
     // No return value (204 No Content)
-    return new msdyn_StartODOSDeprovisioningResponse();
+    return Promise.resolve(new msdyn_StartODOSDeprovisioningResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class msdyn_StartODOSDeprovisioningResponse extends OrganizationResponse 
     super("msdyn_StartODOSDeprovisioning");
   }
 
-  static fromResponse(_data: unknown): msdyn_StartODOSDeprovisioningResponse {
+  static fromResponse(_data?: unknown): msdyn_StartODOSDeprovisioningResponse {
     return new msdyn_StartODOSDeprovisioningResponse();
   }
 }

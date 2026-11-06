@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_TriggerEmailManagementAgent action
+ * Response from the msdyn_TriggerEmailManagementAgent action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_TriggerEmailManagementAgentResponse {
-  // No content returned
-}
+export type msdyn_TriggerEmailManagementAgentResponse = void;
 
 /**
  * Parameters of the msdyn_TriggerEmailManagementAgent action, by their CSDL names. A parameter the CSDL declares
@@ -43,9 +43,8 @@ export class msdyn_TriggerEmailManagementAgentAction implements Executable<msdyn
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_TriggerEmailManagementAgentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_TriggerEmailManagementAgentResponse;
-    return (await response.json()) as msdyn_TriggerEmailManagementAgentResponse;
+  parseResponse(_response: Response): Promise<msdyn_TriggerEmailManagementAgentResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

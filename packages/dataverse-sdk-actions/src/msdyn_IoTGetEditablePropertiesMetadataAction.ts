@@ -5,9 +5,12 @@ import type { EntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_iotdevicecategory } from "./types/index.js";
 
 /**
- * Response from msdyn_IoTGetEditablePropertiesMetadata action
+ * Response from the msdyn_IoTGetEditablePropertiesMetadata action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_IoTGetEditablePropertiesMetadataResponse {
+  "@odata.context"?: string;
   Metadata: string;
 }
 
@@ -45,8 +48,7 @@ export class msdyn_IoTGetEditablePropertiesMetadataAction implements Executable<
   }
 
   async parseResponse(response: Response): Promise<msdyn_IoTGetEditablePropertiesMetadataResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_IoTGetEditablePropertiesMetadataResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_IoTGetEditablePropertiesMetadataResponse;
   }
 }

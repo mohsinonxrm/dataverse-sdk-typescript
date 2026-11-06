@@ -52,11 +52,9 @@ export class msdynmkt_updatechannelcommunicationconsentRequest
     };
   }
 
-  async parseResponse(
-    response: Response
-  ): Promise<msdynmkt_updatechannelcommunicationconsentResponse> {
+  parseResponse(_response: Response): Promise<msdynmkt_updatechannelcommunicationconsentResponse> {
     // No return value (204 No Content)
-    return new msdynmkt_updatechannelcommunicationconsentResponse();
+    return Promise.resolve(new msdynmkt_updatechannelcommunicationconsentResponse());
   }
 }
 
@@ -68,7 +66,7 @@ export class msdynmkt_updatechannelcommunicationconsentResponse extends Organiza
     super("msdynmkt_updatechannelcommunicationconsent");
   }
 
-  static fromResponse(_data: unknown): msdynmkt_updatechannelcommunicationconsentResponse {
+  static fromResponse(_data?: unknown): msdynmkt_updatechannelcommunicationconsentResponse {
     return new msdynmkt_updatechannelcommunicationconsentResponse();
   }
 }

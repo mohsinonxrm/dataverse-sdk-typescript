@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdynmkt_consentsubmissionResponse as msdynmkt_consentsubmissionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdynmkt_consentsubmission message, by their CSDL names. A parameter the CSDL declares
@@ -57,23 +55,33 @@ export class msdynmkt_consentsubmissionRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_consentsubmissionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdynmkt_consentsubmissionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdynmkt_consentsubmissionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdynmkt_consentsubmission action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdynmkt_consentsubmissionResult {
+  "@odata.context"?: string;
+  msdynmkt_consentsubmissionresponse: string;
+}
+
+/**
  * msdynmkt_consentsubmission response message
+ *
+ * `result` is the value the msdynmkt_consentsubmission action returns (see {@link msdynmkt_consentsubmissionResult}).
  */
 export class msdynmkt_consentsubmissionResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_consentsubmissionResponseData) {
+  constructor(public result: msdynmkt_consentsubmissionResult) {
     super("msdynmkt_consentsubmission");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdynmkt_consentsubmissionResponse {
-    return new msdynmkt_consentsubmissionResponse(
-      responseObject<msdynmkt_consentsubmissionResponseData>(data)
-    );
+    return new msdynmkt_consentsubmissionResponse(data as msdynmkt_consentsubmissionResult);
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msft_DismissStorageRecommendationResponse as msft_DismissStorageRecommendationResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msft_DismissStorageRecommendation message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,35 @@ export class msft_DismissStorageRecommendationRequest
   }
 
   async parseResponse(response: Response): Promise<msft_DismissStorageRecommendationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msft_DismissStorageRecommendationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msft_DismissStorageRecommendationResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msft_DismissStorageRecommendation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msft_DismissStorageRecommendationResult {
+  "@odata.context"?: string;
+  IsSuccess: boolean;
+}
+
+/**
  * msft_DismissStorageRecommendation response message
+ *
+ * `result` is the value the msft_DismissStorageRecommendation action returns (see {@link msft_DismissStorageRecommendationResult}).
  */
 export class msft_DismissStorageRecommendationResponse extends OrganizationResponse {
-  constructor(public result: msft_DismissStorageRecommendationResponseData) {
+  constructor(public result: msft_DismissStorageRecommendationResult) {
     super("msft_DismissStorageRecommendation");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msft_DismissStorageRecommendationResponse {
     return new msft_DismissStorageRecommendationResponse(
-      responseObject<msft_DismissStorageRecommendationResponseData>(data)
+      data as msft_DismissStorageRecommendationResult
     );
   }
 }

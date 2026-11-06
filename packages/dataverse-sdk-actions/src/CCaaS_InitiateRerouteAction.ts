@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CCaaS_InitiateReroute action
+ * Response from the CCaaS_InitiateReroute action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface CCaaS_InitiateRerouteResponse {
-  // No content returned
-}
+export type CCaaS_InitiateRerouteResponse = void;
 
 /**
  * Parameters of the CCaaS_InitiateReroute action, by their CSDL names. A parameter the CSDL declares
@@ -48,9 +48,8 @@ export class CCaaS_InitiateRerouteAction implements Executable<CCaaS_InitiateRer
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_InitiateRerouteResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CCaaS_InitiateRerouteResponse;
-    return (await response.json()) as CCaaS_InitiateRerouteResponse;
+  parseResponse(_response: Response): Promise<CCaaS_InitiateRerouteResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

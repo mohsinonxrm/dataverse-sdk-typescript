@@ -50,9 +50,9 @@ export class msdyn_RegisterCustomEntityRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_RegisterCustomEntityResponse> {
+  parseResponse(_response: Response): Promise<msdyn_RegisterCustomEntityResponse> {
     // No return value (204 No Content)
-    return new msdyn_RegisterCustomEntityResponse();
+    return Promise.resolve(new msdyn_RegisterCustomEntityResponse());
   }
 }
 
@@ -64,7 +64,7 @@ export class msdyn_RegisterCustomEntityResponse extends OrganizationResponse {
     super("msdyn_RegisterCustomEntity");
   }
 
-  static fromResponse(_data: unknown): msdyn_RegisterCustomEntityResponse {
+  static fromResponse(_data?: unknown): msdyn_RegisterCustomEntityResponse {
     return new msdyn_RegisterCustomEntityResponse();
   }
 }

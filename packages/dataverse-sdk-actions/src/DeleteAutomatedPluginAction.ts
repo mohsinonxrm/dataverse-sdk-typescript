@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from DeleteAutomatedPlugin action
+ * Response from the DeleteAutomatedPlugin action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface DeleteAutomatedPluginResponse {
-  // No content returned
-}
+export type DeleteAutomatedPluginResponse = void;
 
 /**
  * Parameters of the DeleteAutomatedPlugin action, by their CSDL names. A parameter the CSDL declares
@@ -41,9 +41,8 @@ export class DeleteAutomatedPluginAction implements Executable<DeleteAutomatedPl
     };
   }
 
-  async parseResponse(response: Response): Promise<DeleteAutomatedPluginResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as DeleteAutomatedPluginResponse;
-    return (await response.json()) as DeleteAutomatedPluginResponse;
+  parseResponse(_response: Response): Promise<DeleteAutomatedPluginResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

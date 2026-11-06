@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from mspp_ppComponentSecurityRoleBinder action
+ * Response from the mspp_ppComponentSecurityRoleBinder action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface mspp_ppComponentSecurityRoleBinderResponse {
-  // No content returned
-}
+export type mspp_ppComponentSecurityRoleBinderResponse = void;
 
 /**
  * Parameters of the mspp_ppComponentSecurityRoleBinder action, by their CSDL names. A parameter the CSDL declares
@@ -48,9 +48,8 @@ export class mspp_ppComponentSecurityRoleBinderAction implements Executable<mspp
     };
   }
 
-  async parseResponse(response: Response): Promise<mspp_ppComponentSecurityRoleBinderResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as mspp_ppComponentSecurityRoleBinderResponse;
-    return (await response.json()) as mspp_ppComponentSecurityRoleBinderResponse;
+  parseResponse(_response: Response): Promise<mspp_ppComponentSecurityRoleBinderResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

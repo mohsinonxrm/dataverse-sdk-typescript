@@ -42,9 +42,9 @@ export class msdyn_PredictiveScoringDataMigrationRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_PredictiveScoringDataMigrationResponse> {
+  parseResponse(_response: Response): Promise<msdyn_PredictiveScoringDataMigrationResponse> {
     // No return value (204 No Content)
-    return new msdyn_PredictiveScoringDataMigrationResponse();
+    return Promise.resolve(new msdyn_PredictiveScoringDataMigrationResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_PredictiveScoringDataMigrationResponse extends OrganizationRe
     super("msdyn_PredictiveScoringDataMigration");
   }
 
-  static fromResponse(_data: unknown): msdyn_PredictiveScoringDataMigrationResponse {
+  static fromResponse(_data?: unknown): msdyn_PredictiveScoringDataMigrationResponse {
     return new msdyn_PredictiveScoringDataMigrationResponse();
   }
 }

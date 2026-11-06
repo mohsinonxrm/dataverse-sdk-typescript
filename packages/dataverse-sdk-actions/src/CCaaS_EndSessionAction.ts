@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CCaaS_EndSession action
+ * Response from the CCaaS_EndSession action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface CCaaS_EndSessionResponse {
-  // No content returned
-}
+export type CCaaS_EndSessionResponse = void;
 
 /**
  * Parameters of the CCaaS_EndSession action, by their CSDL names. A parameter the CSDL declares
@@ -50,9 +50,8 @@ export class CCaaS_EndSessionAction implements Executable<CCaaS_EndSessionRespon
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_EndSessionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CCaaS_EndSessionResponse;
-    return (await response.json()) as CCaaS_EndSessionResponse;
+  parseResponse(_response: Response): Promise<CCaaS_EndSessionResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

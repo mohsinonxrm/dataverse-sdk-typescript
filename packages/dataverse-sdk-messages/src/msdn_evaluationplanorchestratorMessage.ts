@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdn_evaluationplanorchestratorResponse as msdn_evaluationplanorchestratorResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdn_evaluationplanorchestrator message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,35 @@ export class msdn_evaluationplanorchestratorRequest
   }
 
   async parseResponse(response: Response): Promise<msdn_evaluationplanorchestratorResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdn_evaluationplanorchestratorResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdn_evaluationplanorchestratorResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdn_evaluationplanorchestrator action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdn_evaluationplanorchestratorResult {
+  "@odata.context"?: string;
+  Status: boolean;
+}
+
+/**
  * msdn_evaluationplanorchestrator response message
+ *
+ * `result` is the value the msdn_evaluationplanorchestrator action returns (see {@link msdn_evaluationplanorchestratorResult}).
  */
 export class msdn_evaluationplanorchestratorResponse extends OrganizationResponse {
-  constructor(public result: msdn_evaluationplanorchestratorResponseData) {
+  constructor(public result: msdn_evaluationplanorchestratorResult) {
     super("msdn_evaluationplanorchestrator");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdn_evaluationplanorchestratorResponse {
     return new msdn_evaluationplanorchestratorResponse(
-      responseObject<msdn_evaluationplanorchestratorResponseData>(data)
+      data as msdn_evaluationplanorchestratorResult
     );
   }
 }

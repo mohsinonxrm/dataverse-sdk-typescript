@@ -42,9 +42,9 @@ export class msdyn_startSequenceStatsCopyJobRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_startSequenceStatsCopyJobResponse> {
+  parseResponse(_response: Response): Promise<msdyn_startSequenceStatsCopyJobResponse> {
     // No return value (204 No Content)
-    return new msdyn_startSequenceStatsCopyJobResponse();
+    return Promise.resolve(new msdyn_startSequenceStatsCopyJobResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_startSequenceStatsCopyJobResponse extends OrganizationRespons
     super("msdyn_startSequenceStatsCopyJob");
   }
 
-  static fromResponse(_data: unknown): msdyn_startSequenceStatsCopyJobResponse {
+  static fromResponse(_data?: unknown): msdyn_startSequenceStatsCopyJobResponse {
     return new msdyn_startSequenceStatsCopyJobResponse();
   }
 }

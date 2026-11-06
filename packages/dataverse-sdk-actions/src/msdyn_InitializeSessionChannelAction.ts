@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_InitializeSessionChannel action
+ * Response from the msdyn_InitializeSessionChannel action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_InitializeSessionChannelResponse {
-  // No content returned
-}
+export type msdyn_InitializeSessionChannelResponse = void;
 
 /**
  * msdyn_InitializeSessionChannel action
@@ -25,9 +25,8 @@ export class msdyn_InitializeSessionChannelAction implements Executable<msdyn_In
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_InitializeSessionChannelResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_InitializeSessionChannelResponse;
-    return (await response.json()) as msdyn_InitializeSessionChannelResponse;
+  parseResponse(_response: Response): Promise<msdyn_InitializeSessionChannelResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

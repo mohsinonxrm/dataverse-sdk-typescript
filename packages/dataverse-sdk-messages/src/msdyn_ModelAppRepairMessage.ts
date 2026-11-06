@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { msdyn_ModelAppRepairResponse as msdyn_ModelAppRepairResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_ModelAppRepair message, by their CSDL names. A parameter the CSDL declares
@@ -47,21 +45,35 @@ export class msdyn_ModelAppRepairRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ModelAppRepairResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_ModelAppRepairResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_ModelAppRepairResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_ModelAppRepair action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_ModelAppRepairResult {
+  "@odata.context"?: string;
+  HelpLink: string;
+  ResolutionState: number;
+  ResolvedRecordsCount: number;
+}
+
+/**
  * msdyn_ModelAppRepair response message
+ *
+ * `result` is the value the msdyn_ModelAppRepair action returns (see {@link msdyn_ModelAppRepairResult}).
  */
 export class msdyn_ModelAppRepairResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ModelAppRepairResponseData) {
+  constructor(public result: msdyn_ModelAppRepairResult) {
     super("msdyn_ModelAppRepair");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_ModelAppRepairResponse {
-    return new msdyn_ModelAppRepairResponse(responseObject<msdyn_ModelAppRepairResponseData>(data));
+    return new msdyn_ModelAppRepairResponse(data as msdyn_ModelAppRepairResult);
   }
 }

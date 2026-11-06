@@ -42,9 +42,9 @@ export class msdyn_publishScheduledRolloutRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_publishScheduledRolloutResponse> {
+  parseResponse(_response: Response): Promise<msdyn_publishScheduledRolloutResponse> {
     // No return value (204 No Content)
-    return new msdyn_publishScheduledRolloutResponse();
+    return Promise.resolve(new msdyn_publishScheduledRolloutResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_publishScheduledRolloutResponse extends OrganizationResponse 
     super("msdyn_publishScheduledRollout");
   }
 
-  static fromResponse(_data: unknown): msdyn_publishScheduledRolloutResponse {
+  static fromResponse(_data?: unknown): msdyn_publishScheduledRolloutResponse {
     return new msdyn_publishScheduledRolloutResponse();
   }
 }

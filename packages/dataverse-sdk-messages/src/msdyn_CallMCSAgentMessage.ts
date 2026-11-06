@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_CallMCSAgentResponse as msdyn_CallMCSAgentResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CallMCSAgent message, by their CSDL names. A parameter the CSDL declares
@@ -55,21 +53,33 @@ export class msdyn_CallMCSAgentRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CallMCSAgentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_CallMCSAgentResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CallMCSAgentResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CallMCSAgent action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CallMCSAgentResult {
+  "@odata.context"?: string;
+  ResponsePayload: string;
+}
+
+/**
  * msdyn_CallMCSAgent response message
+ *
+ * `result` is the value the msdyn_CallMCSAgent action returns (see {@link msdyn_CallMCSAgentResult}).
  */
 export class msdyn_CallMCSAgentResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CallMCSAgentResponseData) {
+  constructor(public result: msdyn_CallMCSAgentResult) {
     super("msdyn_CallMCSAgent");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CallMCSAgentResponse {
-    return new msdyn_CallMCSAgentResponse(responseObject<msdyn_CallMCSAgentResponseData>(data));
+    return new msdyn_CallMCSAgentResponse(data as msdyn_CallMCSAgentResult);
   }
 }

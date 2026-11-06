@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_RecordEmailUsageResponse as msdyn_RecordEmailUsageResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_RecordEmailUsage message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,33 @@ export class msdyn_RecordEmailUsageRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RecordEmailUsageResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_RecordEmailUsageResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_RecordEmailUsageResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_RecordEmailUsage action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_RecordEmailUsageResult {
+  "@odata.context"?: string;
+  Success: boolean;
+}
+
+/**
  * msdyn_RecordEmailUsage response message
+ *
+ * `result` is the value the msdyn_RecordEmailUsage action returns (see {@link msdyn_RecordEmailUsageResult}).
  */
 export class msdyn_RecordEmailUsageResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RecordEmailUsageResponseData) {
+  constructor(public result: msdyn_RecordEmailUsageResult) {
     super("msdyn_RecordEmailUsage");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_RecordEmailUsageResponse {
-    return new msdyn_RecordEmailUsageResponse(
-      responseObject<msdyn_RecordEmailUsageResponseData>(data)
-    );
+    return new msdyn_RecordEmailUsageResponse(data as msdyn_RecordEmailUsageResult);
   }
 }

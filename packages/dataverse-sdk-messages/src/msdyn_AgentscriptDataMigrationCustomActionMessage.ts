@@ -26,11 +26,9 @@ export class msdyn_AgentscriptDataMigrationCustomActionRequest
     };
   }
 
-  async parseResponse(
-    response: Response
-  ): Promise<msdyn_AgentscriptDataMigrationCustomActionResponse> {
+  parseResponse(_response: Response): Promise<msdyn_AgentscriptDataMigrationCustomActionResponse> {
     // No return value (204 No Content)
-    return new msdyn_AgentscriptDataMigrationCustomActionResponse();
+    return Promise.resolve(new msdyn_AgentscriptDataMigrationCustomActionResponse());
   }
 }
 
@@ -42,7 +40,7 @@ export class msdyn_AgentscriptDataMigrationCustomActionResponse extends Organiza
     super("msdyn_AgentscriptDataMigrationCustomAction");
   }
 
-  static fromResponse(_data: unknown): msdyn_AgentscriptDataMigrationCustomActionResponse {
+  static fromResponse(_data?: unknown): msdyn_AgentscriptDataMigrationCustomActionResponse {
     return new msdyn_AgentscriptDataMigrationCustomActionResponse();
   }
 }

@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_CheckIfSLAStaticFlowIsDisabledResponse as msdyn_CheckIfSLAStaticFlowIsDisabledResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckIfSLAStaticFlowIsDisabled request message
@@ -29,24 +27,38 @@ export class msdyn_CheckIfSLAStaticFlowIsDisabledRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckIfSLAStaticFlowIsDisabledResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_CheckIfSLAStaticFlowIsDisabledResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CheckIfSLAStaticFlowIsDisabledResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CheckIfSLAStaticFlowIsDisabled action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CheckIfSLAStaticFlowIsDisabledResult {
+  "@odata.context"?: string;
+  HelpLink: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_CheckIfSLAStaticFlowIsDisabled response message
+ *
+ * `result` is the value the msdyn_CheckIfSLAStaticFlowIsDisabled action returns (see {@link msdyn_CheckIfSLAStaticFlowIsDisabledResult}).
  */
 export class msdyn_CheckIfSLAStaticFlowIsDisabledResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfSLAStaticFlowIsDisabledResponseData) {
+  constructor(public result: msdyn_CheckIfSLAStaticFlowIsDisabledResult) {
     super("msdyn_CheckIfSLAStaticFlowIsDisabled");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CheckIfSLAStaticFlowIsDisabledResponse {
     return new msdyn_CheckIfSLAStaticFlowIsDisabledResponse(
-      responseObject<msdyn_CheckIfSLAStaticFlowIsDisabledResponseData>(data)
+      data as msdyn_CheckIfSLAStaticFlowIsDisabledResult
     );
   }
 }

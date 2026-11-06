@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { DetectLanguageResponse as DetectLanguageResponseData } from "./types/index.js";
 
 /**
  * Parameters of the DetectLanguage message, by their CSDL names. A parameter the CSDL declares
@@ -49,21 +47,34 @@ export class DetectLanguageRequest
   }
 
   async parseResponse(response: Response): Promise<DetectLanguageResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return DetectLanguageResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return DetectLanguageResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the DetectLanguage action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface DetectLanguageResult {
+  "@odata.context"?: string;
+  language: string;
+  score: number;
+}
+
+/**
  * DetectLanguage response message
+ *
+ * `result` is the value the DetectLanguage action returns (see {@link DetectLanguageResult}).
  */
 export class DetectLanguageResponse extends OrganizationResponse {
-  constructor(public result: DetectLanguageResponseData) {
+  constructor(public result: DetectLanguageResult) {
     super("DetectLanguage");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): DetectLanguageResponse {
-    return new DetectLanguageResponse(responseObject<DetectLanguageResponseData>(data));
+    return new DetectLanguageResponse(data as DetectLanguageResult);
   }
 }

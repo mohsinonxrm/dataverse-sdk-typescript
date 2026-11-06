@@ -45,9 +45,9 @@ export class msdyn_CapacityProfilesToUsersRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_CapacityProfilesToUsersResponse> {
+  parseResponse(_response: Response): Promise<msdyn_CapacityProfilesToUsersResponse> {
     // No return value (204 No Content)
-    return new msdyn_CapacityProfilesToUsersResponse();
+    return Promise.resolve(new msdyn_CapacityProfilesToUsersResponse());
   }
 }
 
@@ -59,7 +59,7 @@ export class msdyn_CapacityProfilesToUsersResponse extends OrganizationResponse 
     super("msdyn_CapacityProfilesToUsers");
   }
 
-  static fromResponse(_data: unknown): msdyn_CapacityProfilesToUsersResponse {
+  static fromResponse(_data?: unknown): msdyn_CapacityProfilesToUsersResponse {
     return new msdyn_CapacityProfilesToUsersResponse();
   }
 }

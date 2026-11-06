@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { RecognizeTextResponse as RecognizeTextResponseData } from "./types/index.js";
 
 /**
  * Parameters of the RecognizeText message, by their CSDL names. A parameter the CSDL declares
@@ -49,21 +47,33 @@ export class RecognizeTextRequest
   }
 
   async parseResponse(response: Response): Promise<RecognizeTextResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return RecognizeTextResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return RecognizeTextResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the RecognizeText action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface RecognizeTextResult {
+  "@odata.context"?: string;
+  countOfPages: number;
+}
+
+/**
  * RecognizeText response message
+ *
+ * `result` is the value the RecognizeText action returns (see {@link RecognizeTextResult}).
  */
 export class RecognizeTextResponse extends OrganizationResponse {
-  constructor(public result: RecognizeTextResponseData) {
+  constructor(public result: RecognizeTextResult) {
     super("RecognizeText");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): RecognizeTextResponse {
-    return new RecognizeTextResponse(responseObject<RecognizeTextResponseData>(data));
+    return new RecognizeTextResponse(data as RecognizeTextResult);
   }
 }

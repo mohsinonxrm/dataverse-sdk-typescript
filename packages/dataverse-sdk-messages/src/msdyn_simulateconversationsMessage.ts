@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_simulateconversationsResponse as msdyn_simulateconversationsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_simulateconversations message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,33 @@ export class msdyn_simulateconversationsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_simulateconversationsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_simulateconversationsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_simulateconversationsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_simulateconversations action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_simulateconversationsResult {
+  "@odata.context"?: string;
+  simulationrunid: string;
+}
+
+/**
  * msdyn_simulateconversations response message
+ *
+ * `result` is the value the msdyn_simulateconversations action returns (see {@link msdyn_simulateconversationsResult}).
  */
 export class msdyn_simulateconversationsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_simulateconversationsResponseData) {
+  constructor(public result: msdyn_simulateconversationsResult) {
     super("msdyn_simulateconversations");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_simulateconversationsResponse {
-    return new msdyn_simulateconversationsResponse(
-      responseObject<msdyn_simulateconversationsResponseData>(data)
-    );
+    return new msdyn_simulateconversationsResponse(data as msdyn_simulateconversationsResult);
   }
 }

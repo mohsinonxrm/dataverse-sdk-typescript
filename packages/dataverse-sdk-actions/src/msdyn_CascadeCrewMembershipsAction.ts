@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_CascadeCrewMemberships action
+ * Response from the msdyn_CascadeCrewMemberships action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_CascadeCrewMembershipsResponse {
+  "@odata.context"?: string;
   AsyncOperationRequestId: string;
 }
 
@@ -42,8 +45,7 @@ export class msdyn_CascadeCrewMembershipsAction implements Executable<msdyn_Casc
   }
 
   async parseResponse(response: Response): Promise<msdyn_CascadeCrewMembershipsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_CascadeCrewMembershipsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_CascadeCrewMembershipsResponse;
   }
 }

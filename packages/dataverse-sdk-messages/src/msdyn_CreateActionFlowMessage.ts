@@ -42,9 +42,9 @@ export class msdyn_CreateActionFlowRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_CreateActionFlowResponse> {
+  parseResponse(_response: Response): Promise<msdyn_CreateActionFlowResponse> {
     // No return value (204 No Content)
-    return new msdyn_CreateActionFlowResponse();
+    return Promise.resolve(new msdyn_CreateActionFlowResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_CreateActionFlowResponse extends OrganizationResponse {
     super("msdyn_CreateActionFlow");
   }
 
-  static fromResponse(_data: unknown): msdyn_CreateActionFlowResponse {
+  static fromResponse(_data?: unknown): msdyn_CreateActionFlowResponse {
     return new msdyn_CreateActionFlowResponse();
   }
 }

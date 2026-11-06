@@ -50,9 +50,9 @@ export class CCaaS_AssignConversationRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_AssignConversationResponse> {
+  parseResponse(_response: Response): Promise<CCaaS_AssignConversationResponse> {
     // No return value (204 No Content)
-    return new CCaaS_AssignConversationResponse();
+    return Promise.resolve(new CCaaS_AssignConversationResponse());
   }
 }
 
@@ -64,7 +64,7 @@ export class CCaaS_AssignConversationResponse extends OrganizationResponse {
     super("CCaaS_AssignConversation");
   }
 
-  static fromResponse(_data: unknown): CCaaS_AssignConversationResponse {
+  static fromResponse(_data?: unknown): CCaaS_AssignConversationResponse {
     return new CCaaS_AssignConversationResponse();
   }
 }

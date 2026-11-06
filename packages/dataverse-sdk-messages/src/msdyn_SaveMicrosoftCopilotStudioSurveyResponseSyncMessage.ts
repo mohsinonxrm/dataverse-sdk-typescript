@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SaveMicrosoftCopilotStudioSurveyResponseSyncResponse as msdyn_SaveMicrosoftCopilotStudioSurveyResponseSyncResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SaveMicrosoftCopilotStudioSurveyResponseSync message, by their CSDL names. A parameter the CSDL declares
@@ -49,9 +47,7 @@ export class msdyn_SaveMicrosoftCopilotStudioSurveyResponseSyncRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SaveMicrosoftCopilotStudioSurveyResponseSyncResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_SaveMicrosoftCopilotStudioSurveyResponseSyncResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SaveMicrosoftCopilotStudioSurveyResponseSyncResponse.fromResponse(
       await response.json()
     );
@@ -59,16 +55,30 @@ export class msdyn_SaveMicrosoftCopilotStudioSurveyResponseSyncRequest
 }
 
 /**
+ * Response from the msdyn_SaveMicrosoftCopilotStudioSurveyResponseSync action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SaveMicrosoftCopilotStudioSurveyResponseSyncResult {
+  "@odata.context"?: string;
+  ErrorResponse: string;
+  SurveyResponseRecordId: string;
+}
+
+/**
  * msdyn_SaveMicrosoftCopilotStudioSurveyResponseSync response message
+ *
+ * `result` is the value the msdyn_SaveMicrosoftCopilotStudioSurveyResponseSync action returns (see {@link msdyn_SaveMicrosoftCopilotStudioSurveyResponseSyncResult}).
  */
 export class msdyn_SaveMicrosoftCopilotStudioSurveyResponseSyncResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SaveMicrosoftCopilotStudioSurveyResponseSyncResponseData) {
+  constructor(public result: msdyn_SaveMicrosoftCopilotStudioSurveyResponseSyncResult) {
     super("msdyn_SaveMicrosoftCopilotStudioSurveyResponseSync");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SaveMicrosoftCopilotStudioSurveyResponseSyncResponse {
     return new msdyn_SaveMicrosoftCopilotStudioSurveyResponseSyncResponse(
-      responseObject<msdyn_SaveMicrosoftCopilotStudioSurveyResponseSyncResponseData>(data)
+      data as msdyn_SaveMicrosoftCopilotStudioSurveyResponseSyncResult
     );
   }
 }

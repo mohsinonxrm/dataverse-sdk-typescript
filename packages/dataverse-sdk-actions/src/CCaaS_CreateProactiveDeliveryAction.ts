@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CCaaS_CreateProactiveDelivery action
+ * Response from the CCaaS_CreateProactiveDelivery action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CCaaS_CreateProactiveDeliveryResponse {
+  "@odata.context"?: string;
   DeliveryId: string;
   DeliveryTaskId: string;
 }
@@ -63,8 +66,7 @@ export class CCaaS_CreateProactiveDeliveryAction implements Executable<CCaaS_Cre
   }
 
   async parseResponse(response: Response): Promise<CCaaS_CreateProactiveDeliveryResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CCaaS_CreateProactiveDeliveryResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as CCaaS_CreateProactiveDeliveryResponse;
   }
 }

@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
@@ -59,24 +58,41 @@ export class msdyn_RetrieveRequirementGroupCandidatesRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_RetrieveRequirementGroupCandidatesResponse> {
-    // 204 No Content is an empty result
+    // An entity output that wasn't set answers 204 No Content
     if (response.status === 204)
-      return msdyn_RetrieveRequirementGroupCandidatesResponse.fromResponse({});
+      return msdyn_RetrieveRequirementGroupCandidatesResponse.fromResponse(undefined);
+    // The body is the record, with its annotations
     return msdyn_RetrieveRequirementGroupCandidatesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_RetrieveRequirementGroupCandidates action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
+ */
+export type msdyn_RetrieveRequirementGroupCandidatesResult = {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+} | null;
+
+/**
  * msdyn_RetrieveRequirementGroupCandidates response message
+ *
+ * `result` is the value the msdyn_RetrieveRequirementGroupCandidates action returns (see {@link msdyn_RetrieveRequirementGroupCandidatesResult}).
  */
 export class msdyn_RetrieveRequirementGroupCandidatesResponse extends OrganizationResponse {
-  constructor(public result: Record<string, unknown>) {
+  constructor(public result: msdyn_RetrieveRequirementGroupCandidatesResult) {
     super("msdyn_RetrieveRequirementGroupCandidates");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_RetrieveRequirementGroupCandidatesResponse {
     return new msdyn_RetrieveRequirementGroupCandidatesResponse(
-      responseObject<Record<string, unknown>>(data)
+      (data ?? null) as msdyn_RetrieveRequirementGroupCandidatesResult
     );
   }
 }

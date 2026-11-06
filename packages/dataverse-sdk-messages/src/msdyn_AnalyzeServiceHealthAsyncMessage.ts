@@ -26,9 +26,9 @@ export class msdyn_AnalyzeServiceHealthAsyncRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_AnalyzeServiceHealthAsyncResponse> {
+  parseResponse(_response: Response): Promise<msdyn_AnalyzeServiceHealthAsyncResponse> {
     // No return value (204 No Content)
-    return new msdyn_AnalyzeServiceHealthAsyncResponse();
+    return Promise.resolve(new msdyn_AnalyzeServiceHealthAsyncResponse());
   }
 }
 
@@ -40,7 +40,7 @@ export class msdyn_AnalyzeServiceHealthAsyncResponse extends OrganizationRespons
     super("msdyn_AnalyzeServiceHealthAsync");
   }
 
-  static fromResponse(_data: unknown): msdyn_AnalyzeServiceHealthAsyncResponse {
+  static fromResponse(_data?: unknown): msdyn_AnalyzeServiceHealthAsyncResponse {
     return new msdyn_AnalyzeServiceHealthAsyncResponse();
   }
 }

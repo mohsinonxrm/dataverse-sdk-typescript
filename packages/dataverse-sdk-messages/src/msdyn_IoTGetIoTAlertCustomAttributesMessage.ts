@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_IoTGetIoTAlertCustomAttributesResponse as msdyn_IoTGetIoTAlertCustomAttributesResponseData } from "./types/index.js";
 
 /**
  * msdyn_IoTGetIoTAlertCustomAttributes request message
@@ -29,24 +27,35 @@ export class msdyn_IoTGetIoTAlertCustomAttributesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_IoTGetIoTAlertCustomAttributesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_IoTGetIoTAlertCustomAttributesResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_IoTGetIoTAlertCustomAttributesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_IoTGetIoTAlertCustomAttributes action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_IoTGetIoTAlertCustomAttributesResult {
+  "@odata.context"?: string;
+  Metadata: string;
+}
+
+/**
  * msdyn_IoTGetIoTAlertCustomAttributes response message
+ *
+ * `result` is the value the msdyn_IoTGetIoTAlertCustomAttributes action returns (see {@link msdyn_IoTGetIoTAlertCustomAttributesResult}).
  */
 export class msdyn_IoTGetIoTAlertCustomAttributesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_IoTGetIoTAlertCustomAttributesResponseData) {
+  constructor(public result: msdyn_IoTGetIoTAlertCustomAttributesResult) {
     super("msdyn_IoTGetIoTAlertCustomAttributes");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_IoTGetIoTAlertCustomAttributesResponse {
     return new msdyn_IoTGetIoTAlertCustomAttributesResponse(
-      responseObject<msdyn_IoTGetIoTAlertCustomAttributesResponseData>(data)
+      data as msdyn_IoTGetIoTAlertCustomAttributesResult
     );
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SLATimeCalculationResponse as msdyn_SLATimeCalculationResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SLATimeCalculation message, by their CSDL names. A parameter the CSDL declares
@@ -55,23 +53,34 @@ export class msdyn_SLATimeCalculationRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SLATimeCalculationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_SLATimeCalculationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SLATimeCalculationResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SLATimeCalculation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SLATimeCalculationResult {
+  "@odata.context"?: string;
+  outputLogs: string;
+  returnValue: string;
+}
+
+/**
  * msdyn_SLATimeCalculation response message
+ *
+ * `result` is the value the msdyn_SLATimeCalculation action returns (see {@link msdyn_SLATimeCalculationResult}).
  */
 export class msdyn_SLATimeCalculationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SLATimeCalculationResponseData) {
+  constructor(public result: msdyn_SLATimeCalculationResult) {
     super("msdyn_SLATimeCalculation");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SLATimeCalculationResponse {
-    return new msdyn_SLATimeCalculationResponse(
-      responseObject<msdyn_SLATimeCalculationResponseData>(data)
-    );
+    return new msdyn_SLATimeCalculationResponse(data as msdyn_SLATimeCalculationResult);
   }
 }

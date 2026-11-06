@@ -51,9 +51,9 @@ export class GetSalesOrderProductsFromOpportunityRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<GetSalesOrderProductsFromOpportunityResponse> {
+  parseResponse(_response: Response): Promise<GetSalesOrderProductsFromOpportunityResponse> {
     // No return value (204 No Content)
-    return new GetSalesOrderProductsFromOpportunityResponse();
+    return Promise.resolve(new GetSalesOrderProductsFromOpportunityResponse());
   }
 }
 
@@ -65,7 +65,7 @@ export class GetSalesOrderProductsFromOpportunityResponse extends OrganizationRe
     super("GetSalesOrderProductsFromOpportunity");
   }
 
-  static fromResponse(_data: unknown): GetSalesOrderProductsFromOpportunityResponse {
+  static fromResponse(_data?: unknown): GetSalesOrderProductsFromOpportunityResponse {
     return new GetSalesOrderProductsFromOpportunityResponse();
   }
 }

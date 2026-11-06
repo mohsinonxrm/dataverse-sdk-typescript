@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from DownloadBlock action
+ * Response from the DownloadBlock action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface DownloadBlockResponse {
+  "@odata.context"?: string;
   Data: string;
 }
 
@@ -46,8 +49,7 @@ export class DownloadBlockAction implements Executable<DownloadBlockResponse> {
   }
 
   async parseResponse(response: Response): Promise<DownloadBlockResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as DownloadBlockResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as DownloadBlockResponse;
   }
 }

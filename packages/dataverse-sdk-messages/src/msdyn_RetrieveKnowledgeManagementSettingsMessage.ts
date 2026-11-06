@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_RetrieveKnowledgeManagementSettingsResponse as msdyn_RetrieveKnowledgeManagementSettingsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_RetrieveKnowledgeManagementSettings message, by their CSDL names. A parameter the CSDL declares
@@ -47,24 +45,35 @@ export class msdyn_RetrieveKnowledgeManagementSettingsRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_RetrieveKnowledgeManagementSettingsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_RetrieveKnowledgeManagementSettingsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_RetrieveKnowledgeManagementSettingsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_RetrieveKnowledgeManagementSettings action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_RetrieveKnowledgeManagementSettingsResult {
+  "@odata.context"?: string;
+  Result: string;
+}
+
+/**
  * msdyn_RetrieveKnowledgeManagementSettings response message
+ *
+ * `result` is the value the msdyn_RetrieveKnowledgeManagementSettings action returns (see {@link msdyn_RetrieveKnowledgeManagementSettingsResult}).
  */
 export class msdyn_RetrieveKnowledgeManagementSettingsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrieveKnowledgeManagementSettingsResponseData) {
+  constructor(public result: msdyn_RetrieveKnowledgeManagementSettingsResult) {
     super("msdyn_RetrieveKnowledgeManagementSettings");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_RetrieveKnowledgeManagementSettingsResponse {
     return new msdyn_RetrieveKnowledgeManagementSettingsResponse(
-      responseObject<msdyn_RetrieveKnowledgeManagementSettingsResponseData>(data)
+      data as msdyn_RetrieveKnowledgeManagementSettingsResult
     );
   }
 }

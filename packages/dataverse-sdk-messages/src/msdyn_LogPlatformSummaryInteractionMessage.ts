@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_LogPlatformSummaryInteractionResponse as msdyn_LogPlatformSummaryInteractionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_LogPlatformSummaryInteraction message, by their CSDL names. A parameter the CSDL declares
@@ -49,24 +47,35 @@ export class msdyn_LogPlatformSummaryInteractionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_LogPlatformSummaryInteractionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_LogPlatformSummaryInteractionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_LogPlatformSummaryInteractionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_LogPlatformSummaryInteraction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_LogPlatformSummaryInteractionResult {
+  "@odata.context"?: string;
+  Result: string;
+}
+
+/**
  * msdyn_LogPlatformSummaryInteraction response message
+ *
+ * `result` is the value the msdyn_LogPlatformSummaryInteraction action returns (see {@link msdyn_LogPlatformSummaryInteractionResult}).
  */
 export class msdyn_LogPlatformSummaryInteractionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_LogPlatformSummaryInteractionResponseData) {
+  constructor(public result: msdyn_LogPlatformSummaryInteractionResult) {
     super("msdyn_LogPlatformSummaryInteraction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_LogPlatformSummaryInteractionResponse {
     return new msdyn_LogPlatformSummaryInteractionResponse(
-      responseObject<msdyn_LogPlatformSummaryInteractionResponseData>(data)
+      data as msdyn_LogPlatformSummaryInteractionResult
     );
   }
 }

@@ -4,9 +4,12 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from _RoutingRuleSetValidation action
+ * Response from the _RoutingRuleSetValidation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface _RoutingRuleSetValidationResponse {
+  "@odata.context"?: string;
   ValidationMessageToDisplay: string;
   ValidationMessageToDownload: string;
 }
@@ -45,8 +48,7 @@ export class _RoutingRuleSetValidationAction implements Executable<_RoutingRuleS
   }
 
   async parseResponse(response: Response): Promise<_RoutingRuleSetValidationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as _RoutingRuleSetValidationResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as _RoutingRuleSetValidationResponse;
   }
 }

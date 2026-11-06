@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_CustomerServiceSolutionHealthRulesRegistration action
+ * Response from the msdyn_CustomerServiceSolutionHealthRulesRegistration action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_CustomerServiceSolutionHealthRulesRegistrationResponse {
+  "@odata.context"?: string;
   Message: string;
   ReturnStatus: string;
   RuleId: string;
@@ -48,9 +51,7 @@ export class msdyn_CustomerServiceSolutionHealthRulesRegistrationAction implemen
   async parseResponse(
     response: Response
   ): Promise<msdyn_CustomerServiceSolutionHealthRulesRegistrationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return {} as msdyn_CustomerServiceSolutionHealthRulesRegistrationResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_CustomerServiceSolutionHealthRulesRegistrationResponse;
   }
 }

@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdynmkt_EnableDoubleOptInComplianceV2 action
+ * Response from the msdynmkt_EnableDoubleOptInComplianceV2 action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdynmkt_EnableDoubleOptInComplianceV2Response {
-  // No content returned
-}
+export type msdynmkt_EnableDoubleOptInComplianceV2Response = void;
 
 /**
  * Parameters of the msdynmkt_EnableDoubleOptInComplianceV2 action, by their CSDL names. A parameter the CSDL declares
@@ -41,9 +41,8 @@ export class msdynmkt_EnableDoubleOptInComplianceV2Action implements Executable<
     };
   }
 
-  async parseResponse(response: Response): Promise<msdynmkt_EnableDoubleOptInComplianceV2Response> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdynmkt_EnableDoubleOptInComplianceV2Response;
-    return (await response.json()) as msdynmkt_EnableDoubleOptInComplianceV2Response;
+  parseResponse(_response: Response): Promise<msdynmkt_EnableDoubleOptInComplianceV2Response> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

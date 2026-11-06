@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetAgentCoachEnabledResponse as msdyn_GetAgentCoachEnabledResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetAgentCoachEnabled message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,34 @@ export class msdyn_GetAgentCoachEnabledRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAgentCoachEnabledResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetAgentCoachEnabledResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetAgentCoachEnabledResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetAgentCoachEnabled action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetAgentCoachEnabledResult {
+  "@odata.context"?: string;
+  msdyn_ErrorResult: string;
+  msdyn_IsEnabled: string;
+}
+
+/**
  * msdyn_GetAgentCoachEnabled response message
+ *
+ * `result` is the value the msdyn_GetAgentCoachEnabled action returns (see {@link msdyn_GetAgentCoachEnabledResult}).
  */
 export class msdyn_GetAgentCoachEnabledResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetAgentCoachEnabledResponseData) {
+  constructor(public result: msdyn_GetAgentCoachEnabledResult) {
     super("msdyn_GetAgentCoachEnabled");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetAgentCoachEnabledResponse {
-    return new msdyn_GetAgentCoachEnabledResponse(
-      responseObject<msdyn_GetAgentCoachEnabledResponseData>(data)
-    );
+    return new msdyn_GetAgentCoachEnabledResponse(data as msdyn_GetAgentCoachEnabledResult);
   }
 }

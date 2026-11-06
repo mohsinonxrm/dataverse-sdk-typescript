@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_GenerateRule action
+ * Response from the msdyn_GenerateRule action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GenerateRuleResponse {
+  "@odata.context"?: string;
   FailureReason: string;
   Status: string;
 }
@@ -45,8 +48,7 @@ export class msdyn_GenerateRuleAction implements Executable<msdyn_GenerateRuleRe
   }
 
   async parseResponse(response: Response): Promise<msdyn_GenerateRuleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_GenerateRuleResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_GenerateRuleResponse;
   }
 }

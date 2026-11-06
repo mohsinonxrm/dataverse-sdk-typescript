@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_RetrieveEmailNBAResponse as msdyn_RetrieveEmailNBAResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_RetrieveEmailNBA message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class msdyn_RetrieveEmailNBARequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrieveEmailNBAResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_RetrieveEmailNBAResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_RetrieveEmailNBAResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_RetrieveEmailNBA action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_RetrieveEmailNBAResult {
+  "@odata.context"?: string;
+  msdyn_result: string;
+}
+
+/**
  * msdyn_RetrieveEmailNBA response message
+ *
+ * `result` is the value the msdyn_RetrieveEmailNBA action returns (see {@link msdyn_RetrieveEmailNBAResult}).
  */
 export class msdyn_RetrieveEmailNBAResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrieveEmailNBAResponseData) {
+  constructor(public result: msdyn_RetrieveEmailNBAResult) {
     super("msdyn_RetrieveEmailNBA");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_RetrieveEmailNBAResponse {
-    return new msdyn_RetrieveEmailNBAResponse(
-      responseObject<msdyn_RetrieveEmailNBAResponseData>(data)
-    );
+    return new msdyn_RetrieveEmailNBAResponse(data as msdyn_RetrieveEmailNBAResult);
   }
 }

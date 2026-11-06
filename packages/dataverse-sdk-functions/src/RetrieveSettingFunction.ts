@@ -3,9 +3,12 @@ import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { SettingDetail } from "./types/index.js";
 
 /**
- * Response from RetrieveSetting function
+ * Response from the RetrieveSetting function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveSettingResponse {
+  "@odata.context"?: string;
   SettingDetail: SettingDetail;
 }
 
@@ -54,8 +57,7 @@ export class RetrieveSettingFunction implements Executable<RetrieveSettingRespon
   }
 
   async parseResponse(response: Response): Promise<RetrieveSettingResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveSettingResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RetrieveSettingResponse;
   }
 }

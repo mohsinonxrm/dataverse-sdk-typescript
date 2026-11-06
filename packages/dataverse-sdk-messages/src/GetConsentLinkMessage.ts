@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { GetConsentLinkResponse as GetConsentLinkResponseData } from "./types/index.js";
 
 /**
  * Parameters of the GetConsentLink message, by their CSDL names. A parameter the CSDL declares
@@ -51,21 +49,40 @@ export class GetConsentLinkRequest
   }
 
   async parseResponse(response: Response): Promise<GetConsentLinkResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return GetConsentLinkResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return GetConsentLinkResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the GetConsentLink action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface GetConsentLinkResult {
+  "@odata.context"?: string;
+  consentLink: string;
+  customParameters: string;
+  firstPartyLoginUri: string;
+  parameterConsentLinks: string;
+  principalId: string;
+  principalType: string;
+  redirectUrl: string;
+  tenantId: string;
+}
+
+/**
  * GetConsentLink response message
+ *
+ * `result` is the value the GetConsentLink action returns (see {@link GetConsentLinkResult}).
  */
 export class GetConsentLinkResponse extends OrganizationResponse {
-  constructor(public result: GetConsentLinkResponseData) {
+  constructor(public result: GetConsentLinkResult) {
     super("GetConsentLink");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): GetConsentLinkResponse {
-    return new GetConsentLinkResponse(responseObject<GetConsentLinkResponseData>(data));
+    return new GetConsentLinkResponse(data as GetConsentLinkResult);
   }
 }

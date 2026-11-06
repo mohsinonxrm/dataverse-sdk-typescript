@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetWidgetsDataResponse as msdyn_GetWidgetsDataResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetWidgetsData message, by their CSDL names. A parameter the CSDL declares
@@ -53,21 +51,33 @@ export class msdyn_GetWidgetsDataRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetWidgetsDataResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetWidgetsDataResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetWidgetsDataResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetWidgetsData action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetWidgetsDataResult {
+  "@odata.context"?: string;
+  msdyn_response: string;
+}
+
+/**
  * msdyn_GetWidgetsData response message
+ *
+ * `result` is the value the msdyn_GetWidgetsData action returns (see {@link msdyn_GetWidgetsDataResult}).
  */
 export class msdyn_GetWidgetsDataResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetWidgetsDataResponseData) {
+  constructor(public result: msdyn_GetWidgetsDataResult) {
     super("msdyn_GetWidgetsData");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetWidgetsDataResponse {
-    return new msdyn_GetWidgetsDataResponse(responseObject<msdyn_GetWidgetsDataResponseData>(data));
+    return new msdyn_GetWidgetsDataResponse(data as msdyn_GetWidgetsDataResult);
   }
 }

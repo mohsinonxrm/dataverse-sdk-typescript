@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdynmkt_PersonalizationGetEventsByName action
+ * Response from the msdynmkt_PersonalizationGetEventsByName action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdynmkt_PersonalizationGetEventsByNameResponse {
+  "@odata.context"?: string;
   GetPersonalizationEventResult: string;
 }
 
@@ -46,8 +49,7 @@ export class msdynmkt_PersonalizationGetEventsByNameAction implements Executable
   async parseResponse(
     response: Response
   ): Promise<msdynmkt_PersonalizationGetEventsByNameResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdynmkt_PersonalizationGetEventsByNameResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdynmkt_PersonalizationGetEventsByNameResponse;
   }
 }

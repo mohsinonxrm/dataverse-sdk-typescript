@@ -53,9 +53,9 @@ export class PickFromQueueRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<PickFromQueueResponse> {
+  parseResponse(_response: Response): Promise<PickFromQueueResponse> {
     // No return value (204 No Content)
-    return new PickFromQueueResponse();
+    return Promise.resolve(new PickFromQueueResponse());
   }
 }
 
@@ -67,7 +67,7 @@ export class PickFromQueueResponse extends OrganizationResponse {
     super("PickFromQueue");
   }
 
-  static fromResponse(_data: unknown): PickFromQueueResponse {
+  static fromResponse(_data?: unknown): PickFromQueueResponse {
     return new PickFromQueueResponse();
   }
 }

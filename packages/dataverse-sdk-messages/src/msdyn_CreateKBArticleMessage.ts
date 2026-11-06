@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_CreateKBArticleResponse as msdyn_CreateKBArticleResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CreateKBArticle message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,34 @@ export class msdyn_CreateKBArticleRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateKBArticleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_CreateKBArticleResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CreateKBArticleResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CreateKBArticle action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CreateKBArticleResult {
+  "@odata.context"?: string;
+  Response2: string;
+  usage: string;
+}
+
+/**
  * msdyn_CreateKBArticle response message
+ *
+ * `result` is the value the msdyn_CreateKBArticle action returns (see {@link msdyn_CreateKBArticleResult}).
  */
 export class msdyn_CreateKBArticleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CreateKBArticleResponseData) {
+  constructor(public result: msdyn_CreateKBArticleResult) {
     super("msdyn_CreateKBArticle");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CreateKBArticleResponse {
-    return new msdyn_CreateKBArticleResponse(
-      responseObject<msdyn_CreateKBArticleResponseData>(data)
-    );
+    return new msdyn_CreateKBArticleResponse(data as msdyn_CreateKBArticleResult);
   }
 }

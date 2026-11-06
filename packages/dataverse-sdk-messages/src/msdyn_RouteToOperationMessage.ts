@@ -42,9 +42,9 @@ export class msdyn_RouteToOperationRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_RouteToOperationResponse> {
+  parseResponse(_response: Response): Promise<msdyn_RouteToOperationResponse> {
     // No return value (204 No Content)
-    return new msdyn_RouteToOperationResponse();
+    return Promise.resolve(new msdyn_RouteToOperationResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_RouteToOperationResponse extends OrganizationResponse {
     super("msdyn_RouteToOperation");
   }
 
-  static fromResponse(_data: unknown): msdyn_RouteToOperationResponse {
+  static fromResponse(_data?: unknown): msdyn_RouteToOperationResponse {
     return new msdyn_RouteToOperationResponse();
   }
 }

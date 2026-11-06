@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CCaaS_VoiceBiometricsEnrollFraudsterResponse as CCaaS_VoiceBiometricsEnrollFraudsterResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CCaaS_VoiceBiometricsEnrollFraudster message, by their CSDL names. A parameter the CSDL declares
@@ -57,24 +55,40 @@ export class CCaaS_VoiceBiometricsEnrollFraudsterRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_VoiceBiometricsEnrollFraudsterResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return CCaaS_VoiceBiometricsEnrollFraudsterResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CCaaS_VoiceBiometricsEnrollFraudsterResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CCaaS_VoiceBiometricsEnrollFraudster action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CCaaS_VoiceBiometricsEnrollFraudsterResult {
+  "@odata.context"?: string;
+  BadRequestReason: string;
+  ErrorMessage: string;
+  FailureReason: string;
+  FraudsterId: string;
+  Outcome: string;
+  StatusCode: string;
+}
+
+/**
  * CCaaS_VoiceBiometricsEnrollFraudster response message
+ *
+ * `result` is the value the CCaaS_VoiceBiometricsEnrollFraudster action returns (see {@link CCaaS_VoiceBiometricsEnrollFraudsterResult}).
  */
 export class CCaaS_VoiceBiometricsEnrollFraudsterResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_VoiceBiometricsEnrollFraudsterResponseData) {
+  constructor(public result: CCaaS_VoiceBiometricsEnrollFraudsterResult) {
     super("CCaaS_VoiceBiometricsEnrollFraudster");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CCaaS_VoiceBiometricsEnrollFraudsterResponse {
     return new CCaaS_VoiceBiometricsEnrollFraudsterResponse(
-      responseObject<CCaaS_VoiceBiometricsEnrollFraudsterResponseData>(data)
+      data as CCaaS_VoiceBiometricsEnrollFraudsterResult
     );
   }
 }

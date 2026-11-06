@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from msdyn_getchannelendpointurl function
+ * Response from the msdyn_getchannelendpointurl function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_getchannelendpointurlResponse {
+  "@odata.context"?: string;
   channelbatchendpointurl: string;
   channelendpointurl: string;
   scopes: string[];
@@ -51,8 +54,7 @@ export class msdyn_getchannelendpointurlFunction implements Executable<msdyn_get
   }
 
   async parseResponse(response: Response): Promise<msdyn_getchannelendpointurlResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_getchannelendpointurlResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_getchannelendpointurlResponse;
   }
 }

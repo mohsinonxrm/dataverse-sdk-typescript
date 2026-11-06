@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetAccountResearchCacheResponse as msdyn_GetAccountResearchCacheResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetAccountResearchCache message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,37 @@ export class msdyn_GetAccountResearchCacheRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAccountResearchCacheResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetAccountResearchCacheResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetAccountResearchCacheResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetAccountResearchCache action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetAccountResearchCacheResult {
+  "@odata.context"?: string;
+  AccountFinances: string;
+  AccountNews: string;
+  AccountOverview: string;
+  IsHit: boolean;
+  ProductIdsCacheKey: string;
+}
+
+/**
  * msdyn_GetAccountResearchCache response message
+ *
+ * `result` is the value the msdyn_GetAccountResearchCache action returns (see {@link msdyn_GetAccountResearchCacheResult}).
  */
 export class msdyn_GetAccountResearchCacheResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetAccountResearchCacheResponseData) {
+  constructor(public result: msdyn_GetAccountResearchCacheResult) {
     super("msdyn_GetAccountResearchCache");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetAccountResearchCacheResponse {
-    return new msdyn_GetAccountResearchCacheResponse(
-      responseObject<msdyn_GetAccountResearchCacheResponseData>(data)
-    );
+    return new msdyn_GetAccountResearchCacheResponse(data as msdyn_GetAccountResearchCacheResult);
   }
 }

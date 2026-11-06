@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from In function
+ * Response from the In function.
+ *
+ * The value, read from the `value` of the response body.
  */
-export interface InResponse {
-  value: boolean;
-}
+export type InResponse = boolean;
 
 /**
  * Parameters of the In function, by their CSDL names. A parameter the CSDL declares
@@ -53,8 +53,7 @@ export class InFunction implements Executable<InResponse> {
   }
 
   async parseResponse(response: Response): Promise<InResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as InResponse;
-    return (await response.json()) as InResponse;
+    // A primitive comes wrapped: { "@odata.context": "…", "value": … }
+    return ((await response.json()) as { value: InResponse }).value;
   }
 }

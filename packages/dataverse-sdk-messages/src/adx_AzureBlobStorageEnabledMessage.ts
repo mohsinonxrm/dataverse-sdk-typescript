@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { adx_AzureBlobStorageEnabledResponse as adx_AzureBlobStorageEnabledResponseData } from "./types/index.js";
 
 /**
  * adx_AzureBlobStorageEnabled request message
@@ -29,23 +27,33 @@ export class adx_AzureBlobStorageEnabledRequest
   }
 
   async parseResponse(response: Response): Promise<adx_AzureBlobStorageEnabledResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return adx_AzureBlobStorageEnabledResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return adx_AzureBlobStorageEnabledResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the adx_AzureBlobStorageEnabled action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface adx_AzureBlobStorageEnabledResult {
+  "@odata.context"?: string;
+  Enabled: boolean;
+}
+
+/**
  * adx_AzureBlobStorageEnabled response message
+ *
+ * `result` is the value the adx_AzureBlobStorageEnabled action returns (see {@link adx_AzureBlobStorageEnabledResult}).
  */
 export class adx_AzureBlobStorageEnabledResponse extends OrganizationResponse {
-  constructor(public result: adx_AzureBlobStorageEnabledResponseData) {
+  constructor(public result: adx_AzureBlobStorageEnabledResult) {
     super("adx_AzureBlobStorageEnabled");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): adx_AzureBlobStorageEnabledResponse {
-    return new adx_AzureBlobStorageEnabledResponse(
-      responseObject<adx_AzureBlobStorageEnabledResponseData>(data)
-    );
+    return new adx_AzureBlobStorageEnabledResponse(data as adx_AzureBlobStorageEnabledResult);
   }
 }

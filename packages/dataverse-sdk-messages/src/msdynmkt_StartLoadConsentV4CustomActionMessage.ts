@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdynmkt_StartLoadConsentV4CustomActionResponse as msdynmkt_StartLoadConsentV4CustomActionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdynmkt_StartLoadConsentV4CustomAction message, by their CSDL names. A parameter the CSDL declares
@@ -69,24 +67,36 @@ export class msdynmkt_StartLoadConsentV4CustomActionRequest
   async parseResponse(
     response: Response
   ): Promise<msdynmkt_StartLoadConsentV4CustomActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdynmkt_StartLoadConsentV4CustomActionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdynmkt_StartLoadConsentV4CustomActionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdynmkt_StartLoadConsentV4CustomAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdynmkt_StartLoadConsentV4CustomActionResult {
+  "@odata.context"?: string;
+  ErrorCodes: string;
+  ErrorMetadata: string;
+}
+
+/**
  * msdynmkt_StartLoadConsentV4CustomAction response message
+ *
+ * `result` is the value the msdynmkt_StartLoadConsentV4CustomAction action returns (see {@link msdynmkt_StartLoadConsentV4CustomActionResult}).
  */
 export class msdynmkt_StartLoadConsentV4CustomActionResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_StartLoadConsentV4CustomActionResponseData) {
+  constructor(public result: msdynmkt_StartLoadConsentV4CustomActionResult) {
     super("msdynmkt_StartLoadConsentV4CustomAction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdynmkt_StartLoadConsentV4CustomActionResponse {
     return new msdynmkt_StartLoadConsentV4CustomActionResponse(
-      responseObject<msdynmkt_StartLoadConsentV4CustomActionResponseData>(data)
+      data as msdynmkt_StartLoadConsentV4CustomActionResult
     );
   }
 }

@@ -42,9 +42,9 @@ export class DeleteFileRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<DeleteFileResponse> {
+  parseResponse(_response: Response): Promise<DeleteFileResponse> {
     // No return value (204 No Content)
-    return new DeleteFileResponse();
+    return Promise.resolve(new DeleteFileResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class DeleteFileResponse extends OrganizationResponse {
     super("DeleteFile");
   }
 
-  static fromResponse(_data: unknown): DeleteFileResponse {
+  static fromResponse(_data?: unknown): DeleteFileResponse {
     return new DeleteFileResponse();
   }
 }

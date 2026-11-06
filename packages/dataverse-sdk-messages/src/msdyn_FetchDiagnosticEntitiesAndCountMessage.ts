@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_FetchDiagnosticEntitiesAndCountResponse as msdyn_FetchDiagnosticEntitiesAndCountResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_FetchDiagnosticEntitiesAndCount message, by their CSDL names. A parameter the CSDL declares
@@ -47,24 +45,35 @@ export class msdyn_FetchDiagnosticEntitiesAndCountRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_FetchDiagnosticEntitiesAndCountResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_FetchDiagnosticEntitiesAndCountResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_FetchDiagnosticEntitiesAndCountResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_FetchDiagnosticEntitiesAndCount action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_FetchDiagnosticEntitiesAndCountResult {
+  "@odata.context"?: string;
+  msdyn_Count: number;
+}
+
+/**
  * msdyn_FetchDiagnosticEntitiesAndCount response message
+ *
+ * `result` is the value the msdyn_FetchDiagnosticEntitiesAndCount action returns (see {@link msdyn_FetchDiagnosticEntitiesAndCountResult}).
  */
 export class msdyn_FetchDiagnosticEntitiesAndCountResponse extends OrganizationResponse {
-  constructor(public result: msdyn_FetchDiagnosticEntitiesAndCountResponseData) {
+  constructor(public result: msdyn_FetchDiagnosticEntitiesAndCountResult) {
     super("msdyn_FetchDiagnosticEntitiesAndCount");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_FetchDiagnosticEntitiesAndCountResponse {
     return new msdyn_FetchDiagnosticEntitiesAndCountResponse(
-      responseObject<msdyn_FetchDiagnosticEntitiesAndCountResponseData>(data)
+      data as msdyn_FetchDiagnosticEntitiesAndCountResult
     );
   }
 }

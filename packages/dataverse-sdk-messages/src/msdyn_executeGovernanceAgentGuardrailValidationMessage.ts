@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_executeGovernanceAgentGuardrailValidationResponse as msdyn_executeGovernanceAgentGuardrailValidationResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_executeGovernanceAgentGuardrailValidation message, by their CSDL names. A parameter the CSDL declares
@@ -65,9 +63,7 @@ export class msdyn_executeGovernanceAgentGuardrailValidationRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_executeGovernanceAgentGuardrailValidationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_executeGovernanceAgentGuardrailValidationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_executeGovernanceAgentGuardrailValidationResponse.fromResponse(
       await response.json()
     );
@@ -75,16 +71,30 @@ export class msdyn_executeGovernanceAgentGuardrailValidationRequest
 }
 
 /**
+ * Response from the msdyn_executeGovernanceAgentGuardrailValidation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_executeGovernanceAgentGuardrailValidationResult {
+  "@odata.context"?: string;
+  msdyn_error: string;
+  msdyn_status: string;
+}
+
+/**
  * msdyn_executeGovernanceAgentGuardrailValidation response message
+ *
+ * `result` is the value the msdyn_executeGovernanceAgentGuardrailValidation action returns (see {@link msdyn_executeGovernanceAgentGuardrailValidationResult}).
  */
 export class msdyn_executeGovernanceAgentGuardrailValidationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_executeGovernanceAgentGuardrailValidationResponseData) {
+  constructor(public result: msdyn_executeGovernanceAgentGuardrailValidationResult) {
     super("msdyn_executeGovernanceAgentGuardrailValidation");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_executeGovernanceAgentGuardrailValidationResponse {
     return new msdyn_executeGovernanceAgentGuardrailValidationResponse(
-      responseObject<msdyn_executeGovernanceAgentGuardrailValidationResponseData>(data)
+      data as msdyn_executeGovernanceAgentGuardrailValidationResult
     );
   }
 }

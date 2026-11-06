@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_UpdateRequirementDemandResponse as msdyn_UpdateRequirementDemandResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_UpdateRequirementDemand message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,33 @@ export class msdyn_UpdateRequirementDemandRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_UpdateRequirementDemandResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_UpdateRequirementDemandResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_UpdateRequirementDemandResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_UpdateRequirementDemand action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_UpdateRequirementDemandResult {
+  "@odata.context"?: string;
+  PersistedRequirementDemandContext: string;
+}
+
+/**
  * msdyn_UpdateRequirementDemand response message
+ *
+ * `result` is the value the msdyn_UpdateRequirementDemand action returns (see {@link msdyn_UpdateRequirementDemandResult}).
  */
 export class msdyn_UpdateRequirementDemandResponse extends OrganizationResponse {
-  constructor(public result: msdyn_UpdateRequirementDemandResponseData) {
+  constructor(public result: msdyn_UpdateRequirementDemandResult) {
     super("msdyn_UpdateRequirementDemand");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_UpdateRequirementDemandResponse {
-    return new msdyn_UpdateRequirementDemandResponse(
-      responseObject<msdyn_UpdateRequirementDemandResponseData>(data)
-    );
+    return new msdyn_UpdateRequirementDemandResponse(data as msdyn_UpdateRequirementDemandResult);
   }
 }

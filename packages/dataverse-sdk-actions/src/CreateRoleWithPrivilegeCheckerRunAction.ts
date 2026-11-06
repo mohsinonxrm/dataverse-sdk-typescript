@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CreateRoleWithPrivilegeCheckerRun action
+ * Response from the CreateRoleWithPrivilegeCheckerRun action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CreateRoleWithPrivilegeCheckerRunResponse {
+  "@odata.context"?: string;
   RoleId: string;
 }
 
@@ -51,8 +54,7 @@ export class CreateRoleWithPrivilegeCheckerRunAction implements Executable<Creat
   }
 
   async parseResponse(response: Response): Promise<CreateRoleWithPrivilegeCheckerRunResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CreateRoleWithPrivilegeCheckerRunResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as CreateRoleWithPrivilegeCheckerRunResponse;
   }
 }

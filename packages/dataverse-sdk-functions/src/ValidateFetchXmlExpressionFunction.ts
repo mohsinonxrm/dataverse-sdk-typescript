@@ -3,9 +3,12 @@ import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { ValidateFetchXmlExpressionResult } from "./types/index.js";
 
 /**
- * Response from ValidateFetchXmlExpression function
+ * Response from the ValidateFetchXmlExpression function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface ValidateFetchXmlExpressionResponse {
+  "@odata.context"?: string;
   ValidationResults: ValidateFetchXmlExpressionResult;
 }
 
@@ -49,8 +52,7 @@ export class ValidateFetchXmlExpressionFunction implements Executable<ValidateFe
   }
 
   async parseResponse(response: Response): Promise<ValidateFetchXmlExpressionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ValidateFetchXmlExpressionResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as ValidateFetchXmlExpressionResponse;
   }
 }

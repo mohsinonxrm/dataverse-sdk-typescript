@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from NextXHours function
+ * Response from the NextXHours function.
+ *
+ * The value, read from the `value` of the response body.
  */
-export interface NextXHoursResponse {
-  value: boolean;
-}
+export type NextXHoursResponse = boolean;
 
 /**
  * Parameters of the NextXHours function, by their CSDL names. A parameter the CSDL declares
@@ -53,8 +53,7 @@ export class NextXHoursFunction implements Executable<NextXHoursResponse> {
   }
 
   async parseResponse(response: Response): Promise<NextXHoursResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as NextXHoursResponse;
-    return (await response.json()) as NextXHoursResponse;
+    // A primitive comes wrapped: { "@odata.context": "…", "value": … }
+    return ((await response.json()) as { value: NextXHoursResponse }).value;
   }
 }

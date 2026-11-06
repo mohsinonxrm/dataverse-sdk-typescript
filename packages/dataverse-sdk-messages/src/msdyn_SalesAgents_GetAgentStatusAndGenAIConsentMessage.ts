@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesAgents_GetAgentStatusAndGenAIConsentResponse as msdyn_SalesAgents_GetAgentStatusAndGenAIConsentResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesAgents_GetAgentStatusAndGenAIConsent message, by their CSDL names. A parameter the CSDL declares
@@ -47,9 +45,7 @@ export class msdyn_SalesAgents_GetAgentStatusAndGenAIConsentRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_GetAgentStatusAndGenAIConsentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_SalesAgents_GetAgentStatusAndGenAIConsentResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesAgents_GetAgentStatusAndGenAIConsentResponse.fromResponse(
       await response.json()
     );
@@ -57,16 +53,29 @@ export class msdyn_SalesAgents_GetAgentStatusAndGenAIConsentRequest
 }
 
 /**
+ * Response from the msdyn_SalesAgents_GetAgentStatusAndGenAIConsent action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesAgents_GetAgentStatusAndGenAIConsentResult {
+  "@odata.context"?: string;
+  ResponseJson: string;
+}
+
+/**
  * msdyn_SalesAgents_GetAgentStatusAndGenAIConsent response message
+ *
+ * `result` is the value the msdyn_SalesAgents_GetAgentStatusAndGenAIConsent action returns (see {@link msdyn_SalesAgents_GetAgentStatusAndGenAIConsentResult}).
  */
 export class msdyn_SalesAgents_GetAgentStatusAndGenAIConsentResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgents_GetAgentStatusAndGenAIConsentResponseData) {
+  constructor(public result: msdyn_SalesAgents_GetAgentStatusAndGenAIConsentResult) {
     super("msdyn_SalesAgents_GetAgentStatusAndGenAIConsent");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesAgents_GetAgentStatusAndGenAIConsentResponse {
     return new msdyn_SalesAgents_GetAgentStatusAndGenAIConsentResponse(
-      responseObject<msdyn_SalesAgents_GetAgentStatusAndGenAIConsentResponseData>(data)
+      data as msdyn_SalesAgents_GetAgentStatusAndGenAIConsentResult
     );
   }
 }

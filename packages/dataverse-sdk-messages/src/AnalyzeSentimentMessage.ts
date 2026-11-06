@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { AnalyzeSentimentResponse as AnalyzeSentimentResponseData } from "./types/index.js";
 
 /**
  * Parameters of the AnalyzeSentiment message, by their CSDL names. A parameter the CSDL declares
@@ -49,21 +47,33 @@ export class AnalyzeSentimentRequest
   }
 
   async parseResponse(response: Response): Promise<AnalyzeSentimentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return AnalyzeSentimentResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return AnalyzeSentimentResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the AnalyzeSentiment action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface AnalyzeSentimentResult {
+  "@odata.context"?: string;
+  sentiment: string;
+}
+
+/**
  * AnalyzeSentiment response message
+ *
+ * `result` is the value the AnalyzeSentiment action returns (see {@link AnalyzeSentimentResult}).
  */
 export class AnalyzeSentimentResponse extends OrganizationResponse {
-  constructor(public result: AnalyzeSentimentResponseData) {
+  constructor(public result: AnalyzeSentimentResult) {
     super("AnalyzeSentiment");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): AnalyzeSentimentResponse {
-    return new AnalyzeSentimentResponse(responseObject<AnalyzeSentimentResponseData>(data));
+    return new AnalyzeSentimentResponse(data as AnalyzeSentimentResult);
   }
 }

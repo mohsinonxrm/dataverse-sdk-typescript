@@ -54,9 +54,9 @@ export class CCaaS_RaiseSecondaryChannelEventRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_RaiseSecondaryChannelEventResponse> {
+  parseResponse(_response: Response): Promise<CCaaS_RaiseSecondaryChannelEventResponse> {
     // No return value (204 No Content)
-    return new CCaaS_RaiseSecondaryChannelEventResponse();
+    return Promise.resolve(new CCaaS_RaiseSecondaryChannelEventResponse());
   }
 }
 
@@ -68,7 +68,7 @@ export class CCaaS_RaiseSecondaryChannelEventResponse extends OrganizationRespon
     super("CCaaS_RaiseSecondaryChannelEvent");
   }
 
-  static fromResponse(_data: unknown): CCaaS_RaiseSecondaryChannelEventResponse {
+  static fromResponse(_data?: unknown): CCaaS_RaiseSecondaryChannelEventResponse {
     return new CCaaS_RaiseSecondaryChannelEventResponse();
   }
 }

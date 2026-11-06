@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from EqualUserOrUserHierarchy function
+ * Response from the EqualUserOrUserHierarchy function.
+ *
+ * The value, read from the `value` of the response body.
  */
-export interface EqualUserOrUserHierarchyResponse {
-  value: boolean;
-}
+export type EqualUserOrUserHierarchyResponse = boolean;
 
 /**
  * Parameters of the EqualUserOrUserHierarchy function, by their CSDL names. A parameter the CSDL declares
@@ -48,8 +48,7 @@ export class EqualUserOrUserHierarchyFunction implements Executable<EqualUserOrU
   }
 
   async parseResponse(response: Response): Promise<EqualUserOrUserHierarchyResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as EqualUserOrUserHierarchyResponse;
-    return (await response.json()) as EqualUserOrUserHierarchyResponse;
+    // A primitive comes wrapped: { "@odata.context": "…", "value": … }
+    return ((await response.json()) as { value: EqualUserOrUserHierarchyResponse }).value;
   }
 }

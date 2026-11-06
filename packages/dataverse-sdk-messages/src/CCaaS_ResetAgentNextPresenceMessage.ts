@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CCaaS_ResetAgentNextPresenceResponse as CCaaS_ResetAgentNextPresenceResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CCaaS_ResetAgentNextPresence message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,40 @@ export class CCaaS_ResetAgentNextPresenceRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_ResetAgentNextPresenceResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CCaaS_ResetAgentNextPresenceResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CCaaS_ResetAgentNextPresenceResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CCaaS_ResetAgentNextPresence action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CCaaS_ResetAgentNextPresenceResult {
+  "@odata.context"?: string;
+  ActiveBrowserSessions: number;
+  AgentId: string;
+  AgentName: string;
+  AllowedChannels: string[];
+  CurrentPresenceStatusInfo: string;
+  DisabledChannels: string[];
+  PresenceId: string;
+  Timestamp: number;
+}
+
+/**
  * CCaaS_ResetAgentNextPresence response message
+ *
+ * `result` is the value the CCaaS_ResetAgentNextPresence action returns (see {@link CCaaS_ResetAgentNextPresenceResult}).
  */
 export class CCaaS_ResetAgentNextPresenceResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_ResetAgentNextPresenceResponseData) {
+  constructor(public result: CCaaS_ResetAgentNextPresenceResult) {
     super("CCaaS_ResetAgentNextPresence");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CCaaS_ResetAgentNextPresenceResponse {
-    return new CCaaS_ResetAgentNextPresenceResponse(
-      responseObject<CCaaS_ResetAgentNextPresenceResponseData>(data)
-    );
+    return new CCaaS_ResetAgentNextPresenceResponse(data as CCaaS_ResetAgentNextPresenceResult);
   }
 }

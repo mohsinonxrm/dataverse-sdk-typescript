@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SnoozeEmailInfraActionCardResponse as msdyn_SnoozeEmailInfraActionCardResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SnoozeEmailInfraActionCard message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,36 @@ export class msdyn_SnoozeEmailInfraActionCardRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SnoozeEmailInfraActionCardResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_SnoozeEmailInfraActionCardResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SnoozeEmailInfraActionCardResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SnoozeEmailInfraActionCard action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SnoozeEmailInfraActionCardResult {
+  "@odata.context"?: string;
+  Error: string;
+  Result: string;
+}
+
+/**
  * msdyn_SnoozeEmailInfraActionCard response message
+ *
+ * `result` is the value the msdyn_SnoozeEmailInfraActionCard action returns (see {@link msdyn_SnoozeEmailInfraActionCardResult}).
  */
 export class msdyn_SnoozeEmailInfraActionCardResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SnoozeEmailInfraActionCardResponseData) {
+  constructor(public result: msdyn_SnoozeEmailInfraActionCardResult) {
     super("msdyn_SnoozeEmailInfraActionCard");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SnoozeEmailInfraActionCardResponse {
     return new msdyn_SnoozeEmailInfraActionCardResponse(
-      responseObject<msdyn_SnoozeEmailInfraActionCardResponseData>(data)
+      data as msdyn_SnoozeEmailInfraActionCardResult
     );
   }
 }

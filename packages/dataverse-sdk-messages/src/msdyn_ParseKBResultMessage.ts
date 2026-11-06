@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_ParseKBResultResponse as msdyn_ParseKBResultResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_ParseKBResult message, by their CSDL names. A parameter the CSDL declares
@@ -47,21 +45,33 @@ export class msdyn_ParseKBResultRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ParseKBResultResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_ParseKBResultResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_ParseKBResultResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_ParseKBResult action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_ParseKBResultResult {
+  "@odata.context"?: string;
+  ParseKBExternalSourceResultResponse: string;
+}
+
+/**
  * msdyn_ParseKBResult response message
+ *
+ * `result` is the value the msdyn_ParseKBResult action returns (see {@link msdyn_ParseKBResultResult}).
  */
 export class msdyn_ParseKBResultResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ParseKBResultResponseData) {
+  constructor(public result: msdyn_ParseKBResultResult) {
     super("msdyn_ParseKBResult");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_ParseKBResultResponse {
-    return new msdyn_ParseKBResultResponse(responseObject<msdyn_ParseKBResultResponseData>(data));
+    return new msdyn_ParseKBResultResponse(data as msdyn_ParseKBResultResult);
   }
 }

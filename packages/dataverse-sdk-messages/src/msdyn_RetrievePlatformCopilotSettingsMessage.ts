@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_RetrievePlatformCopilotSettingsResponse as msdyn_RetrievePlatformCopilotSettingsResponseData } from "./types/index.js";
 
 /**
  * msdyn_RetrievePlatformCopilotSettings request message
@@ -29,24 +27,35 @@ export class msdyn_RetrievePlatformCopilotSettingsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrievePlatformCopilotSettingsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_RetrievePlatformCopilotSettingsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_RetrievePlatformCopilotSettingsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_RetrievePlatformCopilotSettings action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_RetrievePlatformCopilotSettingsResult {
+  "@odata.context"?: string;
+  Result: string;
+}
+
+/**
  * msdyn_RetrievePlatformCopilotSettings response message
+ *
+ * `result` is the value the msdyn_RetrievePlatformCopilotSettings action returns (see {@link msdyn_RetrievePlatformCopilotSettingsResult}).
  */
 export class msdyn_RetrievePlatformCopilotSettingsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrievePlatformCopilotSettingsResponseData) {
+  constructor(public result: msdyn_RetrievePlatformCopilotSettingsResult) {
     super("msdyn_RetrievePlatformCopilotSettings");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_RetrievePlatformCopilotSettingsResponse {
     return new msdyn_RetrievePlatformCopilotSettingsResponse(
-      responseObject<msdyn_RetrievePlatformCopilotSettingsResponseData>(data)
+      data as msdyn_RetrievePlatformCopilotSettingsResult
     );
   }
 }

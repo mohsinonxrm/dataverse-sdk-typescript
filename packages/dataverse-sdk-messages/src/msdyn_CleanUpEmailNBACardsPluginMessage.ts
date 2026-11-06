@@ -42,9 +42,9 @@ export class msdyn_CleanUpEmailNBACardsPluginRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_CleanUpEmailNBACardsPluginResponse> {
+  parseResponse(_response: Response): Promise<msdyn_CleanUpEmailNBACardsPluginResponse> {
     // No return value (204 No Content)
-    return new msdyn_CleanUpEmailNBACardsPluginResponse();
+    return Promise.resolve(new msdyn_CleanUpEmailNBACardsPluginResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_CleanUpEmailNBACardsPluginResponse extends OrganizationRespon
     super("msdyn_CleanUpEmailNBACardsPlugin");
   }
 
-  static fromResponse(_data: unknown): msdyn_CleanUpEmailNBACardsPluginResponse {
+  static fromResponse(_data?: unknown): msdyn_CleanUpEmailNBACardsPluginResponse {
     return new msdyn_CleanUpEmailNBACardsPluginResponse();
   }
 }

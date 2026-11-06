@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_RetrieveDistanceMatrixResponse as msdyn_RetrieveDistanceMatrixResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_RetrieveDistanceMatrix message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,33 @@ export class msdyn_RetrieveDistanceMatrixRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrieveDistanceMatrixResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_RetrieveDistanceMatrixResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_RetrieveDistanceMatrixResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_RetrieveDistanceMatrix action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_RetrieveDistanceMatrixResult {
+  "@odata.context"?: string;
+  ExceptionMessage: string;
+}
+
+/**
  * msdyn_RetrieveDistanceMatrix response message
+ *
+ * `result` is the value the msdyn_RetrieveDistanceMatrix action returns (see {@link msdyn_RetrieveDistanceMatrixResult}).
  */
 export class msdyn_RetrieveDistanceMatrixResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrieveDistanceMatrixResponseData) {
+  constructor(public result: msdyn_RetrieveDistanceMatrixResult) {
     super("msdyn_RetrieveDistanceMatrix");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_RetrieveDistanceMatrixResponse {
-    return new msdyn_RetrieveDistanceMatrixResponse(
-      responseObject<msdyn_RetrieveDistanceMatrixResponseData>(data)
-    );
+    return new msdyn_RetrieveDistanceMatrixResponse(data as msdyn_RetrieveDistanceMatrixResult);
   }
 }

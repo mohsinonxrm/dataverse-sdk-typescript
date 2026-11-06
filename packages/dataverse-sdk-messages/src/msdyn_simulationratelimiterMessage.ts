@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_simulationratelimiterResponse as msdyn_simulationratelimiterResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_simulationratelimiter message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,34 @@ export class msdyn_simulationratelimiterRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_simulationratelimiterResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_simulationratelimiterResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_simulationratelimiterResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_simulationratelimiter action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_simulationratelimiterResult {
+  "@odata.context"?: string;
+  message: string;
+  statuscode: number;
+}
+
+/**
  * msdyn_simulationratelimiter response message
+ *
+ * `result` is the value the msdyn_simulationratelimiter action returns (see {@link msdyn_simulationratelimiterResult}).
  */
 export class msdyn_simulationratelimiterResponse extends OrganizationResponse {
-  constructor(public result: msdyn_simulationratelimiterResponseData) {
+  constructor(public result: msdyn_simulationratelimiterResult) {
     super("msdyn_simulationratelimiter");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_simulationratelimiterResponse {
-    return new msdyn_simulationratelimiterResponse(
-      responseObject<msdyn_simulationratelimiterResponseData>(data)
-    );
+    return new msdyn_simulationratelimiterResponse(data as msdyn_simulationratelimiterResult);
   }
 }

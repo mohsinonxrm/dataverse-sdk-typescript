@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetInsightsResponse as msdyn_GetInsightsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetInsights message, by their CSDL names. A parameter the CSDL declares
@@ -49,21 +47,34 @@ export class msdyn_GetInsightsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetInsightsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetInsightsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetInsightsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetInsights action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetInsightsResult {
+  "@odata.context"?: string;
+  msdyn_insight: string;
+  msdyn_status: number;
+}
+
+/**
  * msdyn_GetInsights response message
+ *
+ * `result` is the value the msdyn_GetInsights action returns (see {@link msdyn_GetInsightsResult}).
  */
 export class msdyn_GetInsightsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetInsightsResponseData) {
+  constructor(public result: msdyn_GetInsightsResult) {
     super("msdyn_GetInsights");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetInsightsResponse {
-    return new msdyn_GetInsightsResponse(responseObject<msdyn_GetInsightsResponseData>(data));
+    return new msdyn_GetInsightsResponse(data as msdyn_GetInsightsResult);
   }
 }

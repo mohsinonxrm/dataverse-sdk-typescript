@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from CancelAllCloudFlowRuns action
+ * Response from the CancelAllCloudFlowRuns action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface CancelAllCloudFlowRunsResponse {
-  // No content returned
-}
+export type CancelAllCloudFlowRunsResponse = void;
 
 /**
  * CancelAllCloudFlowRuns action
@@ -31,9 +31,8 @@ export class CancelAllCloudFlowRunsAction implements Executable<CancelAllCloudFl
     };
   }
 
-  async parseResponse(response: Response): Promise<CancelAllCloudFlowRunsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CancelAllCloudFlowRunsResponse;
-    return (await response.json()) as CancelAllCloudFlowRunsResponse;
+  parseResponse(_response: Response): Promise<CancelAllCloudFlowRunsResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

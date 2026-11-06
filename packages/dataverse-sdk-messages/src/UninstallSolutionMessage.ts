@@ -42,9 +42,9 @@ export class UninstallSolutionRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<UninstallSolutionResponse> {
+  parseResponse(_response: Response): Promise<UninstallSolutionResponse> {
     // No return value (204 No Content)
-    return new UninstallSolutionResponse();
+    return Promise.resolve(new UninstallSolutionResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class UninstallSolutionResponse extends OrganizationResponse {
     super("UninstallSolution");
   }
 
-  static fromResponse(_data: unknown): UninstallSolutionResponse {
+  static fromResponse(_data?: unknown): UninstallSolutionResponse {
     return new UninstallSolutionResponse();
   }
 }

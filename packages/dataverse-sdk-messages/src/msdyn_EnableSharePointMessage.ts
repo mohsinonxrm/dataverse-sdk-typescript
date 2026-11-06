@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_EnableSharePointResponse as msdyn_EnableSharePointResponseData } from "./types/index.js";
 
 /**
  * msdyn_EnableSharePoint request message
@@ -29,23 +27,33 @@ export class msdyn_EnableSharePointRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_EnableSharePointResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_EnableSharePointResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_EnableSharePointResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_EnableSharePoint action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_EnableSharePointResult {
+  "@odata.context"?: string;
+  OperationResult: boolean;
+}
+
+/**
  * msdyn_EnableSharePoint response message
+ *
+ * `result` is the value the msdyn_EnableSharePoint action returns (see {@link msdyn_EnableSharePointResult}).
  */
 export class msdyn_EnableSharePointResponse extends OrganizationResponse {
-  constructor(public result: msdyn_EnableSharePointResponseData) {
+  constructor(public result: msdyn_EnableSharePointResult) {
     super("msdyn_EnableSharePoint");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_EnableSharePointResponse {
-    return new msdyn_EnableSharePointResponse(
-      responseObject<msdyn_EnableSharePointResponseData>(data)
-    );
+    return new msdyn_EnableSharePointResponse(data as msdyn_EnableSharePointResult);
   }
 }

@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseValue } from "./internal/responseData.js";
 import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
@@ -50,21 +49,39 @@ export class GeneratePowerFxFormulaRequest
   }
 
   async parseResponse(response: Response): Promise<GeneratePowerFxFormulaResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return GeneratePowerFxFormulaResponse.fromResponse({});
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return GeneratePowerFxFormulaResponse.fromResponse(undefined);
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
     return GeneratePowerFxFormulaResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the GeneratePowerFxFormula action.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
+ */
+export type GeneratePowerFxFormulaResult = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
+
+/**
  * GeneratePowerFxFormula response message
+ *
+ * `result` is the value the GeneratePowerFxFormula action returns (see {@link GeneratePowerFxFormulaResult}).
  */
 export class GeneratePowerFxFormulaResponse extends OrganizationResponse {
-  constructor(public result: Record<string, unknown>[]) {
+  constructor(public result: GeneratePowerFxFormulaResult) {
     super("GeneratePowerFxFormula");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): GeneratePowerFxFormulaResponse {
-    return new GeneratePowerFxFormulaResponse(responseValue<Record<string, unknown>[]>(data));
+    return new GeneratePowerFxFormulaResponse(
+      data === undefined ? [] : (data as { value: GeneratePowerFxFormulaResult }).value
+    );
   }
 }

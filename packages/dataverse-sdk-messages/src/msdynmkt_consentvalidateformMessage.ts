@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdynmkt_consentvalidateformResponse as msdynmkt_consentvalidateformResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdynmkt_consentvalidateform message, by their CSDL names. A parameter the CSDL declares
@@ -55,23 +53,33 @@ export class msdynmkt_consentvalidateformRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_consentvalidateformResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdynmkt_consentvalidateformResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdynmkt_consentvalidateformResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdynmkt_consentvalidateform action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdynmkt_consentvalidateformResult {
+  "@odata.context"?: string;
+  msdynmkt_validationresponse: string;
+}
+
+/**
  * msdynmkt_consentvalidateform response message
+ *
+ * `result` is the value the msdynmkt_consentvalidateform action returns (see {@link msdynmkt_consentvalidateformResult}).
  */
 export class msdynmkt_consentvalidateformResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_consentvalidateformResponseData) {
+  constructor(public result: msdynmkt_consentvalidateformResult) {
     super("msdynmkt_consentvalidateform");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdynmkt_consentvalidateformResponse {
-    return new msdynmkt_consentvalidateformResponse(
-      responseObject<msdynmkt_consentvalidateformResponseData>(data)
-    );
+    return new msdynmkt_consentvalidateformResponse(data as msdynmkt_consentvalidateformResult);
   }
 }

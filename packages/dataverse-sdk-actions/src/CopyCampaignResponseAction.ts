@@ -2,14 +2,18 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import type { campaignresponse } from "./types/index.js";
 
 /**
- * Response from CopyCampaignResponse action
+ * Response from the CopyCampaignResponse action.
  *
- * The response is the entity itself, not wrapped in `value`.
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface CopyCampaignResponseResponse extends campaignresponse {
-  "@odata.context"?: string;
-  "@odata.etag"?: string;
-}
+export type CopyCampaignResponseResponse =
+  | (campaignresponse & {
+      "@odata.context"?: string;
+      "@odata.etag"?: string;
+      "@odata.type"?: string;
+    })
+  | null;
 
 /**
  * CopyCampaignResponse action
@@ -36,8 +40,9 @@ export class CopyCampaignResponseAction implements Executable<CopyCampaignRespon
   }
 
   async parseResponse(response: Response): Promise<CopyCampaignResponseResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CopyCampaignResponseResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
     return (await response.json()) as CopyCampaignResponseResponse;
   }
 }

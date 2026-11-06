@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CCaaS_AcceptPhoneCall action
+ * Response from the CCaaS_AcceptPhoneCall action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface CCaaS_AcceptPhoneCallResponse {
-  // No content returned
-}
+export type CCaaS_AcceptPhoneCallResponse = void;
 
 /**
  * Parameters of the CCaaS_AcceptPhoneCall action, by their CSDL names. A parameter the CSDL declares
@@ -50,9 +50,8 @@ export class CCaaS_AcceptPhoneCallAction implements Executable<CCaaS_AcceptPhone
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_AcceptPhoneCallResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CCaaS_AcceptPhoneCallResponse;
-    return (await response.json()) as CCaaS_AcceptPhoneCallResponse;
+  parseResponse(_response: Response): Promise<CCaaS_AcceptPhoneCallResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

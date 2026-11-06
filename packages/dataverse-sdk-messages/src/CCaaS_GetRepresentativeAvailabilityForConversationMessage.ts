@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CCaaS_GetRepresentativeAvailabilityForConversationResponse as CCaaS_GetRepresentativeAvailabilityForConversationResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CCaaS_GetRepresentativeAvailabilityForConversation message, by their CSDL names. A parameter the CSDL declares
@@ -51,9 +49,7 @@ export class CCaaS_GetRepresentativeAvailabilityForConversationRequest
   async parseResponse(
     response: Response
   ): Promise<CCaaS_GetRepresentativeAvailabilityForConversationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return CCaaS_GetRepresentativeAvailabilityForConversationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CCaaS_GetRepresentativeAvailabilityForConversationResponse.fromResponse(
       await response.json()
     );
@@ -61,16 +57,44 @@ export class CCaaS_GetRepresentativeAvailabilityForConversationRequest
 }
 
 /**
+ * Response from the CCaaS_GetRepresentativeAvailabilityForConversation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CCaaS_GetRepresentativeAvailabilityForConversationResult {
+  "@odata.context"?: string;
+  AverageWaitTime: number;
+  AverageWaitTimeInSeconds: number;
+  EndTimeOfNextOperatingHour: string;
+  IsAgentAvailable: boolean;
+  IsOverflowing: boolean;
+  IsQueueAvailable: boolean;
+  NextTransitionTime: string;
+  NumberOfExpertsAvailableInQueue: number;
+  OverflowAction: string;
+  OverflowChannel: string;
+  OverflowCondition: string;
+  OverflowSourceQueueId: string;
+  OverflowStage: string;
+  PositionInQueue: number;
+  QueueId: string;
+  StartTimeOfNextOperatingHour: string;
+}
+
+/**
  * CCaaS_GetRepresentativeAvailabilityForConversation response message
+ *
+ * `result` is the value the CCaaS_GetRepresentativeAvailabilityForConversation action returns (see {@link CCaaS_GetRepresentativeAvailabilityForConversationResult}).
  */
 export class CCaaS_GetRepresentativeAvailabilityForConversationResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_GetRepresentativeAvailabilityForConversationResponseData) {
+  constructor(public result: CCaaS_GetRepresentativeAvailabilityForConversationResult) {
     super("CCaaS_GetRepresentativeAvailabilityForConversation");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CCaaS_GetRepresentativeAvailabilityForConversationResponse {
     return new CCaaS_GetRepresentativeAvailabilityForConversationResponse(
-      responseObject<CCaaS_GetRepresentativeAvailabilityForConversationResponseData>(data)
+      data as CCaaS_GetRepresentativeAvailabilityForConversationResult
     );
   }
 }

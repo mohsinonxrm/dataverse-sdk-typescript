@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { msdyn_CreateSuggestedNextActionResponse as msdyn_CreateSuggestedNextActionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CreateSuggestedNextAction message, by their CSDL names. A parameter the CSDL declares
@@ -55,23 +53,35 @@ export class msdyn_CreateSuggestedNextActionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateSuggestedNextActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_CreateSuggestedNextActionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CreateSuggestedNextActionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CreateSuggestedNextAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CreateSuggestedNextActionResult {
+  "@odata.context"?: string;
+  Result: string;
+}
+
+/**
  * msdyn_CreateSuggestedNextAction response message
+ *
+ * `result` is the value the msdyn_CreateSuggestedNextAction action returns (see {@link msdyn_CreateSuggestedNextActionResult}).
  */
 export class msdyn_CreateSuggestedNextActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CreateSuggestedNextActionResponseData) {
+  constructor(public result: msdyn_CreateSuggestedNextActionResult) {
     super("msdyn_CreateSuggestedNextAction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CreateSuggestedNextActionResponse {
     return new msdyn_CreateSuggestedNextActionResponse(
-      responseObject<msdyn_CreateSuggestedNextActionResponseData>(data)
+      data as msdyn_CreateSuggestedNextActionResult
     );
   }
 }

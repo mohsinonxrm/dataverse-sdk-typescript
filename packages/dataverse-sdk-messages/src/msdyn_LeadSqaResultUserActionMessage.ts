@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_LeadSqaResultUserActionResponse as msdyn_LeadSqaResultUserActionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_LeadSqaResultUserAction message, by their CSDL names. A parameter the CSDL declares
@@ -51,23 +49,36 @@ export class msdyn_LeadSqaResultUserActionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_LeadSqaResultUserActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_LeadSqaResultUserActionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_LeadSqaResultUserActionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_LeadSqaResultUserAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_LeadSqaResultUserActionResult {
+  "@odata.context"?: string;
+  Message: string;
+  Outcome: string;
+  Retryable: boolean;
+  Success: boolean;
+}
+
+/**
  * msdyn_LeadSqaResultUserAction response message
+ *
+ * `result` is the value the msdyn_LeadSqaResultUserAction action returns (see {@link msdyn_LeadSqaResultUserActionResult}).
  */
 export class msdyn_LeadSqaResultUserActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_LeadSqaResultUserActionResponseData) {
+  constructor(public result: msdyn_LeadSqaResultUserActionResult) {
     super("msdyn_LeadSqaResultUserAction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_LeadSqaResultUserActionResponse {
-    return new msdyn_LeadSqaResultUserActionResponse(
-      responseObject<msdyn_LeadSqaResultUserActionResponseData>(data)
-    );
+    return new msdyn_LeadSqaResultUserActionResponse(data as msdyn_LeadSqaResultUserActionResult);
   }
 }

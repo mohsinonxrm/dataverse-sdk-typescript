@@ -5,11 +5,11 @@ import type { EntityPayload } from "./types/EntityPayload.js";
 import type { list } from "./types/index.js";
 
 /**
- * Response from CopyMembersList action
+ * Response from the CopyMembersList action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface CopyMembersListResponse {
-  // No content returned
-}
+export type CopyMembersListResponse = void;
 
 /**
  * Parameters of the CopyMembersList action, by their CSDL names. A parameter the CSDL declares
@@ -51,9 +51,8 @@ export class CopyMembersListAction implements Executable<CopyMembersListResponse
     };
   }
 
-  async parseResponse(response: Response): Promise<CopyMembersListResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CopyMembersListResponse;
-    return (await response.json()) as CopyMembersListResponse;
+  parseResponse(_response: Response): Promise<CopyMembersListResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

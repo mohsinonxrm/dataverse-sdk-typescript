@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_SalesAgents_ReEngageEntity action
+ * Response from the msdyn_SalesAgents_ReEngageEntity action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_SalesAgents_ReEngageEntityResponse {
-  // No content returned
-}
+export type msdyn_SalesAgents_ReEngageEntityResponse = void;
 
 /**
  * Parameters of the msdyn_SalesAgents_ReEngageEntity action, by their CSDL names. A parameter the CSDL declares
@@ -43,9 +43,8 @@ export class msdyn_SalesAgents_ReEngageEntityAction implements Executable<msdyn_
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_SalesAgents_ReEngageEntityResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_SalesAgents_ReEngageEntityResponse;
-    return (await response.json()) as msdyn_SalesAgents_ReEngageEntityResponse;
+  parseResponse(_response: Response): Promise<msdyn_SalesAgents_ReEngageEntityResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

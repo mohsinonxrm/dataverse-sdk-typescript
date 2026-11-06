@@ -42,9 +42,9 @@ export class msdyn_TriggerForecastRecomputeRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_TriggerForecastRecomputeResponse> {
+  parseResponse(_response: Response): Promise<msdyn_TriggerForecastRecomputeResponse> {
     // No return value (204 No Content)
-    return new msdyn_TriggerForecastRecomputeResponse();
+    return Promise.resolve(new msdyn_TriggerForecastRecomputeResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_TriggerForecastRecomputeResponse extends OrganizationResponse
     super("msdyn_TriggerForecastRecompute");
   }
 
-  static fromResponse(_data: unknown): msdyn_TriggerForecastRecomputeResponse {
+  static fromResponse(_data?: unknown): msdyn_TriggerForecastRecomputeResponse {
     return new msdyn_TriggerForecastRecomputeResponse();
   }
 }

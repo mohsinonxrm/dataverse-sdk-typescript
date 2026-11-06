@@ -50,9 +50,9 @@ export class OrderOptionRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<OrderOptionResponse> {
+  parseResponse(_response: Response): Promise<OrderOptionResponse> {
     // No return value (204 No Content)
-    return new OrderOptionResponse();
+    return Promise.resolve(new OrderOptionResponse());
   }
 }
 
@@ -64,7 +64,7 @@ export class OrderOptionResponse extends OrganizationResponse {
     super("OrderOption");
   }
 
-  static fromResponse(_data: unknown): OrderOptionResponse {
+  static fromResponse(_data?: unknown): OrderOptionResponse {
     return new OrderOptionResponse();
   }
 }

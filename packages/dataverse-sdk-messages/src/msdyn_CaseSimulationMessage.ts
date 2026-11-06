@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_CaseSimulationResponse as msdyn_CaseSimulationResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CaseSimulation message, by their CSDL names. A parameter the CSDL declares
@@ -47,21 +45,36 @@ export class msdyn_CaseSimulationRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CaseSimulationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_CaseSimulationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CaseSimulationResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CaseSimulation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CaseSimulationResult {
+  "@odata.context"?: string;
+  msdyn_AccuracyPercentage: number;
+  msdyn_HasMoreRecords: string;
+  msdyn_NeedThrottling: string;
+  msdyn_Predictions: string;
+}
+
+/**
  * msdyn_CaseSimulation response message
+ *
+ * `result` is the value the msdyn_CaseSimulation action returns (see {@link msdyn_CaseSimulationResult}).
  */
 export class msdyn_CaseSimulationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CaseSimulationResponseData) {
+  constructor(public result: msdyn_CaseSimulationResult) {
     super("msdyn_CaseSimulation");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CaseSimulationResponse {
-    return new msdyn_CaseSimulationResponse(responseObject<msdyn_CaseSimulationResponseData>(data));
+    return new msdyn_CaseSimulationResponse(data as msdyn_CaseSimulationResult);
   }
 }

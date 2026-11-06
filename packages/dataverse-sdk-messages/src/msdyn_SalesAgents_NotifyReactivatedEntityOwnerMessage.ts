@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesAgents_NotifyReactivatedEntityOwnerResponse as msdyn_SalesAgents_NotifyReactivatedEntityOwnerResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesAgents_NotifyReactivatedEntityOwner message, by their CSDL names. A parameter the CSDL declares
@@ -49,9 +47,7 @@ export class msdyn_SalesAgents_NotifyReactivatedEntityOwnerRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_NotifyReactivatedEntityOwnerResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_SalesAgents_NotifyReactivatedEntityOwnerResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesAgents_NotifyReactivatedEntityOwnerResponse.fromResponse(
       await response.json()
     );
@@ -59,16 +55,29 @@ export class msdyn_SalesAgents_NotifyReactivatedEntityOwnerRequest
 }
 
 /**
+ * Response from the msdyn_SalesAgents_NotifyReactivatedEntityOwner action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesAgents_NotifyReactivatedEntityOwnerResult {
+  "@odata.context"?: string;
+  ResponseJson: string;
+}
+
+/**
  * msdyn_SalesAgents_NotifyReactivatedEntityOwner response message
+ *
+ * `result` is the value the msdyn_SalesAgents_NotifyReactivatedEntityOwner action returns (see {@link msdyn_SalesAgents_NotifyReactivatedEntityOwnerResult}).
  */
 export class msdyn_SalesAgents_NotifyReactivatedEntityOwnerResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgents_NotifyReactivatedEntityOwnerResponseData) {
+  constructor(public result: msdyn_SalesAgents_NotifyReactivatedEntityOwnerResult) {
     super("msdyn_SalesAgents_NotifyReactivatedEntityOwner");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesAgents_NotifyReactivatedEntityOwnerResponse {
     return new msdyn_SalesAgents_NotifyReactivatedEntityOwnerResponse(
-      responseObject<msdyn_SalesAgents_NotifyReactivatedEntityOwnerResponseData>(data)
+      data as msdyn_SalesAgents_NotifyReactivatedEntityOwnerResult
     );
   }
 }

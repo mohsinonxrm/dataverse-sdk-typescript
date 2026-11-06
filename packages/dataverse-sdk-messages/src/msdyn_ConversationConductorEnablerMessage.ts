@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_ConversationConductorEnablerResponse as msdyn_ConversationConductorEnablerResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_ConversationConductorEnabler message, by their CSDL names. A parameter the CSDL declares
@@ -57,23 +55,36 @@ export class msdyn_ConversationConductorEnablerRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ConversationConductorEnablerResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_ConversationConductorEnablerResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_ConversationConductorEnablerResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_ConversationConductorEnabler action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_ConversationConductorEnablerResult {
+  "@odata.context"?: string;
+  ErrorCode: string;
+  ErrorDescription: string;
+}
+
+/**
  * msdyn_ConversationConductorEnabler response message
+ *
+ * `result` is the value the msdyn_ConversationConductorEnabler action returns (see {@link msdyn_ConversationConductorEnablerResult}).
  */
 export class msdyn_ConversationConductorEnablerResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ConversationConductorEnablerResponseData) {
+  constructor(public result: msdyn_ConversationConductorEnablerResult) {
     super("msdyn_ConversationConductorEnabler");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_ConversationConductorEnablerResponse {
     return new msdyn_ConversationConductorEnablerResponse(
-      responseObject<msdyn_ConversationConductorEnablerResponseData>(data)
+      data as msdyn_ConversationConductorEnablerResult
     );
   }
 }

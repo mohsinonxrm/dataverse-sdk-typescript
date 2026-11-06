@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_setCefInsightsEnabledResponse as msdyn_setCefInsightsEnabledResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_setCefInsightsEnabled message, by their CSDL names. A parameter the CSDL declares
@@ -51,23 +49,33 @@ export class msdyn_setCefInsightsEnabledRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_setCefInsightsEnabledResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_setCefInsightsEnabledResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_setCefInsightsEnabledResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_setCefInsightsEnabled action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_setCefInsightsEnabledResult {
+  "@odata.context"?: string;
+  msdyn_responseStatus: string;
+}
+
+/**
  * msdyn_setCefInsightsEnabled response message
+ *
+ * `result` is the value the msdyn_setCefInsightsEnabled action returns (see {@link msdyn_setCefInsightsEnabledResult}).
  */
 export class msdyn_setCefInsightsEnabledResponse extends OrganizationResponse {
-  constructor(public result: msdyn_setCefInsightsEnabledResponseData) {
+  constructor(public result: msdyn_setCefInsightsEnabledResult) {
     super("msdyn_setCefInsightsEnabled");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_setCefInsightsEnabledResponse {
-    return new msdyn_setCefInsightsEnabledResponse(
-      responseObject<msdyn_setCefInsightsEnabledResponseData>(data)
-    );
+    return new msdyn_setCefInsightsEnabledResponse(data as msdyn_setCefInsightsEnabledResult);
   }
 }

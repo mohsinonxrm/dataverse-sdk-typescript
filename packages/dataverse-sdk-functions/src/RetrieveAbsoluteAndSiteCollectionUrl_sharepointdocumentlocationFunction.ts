@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from RetrieveAbsoluteAndSiteCollectionUrl function
+ * Response from the RetrieveAbsoluteAndSiteCollectionUrl function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveAbsoluteAndSiteCollectionUrl_sharepointdocumentlocationResponse {
+  "@odata.context"?: string;
   AbsoluteUrl: string;
   SiteCollectionUrl: string;
 }
@@ -35,9 +38,7 @@ export class RetrieveAbsoluteAndSiteCollectionUrl_sharepointdocumentlocationFunc
   async parseResponse(
     response: Response
   ): Promise<RetrieveAbsoluteAndSiteCollectionUrl_sharepointdocumentlocationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return {} as RetrieveAbsoluteAndSiteCollectionUrl_sharepointdocumentlocationResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RetrieveAbsoluteAndSiteCollectionUrl_sharepointdocumentlocationResponse;
   }
 }

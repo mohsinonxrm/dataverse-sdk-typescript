@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from OrderOption action
+ * Response from the OrderOption action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface OrderOptionResponse {
-  // No content returned
-}
+export type OrderOptionResponse = void;
 
 /**
  * Parameters of the OrderOption action, by their CSDL names. A parameter the CSDL declares
@@ -49,9 +49,8 @@ export class OrderOptionAction implements Executable<OrderOptionResponse> {
     };
   }
 
-  async parseResponse(response: Response): Promise<OrderOptionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as OrderOptionResponse;
-    return (await response.json()) as OrderOptionResponse;
+  parseResponse(_response: Response): Promise<OrderOptionResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

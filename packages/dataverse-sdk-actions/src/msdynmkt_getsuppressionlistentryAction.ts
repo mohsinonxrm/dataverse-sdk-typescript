@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdynmkt_getsuppressionlistentry action
+ * Response from the msdynmkt_getsuppressionlistentry action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdynmkt_getsuppressionlistentryResponse {
+  "@odata.context"?: string;
   msdynmkt_getsuppressionlistentryresponse: string;
 }
 
@@ -42,8 +45,7 @@ export class msdynmkt_getsuppressionlistentryAction implements Executable<msdynm
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_getsuppressionlistentryResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdynmkt_getsuppressionlistentryResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdynmkt_getsuppressionlistentryResponse;
   }
 }

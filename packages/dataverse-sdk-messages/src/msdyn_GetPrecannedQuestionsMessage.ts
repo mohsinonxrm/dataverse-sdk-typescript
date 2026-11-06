@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetPrecannedQuestionsResponse as msdyn_GetPrecannedQuestionsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetPrecannedQuestions message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,35 @@ export class msdyn_GetPrecannedQuestionsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetPrecannedQuestionsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetPrecannedQuestionsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetPrecannedQuestionsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetPrecannedQuestions action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetPrecannedQuestionsResult {
+  "@odata.context"?: string;
+  msdyn_csrescalationquestions: string;
+  msdyn_errormessage: string;
+  msdyn_selfservicequestions: string;
+}
+
+/**
  * msdyn_GetPrecannedQuestions response message
+ *
+ * `result` is the value the msdyn_GetPrecannedQuestions action returns (see {@link msdyn_GetPrecannedQuestionsResult}).
  */
 export class msdyn_GetPrecannedQuestionsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetPrecannedQuestionsResponseData) {
+  constructor(public result: msdyn_GetPrecannedQuestionsResult) {
     super("msdyn_GetPrecannedQuestions");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetPrecannedQuestionsResponse {
-    return new msdyn_GetPrecannedQuestionsResponse(
-      responseObject<msdyn_GetPrecannedQuestionsResponseData>(data)
-    );
+    return new msdyn_GetPrecannedQuestionsResponse(data as msdyn_GetPrecannedQuestionsResult);
   }
 }

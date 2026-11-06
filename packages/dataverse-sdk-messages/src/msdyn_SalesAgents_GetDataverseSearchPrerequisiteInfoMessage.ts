@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesAgents_GetDataverseSearchPrerequisiteInfoResponse as msdyn_SalesAgents_GetDataverseSearchPrerequisiteInfoResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesAgents_GetDataverseSearchPrerequisiteInfo message, by their CSDL names. A parameter the CSDL declares
@@ -47,9 +45,7 @@ export class msdyn_SalesAgents_GetDataverseSearchPrerequisiteInfoRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_GetDataverseSearchPrerequisiteInfoResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_SalesAgents_GetDataverseSearchPrerequisiteInfoResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesAgents_GetDataverseSearchPrerequisiteInfoResponse.fromResponse(
       await response.json()
     );
@@ -57,16 +53,29 @@ export class msdyn_SalesAgents_GetDataverseSearchPrerequisiteInfoRequest
 }
 
 /**
+ * Response from the msdyn_SalesAgents_GetDataverseSearchPrerequisiteInfo action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesAgents_GetDataverseSearchPrerequisiteInfoResult {
+  "@odata.context"?: string;
+  ResponseJson: string;
+}
+
+/**
  * msdyn_SalesAgents_GetDataverseSearchPrerequisiteInfo response message
+ *
+ * `result` is the value the msdyn_SalesAgents_GetDataverseSearchPrerequisiteInfo action returns (see {@link msdyn_SalesAgents_GetDataverseSearchPrerequisiteInfoResult}).
  */
 export class msdyn_SalesAgents_GetDataverseSearchPrerequisiteInfoResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgents_GetDataverseSearchPrerequisiteInfoResponseData) {
+  constructor(public result: msdyn_SalesAgents_GetDataverseSearchPrerequisiteInfoResult) {
     super("msdyn_SalesAgents_GetDataverseSearchPrerequisiteInfo");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesAgents_GetDataverseSearchPrerequisiteInfoResponse {
     return new msdyn_SalesAgents_GetDataverseSearchPrerequisiteInfoResponse(
-      responseObject<msdyn_SalesAgents_GetDataverseSearchPrerequisiteInfoResponseData>(data)
+      data as msdyn_SalesAgents_GetDataverseSearchPrerequisiteInfoResult
     );
   }
 }

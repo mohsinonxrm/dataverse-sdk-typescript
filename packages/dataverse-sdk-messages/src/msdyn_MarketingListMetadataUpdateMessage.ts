@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_MarketingListMetadataUpdateResponse as msdyn_MarketingListMetadataUpdateResponseData } from "./types/index.js";
 
 /**
  * msdyn_MarketingListMetadataUpdate request message
@@ -29,23 +27,35 @@ export class msdyn_MarketingListMetadataUpdateRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_MarketingListMetadataUpdateResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_MarketingListMetadataUpdateResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_MarketingListMetadataUpdateResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_MarketingListMetadataUpdate action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_MarketingListMetadataUpdateResult {
+  "@odata.context"?: string;
+  resultCode: number;
+}
+
+/**
  * msdyn_MarketingListMetadataUpdate response message
+ *
+ * `result` is the value the msdyn_MarketingListMetadataUpdate action returns (see {@link msdyn_MarketingListMetadataUpdateResult}).
  */
 export class msdyn_MarketingListMetadataUpdateResponse extends OrganizationResponse {
-  constructor(public result: msdyn_MarketingListMetadataUpdateResponseData) {
+  constructor(public result: msdyn_MarketingListMetadataUpdateResult) {
     super("msdyn_MarketingListMetadataUpdate");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_MarketingListMetadataUpdateResponse {
     return new msdyn_MarketingListMetadataUpdateResponse(
-      responseObject<msdyn_MarketingListMetadataUpdateResponseData>(data)
+      data as msdyn_MarketingListMetadataUpdateResult
     );
   }
 }

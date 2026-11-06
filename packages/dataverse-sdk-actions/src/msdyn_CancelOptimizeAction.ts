@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_CancelOptimize action
+ * Response from the msdyn_CancelOptimize action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_CancelOptimizeResponse {
+  "@odata.context"?: string;
   msdyn_Response: string;
   msdyn_Restored: string;
   msdyn_Status: string;
@@ -44,8 +47,7 @@ export class msdyn_CancelOptimizeAction implements Executable<msdyn_CancelOptimi
   }
 
   async parseResponse(response: Response): Promise<msdyn_CancelOptimizeResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_CancelOptimizeResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_CancelOptimizeResponse;
   }
 }

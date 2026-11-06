@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from PublishTheme action
+ * Response from the PublishTheme action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface PublishThemeResponse {
-  // No content returned
-}
+export type PublishThemeResponse = void;
 
 /**
  * PublishTheme action
@@ -31,9 +31,8 @@ export class PublishThemeAction implements Executable<PublishThemeResponse> {
     };
   }
 
-  async parseResponse(response: Response): Promise<PublishThemeResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as PublishThemeResponse;
-    return (await response.json()) as PublishThemeResponse;
+  parseResponse(_response: Response): Promise<PublishThemeResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

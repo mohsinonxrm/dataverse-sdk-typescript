@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_WKWDeleteGDPRData action
+ * Response from the msdyn_WKWDeleteGDPRData action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_WKWDeleteGDPRDataResponse {
-  // No content returned
-}
+export type msdyn_WKWDeleteGDPRDataResponse = void;
 
 /**
  * Parameters of the msdyn_WKWDeleteGDPRData action, by their CSDL names. A parameter the CSDL declares
@@ -41,9 +41,8 @@ export class msdyn_WKWDeleteGDPRDataAction implements Executable<msdyn_WKWDelete
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_WKWDeleteGDPRDataResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_WKWDeleteGDPRDataResponse;
-    return (await response.json()) as msdyn_WKWDeleteGDPRDataResponse;
+  parseResponse(_response: Response): Promise<msdyn_WKWDeleteGDPRDataResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

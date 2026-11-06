@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_RetrieveActivityAnalyticsConfigurationResponse as msdyn_RetrieveActivityAnalyticsConfigurationResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_RetrieveActivityAnalyticsConfiguration message, by their CSDL names. A parameter the CSDL declares
@@ -47,24 +45,41 @@ export class msdyn_RetrieveActivityAnalyticsConfigurationRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_RetrieveActivityAnalyticsConfigurationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_RetrieveActivityAnalyticsConfigurationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_RetrieveActivityAnalyticsConfigurationResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_RetrieveActivityAnalyticsConfiguration action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_RetrieveActivityAnalyticsConfigurationResult {
+  "@odata.context"?: string;
+  DCIHubUrl: string;
+  EmailEngagementEnabled: boolean;
+  HealthFeatureStatus: number;
+  LinkedInStatus: number;
+  MarsStatus: number;
+  OrgTypeSuffix: string;
+  RaProvisioningStatus: number;
+}
+
+/**
  * msdyn_RetrieveActivityAnalyticsConfiguration response message
+ *
+ * `result` is the value the msdyn_RetrieveActivityAnalyticsConfiguration action returns (see {@link msdyn_RetrieveActivityAnalyticsConfigurationResult}).
  */
 export class msdyn_RetrieveActivityAnalyticsConfigurationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrieveActivityAnalyticsConfigurationResponseData) {
+  constructor(public result: msdyn_RetrieveActivityAnalyticsConfigurationResult) {
     super("msdyn_RetrieveActivityAnalyticsConfiguration");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_RetrieveActivityAnalyticsConfigurationResponse {
     return new msdyn_RetrieveActivityAnalyticsConfigurationResponse(
-      responseObject<msdyn_RetrieveActivityAnalyticsConfigurationResponseData>(data)
+      data as msdyn_RetrieveActivityAnalyticsConfigurationResult
     );
   }
 }

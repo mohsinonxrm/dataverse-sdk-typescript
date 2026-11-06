@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdynmkt_consentsubmission action
+ * Response from the msdynmkt_consentsubmission action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdynmkt_consentsubmissionResponse {
+  "@odata.context"?: string;
   msdynmkt_consentsubmissionresponse: string;
 }
 
@@ -54,8 +57,7 @@ export class msdynmkt_consentsubmissionAction implements Executable<msdynmkt_con
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_consentsubmissionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdynmkt_consentsubmissionResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdynmkt_consentsubmissionResponse;
   }
 }

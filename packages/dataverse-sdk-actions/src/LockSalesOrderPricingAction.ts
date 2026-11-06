@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from LockSalesOrderPricing action
+ * Response from the LockSalesOrderPricing action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface LockSalesOrderPricingResponse {
-  // No content returned
-}
+export type LockSalesOrderPricingResponse = void;
 
 /**
  * LockSalesOrderPricing action
@@ -31,9 +31,8 @@ export class LockSalesOrderPricingAction implements Executable<LockSalesOrderPri
     };
   }
 
-  async parseResponse(response: Response): Promise<LockSalesOrderPricingResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as LockSalesOrderPricingResponse;
-    return (await response.json()) as LockSalesOrderPricingResponse;
+  parseResponse(_response: Response): Promise<LockSalesOrderPricingResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

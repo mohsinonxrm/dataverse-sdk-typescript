@@ -42,9 +42,9 @@ export class msdyn_IoTSendTestAlertRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_IoTSendTestAlertResponse> {
+  parseResponse(_response: Response): Promise<msdyn_IoTSendTestAlertResponse> {
     // No return value (204 No Content)
-    return new msdyn_IoTSendTestAlertResponse();
+    return Promise.resolve(new msdyn_IoTSendTestAlertResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_IoTSendTestAlertResponse extends OrganizationResponse {
     super("msdyn_IoTSendTestAlert");
   }
 
-  static fromResponse(_data: unknown): msdyn_IoTSendTestAlertResponse {
+  static fromResponse(_data?: unknown): msdyn_IoTSendTestAlertResponse {
     return new msdyn_IoTSendTestAlertResponse();
   }
 }

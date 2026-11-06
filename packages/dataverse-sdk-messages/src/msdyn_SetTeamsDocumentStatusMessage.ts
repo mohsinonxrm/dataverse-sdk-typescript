@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SetTeamsDocumentStatusResponse as msdyn_SetTeamsDocumentStatusResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SetTeamsDocumentStatus message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,35 @@ export class msdyn_SetTeamsDocumentStatusRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SetTeamsDocumentStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_SetTeamsDocumentStatusResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SetTeamsDocumentStatusResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SetTeamsDocumentStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SetTeamsDocumentStatusResult {
+  "@odata.context"?: string;
+  FailedLogicalEntityNames: string;
+  OperationResult: boolean;
+  PassedLogicalEntityNames: string;
+}
+
+/**
  * msdyn_SetTeamsDocumentStatus response message
+ *
+ * `result` is the value the msdyn_SetTeamsDocumentStatus action returns (see {@link msdyn_SetTeamsDocumentStatusResult}).
  */
 export class msdyn_SetTeamsDocumentStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SetTeamsDocumentStatusResponseData) {
+  constructor(public result: msdyn_SetTeamsDocumentStatusResult) {
     super("msdyn_SetTeamsDocumentStatus");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SetTeamsDocumentStatusResponse {
-    return new msdyn_SetTeamsDocumentStatusResponse(
-      responseObject<msdyn_SetTeamsDocumentStatusResponseData>(data)
-    );
+    return new msdyn_SetTeamsDocumentStatusResponse(data as msdyn_SetTeamsDocumentStatusResult);
   }
 }

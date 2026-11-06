@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { IngestResponse as IngestResponseData } from "./types/index.js";
 
 /**
  * Parameters of the Ingest message, by their CSDL names. A parameter the CSDL declares
@@ -48,21 +46,33 @@ export class IngestRequest extends OrganizationRequest implements Executable<Ing
   }
 
   async parseResponse(response: Response): Promise<IngestResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return IngestResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return IngestResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the Ingest action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface IngestResult {
+  "@odata.context"?: string;
+  response: string;
+}
+
+/**
  * Ingest response message
+ *
+ * `result` is the value the Ingest action returns (see {@link IngestResult}).
  */
 export class IngestResponse extends OrganizationResponse {
-  constructor(public result: IngestResponseData) {
+  constructor(public result: IngestResult) {
     super("Ingest");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): IngestResponse {
-    return new IngestResponse(responseObject<IngestResponseData>(data));
+    return new IngestResponse(data as IngestResult);
   }
 }

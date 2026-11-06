@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetSummaryBookingsResponse as msdyn_GetSummaryBookingsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetSummaryBookings message, by their CSDL names. A parameter the CSDL declares
@@ -57,23 +55,33 @@ export class msdyn_GetSummaryBookingsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSummaryBookingsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetSummaryBookingsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetSummaryBookingsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetSummaryBookings action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetSummaryBookingsResult {
+  "@odata.context"?: string;
+  SummaryBookings: string;
+}
+
+/**
  * msdyn_GetSummaryBookings response message
+ *
+ * `result` is the value the msdyn_GetSummaryBookings action returns (see {@link msdyn_GetSummaryBookingsResult}).
  */
 export class msdyn_GetSummaryBookingsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetSummaryBookingsResponseData) {
+  constructor(public result: msdyn_GetSummaryBookingsResult) {
     super("msdyn_GetSummaryBookings");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetSummaryBookingsResponse {
-    return new msdyn_GetSummaryBookingsResponse(
-      responseObject<msdyn_GetSummaryBookingsResponseData>(data)
-    );
+    return new msdyn_GetSummaryBookingsResponse(data as msdyn_GetSummaryBookingsResult);
   }
 }

@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CCaaS_ForceCloseConversation action
+ * Response from the CCaaS_ForceCloseConversation action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface CCaaS_ForceCloseConversationResponse {
-  // No content returned
-}
+export type CCaaS_ForceCloseConversationResponse = void;
 
 /**
  * Parameters of the CCaaS_ForceCloseConversation action, by their CSDL names. A parameter the CSDL declares
@@ -48,9 +48,8 @@ export class CCaaS_ForceCloseConversationAction implements Executable<CCaaS_Forc
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_ForceCloseConversationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CCaaS_ForceCloseConversationResponse;
-    return (await response.json()) as CCaaS_ForceCloseConversationResponse;
+  parseResponse(_response: Response): Promise<CCaaS_ForceCloseConversationResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

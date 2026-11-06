@@ -47,9 +47,9 @@ export class MergeRequest extends OrganizationRequest implements Executable<Merg
     };
   }
 
-  async parseResponse(response: Response): Promise<MergeResponse> {
+  parseResponse(_response: Response): Promise<MergeResponse> {
     // No return value (204 No Content)
-    return new MergeResponse();
+    return Promise.resolve(new MergeResponse());
   }
 }
 
@@ -61,7 +61,7 @@ export class MergeResponse extends OrganizationResponse {
     super("Merge");
   }
 
-  static fromResponse(_data: unknown): MergeResponse {
+  static fromResponse(_data?: unknown): MergeResponse {
     return new MergeResponse();
   }
 }

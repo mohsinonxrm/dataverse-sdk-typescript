@@ -42,9 +42,9 @@ export class msdyn_RegisterIoTDeviceRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_RegisterIoTDeviceResponse> {
+  parseResponse(_response: Response): Promise<msdyn_RegisterIoTDeviceResponse> {
     // No return value (204 No Content)
-    return new msdyn_RegisterIoTDeviceResponse();
+    return Promise.resolve(new msdyn_RegisterIoTDeviceResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_RegisterIoTDeviceResponse extends OrganizationResponse {
     super("msdyn_RegisterIoTDevice");
   }
 
-  static fromResponse(_data: unknown): msdyn_RegisterIoTDeviceResponse {
+  static fromResponse(_data?: unknown): msdyn_RegisterIoTDeviceResponse {
     return new msdyn_RegisterIoTDeviceResponse();
   }
 }

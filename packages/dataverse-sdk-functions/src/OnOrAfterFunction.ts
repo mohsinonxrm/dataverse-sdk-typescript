@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from OnOrAfter function
+ * Response from the OnOrAfter function.
+ *
+ * The value, read from the `value` of the response body.
  */
-export interface OnOrAfterResponse {
-  value: boolean;
-}
+export type OnOrAfterResponse = boolean;
 
 /**
  * Parameters of the OnOrAfter function, by their CSDL names. A parameter the CSDL declares
@@ -53,8 +53,7 @@ export class OnOrAfterFunction implements Executable<OnOrAfterResponse> {
   }
 
   async parseResponse(response: Response): Promise<OnOrAfterResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as OnOrAfterResponse;
-    return (await response.json()) as OnOrAfterResponse;
+    // A primitive comes wrapped: { "@odata.context": "…", "value": … }
+    return ((await response.json()) as { value: OnOrAfterResponse }).value;
   }
 }

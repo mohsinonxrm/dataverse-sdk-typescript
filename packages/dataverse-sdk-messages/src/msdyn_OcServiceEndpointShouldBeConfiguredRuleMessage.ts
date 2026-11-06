@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_OcServiceEndpointShouldBeConfiguredRuleResponse as msdyn_OcServiceEndpointShouldBeConfiguredRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_OcServiceEndpointShouldBeConfiguredRule request message
@@ -31,9 +29,7 @@ export class msdyn_OcServiceEndpointShouldBeConfiguredRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_OcServiceEndpointShouldBeConfiguredRuleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_OcServiceEndpointShouldBeConfiguredRuleResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_OcServiceEndpointShouldBeConfiguredRuleResponse.fromResponse(
       await response.json()
     );
@@ -41,16 +37,31 @@ export class msdyn_OcServiceEndpointShouldBeConfiguredRuleRequest
 }
 
 /**
+ * Response from the msdyn_OcServiceEndpointShouldBeConfiguredRule action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_OcServiceEndpointShouldBeConfiguredRuleResult {
+  "@odata.context"?: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_OcServiceEndpointShouldBeConfiguredRule response message
+ *
+ * `result` is the value the msdyn_OcServiceEndpointShouldBeConfiguredRule action returns (see {@link msdyn_OcServiceEndpointShouldBeConfiguredRuleResult}).
  */
 export class msdyn_OcServiceEndpointShouldBeConfiguredRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_OcServiceEndpointShouldBeConfiguredRuleResponseData) {
+  constructor(public result: msdyn_OcServiceEndpointShouldBeConfiguredRuleResult) {
     super("msdyn_OcServiceEndpointShouldBeConfiguredRule");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_OcServiceEndpointShouldBeConfiguredRuleResponse {
     return new msdyn_OcServiceEndpointShouldBeConfiguredRuleResponse(
-      responseObject<msdyn_OcServiceEndpointShouldBeConfiguredRuleResponseData>(data)
+      data as msdyn_OcServiceEndpointShouldBeConfiguredRuleResult
     );
   }
 }

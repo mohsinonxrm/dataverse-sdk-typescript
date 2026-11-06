@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CCaaS_SetPresence action
+ * Response from the CCaaS_SetPresence action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface CCaaS_SetPresenceResponse {
-  // No content returned
-}
+export type CCaaS_SetPresenceResponse = void;
 
 /**
  * Parameters of the CCaaS_SetPresence action, by their CSDL names. A parameter the CSDL declares
@@ -43,9 +43,8 @@ export class CCaaS_SetPresenceAction implements Executable<CCaaS_SetPresenceResp
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_SetPresenceResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CCaaS_SetPresenceResponse;
-    return (await response.json()) as CCaaS_SetPresenceResponse;
+  parseResponse(_response: Response): Promise<CCaaS_SetPresenceResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

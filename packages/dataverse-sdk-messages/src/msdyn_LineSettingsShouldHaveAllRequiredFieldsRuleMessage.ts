@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_LineSettingsShouldHaveAllRequiredFieldsRuleResponse as msdyn_LineSettingsShouldHaveAllRequiredFieldsRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_LineSettingsShouldHaveAllRequiredFieldsRule request message
@@ -31,9 +29,7 @@ export class msdyn_LineSettingsShouldHaveAllRequiredFieldsRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_LineSettingsShouldHaveAllRequiredFieldsRuleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_LineSettingsShouldHaveAllRequiredFieldsRuleResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_LineSettingsShouldHaveAllRequiredFieldsRuleResponse.fromResponse(
       await response.json()
     );
@@ -41,16 +37,31 @@ export class msdyn_LineSettingsShouldHaveAllRequiredFieldsRuleRequest
 }
 
 /**
+ * Response from the msdyn_LineSettingsShouldHaveAllRequiredFieldsRule action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_LineSettingsShouldHaveAllRequiredFieldsRuleResult {
+  "@odata.context"?: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_LineSettingsShouldHaveAllRequiredFieldsRule response message
+ *
+ * `result` is the value the msdyn_LineSettingsShouldHaveAllRequiredFieldsRule action returns (see {@link msdyn_LineSettingsShouldHaveAllRequiredFieldsRuleResult}).
  */
 export class msdyn_LineSettingsShouldHaveAllRequiredFieldsRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_LineSettingsShouldHaveAllRequiredFieldsRuleResponseData) {
+  constructor(public result: msdyn_LineSettingsShouldHaveAllRequiredFieldsRuleResult) {
     super("msdyn_LineSettingsShouldHaveAllRequiredFieldsRule");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_LineSettingsShouldHaveAllRequiredFieldsRuleResponse {
     return new msdyn_LineSettingsShouldHaveAllRequiredFieldsRuleResponse(
-      responseObject<msdyn_LineSettingsShouldHaveAllRequiredFieldsRuleResponseData>(data)
+      data as msdyn_LineSettingsShouldHaveAllRequiredFieldsRuleResult
     );
   }
 }

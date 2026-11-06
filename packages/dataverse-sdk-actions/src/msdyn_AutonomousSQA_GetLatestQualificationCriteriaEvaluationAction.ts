@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluation action
+ * Response from the msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResponse {
+  "@odata.context"?: string;
   msdyn_IsEvaluationComplete: boolean;
   msdyn_QualificationDecision: number;
 }
@@ -51,9 +54,7 @@ export class msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationAction 
   async parseResponse(
     response: Response
   ): Promise<msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return {} as msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResponse;
   }
 }

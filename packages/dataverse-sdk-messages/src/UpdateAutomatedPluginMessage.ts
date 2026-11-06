@@ -56,9 +56,9 @@ export class UpdateAutomatedPluginRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<UpdateAutomatedPluginResponse> {
+  parseResponse(_response: Response): Promise<UpdateAutomatedPluginResponse> {
     // No return value (204 No Content)
-    return new UpdateAutomatedPluginResponse();
+    return Promise.resolve(new UpdateAutomatedPluginResponse());
   }
 }
 
@@ -70,7 +70,7 @@ export class UpdateAutomatedPluginResponse extends OrganizationResponse {
     super("UpdateAutomatedPlugin");
   }
 
-  static fromResponse(_data: unknown): UpdateAutomatedPluginResponse {
+  static fromResponse(_data?: unknown): UpdateAutomatedPluginResponse {
     return new UpdateAutomatedPluginResponse();
   }
 }

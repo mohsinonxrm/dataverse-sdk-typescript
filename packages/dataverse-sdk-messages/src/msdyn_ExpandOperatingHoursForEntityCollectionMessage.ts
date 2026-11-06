@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_ExpandOperatingHoursForEntityCollectionResponse as msdyn_ExpandOperatingHoursForEntityCollectionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_ExpandOperatingHoursForEntityCollection message, by their CSDL names. A parameter the CSDL declares
@@ -51,9 +49,7 @@ export class msdyn_ExpandOperatingHoursForEntityCollectionRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_ExpandOperatingHoursForEntityCollectionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_ExpandOperatingHoursForEntityCollectionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_ExpandOperatingHoursForEntityCollectionResponse.fromResponse(
       await response.json()
     );
@@ -61,16 +57,29 @@ export class msdyn_ExpandOperatingHoursForEntityCollectionRequest
 }
 
 /**
+ * Response from the msdyn_ExpandOperatingHoursForEntityCollection action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_ExpandOperatingHoursForEntityCollectionResult {
+  "@odata.context"?: string;
+  msdyn_Result: string;
+}
+
+/**
  * msdyn_ExpandOperatingHoursForEntityCollection response message
+ *
+ * `result` is the value the msdyn_ExpandOperatingHoursForEntityCollection action returns (see {@link msdyn_ExpandOperatingHoursForEntityCollectionResult}).
  */
 export class msdyn_ExpandOperatingHoursForEntityCollectionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ExpandOperatingHoursForEntityCollectionResponseData) {
+  constructor(public result: msdyn_ExpandOperatingHoursForEntityCollectionResult) {
     super("msdyn_ExpandOperatingHoursForEntityCollection");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_ExpandOperatingHoursForEntityCollectionResponse {
     return new msdyn_ExpandOperatingHoursForEntityCollectionResponse(
-      responseObject<msdyn_ExpandOperatingHoursForEntityCollectionResponseData>(data)
+      data as msdyn_ExpandOperatingHoursForEntityCollectionResult
     );
   }
 }

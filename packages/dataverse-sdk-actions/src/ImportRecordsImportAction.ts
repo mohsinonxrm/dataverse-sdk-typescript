@@ -2,14 +2,14 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import type { asyncoperation } from "./types/index.js";
 
 /**
- * Response from ImportRecordsImport action
+ * Response from the ImportRecordsImport action.
  *
- * The response is the entity itself, not wrapped in `value`.
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface ImportRecordsImportResponse extends asyncoperation {
-  "@odata.context"?: string;
-  "@odata.etag"?: string;
-}
+export type ImportRecordsImportResponse =
+  | (asyncoperation & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string })
+  | null;
 
 /**
  * ImportRecordsImport action
@@ -36,8 +36,9 @@ export class ImportRecordsImportAction implements Executable<ImportRecordsImport
   }
 
   async parseResponse(response: Response): Promise<ImportRecordsImportResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ImportRecordsImportResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
     return (await response.json()) as ImportRecordsImportResponse;
   }
 }

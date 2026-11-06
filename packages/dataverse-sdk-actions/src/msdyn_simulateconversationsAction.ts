@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_simulateconversations action
+ * Response from the msdyn_simulateconversations action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_simulateconversationsResponse {
+  "@odata.context"?: string;
   simulationrunid: string;
 }
 
@@ -42,8 +45,7 @@ export class msdyn_simulateconversationsAction implements Executable<msdyn_simul
   }
 
   async parseResponse(response: Response): Promise<msdyn_simulateconversationsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_simulateconversationsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_simulateconversationsResponse;
   }
 }

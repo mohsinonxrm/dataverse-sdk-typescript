@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesOutlookMeetingPreparationResponse as msdyn_SalesOutlookMeetingPreparationResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesOutlookMeetingPreparation message, by their CSDL names. A parameter the CSDL declares
@@ -47,24 +45,37 @@ export class msdyn_SalesOutlookMeetingPreparationRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesOutlookMeetingPreparationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_SalesOutlookMeetingPreparationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesOutlookMeetingPreparationResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SalesOutlookMeetingPreparation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesOutlookMeetingPreparationResult {
+  "@odata.context"?: string;
+  msdyn_error: string;
+  msdyn_result: string;
+  msdyn_status: number;
+}
+
+/**
  * msdyn_SalesOutlookMeetingPreparation response message
+ *
+ * `result` is the value the msdyn_SalesOutlookMeetingPreparation action returns (see {@link msdyn_SalesOutlookMeetingPreparationResult}).
  */
 export class msdyn_SalesOutlookMeetingPreparationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesOutlookMeetingPreparationResponseData) {
+  constructor(public result: msdyn_SalesOutlookMeetingPreparationResult) {
     super("msdyn_SalesOutlookMeetingPreparation");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesOutlookMeetingPreparationResponse {
     return new msdyn_SalesOutlookMeetingPreparationResponse(
-      responseObject<msdyn_SalesOutlookMeetingPreparationResponseData>(data)
+      data as msdyn_SalesOutlookMeetingPreparationResult
     );
   }
 }

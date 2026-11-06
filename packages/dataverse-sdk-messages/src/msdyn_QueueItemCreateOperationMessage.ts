@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_QueueItemCreateOperationResponse as msdyn_QueueItemCreateOperationResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_QueueItemCreateOperation message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,33 @@ export class msdyn_QueueItemCreateOperationRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_QueueItemCreateOperationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_QueueItemCreateOperationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_QueueItemCreateOperationResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_QueueItemCreateOperation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_QueueItemCreateOperationResult {
+  "@odata.context"?: string;
+  msdyn_queueItemCreateAPIResponse: string;
+}
+
+/**
  * msdyn_QueueItemCreateOperation response message
+ *
+ * `result` is the value the msdyn_QueueItemCreateOperation action returns (see {@link msdyn_QueueItemCreateOperationResult}).
  */
 export class msdyn_QueueItemCreateOperationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_QueueItemCreateOperationResponseData) {
+  constructor(public result: msdyn_QueueItemCreateOperationResult) {
     super("msdyn_QueueItemCreateOperation");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_QueueItemCreateOperationResponse {
-    return new msdyn_QueueItemCreateOperationResponse(
-      responseObject<msdyn_QueueItemCreateOperationResponseData>(data)
-    );
+    return new msdyn_QueueItemCreateOperationResponse(data as msdyn_QueueItemCreateOperationResult);
   }
 }

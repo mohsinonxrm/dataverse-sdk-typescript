@@ -42,9 +42,9 @@ export class msdyn_GetFeatureConsentStatusRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_GetFeatureConsentStatusResponse> {
+  parseResponse(_response: Response): Promise<msdyn_GetFeatureConsentStatusResponse> {
     // No return value (204 No Content)
-    return new msdyn_GetFeatureConsentStatusResponse();
+    return Promise.resolve(new msdyn_GetFeatureConsentStatusResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_GetFeatureConsentStatusResponse extends OrganizationResponse 
     super("msdyn_GetFeatureConsentStatus");
   }
 
-  static fromResponse(_data: unknown): msdyn_GetFeatureConsentStatusResponse {
+  static fromResponse(_data?: unknown): msdyn_GetFeatureConsentStatusResponse {
     return new msdyn_GetFeatureConsentStatusResponse();
   }
 }

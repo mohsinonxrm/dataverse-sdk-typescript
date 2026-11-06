@@ -48,9 +48,9 @@ export class msdyn_CascadeCrewBookingsRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_CascadeCrewBookingsResponse> {
+  parseResponse(_response: Response): Promise<msdyn_CascadeCrewBookingsResponse> {
     // No return value (204 No Content)
-    return new msdyn_CascadeCrewBookingsResponse();
+    return Promise.resolve(new msdyn_CascadeCrewBookingsResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class msdyn_CascadeCrewBookingsResponse extends OrganizationResponse {
     super("msdyn_CascadeCrewBookings");
   }
 
-  static fromResponse(_data: unknown): msdyn_CascadeCrewBookingsResponse {
+  static fromResponse(_data?: unknown): msdyn_CascadeCrewBookingsResponse {
     return new msdyn_CascadeCrewBookingsResponse();
   }
 }

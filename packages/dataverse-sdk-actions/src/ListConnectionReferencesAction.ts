@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from ListConnectionReferences action
+ * Response from the ListConnectionReferences action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface ListConnectionReferencesResponse {
+  "@odata.context"?: string;
   connectionReferences: string;
   connections: string;
   mappingBetweenLogicalNameAndName: string;
@@ -34,8 +37,7 @@ export class ListConnectionReferencesAction implements Executable<ListConnection
   }
 
   async parseResponse(response: Response): Promise<ListConnectionReferencesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ListConnectionReferencesResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as ListConnectionReferencesResponse;
   }
 }

@@ -44,9 +44,9 @@ export class msdyn_IoTSetConfigurationRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_IoTSetConfigurationResponse> {
+  parseResponse(_response: Response): Promise<msdyn_IoTSetConfigurationResponse> {
     // No return value (204 No Content)
-    return new msdyn_IoTSetConfigurationResponse();
+    return Promise.resolve(new msdyn_IoTSetConfigurationResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class msdyn_IoTSetConfigurationResponse extends OrganizationResponse {
     super("msdyn_IoTSetConfiguration");
   }
 
-  static fromResponse(_data: unknown): msdyn_IoTSetConfigurationResponse {
+  static fromResponse(_data?: unknown): msdyn_IoTSetConfigurationResponse {
     return new msdyn_IoTSetConfigurationResponse();
   }
 }

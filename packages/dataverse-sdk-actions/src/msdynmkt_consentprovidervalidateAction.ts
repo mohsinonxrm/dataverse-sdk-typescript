@@ -4,9 +4,12 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdynmkt_consentprovidervalidate action
+ * Response from the msdynmkt_consentprovidervalidate action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdynmkt_consentprovidervalidateResponse {
+  "@odata.context"?: string;
   issuccess: boolean;
   message: string;
 }
@@ -45,8 +48,7 @@ export class msdynmkt_consentprovidervalidateAction implements Executable<msdynm
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_consentprovidervalidateResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdynmkt_consentprovidervalidateResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdynmkt_consentprovidervalidateResponse;
   }
 }

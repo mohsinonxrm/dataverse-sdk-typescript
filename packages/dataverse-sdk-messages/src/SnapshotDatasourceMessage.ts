@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { SnapshotDatasourceResponse as SnapshotDatasourceResponseData } from "./types/index.js";
 
 /**
  * Parameters of the SnapshotDatasource message, by their CSDL names. A parameter the CSDL declares
@@ -45,21 +43,33 @@ export class SnapshotDatasourceRequest
   }
 
   async parseResponse(response: Response): Promise<SnapshotDatasourceResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return SnapshotDatasourceResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return SnapshotDatasourceResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the SnapshotDatasource action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface SnapshotDatasourceResult {
+  "@odata.context"?: string;
+  SnapshotReference: string;
+}
+
+/**
  * SnapshotDatasource response message
+ *
+ * `result` is the value the SnapshotDatasource action returns (see {@link SnapshotDatasourceResult}).
  */
 export class SnapshotDatasourceResponse extends OrganizationResponse {
-  constructor(public result: SnapshotDatasourceResponseData) {
+  constructor(public result: SnapshotDatasourceResult) {
     super("SnapshotDatasource");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): SnapshotDatasourceResponse {
-    return new SnapshotDatasourceResponse(responseObject<SnapshotDatasourceResponseData>(data));
+    return new SnapshotDatasourceResponse(data as SnapshotDatasourceResult);
   }
 }

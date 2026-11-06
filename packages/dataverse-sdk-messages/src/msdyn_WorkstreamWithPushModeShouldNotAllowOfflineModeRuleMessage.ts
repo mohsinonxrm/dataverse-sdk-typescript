@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_WorkstreamWithPushModeShouldNotAllowOfflineModeRuleResponse as msdyn_WorkstreamWithPushModeShouldNotAllowOfflineModeRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_WorkstreamWithPushModeShouldNotAllowOfflineModeRule request message
@@ -31,9 +29,7 @@ export class msdyn_WorkstreamWithPushModeShouldNotAllowOfflineModeRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_WorkstreamWithPushModeShouldNotAllowOfflineModeRuleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_WorkstreamWithPushModeShouldNotAllowOfflineModeRuleResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_WorkstreamWithPushModeShouldNotAllowOfflineModeRuleResponse.fromResponse(
       await response.json()
     );
@@ -41,20 +37,33 @@ export class msdyn_WorkstreamWithPushModeShouldNotAllowOfflineModeRuleRequest
 }
 
 /**
+ * Response from the msdyn_WorkstreamWithPushModeShouldNotAllowOfflineModeRule action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_WorkstreamWithPushModeShouldNotAllowOfflineModeRuleResult {
+  "@odata.context"?: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_WorkstreamWithPushModeShouldNotAllowOfflineModeRule response message
+ *
+ * `result` is the value the msdyn_WorkstreamWithPushModeShouldNotAllowOfflineModeRule action returns (see {@link msdyn_WorkstreamWithPushModeShouldNotAllowOfflineModeRuleResult}).
  */
 export class msdyn_WorkstreamWithPushModeShouldNotAllowOfflineModeRuleResponse extends OrganizationResponse {
-  constructor(
-    public result: msdyn_WorkstreamWithPushModeShouldNotAllowOfflineModeRuleResponseData
-  ) {
+  constructor(public result: msdyn_WorkstreamWithPushModeShouldNotAllowOfflineModeRuleResult) {
     super("msdyn_WorkstreamWithPushModeShouldNotAllowOfflineModeRule");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(
     data: unknown
   ): msdyn_WorkstreamWithPushModeShouldNotAllowOfflineModeRuleResponse {
     return new msdyn_WorkstreamWithPushModeShouldNotAllowOfflineModeRuleResponse(
-      responseObject<msdyn_WorkstreamWithPushModeShouldNotAllowOfflineModeRuleResponseData>(data)
+      data as msdyn_WorkstreamWithPushModeShouldNotAllowOfflineModeRuleResult
     );
   }
 }

@@ -3,14 +3,14 @@ import { requestBody } from "./internal/requestBody.js";
 import type { InputArgumentCollection, asyncoperation } from "./types/index.js";
 
 /**
- * Response from ExecuteWorkflow action
+ * Response from the ExecuteWorkflow action.
  *
- * The response is the entity itself, not wrapped in `value`.
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface ExecuteWorkflowResponse extends asyncoperation {
-  "@odata.context"?: string;
-  "@odata.etag"?: string;
-}
+export type ExecuteWorkflowResponse =
+  | (asyncoperation & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string })
+  | null;
 
 /**
  * Parameters of the ExecuteWorkflow action, by their CSDL names. A parameter the CSDL declares
@@ -55,8 +55,9 @@ export class ExecuteWorkflowAction implements Executable<ExecuteWorkflowResponse
   }
 
   async parseResponse(response: Response): Promise<ExecuteWorkflowResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ExecuteWorkflowResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
     return (await response.json()) as ExecuteWorkflowResponse;
   }
 }

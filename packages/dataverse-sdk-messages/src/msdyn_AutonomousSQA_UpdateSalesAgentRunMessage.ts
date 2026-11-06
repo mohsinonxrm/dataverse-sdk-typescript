@@ -58,11 +58,9 @@ export class msdyn_AutonomousSQA_UpdateSalesAgentRunRequest
     };
   }
 
-  async parseResponse(
-    response: Response
-  ): Promise<msdyn_AutonomousSQA_UpdateSalesAgentRunResponse> {
+  parseResponse(_response: Response): Promise<msdyn_AutonomousSQA_UpdateSalesAgentRunResponse> {
     // No return value (204 No Content)
-    return new msdyn_AutonomousSQA_UpdateSalesAgentRunResponse();
+    return Promise.resolve(new msdyn_AutonomousSQA_UpdateSalesAgentRunResponse());
   }
 }
 
@@ -74,7 +72,7 @@ export class msdyn_AutonomousSQA_UpdateSalesAgentRunResponse extends Organizatio
     super("msdyn_AutonomousSQA_UpdateSalesAgentRun");
   }
 
-  static fromResponse(_data: unknown): msdyn_AutonomousSQA_UpdateSalesAgentRunResponse {
+  static fromResponse(_data?: unknown): msdyn_AutonomousSQA_UpdateSalesAgentRunResponse {
     return new msdyn_AutonomousSQA_UpdateSalesAgentRunResponse();
   }
 }

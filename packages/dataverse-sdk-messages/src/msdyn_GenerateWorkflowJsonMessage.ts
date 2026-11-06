@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GenerateWorkflowJsonResponse as msdyn_GenerateWorkflowJsonResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GenerateWorkflowJson message, by their CSDL names. A parameter the CSDL declares
@@ -57,23 +55,35 @@ export class msdyn_GenerateWorkflowJsonRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GenerateWorkflowJsonResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GenerateWorkflowJsonResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GenerateWorkflowJsonResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GenerateWorkflowJson action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GenerateWorkflowJsonResult {
+  "@odata.context"?: string;
+  conflicts: string;
+  msdyn_errormessage: string;
+  msdyn_promptstatus: number;
+}
+
+/**
  * msdyn_GenerateWorkflowJson response message
+ *
+ * `result` is the value the msdyn_GenerateWorkflowJson action returns (see {@link msdyn_GenerateWorkflowJsonResult}).
  */
 export class msdyn_GenerateWorkflowJsonResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GenerateWorkflowJsonResponseData) {
+  constructor(public result: msdyn_GenerateWorkflowJsonResult) {
     super("msdyn_GenerateWorkflowJson");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GenerateWorkflowJsonResponse {
-    return new msdyn_GenerateWorkflowJsonResponse(
-      responseObject<msdyn_GenerateWorkflowJsonResponseData>(data)
-    );
+    return new msdyn_GenerateWorkflowJsonResponse(data as msdyn_GenerateWorkflowJsonResult);
   }
 }

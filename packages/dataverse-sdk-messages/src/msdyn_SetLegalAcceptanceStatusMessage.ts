@@ -42,9 +42,9 @@ export class msdyn_SetLegalAcceptanceStatusRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_SetLegalAcceptanceStatusResponse> {
+  parseResponse(_response: Response): Promise<msdyn_SetLegalAcceptanceStatusResponse> {
     // No return value (204 No Content)
-    return new msdyn_SetLegalAcceptanceStatusResponse();
+    return Promise.resolve(new msdyn_SetLegalAcceptanceStatusResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_SetLegalAcceptanceStatusResponse extends OrganizationResponse
     super("msdyn_SetLegalAcceptanceStatus");
   }
 
-  static fromResponse(_data: unknown): msdyn_SetLegalAcceptanceStatusResponse {
+  static fromResponse(_data?: unknown): msdyn_SetLegalAcceptanceStatusResponse {
     return new msdyn_SetLegalAcceptanceStatusResponse();
   }
 }

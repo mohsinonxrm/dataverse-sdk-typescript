@@ -5,9 +5,12 @@ import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { queue, queueitem } from "./types/index.js";
 
 /**
- * Response from AddToQueue action
+ * Response from the AddToQueue action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface AddToQueueResponse {
+  "@odata.context"?: string;
   QueueItemId: string;
 }
 
@@ -56,8 +59,7 @@ export class AddToQueueAction implements Executable<AddToQueueResponse> {
   }
 
   async parseResponse(response: Response): Promise<AddToQueueResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as AddToQueueResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as AddToQueueResponse;
   }
 }

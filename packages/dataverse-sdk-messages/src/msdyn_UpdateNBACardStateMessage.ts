@@ -48,9 +48,9 @@ export class msdyn_UpdateNBACardStateRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_UpdateNBACardStateResponse> {
+  parseResponse(_response: Response): Promise<msdyn_UpdateNBACardStateResponse> {
     // No return value (204 No Content)
-    return new msdyn_UpdateNBACardStateResponse();
+    return Promise.resolve(new msdyn_UpdateNBACardStateResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class msdyn_UpdateNBACardStateResponse extends OrganizationResponse {
     super("msdyn_UpdateNBACardState");
   }
 
-  static fromResponse(_data: unknown): msdyn_UpdateNBACardStateResponse {
+  static fromResponse(_data?: unknown): msdyn_UpdateNBACardStateResponse {
     return new msdyn_UpdateNBACardStateResponse();
   }
 }

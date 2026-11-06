@@ -42,9 +42,9 @@ export class UnlockInvoicePricingRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<UnlockInvoicePricingResponse> {
+  parseResponse(_response: Response): Promise<UnlockInvoicePricingResponse> {
     // No return value (204 No Content)
-    return new UnlockInvoicePricingResponse();
+    return Promise.resolve(new UnlockInvoicePricingResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class UnlockInvoicePricingResponse extends OrganizationResponse {
     super("UnlockInvoicePricing");
   }
 
-  static fromResponse(_data: unknown): UnlockInvoicePricingResponse {
+  static fromResponse(_data?: unknown): UnlockInvoicePricingResponse {
     return new UnlockInvoicePricingResponse();
   }
 }

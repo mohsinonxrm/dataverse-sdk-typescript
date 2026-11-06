@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { installResponse as installResponseData } from "./types/index.js";
 
 /**
  * Parameters of the install message, by their CSDL names. A parameter the CSDL declares
@@ -54,21 +52,35 @@ export class installRequest extends OrganizationRequest implements Executable<in
   }
 
   async parseResponse(response: Response): Promise<installResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return installResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return installResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the install action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface installResult {
+  "@odata.context"?: string;
+  connectionId: string;
+  flowTriggerUri: string;
+  stringifiedConnectionObject: string;
+}
+
+/**
  * install response message
+ *
+ * `result` is the value the install action returns (see {@link installResult}).
  */
 export class installResponse extends OrganizationResponse {
-  constructor(public result: installResponseData) {
+  constructor(public result: installResult) {
     super("install");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): installResponse {
-    return new installResponse(responseObject<installResponseData>(data));
+    return new installResponse(data as installResult);
   }
 }

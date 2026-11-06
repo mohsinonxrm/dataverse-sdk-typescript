@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from msdyn_getinboundurl function
+ * Response from the msdyn_getinboundurl function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_getinboundurlResponse {
+  "@odata.context"?: string;
   inboundurl: string;
   scopes: string[];
   tenant: string;
@@ -55,8 +58,7 @@ export class msdyn_getinboundurlFunction implements Executable<msdyn_getinboundu
   }
 
   async parseResponse(response: Response): Promise<msdyn_getinboundurlResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_getinboundurlResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_getinboundurlResponse;
   }
 }

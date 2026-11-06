@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CCaaS_AddChannelToConversationResponse as CCaaS_AddChannelToConversationResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CCaaS_AddChannelToConversation message, by their CSDL names. A parameter the CSDL declares
@@ -57,23 +55,33 @@ export class CCaaS_AddChannelToConversationRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_AddChannelToConversationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CCaaS_AddChannelToConversationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CCaaS_AddChannelToConversationResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CCaaS_AddChannelToConversation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CCaaS_AddChannelToConversationResult {
+  "@odata.context"?: string;
+  ResponseBody: string;
+}
+
+/**
  * CCaaS_AddChannelToConversation response message
+ *
+ * `result` is the value the CCaaS_AddChannelToConversation action returns (see {@link CCaaS_AddChannelToConversationResult}).
  */
 export class CCaaS_AddChannelToConversationResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_AddChannelToConversationResponseData) {
+  constructor(public result: CCaaS_AddChannelToConversationResult) {
     super("CCaaS_AddChannelToConversation");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CCaaS_AddChannelToConversationResponse {
-    return new CCaaS_AddChannelToConversationResponse(
-      responseObject<CCaaS_AddChannelToConversationResponseData>(data)
-    );
+    return new CCaaS_AddChannelToConversationResponse(data as CCaaS_AddChannelToConversationResult);
   }
 }

@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from AddAppComponents action
+ * Response from the AddAppComponents action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface AddAppComponentsResponse {
-  // No content returned
-}
+export type AddAppComponentsResponse = void;
 
 /**
  * Parameters of the AddAppComponents action, by their CSDL names. A parameter the CSDL declares
@@ -43,9 +43,8 @@ export class AddAppComponentsAction implements Executable<AddAppComponentsRespon
     };
   }
 
-  async parseResponse(response: Response): Promise<AddAppComponentsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as AddAppComponentsResponse;
-    return (await response.json()) as AddAppComponentsResponse;
+  parseResponse(_response: Response): Promise<AddAppComponentsResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from PowerAutomateProxy action
+ * Response from the PowerAutomateProxy action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface PowerAutomateProxyResponse {
+  "@odata.context"?: string;
   HttpStatusCode: number;
   ResponseBody: string;
   ResponseHeaders: string;
@@ -50,8 +53,7 @@ export class PowerAutomateProxyAction implements Executable<PowerAutomateProxyRe
   }
 
   async parseResponse(response: Response): Promise<PowerAutomateProxyResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as PowerAutomateProxyResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as PowerAutomateProxyResponse;
   }
 }

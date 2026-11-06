@@ -4,9 +4,12 @@ import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtim
 import type { FileSasUrlResponse } from "./types/index.js";
 
 /**
- * Response from GetFileSasUrl function
+ * Response from the GetFileSasUrl function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface GetFileSasUrlResponse {
+  "@odata.context"?: string;
   Result: FileSasUrlResponse;
 }
 
@@ -63,8 +66,7 @@ export class GetFileSasUrlFunction implements Executable<GetFileSasUrlResponse> 
   }
 
   async parseResponse(response: Response): Promise<GetFileSasUrlResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as GetFileSasUrlResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as GetFileSasUrlResponse;
   }
 }

@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { asyncoperation } from "./types/index.js";
 
 /**
@@ -32,21 +31,35 @@ export class ParseImportRequest
   }
 
   async parseResponse(response: Response): Promise<ParseImportResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return ParseImportResponse.fromResponse({});
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return ParseImportResponse.fromResponse(undefined);
+    // The body is the record, with its annotations
     return ParseImportResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the ParseImport action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
+ */
+export type ParseImportResult =
+  | (asyncoperation & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string })
+  | null;
+
+/**
  * ParseImport response message
+ *
+ * `result` is the value the ParseImport action returns (see {@link ParseImportResult}).
  */
 export class ParseImportResponse extends OrganizationResponse {
-  constructor(public result: asyncoperation) {
+  constructor(public result: ParseImportResult) {
     super("ParseImport");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): ParseImportResponse {
-    return new ParseImportResponse(responseObject<asyncoperation>(data));
+    return new ParseImportResponse((data ?? null) as ParseImportResult);
   }
 }

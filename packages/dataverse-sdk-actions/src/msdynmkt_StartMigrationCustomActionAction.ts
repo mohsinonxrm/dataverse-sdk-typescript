@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdynmkt_StartMigrationCustomAction action
+ * Response from the msdynmkt_StartMigrationCustomAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdynmkt_StartMigrationCustomActionResponse {
+  "@odata.context"?: string;
   ErrorCodes: string;
 }
 
@@ -44,8 +47,7 @@ export class msdynmkt_StartMigrationCustomActionAction implements Executable<msd
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_StartMigrationCustomActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdynmkt_StartMigrationCustomActionResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdynmkt_StartMigrationCustomActionResponse;
   }
 }

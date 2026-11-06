@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_OSGetPredictionModelStatusResponse as msdyn_OSGetPredictionModelStatusResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_OSGetPredictionModelStatus message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,35 @@ export class msdyn_OSGetPredictionModelStatusRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_OSGetPredictionModelStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_OSGetPredictionModelStatusResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_OSGetPredictionModelStatusResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_OSGetPredictionModelStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_OSGetPredictionModelStatusResult {
+  "@odata.context"?: string;
+  PredictionModelStatus: string;
+}
+
+/**
  * msdyn_OSGetPredictionModelStatus response message
+ *
+ * `result` is the value the msdyn_OSGetPredictionModelStatus action returns (see {@link msdyn_OSGetPredictionModelStatusResult}).
  */
 export class msdyn_OSGetPredictionModelStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_OSGetPredictionModelStatusResponseData) {
+  constructor(public result: msdyn_OSGetPredictionModelStatusResult) {
     super("msdyn_OSGetPredictionModelStatus");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_OSGetPredictionModelStatusResponse {
     return new msdyn_OSGetPredictionModelStatusResponse(
-      responseObject<msdyn_OSGetPredictionModelStatusResponseData>(data)
+      data as msdyn_OSGetPredictionModelStatusResult
     );
   }
 }

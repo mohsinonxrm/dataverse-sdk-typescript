@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_TelephonyPhoneNumberPlanUpgradeActionResponse as msdyn_TelephonyPhoneNumberPlanUpgradeActionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_TelephonyPhoneNumberPlanUpgradeAction message, by their CSDL names. A parameter the CSDL declares
@@ -53,24 +51,35 @@ export class msdyn_TelephonyPhoneNumberPlanUpgradeActionRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_TelephonyPhoneNumberPlanUpgradeActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_TelephonyPhoneNumberPlanUpgradeActionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_TelephonyPhoneNumberPlanUpgradeActionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_TelephonyPhoneNumberPlanUpgradeAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_TelephonyPhoneNumberPlanUpgradeActionResult {
+  "@odata.context"?: string;
+  ActionResult: string;
+}
+
+/**
  * msdyn_TelephonyPhoneNumberPlanUpgradeAction response message
+ *
+ * `result` is the value the msdyn_TelephonyPhoneNumberPlanUpgradeAction action returns (see {@link msdyn_TelephonyPhoneNumberPlanUpgradeActionResult}).
  */
 export class msdyn_TelephonyPhoneNumberPlanUpgradeActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_TelephonyPhoneNumberPlanUpgradeActionResponseData) {
+  constructor(public result: msdyn_TelephonyPhoneNumberPlanUpgradeActionResult) {
     super("msdyn_TelephonyPhoneNumberPlanUpgradeAction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_TelephonyPhoneNumberPlanUpgradeActionResponse {
     return new msdyn_TelephonyPhoneNumberPlanUpgradeActionResponse(
-      responseObject<msdyn_TelephonyPhoneNumberPlanUpgradeActionResponseData>(data)
+      data as msdyn_TelephonyPhoneNumberPlanUpgradeActionResult
     );
   }
 }

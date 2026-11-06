@@ -50,9 +50,9 @@ export class msdyn_TriggerARCWithRuleRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_TriggerARCWithRuleResponse> {
+  parseResponse(_response: Response): Promise<msdyn_TriggerARCWithRuleResponse> {
     // No return value (204 No Content)
-    return new msdyn_TriggerARCWithRuleResponse();
+    return Promise.resolve(new msdyn_TriggerARCWithRuleResponse());
   }
 }
 
@@ -64,7 +64,7 @@ export class msdyn_TriggerARCWithRuleResponse extends OrganizationResponse {
     super("msdyn_TriggerARCWithRule");
   }
 
-  static fromResponse(_data: unknown): msdyn_TriggerARCWithRuleResponse {
+  static fromResponse(_data?: unknown): msdyn_TriggerARCWithRuleResponse {
     return new msdyn_TriggerARCWithRuleResponse();
   }
 }

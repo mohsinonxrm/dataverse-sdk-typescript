@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_SignalRInstanceActions action
+ * Response from the msdyn_SignalRInstanceActions action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_SignalRInstanceActionsResponse {
+  "@odata.context"?: string;
   response: string;
 }
 
@@ -46,8 +49,7 @@ export class msdyn_SignalRInstanceActionsAction implements Executable<msdyn_Sign
   }
 
   async parseResponse(response: Response): Promise<msdyn_SignalRInstanceActionsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_SignalRInstanceActionsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_SignalRInstanceActionsResponse;
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_RecoverOptimizeLeasesResponse as msdyn_RecoverOptimizeLeasesResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_RecoverOptimizeLeases message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,33 @@ export class msdyn_RecoverOptimizeLeasesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RecoverOptimizeLeasesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_RecoverOptimizeLeasesResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_RecoverOptimizeLeasesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_RecoverOptimizeLeases action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_RecoverOptimizeLeasesResult {
+  "@odata.context"?: string;
+  ResultJson: string;
+}
+
+/**
  * msdyn_RecoverOptimizeLeases response message
+ *
+ * `result` is the value the msdyn_RecoverOptimizeLeases action returns (see {@link msdyn_RecoverOptimizeLeasesResult}).
  */
 export class msdyn_RecoverOptimizeLeasesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RecoverOptimizeLeasesResponseData) {
+  constructor(public result: msdyn_RecoverOptimizeLeasesResult) {
     super("msdyn_RecoverOptimizeLeases");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_RecoverOptimizeLeasesResponse {
-    return new msdyn_RecoverOptimizeLeasesResponse(
-      responseObject<msdyn_RecoverOptimizeLeasesResponseData>(data)
-    );
+    return new msdyn_RecoverOptimizeLeasesResponse(data as msdyn_RecoverOptimizeLeasesResult);
   }
 }

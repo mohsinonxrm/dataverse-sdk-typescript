@@ -45,9 +45,9 @@ export class UpdateProductPropertiesRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<UpdateProductPropertiesResponse> {
+  parseResponse(_response: Response): Promise<UpdateProductPropertiesResponse> {
     // No return value (204 No Content)
-    return new UpdateProductPropertiesResponse();
+    return Promise.resolve(new UpdateProductPropertiesResponse());
   }
 }
 
@@ -59,7 +59,7 @@ export class UpdateProductPropertiesResponse extends OrganizationResponse {
     super("UpdateProductProperties");
   }
 
-  static fromResponse(_data: unknown): UpdateProductPropertiesResponse {
+  static fromResponse(_data?: unknown): UpdateProductPropertiesResponse {
     return new UpdateProductPropertiesResponse();
   }
 }

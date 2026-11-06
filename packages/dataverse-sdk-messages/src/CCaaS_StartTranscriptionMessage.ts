@@ -56,9 +56,9 @@ export class CCaaS_StartTranscriptionRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_StartTranscriptionResponse> {
+  parseResponse(_response: Response): Promise<CCaaS_StartTranscriptionResponse> {
     // No return value (204 No Content)
-    return new CCaaS_StartTranscriptionResponse();
+    return Promise.resolve(new CCaaS_StartTranscriptionResponse());
   }
 }
 
@@ -70,7 +70,7 @@ export class CCaaS_StartTranscriptionResponse extends OrganizationResponse {
     super("CCaaS_StartTranscription");
   }
 
-  static fromResponse(_data: unknown): CCaaS_StartTranscriptionResponse {
+  static fromResponse(_data?: unknown): CCaaS_StartTranscriptionResponse {
     return new CCaaS_StartTranscriptionResponse();
   }
 }

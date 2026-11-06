@@ -42,9 +42,9 @@ export class msdyn_reassignmentbatchRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_reassignmentbatchResponse> {
+  parseResponse(_response: Response): Promise<msdyn_reassignmentbatchResponse> {
     // No return value (204 No Content)
-    return new msdyn_reassignmentbatchResponse();
+    return Promise.resolve(new msdyn_reassignmentbatchResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_reassignmentbatchResponse extends OrganizationResponse {
     super("msdyn_reassignmentbatch");
   }
 
-  static fromResponse(_data: unknown): msdyn_reassignmentbatchResponse {
+  static fromResponse(_data?: unknown): msdyn_reassignmentbatchResponse {
     return new msdyn_reassignmentbatchResponse();
   }
 }

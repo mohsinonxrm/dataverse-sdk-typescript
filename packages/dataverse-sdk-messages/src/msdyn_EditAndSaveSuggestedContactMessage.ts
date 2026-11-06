@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_EditAndSaveSuggestedContactResponse as msdyn_EditAndSaveSuggestedContactResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_EditAndSaveSuggestedContact message, by their CSDL names. A parameter the CSDL declares
@@ -59,23 +57,35 @@ export class msdyn_EditAndSaveSuggestedContactRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_EditAndSaveSuggestedContactResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_EditAndSaveSuggestedContactResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_EditAndSaveSuggestedContactResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_EditAndSaveSuggestedContact action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_EditAndSaveSuggestedContactResult {
+  "@odata.context"?: string;
+  id: string;
+}
+
+/**
  * msdyn_EditAndSaveSuggestedContact response message
+ *
+ * `result` is the value the msdyn_EditAndSaveSuggestedContact action returns (see {@link msdyn_EditAndSaveSuggestedContactResult}).
  */
 export class msdyn_EditAndSaveSuggestedContactResponse extends OrganizationResponse {
-  constructor(public result: msdyn_EditAndSaveSuggestedContactResponseData) {
+  constructor(public result: msdyn_EditAndSaveSuggestedContactResult) {
     super("msdyn_EditAndSaveSuggestedContact");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_EditAndSaveSuggestedContactResponse {
     return new msdyn_EditAndSaveSuggestedContactResponse(
-      responseObject<msdyn_EditAndSaveSuggestedContactResponseData>(data)
+      data as msdyn_EditAndSaveSuggestedContactResult
     );
   }
 }

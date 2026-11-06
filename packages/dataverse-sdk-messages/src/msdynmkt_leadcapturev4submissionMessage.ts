@@ -48,9 +48,9 @@ export class msdynmkt_leadcapturev4submissionRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdynmkt_leadcapturev4submissionResponse> {
+  parseResponse(_response: Response): Promise<msdynmkt_leadcapturev4submissionResponse> {
     // No return value (204 No Content)
-    return new msdynmkt_leadcapturev4submissionResponse();
+    return Promise.resolve(new msdynmkt_leadcapturev4submissionResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class msdynmkt_leadcapturev4submissionResponse extends OrganizationRespon
     super("msdynmkt_leadcapturev4submission");
   }
 
-  static fromResponse(_data: unknown): msdynmkt_leadcapturev4submissionResponse {
+  static fromResponse(_data?: unknown): msdynmkt_leadcapturev4submissionResponse {
     return new msdynmkt_leadcapturev4submissionResponse();
   }
 }

@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_RequirementGroupOverview action
+ * Response from the msdyn_RequirementGroupOverview action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_RequirementGroupOverviewResponse {
+  "@odata.context"?: string;
   Result: string;
 }
 
@@ -63,8 +66,7 @@ export class msdyn_RequirementGroupOverviewAction implements Executable<msdyn_Re
   }
 
   async parseResponse(response: Response): Promise<msdyn_RequirementGroupOverviewResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_RequirementGroupOverviewResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_RequirementGroupOverviewResponse;
   }
 }

@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CCaaS_VoiceprintCustomerConsentUpdate action
+ * Response from the CCaaS_VoiceprintCustomerConsentUpdate action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CCaaS_VoiceprintCustomerConsentUpdateResponse {
+  "@odata.context"?: string;
   ConsentStatus: number;
   ErrorMessage: string;
   Locked: boolean;
@@ -60,8 +63,7 @@ export class CCaaS_VoiceprintCustomerConsentUpdateAction implements Executable<C
   }
 
   async parseResponse(response: Response): Promise<CCaaS_VoiceprintCustomerConsentUpdateResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CCaaS_VoiceprintCustomerConsentUpdateResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as CCaaS_VoiceprintCustomerConsentUpdateResponse;
   }
 }

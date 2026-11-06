@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_ExecuteHttpServiceRequestResponse as msdyn_ExecuteHttpServiceRequestResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_ExecuteHttpServiceRequest message, by their CSDL names. A parameter the CSDL declares
@@ -53,23 +51,36 @@ export class msdyn_ExecuteHttpServiceRequestRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ExecuteHttpServiceRequestResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_ExecuteHttpServiceRequestResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_ExecuteHttpServiceRequestResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_ExecuteHttpServiceRequest action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_ExecuteHttpServiceRequestResult {
+  "@odata.context"?: string;
+  msdyn_Response: string;
+  msdyn_StatusCode: string;
+}
+
+/**
  * msdyn_ExecuteHttpServiceRequest response message
+ *
+ * `result` is the value the msdyn_ExecuteHttpServiceRequest action returns (see {@link msdyn_ExecuteHttpServiceRequestResult}).
  */
 export class msdyn_ExecuteHttpServiceRequestResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ExecuteHttpServiceRequestResponseData) {
+  constructor(public result: msdyn_ExecuteHttpServiceRequestResult) {
     super("msdyn_ExecuteHttpServiceRequest");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_ExecuteHttpServiceRequestResponse {
     return new msdyn_ExecuteHttpServiceRequestResponse(
-      responseObject<msdyn_ExecuteHttpServiceRequestResponseData>(data)
+      data as msdyn_ExecuteHttpServiceRequestResult
     );
   }
 }

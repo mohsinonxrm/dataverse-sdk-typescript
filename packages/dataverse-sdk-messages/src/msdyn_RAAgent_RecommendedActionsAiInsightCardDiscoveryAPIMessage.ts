@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_RAAgent_RecommendedActionsAiInsightCardDiscoveryAPIResponse as msdyn_RAAgent_RecommendedActionsAiInsightCardDiscoveryAPIResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_RAAgent_RecommendedActionsAiInsightCardDiscoveryAPI message, by their CSDL names. A parameter the CSDL declares
@@ -49,9 +47,7 @@ export class msdyn_RAAgent_RecommendedActionsAiInsightCardDiscoveryAPIRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_RAAgent_RecommendedActionsAiInsightCardDiscoveryAPIResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_RAAgent_RecommendedActionsAiInsightCardDiscoveryAPIResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_RAAgent_RecommendedActionsAiInsightCardDiscoveryAPIResponse.fromResponse(
       await response.json()
     );
@@ -59,20 +55,31 @@ export class msdyn_RAAgent_RecommendedActionsAiInsightCardDiscoveryAPIRequest
 }
 
 /**
+ * Response from the msdyn_RAAgent_RecommendedActionsAiInsightCardDiscoveryAPI action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_RAAgent_RecommendedActionsAiInsightCardDiscoveryAPIResult {
+  "@odata.context"?: string;
+  Result: string;
+}
+
+/**
  * msdyn_RAAgent_RecommendedActionsAiInsightCardDiscoveryAPI response message
+ *
+ * `result` is the value the msdyn_RAAgent_RecommendedActionsAiInsightCardDiscoveryAPI action returns (see {@link msdyn_RAAgent_RecommendedActionsAiInsightCardDiscoveryAPIResult}).
  */
 export class msdyn_RAAgent_RecommendedActionsAiInsightCardDiscoveryAPIResponse extends OrganizationResponse {
-  constructor(
-    public result: msdyn_RAAgent_RecommendedActionsAiInsightCardDiscoveryAPIResponseData
-  ) {
+  constructor(public result: msdyn_RAAgent_RecommendedActionsAiInsightCardDiscoveryAPIResult) {
     super("msdyn_RAAgent_RecommendedActionsAiInsightCardDiscoveryAPI");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(
     data: unknown
   ): msdyn_RAAgent_RecommendedActionsAiInsightCardDiscoveryAPIResponse {
     return new msdyn_RAAgent_RecommendedActionsAiInsightCardDiscoveryAPIResponse(
-      responseObject<msdyn_RAAgent_RecommendedActionsAiInsightCardDiscoveryAPIResponseData>(data)
+      data as msdyn_RAAgent_RecommendedActionsAiInsightCardDiscoveryAPIResult
     );
   }
 }

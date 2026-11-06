@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdynmkt_retrievegdprconfiguration function
+ * Response from the msdynmkt_retrievegdprconfiguration function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdynmkt_retrievegdprconfigurationResponse {
+  "@odata.context"?: string;
   msdynmkt_retrievegdprconfigurationresponse: string;
 }
 
@@ -26,8 +29,7 @@ export class msdynmkt_retrievegdprconfigurationFunction implements Executable<ms
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_retrievegdprconfigurationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdynmkt_retrievegdprconfigurationResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdynmkt_retrievegdprconfigurationResponse;
   }
 }

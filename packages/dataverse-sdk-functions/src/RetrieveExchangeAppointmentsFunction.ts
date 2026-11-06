@@ -1,13 +1,17 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { formatParameterAlias } from "./internal/odataLiteral.js";
-import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 
 /**
- * Response from RetrieveExchangeAppointments function
+ * Response from the RetrieveExchangeAppointments function.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface RetrieveExchangeAppointmentsResponse {
-  value: EntityReference[];
-}
+export type RetrieveExchangeAppointmentsResponse = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
 
 /**
  * Parameters of the RetrieveExchangeAppointments function, by their CSDL names. A parameter the CSDL declares
@@ -54,8 +58,9 @@ export class RetrieveExchangeAppointmentsFunction implements Executable<Retrieve
   }
 
   async parseResponse(response: Response): Promise<RetrieveExchangeAppointmentsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveExchangeAppointmentsResponse;
-    return (await response.json()) as RetrieveExchangeAppointmentsResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return ((await response.json()) as { value: RetrieveExchangeAppointmentsResponse }).value;
   }
 }

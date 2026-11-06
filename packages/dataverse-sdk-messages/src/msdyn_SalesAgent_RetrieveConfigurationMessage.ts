@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesAgent_RetrieveConfigurationResponse as msdyn_SalesAgent_RetrieveConfigurationResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesAgent_RetrieveConfiguration message, by their CSDL names. A parameter the CSDL declares
@@ -49,24 +47,39 @@ export class msdyn_SalesAgent_RetrieveConfigurationRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAgent_RetrieveConfigurationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_SalesAgent_RetrieveConfigurationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesAgent_RetrieveConfigurationResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SalesAgent_RetrieveConfiguration action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesAgent_RetrieveConfigurationResult {
+  "@odata.context"?: string;
+  FeatureName: string;
+  Fields: string;
+  Message: string;
+  ProfileId: string;
+  Success: boolean;
+}
+
+/**
  * msdyn_SalesAgent_RetrieveConfiguration response message
+ *
+ * `result` is the value the msdyn_SalesAgent_RetrieveConfiguration action returns (see {@link msdyn_SalesAgent_RetrieveConfigurationResult}).
  */
 export class msdyn_SalesAgent_RetrieveConfigurationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgent_RetrieveConfigurationResponseData) {
+  constructor(public result: msdyn_SalesAgent_RetrieveConfigurationResult) {
     super("msdyn_SalesAgent_RetrieveConfiguration");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesAgent_RetrieveConfigurationResponse {
     return new msdyn_SalesAgent_RetrieveConfigurationResponse(
-      responseObject<msdyn_SalesAgent_RetrieveConfigurationResponseData>(data)
+      data as msdyn_SalesAgent_RetrieveConfigurationResult
     );
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_AssignOwnerToUnassignedRecordsResponse as msdyn_AssignOwnerToUnassignedRecordsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_AssignOwnerToUnassignedRecords message, by their CSDL names. A parameter the CSDL declares
@@ -47,24 +45,35 @@ export class msdyn_AssignOwnerToUnassignedRecordsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_AssignOwnerToUnassignedRecordsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_AssignOwnerToUnassignedRecordsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_AssignOwnerToUnassignedRecordsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_AssignOwnerToUnassignedRecords action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_AssignOwnerToUnassignedRecordsResult {
+  "@odata.context"?: string;
+  AssignmentResults: string;
+}
+
+/**
  * msdyn_AssignOwnerToUnassignedRecords response message
+ *
+ * `result` is the value the msdyn_AssignOwnerToUnassignedRecords action returns (see {@link msdyn_AssignOwnerToUnassignedRecordsResult}).
  */
 export class msdyn_AssignOwnerToUnassignedRecordsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_AssignOwnerToUnassignedRecordsResponseData) {
+  constructor(public result: msdyn_AssignOwnerToUnassignedRecordsResult) {
     super("msdyn_AssignOwnerToUnassignedRecords");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_AssignOwnerToUnassignedRecordsResponse {
     return new msdyn_AssignOwnerToUnassignedRecordsResponse(
-      responseObject<msdyn_AssignOwnerToUnassignedRecordsResponseData>(data)
+      data as msdyn_AssignOwnerToUnassignedRecordsResult
     );
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_FetchCannedPromptsResponse as msdyn_FetchCannedPromptsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_FetchCannedPrompts message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,34 @@ export class msdyn_FetchCannedPromptsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_FetchCannedPromptsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_FetchCannedPromptsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_FetchCannedPromptsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_FetchCannedPrompts action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_FetchCannedPromptsResult {
+  "@odata.context"?: string;
+  cannedprompts: string;
+  errormessage: string;
+}
+
+/**
  * msdyn_FetchCannedPrompts response message
+ *
+ * `result` is the value the msdyn_FetchCannedPrompts action returns (see {@link msdyn_FetchCannedPromptsResult}).
  */
 export class msdyn_FetchCannedPromptsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_FetchCannedPromptsResponseData) {
+  constructor(public result: msdyn_FetchCannedPromptsResult) {
     super("msdyn_FetchCannedPrompts");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_FetchCannedPromptsResponse {
-    return new msdyn_FetchCannedPromptsResponse(
-      responseObject<msdyn_FetchCannedPromptsResponseData>(data)
-    );
+    return new msdyn_FetchCannedPromptsResponse(data as msdyn_FetchCannedPromptsResult);
   }
 }

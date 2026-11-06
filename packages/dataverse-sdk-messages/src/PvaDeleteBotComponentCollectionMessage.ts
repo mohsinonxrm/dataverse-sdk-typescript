@@ -29,9 +29,9 @@ export class PvaDeleteBotComponentCollectionRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<PvaDeleteBotComponentCollectionResponse> {
+  parseResponse(_response: Response): Promise<PvaDeleteBotComponentCollectionResponse> {
     // No return value (204 No Content)
-    return new PvaDeleteBotComponentCollectionResponse();
+    return Promise.resolve(new PvaDeleteBotComponentCollectionResponse());
   }
 }
 
@@ -43,7 +43,7 @@ export class PvaDeleteBotComponentCollectionResponse extends OrganizationRespons
     super("PvaDeleteBotComponentCollection");
   }
 
-  static fromResponse(_data: unknown): PvaDeleteBotComponentCollectionResponse {
+  static fromResponse(_data?: unknown): PvaDeleteBotComponentCollectionResponse {
     return new PvaDeleteBotComponentCollectionResponse();
   }
 }

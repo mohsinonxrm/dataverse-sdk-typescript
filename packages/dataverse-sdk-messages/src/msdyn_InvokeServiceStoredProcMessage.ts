@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_InvokeServiceStoredProcResponse as msdyn_InvokeServiceStoredProcResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_InvokeServiceStoredProc message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,33 @@ export class msdyn_InvokeServiceStoredProcRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_InvokeServiceStoredProcResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_InvokeServiceStoredProcResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_InvokeServiceStoredProcResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_InvokeServiceStoredProc action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_InvokeServiceStoredProcResult {
+  "@odata.context"?: string;
+  output: string;
+}
+
+/**
  * msdyn_InvokeServiceStoredProc response message
+ *
+ * `result` is the value the msdyn_InvokeServiceStoredProc action returns (see {@link msdyn_InvokeServiceStoredProcResult}).
  */
 export class msdyn_InvokeServiceStoredProcResponse extends OrganizationResponse {
-  constructor(public result: msdyn_InvokeServiceStoredProcResponseData) {
+  constructor(public result: msdyn_InvokeServiceStoredProcResult) {
     super("msdyn_InvokeServiceStoredProc");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_InvokeServiceStoredProcResponse {
-    return new msdyn_InvokeServiceStoredProcResponse(
-      responseObject<msdyn_InvokeServiceStoredProcResponseData>(data)
-    );
+    return new msdyn_InvokeServiceStoredProcResponse(data as msdyn_InvokeServiceStoredProcResult);
   }
 }

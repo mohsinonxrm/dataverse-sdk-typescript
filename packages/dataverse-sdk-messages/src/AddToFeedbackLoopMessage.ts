@@ -56,9 +56,9 @@ export class AddToFeedbackLoopRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<AddToFeedbackLoopResponse> {
+  parseResponse(_response: Response): Promise<AddToFeedbackLoopResponse> {
     // No return value (204 No Content)
-    return new AddToFeedbackLoopResponse();
+    return Promise.resolve(new AddToFeedbackLoopResponse());
   }
 }
 
@@ -70,7 +70,7 @@ export class AddToFeedbackLoopResponse extends OrganizationResponse {
     super("AddToFeedbackLoop");
   }
 
-  static fromResponse(_data: unknown): AddToFeedbackLoopResponse {
+  static fromResponse(_data?: unknown): AddToFeedbackLoopResponse {
     return new AddToFeedbackLoopResponse();
   }
 }

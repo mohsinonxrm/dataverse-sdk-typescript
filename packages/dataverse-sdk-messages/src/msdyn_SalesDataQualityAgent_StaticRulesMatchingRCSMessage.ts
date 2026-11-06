@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesDataQualityAgent_StaticRulesMatchingRCSResponse as msdyn_SalesDataQualityAgent_StaticRulesMatchingRCSResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesDataQualityAgent_StaticRulesMatchingRCS message, by their CSDL names. A parameter the CSDL declares
@@ -47,9 +45,7 @@ export class msdyn_SalesDataQualityAgent_StaticRulesMatchingRCSRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesDataQualityAgent_StaticRulesMatchingRCSResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_SalesDataQualityAgent_StaticRulesMatchingRCSResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesDataQualityAgent_StaticRulesMatchingRCSResponse.fromResponse(
       await response.json()
     );
@@ -57,16 +53,29 @@ export class msdyn_SalesDataQualityAgent_StaticRulesMatchingRCSRequest
 }
 
 /**
+ * Response from the msdyn_SalesDataQualityAgent_StaticRulesMatchingRCS action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesDataQualityAgent_StaticRulesMatchingRCSResult {
+  "@odata.context"?: string;
+  msdyn_StaticRulesMatchingRCSResponse: string;
+}
+
+/**
  * msdyn_SalesDataQualityAgent_StaticRulesMatchingRCS response message
+ *
+ * `result` is the value the msdyn_SalesDataQualityAgent_StaticRulesMatchingRCS action returns (see {@link msdyn_SalesDataQualityAgent_StaticRulesMatchingRCSResult}).
  */
 export class msdyn_SalesDataQualityAgent_StaticRulesMatchingRCSResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesDataQualityAgent_StaticRulesMatchingRCSResponseData) {
+  constructor(public result: msdyn_SalesDataQualityAgent_StaticRulesMatchingRCSResult) {
     super("msdyn_SalesDataQualityAgent_StaticRulesMatchingRCS");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesDataQualityAgent_StaticRulesMatchingRCSResponse {
     return new msdyn_SalesDataQualityAgent_StaticRulesMatchingRCSResponse(
-      responseObject<msdyn_SalesDataQualityAgent_StaticRulesMatchingRCSResponseData>(data)
+      data as msdyn_SalesDataQualityAgent_StaticRulesMatchingRCSResult
     );
   }
 }

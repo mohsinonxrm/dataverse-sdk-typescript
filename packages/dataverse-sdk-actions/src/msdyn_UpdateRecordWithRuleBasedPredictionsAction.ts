@@ -4,9 +4,12 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdyn_UpdateRecordWithRuleBasedPredictions action
+ * Response from the msdyn_UpdateRecordWithRuleBasedPredictions action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_UpdateRecordWithRuleBasedPredictionsResponse {
+  "@odata.context"?: string;
   msdyn_UpdatedRecords: string[];
 }
 
@@ -54,8 +57,7 @@ export class msdyn_UpdateRecordWithRuleBasedPredictionsAction implements Executa
   async parseResponse(
     response: Response
   ): Promise<msdyn_UpdateRecordWithRuleBasedPredictionsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_UpdateRecordWithRuleBasedPredictionsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_UpdateRecordWithRuleBasedPredictionsResponse;
   }
 }

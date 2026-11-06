@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdynmkt_RetrieveServiceFeatureFlagsResponse as msdynmkt_RetrieveServiceFeatureFlagsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdynmkt_RetrieveServiceFeatureFlags message, by their CSDL names. A parameter the CSDL declares
@@ -45,24 +43,36 @@ export class msdynmkt_RetrieveServiceFeatureFlagsRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_RetrieveServiceFeatureFlagsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdynmkt_RetrieveServiceFeatureFlagsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdynmkt_RetrieveServiceFeatureFlagsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdynmkt_RetrieveServiceFeatureFlags action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdynmkt_RetrieveServiceFeatureFlagsResult {
+  "@odata.context"?: string;
+  ResultText: string;
+  StatusCode: number;
+}
+
+/**
  * msdynmkt_RetrieveServiceFeatureFlags response message
+ *
+ * `result` is the value the msdynmkt_RetrieveServiceFeatureFlags action returns (see {@link msdynmkt_RetrieveServiceFeatureFlagsResult}).
  */
 export class msdynmkt_RetrieveServiceFeatureFlagsResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_RetrieveServiceFeatureFlagsResponseData) {
+  constructor(public result: msdynmkt_RetrieveServiceFeatureFlagsResult) {
     super("msdynmkt_RetrieveServiceFeatureFlags");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdynmkt_RetrieveServiceFeatureFlagsResponse {
     return new msdynmkt_RetrieveServiceFeatureFlagsResponse(
-      responseObject<msdynmkt_RetrieveServiceFeatureFlagsResponseData>(data)
+      data as msdynmkt_RetrieveServiceFeatureFlagsResult
     );
   }
 }

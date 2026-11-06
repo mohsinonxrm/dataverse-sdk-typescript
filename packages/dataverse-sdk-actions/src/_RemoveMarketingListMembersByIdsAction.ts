@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from _RemoveMarketingListMembersByIds action
+ * Response from the _RemoveMarketingListMembersByIds action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface _RemoveMarketingListMembersByIdsResponse {
-  // No content returned
-}
+export type _RemoveMarketingListMembersByIdsResponse = void;
 
 /**
  * Parameters of the _RemoveMarketingListMembersByIds action, by their CSDL names. A parameter the CSDL declares
@@ -43,9 +43,8 @@ export class _RemoveMarketingListMembersByIdsAction implements Executable<_Remov
     };
   }
 
-  async parseResponse(response: Response): Promise<_RemoveMarketingListMembersByIdsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as _RemoveMarketingListMembersByIdsResponse;
-    return (await response.json()) as _RemoveMarketingListMembersByIdsResponse;
+  parseResponse(_response: Response): Promise<_RemoveMarketingListMembersByIdsResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

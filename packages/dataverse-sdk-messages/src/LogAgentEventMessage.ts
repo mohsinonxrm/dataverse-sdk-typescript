@@ -52,9 +52,9 @@ export class LogAgentEventRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<LogAgentEventResponse> {
+  parseResponse(_response: Response): Promise<LogAgentEventResponse> {
     // No return value (204 No Content)
-    return new LogAgentEventResponse();
+    return Promise.resolve(new LogAgentEventResponse());
   }
 }
 
@@ -66,7 +66,7 @@ export class LogAgentEventResponse extends OrganizationResponse {
     super("LogAgentEvent");
   }
 
-  static fromResponse(_data: unknown): LogAgentEventResponse {
+  static fromResponse(_data?: unknown): LogAgentEventResponse {
     return new LogAgentEventResponse();
   }
 }

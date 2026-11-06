@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_ScreenRecordingRedaction action
+ * Response from the msdyn_ScreenRecordingRedaction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_ScreenRecordingRedactionResponse {
+  "@odata.context"?: string;
   ResponseData: string;
 }
 
@@ -42,8 +45,7 @@ export class msdyn_ScreenRecordingRedactionAction implements Executable<msdyn_Sc
   }
 
   async parseResponse(response: Response): Promise<msdyn_ScreenRecordingRedactionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_ScreenRecordingRedactionResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_ScreenRecordingRedactionResponse;
   }
 }

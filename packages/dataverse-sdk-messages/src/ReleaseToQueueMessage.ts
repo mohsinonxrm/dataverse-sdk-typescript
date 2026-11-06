@@ -29,9 +29,9 @@ export class ReleaseToQueueRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<ReleaseToQueueResponse> {
+  parseResponse(_response: Response): Promise<ReleaseToQueueResponse> {
     // No return value (204 No Content)
-    return new ReleaseToQueueResponse();
+    return Promise.resolve(new ReleaseToQueueResponse());
   }
 }
 
@@ -43,7 +43,7 @@ export class ReleaseToQueueResponse extends OrganizationResponse {
     super("ReleaseToQueue");
   }
 
-  static fromResponse(_data: unknown): ReleaseToQueueResponse {
+  static fromResponse(_data?: unknown): ReleaseToQueueResponse {
     return new ReleaseToQueueResponse();
   }
 }

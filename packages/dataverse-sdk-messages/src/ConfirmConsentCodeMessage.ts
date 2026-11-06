@@ -48,9 +48,9 @@ export class ConfirmConsentCodeRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<ConfirmConsentCodeResponse> {
+  parseResponse(_response: Response): Promise<ConfirmConsentCodeResponse> {
     // No return value (204 No Content)
-    return new ConfirmConsentCodeResponse();
+    return Promise.resolve(new ConfirmConsentCodeResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class ConfirmConsentCodeResponse extends OrganizationResponse {
     super("ConfirmConsentCode");
   }
 
-  static fromResponse(_data: unknown): ConfirmConsentCodeResponse {
+  static fromResponse(_data?: unknown): ConfirmConsentCodeResponse {
     return new ConfirmConsentCodeResponse();
   }
 }

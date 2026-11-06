@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetGPT3PredictionResponse as msdyn_GetGPT3PredictionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetGPT3Prediction message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,34 @@ export class msdyn_GetGPT3PredictionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetGPT3PredictionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetGPT3PredictionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetGPT3PredictionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetGPT3Prediction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetGPT3PredictionResult {
+  "@odata.context"?: string;
+  msdyn_prediction: string;
+  msdyn_status: number;
+}
+
+/**
  * msdyn_GetGPT3Prediction response message
+ *
+ * `result` is the value the msdyn_GetGPT3Prediction action returns (see {@link msdyn_GetGPT3PredictionResult}).
  */
 export class msdyn_GetGPT3PredictionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetGPT3PredictionResponseData) {
+  constructor(public result: msdyn_GetGPT3PredictionResult) {
     super("msdyn_GetGPT3Prediction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetGPT3PredictionResponse {
-    return new msdyn_GetGPT3PredictionResponse(
-      responseObject<msdyn_GetGPT3PredictionResponseData>(data)
-    );
+    return new msdyn_GetGPT3PredictionResponse(data as msdyn_GetGPT3PredictionResult);
   }
 }

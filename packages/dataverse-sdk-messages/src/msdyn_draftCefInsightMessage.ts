@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_draftCefInsightResponse as msdyn_draftCefInsightResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_draftCefInsight message, by their CSDL names. A parameter the CSDL declares
@@ -59,23 +57,34 @@ export class msdyn_draftCefInsightRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_draftCefInsightResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_draftCefInsightResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_draftCefInsightResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_draftCefInsight action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_draftCefInsightResult {
+  "@odata.context"?: string;
+  msdyn_jobId: string;
+  msdyn_responseStatus: string;
+}
+
+/**
  * msdyn_draftCefInsight response message
+ *
+ * `result` is the value the msdyn_draftCefInsight action returns (see {@link msdyn_draftCefInsightResult}).
  */
 export class msdyn_draftCefInsightResponse extends OrganizationResponse {
-  constructor(public result: msdyn_draftCefInsightResponseData) {
+  constructor(public result: msdyn_draftCefInsightResult) {
     super("msdyn_draftCefInsight");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_draftCefInsightResponse {
-    return new msdyn_draftCefInsightResponse(
-      responseObject<msdyn_draftCefInsightResponseData>(data)
-    );
+    return new msdyn_draftCefInsightResponse(data as msdyn_draftCefInsightResult);
   }
 }

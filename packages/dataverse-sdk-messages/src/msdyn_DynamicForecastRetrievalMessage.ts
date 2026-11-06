@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_DynamicForecastRetrievalResponse as msdyn_DynamicForecastRetrievalResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_DynamicForecastRetrieval message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,33 @@ export class msdyn_DynamicForecastRetrievalRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_DynamicForecastRetrievalResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_DynamicForecastRetrievalResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_DynamicForecastRetrievalResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_DynamicForecastRetrieval action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_DynamicForecastRetrievalResult {
+  "@odata.context"?: string;
+  msdyn_dynamicForecastRetrievalResponse: string;
+}
+
+/**
  * msdyn_DynamicForecastRetrieval response message
+ *
+ * `result` is the value the msdyn_DynamicForecastRetrieval action returns (see {@link msdyn_DynamicForecastRetrievalResult}).
  */
 export class msdyn_DynamicForecastRetrievalResponse extends OrganizationResponse {
-  constructor(public result: msdyn_DynamicForecastRetrievalResponseData) {
+  constructor(public result: msdyn_DynamicForecastRetrievalResult) {
     super("msdyn_DynamicForecastRetrieval");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_DynamicForecastRetrievalResponse {
-    return new msdyn_DynamicForecastRetrievalResponse(
-      responseObject<msdyn_DynamicForecastRetrievalResponseData>(data)
-    );
+    return new msdyn_DynamicForecastRetrievalResponse(data as msdyn_DynamicForecastRetrievalResult);
   }
 }

@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from GetComponentManagedIdentityFIC function
+ * Response from the GetComponentManagedIdentityFIC function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface GetComponentManagedIdentityFICResponse {
+  "@odata.context"?: string;
   FICSubject: string;
 }
 
@@ -53,8 +56,7 @@ export class GetComponentManagedIdentityFICFunction implements Executable<GetCom
   }
 
   async parseResponse(response: Response): Promise<GetComponentManagedIdentityFICResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as GetComponentManagedIdentityFICResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as GetComponentManagedIdentityFICResponse;
   }
 }

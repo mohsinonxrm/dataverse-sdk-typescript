@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_ProcessPostProposalFollowup action
+ * Response from the msdyn_ProcessPostProposalFollowup action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_ProcessPostProposalFollowupResponse {
+  "@odata.context"?: string;
   msdyn_IsPostProposalFollowupHandled: boolean;
   msdyn_IsPostProposalTimedOut: boolean;
 }
@@ -47,8 +50,7 @@ export class msdyn_ProcessPostProposalFollowupAction implements Executable<msdyn
   }
 
   async parseResponse(response: Response): Promise<msdyn_ProcessPostProposalFollowupResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_ProcessPostProposalFollowupResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_ProcessPostProposalFollowupResponse;
   }
 }

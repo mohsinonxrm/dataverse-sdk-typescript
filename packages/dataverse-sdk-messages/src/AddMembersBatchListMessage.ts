@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { AddMembersBatchListResponse as AddMembersBatchListResponseData } from "./types/index.js";
 
 /**
  * Parameters of the AddMembersBatchList message, by their CSDL names. A parameter the CSDL declares
@@ -49,21 +47,33 @@ export class AddMembersBatchListRequest
   }
 
   async parseResponse(response: Response): Promise<AddMembersBatchListResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return AddMembersBatchListResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return AddMembersBatchListResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the AddMembersBatchList action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface AddMembersBatchListResult {
+  "@odata.context"?: string;
+  SkipCountAfter: number;
+}
+
+/**
  * AddMembersBatchList response message
+ *
+ * `result` is the value the AddMembersBatchList action returns (see {@link AddMembersBatchListResult}).
  */
 export class AddMembersBatchListResponse extends OrganizationResponse {
-  constructor(public result: AddMembersBatchListResponseData) {
+  constructor(public result: AddMembersBatchListResult) {
     super("AddMembersBatchList");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): AddMembersBatchListResponse {
-    return new AddMembersBatchListResponse(responseObject<AddMembersBatchListResponseData>(data));
+    return new AddMembersBatchListResponse(data as AddMembersBatchListResult);
   }
 }

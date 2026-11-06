@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_TriggerDescriptionPublishResponse as msdyn_TriggerDescriptionPublishResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_TriggerDescriptionPublish message, by their CSDL names. A parameter the CSDL declares
@@ -51,23 +49,35 @@ export class msdyn_TriggerDescriptionPublishRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_TriggerDescriptionPublishResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_TriggerDescriptionPublishResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_TriggerDescriptionPublishResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_TriggerDescriptionPublish action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_TriggerDescriptionPublishResult {
+  "@odata.context"?: string;
+  msdyn_PublishJobId: string;
+}
+
+/**
  * msdyn_TriggerDescriptionPublish response message
+ *
+ * `result` is the value the msdyn_TriggerDescriptionPublish action returns (see {@link msdyn_TriggerDescriptionPublishResult}).
  */
 export class msdyn_TriggerDescriptionPublishResponse extends OrganizationResponse {
-  constructor(public result: msdyn_TriggerDescriptionPublishResponseData) {
+  constructor(public result: msdyn_TriggerDescriptionPublishResult) {
     super("msdyn_TriggerDescriptionPublish");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_TriggerDescriptionPublishResponse {
     return new msdyn_TriggerDescriptionPublishResponse(
-      responseObject<msdyn_TriggerDescriptionPublishResponseData>(data)
+      data as msdyn_TriggerDescriptionPublishResult
     );
   }
 }

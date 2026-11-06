@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SyncDealRiskActionFromNbaResponse as msdyn_SyncDealRiskActionFromNbaResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SyncDealRiskActionFromNba message, by their CSDL names. A parameter the CSDL declares
@@ -51,23 +49,36 @@ export class msdyn_SyncDealRiskActionFromNbaRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SyncDealRiskActionFromNbaResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_SyncDealRiskActionFromNbaResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SyncDealRiskActionFromNbaResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SyncDealRiskActionFromNba action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SyncDealRiskActionFromNbaResult {
+  "@odata.context"?: string;
+  Message: string;
+  Success: boolean;
+}
+
+/**
  * msdyn_SyncDealRiskActionFromNba response message
+ *
+ * `result` is the value the msdyn_SyncDealRiskActionFromNba action returns (see {@link msdyn_SyncDealRiskActionFromNbaResult}).
  */
 export class msdyn_SyncDealRiskActionFromNbaResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SyncDealRiskActionFromNbaResponseData) {
+  constructor(public result: msdyn_SyncDealRiskActionFromNbaResult) {
     super("msdyn_SyncDealRiskActionFromNba");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SyncDealRiskActionFromNbaResponse {
     return new msdyn_SyncDealRiskActionFromNbaResponse(
-      responseObject<msdyn_SyncDealRiskActionFromNbaResponseData>(data)
+      data as msdyn_SyncDealRiskActionFromNbaResult
     );
   }
 }

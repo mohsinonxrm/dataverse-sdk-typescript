@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_getsimulationstatus action
+ * Response from the msdyn_getsimulationstatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_getsimulationstatusResponse {
+  "@odata.context"?: string;
   endtime: string;
   starttime: string;
   status: string;
@@ -44,8 +47,7 @@ export class msdyn_getsimulationstatusAction implements Executable<msdyn_getsimu
   }
 
   async parseResponse(response: Response): Promise<msdyn_getsimulationstatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_getsimulationstatusResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_getsimulationstatusResponse;
   }
 }

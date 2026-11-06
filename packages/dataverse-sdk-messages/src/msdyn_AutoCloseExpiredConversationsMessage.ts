@@ -26,9 +26,9 @@ export class msdyn_AutoCloseExpiredConversationsRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_AutoCloseExpiredConversationsResponse> {
+  parseResponse(_response: Response): Promise<msdyn_AutoCloseExpiredConversationsResponse> {
     // No return value (204 No Content)
-    return new msdyn_AutoCloseExpiredConversationsResponse();
+    return Promise.resolve(new msdyn_AutoCloseExpiredConversationsResponse());
   }
 }
 
@@ -40,7 +40,7 @@ export class msdyn_AutoCloseExpiredConversationsResponse extends OrganizationRes
     super("msdyn_AutoCloseExpiredConversations");
   }
 
-  static fromResponse(_data: unknown): msdyn_AutoCloseExpiredConversationsResponse {
+  static fromResponse(_data?: unknown): msdyn_AutoCloseExpiredConversationsResponse {
     return new msdyn_AutoCloseExpiredConversationsResponse();
   }
 }

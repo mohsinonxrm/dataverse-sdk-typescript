@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CCaaS_InitiateAgentTransfer action
+ * Response from the CCaaS_InitiateAgentTransfer action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface CCaaS_InitiateAgentTransferResponse {
-  // No content returned
-}
+export type CCaaS_InitiateAgentTransferResponse = void;
 
 /**
  * Parameters of the CCaaS_InitiateAgentTransfer action, by their CSDL names. A parameter the CSDL declares
@@ -52,9 +52,8 @@ export class CCaaS_InitiateAgentTransferAction implements Executable<CCaaS_Initi
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_InitiateAgentTransferResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CCaaS_InitiateAgentTransferResponse;
-    return (await response.json()) as CCaaS_InitiateAgentTransferResponse;
+  parseResponse(_response: Response): Promise<CCaaS_InitiateAgentTransferResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

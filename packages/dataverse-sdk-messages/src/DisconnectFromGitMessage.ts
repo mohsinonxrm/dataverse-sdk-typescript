@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { DisconnectFromGitResponse as DisconnectFromGitResponseData } from "./types/index.js";
 
 /**
  * Parameters of the DisconnectFromGit message, by their CSDL names. A parameter the CSDL declares
@@ -45,21 +43,33 @@ export class DisconnectFromGitRequest
   }
 
   async parseResponse(response: Response): Promise<DisconnectFromGitResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return DisconnectFromGitResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return DisconnectFromGitResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the DisconnectFromGit action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface DisconnectFromGitResult {
+  "@odata.context"?: string;
+  Response: string;
+}
+
+/**
  * DisconnectFromGit response message
+ *
+ * `result` is the value the DisconnectFromGit action returns (see {@link DisconnectFromGitResult}).
  */
 export class DisconnectFromGitResponse extends OrganizationResponse {
-  constructor(public result: DisconnectFromGitResponseData) {
+  constructor(public result: DisconnectFromGitResult) {
     super("DisconnectFromGit");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): DisconnectFromGitResponse {
-    return new DisconnectFromGitResponse(responseObject<DisconnectFromGitResponseData>(data));
+    return new DisconnectFromGitResponse(data as DisconnectFromGitResult);
   }
 }

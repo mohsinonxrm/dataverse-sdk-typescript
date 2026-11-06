@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_GetFieldsForPredictions action
+ * Response from the msdyn_GetFieldsForPredictions action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetFieldsForPredictionsResponse {
+  "@odata.context"?: string;
   FieldsForPrediction: string;
   SettingsConfiguration: string;
 }
@@ -27,8 +30,7 @@ export class msdyn_GetFieldsForPredictionsAction implements Executable<msdyn_Get
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetFieldsForPredictionsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_GetFieldsForPredictionsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_GetFieldsForPredictionsResponse;
   }
 }

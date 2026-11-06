@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_StoreSimulationResultResponse as msdyn_StoreSimulationResultResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_StoreSimulationResult message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,33 @@ export class msdyn_StoreSimulationResultRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_StoreSimulationResultResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_StoreSimulationResultResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_StoreSimulationResultResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_StoreSimulationResult action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_StoreSimulationResultResult {
+  "@odata.context"?: string;
+  SimulationResult: string;
+}
+
+/**
  * msdyn_StoreSimulationResult response message
+ *
+ * `result` is the value the msdyn_StoreSimulationResult action returns (see {@link msdyn_StoreSimulationResultResult}).
  */
 export class msdyn_StoreSimulationResultResponse extends OrganizationResponse {
-  constructor(public result: msdyn_StoreSimulationResultResponseData) {
+  constructor(public result: msdyn_StoreSimulationResultResult) {
     super("msdyn_StoreSimulationResult");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_StoreSimulationResultResponse {
-    return new msdyn_StoreSimulationResultResponse(
-      responseObject<msdyn_StoreSimulationResultResponseData>(data)
-    );
+    return new msdyn_StoreSimulationResultResponse(data as msdyn_StoreSimulationResultResult);
   }
 }

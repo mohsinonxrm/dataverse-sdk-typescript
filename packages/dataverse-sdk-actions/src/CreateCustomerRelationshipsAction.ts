@@ -7,9 +7,12 @@ import type {
 } from "./types/index.js";
 
 /**
- * Response from CreateCustomerRelationships action
+ * Response from the CreateCustomerRelationships action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CreateCustomerRelationshipsResponse {
+  "@odata.context"?: string;
   AttributeId: string;
   RelationshipIds: string[];
 }
@@ -55,8 +58,7 @@ export class CreateCustomerRelationshipsAction implements Executable<CreateCusto
   }
 
   async parseResponse(response: Response): Promise<CreateCustomerRelationshipsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CreateCustomerRelationshipsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as CreateCustomerRelationshipsResponse;
   }
 }

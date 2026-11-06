@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetFieldEvidenceResponse as msdyn_GetFieldEvidenceResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetFieldEvidence message, by their CSDL names. A parameter the CSDL declares
@@ -53,23 +51,34 @@ export class msdyn_GetFieldEvidenceRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetFieldEvidenceResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetFieldEvidenceResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetFieldEvidenceResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetFieldEvidence action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetFieldEvidenceResult {
+  "@odata.context"?: string;
+  msdyn_Evidence: string;
+  msdyn_Status: string;
+}
+
+/**
  * msdyn_GetFieldEvidence response message
+ *
+ * `result` is the value the msdyn_GetFieldEvidence action returns (see {@link msdyn_GetFieldEvidenceResult}).
  */
 export class msdyn_GetFieldEvidenceResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetFieldEvidenceResponseData) {
+  constructor(public result: msdyn_GetFieldEvidenceResult) {
     super("msdyn_GetFieldEvidence");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetFieldEvidenceResponse {
-    return new msdyn_GetFieldEvidenceResponse(
-      responseObject<msdyn_GetFieldEvidenceResponseData>(data)
-    );
+    return new msdyn_GetFieldEvidenceResponse(data as msdyn_GetFieldEvidenceResult);
   }
 }

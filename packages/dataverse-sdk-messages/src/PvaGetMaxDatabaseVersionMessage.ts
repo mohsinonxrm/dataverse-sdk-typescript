@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { PvaGetMaxDatabaseVersionResponse as PvaGetMaxDatabaseVersionResponseData } from "./types/index.js";
 
 /**
  * PvaGetMaxDatabaseVersion request message
@@ -29,23 +27,33 @@ export class PvaGetMaxDatabaseVersionRequest
   }
 
   async parseResponse(response: Response): Promise<PvaGetMaxDatabaseVersionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return PvaGetMaxDatabaseVersionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return PvaGetMaxDatabaseVersionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the PvaGetMaxDatabaseVersion action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface PvaGetMaxDatabaseVersionResult {
+  "@odata.context"?: string;
+  VersionInfo: string;
+}
+
+/**
  * PvaGetMaxDatabaseVersion response message
+ *
+ * `result` is the value the PvaGetMaxDatabaseVersion action returns (see {@link PvaGetMaxDatabaseVersionResult}).
  */
 export class PvaGetMaxDatabaseVersionResponse extends OrganizationResponse {
-  constructor(public result: PvaGetMaxDatabaseVersionResponseData) {
+  constructor(public result: PvaGetMaxDatabaseVersionResult) {
     super("PvaGetMaxDatabaseVersion");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): PvaGetMaxDatabaseVersionResponse {
-    return new PvaGetMaxDatabaseVersionResponse(
-      responseObject<PvaGetMaxDatabaseVersionResponseData>(data)
-    );
+    return new PvaGetMaxDatabaseVersionResponse(data as PvaGetMaxDatabaseVersionResult);
   }
 }

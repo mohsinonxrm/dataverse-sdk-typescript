@@ -5,9 +5,12 @@ import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { campaignactivity } from "./types/index.js";
 
 /**
- * Response from AddItemCampaignActivity action
+ * Response from the AddItemCampaignActivity action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface AddItemCampaignActivityResponse {
+  "@odata.context"?: string;
   CampaignActivityItemId: string;
 }
 
@@ -47,8 +50,7 @@ export class AddItemCampaignActivityAction implements Executable<AddItemCampaign
   }
 
   async parseResponse(response: Response): Promise<AddItemCampaignActivityResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as AddItemCampaignActivityResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as AddItemCampaignActivityResponse;
   }
 }

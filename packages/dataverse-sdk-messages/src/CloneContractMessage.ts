@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { contract } from "./types/index.js";
 
@@ -51,21 +50,34 @@ export class CloneContractRequest
   }
 
   async parseResponse(response: Response): Promise<CloneContractResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CloneContractResponse.fromResponse({});
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return CloneContractResponse.fromResponse(undefined);
+    // The body is the record, with its annotations
     return CloneContractResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CloneContract action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
+ */
+export type CloneContractResult =
+  (contract & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string }) | null;
+
+/**
  * CloneContract response message
+ *
+ * `result` is the value the CloneContract action returns (see {@link CloneContractResult}).
  */
 export class CloneContractResponse extends OrganizationResponse {
-  constructor(public result: contract) {
+  constructor(public result: CloneContractResult) {
     super("CloneContract");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CloneContractResponse {
-    return new CloneContractResponse(responseObject<contract>(data));
+    return new CloneContractResponse((data ?? null) as CloneContractResult);
   }
 }

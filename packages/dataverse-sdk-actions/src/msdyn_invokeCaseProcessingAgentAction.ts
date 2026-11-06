@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_invokeCaseProcessingAgent action
+ * Response from the msdyn_invokeCaseProcessingAgent action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_invokeCaseProcessingAgentResponse {
-  // No content returned
-}
+export type msdyn_invokeCaseProcessingAgentResponse = void;
 
 /**
  * Parameters of the msdyn_invokeCaseProcessingAgent action, by their CSDL names. A parameter the CSDL declares
@@ -47,9 +47,8 @@ export class msdyn_invokeCaseProcessingAgentAction implements Executable<msdyn_i
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_invokeCaseProcessingAgentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_invokeCaseProcessingAgentResponse;
-    return (await response.json()) as msdyn_invokeCaseProcessingAgentResponse;
+  parseResponse(_response: Response): Promise<msdyn_invokeCaseProcessingAgentResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

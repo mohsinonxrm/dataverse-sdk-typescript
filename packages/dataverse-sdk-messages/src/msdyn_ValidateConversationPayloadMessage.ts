@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_ValidateConversationPayloadResponse as msdyn_ValidateConversationPayloadResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_ValidateConversationPayload message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,35 @@ export class msdyn_ValidateConversationPayloadRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ValidateConversationPayloadResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_ValidateConversationPayloadResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_ValidateConversationPayloadResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_ValidateConversationPayload action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_ValidateConversationPayloadResult {
+  "@odata.context"?: string;
+  msdyn_response: string;
+}
+
+/**
  * msdyn_ValidateConversationPayload response message
+ *
+ * `result` is the value the msdyn_ValidateConversationPayload action returns (see {@link msdyn_ValidateConversationPayloadResult}).
  */
 export class msdyn_ValidateConversationPayloadResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ValidateConversationPayloadResponseData) {
+  constructor(public result: msdyn_ValidateConversationPayloadResult) {
     super("msdyn_ValidateConversationPayload");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_ValidateConversationPayloadResponse {
     return new msdyn_ValidateConversationPayloadResponse(
-      responseObject<msdyn_ValidateConversationPayloadResponseData>(data)
+      data as msdyn_ValidateConversationPayloadResult
     );
   }
 }

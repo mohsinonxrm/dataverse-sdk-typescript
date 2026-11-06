@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_RetrievePlatformCopilotSettings action
+ * Response from the msdyn_RetrievePlatformCopilotSettings action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_RetrievePlatformCopilotSettingsResponse {
+  "@odata.context"?: string;
   Result: string;
 }
 
@@ -26,8 +29,7 @@ export class msdyn_RetrievePlatformCopilotSettingsAction implements Executable<m
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrievePlatformCopilotSettingsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_RetrievePlatformCopilotSettingsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_RetrievePlatformCopilotSettingsResponse;
   }
 }

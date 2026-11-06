@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from DeactivateEntityKey action
+ * Response from the DeactivateEntityKey action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface DeactivateEntityKeyResponse {
-  // No content returned
-}
+export type DeactivateEntityKeyResponse = void;
 
 /**
  * Parameters of the DeactivateEntityKey action, by their CSDL names. A parameter the CSDL declares
@@ -43,9 +43,8 @@ export class DeactivateEntityKeyAction implements Executable<DeactivateEntityKey
     };
   }
 
-  async parseResponse(response: Response): Promise<DeactivateEntityKeyResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as DeactivateEntityKeyResponse;
-    return (await response.json()) as DeactivateEntityKeyResponse;
+  parseResponse(_response: Response): Promise<DeactivateEntityKeyResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

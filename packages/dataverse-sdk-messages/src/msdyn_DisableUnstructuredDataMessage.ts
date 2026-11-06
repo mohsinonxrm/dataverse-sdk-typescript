@@ -26,9 +26,9 @@ export class msdyn_DisableUnstructuredDataRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_DisableUnstructuredDataResponse> {
+  parseResponse(_response: Response): Promise<msdyn_DisableUnstructuredDataResponse> {
     // No return value (204 No Content)
-    return new msdyn_DisableUnstructuredDataResponse();
+    return Promise.resolve(new msdyn_DisableUnstructuredDataResponse());
   }
 }
 
@@ -40,7 +40,7 @@ export class msdyn_DisableUnstructuredDataResponse extends OrganizationResponse 
     super("msdyn_DisableUnstructuredData");
   }
 
-  static fromResponse(_data: unknown): msdyn_DisableUnstructuredDataResponse {
+  static fromResponse(_data?: unknown): msdyn_DisableUnstructuredDataResponse {
     return new msdyn_DisableUnstructuredDataResponse();
   }
 }

@@ -4,11 +4,11 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdyn_FastPassBotEventUpdate action
+ * Response from the msdyn_FastPassBotEventUpdate action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_FastPassBotEventUpdateResponse {
-  // No content returned
-}
+export type msdyn_FastPassBotEventUpdateResponse = void;
 
 /**
  * Parameters of the msdyn_FastPassBotEventUpdate action, by their CSDL names. A parameter the CSDL declares
@@ -45,9 +45,8 @@ export class msdyn_FastPassBotEventUpdateAction implements Executable<msdyn_Fast
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_FastPassBotEventUpdateResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_FastPassBotEventUpdateResponse;
-    return (await response.json()) as msdyn_FastPassBotEventUpdateResponse;
+  parseResponse(_response: Response): Promise<msdyn_FastPassBotEventUpdateResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

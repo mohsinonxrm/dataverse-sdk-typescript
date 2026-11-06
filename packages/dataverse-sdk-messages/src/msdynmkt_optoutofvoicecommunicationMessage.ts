@@ -42,9 +42,9 @@ export class msdynmkt_optoutofvoicecommunicationRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdynmkt_optoutofvoicecommunicationResponse> {
+  parseResponse(_response: Response): Promise<msdynmkt_optoutofvoicecommunicationResponse> {
     // No return value (204 No Content)
-    return new msdynmkt_optoutofvoicecommunicationResponse();
+    return Promise.resolve(new msdynmkt_optoutofvoicecommunicationResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdynmkt_optoutofvoicecommunicationResponse extends OrganizationRes
     super("msdynmkt_optoutofvoicecommunication");
   }
 
-  static fromResponse(_data: unknown): msdynmkt_optoutofvoicecommunicationResponse {
+  static fromResponse(_data?: unknown): msdynmkt_optoutofvoicecommunicationResponse {
     return new msdynmkt_optoutofvoicecommunicationResponse();
   }
 }

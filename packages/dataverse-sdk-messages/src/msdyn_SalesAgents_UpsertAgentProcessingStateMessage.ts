@@ -54,11 +54,11 @@ export class msdyn_SalesAgents_UpsertAgentProcessingStateRequest
     };
   }
 
-  async parseResponse(
-    response: Response
+  parseResponse(
+    _response: Response
   ): Promise<msdyn_SalesAgents_UpsertAgentProcessingStateResponse> {
     // No return value (204 No Content)
-    return new msdyn_SalesAgents_UpsertAgentProcessingStateResponse();
+    return Promise.resolve(new msdyn_SalesAgents_UpsertAgentProcessingStateResponse());
   }
 }
 
@@ -70,7 +70,7 @@ export class msdyn_SalesAgents_UpsertAgentProcessingStateResponse extends Organi
     super("msdyn_SalesAgents_UpsertAgentProcessingState");
   }
 
-  static fromResponse(_data: unknown): msdyn_SalesAgents_UpsertAgentProcessingStateResponse {
+  static fromResponse(_data?: unknown): msdyn_SalesAgents_UpsertAgentProcessingStateResponse {
     return new msdyn_SalesAgents_UpsertAgentProcessingStateResponse();
   }
 }

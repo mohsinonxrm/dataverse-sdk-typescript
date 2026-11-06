@@ -51,9 +51,9 @@ export class msdyn_UpdateKbAttachmentPrivilegeRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_UpdateKbAttachmentPrivilegeResponse> {
+  parseResponse(_response: Response): Promise<msdyn_UpdateKbAttachmentPrivilegeResponse> {
     // No return value (204 No Content)
-    return new msdyn_UpdateKbAttachmentPrivilegeResponse();
+    return Promise.resolve(new msdyn_UpdateKbAttachmentPrivilegeResponse());
   }
 }
 
@@ -65,7 +65,7 @@ export class msdyn_UpdateKbAttachmentPrivilegeResponse extends OrganizationRespo
     super("msdyn_UpdateKbAttachmentPrivilege");
   }
 
-  static fromResponse(_data: unknown): msdyn_UpdateKbAttachmentPrivilegeResponse {
+  static fromResponse(_data?: unknown): msdyn_UpdateKbAttachmentPrivilegeResponse {
     return new msdyn_UpdateKbAttachmentPrivilegeResponse();
   }
 }

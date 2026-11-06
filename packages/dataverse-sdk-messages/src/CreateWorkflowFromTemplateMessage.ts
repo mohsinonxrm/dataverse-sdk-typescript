@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { workflow } from "./types/index.js";
 
@@ -51,21 +50,36 @@ export class CreateWorkflowFromTemplateRequest
   }
 
   async parseResponse(response: Response): Promise<CreateWorkflowFromTemplateResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CreateWorkflowFromTemplateResponse.fromResponse({});
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return CreateWorkflowFromTemplateResponse.fromResponse(undefined);
+    // The body is the record, with its annotations
     return CreateWorkflowFromTemplateResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CreateWorkflowFromTemplate action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
+ */
+export type CreateWorkflowFromTemplateResult =
+  (workflow & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string }) | null;
+
+/**
  * CreateWorkflowFromTemplate response message
+ *
+ * `result` is the value the CreateWorkflowFromTemplate action returns (see {@link CreateWorkflowFromTemplateResult}).
  */
 export class CreateWorkflowFromTemplateResponse extends OrganizationResponse {
-  constructor(public result: workflow) {
+  constructor(public result: CreateWorkflowFromTemplateResult) {
     super("CreateWorkflowFromTemplate");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CreateWorkflowFromTemplateResponse {
-    return new CreateWorkflowFromTemplateResponse(responseObject<workflow>(data));
+    return new CreateWorkflowFromTemplateResponse(
+      (data ?? null) as CreateWorkflowFromTemplateResult
+    );
   }
 }

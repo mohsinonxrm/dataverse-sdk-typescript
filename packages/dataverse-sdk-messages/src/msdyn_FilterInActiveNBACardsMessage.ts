@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_FilterInActiveNBACardsResponse as msdyn_FilterInActiveNBACardsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_FilterInActiveNBACards message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,33 @@ export class msdyn_FilterInActiveNBACardsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_FilterInActiveNBACardsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_FilterInActiveNBACardsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_FilterInActiveNBACardsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_FilterInActiveNBACards action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_FilterInActiveNBACardsResult {
+  "@odata.context"?: string;
+  msdyn_ActiveNBAEntityIds: string;
+}
+
+/**
  * msdyn_FilterInActiveNBACards response message
+ *
+ * `result` is the value the msdyn_FilterInActiveNBACards action returns (see {@link msdyn_FilterInActiveNBACardsResult}).
  */
 export class msdyn_FilterInActiveNBACardsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_FilterInActiveNBACardsResponseData) {
+  constructor(public result: msdyn_FilterInActiveNBACardsResult) {
     super("msdyn_FilterInActiveNBACards");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_FilterInActiveNBACardsResponse {
-    return new msdyn_FilterInActiveNBACardsResponse(
-      responseObject<msdyn_FilterInActiveNBACardsResponseData>(data)
-    );
+    return new msdyn_FilterInActiveNBACardsResponse(data as msdyn_FilterInActiveNBACardsResult);
   }
 }

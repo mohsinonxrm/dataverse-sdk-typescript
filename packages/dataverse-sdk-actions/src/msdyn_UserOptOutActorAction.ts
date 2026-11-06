@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_UserOptOutActor action
+ * Response from the msdyn_UserOptOutActor action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_UserOptOutActorResponse {
-  // No content returned
-}
+export type msdyn_UserOptOutActorResponse = void;
 
 /**
  * Parameters of the msdyn_UserOptOutActor action, by their CSDL names. A parameter the CSDL declares
@@ -41,9 +41,8 @@ export class msdyn_UserOptOutActorAction implements Executable<msdyn_UserOptOutA
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_UserOptOutActorResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_UserOptOutActorResponse;
-    return (await response.json()) as msdyn_UserOptOutActorResponse;
+  parseResponse(_response: Response): Promise<msdyn_UserOptOutActorResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

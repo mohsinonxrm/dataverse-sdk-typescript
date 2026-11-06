@@ -56,9 +56,9 @@ export class CCaaS_BargeInToCallRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_BargeInToCallResponse> {
+  parseResponse(_response: Response): Promise<CCaaS_BargeInToCallResponse> {
     // No return value (204 No Content)
-    return new CCaaS_BargeInToCallResponse();
+    return Promise.resolve(new CCaaS_BargeInToCallResponse());
   }
 }
 
@@ -70,7 +70,7 @@ export class CCaaS_BargeInToCallResponse extends OrganizationResponse {
     super("CCaaS_BargeInToCall");
   }
 
-  static fromResponse(_data: unknown): CCaaS_BargeInToCallResponse {
+  static fromResponse(_data?: unknown): CCaaS_BargeInToCallResponse {
     return new CCaaS_BargeInToCallResponse();
   }
 }

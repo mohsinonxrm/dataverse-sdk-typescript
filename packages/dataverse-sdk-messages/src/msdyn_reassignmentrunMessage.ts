@@ -42,9 +42,9 @@ export class msdyn_reassignmentrunRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_reassignmentrunResponse> {
+  parseResponse(_response: Response): Promise<msdyn_reassignmentrunResponse> {
     // No return value (204 No Content)
-    return new msdyn_reassignmentrunResponse();
+    return Promise.resolve(new msdyn_reassignmentrunResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_reassignmentrunResponse extends OrganizationResponse {
     super("msdyn_reassignmentrun");
   }
 
-  static fromResponse(_data: unknown): msdyn_reassignmentrunResponse {
+  static fromResponse(_data?: unknown): msdyn_reassignmentrunResponse {
     return new msdyn_reassignmentrunResponse();
   }
 }

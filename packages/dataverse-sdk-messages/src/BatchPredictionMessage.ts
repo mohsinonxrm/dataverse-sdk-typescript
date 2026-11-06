@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { BatchPredictionResponse as BatchPredictionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the BatchPrediction message, by their CSDL names. A parameter the CSDL declares
@@ -51,21 +49,33 @@ export class BatchPredictionRequest
   }
 
   async parseResponse(response: Response): Promise<BatchPredictionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return BatchPredictionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return BatchPredictionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the BatchPrediction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface BatchPredictionResult {
+  "@odata.context"?: string;
+  response: string;
+}
+
+/**
  * BatchPrediction response message
+ *
+ * `result` is the value the BatchPrediction action returns (see {@link BatchPredictionResult}).
  */
 export class BatchPredictionResponse extends OrganizationResponse {
-  constructor(public result: BatchPredictionResponseData) {
+  constructor(public result: BatchPredictionResult) {
     super("BatchPrediction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): BatchPredictionResponse {
-    return new BatchPredictionResponse(responseObject<BatchPredictionResponseData>(data));
+    return new BatchPredictionResponse(data as BatchPredictionResult);
   }
 }

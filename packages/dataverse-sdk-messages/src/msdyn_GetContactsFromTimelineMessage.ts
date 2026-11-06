@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetContactsFromTimelineResponse as msdyn_GetContactsFromTimelineResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetContactsFromTimeline message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,33 @@ export class msdyn_GetContactsFromTimelineRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetContactsFromTimelineResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetContactsFromTimelineResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetContactsFromTimelineResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetContactsFromTimeline action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetContactsFromTimelineResult {
+  "@odata.context"?: string;
+  CustomActionSuggestedUsers: string;
+}
+
+/**
  * msdyn_GetContactsFromTimeline response message
+ *
+ * `result` is the value the msdyn_GetContactsFromTimeline action returns (see {@link msdyn_GetContactsFromTimelineResult}).
  */
 export class msdyn_GetContactsFromTimelineResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetContactsFromTimelineResponseData) {
+  constructor(public result: msdyn_GetContactsFromTimelineResult) {
     super("msdyn_GetContactsFromTimeline");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetContactsFromTimelineResponse {
-    return new msdyn_GetContactsFromTimelineResponse(
-      responseObject<msdyn_GetContactsFromTimelineResponseData>(data)
-    );
+    return new msdyn_GetContactsFromTimelineResponse(data as msdyn_GetContactsFromTimelineResult);
   }
 }

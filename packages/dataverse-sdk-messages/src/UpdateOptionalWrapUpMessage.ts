@@ -50,9 +50,9 @@ export class UpdateOptionalWrapUpRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<UpdateOptionalWrapUpResponse> {
+  parseResponse(_response: Response): Promise<UpdateOptionalWrapUpResponse> {
     // No return value (204 No Content)
-    return new UpdateOptionalWrapUpResponse();
+    return Promise.resolve(new UpdateOptionalWrapUpResponse());
   }
 }
 
@@ -64,7 +64,7 @@ export class UpdateOptionalWrapUpResponse extends OrganizationResponse {
     super("UpdateOptionalWrapUp");
   }
 
-  static fromResponse(_data: unknown): UpdateOptionalWrapUpResponse {
+  static fromResponse(_data?: unknown): UpdateOptionalWrapUpResponse {
     return new UpdateOptionalWrapUpResponse();
   }
 }

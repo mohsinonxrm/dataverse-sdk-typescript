@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_CallMCSAgent action
+ * Response from the msdyn_CallMCSAgent action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_CallMCSAgentResponse {
+  "@odata.context"?: string;
   ResponsePayload: string;
 }
 
@@ -52,8 +55,7 @@ export class msdyn_CallMCSAgentAction implements Executable<msdyn_CallMCSAgentRe
   }
 
   async parseResponse(response: Response): Promise<msdyn_CallMCSAgentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_CallMCSAgentResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_CallMCSAgentResponse;
   }
 }

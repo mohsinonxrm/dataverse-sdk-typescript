@@ -44,9 +44,9 @@ export class msdyn_GetEmailAssistStreamRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_GetEmailAssistStreamResponse> {
+  parseResponse(_response: Response): Promise<msdyn_GetEmailAssistStreamResponse> {
     // No return value (204 No Content)
-    return new msdyn_GetEmailAssistStreamResponse();
+    return Promise.resolve(new msdyn_GetEmailAssistStreamResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class msdyn_GetEmailAssistStreamResponse extends OrganizationResponse {
     super("msdyn_GetEmailAssistStream");
   }
 
-  static fromResponse(_data: unknown): msdyn_GetEmailAssistStreamResponse {
+  static fromResponse(_data?: unknown): msdyn_GetEmailAssistStreamResponse {
     return new msdyn_GetEmailAssistStreamResponse();
   }
 }

@@ -42,9 +42,9 @@ export class GrantAccessUsingSharedLinkRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<GrantAccessUsingSharedLinkResponse> {
+  parseResponse(_response: Response): Promise<GrantAccessUsingSharedLinkResponse> {
     // No return value (204 No Content)
-    return new GrantAccessUsingSharedLinkResponse();
+    return Promise.resolve(new GrantAccessUsingSharedLinkResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class GrantAccessUsingSharedLinkResponse extends OrganizationResponse {
     super("GrantAccessUsingSharedLink");
   }
 
-  static fromResponse(_data: unknown): GrantAccessUsingSharedLinkResponse {
+  static fromResponse(_data?: unknown): GrantAccessUsingSharedLinkResponse {
     return new GrantAccessUsingSharedLinkResponse();
   }
 }

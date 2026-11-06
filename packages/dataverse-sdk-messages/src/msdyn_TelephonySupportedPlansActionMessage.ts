@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_TelephonySupportedPlansActionResponse as msdyn_TelephonySupportedPlansActionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_TelephonySupportedPlansAction message, by their CSDL names. A parameter the CSDL declares
@@ -45,24 +43,35 @@ export class msdyn_TelephonySupportedPlansActionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_TelephonySupportedPlansActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_TelephonySupportedPlansActionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_TelephonySupportedPlansActionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_TelephonySupportedPlansAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_TelephonySupportedPlansActionResult {
+  "@odata.context"?: string;
+  ActionResult: string;
+}
+
+/**
  * msdyn_TelephonySupportedPlansAction response message
+ *
+ * `result` is the value the msdyn_TelephonySupportedPlansAction action returns (see {@link msdyn_TelephonySupportedPlansActionResult}).
  */
 export class msdyn_TelephonySupportedPlansActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_TelephonySupportedPlansActionResponseData) {
+  constructor(public result: msdyn_TelephonySupportedPlansActionResult) {
     super("msdyn_TelephonySupportedPlansAction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_TelephonySupportedPlansActionResponse {
     return new msdyn_TelephonySupportedPlansActionResponse(
-      responseObject<msdyn_TelephonySupportedPlansActionResponseData>(data)
+      data as msdyn_TelephonySupportedPlansActionResult
     );
   }
 }

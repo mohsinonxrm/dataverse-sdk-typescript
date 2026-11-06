@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_TrainEffortModelResponse as msdyn_TrainEffortModelResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_TrainEffortModel message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,33 @@ export class msdyn_TrainEffortModelRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_TrainEffortModelResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_TrainEffortModelResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_TrainEffortModelResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_TrainEffortModel action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_TrainEffortModelResult {
+  "@odata.context"?: string;
+  Result: string;
+}
+
+/**
  * msdyn_TrainEffortModel response message
+ *
+ * `result` is the value the msdyn_TrainEffortModel action returns (see {@link msdyn_TrainEffortModelResult}).
  */
 export class msdyn_TrainEffortModelResponse extends OrganizationResponse {
-  constructor(public result: msdyn_TrainEffortModelResponseData) {
+  constructor(public result: msdyn_TrainEffortModelResult) {
     super("msdyn_TrainEffortModel");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_TrainEffortModelResponse {
-    return new msdyn_TrainEffortModelResponse(
-      responseObject<msdyn_TrainEffortModelResponseData>(data)
-    );
+    return new msdyn_TrainEffortModelResponse(data as msdyn_TrainEffortModelResult);
   }
 }

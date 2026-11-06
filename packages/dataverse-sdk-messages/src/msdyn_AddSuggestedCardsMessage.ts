@@ -48,9 +48,9 @@ export class msdyn_AddSuggestedCardsRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_AddSuggestedCardsResponse> {
+  parseResponse(_response: Response): Promise<msdyn_AddSuggestedCardsResponse> {
     // No return value (204 No Content)
-    return new msdyn_AddSuggestedCardsResponse();
+    return Promise.resolve(new msdyn_AddSuggestedCardsResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class msdyn_AddSuggestedCardsResponse extends OrganizationResponse {
     super("msdyn_AddSuggestedCards");
   }
 
-  static fromResponse(_data: unknown): msdyn_AddSuggestedCardsResponse {
+  static fromResponse(_data?: unknown): msdyn_AddSuggestedCardsResponse {
     return new msdyn_AddSuggestedCardsResponse();
   }
 }

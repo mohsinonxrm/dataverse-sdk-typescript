@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_GBMConfigurationShouldHaveWorkStreamRuleResponse as msdyn_GBMConfigurationShouldHaveWorkStreamRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_GBMConfigurationShouldHaveWorkStreamRule request message
@@ -31,9 +29,7 @@ export class msdyn_GBMConfigurationShouldHaveWorkStreamRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_GBMConfigurationShouldHaveWorkStreamRuleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_GBMConfigurationShouldHaveWorkStreamRuleResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GBMConfigurationShouldHaveWorkStreamRuleResponse.fromResponse(
       await response.json()
     );
@@ -41,16 +37,31 @@ export class msdyn_GBMConfigurationShouldHaveWorkStreamRuleRequest
 }
 
 /**
+ * Response from the msdyn_GBMConfigurationShouldHaveWorkStreamRule action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GBMConfigurationShouldHaveWorkStreamRuleResult {
+  "@odata.context"?: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_GBMConfigurationShouldHaveWorkStreamRule response message
+ *
+ * `result` is the value the msdyn_GBMConfigurationShouldHaveWorkStreamRule action returns (see {@link msdyn_GBMConfigurationShouldHaveWorkStreamRuleResult}).
  */
 export class msdyn_GBMConfigurationShouldHaveWorkStreamRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GBMConfigurationShouldHaveWorkStreamRuleResponseData) {
+  constructor(public result: msdyn_GBMConfigurationShouldHaveWorkStreamRuleResult) {
     super("msdyn_GBMConfigurationShouldHaveWorkStreamRule");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GBMConfigurationShouldHaveWorkStreamRuleResponse {
     return new msdyn_GBMConfigurationShouldHaveWorkStreamRuleResponse(
-      responseObject<msdyn_GBMConfigurationShouldHaveWorkStreamRuleResponseData>(data)
+      data as msdyn_GBMConfigurationShouldHaveWorkStreamRuleResult
     );
   }
 }

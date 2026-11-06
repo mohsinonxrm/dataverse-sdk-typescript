@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_ShouldEnableRoutingCommand action
+ * Response from the msdyn_ShouldEnableRoutingCommand action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_ShouldEnableRoutingCommandResponse {
+  "@odata.context"?: string;
   EnableRoutingCommand: boolean;
 }
 
@@ -42,8 +45,7 @@ export class msdyn_ShouldEnableRoutingCommandAction implements Executable<msdyn_
   }
 
   async parseResponse(response: Response): Promise<msdyn_ShouldEnableRoutingCommandResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_ShouldEnableRoutingCommandResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_ShouldEnableRoutingCommandResponse;
   }
 }

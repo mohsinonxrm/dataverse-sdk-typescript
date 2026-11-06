@@ -423,8 +423,9 @@ export class WinOpportunityAction extends ActionBase<void> {
     };
   }
 
-  async parseResponse(_response: Response): Promise<void> {
-    // No return value
+  parseResponse(_response: Response): Promise<void> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }
 
@@ -438,15 +439,38 @@ parameter that `$metadata` marks `Nullable="false"` is required; any other is op
 can be constructed without arguments; one without parameters has no constructor arguments at all.
 
 `ActionBase` and `FunctionBase` implement core's `Executable`, so generated operations go straight
-to `client.execute()`. An operation that returns a complex type or an entity resolves to that
-type (an empty object for `204 No Content`); one that returns a primitive or a collection
-resolves to the `value` of the response:
+to `client.execute()`.
+
+#### Return values
+
+`client.execute()` resolves the value the operation returns, never the OData envelope, and each
+operation with a return type exports its type as `<Class>Response`. The values and types are the
+same as the classes in `@mohsinonxrm/dataverse-sdk-actions` and `@mohsinonxrm/dataverse-sdk-functions`
+resolve for the same operation (#300):
+
+| Return type in `$metadata`               | Web API response                                          | `<Class>Response`                                                             |
+| ---------------------------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| none                                     | `204 No Content`                                          | none: `execute()` resolves `undefined` (`void`)                               |
+| primitive (`Edm.String`, `Edm.Int32`, …) | `{ "@odata.context", "value": … }`                        | the value: `string`, `number`, `boolean`                                      |
+| enum                                     | `{ "@odata.context", "value": "Member" }`                 | `string`: the member name (`"A, B"` for flags)                                |
+| collection (`Collection(…)`)             | `{ "@odata.context", "value": [ … ] }`, or 204 when unset | the array, `[]` for a 204; entity records add `@odata.etag` and `@odata.type` |
+| complex type                             | the properties, with `@odata.context`                     | `interface … extends <ComplexType> { "@odata.context"?: string }`             |
+| entity (or `crmbaseentity`)              | the record, with its annotations, or 204 when unset       | `(<Entity> & { "@odata.context"?, "@odata.etag"?, "@odata.type"? }) \| null`  |
+
+Dataverse answers `204 No Content` for an entity or entity-collection output that a custom API
+didn't set, although `$metadata` declares the return `Nullable="false"`: that's `null` for an
+entity and `[]` for a collection. A complex output that wasn't set is still a 200, with the
+properties `null`.
 
 ```typescript
 import { WhoAmIFunction } from "./generated/functions/WhoAmIFunction.js";
 
-const whoAmI = await client.execute(new WhoAmIFunction()); // WhoAmIResponse
+const whoAmI = await client.execute(new WhoAmIFunction()); // WhoAmIFunctionResponse
 console.log(whoAmI.UserId);
+
+const score = await client.execute(new contoso_GetScoreFunction(accountId, { Rights: 1 })); // number
+const job = await client.execute(new contoso_StartJobAction(accountId)); // (Account & …) | null
+if (job) console.log(job.accountid, job["@odata.etag"]);
 ```
 
 ### Function Class

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CCaaS_MaskMessageResponse as CCaaS_MaskMessageResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CCaaS_MaskMessage message, by their CSDL names. A parameter the CSDL declares
@@ -51,21 +49,33 @@ export class CCaaS_MaskMessageRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_MaskMessageResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CCaaS_MaskMessageResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CCaaS_MaskMessageResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CCaaS_MaskMessage action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CCaaS_MaskMessageResult {
+  "@odata.context"?: string;
+  ResponseBody: string;
+}
+
+/**
  * CCaaS_MaskMessage response message
+ *
+ * `result` is the value the CCaaS_MaskMessage action returns (see {@link CCaaS_MaskMessageResult}).
  */
 export class CCaaS_MaskMessageResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_MaskMessageResponseData) {
+  constructor(public result: CCaaS_MaskMessageResult) {
     super("CCaaS_MaskMessage");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CCaaS_MaskMessageResponse {
-    return new CCaaS_MaskMessageResponse(responseObject<CCaaS_MaskMessageResponseData>(data));
+    return new CCaaS_MaskMessageResponse(data as CCaaS_MaskMessageResult);
   }
 }

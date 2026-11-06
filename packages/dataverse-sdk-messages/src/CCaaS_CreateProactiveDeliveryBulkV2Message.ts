@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CCaaS_CreateProactiveDeliveryBulkV2Response as CCaaS_CreateProactiveDeliveryBulkV2ResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CCaaS_CreateProactiveDeliveryBulkV2 message, by their CSDL names. A parameter the CSDL declares
@@ -51,24 +49,35 @@ export class CCaaS_CreateProactiveDeliveryBulkV2Request
   }
 
   async parseResponse(response: Response): Promise<CCaaS_CreateProactiveDeliveryBulkV2Response> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return CCaaS_CreateProactiveDeliveryBulkV2Response.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CCaaS_CreateProactiveDeliveryBulkV2Response.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CCaaS_CreateProactiveDeliveryBulkV2 action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CCaaS_CreateProactiveDeliveryBulkV2Result {
+  "@odata.context"?: string;
+  BatchId: string;
+}
+
+/**
  * CCaaS_CreateProactiveDeliveryBulkV2 response message
+ *
+ * `result` is the value the CCaaS_CreateProactiveDeliveryBulkV2 action returns (see {@link CCaaS_CreateProactiveDeliveryBulkV2Result}).
  */
 export class CCaaS_CreateProactiveDeliveryBulkV2Response extends OrganizationResponse {
-  constructor(public result: CCaaS_CreateProactiveDeliveryBulkV2ResponseData) {
+  constructor(public result: CCaaS_CreateProactiveDeliveryBulkV2Result) {
     super("CCaaS_CreateProactiveDeliveryBulkV2");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CCaaS_CreateProactiveDeliveryBulkV2Response {
     return new CCaaS_CreateProactiveDeliveryBulkV2Response(
-      responseObject<CCaaS_CreateProactiveDeliveryBulkV2ResponseData>(data)
+      data as CCaaS_CreateProactiveDeliveryBulkV2Result
     );
   }
 }

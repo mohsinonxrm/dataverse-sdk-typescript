@@ -44,9 +44,9 @@ export class msdyn_ActivateRoutingRuleRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ActivateRoutingRuleResponse> {
+  parseResponse(_response: Response): Promise<msdyn_ActivateRoutingRuleResponse> {
     // No return value (204 No Content)
-    return new msdyn_ActivateRoutingRuleResponse();
+    return Promise.resolve(new msdyn_ActivateRoutingRuleResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class msdyn_ActivateRoutingRuleResponse extends OrganizationResponse {
     super("msdyn_ActivateRoutingRule");
   }
 
-  static fromResponse(_data: unknown): msdyn_ActivateRoutingRuleResponse {
+  static fromResponse(_data?: unknown): msdyn_ActivateRoutingRuleResponse {
     return new msdyn_ActivateRoutingRuleResponse();
   }
 }

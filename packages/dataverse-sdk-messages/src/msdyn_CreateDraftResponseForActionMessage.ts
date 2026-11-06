@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_CreateDraftResponseForActionResponse as msdyn_CreateDraftResponseForActionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CreateDraftResponseForAction message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,43 @@ export class msdyn_CreateDraftResponseForActionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateDraftResponseForActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_CreateDraftResponseForActionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CreateDraftResponseForActionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CreateDraftResponseForAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CreateDraftResponseForActionResult {
+  "@odata.context"?: string;
+  msdyn_actionType: number;
+  msdyn_cc: string[];
+  msdyn_description: string;
+  msdyn_internetMessageId: string;
+  msdyn_messageId: string;
+  msdyn_scheduledEnd: string;
+  msdyn_scheduledStart: string;
+  msdyn_subject: string;
+  msdyn_to: string[];
+}
+
+/**
  * msdyn_CreateDraftResponseForAction response message
+ *
+ * `result` is the value the msdyn_CreateDraftResponseForAction action returns (see {@link msdyn_CreateDraftResponseForActionResult}).
  */
 export class msdyn_CreateDraftResponseForActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CreateDraftResponseForActionResponseData) {
+  constructor(public result: msdyn_CreateDraftResponseForActionResult) {
     super("msdyn_CreateDraftResponseForAction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CreateDraftResponseForActionResponse {
     return new msdyn_CreateDraftResponseForActionResponse(
-      responseObject<msdyn_CreateDraftResponseForActionResponseData>(data)
+      data as msdyn_CreateDraftResponseForActionResult
     );
   }
 }

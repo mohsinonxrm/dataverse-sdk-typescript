@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_MigrateSlaProactiveRun action
+ * Response from the msdyn_MigrateSlaProactiveRun action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_MigrateSlaProactiveRunResponse {
+  "@odata.context"?: string;
   Exception: string;
   OutputString: string;
 }
@@ -27,8 +30,7 @@ export class msdyn_MigrateSlaProactiveRunAction implements Executable<msdyn_Migr
   }
 
   async parseResponse(response: Response): Promise<msdyn_MigrateSlaProactiveRunResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_MigrateSlaProactiveRunResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_MigrateSlaProactiveRunResponse;
   }
 }

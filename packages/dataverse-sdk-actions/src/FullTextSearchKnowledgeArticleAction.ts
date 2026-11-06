@@ -1,15 +1,19 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { TypedQueryBase } from "./types/index.js";
 
 /**
- * Response from FullTextSearchKnowledgeArticle action
+ * Response from the FullTextSearchKnowledgeArticle action.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface FullTextSearchKnowledgeArticleResponse {
-  value: EntityReference[];
-}
+export type FullTextSearchKnowledgeArticleResponse = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
 
 /**
  * Parameters of the FullTextSearchKnowledgeArticle action, by their CSDL names. A parameter the CSDL declares
@@ -53,8 +57,9 @@ export class FullTextSearchKnowledgeArticleAction implements Executable<FullText
   }
 
   async parseResponse(response: Response): Promise<FullTextSearchKnowledgeArticleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as FullTextSearchKnowledgeArticleResponse;
-    return (await response.json()) as FullTextSearchKnowledgeArticleResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return ((await response.json()) as { value: FullTextSearchKnowledgeArticleResponse }).value;
   }
 }

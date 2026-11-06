@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_simulationratelimiter action
+ * Response from the msdyn_simulationratelimiter action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_simulationratelimiterResponse {
+  "@odata.context"?: string;
   message: string;
   statuscode: number;
 }
@@ -43,8 +46,7 @@ export class msdyn_simulationratelimiterAction implements Executable<msdyn_simul
   }
 
   async parseResponse(response: Response): Promise<msdyn_simulationratelimiterResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_simulationratelimiterResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_simulationratelimiterResponse;
   }
 }

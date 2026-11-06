@@ -26,9 +26,9 @@ export class msdyn_updatelivechatconfigsRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_updatelivechatconfigsResponse> {
+  parseResponse(_response: Response): Promise<msdyn_updatelivechatconfigsResponse> {
     // No return value (204 No Content)
-    return new msdyn_updatelivechatconfigsResponse();
+    return Promise.resolve(new msdyn_updatelivechatconfigsResponse());
   }
 }
 
@@ -40,7 +40,7 @@ export class msdyn_updatelivechatconfigsResponse extends OrganizationResponse {
     super("msdyn_updatelivechatconfigs");
   }
 
-  static fromResponse(_data: unknown): msdyn_updatelivechatconfigsResponse {
+  static fromResponse(_data?: unknown): msdyn_updatelivechatconfigsResponse {
     return new msdyn_updatelivechatconfigsResponse();
   }
 }
