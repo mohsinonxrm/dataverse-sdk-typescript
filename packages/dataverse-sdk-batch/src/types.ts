@@ -7,8 +7,9 @@
  */
 export interface BatchRequestStep {
   /**
-   * Unique identifier for this request within the batch
-   * Used for referencing in Content-ID and dependsOn
+   * Unique identifier for this request within the batch.
+   * Inside a change set it is sent as the part's `Content-ID`, so a later request in the same
+   * change set can refer to the entity this one creates as `$<id>`.
    */
   id: string;
 
@@ -18,7 +19,9 @@ export interface BatchRequestStep {
   method: string;
 
   /**
-   * Request URL (relative to base URL or absolute)
+   * Request URL: an absolute URL, a path relative to the Web API root (`accounts`), or a
+   * `$<id>` reference to an earlier request in the same change set. The encoder writes it
+   * unchanged; `BatchRequestBuilder` resolves relative paths to absolute URLs.
    */
   url: string;
 
@@ -28,16 +31,78 @@ export interface BatchRequestStep {
   headers?: Record<string, string>;
 
   /**
-   * Request body (will be JSON stringified if object)
+   * Request body. Strings are sent unchanged; anything else is JSON-encoded. Either way the part
+   * gets `Content-Type: application/json; type=entry` unless `headers` sets a content type.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   body?: any;
 
   /**
-   * Array of request IDs this request depends on
-   * Used in change sets for Content-ID references
+   * Ids of earlier requests in the same change set that this request refers to with `$<id>`.
+   * Checked when the request is added; it does not change what is sent.
    */
   dependsOn?: string[];
+}
+
+/**
+ * A change set: requests that Dataverse runs as one transaction.
+ */
+export interface BatchChangeset {
+  changeset: BatchRequestStep[];
+}
+
+/**
+ * One top-level item of a batch, in the order it is sent: a request or a change set.
+ */
+export type BatchItem = BatchRequestStep | BatchChangeset;
+
+/**
+ * One operation's response, as decoded from a `multipart/mixed` batch response.
+ */
+export interface BatchResponsePart {
+  /**
+   * The part's `Content-ID`. Dataverse returns it only for parts inside a change set.
+   */
+  contentId?: string;
+
+  /**
+   * Position (0-based) of the top-level batch part this response belongs to. The parts of one
+   * change set share it. Dataverse answers top-level parts in request order, so this is also the
+   * position of the request or change set in the batch that was sent.
+   */
+  batchIndex: number;
+
+  /**
+   * True when the response came from inside a change set.
+   */
+  inChangeset: boolean;
+
+  /**
+   * HTTP status code
+   */
+  status: number;
+
+  /**
+   * HTTP status text (may be empty)
+   */
+  statusText: string;
+
+  /**
+   * Response headers, with lower-cased names
+   */
+  headers: Record<string, string>;
+
+  /**
+   * The body: parsed JSON when the part's content type is JSON and the text parses, otherwise
+   * the text. `undefined` when the body is empty.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  body?: any;
+
+  /**
+   * The body exactly as received (empty string when there is none)
+   */
+  bodyText: string;
 }
 
 /**
@@ -45,7 +110,7 @@ export interface BatchRequestStep {
  */
 export interface BatchResponseStep {
   /**
-   * Request ID this response corresponds to
+   * Id of the request this response answers (the id passed to `addRequest`)
    */
   id: string;
 
@@ -60,15 +125,20 @@ export interface BatchResponseStep {
   statusText?: string;
 
   /**
-   * Response headers
+   * Response headers, with lower-cased names
    */
   headers: Record<string, string>;
 
   /**
-   * Parsed response body
+   * Parsed response body (JSON when the part is JSON, otherwise text)
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   body?: any;
+
+  /**
+   * The body exactly as received
+   */
+  bodyText?: string;
 }
 
 /**
@@ -99,22 +169,27 @@ export interface BatchExecutionOptions {
  */
 export interface BatchExecutionResult {
   /**
-   * Map of request ID to response
+   * Responses keyed by request id (the id passed to `addRequest`)
    */
   responses: Map<string, BatchResponseStep>;
 
   /**
-   * Any requests that failed
+   * Every response received, in request order
+   */
+  results: BatchResponseStep[];
+
+  /**
+   * Failed requests, keyed by request id
    */
   errors: Map<string, Error>;
 
   /**
-   * Whether all requests succeeded
+   * Whether every request ran and succeeded
    */
   success: boolean;
 
   /**
-   * Total number of requests processed
+   * Total number of requests in the batch
    */
   totalRequests: number;
 
@@ -127,4 +202,16 @@ export interface BatchExecutionResult {
    * Number of failed requests
    */
   failedRequests: number;
+
+  /**
+   * Ids of requests that got no response, in request order: Dataverse stopped after an earlier
+   * failure (no `continueOnError`), or the request was in a change set that failed and was
+   * rolled back.
+   */
+  skippedRequestIds: string[];
+
+  /**
+   * True when Dataverse stopped before reaching every top-level request or change set
+   */
+  stoppedEarly: boolean;
 }
