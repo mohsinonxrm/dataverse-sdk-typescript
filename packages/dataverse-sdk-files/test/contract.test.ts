@@ -57,7 +57,7 @@ describe("files: FileColumnClient wire contract", () => {
     expect(init.Target).toEqual({ "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: ID });
   });
 
-  it.fails("#61: upload() rejects when a block upload fails", async () => {
+  it("#61: upload() rejects when a block upload fails", async () => {
     const { client, fake } = createTestClient();
     uploadRoutes(fake, 400);
     await expect(

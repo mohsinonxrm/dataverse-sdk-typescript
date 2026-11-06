@@ -9,6 +9,7 @@ import {
   UploadBlockAction,
   CommitFileBlocksUploadAction,
 } from "@mohsinonxrm/dataverse-sdk-actions";
+import { blockRetryOptions, checkChunkSize, sendChecked } from "./requests.js";
 import type { FileUploadOptions, FileDownloadOptions } from "./types.js";
 
 /**
@@ -117,7 +118,9 @@ export class FileColumnClient {
    * @param file - The file data: a `Blob` (or `File`), an `ArrayBuffer`, or a typed-array view
    *   such as `Uint8Array` (a Node.js `Buffer` is a `Uint8Array`)
    * @param fileName - The name of the file being uploaded
-   * @param options - Upload options (chunk size, progress callback)
+   * @param options - Upload options (chunk size, progress callback, abort signal)
+   * @throws DataverseODataError (with `status` and `code`) when any step fails; nothing after the
+   *   failed request is sent. DataverseInvalidRequestError for a `chunkSize` above 4 MB.
    */
   async upload(
     entitySetName: string,
@@ -127,7 +130,7 @@ export class FileColumnClient {
     fileName: string,
     options?: FileUploadOptions
   ): Promise<void> {
-    const chunkSize = options?.chunkSize ?? DEFAULT_CHUNK_SIZE;
+    const chunkSize = checkChunkSize(options?.chunkSize ?? DEFAULT_CHUNK_SIZE);
 
     // Get file size and convert to Uint8Array
     const fileData = await this.fileToUint8Array(file);
@@ -148,7 +151,7 @@ export class FileColumnClient {
       columnName
     );
     const initRequest = initAction.toRequestInformation(this.baseUrl);
-    const initResponse = await this.adapter.send(initRequest);
+    const initResponse = await sendChecked(this.adapter, initRequest, options?.signal);
     const { FileContinuationToken } = await initAction.parseResponse(initResponse);
 
     // Step 2: Upload blocks (chunks)
@@ -166,8 +169,11 @@ export class FileColumnClient {
 
       // Upload block
       const uploadAction = new UploadBlockAction(blockId, blockData, FileContinuationToken);
-      const uploadRequest = uploadAction.toRequestInformation(this.baseUrl);
-      await this.adapter.send(uploadRequest);
+      const uploadRequest = {
+        ...uploadAction.toRequestInformation(this.baseUrl),
+        middlewareOptions: blockRetryOptions(),
+      };
+      await sendChecked(this.adapter, uploadRequest, options?.signal);
 
       // Report progress
       if (options?.onProgress) {
@@ -192,7 +198,7 @@ export class FileColumnClient {
       FileContinuationToken
     );
     const commitRequest = commitAction.toRequestInformation(this.baseUrl);
-    await this.adapter.send(commitRequest);
+    await sendChecked(this.adapter, commitRequest, options?.signal);
   }
 
   /**
@@ -224,37 +230,32 @@ export class FileColumnClient {
       },
     };
 
-    const response = await this.adapter.send(request);
-
-    if (!response.ok) {
-      throw new Error(`Failed to download file: ${response.statusText}`);
-    }
+    // A column with no file is a 404 DataverseODataError (code 0x80040217).
+    const response = await sendChecked(this.adapter, request);
 
     return response.blob();
   }
 
   /**
-   * Delete a file from a file or image column.
+   * Delete a file from a file or image column, with `DELETE /{entitySet}({id})/{column}`.
+   * Deleting from a column that has no file succeeds.
    *
    * @param entitySetName - The entity set name (e.g., "accounts")
    * @param recordId - The record ID (GUID)
    * @param columnName - The logical name of the file/image column
+   * @throws DataverseODataError (with `status` and `code`) when Dataverse rejects the request.
    */
   async delete(entitySetName: string, recordId: string, columnName: string): Promise<void> {
     const normalizedId = recordId.replace(/[{}]/g, "").toLowerCase();
 
+    // PATCH { column: null } returns 204 but leaves the file in place; DELETE removes it.
     const request: RequestInformation = {
-      method: "PATCH",
-      url: `${this.baseUrl}/${entitySetName}(${normalizedId})`,
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: {
-        [columnName]: null,
-      },
+      method: "DELETE",
+      url: `${this.baseUrl}/${entitySetName}(${normalizedId})/${columnName}`,
+      headers: {},
     };
 
-    await this.adapter.send(request);
+    await sendChecked(this.adapter, request);
   }
 
   /**

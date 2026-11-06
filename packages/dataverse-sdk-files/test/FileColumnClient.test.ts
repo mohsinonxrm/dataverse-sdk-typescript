@@ -134,19 +134,22 @@ describe("FileColumnClient", () => {
     });
 
     it("should throw error if download fails", async () => {
-      vi.mocked(mockAdapter.send).mockResolvedValue({
-        ok: false,
-        statusText: "Not Found",
-      } as Response);
-
-      await expect(client.download("accounts", "bad-id", "field")).rejects.toThrow(
-        "Failed to download file: Not Found"
+      vi.mocked(mockAdapter.send).mockResolvedValue(
+        new Response(JSON.stringify({ error: { code: "0x80040217", message: "No file" } }), {
+          status: 404,
+        })
       );
+
+      await expect(client.download("accounts", "bad-id", "field")).rejects.toMatchObject({
+        status: 404,
+        code: "0x80040217",
+        message: "No file",
+      });
     });
   });
 
   describe("delete", () => {
-    it("should delete file by setting column to null", async () => {
+    it("should delete file with DELETE on the column", async () => {
       vi.mocked(mockAdapter.send).mockResolvedValue({
         ok: true,
         status: 204,
@@ -156,10 +159,8 @@ describe("FileColumnClient", () => {
 
       expect(mockAdapter.send).toHaveBeenCalledWith(
         expect.objectContaining({
-          method: "PATCH",
-          body: {
-            new_logo: null,
-          },
+          method: "DELETE",
+          url: "https://org.crm.dynamics.com/api/data/v9.2/accounts(guid-123)/new_logo",
         })
       );
     });
