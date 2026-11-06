@@ -272,19 +272,37 @@ export class DataverseRequestBuilder {
     return readJson<T>(await this.send("DELETE", undefined, options));
   }
 
-  /** GET the body as text, e.g. `$metadata` (XML) or a `$value` of a text column. */
+  /**
+   * GET the body as text, e.g. `$metadata` (XML) or a `$value` of a text column. Sends
+   * `Accept: *\/*` unless an `Accept` header is set, so non-JSON content isn't refused.
+   */
   async text(options?: RequestOptions): Promise<string> {
-    return (await this.send("GET", undefined, options)).text();
+    return (await this.sendRaw(options)).text();
   }
 
-  /** GET the body as a Blob, e.g. a file or image column's `$value`. */
+  /** GET the body as a Blob, e.g. a file or image column's `$value`. Sends `Accept: *\/*` by default. */
   async blob(options?: RequestOptions): Promise<Blob> {
-    return (await this.send("GET", undefined, options)).blob();
+    return (await this.sendRaw(options)).blob();
   }
 
-  /** GET the body as an ArrayBuffer. */
+  /** GET the body as an ArrayBuffer. Sends `Accept: *\/*` by default. */
   async arrayBuffer(options?: RequestOptions): Promise<ArrayBuffer> {
-    return (await this.send("GET", undefined, options)).arrayBuffer();
+    return (await this.sendRaw(options)).arrayBuffer();
+  }
+
+  /**
+   * GET for a terminal that doesn't read JSON. Without this, the default `Accept:
+   * application/json` makes Dataverse refuse `$metadata` with 415 (#210). A caller's own `Accept`
+   * (on the builder or in the options) wins.
+   */
+  private sendRaw(options: RequestOptions | undefined): Promise<Response> {
+    const hasAccept =
+      "accept" in this.headers ||
+      Object.keys(options?.headers ?? {}).some((name) => name.toLowerCase() === "accept");
+    const withAccept = hasAccept
+      ? options
+      : { ...options, headers: { accept: "*/*", ...options?.headers } };
+    return this.send("GET", undefined, withAccept);
   }
 
   /**
