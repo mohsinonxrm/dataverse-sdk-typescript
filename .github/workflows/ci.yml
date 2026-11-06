@@ -75,6 +75,16 @@ jobs:
       - name: Install Chromium for Playwright
         run: pnpm --filter @mohsinonxrm/dataverse-sdk-browser-tests exec playwright install --with-deps chromium
       - run: pnpm test:browser
+      # The SPA sample's Playwright smoke tests (demo mode, no org needed). Both steps are
+      # skipped while the sample has no test:e2e script. The sample pins its own Playwright
+      # version, so it installs its own Chromium build.
+      - name: Install Chromium for the SPA sample
+        run: |
+          if grep -q '"test:e2e"' samples/spa-fluentui-v9/package.json; then
+            pnpm --filter spa-fluentui-v9-sample exec playwright install --with-deps chromium
+          fi
+      - name: SPA sample e2e tests
+        run: pnpm --filter spa-fluentui-v9-sample --if-present test:e2e
 
   # Branch protection requires a check named exactly "build-test-lint". This job reports it,
   # and passes only if every Node version in the matrix and the browser tests passed, so the

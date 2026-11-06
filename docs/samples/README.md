@@ -13,10 +13,17 @@ Each sample has its own README with setup steps. Run them from the sample folder
 
 ### 1) spa-fluentui-v9
 
-- MSAL browser auth
-- CRUD, relationships (`associate` / `disassociate`), `$batch`, file upload and download
-  (`FileColumnClient`), FetchXML (`client.fetchXml()`), discovery
-- paging, error display and `Prefer` helpers
+- a page per SDK area, each with the code its **Run** button calls, the result (or a card for the
+  error thrown) and every request sent, recorded by a middleware in the SDK pipeline
+- queries (`select`, `filter`, `expand`, paging, FetchXML, `$apply`, views), CRUD with
+  `ifMatch("*")`, optimistic concurrency (412), impersonation and `Prefer` headers
+- `$batch` (change sets, `continueOnError`, split batches), `OrganizationService`, typed
+  actions, functions and messages
+- metadata browser, file and image columns (`FileColumnClient`), discovery and environment
+  switching, telemetry and logging hooks
+- **demo mode** (no org needed: the SDK runs against an in-browser fake of Dataverse) and MSAL
+  sign-in, which is loaded only when you sign in with Microsoft; lazy-loaded scenario pages
+- Playwright smoke tests in demo mode (`pnpm --filter spa-fluentui-v9-sample test:e2e`), run in CI
 
 ### 2) node-cli-devicecode
 
