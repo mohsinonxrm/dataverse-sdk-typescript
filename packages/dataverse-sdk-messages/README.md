@@ -394,6 +394,10 @@ the table's primary key (`{ "@odata.type": "Microsoft.Dynamics.CRM.account", acc
 activities use `activityid`). `logicalName`, `id`, `name` and `entitySetName` are kept on it but
 not sent.
 
+It is the SDK's one `EntityReference`, defined in `@mohsinonxrm/dataverse-sdk-entities-runtime`
+and re-exported here, as the actions, functions and xrm packages do. A reference from any of their
+`createEntityReference`s is accepted by every one of them.
+
 Only `createEntityReference` makes an `EntityReference`. A hand-written
 `{ "@odata.type", logicalName, id }` doesn't type-check, because it would send `logicalName` and
 `id`, which the Web API rejects. To write the reference by hand, use `WebApiEntityReference`, the
@@ -423,7 +427,7 @@ of a `QueryExpression`. The enums are exported from the package root.
 
 An entity member of a complex type, such as `PrincipalAccess.Principal`, takes a reference or a
 payload, like an entity-typed parameter:
-`new GrantAccessRequest(createEntityReference("account", id), { Principal: createEntityReference("team", teamId), AccessMask: AccessRights.ReadAccess })`.
+`new GrantAccessRequest({ Target: createEntityReference("account", id), PrincipalAccess: { Principal: createEntityReference("team", teamId), AccessMask: AccessRights.ReadAccess } })`.
 
 ---
 
@@ -431,16 +435,19 @@ payload, like an entity-typed parameter:
 
 ### createEntityReference
 
-Helper to create entity references.
+Helper to create entity references (the same function every package exports).
 
 ```typescript
 import { createEntityReference } from "@mohsinonxrm/dataverse-sdk-messages";
 
 const accountRef = createEntityReference("account", accountId);
 // JSON: {"@odata.type":"Microsoft.Dynamics.CRM.account","accountid":"<id>"}
-const named = createEntityReference("contact", contactId, "John Doe"); // name is kept, not sent
-// A table the generated CSDL doesn't know:
-createEntityReference("new_project", id, { primaryIdAttribute: "new_projectid" });
+const named = createEntityReference("contact", contactId, { name: "John Doe" }); // kept, not sent
+// A table the SDK's $metadata snapshot doesn't know:
+createEntityReference("new_project", id, {
+  primaryIdAttribute: "new_projectid",
+  entitySetName: "new_projects",
+});
 ```
 
 ---

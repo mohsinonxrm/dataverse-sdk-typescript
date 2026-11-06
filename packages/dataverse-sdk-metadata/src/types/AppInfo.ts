@@ -4,18 +4,19 @@ import type { WebResourceInfo } from "./WebResourceInfo.js";
  * AppInfo
  */
 export interface AppInfo {
+  AiAppDescription?: string;
   AppId?: string;
-  Title?: string;
-  UniqueName?: string;
-  IsDefault?: boolean;
-  Description?: string;
-  webResourceInfo?: WebResourceInfo;
-  welcomePageInfo?: WebResourceInfo;
-  Status?: number;
-  LastModifiedOn?: string;
   AppUrl?: string;
   ClientType?: number;
-  MobileOfflineProfileIds?: string[];
-  AiAppDescription?: string;
+  DefaultAgentEnvVarSchemaName?: string;
+  Description?: string;
+  IsDefault?: boolean;
   IsManaged?: boolean;
+  LastModifiedOn?: string;
+  MobileOfflineProfileIds?: string[];
+  Status?: number;
+  Title?: string;
+  UniqueName?: string;
+  webResourceInfo?: WebResourceInfo;
+  welcomePageInfo?: WebResourceInfo;
 }

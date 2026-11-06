@@ -79,7 +79,7 @@ beforeAll(async () => {
   dir = await mkdtemp(join(OUT_ROOT, ".gen-complex-navigation-test-"));
   const csdl = parseEdmx(EDMX);
   for (const target of ["actions", "functions", "messages"] as const) {
-    await generateComplexTypes(csdl, join(dir, target, "types"), false, target);
+    await generateComplexTypes(csdl, join(dir, target, "types"));
   }
   await generateActions(csdl, join(dir, "actions"), false);
   await generateFunctions(csdl, join(dir, "functions"), false);
@@ -104,15 +104,15 @@ describe("navigation properties of complex types (#231)", () => {
     ]);
   });
 
-  it("generates them like entity-typed parameters, importing EntityReference per package", async () => {
+  it("generates them like entity-typed parameters, with the one EntityReference (#295)", async () => {
     const actions = await read("actions/types/PrincipalAccess.ts");
     expect(actions).toContain("  Principal: EntityReference | AnyEntityPayload;\n");
-    expect(actions).toContain("import type { EntityReference } from './EntityReference.js';");
+    expect(actions).toContain(
+      "import type { EntityReference } from '@mohsinonxrm/dataverse-sdk-entities-runtime';"
+    );
     expect(actions).toContain("import type { AnyEntityPayload } from './EntityPayload.js';");
     expect(await read("functions/types/PrincipalAccess.ts")).toBe(actions);
-    expect(await read("messages/types/PrincipalAccess.ts")).toContain(
-      "import type { EntityReference } from '../EntityReference.js';"
-    );
+    expect(await read("messages/types/PrincipalAccess.ts")).toBe(actions);
     expect(await read("actions/types/EntityCollection.ts")).toContain(
       "  Items?: Record<string, unknown>[];\n"
     );

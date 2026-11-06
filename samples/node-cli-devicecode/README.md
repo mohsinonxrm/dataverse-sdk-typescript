@@ -230,7 +230,12 @@ Retrieves the account with selected columns:
 const account = await client
   .api(`/accounts(${accountId})`)
   .select("name", "telephone1", "address1_city", "createdon")
-  .get();
+  .get<{
+    name: string;
+    telephone1: string | null;
+    address1_city: string | null;
+    createdon: string;
+  }>();
 
 console.log("Name:", account.name);
 ```
@@ -351,8 +356,10 @@ pnpm start
 
 ```typescript
 // Associate a contact with an account (OrganizationService, shown below)
+import { createEntityReference } from "@mohsinonxrm/dataverse-sdk-xrm";
+
 await orgService.associate("accounts", accountId, "contact_customer_accounts", [
-  { logicalName: "contact", id: contactId },
+  createEntityReference("contact", contactId),
 ]);
 
 // Use $batch for multiple operations

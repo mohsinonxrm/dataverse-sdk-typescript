@@ -25,6 +25,16 @@ export const SdkGeneratorConfigSchema = z.object({
       })
       .optional(),
 
+    /** The entity sets and primary keys of entities-runtime's `createEntityReference` (#295). */
+    references: z
+      .object({
+        enabled: z.boolean().default(true),
+        outputPath: z
+          .string()
+          .default("../../packages/dataverse-sdk-entities-runtime/src/generated"),
+      })
+      .optional(),
+
     messages: z
       .object({
         enabled: z.boolean().default(true),

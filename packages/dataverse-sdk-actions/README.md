@@ -182,8 +182,13 @@ JSON.stringify(createEntityReference("account", id)); // {"@odata.type":"Microso
 JSON.stringify(createEntityReference("email", id)); // {"@odata.type":"Microsoft.Dynamics.CRM.email","activityid":"<id>"}
 ```
 
-The primary keys and entity sets come from the CSDL the package was generated from. For a table
-it doesn't know (a custom table created later), pass them:
+`EntityReference`, `createEntityReference`, `getEntitySetNameFromReference` and
+`WebApiEntityReference` are the SDK's one set, defined in
+`@mohsinonxrm/dataverse-sdk-entities-runtime` and re-exported here (and by the functions,
+messages and xrm packages), so a reference from any of them works with any of them.
+
+The primary keys and entity sets come from the `$metadata` snapshot the SDK is generated from.
+For a table it doesn't know (a custom table created later), pass them:
 `createEntityReference("new_project", id, { primaryIdAttribute: "new_projectid", entitySetName: "new_projects" })`.
 
 `logicalName`, `id` and `entitySetName` are on the reference but not enumerable, so they aren't

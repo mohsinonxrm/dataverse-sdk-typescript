@@ -2,13 +2,13 @@
  * UpgradeCurrencyTypeTable
  */
 export interface UpgradeCurrencyTypeTable {
-  TableName?: string;
-  Status?: string;
-  TotalRowCount?: number;
-  ProcessedRowCount?: number;
-  PendingRowCount?: number;
-  StartTime?: string;
-  LastUpdatedTime?: string;
-  ErrorNumber?: string;
   ErrorMessage?: string;
+  ErrorNumber?: string;
+  LastUpdatedTime?: string;
+  PendingRowCount?: number;
+  ProcessedRowCount?: number;
+  StartTime?: string;
+  Status?: string;
+  TableName?: string;
+  TotalRowCount?: number;
 }

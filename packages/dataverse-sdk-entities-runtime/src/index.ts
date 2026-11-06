@@ -10,10 +10,21 @@
 
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { DataverseInvalidRequestError } from "@mohsinonxrm/dataverse-sdk-core";
+import { type EntityReference, isEntityReference } from "./entity-reference.js";
 
 // Generated actions and functions import these from here, so generated code needs only this
 // package (core comes with it).
 export type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+
+// The SDK's one record reference (#295): actions, functions, messages and xrm re-export these.
+export {
+  type EntityReference,
+  type EntityReferenceOptions,
+  type WebApiEntityReference,
+  createEntityReference,
+  getEntitySetNameFromReference,
+  isEntityReference,
+} from "./entity-reference.js";
 
 /**
  * Base interface for all Dataverse entities.
@@ -36,28 +47,6 @@ export interface IEntity {
    * before using it.
    */
   [key: string]: unknown;
-}
-
-/**
- * Represents a reference to another entity record.
- * Used for lookup/navigation properties.
- */
-export interface EntityReference {
-  /** Logical name of the referenced entity */
-  logicalName: string;
-
-  /** GUID of the referenced record */
-  id: string;
-
-  /** Display name (optional) */
-  name?: string;
-
-  /**
-   * Entity set of the referenced table (e.g. "contacts"). `formatEntityForWrite()` needs it to
-   * build `@odata.bind`; without it, it looks the set up in its `metadataCache` or `entitySetNames`
-   * option.
-   */
-  entitySetName?: string;
 }
 
 /**
@@ -204,29 +193,6 @@ export abstract class FunctionBase<TResponse> implements Executable<TResponse> {
 }
 
 /**
- * Helper to create an entity reference.
- */
-export function createEntityReference(
-  logicalName: string,
-  id: string,
-  name?: string
-): EntityReference {
-  return { logicalName, id, name };
-}
-
-/**
- * Type guard to check if a value is an EntityReference.
- */
-export function isEntityReference(value: unknown): value is EntityReference {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    typeof (value as EntityReference).logicalName === "string" &&
-    typeof (value as EntityReference).id === "string"
-  );
-}
-
-/**
  * Type guard to check if a value is an IEntity.
  */
 export function isEntity(value: unknown): value is IEntity {
@@ -285,8 +251,9 @@ export interface FormatEntityForWriteOptions {
  *   such as `customerid`, the navigation property for the reference's table is used
  *   (`customerid_account`).
  *
- * The referenced table's entity set comes from `reference.entitySetName`, then
- * `options.entitySetNames`, then `options.metadataCache`.
+ * The referenced table's entity set comes from `reference.entitySetName` (which
+ * {@link createEntityReference} fills in for the tables in the SDK's `$metadata` snapshot), then
+ * `options.entitySetNames`, then `options.metadataCache`. A custom table needs one of these.
  *
  * @throws DataverseInvalidRequestError when a reference's entity set can't be found.
  *

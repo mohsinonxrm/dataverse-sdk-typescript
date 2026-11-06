@@ -6,10 +6,10 @@ import type { ImeMode } from "./ImeMode.js";
  * Extends: AttributeMetadata
  */
 export interface DoubleAttributeMetadata extends AttributeMetadata {
+  FormulaDefinition?: string;
   ImeMode?: ImeMode;
   MaxValue?: number;
   MinValue?: number;
   Precision?: number;
-  FormulaDefinition?: string;
   SourceTypeMask?: number;
 }

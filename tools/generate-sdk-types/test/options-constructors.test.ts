@@ -125,7 +125,7 @@ beforeAll(async () => {
   out = await mkdtemp(join(OUT_ROOT, ".gen-96-"));
   const csdl = parseEdmx(EDMX);
   for (const target of ["actions", "functions", "messages"] as const) {
-    await generateComplexTypes(csdl, join(out, target, "types"), false, target);
+    await generateComplexTypes(csdl, join(out, target, "types"));
   }
   await generateActions(csdl, join(out, "actions"), false);
   await generateFunctions(csdl, join(out, "functions"), false);

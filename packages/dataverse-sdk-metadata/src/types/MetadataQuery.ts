@@ -5,18 +5,18 @@ import type { GCMMetadataOptions } from "./GCMMetadataOptions.js";
  * MetadataQuery
  */
 export interface MetadataQuery {
-  MetadataType?: string;
-  MetadataOptions?: GCMMetadataOptions;
-  MetadataSubtype?: string;
+  AppId?: string;
+  ChangedAfter?: string;
+  DependencyDepth?: DependencyDepth;
   EntityLogicalName?: string;
+  Exclude?: string[];
+  GetDefault?: boolean;
   MetadataId?: string;
   MetadataName?: string;
   MetadataNames?: string[];
-  GetDefault?: boolean;
-  DependencyDepth?: DependencyDepth;
-  ChangedAfter?: string;
-  Exclude?: string[];
-  AppId?: string;
-  UserMetadataDelta?: string;
+  MetadataOptions?: GCMMetadataOptions;
+  MetadataSubtype?: string;
+  MetadataType?: string;
   SystemMetadataDelta?: string;
+  UserMetadataDelta?: string;
 }

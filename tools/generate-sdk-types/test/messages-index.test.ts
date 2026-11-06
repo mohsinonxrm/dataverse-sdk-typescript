@@ -29,16 +29,23 @@ const EDMX = `<?xml version="1.0" encoding="utf-8"?>
 
 let dir: string;
 
-/** The hand-written base-export block of an index, with import quotes normalised. */
+/**
+ * The export statements of an index's base-export block, with import quotes, line breaks and
+ * trailing commas normalised (prettier wraps the long ones in the committed index).
+ */
 function baseExports(index: string): string[] {
   const start = index.indexOf("// Base classes and types");
   const end = index.indexOf("// Message classes");
   return index
     .slice(start, end)
+    .replace(/^\s*\/\/.*$/gm, "")
     .replace(/'/g, '"')
-    .split("\n")
-    .map((line) => line.trim())
-    .filter((line) => line.startsWith("export"));
+    .replace(/\s+/g, " ")
+    .replace(/,\s*\}/g, " }")
+    .split(";")
+    .map((statement) => statement.trim())
+    .filter((statement) => statement.startsWith("export"))
+    .map((statement) => `${statement};`);
 }
 
 beforeAll(async () => {
@@ -75,6 +82,10 @@ export const request = new OrganizationRequest("new_Custom", {}, options);
     const committed = await readFile(join(MESSAGES_SRC, "index.ts"), "utf8");
     expect(baseExports(generated)).toContain(
       'export type { OrganizationRequestOptions } from "./OrganizationRequest.js";'
+    );
+    // The SDK's one EntityReference, from entities-runtime (#295)
+    expect(baseExports(generated)).toContain(
+      'export { type EntityReference, type EntityReferenceOptions, type WebApiEntityReference, createEntityReference, getEntitySetNameFromReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";'
     );
     expect(baseExports(committed)).toEqual(baseExports(generated));
   });

@@ -1390,9 +1390,10 @@ export {
 export {
   type EntityReference,
   type EntityReferenceOptions,
+  type WebApiEntityReference,
   createEntityReference,
   getEntitySetNameFromReference,
-} from "./types/EntityReference.js";
+} from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 export type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 
 export {

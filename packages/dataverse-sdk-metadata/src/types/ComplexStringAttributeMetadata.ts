@@ -8,13 +8,13 @@ import type { StringFormatName } from "./StringFormatName.js";
  * Extends: ComplexAttributeMetadata
  */
 export interface ComplexStringAttributeMetadata extends ComplexAttributeMetadata {
+  DatabaseLength?: number;
   Format?: StringFormat;
   FormatName?: StringFormatName;
-  ImeMode?: ImeMode;
-  MaxLength?: number;
-  YomiOf?: string;
-  IsLocalizable?: boolean;
-  DatabaseLength?: number;
   FormulaDefinition?: string;
+  ImeMode?: ImeMode;
+  IsLocalizable?: boolean;
+  MaxLength?: number;
   SourceTypeMask?: number;
+  YomiOf?: string;
 }

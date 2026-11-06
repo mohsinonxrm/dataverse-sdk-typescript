@@ -2,12 +2,12 @@
  * CCaaS_SendHeartbeatResponse
  */
 export interface CCaaS_SendHeartbeatResponse {
-  AgentId?: string;
   ActiveBrowserSessions?: number;
-  DisabledChannels?: string[];
-  PresenceId?: string;
-  CurrentPresenceStatusInfo?: string;
-  Timestamp?: number;
+  AgentId?: string;
   AgentName?: string;
   AllowedChannels?: string[];
+  CurrentPresenceStatusInfo?: string;
+  DisabledChannels?: string[];
+  PresenceId?: string;
+  Timestamp?: number;
 }

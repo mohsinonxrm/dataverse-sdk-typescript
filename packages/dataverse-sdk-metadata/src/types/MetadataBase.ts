@@ -11,6 +11,6 @@ export interface MetadataBase extends crmmodelbaseentity {
    * Create payloads use the create types, which require it as `"Microsoft.Dynamics.CRM.<Type>"`.
    */
   "@odata.type"?: string;
-  MetadataId?: string;
   HasChanged?: boolean;
+  MetadataId?: string;
 }

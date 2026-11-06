@@ -65,6 +65,9 @@ importers:
       '@mohsinonxrm/dataverse-sdk-core':
         specifier: workspace:*
         version: link:../dataverse-sdk-core
+      '@mohsinonxrm/dataverse-sdk-entities-runtime':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-entities-runtime
       '@mohsinonxrm/dataverse-sdk-messages':
         specifier: workspace:*
         version: link:../dataverse-sdk-messages
@@ -362,6 +365,9 @@ importers:
       '@mohsinonxrm/dataverse-sdk-core':
         specifier: workspace:*
         version: link:../dataverse-sdk-core
+      '@mohsinonxrm/dataverse-sdk-entities-runtime':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-entities-runtime
     devDependencies:
       '@mohsinonxrm/dataverse-sdk-testing':
         specifier: workspace:*
@@ -491,6 +497,9 @@ importers:
       '@mohsinonxrm/dataverse-sdk-core':
         specifier: workspace:*
         version: link:../dataverse-sdk-core
+      '@mohsinonxrm/dataverse-sdk-entities-runtime':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-entities-runtime
     devDependencies:
       '@mohsinonxrm/dataverse-sdk-testing':
         specifier: workspace:*
@@ -585,10 +594,16 @@ importers:
       '@mohsinonxrm/dataverse-sdk-core':
         specifier: workspace:*
         version: link:../dataverse-sdk-core
+      '@mohsinonxrm/dataverse-sdk-entities-runtime':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-entities-runtime
       '@mohsinonxrm/dataverse-sdk-messages':
         specifier: workspace:*
         version: link:../dataverse-sdk-messages
     devDependencies:
+      '@mohsinonxrm/dataverse-sdk-actions':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-actions
       '@mohsinonxrm/dataverse-sdk-functions':
         specifier: workspace:*
         version: link:../dataverse-sdk-functions
@@ -915,6 +930,9 @@ importers:
         specifier: ^4.6.7
         version: 4.6.7
     devDependencies:
+      '@mohsinonxrm/dataverse-sdk-entities-runtime':
+        specifier: workspace:*
+        version: link:../../packages/dataverse-sdk-entities-runtime
       '@types/ejs':
         specifier: ^3.1.5
         version: 3.1.5

@@ -411,7 +411,7 @@ async associate(
 - `entitySetName` - The plural entity set name
 - `id` - The GUID of the primary record
 - `relationship` - The collection-valued navigation property name
-- `relatedEntities` - Array of `EntityReference`s (`{ logicalName, id }`, with the logical name such as `"contact"`) to associate; each is sent as one `POST …/$ref`. The entity set name comes from `getEntitySetName()`, or from the reference's `entitySetName` when set
+- `relatedEntities` - Array of `EntityReference`s to associate, made with `createEntityReference(logicalName, id)` (exported here, and the same one the actions, functions and messages packages export); each is sent as one `POST …/$ref`. The entity set name is the reference's `entitySetName`, which `createEntityReference` fills in for the tables in the SDK's `$metadata` snapshot; for any other table it comes from `getEntitySetName()`
 - `options` - Optional association settings
 
 **Options:**
@@ -423,16 +423,18 @@ async associate(
 **Examples:**
 
 ```typescript
+import { createEntityReference } from "@mohsinonxrm/dataverse-sdk-xrm";
+
 // Associate a single contact to an account
 await service.associate("accounts", accountId, "contact_customer_accounts", [
-  { logicalName: "contact", id: contactId },
+  createEntityReference("contact", contactId),
 ]);
 
 // Associate multiple contacts
 await service.associate("accounts", accountId, "contact_customer_accounts", [
-  { logicalName: "contact", id: contactId1 },
-  { logicalName: "contact", id: contactId2 },
-  { logicalName: "contact", id: contactId3 },
+  createEntityReference("contact", contactId1),
+  createEntityReference("contact", contactId2),
+  createEntityReference("contact", contactId3),
 ]);
 
 // Associate with impersonation
@@ -440,7 +442,7 @@ await service.associate(
   "opportunities",
   opportunityId,
   "opportunitycompetitors_association",
-  [{ logicalName: "competitor", id: competitorId }],
+  [createEntityReference("competitor", competitorId)],
   { impersonateUserId: "user-guid" }
 );
 ```
@@ -618,7 +620,7 @@ const service = new OrganizationService(client, {
 service.setEntitySetName("new_gadget", "new_gadgetry");
 
 await service.associate("accounts", accountId, "new_account_widgets", [
-  { logicalName: "new_widget", id: widgetId, entitySetName: "new_widgets" },
+  createEntityReference("new_widget", widgetId, { entitySetName: "new_widgets" }),
 ]);
 
 await service.getEntitySetName("opportunity"); // "opportunities" (one metadata request, then cached)
@@ -725,16 +727,24 @@ interface RetrieveMultipleResult<T = EntityRecord> {
 
 ### EntityReference
 
-Represents a reference to an entity record.
+A reference to one record: the SDK's one `EntityReference`, from
+`@mohsinonxrm/dataverse-sdk-entities-runtime`. This package re-exports it with
+`createEntityReference`, `getEntitySetNameFromReference`, `EntityReferenceOptions` and
+`WebApiEntityReference`, the same ones the actions, functions and messages packages export, so a
+reference made by any of them works in `associate()` and in their operations.
 
 ```typescript
-interface EntityReference {
-  logicalName: string; // e.g. "contact"
-  id: string;
-  name?: string;
-  entitySetName?: string; // e.g. "contacts"; resolved from logicalName when omitted
-}
+import { createEntityReference, type EntityReference } from "@mohsinonxrm/dataverse-sdk-xrm";
+
+const contact: EntityReference = createEntityReference("contact", contactId);
+contact.logicalName; // "contact"
+contact.entitySetName; // "contacts", from the SDK's $metadata snapshot
+createEntityReference("new_widget", widgetId, { entitySetName: "new_widgets", name: "Widget" });
 ```
+
+Only `createEntityReference` makes one: a hand-written `{ logicalName, id }` doesn't type-check.
+In a request body it is sent as `{ "@odata.type": "Microsoft.Dynamics.CRM.contact", contactid }`;
+`logicalName`, `id`, `entitySetName` and `name` are not enumerable.
 
 ### OperationOptions
 

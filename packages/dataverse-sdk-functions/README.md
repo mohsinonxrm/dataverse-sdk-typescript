@@ -210,6 +210,12 @@ const { AccessRights } = await client.execute(
 await client.execute(new RetrievePrincipalAccess_teamFunction(teamId, { Target: target }));
 ```
 
+`createEntityReference` and `EntityReference` are the SDK's one set, from
+`@mohsinonxrm/dataverse-sdk-entities-runtime`, re-exported here as by the actions, messages and
+xrm packages: a reference from any of them works here. Only `createEntityReference` makes one; a
+hand-written `{ logicalName, id }` doesn't type-check. For a table the SDK's `$metadata` snapshot
+doesn't know, pass its set: `createEntityReference("new_project", id, { entitySetName: "new_projects" })`.
+
 ## Parameter Values
 
 Each parameter is sent as the OData literal of its CSDL type:

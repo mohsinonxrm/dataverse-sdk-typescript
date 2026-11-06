@@ -6,5 +6,6 @@ import type { Solution } from "./Solution.js";
  */
 export interface OrganizationInfo {
   InstanceType?: OrganizationType;
+  SingletonScenarioName?: string;
   Solutions?: Solution[];
 }

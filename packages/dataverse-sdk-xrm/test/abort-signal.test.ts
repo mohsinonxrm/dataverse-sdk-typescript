@@ -12,7 +12,7 @@ import {
   noContent,
 } from "@mohsinonxrm/dataverse-sdk-testing";
 import type { FakeFetch } from "@mohsinonxrm/dataverse-sdk-testing";
-import { OrganizationService } from "../src/index.js";
+import { OrganizationService, createEntityReference } from "../src/index.js";
 
 const ID = "12345678-1234-1234-1234-123456789012";
 const ID2 = "22222222-2222-2222-2222-222222222222";
@@ -99,7 +99,7 @@ const calls: Array<[string, Call]> = [
         "accounts",
         ID,
         "contact_customer_accounts",
-        [{ logicalName: "contact", id: ID2 }],
+        [createEntityReference("contact", ID2)],
         {
           signal,
         }
@@ -212,8 +212,9 @@ describe("#273: methods that look up entity set names pass the signal to the loo
     const associate = service.associate(
       "accounts",
       ID,
-      "contact_customer_accounts",
-      [{ logicalName: "contact", id: ID2 }],
+      "new_account_widgets",
+      // A custom table: createEntityReference has no entity set for it, so associate() looks it up
+      [createEntityReference("new_widget", ID2)],
       { signal: b.signal }
     );
     await vi.waitFor(() => {

@@ -2,12 +2,12 @@
  * ComponentDetail
  */
 export interface ComponentDetail {
-  Type?: number;
-  SchemaName?: string;
   DisplayName?: string;
   Id?: string;
-  ParentSchemaName?: string;
   ParentDisplayName?: string;
   ParentId?: string;
+  ParentSchemaName?: string;
+  SchemaName?: string;
   Solution?: string;
+  Type?: number;
 }

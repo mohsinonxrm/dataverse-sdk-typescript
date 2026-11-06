@@ -474,7 +474,7 @@ A column with no file is a 404 `DataverseODataError`. `fileClient.delete("accoun
 For developers familiar with the C# SDK, use the OrganizationService pattern:
 
 ```typescript
-import { OrganizationService } from "@mohsinonxrm/dataverse-sdk-xrm";
+import { OrganizationService, createEntityReference } from "@mohsinonxrm/dataverse-sdk-xrm";
 import { ExecuteWorkflowRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 
 const service = new OrganizationService(client);
@@ -504,9 +504,9 @@ const workflowRequest = new ExecuteWorkflowRequest(workflowId, {
 });
 const workflowResponse = await service.execute(workflowRequest);
 
-// Associate: related records are EntityReferences with a logical name
+// Associate: related records are references from createEntityReference(logicalName, id)
 await service.associate("accounts", accountId, "contact_customer_accounts", [
-  { logicalName: "contact", id: contactId },
+  createEntityReference("contact", contactId),
 ]);
 
 // Disassociate: the related record's id

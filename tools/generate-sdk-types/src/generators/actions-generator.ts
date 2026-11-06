@@ -29,7 +29,7 @@ import {
 } from "../utils/file-writer.js";
 import { polymorphicParameterType } from "../utils/polymorphism.js";
 import { entityReturn, entityResponseInterface } from "../utils/entity-return.js";
-import { entityReferenceSource } from "../utils/entity-reference.js";
+import { ENTITY_REFERENCE_EXPORT, ENTITY_REFERENCE_IMPORT } from "../utils/entity-reference.js";
 import { bodyEnumType, ENUM_BODY_MODULE, enumBodySource } from "../utils/enum-body.js";
 import { exportedEnumNames } from "./complex-types-generator.js";
 import { operationNames } from "../utils/overloads.js";
@@ -121,8 +121,12 @@ export async function generateActions(
     console.log(`  ✅ Directory purged`);
   }
 
-  // Ensure EntityReference.ts exists in types folder
-  await ensureEntityReferenceType(absolutePath, csdl);
+  // The payload types of entity-typed parameters (#74). EntityReference comes from
+  // entities-runtime (#295).
+  await writeTypeScriptFile(
+    join(absolutePath, "types", `${ENTITY_PAYLOAD_MODULE}.ts`),
+    ENTITY_PAYLOAD_SOURCE
+  );
   // Enum values in bodies are sent as member names (#232)
   await writeTypeScriptFile(
     join(absolutePath, "internal", `${ENUM_BODY_MODULE}.ts`),
@@ -258,7 +262,7 @@ function generateActionClass(csdl: CsdlSchema, action: CsdlAction, stem = action
   }
 
   if (needsEntityReference) {
-    code += `import type { EntityReference } from './types/EntityReference.js';\n`;
+    code += ENTITY_REFERENCE_IMPORT;
   }
   if (action.parameters.some((p) => p.name)) {
     code += `import { requestBody } from './${REQUEST_BODY_MODULE}.js';\n`;
@@ -530,8 +534,8 @@ function generateActionsIndex(
     code += `export { ${stem}Action${parameters}, type ${stem}Response } from './${stem}Action.js';\n`;
   }
 
-  // Export EntityReference type
-  code += `\nexport { type EntityReference, type EntityReferenceOptions, type WebApiEntityReference, createEntityReference, getEntitySetNameFromReference } from './types/EntityReference.js';\n`;
+  // The SDK's one EntityReference (#295), re-exported from entities-runtime
+  code += `\n${ENTITY_REFERENCE_EXPORT}`;
   code += `export type { AnyEntityPayload, EntityPayload } from './types/${ENTITY_PAYLOAD_MODULE}.js';\n`;
 
   // Enum values for parameters (AccessRights.ReadAccess | AccessRights.WriteAccess), as in the
@@ -541,20 +545,4 @@ function generateActionsIndex(
   }
 
   return code;
-}
-
-/**
- * Write types/EntityReference.ts: the Web API reference shape, with the primary keys and entity
- * sets from the CSDL (#72).
- */
-async function ensureEntityReferenceType(outputPath: string, csdl: CsdlSchema): Promise<void> {
-  await writeTypeScriptFile(
-    join(outputPath, "types", "EntityReference.ts"),
-    entityReferenceSource(csdl, "actions")
-  );
-  // The payload types of entity-typed parameters (#74)
-  await writeTypeScriptFile(
-    join(outputPath, "types", `${ENTITY_PAYLOAD_MODULE}.ts`),
-    ENTITY_PAYLOAD_SOURCE
-  );
 }

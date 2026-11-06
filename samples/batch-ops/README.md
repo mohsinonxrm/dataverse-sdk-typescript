@@ -381,15 +381,10 @@ the independent requests out of the changeset.
 
 **Cause:** the navigation property or reference is wrong.
 
-```typescript
-// Wrong
-"parentcustomerid@odata.bind": "accounts(id)"
-
-// Correct
-"parentcustomerid_account@odata.bind": "/accounts(id)"
-
-// With a Content-ID
-"parentcustomerid_account@odata.bind": "$account"
+```text
+Wrong:               "parentcustomerid@odata.bind": "accounts(id)"
+Correct:             "parentcustomerid_account@odata.bind": "/accounts(id)"
+With a Content-ID:   "parentcustomerid_account@odata.bind": "$account"
 ```
 
 ---

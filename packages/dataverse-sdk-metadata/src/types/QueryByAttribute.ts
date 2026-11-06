@@ -9,11 +9,11 @@ import type { QueryBase } from "./QueryBase.js";
  * Extends: QueryBase
  */
 export interface QueryByAttribute extends QueryBase {
-  EntityName?: string;
   Attributes?: string[];
-  Values?: Object[];
-  PageInfo?: PagingInfo;
   ColumnSet?: ColumnSet;
+  EntityName?: string;
   Orders?: OrderExpression[];
+  PageInfo?: PagingInfo;
   TopCount?: number;
+  Values?: Object[];
 }

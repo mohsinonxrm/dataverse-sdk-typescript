@@ -3,6 +3,6 @@
  */
 export interface InitializeAnnotationBlocksDownloadResponse {
   FileContinuationToken?: string;
-  FileSizeInBytes?: number;
   FileName?: string;
+  FileSizeInBytes?: number;
 }

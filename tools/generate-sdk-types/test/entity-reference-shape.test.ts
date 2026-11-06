@@ -3,8 +3,10 @@
  * hand-written `{ "@odata.type", logicalName, id }` literal that type-checked as one sent the wrong
  * shape. Action and message references are branded (only `createEntityReference` makes one), the
  * payload types reject `logicalName`, and `WebApiEntityReference` types the JSON written by hand.
- * Function parameters read `logicalName`, `id` and `entitySetName` themselves, so a literal stays
- * allowed there.
+ *
+ * #295: there is one `EntityReference`, in entities-runtime. The generated packages import and
+ * re-export it, so a reference from any package's `createEntityReference` is accepted by all of
+ * them, function parameters included.
  */
 import { copyFile, mkdtemp, readFile, rm } from "node:fs/promises";
 import { join } from "node:path";
@@ -158,26 +160,42 @@ export const b = new MergeRequest({ Target: messageReference("account", "a1"), S
     expect(errors).toEqual([]);
   });
 
-  it("a function parameter still takes a literal, since the function reads logicalName and id", async () => {
+  it("a function parameter takes the same EntityReference, from any package (#295)", async () => {
     const errors = await typecheck(
       dir,
       "use-function-reference.ts",
       `${HEADER}
-export const init = new InitializeFromFunction({ EntityMoniker: { ...wrong, entitySetName: "accounts" }, TargetEntityName: "contact" });
+export const init = new InitializeFromFunction({ EntityMoniker: messageReference("account", "a1"), TargetEntityName: "contact" });
+export const fromActions = new InitializeFromFunction({ EntityMoniker: createEntityReference("account", "a1"), TargetEntityName: "contact" });
+// @ts-expect-error a hand-written literal isn't an EntityReference here either
+export const literal = new InitializeFromFunction({ EntityMoniker: { ...wrong, entitySetName: "accounts" }, TargetEntityName: "contact" });
 `
     );
     expect(errors).toEqual([]);
   });
 
-  it("generates the brand and WebApiEntityReference only for request bodies", async () => {
-    for (const file of ["actions/types/EntityReference.ts", "messages/EntityReference.ts"]) {
-      const source = await readFile(join(dir, file), "utf8");
-      expect(source).toContain("declare const entityReferenceBrand: unique symbol;");
-      expect(source).toContain("readonly [entityReferenceBrand]: true;");
-      expect(source).toContain("export interface WebApiEntityReference {");
+  it("references from the actions and messages packages are interchangeable (#295)", async () => {
+    const errors = await typecheck(
+      dir,
+      "use-mixed-references.ts",
+      `${HEADER}
+const fromMessages: EntityReference = messageReference("account", "a1");
+export const merge = new MergeAction({ Target: fromMessages, Subordinate: createEntityReference("account", "a2"), PerformParentingChecks: false });
+export const request = new MergeRequest({ Target: createEntityReference("account", "a1"), Subordinate: fromMessages, PerformParentingChecks: false });
+const json: MessageWebApiReference = { "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "a1" };
+export const fromJson: WebApiEntityReference = json;
+`
+    );
+    expect(errors).toEqual([]);
+  });
+
+  it("no package generates its own EntityReference (#295)", async () => {
+    for (const file of [
+      "actions/types/EntityReference.ts",
+      "functions/types/EntityReference.ts",
+      "messages/EntityReference.ts",
+    ]) {
+      await expect(readFile(join(dir, file), "utf8"), file).rejects.toThrow();
     }
-    const functions = await readFile(join(dir, "functions/types/EntityReference.ts"), "utf8");
-    expect(functions).not.toContain("entityReferenceBrand");
-    expect(functions).not.toContain("WebApiEntityReference");
   });
 });

@@ -2,12 +2,12 @@
  * CCaaS_GetPresenceResponse
  */
 export interface CCaaS_GetPresenceResponse {
-  AgentName?: string;
-  AgentId?: string;
-  DisabledChannels?: string[];
-  PresenceId?: string;
   ActiveBrowserSessions?: number;
+  AgentId?: string;
+  AgentName?: string;
   AllowedChannels?: string[];
   CurrentPresenceStatusInfo?: string;
+  DisabledChannels?: string[];
+  PresenceId?: string;
   Timestamp?: number;
 }

@@ -2,10 +2,10 @@
  * msdyn_CheckIfAutoRouteToOwnerQueueEnabledResponse
  */
 export interface msdyn_CheckIfAutoRouteToOwnerQueueEnabledResponse {
+  HelpLink?: string;
   Message?: string;
   ResultEntities?: string;
-  ReturnStatus?: number;
-  ReturnSeverity?: number;
   ReturnLevel?: number;
-  HelpLink?: string;
+  ReturnSeverity?: number;
+  ReturnStatus?: number;
 }

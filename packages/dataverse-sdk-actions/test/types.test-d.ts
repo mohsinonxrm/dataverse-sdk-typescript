@@ -10,7 +10,7 @@ import {
 import { AddMembersTeamAction } from "../src/AddMembersTeamAction.js";
 import { CreateMultipleAction } from "../src/CreateMultipleAction.js";
 import { PublishAllXmlAction } from "../src/PublishAllXmlAction.js";
-import { createEntityReference } from "../src/types/EntityReference.js";
+import { createEntityReference } from "../src/index.js";
 
 const required = {
   CustomizationFile: "UEsDBA==",

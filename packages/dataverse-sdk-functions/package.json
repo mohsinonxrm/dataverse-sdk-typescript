@@ -48,7 +48,8 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "@mohsinonxrm/dataverse-sdk-core": "workspace:*"
+    "@mohsinonxrm/dataverse-sdk-core": "workspace:*",
+    "@mohsinonxrm/dataverse-sdk-entities-runtime": "workspace:*"
   },
   "devDependencies": {
     "@mohsinonxrm/dataverse-sdk-testing": "workspace:*",

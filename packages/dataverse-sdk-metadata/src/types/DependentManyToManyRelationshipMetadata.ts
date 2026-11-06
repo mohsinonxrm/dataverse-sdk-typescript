@@ -2,9 +2,9 @@
  * DependentManyToManyRelationshipMetadata
  */
 export interface DependentManyToManyRelationshipMetadata {
-  IntersectEntity?: string;
   FromEntityAttribute?: string;
-  ToEntityAttribute?: string;
+  IntersectEntity?: string;
   IntersectPrimaryAttribute?: string;
   IntersectRelatedAttribute?: string;
+  ToEntityAttribute?: string;
 }

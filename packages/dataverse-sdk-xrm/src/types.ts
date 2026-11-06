@@ -3,32 +3,6 @@
  */
 
 /**
- * Represents a reference to an entity record
- */
-export interface EntityReference {
-  /**
-   * The logical name of the entity (e.g., 'account', 'contact')
-   */
-  logicalName: string;
-
-  /**
-   * The GUID identifier of the record
-   */
-  id: string;
-
-  /**
-   * Optional name/display value of the referenced entity
-   */
-  name?: string;
-
-  /**
-   * Optional entity set name (e.g. 'contacts'). When set, it is used as is; otherwise it is
-   * resolved from `logicalName` through metadata (see `OrganizationService.getEntitySetName`).
-   */
-  entitySetName?: string;
-}
-
-/**
  * A record as the Web API returns it: its columns, and annotations such as
  * `_parentaccountid_value@OData.Community.Display.V1.FormattedValue`, by name.
  *

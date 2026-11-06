@@ -164,7 +164,7 @@ const allAccounts = await client
 ### 2. Late-Bound with `OrganizationService`
 
 ```typescript
-import { OrganizationService } from "@mohsinonxrm/dataverse-sdk-xrm";
+import { OrganizationService, createEntityReference } from "@mohsinonxrm/dataverse-sdk-xrm";
 
 const service = new OrganizationService(client);
 
@@ -254,10 +254,10 @@ const result = await service.retrieveMultiple("accounts", {
 console.log(`Found ${result.value.length} of ${result["@odata.count"]} total`);
 
 // ========== ASSOCIATE ==========
-// EntityReference takes the logical name ("contact"), not the entity set name.
+// References come from createEntityReference(logicalName, id), with the logical name ("contact").
 await service.associate("accounts", accountId, "contact_customer_accounts", [
-  { logicalName: "contact", id: contactId1 },
-  { logicalName: "contact", id: contactId2 },
+  createEntityReference("contact", contactId1),
+  createEntityReference("contact", contactId2),
 ]);
 
 // ========== DISASSOCIATE ==========

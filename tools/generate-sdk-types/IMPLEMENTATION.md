@@ -256,17 +256,29 @@ shape with only the primary key.
 - A collection of a table: `(EntityReference | EntityPayload<table>)[]`.
 - `principal` and the other abstract system types stay `EntityReference`.
 
-`types/EntityPayload.ts` is generated into both packages. The messages package's `EntityReference.ts`
-is generated from the CSDL like the actions package's (`entityReferenceSource(csdl, "messages")`), so a
-reference sends the table's primary key, not `id`. Its third argument is still a display name.
+`types/EntityPayload.ts` is generated into both packages.
 
-In both packages `EntityReference` carries a type-only brand (`declare const entityReferenceBrand:
-unique symbol`), so only `createEntityReference` makes one, and both payload types declare
-`logicalName?: never` and `entitySetName?: never` (#251). A hand-written
-`{ "@odata.type", logicalName, id }` would send `logicalName` and `id`, so it doesn't type-check as
-any entity parameter. `WebApiEntityReference` is the JSON shape, for a reference written by hand.
-The functions package's `EntityReference` has no brand: a function parameter reads `logicalName`,
-`id` and `entitySetName` itself, so a literal works there.
+### One EntityReference (#295)
+
+The SDK has one `EntityReference`, with `createEntityReference`, `getEntitySetNameFromReference`,
+`EntityReferenceOptions` and `WebApiEntityReference`. They are hand-written in
+`@mohsinonxrm/dataverse-sdk-entities-runtime` (`src/entity-reference.ts`), which depends only on
+core, so actions, functions, messages and xrm can all depend on it without a cycle. The generated
+files import the type from there (`ENTITY_REFERENCE_IMPORT` in `src/utils/entity-reference.ts`), and
+each generated `index.ts` re-exports the set (`ENTITY_REFERENCE_EXPORT`), so
+`import { createEntityReference } from "@mohsinonxrm/dataverse-sdk-actions"` keeps working and gives
+the same function as every other package. No package gets its own `EntityReference.ts`.
+
+What the generator still owns is the data: the `references` target writes
+`entities-runtime/src/generated/entity-tables.ts` (`entityTablesSource`), the entity set of every
+table and the primary keys that aren't `<name>id`, so a reference sends the table's primary key
+(activities: `activityid`), not `id`.
+
+`EntityReference` carries a type-only brand (`declare const entityReferenceBrand: unique symbol`),
+so only `createEntityReference` makes one, and the payload types declare `logicalName?: never` and
+`entitySetName?: never` (#251). A hand-written `{ "@odata.type", logicalName, id }` would send
+`logicalName` and `id`, so it doesn't type-check as any entity parameter, a function parameter
+included. `WebApiEntityReference` is the JSON shape, for a reference written by hand.
 
 ### Navigation properties of complex types
 
@@ -279,9 +291,9 @@ request body their value is an entity, so they are typed like entity-typed actio
 - `Collection(crmbaseentity)`: `Record<string, unknown>[]`;
 - `principal` and the other abstract system types: `EntityReference`.
 
-A member is required only with `Nullable="false"`. The `target` argument of `generateComplexTypes`
-says where `EntityReference` is: `../EntityReference.js` in messages, `./EntityReference.js`
-otherwise. The functions package now also gets `types/EntityPayload.ts`.
+A member is required only with `Nullable="false"`. `EntityReference` is imported from
+entities-runtime in every package (#295). The functions package now also gets
+`types/EntityPayload.ts`.
 
 ### Enum values in bodies
 

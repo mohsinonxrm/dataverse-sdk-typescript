@@ -30,7 +30,7 @@ import {
   ENTITY_PAYLOAD_SOURCE,
   entityParameterType,
 } from "../utils/entity-payload.js";
-import { entityReferenceSource } from "../utils/entity-reference.js";
+import { ENTITY_REFERENCE_EXPORT, ENTITY_REFERENCE_IMPORT } from "../utils/entity-reference.js";
 import { operationNames } from "../utils/overloads.js";
 import { polymorphicParameterType } from "../utils/polymorphism.js";
 import { collectionBinding, ENTITY_SET_PARAM } from "../utils/binding.js";
@@ -205,13 +205,8 @@ export async function generateMessages(
   // Bodies leave out undefined parameters (#96)
   await writeTypeScriptFile(join(absolutePath, `${REQUEST_BODY_MODULE}.ts`), REQUEST_BODY_SOURCE);
 
-  // Entity references with the CSDL's primary keys, as in the actions package: a reference in a
-  // body is {"@odata.type", <primary key>}; the hand-written one sent "id", which the Web API
-  // rejects (#74). And the payload types of entity-typed parameters.
-  await writeTypeScriptFile(
-    join(absolutePath, "EntityReference.ts"),
-    entityReferenceSource(csdl, "messages")
-  );
+  // The payload types of entity-typed parameters (#74). EntityReference comes from
+  // entities-runtime (#295).
   await writeTypeScriptFile(
     join(absolutePath, "types", `${ENTITY_PAYLOAD_MODULE}.ts`),
     ENTITY_PAYLOAD_SOURCE
@@ -301,7 +296,7 @@ function generateMessageClass(csdl: CsdlSchema, action: CsdlAction, stem = actio
 
   // Add import for EntityReference if needed
   if (needsEntityReference) {
-    code += `import type { EntityReference } from './EntityReference.js';\n`;
+    code += ENTITY_REFERENCE_IMPORT;
   }
   if (action.parameters.some((p) => p.name)) {
     code += `import { requestBody } from './${REQUEST_BODY_MODULE}.js';\n`;
@@ -587,8 +582,8 @@ function generateMessagesIndex(
   code += `// Base classes and types\n`;
   code += `export { OrganizationRequest, OrganizationResponse } from './OrganizationRequest.js';\n`;
   code += `export type { OrganizationRequestOptions } from './OrganizationRequest.js';\n`;
-  code += `export type { EntityReference, EntityReferenceOptions } from './EntityReference.js';\n`;
-  code += `export { createEntityReference, type WebApiEntityReference } from './EntityReference.js';\n`;
+  // The SDK's one EntityReference (#295), re-exported from entities-runtime
+  code += ENTITY_REFERENCE_EXPORT;
   code += `export type { AnyEntityPayload, EntityPayload } from './types/${ENTITY_PAYLOAD_MODULE}.js';\n`;
   code += `export type { MessageRequest, MessageResponse } from './types.js';\n\n`;
 
