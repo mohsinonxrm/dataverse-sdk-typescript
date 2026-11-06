@@ -17,9 +17,14 @@ export const MAX_CHUNK_SIZE = 4 * 1024 * 1024;
 export async function sendChecked(
   adapter: RequestAdapter,
   request: RequestInformation,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  timeoutMs?: number
 ): Promise<Response> {
-  const res = await adapter.send(signal ? { ...request, signal } : request);
+  const res = await adapter.send({
+    ...request,
+    ...(signal ? { signal } : {}),
+    ...(timeoutMs === undefined ? {} : { attemptTimeoutMs: timeoutMs }),
+  });
   if (!res.ok) throw await parseODataError(res);
   return res;
 }
