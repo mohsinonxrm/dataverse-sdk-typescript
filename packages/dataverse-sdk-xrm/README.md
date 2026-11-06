@@ -76,6 +76,7 @@ async create<T = any>(
 - `suppressDuplicateDetection?: boolean` - The Web API skips duplicate detection by default, so `true` changes nothing; `false` is the same as `detectDuplicates: true`
 - `impersonateUserId?: string` - User ID to impersonate (sends `MSCRMCallerID`)
 - `headers?: Record<string, string>` - Additional custom headers
+- `signal?: AbortSignal` - Cancels the request; see [Cancellation](#cancellation)
 
 **Returns:** Entity ID (GUID string, read from the `OData-EntityId` response header) by default, or the full entity if `returnRepresentation: true`
 
@@ -120,7 +121,7 @@ const leadId = await service.create(
 Retrieves an entity record by ID.
 
 ```typescript
-async retrieve<T = unknown>(
+async retrieve<T = any>(
   entitySetName: string,
   id: string,
   options?: RetrieveOptions
@@ -139,6 +140,7 @@ async retrieve<T = unknown>(
 - `expand?: string | ExpandOption[]` - Related entities to expand
 - `impersonateUserId?: string` - User ID to impersonate
 - `headers?: Record<string, string>` - Additional custom headers
+- `signal?: AbortSignal` - Cancels the request; see [Cancellation](#cancellation)
 
 **Examples:**
 
@@ -188,7 +190,7 @@ await service.retrieve("accounts", "{12345678-1234-1234-1234-123456789012}".toUp
 Updates an existing entity record.
 
 ```typescript
-async update<T = unknown>(
+async update<T = any>(
   entitySetName: string,
   id: string,
   entity: Record<string, unknown>,
@@ -216,6 +218,7 @@ Like the C# `Update`, this never creates a record. The PATCH carries `If-Match: 
 - `suppressDuplicateDetection?: boolean` - `false` is the same as `detectDuplicates: true`; `true` is the default
 - `impersonateUserId?: string` - User ID to impersonate
 - `headers?: Record<string, string>` - Additional custom headers
+- `signal?: AbortSignal` - Cancels the request; see [Cancellation](#cancellation)
 
 **Returns:** `void` by default, or the updated entity if `returnRepresentation: true`
 
@@ -281,6 +284,7 @@ async delete(
 - `etag?: string` - ETag for optimistic concurrency
 - `impersonateUserId?: string` - User ID to impersonate
 - `headers?: Record<string, string>` - Additional custom headers
+- `signal?: AbortSignal` - Cancels the request; see [Cancellation](#cancellation)
 
 **Examples:**
 
@@ -328,6 +332,7 @@ async retrieveMultiple<T = any>(
 - `expand?: string | ExpandOption[]` - Related entities to expand
 - `impersonateUserId?: string` - User ID to impersonate
 - `headers?: Record<string, string>` - Additional custom headers
+- `signal?: AbortSignal` - Cancels the request; see [Cancellation](#cancellation)
 
 **Returns:** one page, as `RetrieveMultipleResult<T>` with properties:
 
@@ -400,6 +405,7 @@ async associate(
 
 - `impersonateUserId?: string` - User ID to impersonate
 - `headers?: Record<string, string>` - Additional custom headers
+- `signal?: AbortSignal` - Cancels the request; see [Cancellation](#cancellation)
 
 **Examples:**
 
@@ -454,6 +460,7 @@ async disassociate(
 
 - `impersonateUserId?: string` - User ID to impersonate
 - `headers?: Record<string, string>` - Additional custom headers
+- `signal?: AbortSignal` - Cancels the request; see [Cancellation](#cancellation)
 
 **Examples:**
 
@@ -487,7 +494,7 @@ Works with:
 - Messages from `@mohsinonxrm/dataverse-sdk-messages`
 
 ```typescript
-async execute<TResponse>(request: unknown): Promise<TResponse>
+async execute<TResponse>(request: unknown, options?: OperationOptions): Promise<TResponse>
 ```
 
 **Parameters:**
@@ -495,6 +502,7 @@ async execute<TResponse>(request: unknown): Promise<TResponse>
 - `request` - Request object implementing `Executable<T>` with:
   - `toRequestInformation(baseUrl: string)` method
   - `parseResponse(response: Response)` method
+- `options.signal` - Cancels the request; see [Cancellation](#cancellation)
 
 **Returns:** Response object of type `TResponse`
 
@@ -539,12 +547,16 @@ const workflowResponse = await service.execute(
 Gets the current user information.
 
 ```typescript
-async whoAmI(): Promise<{
+async whoAmI(options?: OperationOptions): Promise<{
   UserId: string;
   BusinessUnitId: string;
   OrganizationId: string;
 }>
 ```
+
+**Parameters:**
+
+- `options.signal` - Cancels the request; see [Cancellation](#cancellation)
 
 **Returns:** Object containing:
 
@@ -568,7 +580,7 @@ console.log("Organization:", whoAmI.OrganizationId);
 Resolves a table's entity set name from its logical name.
 
 ```typescript
-getEntitySetName(logicalName: string): Promise<string>
+getEntitySetName(logicalName: string, options?: OperationOptions): Promise<string>
 setEntitySetName(logicalName: string, entitySetName: string): void
 ```
 
@@ -577,6 +589,9 @@ Methods that take a logical name (`assign()`, `setState()` and the `EntityRefere
 (`opportunity` → `opportunities`, custom tables can use any name), so the service reads
 `EntityDefinitions(LogicalName='…')?$select=EntitySetName` once per logical name and caches it.
 An unknown table rejects with the 404 `DataverseError` instead of a guessed URL.
+
+Concurrent calls for the same name share one lookup. Aborting one caller's `signal` rejects that
+call only; the lookup request is cancelled once every caller waiting on it has aborted.
 
 To skip the lookup, give the names up front, per call, or later:
 
@@ -604,7 +619,8 @@ async assign(
   entityName: string,
   recordId: string,
   assigneeId: string,
-  assigneeType: 'systemuser' | 'team' = 'systemuser'
+  assigneeType: 'systemuser' | 'team' = 'systemuser',
+  options?: OperationOptions
 ): Promise<void>
 ```
 
@@ -614,6 +630,7 @@ async assign(
 - `recordId` - The GUID of the record to assign
 - `assigneeId` - The GUID of the user or team to assign to
 - `assigneeType` - Type of assignee ('systemuser' or 'team'), defaults to 'systemuser'
+- `options.signal` - Cancels the request and the entity set name lookups it needs; see [Cancellation](#cancellation)
 
 **Examples:**
 
@@ -636,7 +653,8 @@ async setState(
   entityName: string,
   recordId: string,
   stateCode: number,
-  statusCode: number
+  statusCode: number,
+  options?: OperationOptions
 ): Promise<void>
 ```
 
@@ -646,6 +664,7 @@ async setState(
 - `recordId` - The GUID of the record
 - `stateCode` - The state code (0 = Active, 1 = Inactive, etc.)
 - `statusCode` - The status code (specific to entity and state)
+- `options.signal` - Cancels the request and the entity set name lookup it needs; see [Cancellation](#cancellation)
 
 **Examples:**
 
@@ -674,6 +693,18 @@ interface EntityReference {
   id: string;
   name?: string;
   entitySetName?: string; // e.g. "contacts"; resolved from logicalName when omitted
+}
+```
+
+### OperationOptions
+
+What every method takes. The options of `create()`, `retrieve()`, `update()`, `delete()`,
+`retrieveMultiple()`, `associate()` and `disassociate()` extend it; `execute()`, `whoAmI()`,
+`getEntitySetName()`, `assign()` and `setState()` take it as their last argument.
+
+```typescript
+interface OperationOptions {
+  signal?: AbortSignal; // cancels the request; see Cancellation
 }
 ```
 
@@ -770,6 +801,33 @@ try {
   } else {
     throw error;
   }
+}
+```
+
+### Cancellation
+
+Every method takes an `AbortSignal`: in its options object, or as its last argument for
+`execute()`, `whoAmI()`, `getEntitySetName()`, `assign()` and `setState()`. Aborting it cancels
+the request in flight (and the requests the method hasn't sent yet), and the call rejects with
+`DataverseAbortError`, whose `name` is `"AbortError"`. A signal that is already aborted rejects
+without sending anything.
+
+```typescript
+import { DataverseAbortError } from "@mohsinonxrm/dataverse-sdk-core";
+
+const controller = new AbortController();
+// e.g. cancel when the user leaves the page
+window.addEventListener("pagehide", () => controller.abort());
+
+try {
+  const page = await service.retrieveMultiple("accounts", {
+    select: ["name"],
+    signal: controller.signal,
+  });
+  // Methods without an options object take it as their last argument
+  await service.assign("account", accountId, userId, "systemuser", { signal: controller.signal });
+} catch (error) {
+  if (!(error instanceof DataverseAbortError)) throw error; // cancelled: nothing to report
 }
 ```
 

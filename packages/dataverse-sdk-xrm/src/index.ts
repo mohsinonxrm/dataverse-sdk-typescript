@@ -4,6 +4,7 @@ export type {
   EntityReference,
   ExpandOption,
   OrganizationServiceOptions,
+  OperationOptions,
   CreateOptions,
   RetrieveOptions,
   RetrieveMultipleOptions,
