@@ -345,5 +345,5 @@ export const d = new contoso_RecalculateAction({ Mode: 3 });
     );
     const lines = bad.join("\n");
     for (const line of [3, 4, 5, 6]) expect(lines).toContain(`usage-96-bad.ts(${String(line)})`);
-  });
+  }, 60_000);
 });

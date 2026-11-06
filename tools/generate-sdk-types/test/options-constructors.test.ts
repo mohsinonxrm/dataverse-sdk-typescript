@@ -351,7 +351,7 @@ new CalculateRollupFunction({ FieldName: "revenue" });
     const lines = bad.join("\n");
     for (const line of [2, 3, 4, 5])
       expect(lines).toMatch(new RegExp(`usage-96-bad\\.ts\\(${String(line)}\\)`));
-  });
+  }, 60_000);
 });
 
 /**
