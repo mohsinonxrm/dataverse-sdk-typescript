@@ -411,7 +411,7 @@ const workflowRequest = new ExecuteWorkflowRequest(workflowId, {
   InputArguments: {},
 });
 const workflowResponse = await service.execute(workflowRequest);
-console.log(`Async operation: ${workflowResponse.result.asyncoperationid}`);
+console.log(`Async operation: ${workflowResponse.result?.asyncoperationid}`);
 
 // NOTE: service.execute() works with ANY Executable<T> class:
 // ✅ Actions from @mohsinonxrm/dataverse-sdk-actions
@@ -487,7 +487,7 @@ const workflowRequest = new ExecuteWorkflowRequest(workflowId, {
   InputArguments: {},
 });
 const workflowResponse = await service.execute(workflowRequest);
-console.log(`Async operation: ${workflowResponse.result.asyncoperationid}`);
+console.log(`Async operation: ${workflowResponse.result?.asyncoperationid}`);
 
 // Assign and SetState aren't Web API messages: they are record updates, so use the helpers
 await service.assign("account", accountId, userId); // PATCH ownerid@odata.bind

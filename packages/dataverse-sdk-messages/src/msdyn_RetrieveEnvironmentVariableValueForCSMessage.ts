@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_RetrieveEnvironmentVariableValueForCSResponse as msdyn_RetrieveEnvironmentVariableValueForCSResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_RetrieveEnvironmentVariableValueForCS message, by their CSDL names. A parameter the CSDL declares
@@ -47,24 +45,35 @@ export class msdyn_RetrieveEnvironmentVariableValueForCSRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_RetrieveEnvironmentVariableValueForCSResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_RetrieveEnvironmentVariableValueForCSResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_RetrieveEnvironmentVariableValueForCSResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_RetrieveEnvironmentVariableValueForCS action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_RetrieveEnvironmentVariableValueForCSResult {
+  "@odata.context"?: string;
+  msdyn_EnvironmentVariableValue: string;
+}
+
+/**
  * msdyn_RetrieveEnvironmentVariableValueForCS response message
+ *
+ * `result` is the value the msdyn_RetrieveEnvironmentVariableValueForCS action returns (see {@link msdyn_RetrieveEnvironmentVariableValueForCSResult}).
  */
 export class msdyn_RetrieveEnvironmentVariableValueForCSResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrieveEnvironmentVariableValueForCSResponseData) {
+  constructor(public result: msdyn_RetrieveEnvironmentVariableValueForCSResult) {
     super("msdyn_RetrieveEnvironmentVariableValueForCS");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_RetrieveEnvironmentVariableValueForCSResponse {
     return new msdyn_RetrieveEnvironmentVariableValueForCSResponse(
-      responseObject<msdyn_RetrieveEnvironmentVariableValueForCSResponseData>(data)
+      data as msdyn_RetrieveEnvironmentVariableValueForCSResult
     );
   }
 }

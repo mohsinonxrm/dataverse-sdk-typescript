@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from PvaGetDirectLineEndpoint action
+ * Response from the PvaGetDirectLineEndpoint action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface PvaGetDirectLineEndpointResponse {
+  "@odata.context"?: string;
   Endpoint: string;
 }
 
@@ -32,8 +35,7 @@ export class PvaGetDirectLineEndpointAction implements Executable<PvaGetDirectLi
   }
 
   async parseResponse(response: Response): Promise<PvaGetDirectLineEndpointResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as PvaGetDirectLineEndpointResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as PvaGetDirectLineEndpointResponse;
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_InvokeCopilotAPIResponse as msdyn_InvokeCopilotAPIResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_InvokeCopilotAPI message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class msdyn_InvokeCopilotAPIRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_InvokeCopilotAPIResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_InvokeCopilotAPIResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_InvokeCopilotAPIResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_InvokeCopilotAPI action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_InvokeCopilotAPIResult {
+  "@odata.context"?: string;
+  msdyn_response: string;
+}
+
+/**
  * msdyn_InvokeCopilotAPI response message
+ *
+ * `result` is the value the msdyn_InvokeCopilotAPI action returns (see {@link msdyn_InvokeCopilotAPIResult}).
  */
 export class msdyn_InvokeCopilotAPIResponse extends OrganizationResponse {
-  constructor(public result: msdyn_InvokeCopilotAPIResponseData) {
+  constructor(public result: msdyn_InvokeCopilotAPIResult) {
     super("msdyn_InvokeCopilotAPI");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_InvokeCopilotAPIResponse {
-    return new msdyn_InvokeCopilotAPIResponse(
-      responseObject<msdyn_InvokeCopilotAPIResponseData>(data)
-    );
+    return new msdyn_InvokeCopilotAPIResponse(data as msdyn_InvokeCopilotAPIResult);
   }
 }

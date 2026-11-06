@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_RetrieveOptimizeEntityPayloadResponse as msdyn_RetrieveOptimizeEntityPayloadResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_RetrieveOptimizeEntityPayload message, by their CSDL names. A parameter the CSDL declares
@@ -49,24 +47,35 @@ export class msdyn_RetrieveOptimizeEntityPayloadRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrieveOptimizeEntityPayloadResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_RetrieveOptimizeEntityPayloadResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_RetrieveOptimizeEntityPayloadResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_RetrieveOptimizeEntityPayload action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_RetrieveOptimizeEntityPayloadResult {
+  "@odata.context"?: string;
+  Result: string;
+}
+
+/**
  * msdyn_RetrieveOptimizeEntityPayload response message
+ *
+ * `result` is the value the msdyn_RetrieveOptimizeEntityPayload action returns (see {@link msdyn_RetrieveOptimizeEntityPayloadResult}).
  */
 export class msdyn_RetrieveOptimizeEntityPayloadResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrieveOptimizeEntityPayloadResponseData) {
+  constructor(public result: msdyn_RetrieveOptimizeEntityPayloadResult) {
     super("msdyn_RetrieveOptimizeEntityPayload");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_RetrieveOptimizeEntityPayloadResponse {
     return new msdyn_RetrieveOptimizeEntityPayloadResponse(
-      responseObject<msdyn_RetrieveOptimizeEntityPayloadResponseData>(data)
+      data as msdyn_RetrieveOptimizeEntityPayloadResult
     );
   }
 }

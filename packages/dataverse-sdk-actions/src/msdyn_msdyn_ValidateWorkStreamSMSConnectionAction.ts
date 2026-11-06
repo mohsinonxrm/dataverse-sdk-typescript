@@ -5,9 +5,12 @@ import type { EntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_liveworkstream, msdyn_ocphonenumber, msdyn_smsnumber } from "./types/index.js";
 
 /**
- * Response from msdyn_msdyn_ValidateWorkStreamSMSConnection action
+ * Response from the msdyn_msdyn_ValidateWorkStreamSMSConnection action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_msdyn_ValidateWorkStreamSMSConnectionResponse {
+  "@odata.context"?: string;
   Output: string;
 }
 
@@ -55,8 +58,7 @@ export class msdyn_msdyn_ValidateWorkStreamSMSConnectionAction implements Execut
   async parseResponse(
     response: Response
   ): Promise<msdyn_msdyn_ValidateWorkStreamSMSConnectionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_msdyn_ValidateWorkStreamSMSConnectionResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_msdyn_ValidateWorkStreamSMSConnectionResponse;
   }
 }

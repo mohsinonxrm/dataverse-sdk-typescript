@@ -46,9 +46,9 @@ export class msdyn_JoinLinkedChatConversationRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_JoinLinkedChatConversationResponse> {
+  parseResponse(_response: Response): Promise<msdyn_JoinLinkedChatConversationResponse> {
     // No return value (204 No Content)
-    return new msdyn_JoinLinkedChatConversationResponse();
+    return Promise.resolve(new msdyn_JoinLinkedChatConversationResponse());
   }
 }
 
@@ -60,7 +60,7 @@ export class msdyn_JoinLinkedChatConversationResponse extends OrganizationRespon
     super("msdyn_JoinLinkedChatConversation");
   }
 
-  static fromResponse(_data: unknown): msdyn_JoinLinkedChatConversationResponse {
+  static fromResponse(_data?: unknown): msdyn_JoinLinkedChatConversationResponse {
     return new msdyn_JoinLinkedChatConversationResponse();
   }
 }

@@ -744,16 +744,18 @@ describe("#71: entity return types", () => {
     await rm(out, { recursive: true, force: true });
   });
 
-  it("a single entity return extends the entity; collections keep value", async () => {
+  it("a single entity return is the entity; a collection is the array of records (#300)", async () => {
     const action = await read("actions/ExecuteWorkflowAction.ts");
-    expect(action).toContain("export interface ExecuteWorkflowResponse extends asyncoperation {");
+    expect(action).toMatch(/export type ExecuteWorkflowResponse =\s*\|?\s*\(asyncoperation & \{/);
     expect(action).not.toContain("value: asyncoperation");
-    expect(await read("actions/ListOperationsAction.ts")).toContain("value: asyncoperation[];");
+    expect(await read("actions/ListOperationsAction.ts")).toMatch(
+      /export type ListOperationsResponse = Array<\s*asyncoperation & \{/
+    );
   });
 
   it("a crmbaseentity return is a record with the annotations", async () => {
     const fn = await read("functions/GetPreferredSolutionFunction.ts");
-    expect(fn).toContain("[column: string]: unknown;");
+    expect(fn).toContain("[column: string]: unknown");
     expect(fn).not.toContain("EntityReference");
   });
 
@@ -763,7 +765,7 @@ describe("#71: entity return types", () => {
       "usage-71-ok.ts",
       `import type { ExecuteWorkflowResponse } from "./ExecuteWorkflowAction.js";
 declare const res: ExecuteWorkflowResponse;
-export const id: string | undefined = res.asyncoperationid;
+export const id: string | undefined = res?.asyncoperationid;
 `
     );
     expect(ok).toEqual([]);
@@ -858,53 +860,54 @@ describe("#70: message response parsing", () => {
     await rm(out, { recursive: true, force: true });
   });
 
-  it("a complex-type return is the body itself, imported under an alias", async () => {
+  it("a complex-type return is the body itself, as the action returns it (#300)", async () => {
     const code = await read("messages/QueryExpressionToFetchXmlMessage.ts");
-    expect(code).toContain(
-      "QueryExpressionToFetchXmlResponse as QueryExpressionToFetchXmlResponseData"
-    );
-    expect(code).toContain("public result: QueryExpressionToFetchXmlResponseData");
+    expect(code).toContain("export interface QueryExpressionToFetchXmlResult {");
+    expect(code).toContain("public result: QueryExpressionToFetchXmlResult");
     const Response_ = await response(
       "QueryExpressionToFetchXmlMessage.ts",
       "QueryExpressionToFetchXmlResponse"
     );
-    const res = Response_.fromResponse({
+    const data = {
       "@odata.context":
         "https://contoso.crm.dynamics.com/api/data/v9.2/$metadata#Microsoft.Dynamics.CRM.QueryExpressionToFetchXmlResponse",
       FetchXml: "<fetch/>",
-    });
-    expect(res.result).toEqual({ FetchXml: "<fetch/>" });
+    };
+    expect(Response_.fromResponse(data).result).toEqual(data);
   });
 
-  it("an entity return is the entity without its @odata annotations", async () => {
+  it("an entity return is the record with its annotations (#300)", async () => {
     expect(await read("messages/ExecuteWorkflowMessage.ts")).toContain(
-      "public result: asyncoperation"
+      "public result: ExecuteWorkflowResult"
     );
     const Response_ = await response("ExecuteWorkflowMessage.ts", "ExecuteWorkflowResponse");
-    const res = Response_.fromResponse({
+    const data = {
       "@odata.context": "$metadata#asyncoperations/$entity",
       "@odata.etag": 'W/"1"',
       asyncoperationid: "aaa",
-    });
-    expect(res.result).toEqual({ asyncoperationid: "aaa" });
+    };
+    expect(Response_.fromResponse(data).result).toEqual(data);
+    expect(Response_.fromResponse(undefined).result).toBeNull();
   });
 
   it("a crmbaseentity return is a record, not an EntityReference", async () => {
     const code = await read("messages/DequeueMessage.ts");
-    expect(code).toContain("public result: Record<string, unknown>");
+    expect(code).toContain("[column: string]: unknown");
     expect(code).not.toContain("EntityReference");
     const Response_ = await response("DequeueMessage.ts", "DequeueResponse");
     expect(Response_.fromResponse({ "@odata.context": "x", emailid: "e1" }).result).toEqual({
+      "@odata.context": "x",
       emailid: "e1",
     });
   });
 
   it("collection and primitive returns are read from value", async () => {
     expect(await read("messages/InstantiateTemplateMessage.ts")).toContain(
-      "public result: Record<string, unknown>[]"
+      "public result: InstantiateTemplateResult"
     );
     const many = await response("InstantiateTemplateMessage.ts", "InstantiateTemplateResponse");
     expect(many.fromResponse({ value: [{ subject: "s" }] }).result).toEqual([{ subject: "s" }]);
+    expect(many.fromResponse(undefined).result).toEqual([]);
     const count = await response("CountThingsMessage.ts", "CountThingsResponse");
     expect(count.fromResponse({ "@odata.context": "x", value: 3 }).result).toBe(3);
   });

@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_UpdateIsCustomFieldForOrganizationEntityResponse as msdyn_UpdateIsCustomFieldForOrganizationEntityResponseData } from "./types/index.js";
 
 /**
  * msdyn_UpdateIsCustomFieldForOrganizationEntity request message
@@ -31,9 +29,7 @@ export class msdyn_UpdateIsCustomFieldForOrganizationEntityRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_UpdateIsCustomFieldForOrganizationEntityResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_UpdateIsCustomFieldForOrganizationEntityResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_UpdateIsCustomFieldForOrganizationEntityResponse.fromResponse(
       await response.json()
     );
@@ -41,16 +37,29 @@ export class msdyn_UpdateIsCustomFieldForOrganizationEntityRequest
 }
 
 /**
+ * Response from the msdyn_UpdateIsCustomFieldForOrganizationEntity action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_UpdateIsCustomFieldForOrganizationEntityResult {
+  "@odata.context"?: string;
+  resultCode: number;
+}
+
+/**
  * msdyn_UpdateIsCustomFieldForOrganizationEntity response message
+ *
+ * `result` is the value the msdyn_UpdateIsCustomFieldForOrganizationEntity action returns (see {@link msdyn_UpdateIsCustomFieldForOrganizationEntityResult}).
  */
 export class msdyn_UpdateIsCustomFieldForOrganizationEntityResponse extends OrganizationResponse {
-  constructor(public result: msdyn_UpdateIsCustomFieldForOrganizationEntityResponseData) {
+  constructor(public result: msdyn_UpdateIsCustomFieldForOrganizationEntityResult) {
     super("msdyn_UpdateIsCustomFieldForOrganizationEntity");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_UpdateIsCustomFieldForOrganizationEntityResponse {
     return new msdyn_UpdateIsCustomFieldForOrganizationEntityResponse(
-      responseObject<msdyn_UpdateIsCustomFieldForOrganizationEntityResponseData>(data)
+      data as msdyn_UpdateIsCustomFieldForOrganizationEntityResult
     );
   }
 }

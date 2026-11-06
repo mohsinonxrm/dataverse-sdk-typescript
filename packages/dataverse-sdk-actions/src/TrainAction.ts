@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from Train action
+ * Response from the Train action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface TrainResponse {
+  "@odata.context"?: string;
   response: string;
 }
 
@@ -51,8 +54,7 @@ export class TrainAction implements Executable<TrainResponse> {
   }
 
   async parseResponse(response: Response): Promise<TrainResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as TrainResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as TrainResponse;
   }
 }

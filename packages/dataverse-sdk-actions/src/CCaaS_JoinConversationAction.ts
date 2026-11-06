@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CCaaS_JoinConversation action
+ * Response from the CCaaS_JoinConversation action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface CCaaS_JoinConversationResponse {
-  // No content returned
-}
+export type CCaaS_JoinConversationResponse = void;
 
 /**
  * Parameters of the CCaaS_JoinConversation action, by their CSDL names. A parameter the CSDL declares
@@ -54,9 +54,8 @@ export class CCaaS_JoinConversationAction implements Executable<CCaaS_JoinConver
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_JoinConversationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CCaaS_JoinConversationResponse;
-    return (await response.json()) as CCaaS_JoinConversationResponse;
+  parseResponse(_response: Response): Promise<CCaaS_JoinConversationResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

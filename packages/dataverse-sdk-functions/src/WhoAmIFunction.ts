@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from WhoAmI function
+ * Response from the WhoAmI function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface WhoAmIResponse {
+  "@odata.context"?: string;
   BusinessUnitId: string;
   OrganizationId: string;
   UserId: string;
@@ -28,8 +31,7 @@ export class WhoAmIFunction implements Executable<WhoAmIResponse> {
   }
 
   async parseResponse(response: Response): Promise<WhoAmIResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as WhoAmIResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as WhoAmIResponse;
   }
 }

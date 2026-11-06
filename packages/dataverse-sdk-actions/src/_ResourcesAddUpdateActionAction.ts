@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from _ResourcesAddUpdateAction action
+ * Response from the _ResourcesAddUpdateAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface _ResourcesAddUpdateActionResponse {
+  "@odata.context"?: string;
   CyclicResources: string;
 }
 
@@ -46,8 +49,7 @@ export class _ResourcesAddUpdateActionAction implements Executable<_ResourcesAdd
   }
 
   async parseResponse(response: Response): Promise<_ResourcesAddUpdateActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as _ResourcesAddUpdateActionResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as _ResourcesAddUpdateActionResponse;
   }
 }

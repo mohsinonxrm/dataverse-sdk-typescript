@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_GetRICommonFCBStatus action
+ * Response from the msdyn_GetRICommonFCBStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetRICommonFCBStatusResponse {
+  "@odata.context"?: string;
   Status: boolean;
 }
 
@@ -42,8 +45,7 @@ export class msdyn_GetRICommonFCBStatusAction implements Executable<msdyn_GetRIC
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetRICommonFCBStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_GetRICommonFCBStatusResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_GetRICommonFCBStatusResponse;
   }
 }

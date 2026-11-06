@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { ExportMappingsImportMapResponse as ExportMappingsImportMapResponseData } from "./types/index.js";
 
 /**
  * Parameters of the ExportMappingsImportMap message, by their CSDL names. A parameter the CSDL declares
@@ -51,23 +49,33 @@ export class ExportMappingsImportMapRequest
   }
 
   async parseResponse(response: Response): Promise<ExportMappingsImportMapResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return ExportMappingsImportMapResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return ExportMappingsImportMapResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the ExportMappingsImportMap action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface ExportMappingsImportMapResult {
+  "@odata.context"?: string;
+  MappingsXml: string;
+}
+
+/**
  * ExportMappingsImportMap response message
+ *
+ * `result` is the value the ExportMappingsImportMap action returns (see {@link ExportMappingsImportMapResult}).
  */
 export class ExportMappingsImportMapResponse extends OrganizationResponse {
-  constructor(public result: ExportMappingsImportMapResponseData) {
+  constructor(public result: ExportMappingsImportMapResult) {
     super("ExportMappingsImportMap");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): ExportMappingsImportMapResponse {
-    return new ExportMappingsImportMapResponse(
-      responseObject<ExportMappingsImportMapResponseData>(data)
-    );
+    return new ExportMappingsImportMapResponse(data as ExportMappingsImportMapResult);
   }
 }

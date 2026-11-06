@@ -1,11 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type {
-  TypedActivitypointer,
-  ValidateResponse as ValidateResponseData,
-} from "./types/index.js";
+import type { TypedActivitypointer, ValidationResult } from "./types/index.js";
 
 /**
  * Parameters of the Validate message, by their CSDL names. A parameter the CSDL declares
@@ -45,21 +41,33 @@ export class ValidateRequest extends OrganizationRequest implements Executable<V
   }
 
   async parseResponse(response: Response): Promise<ValidateResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return ValidateResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return ValidateResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the Validate action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface ValidateResult {
+  "@odata.context"?: string;
+  Result: ValidationResult[];
+}
+
+/**
  * Validate response message
+ *
+ * `result` is the value the Validate action returns (see {@link ValidateResult}).
  */
 export class ValidateResponse extends OrganizationResponse {
-  constructor(public result: ValidateResponseData) {
+  constructor(public result: ValidateResult) {
     super("Validate");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): ValidateResponse {
-    return new ValidateResponse(responseObject<ValidateResponseData>(data));
+    return new ValidateResponse(data as ValidateResult);
   }
 }

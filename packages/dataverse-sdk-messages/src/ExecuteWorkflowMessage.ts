@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { InputArgumentCollection, asyncoperation } from "./types/index.js";
 
@@ -53,21 +52,35 @@ export class ExecuteWorkflowRequest
   }
 
   async parseResponse(response: Response): Promise<ExecuteWorkflowResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return ExecuteWorkflowResponse.fromResponse({});
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return ExecuteWorkflowResponse.fromResponse(undefined);
+    // The body is the record, with its annotations
     return ExecuteWorkflowResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the ExecuteWorkflow action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
+ */
+export type ExecuteWorkflowResult =
+  | (asyncoperation & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string })
+  | null;
+
+/**
  * ExecuteWorkflow response message
+ *
+ * `result` is the value the ExecuteWorkflow action returns (see {@link ExecuteWorkflowResult}).
  */
 export class ExecuteWorkflowResponse extends OrganizationResponse {
-  constructor(public result: asyncoperation) {
+  constructor(public result: ExecuteWorkflowResult) {
     super("ExecuteWorkflow");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): ExecuteWorkflowResponse {
-    return new ExecuteWorkflowResponse(responseObject<asyncoperation>(data));
+    return new ExecuteWorkflowResponse((data ?? null) as ExecuteWorkflowResult);
   }
 }

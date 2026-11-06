@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_EmailClassificationSimulation action
+ * Response from the msdyn_EmailClassificationSimulation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_EmailClassificationSimulationResponse {
+  "@odata.context"?: string;
   msdyn_HasMoreRecords: string;
   msdyn_NeedThrottling: string;
 }
@@ -45,8 +48,7 @@ export class msdyn_EmailClassificationSimulationAction implements Executable<msd
   }
 
   async parseResponse(response: Response): Promise<msdyn_EmailClassificationSimulationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_EmailClassificationSimulationResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_EmailClassificationSimulationResponse;
   }
 }

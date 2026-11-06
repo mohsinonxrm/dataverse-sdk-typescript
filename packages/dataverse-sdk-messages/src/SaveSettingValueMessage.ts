@@ -48,9 +48,9 @@ export class SaveSettingValueRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<SaveSettingValueResponse> {
+  parseResponse(_response: Response): Promise<SaveSettingValueResponse> {
     // No return value (204 No Content)
-    return new SaveSettingValueResponse();
+    return Promise.resolve(new SaveSettingValueResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class SaveSettingValueResponse extends OrganizationResponse {
     super("SaveSettingValue");
   }
 
-  static fromResponse(_data: unknown): SaveSettingValueResponse {
+  static fromResponse(_data?: unknown): SaveSettingValueResponse {
     return new SaveSettingValueResponse();
   }
 }

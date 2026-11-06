@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from GetHeaderColumnsImportFile function
+ * Response from the GetHeaderColumnsImportFile function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface GetHeaderColumnsImportFileResponse {
+  "@odata.context"?: string;
   Columns: string[];
 }
 
@@ -32,8 +35,7 @@ export class GetHeaderColumnsImportFileFunction implements Executable<GetHeaderC
   }
 
   async parseResponse(response: Response): Promise<GetHeaderColumnsImportFileResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as GetHeaderColumnsImportFileResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as GetHeaderColumnsImportFileResponse;
   }
 }

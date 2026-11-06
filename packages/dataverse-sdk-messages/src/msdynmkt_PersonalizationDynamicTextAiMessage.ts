@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdynmkt_PersonalizationDynamicTextAiResponse as msdynmkt_PersonalizationDynamicTextAiResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdynmkt_PersonalizationDynamicTextAi message, by their CSDL names. A parameter the CSDL declares
@@ -46,24 +44,35 @@ export class msdynmkt_PersonalizationDynamicTextAiRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_PersonalizationDynamicTextAiResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdynmkt_PersonalizationDynamicTextAiResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdynmkt_PersonalizationDynamicTextAiResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdynmkt_PersonalizationDynamicTextAi action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdynmkt_PersonalizationDynamicTextAiResult {
+  "@odata.context"?: string;
+  msdynmkt_PersonalizationDynamicTextAiResponse: string;
+}
+
+/**
  * msdynmkt_PersonalizationDynamicTextAi response message
+ *
+ * `result` is the value the msdynmkt_PersonalizationDynamicTextAi action returns (see {@link msdynmkt_PersonalizationDynamicTextAiResult}).
  */
 export class msdynmkt_PersonalizationDynamicTextAiResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_PersonalizationDynamicTextAiResponseData) {
+  constructor(public result: msdynmkt_PersonalizationDynamicTextAiResult) {
     super("msdynmkt_PersonalizationDynamicTextAi");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdynmkt_PersonalizationDynamicTextAiResponse {
     return new msdynmkt_PersonalizationDynamicTextAiResponse(
-      responseObject<msdynmkt_PersonalizationDynamicTextAiResponseData>(data)
+      data as msdynmkt_PersonalizationDynamicTextAiResult
     );
   }
 }

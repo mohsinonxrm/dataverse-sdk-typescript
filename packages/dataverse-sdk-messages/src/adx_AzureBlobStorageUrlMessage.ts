@@ -1,13 +1,9 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
-import type {
-  adx_AzureBlobStorageUrlResponse as adx_AzureBlobStorageUrlResponseData,
-  annotation,
-} from "./types/index.js";
+import type { annotation } from "./types/index.js";
 
 /**
  * Parameters of the adx_AzureBlobStorageUrl message, by their CSDL names. A parameter the CSDL declares
@@ -50,23 +46,33 @@ export class adx_AzureBlobStorageUrlRequest
   }
 
   async parseResponse(response: Response): Promise<adx_AzureBlobStorageUrlResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return adx_AzureBlobStorageUrlResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return adx_AzureBlobStorageUrlResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the adx_AzureBlobStorageUrl action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface adx_AzureBlobStorageUrlResult {
+  "@odata.context"?: string;
+  Url: string;
+}
+
+/**
  * adx_AzureBlobStorageUrl response message
+ *
+ * `result` is the value the adx_AzureBlobStorageUrl action returns (see {@link adx_AzureBlobStorageUrlResult}).
  */
 export class adx_AzureBlobStorageUrlResponse extends OrganizationResponse {
-  constructor(public result: adx_AzureBlobStorageUrlResponseData) {
+  constructor(public result: adx_AzureBlobStorageUrlResult) {
     super("adx_AzureBlobStorageUrl");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): adx_AzureBlobStorageUrlResponse {
-    return new adx_AzureBlobStorageUrlResponse(
-      responseObject<adx_AzureBlobStorageUrlResponseData>(data)
-    );
+    return new adx_AzureBlobStorageUrlResponse(data as adx_AzureBlobStorageUrlResult);
   }
 }

@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_DeprovisionUnifiedRoutingResponse as msdyn_DeprovisionUnifiedRoutingResponseData } from "./types/index.js";
 
 /**
  * msdyn_DeprovisionUnifiedRouting request message
@@ -29,23 +27,38 @@ export class msdyn_DeprovisionUnifiedRoutingRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_DeprovisionUnifiedRoutingResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_DeprovisionUnifiedRoutingResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_DeprovisionUnifiedRoutingResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_DeprovisionUnifiedRouting action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_DeprovisionUnifiedRoutingResult {
+  "@odata.context"?: string;
+  msdyn_customMessage: string;
+  msdyn_errorCode: string;
+  msdyn_responseCode: string;
+  msdyn_serviceRequestId: string;
+}
+
+/**
  * msdyn_DeprovisionUnifiedRouting response message
+ *
+ * `result` is the value the msdyn_DeprovisionUnifiedRouting action returns (see {@link msdyn_DeprovisionUnifiedRoutingResult}).
  */
 export class msdyn_DeprovisionUnifiedRoutingResponse extends OrganizationResponse {
-  constructor(public result: msdyn_DeprovisionUnifiedRoutingResponseData) {
+  constructor(public result: msdyn_DeprovisionUnifiedRoutingResult) {
     super("msdyn_DeprovisionUnifiedRouting");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_DeprovisionUnifiedRoutingResponse {
     return new msdyn_DeprovisionUnifiedRoutingResponse(
-      responseObject<msdyn_DeprovisionUnifiedRoutingResponseData>(data)
+      data as msdyn_DeprovisionUnifiedRoutingResult
     );
   }
 }

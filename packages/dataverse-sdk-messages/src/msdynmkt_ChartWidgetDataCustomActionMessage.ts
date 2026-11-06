@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdynmkt_ChartWidgetDataCustomActionResponse as msdynmkt_ChartWidgetDataCustomActionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdynmkt_ChartWidgetDataCustomAction message, by their CSDL names. A parameter the CSDL declares
@@ -45,24 +43,39 @@ export class msdynmkt_ChartWidgetDataCustomActionRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_ChartWidgetDataCustomActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdynmkt_ChartWidgetDataCustomActionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdynmkt_ChartWidgetDataCustomActionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdynmkt_ChartWidgetDataCustomAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdynmkt_ChartWidgetDataCustomActionResult {
+  "@odata.context"?: string;
+  ErrorMessage: string;
+  IsSuccess: boolean;
+  StatusCode: number;
+  WidgetData: string;
+  WidgetDefinition: string;
+}
+
+/**
  * msdynmkt_ChartWidgetDataCustomAction response message
+ *
+ * `result` is the value the msdynmkt_ChartWidgetDataCustomAction action returns (see {@link msdynmkt_ChartWidgetDataCustomActionResult}).
  */
 export class msdynmkt_ChartWidgetDataCustomActionResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_ChartWidgetDataCustomActionResponseData) {
+  constructor(public result: msdynmkt_ChartWidgetDataCustomActionResult) {
     super("msdynmkt_ChartWidgetDataCustomAction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdynmkt_ChartWidgetDataCustomActionResponse {
     return new msdynmkt_ChartWidgetDataCustomActionResponse(
-      responseObject<msdynmkt_ChartWidgetDataCustomActionResponseData>(data)
+      data as msdynmkt_ChartWidgetDataCustomActionResult
     );
   }
 }

@@ -60,9 +60,9 @@ export class adx_SendEmailConfirmationToContactRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<adx_SendEmailConfirmationToContactResponse> {
+  parseResponse(_response: Response): Promise<adx_SendEmailConfirmationToContactResponse> {
     // No return value (204 No Content)
-    return new adx_SendEmailConfirmationToContactResponse();
+    return Promise.resolve(new adx_SendEmailConfirmationToContactResponse());
   }
 }
 
@@ -74,7 +74,7 @@ export class adx_SendEmailConfirmationToContactResponse extends OrganizationResp
     super("adx_SendEmailConfirmationToContact");
   }
 
-  static fromResponse(_data: unknown): adx_SendEmailConfirmationToContactResponse {
+  static fromResponse(_data?: unknown): adx_SendEmailConfirmationToContactResponse {
     return new adx_SendEmailConfirmationToContactResponse();
   }
 }

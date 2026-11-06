@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdynmkt_PersonalizationGetEntityTypesResponse as msdynmkt_PersonalizationGetEntityTypesResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdynmkt_PersonalizationGetEntityTypes message, by their CSDL names. A parameter the CSDL declares
@@ -45,24 +43,35 @@ export class msdynmkt_PersonalizationGetEntityTypesRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_PersonalizationGetEntityTypesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdynmkt_PersonalizationGetEntityTypesResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdynmkt_PersonalizationGetEntityTypesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdynmkt_PersonalizationGetEntityTypes action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdynmkt_PersonalizationGetEntityTypesResult {
+  "@odata.context"?: string;
+  GetEntityTypesResult: string;
+}
+
+/**
  * msdynmkt_PersonalizationGetEntityTypes response message
+ *
+ * `result` is the value the msdynmkt_PersonalizationGetEntityTypes action returns (see {@link msdynmkt_PersonalizationGetEntityTypesResult}).
  */
 export class msdynmkt_PersonalizationGetEntityTypesResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_PersonalizationGetEntityTypesResponseData) {
+  constructor(public result: msdynmkt_PersonalizationGetEntityTypesResult) {
     super("msdynmkt_PersonalizationGetEntityTypes");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdynmkt_PersonalizationGetEntityTypesResponse {
     return new msdynmkt_PersonalizationGetEntityTypesResponse(
-      responseObject<msdynmkt_PersonalizationGetEntityTypesResponseData>(data)
+      data as msdynmkt_PersonalizationGetEntityTypesResult
     );
   }
 }

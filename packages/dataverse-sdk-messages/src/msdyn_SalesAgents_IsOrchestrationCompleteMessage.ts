@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesAgents_IsOrchestrationCompleteResponse as msdyn_SalesAgents_IsOrchestrationCompleteResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesAgents_IsOrchestrationComplete message, by their CSDL names. A parameter the CSDL declares
@@ -53,24 +51,35 @@ export class msdyn_SalesAgents_IsOrchestrationCompleteRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_IsOrchestrationCompleteResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_SalesAgents_IsOrchestrationCompleteResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesAgents_IsOrchestrationCompleteResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SalesAgents_IsOrchestrationComplete action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesAgents_IsOrchestrationCompleteResult {
+  "@odata.context"?: string;
+  msdyn_IsOrchestrationComplete: boolean;
+}
+
+/**
  * msdyn_SalesAgents_IsOrchestrationComplete response message
+ *
+ * `result` is the value the msdyn_SalesAgents_IsOrchestrationComplete action returns (see {@link msdyn_SalesAgents_IsOrchestrationCompleteResult}).
  */
 export class msdyn_SalesAgents_IsOrchestrationCompleteResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgents_IsOrchestrationCompleteResponseData) {
+  constructor(public result: msdyn_SalesAgents_IsOrchestrationCompleteResult) {
     super("msdyn_SalesAgents_IsOrchestrationComplete");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesAgents_IsOrchestrationCompleteResponse {
     return new msdyn_SalesAgents_IsOrchestrationCompleteResponse(
-      responseObject<msdyn_SalesAgents_IsOrchestrationCompleteResponseData>(data)
+      data as msdyn_SalesAgents_IsOrchestrationCompleteResult
     );
   }
 }

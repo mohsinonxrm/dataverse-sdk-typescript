@@ -29,11 +29,11 @@ export class AddRequiredUIElementCollectionComponentsToSolutionsRequest
     };
   }
 
-  async parseResponse(
-    response: Response
+  parseResponse(
+    _response: Response
   ): Promise<AddRequiredUIElementCollectionComponentsToSolutionsResponse> {
     // No return value (204 No Content)
-    return new AddRequiredUIElementCollectionComponentsToSolutionsResponse();
+    return Promise.resolve(new AddRequiredUIElementCollectionComponentsToSolutionsResponse());
   }
 }
 
@@ -45,7 +45,9 @@ export class AddRequiredUIElementCollectionComponentsToSolutionsResponse extends
     super("AddRequiredUIElementCollectionComponentsToSolutions");
   }
 
-  static fromResponse(_data: unknown): AddRequiredUIElementCollectionComponentsToSolutionsResponse {
+  static fromResponse(
+    _data?: unknown
+  ): AddRequiredUIElementCollectionComponentsToSolutionsResponse {
     return new AddRequiredUIElementCollectionComponentsToSolutionsResponse();
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CanBeReferencingResponse as CanBeReferencingResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CanBeReferencing message, by their CSDL names. A parameter the CSDL declares
@@ -45,21 +43,33 @@ export class CanBeReferencingRequest
   }
 
   async parseResponse(response: Response): Promise<CanBeReferencingResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CanBeReferencingResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CanBeReferencingResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CanBeReferencing action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CanBeReferencingResult {
+  "@odata.context"?: string;
+  CanBeReferencing: boolean;
+}
+
+/**
  * CanBeReferencing response message
+ *
+ * `result` is the value the CanBeReferencing action returns (see {@link CanBeReferencingResult}).
  */
 export class CanBeReferencingResponse extends OrganizationResponse {
-  constructor(public result: CanBeReferencingResponseData) {
+  constructor(public result: CanBeReferencingResult) {
     super("CanBeReferencing");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CanBeReferencingResponse {
-    return new CanBeReferencingResponse(responseObject<CanBeReferencingResponseData>(data));
+    return new CanBeReferencingResponse(data as CanBeReferencingResult);
   }
 }

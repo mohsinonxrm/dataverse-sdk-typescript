@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import type { AttributeMapping } from "./types/index.js";
 
 /**
- * Response from RetrievePrincipalSyncAttributeMappings function
+ * Response from the RetrievePrincipalSyncAttributeMappings function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrievePrincipalSyncAttributeMappings_teamResponse {
+  "@odata.context"?: string;
   AttributeMappings: AttributeMapping[];
 }
 
@@ -35,8 +38,7 @@ export class RetrievePrincipalSyncAttributeMappings_teamFunction implements Exec
   async parseResponse(
     response: Response
   ): Promise<RetrievePrincipalSyncAttributeMappings_teamResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrievePrincipalSyncAttributeMappings_teamResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RetrievePrincipalSyncAttributeMappings_teamResponse;
   }
 }

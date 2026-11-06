@@ -42,11 +42,9 @@ export class msdyn_FixSLARelationshipsOnTargetEntitiesRequest
     };
   }
 
-  async parseResponse(
-    response: Response
-  ): Promise<msdyn_FixSLARelationshipsOnTargetEntitiesResponse> {
+  parseResponse(_response: Response): Promise<msdyn_FixSLARelationshipsOnTargetEntitiesResponse> {
     // No return value (204 No Content)
-    return new msdyn_FixSLARelationshipsOnTargetEntitiesResponse();
+    return Promise.resolve(new msdyn_FixSLARelationshipsOnTargetEntitiesResponse());
   }
 }
 
@@ -58,7 +56,7 @@ export class msdyn_FixSLARelationshipsOnTargetEntitiesResponse extends Organizat
     super("msdyn_FixSLARelationshipsOnTargetEntities");
   }
 
-  static fromResponse(_data: unknown): msdyn_FixSLARelationshipsOnTargetEntitiesResponse {
+  static fromResponse(_data?: unknown): msdyn_FixSLARelationshipsOnTargetEntitiesResponse {
     return new msdyn_FixSLARelationshipsOnTargetEntitiesResponse();
   }
 }

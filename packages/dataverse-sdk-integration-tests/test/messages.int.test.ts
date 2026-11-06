@@ -20,6 +20,7 @@ describe.skipIf(!live)("live: generated messages (#70)", () => {
     );
     expect(response.messageName).toBe("QueryExpressionToFetchXml");
     expect(response.result.FetchXml).toContain('<entity name="account">');
-    expect(response.result).not.toHaveProperty("@odata.context");
+    // The action's value: the body, with its @odata.context (#300)
+    expect(response.result["@odata.context"]).toContain("QueryExpressionToFetchXmlResponse");
   });
 });

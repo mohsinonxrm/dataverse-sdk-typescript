@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from Recalculate action
+ * Response from the Recalculate action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface RecalculateResponse {
-  // No content returned
-}
+export type RecalculateResponse = void;
 
 /**
  * Recalculate action
@@ -31,9 +31,8 @@ export class RecalculateAction implements Executable<RecalculateResponse> {
     };
   }
 
-  async parseResponse(response: Response): Promise<RecalculateResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RecalculateResponse;
-    return (await response.json()) as RecalculateResponse;
+  parseResponse(_response: Response): Promise<RecalculateResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

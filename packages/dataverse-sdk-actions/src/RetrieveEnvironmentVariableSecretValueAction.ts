@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from RetrieveEnvironmentVariableSecretValue action
+ * Response from the RetrieveEnvironmentVariableSecretValue action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveEnvironmentVariableSecretValueResponse {
+  "@odata.context"?: string;
   EnvironmentVariableSecretValue: string;
 }
 
@@ -42,8 +45,7 @@ export class RetrieveEnvironmentVariableSecretValueAction implements Executable<
   }
 
   async parseResponse(response: Response): Promise<RetrieveEnvironmentVariableSecretValueResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveEnvironmentVariableSecretValueResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RetrieveEnvironmentVariableSecretValueResponse;
   }
 }

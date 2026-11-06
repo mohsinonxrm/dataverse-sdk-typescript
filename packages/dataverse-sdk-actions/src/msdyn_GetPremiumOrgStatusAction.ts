@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_GetPremiumOrgStatus action
+ * Response from the msdyn_GetPremiumOrgStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetPremiumOrgStatusResponse {
+  "@odata.context"?: string;
   PremiumOrgStatus: boolean;
 }
 
@@ -26,8 +29,7 @@ export class msdyn_GetPremiumOrgStatusAction implements Executable<msdyn_GetPrem
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetPremiumOrgStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_GetPremiumOrgStatusResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_GetPremiumOrgStatusResponse;
   }
 }

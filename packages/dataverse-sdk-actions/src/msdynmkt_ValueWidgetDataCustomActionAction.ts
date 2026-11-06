@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdynmkt_ValueWidgetDataCustomAction action
+ * Response from the msdynmkt_ValueWidgetDataCustomAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdynmkt_ValueWidgetDataCustomActionResponse {
+  "@odata.context"?: string;
   ErrorMessage: string;
   IsSuccess: boolean;
   StatusCode: number;
@@ -48,8 +51,7 @@ export class msdynmkt_ValueWidgetDataCustomActionAction implements Executable<ms
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_ValueWidgetDataCustomActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdynmkt_ValueWidgetDataCustomActionResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdynmkt_ValueWidgetDataCustomActionResponse;
   }
 }

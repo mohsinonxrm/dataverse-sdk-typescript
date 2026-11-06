@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CCaaS_GetCallbackTimeSlotsResponse as CCaaS_GetCallbackTimeSlotsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CCaaS_GetCallbackTimeSlots message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,33 @@ export class CCaaS_GetCallbackTimeSlotsRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_GetCallbackTimeSlotsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CCaaS_GetCallbackTimeSlotsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CCaaS_GetCallbackTimeSlotsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CCaaS_GetCallbackTimeSlots action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CCaaS_GetCallbackTimeSlotsResult {
+  "@odata.context"?: string;
+  TimeInfoJson: string;
+}
+
+/**
  * CCaaS_GetCallbackTimeSlots response message
+ *
+ * `result` is the value the CCaaS_GetCallbackTimeSlots action returns (see {@link CCaaS_GetCallbackTimeSlotsResult}).
  */
 export class CCaaS_GetCallbackTimeSlotsResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_GetCallbackTimeSlotsResponseData) {
+  constructor(public result: CCaaS_GetCallbackTimeSlotsResult) {
     super("CCaaS_GetCallbackTimeSlots");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CCaaS_GetCallbackTimeSlotsResponse {
-    return new CCaaS_GetCallbackTimeSlotsResponse(
-      responseObject<CCaaS_GetCallbackTimeSlotsResponseData>(data)
-    );
+    return new CCaaS_GetCallbackTimeSlotsResponse(data as CCaaS_GetCallbackTimeSlotsResult);
   }
 }

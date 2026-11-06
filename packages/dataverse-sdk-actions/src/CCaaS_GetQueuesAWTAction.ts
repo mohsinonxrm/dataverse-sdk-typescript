@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CCaaS_GetQueuesAWT action
+ * Response from the CCaaS_GetQueuesAWT action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CCaaS_GetQueuesAWTResponse {
+  "@odata.context"?: string;
   Queues: string;
 }
 
@@ -44,8 +47,7 @@ export class CCaaS_GetQueuesAWTAction implements Executable<CCaaS_GetQueuesAWTRe
   }
 
   async parseResponse(response: Response): Promise<CCaaS_GetQueuesAWTResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CCaaS_GetQueuesAWTResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as CCaaS_GetQueuesAWTResponse;
   }
 }

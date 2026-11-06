@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CCaaS_InitiateAgentConsult action
+ * Response from the CCaaS_InitiateAgentConsult action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface CCaaS_InitiateAgentConsultResponse {
-  // No content returned
-}
+export type CCaaS_InitiateAgentConsultResponse = void;
 
 /**
  * Parameters of the CCaaS_InitiateAgentConsult action, by their CSDL names. A parameter the CSDL declares
@@ -58,9 +58,8 @@ export class CCaaS_InitiateAgentConsultAction implements Executable<CCaaS_Initia
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_InitiateAgentConsultResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CCaaS_InitiateAgentConsultResponse;
-    return (await response.json()) as CCaaS_InitiateAgentConsultResponse;
+  parseResponse(_response: Response): Promise<CCaaS_InitiateAgentConsultResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

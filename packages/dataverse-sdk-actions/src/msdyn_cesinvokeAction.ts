@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_cesinvoke action
+ * Response from the msdyn_cesinvoke action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_cesinvokeResponse {
+  "@odata.context"?: string;
   CESResult: string;
   IsSuccess: string;
 }
@@ -47,8 +50,7 @@ export class msdyn_cesinvokeAction implements Executable<msdyn_cesinvokeResponse
   }
 
   async parseResponse(response: Response): Promise<msdyn_cesinvokeResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_cesinvokeResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_cesinvokeResponse;
   }
 }

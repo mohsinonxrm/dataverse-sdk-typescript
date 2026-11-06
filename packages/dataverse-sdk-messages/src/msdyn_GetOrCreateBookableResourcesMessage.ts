@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetOrCreateBookableResourcesResponse as msdyn_GetOrCreateBookableResourcesResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetOrCreateBookableResources message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,35 @@ export class msdyn_GetOrCreateBookableResourcesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetOrCreateBookableResourcesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetOrCreateBookableResourcesResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetOrCreateBookableResourcesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetOrCreateBookableResources action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetOrCreateBookableResourcesResult {
+  "@odata.context"?: string;
+  BookableResources: string;
+}
+
+/**
  * msdyn_GetOrCreateBookableResources response message
+ *
+ * `result` is the value the msdyn_GetOrCreateBookableResources action returns (see {@link msdyn_GetOrCreateBookableResourcesResult}).
  */
 export class msdyn_GetOrCreateBookableResourcesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetOrCreateBookableResourcesResponseData) {
+  constructor(public result: msdyn_GetOrCreateBookableResourcesResult) {
     super("msdyn_GetOrCreateBookableResources");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetOrCreateBookableResourcesResponse {
     return new msdyn_GetOrCreateBookableResourcesResponse(
-      responseObject<msdyn_GetOrCreateBookableResourcesResponseData>(data)
+      data as msdyn_GetOrCreateBookableResourcesResult
     );
   }
 }

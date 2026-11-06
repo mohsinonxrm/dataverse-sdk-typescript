@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_SyncLeadActionFromNba action
+ * Response from the msdyn_SyncLeadActionFromNba action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_SyncLeadActionFromNbaResponse {
+  "@odata.context"?: string;
   Message: string;
   Retryable: boolean;
   Success: boolean;
@@ -50,8 +53,7 @@ export class msdyn_SyncLeadActionFromNbaAction implements Executable<msdyn_SyncL
   }
 
   async parseResponse(response: Response): Promise<msdyn_SyncLeadActionFromNbaResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_SyncLeadActionFromNbaResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_SyncLeadActionFromNbaResponse;
   }
 }

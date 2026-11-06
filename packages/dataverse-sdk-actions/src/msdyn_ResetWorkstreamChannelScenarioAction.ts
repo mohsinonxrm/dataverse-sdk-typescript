@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_ResetWorkstreamChannelScenario action
+ * Response from the msdyn_ResetWorkstreamChannelScenario action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_ResetWorkstreamChannelScenarioResponse {
-  // No content returned
-}
+export type msdyn_ResetWorkstreamChannelScenarioResponse = void;
 
 /**
  * Parameters of the msdyn_ResetWorkstreamChannelScenario action, by their CSDL names. A parameter the CSDL declares
@@ -41,9 +41,8 @@ export class msdyn_ResetWorkstreamChannelScenarioAction implements Executable<ms
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ResetWorkstreamChannelScenarioResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_ResetWorkstreamChannelScenarioResponse;
-    return (await response.json()) as msdyn_ResetWorkstreamChannelScenarioResponse;
+  parseResponse(_response: Response): Promise<msdyn_ResetWorkstreamChannelScenarioResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

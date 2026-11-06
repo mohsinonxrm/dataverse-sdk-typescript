@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { msdyn_ocsimltraining } from "./types/index.js";
 
 /**
@@ -32,21 +31,39 @@ export class msdyn_CreateTrainConfigRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateTrainConfigResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_CreateTrainConfigResponse.fromResponse({});
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return msdyn_CreateTrainConfigResponse.fromResponse(undefined);
+    // The body is the record, with its annotations
     return msdyn_CreateTrainConfigResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CreateTrainConfig action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
+ */
+export type msdyn_CreateTrainConfigResult =
+  | (msdyn_ocsimltraining & {
+      "@odata.context"?: string;
+      "@odata.etag"?: string;
+      "@odata.type"?: string;
+    })
+  | null;
+
+/**
  * msdyn_CreateTrainConfig response message
+ *
+ * `result` is the value the msdyn_CreateTrainConfig action returns (see {@link msdyn_CreateTrainConfigResult}).
  */
 export class msdyn_CreateTrainConfigResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ocsimltraining) {
+  constructor(public result: msdyn_CreateTrainConfigResult) {
     super("msdyn_CreateTrainConfig");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CreateTrainConfigResponse {
-    return new msdyn_CreateTrainConfigResponse(responseObject<msdyn_ocsimltraining>(data));
+    return new msdyn_CreateTrainConfigResponse((data ?? null) as msdyn_CreateTrainConfigResult);
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { GenerateAutomatedPluginResponse as GenerateAutomatedPluginResponseData } from "./types/index.js";
 
 /**
  * Parameters of the GenerateAutomatedPlugin message, by their CSDL names. A parameter the CSDL declares
@@ -57,23 +55,34 @@ export class GenerateAutomatedPluginRequest
   }
 
   async parseResponse(response: Response): Promise<GenerateAutomatedPluginResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return GenerateAutomatedPluginResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return GenerateAutomatedPluginResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the GenerateAutomatedPlugin action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface GenerateAutomatedPluginResult {
+  "@odata.context"?: string;
+  FxExpressionId: string;
+  pluginid: string;
+}
+
+/**
  * GenerateAutomatedPlugin response message
+ *
+ * `result` is the value the GenerateAutomatedPlugin action returns (see {@link GenerateAutomatedPluginResult}).
  */
 export class GenerateAutomatedPluginResponse extends OrganizationResponse {
-  constructor(public result: GenerateAutomatedPluginResponseData) {
+  constructor(public result: GenerateAutomatedPluginResult) {
     super("GenerateAutomatedPlugin");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): GenerateAutomatedPluginResponse {
-    return new GenerateAutomatedPluginResponse(
-      responseObject<GenerateAutomatedPluginResponseData>(data)
-    );
+    return new GenerateAutomatedPluginResponse(data as GenerateAutomatedPluginResult);
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CancelTrainingResponse as CancelTrainingResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CancelTraining message, by their CSDL names. A parameter the CSDL declares
@@ -51,21 +49,33 @@ export class CancelTrainingRequest
   }
 
   async parseResponse(response: Response): Promise<CancelTrainingResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CancelTrainingResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CancelTrainingResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CancelTraining action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CancelTrainingResult {
+  "@odata.context"?: string;
+  response: string;
+}
+
+/**
  * CancelTraining response message
+ *
+ * `result` is the value the CancelTraining action returns (see {@link CancelTrainingResult}).
  */
 export class CancelTrainingResponse extends OrganizationResponse {
-  constructor(public result: CancelTrainingResponseData) {
+  constructor(public result: CancelTrainingResult) {
     super("CancelTraining");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CancelTrainingResponse {
-    return new CancelTrainingResponse(responseObject<CancelTrainingResponseData>(data));
+    return new CancelTrainingResponse(data as CancelTrainingResult);
   }
 }

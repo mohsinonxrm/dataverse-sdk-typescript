@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_gettransformationconnectionsResponse as msdyn_gettransformationconnectionsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_gettransformationconnections message, by their CSDL names. A parameter the CSDL declares
@@ -51,23 +49,38 @@ export class msdyn_gettransformationconnectionsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_gettransformationconnectionsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_gettransformationconnectionsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_gettransformationconnectionsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_gettransformationconnections action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_gettransformationconnectionsResult {
+  "@odata.context"?: string;
+  ConnectionsJson: string;
+  CreateConnectionUrl: string;
+  IsCurrentConnectionValid: boolean;
+  Status: string;
+}
+
+/**
  * msdyn_gettransformationconnections response message
+ *
+ * `result` is the value the msdyn_gettransformationconnections action returns (see {@link msdyn_gettransformationconnectionsResult}).
  */
 export class msdyn_gettransformationconnectionsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_gettransformationconnectionsResponseData) {
+  constructor(public result: msdyn_gettransformationconnectionsResult) {
     super("msdyn_gettransformationconnections");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_gettransformationconnectionsResponse {
     return new msdyn_gettransformationconnectionsResponse(
-      responseObject<msdyn_gettransformationconnectionsResponseData>(data)
+      data as msdyn_gettransformationconnectionsResult
     );
   }
 }

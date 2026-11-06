@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdynmkt_StartMigrationCustomActionResponse as msdynmkt_StartMigrationCustomActionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdynmkt_StartMigrationCustomAction message, by their CSDL names. A parameter the CSDL declares
@@ -45,24 +43,35 @@ export class msdynmkt_StartMigrationCustomActionRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_StartMigrationCustomActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdynmkt_StartMigrationCustomActionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdynmkt_StartMigrationCustomActionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdynmkt_StartMigrationCustomAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdynmkt_StartMigrationCustomActionResult {
+  "@odata.context"?: string;
+  ErrorCodes: string;
+}
+
+/**
  * msdynmkt_StartMigrationCustomAction response message
+ *
+ * `result` is the value the msdynmkt_StartMigrationCustomAction action returns (see {@link msdynmkt_StartMigrationCustomActionResult}).
  */
 export class msdynmkt_StartMigrationCustomActionResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_StartMigrationCustomActionResponseData) {
+  constructor(public result: msdynmkt_StartMigrationCustomActionResult) {
     super("msdynmkt_StartMigrationCustomAction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdynmkt_StartMigrationCustomActionResponse {
     return new msdynmkt_StartMigrationCustomActionResponse(
-      responseObject<msdynmkt_StartMigrationCustomActionResponseData>(data)
+      data as msdynmkt_StartMigrationCustomActionResult
     );
   }
 }

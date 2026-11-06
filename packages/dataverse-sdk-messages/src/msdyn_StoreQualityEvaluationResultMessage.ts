@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_StoreQualityEvaluationResultResponse as msdyn_StoreQualityEvaluationResultResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_StoreQualityEvaluationResult message, by their CSDL names. A parameter the CSDL declares
@@ -55,23 +53,35 @@ export class msdyn_StoreQualityEvaluationResultRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_StoreQualityEvaluationResultResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_StoreQualityEvaluationResultResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_StoreQualityEvaluationResultResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_StoreQualityEvaluationResult action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_StoreQualityEvaluationResultResult {
+  "@odata.context"?: string;
+  EnrichedEvaluationInsight: string;
+}
+
+/**
  * msdyn_StoreQualityEvaluationResult response message
+ *
+ * `result` is the value the msdyn_StoreQualityEvaluationResult action returns (see {@link msdyn_StoreQualityEvaluationResultResult}).
  */
 export class msdyn_StoreQualityEvaluationResultResponse extends OrganizationResponse {
-  constructor(public result: msdyn_StoreQualityEvaluationResultResponseData) {
+  constructor(public result: msdyn_StoreQualityEvaluationResultResult) {
     super("msdyn_StoreQualityEvaluationResult");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_StoreQualityEvaluationResultResponse {
     return new msdyn_StoreQualityEvaluationResultResponse(
-      responseObject<msdyn_StoreQualityEvaluationResultResponseData>(data)
+      data as msdyn_StoreQualityEvaluationResultResult
     );
   }
 }

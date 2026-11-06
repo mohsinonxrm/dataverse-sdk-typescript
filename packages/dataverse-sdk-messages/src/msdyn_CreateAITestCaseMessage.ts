@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_CreateAITestCaseResponse as msdyn_CreateAITestCaseResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CreateAITestCase message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,33 @@ export class msdyn_CreateAITestCaseRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateAITestCaseResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_CreateAITestCaseResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CreateAITestCaseResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CreateAITestCase action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CreateAITestCaseResult {
+  "@odata.context"?: string;
+  response: string;
+}
+
+/**
  * msdyn_CreateAITestCase response message
+ *
+ * `result` is the value the msdyn_CreateAITestCase action returns (see {@link msdyn_CreateAITestCaseResult}).
  */
 export class msdyn_CreateAITestCaseResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CreateAITestCaseResponseData) {
+  constructor(public result: msdyn_CreateAITestCaseResult) {
     super("msdyn_CreateAITestCase");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CreateAITestCaseResponse {
-    return new msdyn_CreateAITestCaseResponse(
-      responseObject<msdyn_CreateAITestCaseResponseData>(data)
-    );
+    return new msdyn_CreateAITestCaseResponse(data as msdyn_CreateAITestCaseResult);
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetBookableResourcesResponse as msdyn_GetBookableResourcesResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetBookableResources message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,33 @@ export class msdyn_GetBookableResourcesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetBookableResourcesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetBookableResourcesResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetBookableResourcesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetBookableResources action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetBookableResourcesResult {
+  "@odata.context"?: string;
+  BookableResources: string;
+}
+
+/**
  * msdyn_GetBookableResources response message
+ *
+ * `result` is the value the msdyn_GetBookableResources action returns (see {@link msdyn_GetBookableResourcesResult}).
  */
 export class msdyn_GetBookableResourcesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetBookableResourcesResponseData) {
+  constructor(public result: msdyn_GetBookableResourcesResult) {
     super("msdyn_GetBookableResources");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetBookableResourcesResponse {
-    return new msdyn_GetBookableResourcesResponse(
-      responseObject<msdyn_GetBookableResourcesResponseData>(data)
-    );
+    return new msdyn_GetBookableResourcesResponse(data as msdyn_GetBookableResourcesResult);
   }
 }

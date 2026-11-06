@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CreateFlowMachineNetwork action
+ * Response from the CreateFlowMachineNetwork action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CreateFlowMachineNetworkResponse {
+  "@odata.context"?: string;
   flowmachinenetworkid: string;
 }
 
@@ -54,8 +57,7 @@ export class CreateFlowMachineNetworkAction implements Executable<CreateFlowMach
   }
 
   async parseResponse(response: Response): Promise<CreateFlowMachineNetworkResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CreateFlowMachineNetworkResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as CreateFlowMachineNetworkResponse;
   }
 }

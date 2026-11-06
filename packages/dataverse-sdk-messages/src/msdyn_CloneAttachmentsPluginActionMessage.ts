@@ -44,9 +44,9 @@ export class msdyn_CloneAttachmentsPluginActionRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_CloneAttachmentsPluginActionResponse> {
+  parseResponse(_response: Response): Promise<msdyn_CloneAttachmentsPluginActionResponse> {
     // No return value (204 No Content)
-    return new msdyn_CloneAttachmentsPluginActionResponse();
+    return Promise.resolve(new msdyn_CloneAttachmentsPluginActionResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class msdyn_CloneAttachmentsPluginActionResponse extends OrganizationResp
     super("msdyn_CloneAttachmentsPluginAction");
   }
 
-  static fromResponse(_data: unknown): msdyn_CloneAttachmentsPluginActionResponse {
+  static fromResponse(_data?: unknown): msdyn_CloneAttachmentsPluginActionResponse {
     return new msdyn_CloneAttachmentsPluginActionResponse();
   }
 }

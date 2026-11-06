@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from InOrAfterFiscalPeriodAndYear function
+ * Response from the InOrAfterFiscalPeriodAndYear function.
+ *
+ * The value, read from the `value` of the response body.
  */
-export interface InOrAfterFiscalPeriodAndYearResponse {
-  value: boolean;
-}
+export type InOrAfterFiscalPeriodAndYearResponse = boolean;
 
 /**
  * Parameters of the InOrAfterFiscalPeriodAndYear function, by their CSDL names. A parameter the CSDL declares
@@ -58,8 +58,7 @@ export class InOrAfterFiscalPeriodAndYearFunction implements Executable<InOrAfte
   }
 
   async parseResponse(response: Response): Promise<InOrAfterFiscalPeriodAndYearResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as InOrAfterFiscalPeriodAndYearResponse;
-    return (await response.json()) as InOrAfterFiscalPeriodAndYearResponse;
+    // A primitive comes wrapped: { "@odata.context": "…", "value": … }
+    return ((await response.json()) as { value: InOrAfterFiscalPeriodAndYearResponse }).value;
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CCaaS_CreateConnectionResponse as CCaaS_CreateConnectionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CCaaS_CreateConnection message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,40 @@ export class CCaaS_CreateConnectionRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_CreateConnectionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CCaaS_CreateConnectionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CCaaS_CreateConnectionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CCaaS_CreateConnection action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CCaaS_CreateConnectionResult {
+  "@odata.context"?: string;
+  ActiveBrowserSessions: number;
+  AgentId: string;
+  AgentName: string;
+  AllowedChannels: string[];
+  CurrentPresenceStatusInfo: string;
+  DisabledChannels: string[];
+  PresenceId: string;
+  Timestamp: number;
+}
+
+/**
  * CCaaS_CreateConnection response message
+ *
+ * `result` is the value the CCaaS_CreateConnection action returns (see {@link CCaaS_CreateConnectionResult}).
  */
 export class CCaaS_CreateConnectionResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_CreateConnectionResponseData) {
+  constructor(public result: CCaaS_CreateConnectionResult) {
     super("CCaaS_CreateConnection");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CCaaS_CreateConnectionResponse {
-    return new CCaaS_CreateConnectionResponse(
-      responseObject<CCaaS_CreateConnectionResponseData>(data)
-    );
+    return new CCaaS_CreateConnectionResponse(data as CCaaS_CreateConnectionResult);
   }
 }

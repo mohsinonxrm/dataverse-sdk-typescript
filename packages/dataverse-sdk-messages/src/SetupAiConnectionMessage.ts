@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
 
 /**
@@ -46,21 +45,38 @@ export class SetupAiConnectionRequest
   }
 
   async parseResponse(response: Response): Promise<SetupAiConnectionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return SetupAiConnectionResponse.fromResponse({});
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return SetupAiConnectionResponse.fromResponse(undefined);
+    // The body is the record, with its annotations
     return SetupAiConnectionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the SetupAiConnection action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
+ */
+export type SetupAiConnectionResult = {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+} | null;
+
+/**
  * SetupAiConnection response message
+ *
+ * `result` is the value the SetupAiConnection action returns (see {@link SetupAiConnectionResult}).
  */
 export class SetupAiConnectionResponse extends OrganizationResponse {
-  constructor(public result: Record<string, unknown>) {
+  constructor(public result: SetupAiConnectionResult) {
     super("SetupAiConnection");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): SetupAiConnectionResponse {
-    return new SetupAiConnectionResponse(responseObject<Record<string, unknown>>(data));
+    return new SetupAiConnectionResponse((data ?? null) as SetupAiConnectionResult);
   }
 }

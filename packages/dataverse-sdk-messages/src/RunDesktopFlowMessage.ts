@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { RunDesktopFlowResponse as RunDesktopFlowResponseData } from "./types/index.js";
 
 /**
  * Parameters of the RunDesktopFlow message, by their CSDL names. A parameter the CSDL declares
@@ -63,21 +61,33 @@ export class RunDesktopFlowRequest
   }
 
   async parseResponse(response: Response): Promise<RunDesktopFlowResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return RunDesktopFlowResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return RunDesktopFlowResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the RunDesktopFlow action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface RunDesktopFlowResult {
+  "@odata.context"?: string;
+  flowsessionId: string;
+}
+
+/**
  * RunDesktopFlow response message
+ *
+ * `result` is the value the RunDesktopFlow action returns (see {@link RunDesktopFlowResult}).
  */
 export class RunDesktopFlowResponse extends OrganizationResponse {
-  constructor(public result: RunDesktopFlowResponseData) {
+  constructor(public result: RunDesktopFlowResult) {
     super("RunDesktopFlow");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): RunDesktopFlowResponse {
-    return new RunDesktopFlowResponse(responseObject<RunDesktopFlowResponseData>(data));
+    return new RunDesktopFlowResponse(data as RunDesktopFlowResult);
   }
 }

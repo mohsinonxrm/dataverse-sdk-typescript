@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdynmkt_ChannelContentPersonalizeResponse as msdynmkt_ChannelContentPersonalizeResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdynmkt_ChannelContentPersonalize message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,35 @@ export class msdynmkt_ChannelContentPersonalizeRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_ChannelContentPersonalizeResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdynmkt_ChannelContentPersonalizeResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdynmkt_ChannelContentPersonalizeResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdynmkt_ChannelContentPersonalize action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdynmkt_ChannelContentPersonalizeResult {
+  "@odata.context"?: string;
+  msdynmkt_PersonalizeContentResponse: string;
+}
+
+/**
  * msdynmkt_ChannelContentPersonalize response message
+ *
+ * `result` is the value the msdynmkt_ChannelContentPersonalize action returns (see {@link msdynmkt_ChannelContentPersonalizeResult}).
  */
 export class msdynmkt_ChannelContentPersonalizeResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_ChannelContentPersonalizeResponseData) {
+  constructor(public result: msdynmkt_ChannelContentPersonalizeResult) {
     super("msdynmkt_ChannelContentPersonalize");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdynmkt_ChannelContentPersonalizeResponse {
     return new msdynmkt_ChannelContentPersonalizeResponse(
-      responseObject<msdynmkt_ChannelContentPersonalizeResponseData>(data)
+      data as msdynmkt_ChannelContentPersonalizeResult
     );
   }
 }

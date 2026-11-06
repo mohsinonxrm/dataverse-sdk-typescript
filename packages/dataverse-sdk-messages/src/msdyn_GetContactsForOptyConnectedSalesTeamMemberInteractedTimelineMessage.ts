@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineResponse as msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimeline message, by their CSDL names. A parameter the CSDL declares
@@ -53,11 +51,7 @@ export class msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineR
   async parseResponse(
     response: Response
   ): Promise<msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineResponse.fromResponse(
-        {}
-      );
+    // The body is the complex value, with its @odata.context
     return msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineResponse.fromResponse(
       await response.json()
     );
@@ -65,22 +59,33 @@ export class msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineR
 }
 
 /**
+ * Response from the msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimeline action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineResult {
+  "@odata.context"?: string;
+  CustomActionSuggestedUsers: string;
+}
+
+/**
  * msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimeline response message
+ *
+ * `result` is the value the msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimeline action returns (see {@link msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineResult}).
  */
 export class msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineResponse extends OrganizationResponse {
   constructor(
-    public result: msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineResponseData
+    public result: msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineResult
   ) {
     super("msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimeline");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(
     data: unknown
   ): msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineResponse {
     return new msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineResponse(
-      responseObject<msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineResponseData>(
-        data
-      )
+      data as msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineResult
     );
   }
 }

@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { ListChildDesktopFlowsResponse as ListChildDesktopFlowsResponseData } from "./types/index.js";
 
 /**
  * ListChildDesktopFlows request message
@@ -32,23 +30,33 @@ export class ListChildDesktopFlowsRequest
   }
 
   async parseResponse(response: Response): Promise<ListChildDesktopFlowsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return ListChildDesktopFlowsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return ListChildDesktopFlowsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the ListChildDesktopFlows action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface ListChildDesktopFlowsResult {
+  "@odata.context"?: string;
+  childFlows: string;
+}
+
+/**
  * ListChildDesktopFlows response message
+ *
+ * `result` is the value the ListChildDesktopFlows action returns (see {@link ListChildDesktopFlowsResult}).
  */
 export class ListChildDesktopFlowsResponse extends OrganizationResponse {
-  constructor(public result: ListChildDesktopFlowsResponseData) {
+  constructor(public result: ListChildDesktopFlowsResult) {
     super("ListChildDesktopFlows");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): ListChildDesktopFlowsResponse {
-    return new ListChildDesktopFlowsResponse(
-      responseObject<ListChildDesktopFlowsResponseData>(data)
-    );
+    return new ListChildDesktopFlowsResponse(data as ListChildDesktopFlowsResult);
   }
 }

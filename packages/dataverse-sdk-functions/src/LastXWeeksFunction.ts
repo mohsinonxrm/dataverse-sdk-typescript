@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from LastXWeeks function
+ * Response from the LastXWeeks function.
+ *
+ * The value, read from the `value` of the response body.
  */
-export interface LastXWeeksResponse {
-  value: boolean;
-}
+export type LastXWeeksResponse = boolean;
 
 /**
  * Parameters of the LastXWeeks function, by their CSDL names. A parameter the CSDL declares
@@ -53,8 +53,7 @@ export class LastXWeeksFunction implements Executable<LastXWeeksResponse> {
   }
 
   async parseResponse(response: Response): Promise<LastXWeeksResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as LastXWeeksResponse;
-    return (await response.json()) as LastXWeeksResponse;
+    // A primitive comes wrapped: { "@odata.context": "…", "value": … }
+    return ((await response.json()) as { value: LastXWeeksResponse }).value;
   }
 }

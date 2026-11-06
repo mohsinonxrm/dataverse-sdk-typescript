@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import type { EntityRecordCountCollection } from "./types/index.js";
 
 /**
- * Response from RetrieveTotalRecordCount function
+ * Response from the RetrieveTotalRecordCount function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveTotalRecordCountResponse {
+  "@odata.context"?: string;
   EntityRecordCountCollection: EntityRecordCountCollection;
 }
 
@@ -48,8 +51,7 @@ export class RetrieveTotalRecordCountFunction implements Executable<RetrieveTota
   }
 
   async parseResponse(response: Response): Promise<RetrieveTotalRecordCountResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveTotalRecordCountResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RetrieveTotalRecordCountResponse;
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { McpExecuteWorkIQTaskResponse as McpExecuteWorkIQTaskResponseData } from "./types/index.js";
 
 /**
  * Parameters of the McpExecuteWorkIQTask message, by their CSDL names. A parameter the CSDL declares
@@ -63,21 +61,33 @@ export class McpExecuteWorkIQTaskRequest
   }
 
   async parseResponse(response: Response): Promise<McpExecuteWorkIQTaskResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return McpExecuteWorkIQTaskResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return McpExecuteWorkIQTaskResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the McpExecuteWorkIQTask action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface McpExecuteWorkIQTaskResult {
+  "@odata.context"?: string;
+  results: string;
+}
+
+/**
  * McpExecuteWorkIQTask response message
+ *
+ * `result` is the value the McpExecuteWorkIQTask action returns (see {@link McpExecuteWorkIQTaskResult}).
  */
 export class McpExecuteWorkIQTaskResponse extends OrganizationResponse {
-  constructor(public result: McpExecuteWorkIQTaskResponseData) {
+  constructor(public result: McpExecuteWorkIQTaskResult) {
     super("McpExecuteWorkIQTask");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): McpExecuteWorkIQTaskResponse {
-    return new McpExecuteWorkIQTaskResponse(responseObject<McpExecuteWorkIQTaskResponseData>(data));
+    return new McpExecuteWorkIQTaskResponse(data as McpExecuteWorkIQTaskResult);
   }
 }

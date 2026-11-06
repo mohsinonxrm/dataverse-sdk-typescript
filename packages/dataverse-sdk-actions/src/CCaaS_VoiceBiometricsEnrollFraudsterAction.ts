@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CCaaS_VoiceBiometricsEnrollFraudster action
+ * Response from the CCaaS_VoiceBiometricsEnrollFraudster action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CCaaS_VoiceBiometricsEnrollFraudsterResponse {
+  "@odata.context"?: string;
   BadRequestReason: string;
   ErrorMessage: string;
   FailureReason: string;
@@ -60,8 +63,7 @@ export class CCaaS_VoiceBiometricsEnrollFraudsterAction implements Executable<CC
   }
 
   async parseResponse(response: Response): Promise<CCaaS_VoiceBiometricsEnrollFraudsterResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CCaaS_VoiceBiometricsEnrollFraudsterResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as CCaaS_VoiceBiometricsEnrollFraudsterResponse;
   }
 }

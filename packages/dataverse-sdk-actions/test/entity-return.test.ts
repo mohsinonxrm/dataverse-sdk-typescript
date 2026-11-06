@@ -55,15 +55,16 @@ describe("#71: entity-returning actions", () => {
       new ExecuteWorkflowAction(WORKFLOW, { EntityId: "e1", InputArguments: {} })
     );
 
-    expect(res.asyncoperationid).toBe("aaa");
-    expect(res["@odata.context"]).toBe("$metadata#asyncoperations/$entity");
+    expect(res?.asyncoperationid).toBe("aaa");
+    expect(res?.["@odata.context"]).toBe("$metadata#asyncoperations/$entity");
   });
 
-  it("res.asyncoperationid type-checks; res.value doesn't", async () => {
+  it("res?.asyncoperationid type-checks; res.value doesn't", async () => {
+    // The record, or null for a 204 (an entity output that wasn't set, #300)
     expect(
       await typecheck(`import type { ExecuteWorkflowResponse } from "SRC";
 declare const res: ExecuteWorkflowResponse;
-export const id: string | undefined = res.asyncoperationid;
+export const id: string | undefined = res?.asyncoperationid;
 `)
     ).toEqual([]);
     expect(

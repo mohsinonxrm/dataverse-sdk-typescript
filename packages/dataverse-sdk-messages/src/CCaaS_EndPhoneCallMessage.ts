@@ -50,9 +50,9 @@ export class CCaaS_EndPhoneCallRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_EndPhoneCallResponse> {
+  parseResponse(_response: Response): Promise<CCaaS_EndPhoneCallResponse> {
     // No return value (204 No Content)
-    return new CCaaS_EndPhoneCallResponse();
+    return Promise.resolve(new CCaaS_EndPhoneCallResponse());
   }
 }
 
@@ -64,7 +64,7 @@ export class CCaaS_EndPhoneCallResponse extends OrganizationResponse {
     super("CCaaS_EndPhoneCall");
   }
 
-  static fromResponse(_data: unknown): CCaaS_EndPhoneCallResponse {
+  static fromResponse(_data?: unknown): CCaaS_EndPhoneCallResponse {
     return new CCaaS_EndPhoneCallResponse();
   }
 }

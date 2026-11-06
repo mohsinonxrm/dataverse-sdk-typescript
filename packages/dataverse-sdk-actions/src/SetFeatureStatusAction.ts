@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from SetFeatureStatus action
+ * Response from the SetFeatureStatus action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface SetFeatureStatusResponse {
-  // No content returned
-}
+export type SetFeatureStatusResponse = void;
 
 /**
  * Parameters of the SetFeatureStatus action, by their CSDL names. A parameter the CSDL declares
@@ -47,9 +47,8 @@ export class SetFeatureStatusAction implements Executable<SetFeatureStatusRespon
     };
   }
 
-  async parseResponse(response: Response): Promise<SetFeatureStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as SetFeatureStatusResponse;
-    return (await response.json()) as SetFeatureStatusResponse;
+  parseResponse(_response: Response): Promise<SetFeatureStatusResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

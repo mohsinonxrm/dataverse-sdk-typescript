@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_InvokeEvaluationActionResponse as msdyn_InvokeEvaluationActionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_InvokeEvaluationAction message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,35 @@ export class msdyn_InvokeEvaluationActionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_InvokeEvaluationActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_InvokeEvaluationActionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_InvokeEvaluationActionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_InvokeEvaluationAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_InvokeEvaluationActionResult {
+  "@odata.context"?: string;
+  Metadata: string;
+  Result: string;
+  Status: string;
+}
+
+/**
  * msdyn_InvokeEvaluationAction response message
+ *
+ * `result` is the value the msdyn_InvokeEvaluationAction action returns (see {@link msdyn_InvokeEvaluationActionResult}).
  */
 export class msdyn_InvokeEvaluationActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_InvokeEvaluationActionResponseData) {
+  constructor(public result: msdyn_InvokeEvaluationActionResult) {
     super("msdyn_InvokeEvaluationAction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_InvokeEvaluationActionResponse {
-    return new msdyn_InvokeEvaluationActionResponse(
-      responseObject<msdyn_InvokeEvaluationActionResponseData>(data)
-    );
+    return new msdyn_InvokeEvaluationActionResponse(data as msdyn_InvokeEvaluationActionResult);
   }
 }

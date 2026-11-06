@@ -46,11 +46,9 @@ export class msdynmkt_optoutofallchannelcommunicationRequest
     };
   }
 
-  async parseResponse(
-    response: Response
-  ): Promise<msdynmkt_optoutofallchannelcommunicationResponse> {
+  parseResponse(_response: Response): Promise<msdynmkt_optoutofallchannelcommunicationResponse> {
     // No return value (204 No Content)
-    return new msdynmkt_optoutofallchannelcommunicationResponse();
+    return Promise.resolve(new msdynmkt_optoutofallchannelcommunicationResponse());
   }
 }
 
@@ -62,7 +60,7 @@ export class msdynmkt_optoutofallchannelcommunicationResponse extends Organizati
     super("msdynmkt_optoutofallchannelcommunication");
   }
 
-  static fromResponse(_data: unknown): msdynmkt_optoutofallchannelcommunicationResponse {
+  static fromResponse(_data?: unknown): msdynmkt_optoutofallchannelcommunicationResponse {
     return new msdynmkt_optoutofallchannelcommunicationResponse();
   }
 }

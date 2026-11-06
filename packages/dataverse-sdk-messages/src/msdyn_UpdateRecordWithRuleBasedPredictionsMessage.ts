@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { msdyn_UpdateRecordWithRuleBasedPredictionsResponse as msdyn_UpdateRecordWithRuleBasedPredictionsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_UpdateRecordWithRuleBasedPredictions message, by their CSDL names. A parameter the CSDL declares
@@ -55,24 +53,35 @@ export class msdyn_UpdateRecordWithRuleBasedPredictionsRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_UpdateRecordWithRuleBasedPredictionsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_UpdateRecordWithRuleBasedPredictionsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_UpdateRecordWithRuleBasedPredictionsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_UpdateRecordWithRuleBasedPredictions action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_UpdateRecordWithRuleBasedPredictionsResult {
+  "@odata.context"?: string;
+  msdyn_UpdatedRecords: string[];
+}
+
+/**
  * msdyn_UpdateRecordWithRuleBasedPredictions response message
+ *
+ * `result` is the value the msdyn_UpdateRecordWithRuleBasedPredictions action returns (see {@link msdyn_UpdateRecordWithRuleBasedPredictionsResult}).
  */
 export class msdyn_UpdateRecordWithRuleBasedPredictionsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_UpdateRecordWithRuleBasedPredictionsResponseData) {
+  constructor(public result: msdyn_UpdateRecordWithRuleBasedPredictionsResult) {
     super("msdyn_UpdateRecordWithRuleBasedPredictions");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_UpdateRecordWithRuleBasedPredictionsResponse {
     return new msdyn_UpdateRecordWithRuleBasedPredictionsResponse(
-      responseObject<msdyn_UpdateRecordWithRuleBasedPredictionsResponseData>(data)
+      data as msdyn_UpdateRecordWithRuleBasedPredictionsResult
     );
   }
 }

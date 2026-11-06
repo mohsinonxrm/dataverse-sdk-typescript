@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_UnifiedRoutingQueueItemOperationsResponse as msdyn_UnifiedRoutingQueueItemOperationsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_UnifiedRoutingQueueItemOperations message, by their CSDL names. A parameter the CSDL declares
@@ -48,24 +46,35 @@ export class msdyn_UnifiedRoutingQueueItemOperationsRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_UnifiedRoutingQueueItemOperationsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_UnifiedRoutingQueueItemOperationsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_UnifiedRoutingQueueItemOperationsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_UnifiedRoutingQueueItemOperations action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_UnifiedRoutingQueueItemOperationsResult {
+  "@odata.context"?: string;
+  UnifiedRoutingQueueItemOperationsResponsePropertiesJson: string;
+}
+
+/**
  * msdyn_UnifiedRoutingQueueItemOperations response message
+ *
+ * `result` is the value the msdyn_UnifiedRoutingQueueItemOperations action returns (see {@link msdyn_UnifiedRoutingQueueItemOperationsResult}).
  */
 export class msdyn_UnifiedRoutingQueueItemOperationsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_UnifiedRoutingQueueItemOperationsResponseData) {
+  constructor(public result: msdyn_UnifiedRoutingQueueItemOperationsResult) {
     super("msdyn_UnifiedRoutingQueueItemOperations");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_UnifiedRoutingQueueItemOperationsResponse {
     return new msdyn_UnifiedRoutingQueueItemOperationsResponse(
-      responseObject<msdyn_UnifiedRoutingQueueItemOperationsResponseData>(data)
+      data as msdyn_UnifiedRoutingQueueItemOperationsResult
     );
   }
 }

@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CommitToGit action
+ * Response from the CommitToGit action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CommitToGitResponse {
+  "@odata.context"?: string;
   CommitId: string;
   Type: number;
 }
@@ -45,8 +48,7 @@ export class CommitToGitAction implements Executable<CommitToGitResponse> {
   }
 
   async parseResponse(response: Response): Promise<CommitToGitResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CommitToGitResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as CommitToGitResponse;
   }
 }

@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_SalesAcceleratorMailNotificationToAdmin action
+ * Response from the msdyn_SalesAcceleratorMailNotificationToAdmin action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_SalesAcceleratorMailNotificationToAdminResponse {
-  // No content returned
-}
+export type msdyn_SalesAcceleratorMailNotificationToAdminResponse = void;
 
 /**
  * Parameters of the msdyn_SalesAcceleratorMailNotificationToAdmin action, by their CSDL names. A parameter the CSDL declares
@@ -43,11 +43,10 @@ export class msdyn_SalesAcceleratorMailNotificationToAdminAction implements Exec
     };
   }
 
-  async parseResponse(
-    response: Response
+  parseResponse(
+    _response: Response
   ): Promise<msdyn_SalesAcceleratorMailNotificationToAdminResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_SalesAcceleratorMailNotificationToAdminResponse;
-    return (await response.json()) as msdyn_SalesAcceleratorMailNotificationToAdminResponse;
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

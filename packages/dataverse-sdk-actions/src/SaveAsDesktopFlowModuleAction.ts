@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from SaveAsDesktopFlowModule action
+ * Response from the SaveAsDesktopFlowModule action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface SaveAsDesktopFlowModuleResponse {
+  "@odata.context"?: string;
   desktopflowmoduleid: string;
 }
 
@@ -49,8 +52,7 @@ export class SaveAsDesktopFlowModuleAction implements Executable<SaveAsDesktopFl
   }
 
   async parseResponse(response: Response): Promise<SaveAsDesktopFlowModuleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as SaveAsDesktopFlowModuleResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as SaveAsDesktopFlowModuleResponse;
   }
 }

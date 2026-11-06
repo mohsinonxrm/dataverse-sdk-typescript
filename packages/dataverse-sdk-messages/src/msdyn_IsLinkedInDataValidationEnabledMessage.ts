@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_IsLinkedInDataValidationEnabledResponse as msdyn_IsLinkedInDataValidationEnabledResponseData } from "./types/index.js";
 
 /**
  * msdyn_IsLinkedInDataValidationEnabled request message
@@ -29,24 +27,35 @@ export class msdyn_IsLinkedInDataValidationEnabledRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_IsLinkedInDataValidationEnabledResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_IsLinkedInDataValidationEnabledResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_IsLinkedInDataValidationEnabledResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_IsLinkedInDataValidationEnabled action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_IsLinkedInDataValidationEnabledResult {
+  "@odata.context"?: string;
+  Result: string;
+}
+
+/**
  * msdyn_IsLinkedInDataValidationEnabled response message
+ *
+ * `result` is the value the msdyn_IsLinkedInDataValidationEnabled action returns (see {@link msdyn_IsLinkedInDataValidationEnabledResult}).
  */
 export class msdyn_IsLinkedInDataValidationEnabledResponse extends OrganizationResponse {
-  constructor(public result: msdyn_IsLinkedInDataValidationEnabledResponseData) {
+  constructor(public result: msdyn_IsLinkedInDataValidationEnabledResult) {
     super("msdyn_IsLinkedInDataValidationEnabled");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_IsLinkedInDataValidationEnabledResponse {
     return new msdyn_IsLinkedInDataValidationEnabledResponse(
-      responseObject<msdyn_IsLinkedInDataValidationEnabledResponseData>(data)
+      data as msdyn_IsLinkedInDataValidationEnabledResult
     );
   }
 }

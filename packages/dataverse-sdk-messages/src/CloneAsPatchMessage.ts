@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CloneAsPatchResponse as CloneAsPatchResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CloneAsPatch message, by their CSDL names. A parameter the CSDL declares
@@ -49,21 +47,33 @@ export class CloneAsPatchRequest
   }
 
   async parseResponse(response: Response): Promise<CloneAsPatchResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CloneAsPatchResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CloneAsPatchResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CloneAsPatch action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CloneAsPatchResult {
+  "@odata.context"?: string;
+  SolutionId: string;
+}
+
+/**
  * CloneAsPatch response message
+ *
+ * `result` is the value the CloneAsPatch action returns (see {@link CloneAsPatchResult}).
  */
 export class CloneAsPatchResponse extends OrganizationResponse {
-  constructor(public result: CloneAsPatchResponseData) {
+  constructor(public result: CloneAsPatchResult) {
     super("CloneAsPatch");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CloneAsPatchResponse {
-    return new CloneAsPatchResponse(responseObject<CloneAsPatchResponseData>(data));
+    return new CloneAsPatchResponse(data as CloneAsPatchResult);
   }
 }

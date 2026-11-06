@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_PublishEffortAIModelResponse as msdyn_PublishEffortAIModelResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_PublishEffortAIModel message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class msdyn_PublishEffortAIModelRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_PublishEffortAIModelResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_PublishEffortAIModelResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_PublishEffortAIModelResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_PublishEffortAIModel action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_PublishEffortAIModelResult {
+  "@odata.context"?: string;
+  Result: string;
+}
+
+/**
  * msdyn_PublishEffortAIModel response message
+ *
+ * `result` is the value the msdyn_PublishEffortAIModel action returns (see {@link msdyn_PublishEffortAIModelResult}).
  */
 export class msdyn_PublishEffortAIModelResponse extends OrganizationResponse {
-  constructor(public result: msdyn_PublishEffortAIModelResponseData) {
+  constructor(public result: msdyn_PublishEffortAIModelResult) {
     super("msdyn_PublishEffortAIModel");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_PublishEffortAIModelResponse {
-    return new msdyn_PublishEffortAIModelResponse(
-      responseObject<msdyn_PublishEffortAIModelResponseData>(data)
-    );
+    return new msdyn_PublishEffortAIModelResponse(data as msdyn_PublishEffortAIModelResult);
   }
 }

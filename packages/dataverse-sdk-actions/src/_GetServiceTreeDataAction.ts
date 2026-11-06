@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from _GetServiceTreeData action
+ * Response from the _GetServiceTreeData action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface _GetServiceTreeDataResponse {
+  "@odata.context"?: string;
   TreeObject: string;
 }
 
@@ -44,8 +47,7 @@ export class _GetServiceTreeDataAction implements Executable<_GetServiceTreeData
   }
 
   async parseResponse(response: Response): Promise<_GetServiceTreeDataResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as _GetServiceTreeDataResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as _GetServiceTreeDataResponse;
   }
 }

@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from RetrieveDeploymentLicenseType function
+ * Response from the RetrieveDeploymentLicenseType function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveDeploymentLicenseTypeResponse {
+  "@odata.context"?: string;
   licenseType: string;
 }
 
@@ -26,8 +29,7 @@ export class RetrieveDeploymentLicenseTypeFunction implements Executable<Retriev
   }
 
   async parseResponse(response: Response): Promise<RetrieveDeploymentLicenseTypeResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveDeploymentLicenseTypeResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RetrieveDeploymentLicenseTypeResponse;
   }
 }

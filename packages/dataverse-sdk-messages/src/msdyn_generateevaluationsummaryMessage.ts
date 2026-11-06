@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_generateevaluationsummaryResponse as msdyn_generateevaluationsummaryResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_generateevaluationsummary message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,37 @@ export class msdyn_generateevaluationsummaryRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_generateevaluationsummaryResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_generateevaluationsummaryResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_generateevaluationsummaryResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_generateevaluationsummary action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_generateevaluationsummaryResult {
+  "@odata.context"?: string;
+  actionPlan: string;
+  evaluationSummary: string;
+  status: string;
+}
+
+/**
  * msdyn_generateevaluationsummary response message
+ *
+ * `result` is the value the msdyn_generateevaluationsummary action returns (see {@link msdyn_generateevaluationsummaryResult}).
  */
 export class msdyn_generateevaluationsummaryResponse extends OrganizationResponse {
-  constructor(public result: msdyn_generateevaluationsummaryResponseData) {
+  constructor(public result: msdyn_generateevaluationsummaryResult) {
     super("msdyn_generateevaluationsummary");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_generateevaluationsummaryResponse {
     return new msdyn_generateevaluationsummaryResponse(
-      responseObject<msdyn_generateevaluationsummaryResponseData>(data)
+      data as msdyn_generateevaluationsummaryResult
     );
   }
 }

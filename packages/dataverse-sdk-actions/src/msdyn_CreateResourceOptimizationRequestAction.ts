@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_CreateResourceOptimizationRequest action
+ * Response from the msdyn_CreateResourceOptimizationRequest action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_CreateResourceOptimizationRequestResponse {
-  // No content returned
-}
+export type msdyn_CreateResourceOptimizationRequestResponse = void;
 
 /**
  * Parameters of the msdyn_CreateResourceOptimizationRequest action, by their CSDL names. A parameter the CSDL declares
@@ -53,11 +53,8 @@ export class msdyn_CreateResourceOptimizationRequestAction implements Executable
     };
   }
 
-  async parseResponse(
-    response: Response
-  ): Promise<msdyn_CreateResourceOptimizationRequestResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_CreateResourceOptimizationRequestResponse;
-    return (await response.json()) as msdyn_CreateResourceOptimizationRequestResponse;
+  parseResponse(_response: Response): Promise<msdyn_CreateResourceOptimizationRequestResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseValue } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
 
 /**
@@ -74,21 +73,39 @@ export class _EvaluateSearchRequestRequest
   }
 
   async parseResponse(response: Response): Promise<_EvaluateSearchRequestResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return _EvaluateSearchRequestResponse.fromResponse({});
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return _EvaluateSearchRequestResponse.fromResponse(undefined);
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
     return _EvaluateSearchRequestResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the _EvaluateSearchRequest action.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
+ */
+export type _EvaluateSearchRequestResult = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
+
+/**
  * _EvaluateSearchRequest response message
+ *
+ * `result` is the value the _EvaluateSearchRequest action returns (see {@link _EvaluateSearchRequestResult}).
  */
 export class _EvaluateSearchRequestResponse extends OrganizationResponse {
-  constructor(public result: Record<string, unknown>[]) {
+  constructor(public result: _EvaluateSearchRequestResult) {
     super("_EvaluateSearchRequest");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): _EvaluateSearchRequestResponse {
-    return new _EvaluateSearchRequestResponse(responseValue<Record<string, unknown>[]>(data));
+    return new _EvaluateSearchRequestResponse(
+      data === undefined ? [] : (data as { value: _EvaluateSearchRequestResult }).value
+    );
   }
 }

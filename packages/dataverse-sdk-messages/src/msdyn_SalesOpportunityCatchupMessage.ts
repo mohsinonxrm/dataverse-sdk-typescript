@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesOpportunityCatchupResponse as msdyn_SalesOpportunityCatchupResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesOpportunityCatchup message, by their CSDL names. A parameter the CSDL declares
@@ -57,23 +55,36 @@ export class msdyn_SalesOpportunityCatchupRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesOpportunityCatchupResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_SalesOpportunityCatchupResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesOpportunityCatchupResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SalesOpportunityCatchup action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesOpportunityCatchupResult {
+  "@odata.context"?: string;
+  msdyn_sales_copilot_output: string;
+  msdyn_summary: string;
+  msdyn_summary_raw: string;
+  msdyn_version: string;
+}
+
+/**
  * msdyn_SalesOpportunityCatchup response message
+ *
+ * `result` is the value the msdyn_SalesOpportunityCatchup action returns (see {@link msdyn_SalesOpportunityCatchupResult}).
  */
 export class msdyn_SalesOpportunityCatchupResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesOpportunityCatchupResponseData) {
+  constructor(public result: msdyn_SalesOpportunityCatchupResult) {
     super("msdyn_SalesOpportunityCatchup");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesOpportunityCatchupResponse {
-    return new msdyn_SalesOpportunityCatchupResponse(
-      responseObject<msdyn_SalesOpportunityCatchupResponseData>(data)
-    );
+    return new msdyn_SalesOpportunityCatchupResponse(data as msdyn_SalesOpportunityCatchupResult);
   }
 }

@@ -44,11 +44,9 @@ export class DeleteOQOILineWithSkipPricingCalculationRequest
     };
   }
 
-  async parseResponse(
-    response: Response
-  ): Promise<DeleteOQOILineWithSkipPricingCalculationResponse> {
+  parseResponse(_response: Response): Promise<DeleteOQOILineWithSkipPricingCalculationResponse> {
     // No return value (204 No Content)
-    return new DeleteOQOILineWithSkipPricingCalculationResponse();
+    return Promise.resolve(new DeleteOQOILineWithSkipPricingCalculationResponse());
   }
 }
 
@@ -60,7 +58,7 @@ export class DeleteOQOILineWithSkipPricingCalculationResponse extends Organizati
     super("DeleteOQOILineWithSkipPricingCalculation");
   }
 
-  static fromResponse(_data: unknown): DeleteOQOILineWithSkipPricingCalculationResponse {
+  static fromResponse(_data?: unknown): DeleteOQOILineWithSkipPricingCalculationResponse {
     return new DeleteOQOILineWithSkipPricingCalculationResponse();
   }
 }

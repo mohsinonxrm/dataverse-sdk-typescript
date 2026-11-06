@@ -29,9 +29,9 @@ export class CancelDesktopFlowRunRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CancelDesktopFlowRunResponse> {
+  parseResponse(_response: Response): Promise<CancelDesktopFlowRunResponse> {
     // No return value (204 No Content)
-    return new CancelDesktopFlowRunResponse();
+    return Promise.resolve(new CancelDesktopFlowRunResponse());
   }
 }
 
@@ -43,7 +43,7 @@ export class CancelDesktopFlowRunResponse extends OrganizationResponse {
     super("CancelDesktopFlowRun");
   }
 
-  static fromResponse(_data: unknown): CancelDesktopFlowRunResponse {
+  static fromResponse(_data?: unknown): CancelDesktopFlowRunResponse {
     return new CancelDesktopFlowRunResponse();
   }
 }

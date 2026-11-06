@@ -49,9 +49,9 @@ export class GrantDelegatedAccessRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<GrantDelegatedAccessResponse> {
+  parseResponse(_response: Response): Promise<GrantDelegatedAccessResponse> {
     // No return value (204 No Content)
-    return new GrantDelegatedAccessResponse();
+    return Promise.resolve(new GrantDelegatedAccessResponse());
   }
 }
 
@@ -63,7 +63,7 @@ export class GrantDelegatedAccessResponse extends OrganizationResponse {
     super("GrantDelegatedAccess");
   }
 
-  static fromResponse(_data: unknown): GrantDelegatedAccessResponse {
+  static fromResponse(_data?: unknown): GrantDelegatedAccessResponse {
     return new GrantDelegatedAccessResponse();
   }
 }

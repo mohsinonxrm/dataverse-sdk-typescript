@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesAgents_ProcessSalesProfilerAgentResponseResponse as msdyn_SalesAgents_ProcessSalesProfilerAgentResponseResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesAgents_ProcessSalesProfilerAgentResponse message, by their CSDL names. A parameter the CSDL declares
@@ -53,9 +51,7 @@ export class msdyn_SalesAgents_ProcessSalesProfilerAgentResponseRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_ProcessSalesProfilerAgentResponseResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_SalesAgents_ProcessSalesProfilerAgentResponseResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesAgents_ProcessSalesProfilerAgentResponseResponse.fromResponse(
       await response.json()
     );
@@ -63,16 +59,29 @@ export class msdyn_SalesAgents_ProcessSalesProfilerAgentResponseRequest
 }
 
 /**
+ * Response from the msdyn_SalesAgents_ProcessSalesProfilerAgentResponse action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesAgents_ProcessSalesProfilerAgentResponseResult {
+  "@odata.context"?: string;
+  msdyn_IsSuccess: boolean;
+}
+
+/**
  * msdyn_SalesAgents_ProcessSalesProfilerAgentResponse response message
+ *
+ * `result` is the value the msdyn_SalesAgents_ProcessSalesProfilerAgentResponse action returns (see {@link msdyn_SalesAgents_ProcessSalesProfilerAgentResponseResult}).
  */
 export class msdyn_SalesAgents_ProcessSalesProfilerAgentResponseResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgents_ProcessSalesProfilerAgentResponseResponseData) {
+  constructor(public result: msdyn_SalesAgents_ProcessSalesProfilerAgentResponseResult) {
     super("msdyn_SalesAgents_ProcessSalesProfilerAgentResponse");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesAgents_ProcessSalesProfilerAgentResponseResponse {
     return new msdyn_SalesAgents_ProcessSalesProfilerAgentResponseResponse(
-      responseObject<msdyn_SalesAgents_ProcessSalesProfilerAgentResponseResponseData>(data)
+      data as msdyn_SalesAgents_ProcessSalesProfilerAgentResponseResult
     );
   }
 }

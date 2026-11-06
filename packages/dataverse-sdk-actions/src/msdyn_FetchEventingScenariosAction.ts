@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_FetchEventingScenarios action
+ * Response from the msdyn_FetchEventingScenarios action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_FetchEventingScenariosResponse {
+  "@odata.context"?: string;
   errormessage: string;
   scenarios: string;
 }
@@ -27,8 +30,7 @@ export class msdyn_FetchEventingScenariosAction implements Executable<msdyn_Fetc
   }
 
   async parseResponse(response: Response): Promise<msdyn_FetchEventingScenariosResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_FetchEventingScenariosResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_FetchEventingScenariosResponse;
   }
 }

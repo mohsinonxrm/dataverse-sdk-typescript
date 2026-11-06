@@ -54,9 +54,9 @@ export class SendBulkMailRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<SendBulkMailResponse> {
+  parseResponse(_response: Response): Promise<SendBulkMailResponse> {
     // No return value (204 No Content)
-    return new SendBulkMailResponse();
+    return Promise.resolve(new SendBulkMailResponse());
   }
 }
 
@@ -68,7 +68,7 @@ export class SendBulkMailResponse extends OrganizationResponse {
     super("SendBulkMail");
   }
 
-  static fromResponse(_data: unknown): SendBulkMailResponse {
+  static fromResponse(_data?: unknown): SendBulkMailResponse {
     return new SendBulkMailResponse();
   }
 }

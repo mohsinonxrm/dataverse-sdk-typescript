@@ -44,9 +44,9 @@ export class RefreshChangesFromGitRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<RefreshChangesFromGitResponse> {
+  parseResponse(_response: Response): Promise<RefreshChangesFromGitResponse> {
     // No return value (204 No Content)
-    return new RefreshChangesFromGitResponse();
+    return Promise.resolve(new RefreshChangesFromGitResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class RefreshChangesFromGitResponse extends OrganizationResponse {
     super("RefreshChangesFromGit");
   }
 
-  static fromResponse(_data: unknown): RefreshChangesFromGitResponse {
+  static fromResponse(_data?: unknown): RefreshChangesFromGitResponse {
     return new RefreshChangesFromGitResponse();
   }
 }

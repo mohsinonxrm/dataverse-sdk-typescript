@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { RunDataProcessingModuleResponse as RunDataProcessingModuleResponseData } from "./types/index.js";
 
 /**
  * Parameters of the RunDataProcessingModule message, by their CSDL names. A parameter the CSDL declares
@@ -55,23 +53,34 @@ export class RunDataProcessingModuleRequest
   }
 
   async parseResponse(response: Response): Promise<RunDataProcessingModuleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return RunDataProcessingModuleResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return RunDataProcessingModuleResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the RunDataProcessingModule action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface RunDataProcessingModuleResult {
+  "@odata.context"?: string;
+  HttpResponseStatus: number;
+  OutputEntities: string;
+}
+
+/**
  * RunDataProcessingModule response message
+ *
+ * `result` is the value the RunDataProcessingModule action returns (see {@link RunDataProcessingModuleResult}).
  */
 export class RunDataProcessingModuleResponse extends OrganizationResponse {
-  constructor(public result: RunDataProcessingModuleResponseData) {
+  constructor(public result: RunDataProcessingModuleResult) {
     super("RunDataProcessingModule");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): RunDataProcessingModuleResponse {
-    return new RunDataProcessingModuleResponse(
-      responseObject<RunDataProcessingModuleResponseData>(data)
-    );
+    return new RunDataProcessingModuleResponse(data as RunDataProcessingModuleResult);
   }
 }

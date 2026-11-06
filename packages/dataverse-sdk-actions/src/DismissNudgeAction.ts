@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from DismissNudge action
+ * Response from the DismissNudge action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface DismissNudgeResponse {
+  "@odata.context"?: string;
   Message: string;
 }
 
@@ -51,8 +54,7 @@ export class DismissNudgeAction implements Executable<DismissNudgeResponse> {
   }
 
   async parseResponse(response: Response): Promise<DismissNudgeResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as DismissNudgeResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as DismissNudgeResponse;
   }
 }

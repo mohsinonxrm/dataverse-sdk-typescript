@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_CheckIfHasLegacySlaRulesResponse as msdyn_CheckIfHasLegacySlaRulesResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckIfHasLegacySlaRules request message
@@ -29,23 +27,35 @@ export class msdyn_CheckIfHasLegacySlaRulesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckIfHasLegacySlaRulesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_CheckIfHasLegacySlaRulesResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CheckIfHasLegacySlaRulesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CheckIfHasLegacySlaRules action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CheckIfHasLegacySlaRulesResult {
+  "@odata.context"?: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_CheckIfHasLegacySlaRules response message
+ *
+ * `result` is the value the msdyn_CheckIfHasLegacySlaRules action returns (see {@link msdyn_CheckIfHasLegacySlaRulesResult}).
  */
 export class msdyn_CheckIfHasLegacySlaRulesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfHasLegacySlaRulesResponseData) {
+  constructor(public result: msdyn_CheckIfHasLegacySlaRulesResult) {
     super("msdyn_CheckIfHasLegacySlaRules");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CheckIfHasLegacySlaRulesResponse {
-    return new msdyn_CheckIfHasLegacySlaRulesResponse(
-      responseObject<msdyn_CheckIfHasLegacySlaRulesResponseData>(data)
-    );
+    return new msdyn_CheckIfHasLegacySlaRulesResponse(data as msdyn_CheckIfHasLegacySlaRulesResult);
   }
 }

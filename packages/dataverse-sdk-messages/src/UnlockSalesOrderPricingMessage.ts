@@ -42,9 +42,9 @@ export class UnlockSalesOrderPricingRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<UnlockSalesOrderPricingResponse> {
+  parseResponse(_response: Response): Promise<UnlockSalesOrderPricingResponse> {
     // No return value (204 No Content)
-    return new UnlockSalesOrderPricingResponse();
+    return Promise.resolve(new UnlockSalesOrderPricingResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class UnlockSalesOrderPricingResponse extends OrganizationResponse {
     super("UnlockSalesOrderPricing");
   }
 
-  static fromResponse(_data: unknown): UnlockSalesOrderPricingResponse {
+  static fromResponse(_data?: unknown): UnlockSalesOrderPricingResponse {
     return new UnlockSalesOrderPricingResponse();
   }
 }

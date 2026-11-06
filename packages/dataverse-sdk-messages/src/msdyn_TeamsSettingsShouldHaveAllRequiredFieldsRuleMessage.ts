@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRuleResponse as msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRule request message
@@ -31,9 +29,7 @@ export class msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRuleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRuleResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRuleResponse.fromResponse(
       await response.json()
     );
@@ -41,16 +37,31 @@ export class msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRuleRequest
 }
 
 /**
+ * Response from the msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRule action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRuleResult {
+  "@odata.context"?: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRule response message
+ *
+ * `result` is the value the msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRule action returns (see {@link msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRuleResult}).
  */
 export class msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRuleResponseData) {
+  constructor(public result: msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRuleResult) {
     super("msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRule");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRuleResponse {
     return new msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRuleResponse(
-      responseObject<msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRuleResponseData>(data)
+      data as msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRuleResult
     );
   }
 }

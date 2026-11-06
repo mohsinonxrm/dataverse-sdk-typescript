@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecksResponse as msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecksResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecks message, by their CSDL names. A parameter the CSDL declares
@@ -53,9 +51,7 @@ export class msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecksRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecksResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecksResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecksResponse.fromResponse(
       await response.json()
     );
@@ -63,20 +59,31 @@ export class msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecksRequest
 }
 
 /**
+ * Response from the msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecks action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecksResult {
+  "@odata.context"?: string;
+  msdyn_CanExecuteAgent: boolean;
+}
+
+/**
  * msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecks response message
+ *
+ * `result` is the value the msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecks action returns (see {@link msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecksResult}).
  */
 export class msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecksResponse extends OrganizationResponse {
-  constructor(
-    public result: msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecksResponseData
-  ) {
+  constructor(public result: msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecksResult) {
     super("msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecks");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(
     data: unknown
   ): msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecksResponse {
     return new msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecksResponse(
-      responseObject<msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecksResponseData>(data)
+      data as msdyn_SalesAgents_ExecuteEngageAndReadinessAgentPrerunChecksResult
     );
   }
 }

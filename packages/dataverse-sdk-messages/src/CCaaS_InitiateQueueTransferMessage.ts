@@ -50,9 +50,9 @@ export class CCaaS_InitiateQueueTransferRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_InitiateQueueTransferResponse> {
+  parseResponse(_response: Response): Promise<CCaaS_InitiateQueueTransferResponse> {
     // No return value (204 No Content)
-    return new CCaaS_InitiateQueueTransferResponse();
+    return Promise.resolve(new CCaaS_InitiateQueueTransferResponse());
   }
 }
 
@@ -64,7 +64,7 @@ export class CCaaS_InitiateQueueTransferResponse extends OrganizationResponse {
     super("CCaaS_InitiateQueueTransfer");
   }
 
-  static fromResponse(_data: unknown): CCaaS_InitiateQueueTransferResponse {
+  static fromResponse(_data?: unknown): CCaaS_InitiateQueueTransferResponse {
     return new CCaaS_InitiateQueueTransferResponse();
   }
 }

@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from ThisFiscalPeriod function
+ * Response from the ThisFiscalPeriod function.
+ *
+ * The value, read from the `value` of the response body.
  */
-export interface ThisFiscalPeriodResponse {
-  value: boolean;
-}
+export type ThisFiscalPeriodResponse = boolean;
 
 /**
  * Parameters of the ThisFiscalPeriod function, by their CSDL names. A parameter the CSDL declares
@@ -48,8 +48,7 @@ export class ThisFiscalPeriodFunction implements Executable<ThisFiscalPeriodResp
   }
 
   async parseResponse(response: Response): Promise<ThisFiscalPeriodResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ThisFiscalPeriodResponse;
-    return (await response.json()) as ThisFiscalPeriodResponse;
+    // A primitive comes wrapped: { "@odata.context": "…", "value": … }
+    return ((await response.json()) as { value: ThisFiscalPeriodResponse }).value;
   }
 }

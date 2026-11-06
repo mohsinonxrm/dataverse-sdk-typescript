@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRuleResponse as msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRule request message
@@ -31,9 +29,7 @@ export class msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRuleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRuleResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRuleResponse.fromResponse(
       await response.json()
     );
@@ -41,18 +37,33 @@ export class msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRuleRequest
 }
 
 /**
+ * Response from the msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRule action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRuleResult {
+  "@odata.context"?: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRule response message
+ *
+ * `result` is the value the msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRule action returns (see {@link msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRuleResult}).
  */
 export class msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRuleResponseData) {
+  constructor(public result: msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRuleResult) {
     super("msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRule");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(
     data: unknown
   ): msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRuleResponse {
     return new msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRuleResponse(
-      responseObject<msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRuleResponseData>(data)
+      data as msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRuleResult
     );
   }
 }

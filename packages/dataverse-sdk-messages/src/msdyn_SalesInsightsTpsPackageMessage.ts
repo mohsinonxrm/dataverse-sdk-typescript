@@ -42,9 +42,9 @@ export class msdyn_SalesInsightsTpsPackageRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_SalesInsightsTpsPackageResponse> {
+  parseResponse(_response: Response): Promise<msdyn_SalesInsightsTpsPackageResponse> {
     // No return value (204 No Content)
-    return new msdyn_SalesInsightsTpsPackageResponse();
+    return Promise.resolve(new msdyn_SalesInsightsTpsPackageResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_SalesInsightsTpsPackageResponse extends OrganizationResponse 
     super("msdyn_SalesInsightsTpsPackage");
   }
 
-  static fromResponse(_data: unknown): msdyn_SalesInsightsTpsPackageResponse {
+  static fromResponse(_data?: unknown): msdyn_SalesInsightsTpsPackageResponse {
     return new msdyn_SalesInsightsTpsPackageResponse();
   }
 }

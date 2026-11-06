@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from GetValidReferencedEntities function
+ * Response from the GetValidReferencedEntities function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface GetValidReferencedEntitiesResponse {
+  "@odata.context"?: string;
   EntityNames: string[];
 }
 
@@ -51,8 +54,7 @@ export class GetValidReferencedEntitiesFunction implements Executable<GetValidRe
   }
 
   async parseResponse(response: Response): Promise<GetValidReferencedEntitiesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as GetValidReferencedEntitiesResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as GetValidReferencedEntitiesResponse;
   }
 }

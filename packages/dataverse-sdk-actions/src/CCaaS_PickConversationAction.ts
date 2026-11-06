@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CCaaS_PickConversation action
+ * Response from the CCaaS_PickConversation action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface CCaaS_PickConversationResponse {
-  // No content returned
-}
+export type CCaaS_PickConversationResponse = void;
 
 /**
  * Parameters of the CCaaS_PickConversation action, by their CSDL names. A parameter the CSDL declares
@@ -48,9 +48,8 @@ export class CCaaS_PickConversationAction implements Executable<CCaaS_PickConver
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_PickConversationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CCaaS_PickConversationResponse;
-    return (await response.json()) as CCaaS_PickConversationResponse;
+  parseResponse(_response: Response): Promise<CCaaS_PickConversationResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

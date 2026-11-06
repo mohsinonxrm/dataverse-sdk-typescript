@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { PBIAutoRefreshDatasetResponse as PBIAutoRefreshDatasetResponseData } from "./types/index.js";
 
 /**
  * Parameters of the PBIAutoRefreshDataset message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class PBIAutoRefreshDatasetRequest
   }
 
   async parseResponse(response: Response): Promise<PBIAutoRefreshDatasetResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return PBIAutoRefreshDatasetResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return PBIAutoRefreshDatasetResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the PBIAutoRefreshDataset action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface PBIAutoRefreshDatasetResult {
+  "@odata.context"?: string;
+  HttpResponse: string;
+}
+
+/**
  * PBIAutoRefreshDataset response message
+ *
+ * `result` is the value the PBIAutoRefreshDataset action returns (see {@link PBIAutoRefreshDatasetResult}).
  */
 export class PBIAutoRefreshDatasetResponse extends OrganizationResponse {
-  constructor(public result: PBIAutoRefreshDatasetResponseData) {
+  constructor(public result: PBIAutoRefreshDatasetResult) {
     super("PBIAutoRefreshDataset");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): PBIAutoRefreshDatasetResponse {
-    return new PBIAutoRefreshDatasetResponse(
-      responseObject<PBIAutoRefreshDatasetResponseData>(data)
-    );
+    return new PBIAutoRefreshDatasetResponse(data as PBIAutoRefreshDatasetResult);
   }
 }

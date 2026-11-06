@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { AnalyzeResponse as AnalyzeResponseData } from "./types/index.js";
 
 /**
  * Parameters of the Analyze message, by their CSDL names. A parameter the CSDL declares
@@ -48,21 +46,33 @@ export class AnalyzeRequest extends OrganizationRequest implements Executable<An
   }
 
   async parseResponse(response: Response): Promise<AnalyzeResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return AnalyzeResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return AnalyzeResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the Analyze action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface AnalyzeResult {
+  "@odata.context"?: string;
+  response: string;
+}
+
+/**
  * Analyze response message
+ *
+ * `result` is the value the Analyze action returns (see {@link AnalyzeResult}).
  */
 export class AnalyzeResponse extends OrganizationResponse {
-  constructor(public result: AnalyzeResponseData) {
+  constructor(public result: AnalyzeResult) {
     super("Analyze");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): AnalyzeResponse {
-    return new AnalyzeResponse(responseObject<AnalyzeResponseData>(data));
+    return new AnalyzeResponse(data as AnalyzeResult);
   }
 }

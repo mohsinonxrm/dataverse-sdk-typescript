@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CreateFlowCredentialApplication action
+ * Response from the CreateFlowCredentialApplication action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CreateFlowCredentialApplicationResponse {
+  "@odata.context"?: string;
   flowCredentialApplicationId: string;
 }
 
@@ -57,8 +60,7 @@ export class CreateFlowCredentialApplicationAction implements Executable<CreateF
   }
 
   async parseResponse(response: Response): Promise<CreateFlowCredentialApplicationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CreateFlowCredentialApplicationResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as CreateFlowCredentialApplicationResponse;
   }
 }

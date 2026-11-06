@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_get_required_fieldsResponse as msdyn_get_required_fieldsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_get_required_fields message, by their CSDL names. A parameter the CSDL declares
@@ -51,23 +49,40 @@ export class msdyn_get_required_fieldsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_get_required_fieldsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_get_required_fieldsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_get_required_fieldsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_get_required_fields action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_get_required_fieldsResult {
+  "@odata.context"?: string;
+  eligible_primary_fields: string[];
+  eligible_primary_keys: string[];
+  table_display_name: string;
+  table_id: string;
+  table_plural_name: string;
+  table_primary_field: string;
+  table_primary_key: string;
+  table_schema_name: string;
+}
+
+/**
  * msdyn_get_required_fields response message
+ *
+ * `result` is the value the msdyn_get_required_fields action returns (see {@link msdyn_get_required_fieldsResult}).
  */
 export class msdyn_get_required_fieldsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_get_required_fieldsResponseData) {
+  constructor(public result: msdyn_get_required_fieldsResult) {
     super("msdyn_get_required_fields");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_get_required_fieldsResponse {
-    return new msdyn_get_required_fieldsResponse(
-      responseObject<msdyn_get_required_fieldsResponseData>(data)
-    );
+    return new msdyn_get_required_fieldsResponse(data as msdyn_get_required_fieldsResult);
   }
 }

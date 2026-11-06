@@ -44,9 +44,9 @@ export class msdyn_UpdateRITenantInfoRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_UpdateRITenantInfoResponse> {
+  parseResponse(_response: Response): Promise<msdyn_UpdateRITenantInfoResponse> {
     // No return value (204 No Content)
-    return new msdyn_UpdateRITenantInfoResponse();
+    return Promise.resolve(new msdyn_UpdateRITenantInfoResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class msdyn_UpdateRITenantInfoResponse extends OrganizationResponse {
     super("msdyn_UpdateRITenantInfo");
   }
 
-  static fromResponse(_data: unknown): msdyn_UpdateRITenantInfoResponse {
+  static fromResponse(_data?: unknown): msdyn_UpdateRITenantInfoResponse {
     return new msdyn_UpdateRITenantInfoResponse();
   }
 }

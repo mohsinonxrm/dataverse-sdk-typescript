@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_OcQueuesShouldHaveAgentsRuleResponse as msdyn_OcQueuesShouldHaveAgentsRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_OcQueuesShouldHaveAgentsRule request message
@@ -29,23 +27,37 @@ export class msdyn_OcQueuesShouldHaveAgentsRuleRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_OcQueuesShouldHaveAgentsRuleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_OcQueuesShouldHaveAgentsRuleResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_OcQueuesShouldHaveAgentsRuleResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_OcQueuesShouldHaveAgentsRule action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_OcQueuesShouldHaveAgentsRuleResult {
+  "@odata.context"?: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_OcQueuesShouldHaveAgentsRule response message
+ *
+ * `result` is the value the msdyn_OcQueuesShouldHaveAgentsRule action returns (see {@link msdyn_OcQueuesShouldHaveAgentsRuleResult}).
  */
 export class msdyn_OcQueuesShouldHaveAgentsRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_OcQueuesShouldHaveAgentsRuleResponseData) {
+  constructor(public result: msdyn_OcQueuesShouldHaveAgentsRuleResult) {
     super("msdyn_OcQueuesShouldHaveAgentsRule");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_OcQueuesShouldHaveAgentsRuleResponse {
     return new msdyn_OcQueuesShouldHaveAgentsRuleResponse(
-      responseObject<msdyn_OcQueuesShouldHaveAgentsRuleResponseData>(data)
+      data as msdyn_OcQueuesShouldHaveAgentsRuleResult
     );
   }
 }

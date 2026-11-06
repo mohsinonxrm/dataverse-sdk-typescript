@@ -2,14 +2,18 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import type { msdyn_ocsimltraining } from "./types/index.js";
 
 /**
- * Response from msdyn_CreateTrainConfig action
+ * Response from the msdyn_CreateTrainConfig action.
  *
- * The response is the entity itself, not wrapped in `value`.
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface msdyn_CreateTrainConfigResponse extends msdyn_ocsimltraining {
-  "@odata.context"?: string;
-  "@odata.etag"?: string;
-}
+export type msdyn_CreateTrainConfigResponse =
+  | (msdyn_ocsimltraining & {
+      "@odata.context"?: string;
+      "@odata.etag"?: string;
+      "@odata.type"?: string;
+    })
+  | null;
 
 /**
  * msdyn_CreateTrainConfig action
@@ -36,8 +40,9 @@ export class msdyn_CreateTrainConfigAction implements Executable<msdyn_CreateTra
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateTrainConfigResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_CreateTrainConfigResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
     return (await response.json()) as msdyn_CreateTrainConfigResponse;
   }
 }

@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_GetLicenseInfoResponse as msdyn_GetLicenseInfoResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetLicenseInfo request message
@@ -29,21 +27,33 @@ export class msdyn_GetLicenseInfoRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetLicenseInfoResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetLicenseInfoResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetLicenseInfoResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetLicenseInfo action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetLicenseInfoResult {
+  "@odata.context"?: string;
+  Response: string;
+}
+
+/**
  * msdyn_GetLicenseInfo response message
+ *
+ * `result` is the value the msdyn_GetLicenseInfo action returns (see {@link msdyn_GetLicenseInfoResult}).
  */
 export class msdyn_GetLicenseInfoResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetLicenseInfoResponseData) {
+  constructor(public result: msdyn_GetLicenseInfoResult) {
     super("msdyn_GetLicenseInfo");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetLicenseInfoResponse {
-    return new msdyn_GetLicenseInfoResponse(responseObject<msdyn_GetLicenseInfoResponseData>(data));
+    return new msdyn_GetLicenseInfoResponse(data as msdyn_GetLicenseInfoResult);
   }
 }

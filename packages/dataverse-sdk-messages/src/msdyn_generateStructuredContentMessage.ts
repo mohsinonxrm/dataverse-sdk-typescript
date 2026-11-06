@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_generateStructuredContentResponse as msdyn_generateStructuredContentResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_generateStructuredContent message, by their CSDL names. A parameter the CSDL declares
@@ -55,23 +53,36 @@ export class msdyn_generateStructuredContentRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_generateStructuredContentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_generateStructuredContentResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_generateStructuredContentResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_generateStructuredContent action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_generateStructuredContentResult {
+  "@odata.context"?: string;
+  restructuredContent: string;
+  status: string;
+}
+
+/**
  * msdyn_generateStructuredContent response message
+ *
+ * `result` is the value the msdyn_generateStructuredContent action returns (see {@link msdyn_generateStructuredContentResult}).
  */
 export class msdyn_generateStructuredContentResponse extends OrganizationResponse {
-  constructor(public result: msdyn_generateStructuredContentResponseData) {
+  constructor(public result: msdyn_generateStructuredContentResult) {
     super("msdyn_generateStructuredContent");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_generateStructuredContentResponse {
     return new msdyn_generateStructuredContentResponse(
-      responseObject<msdyn_generateStructuredContentResponseData>(data)
+      data as msdyn_generateStructuredContentResult
     );
   }
 }

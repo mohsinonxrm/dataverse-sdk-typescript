@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
@@ -49,21 +48,42 @@ export class msdyn_initializedefaultclonequeryRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_initializedefaultclonequeryResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_initializedefaultclonequeryResponse.fromResponse({});
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204)
+      return msdyn_initializedefaultclonequeryResponse.fromResponse(undefined);
+    // The body is the record, with its annotations
     return msdyn_initializedefaultclonequeryResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_initializedefaultclonequery action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
+ */
+export type msdyn_initializedefaultclonequeryResult =
+  | (msdyn_configuration & {
+      "@odata.context"?: string;
+      "@odata.etag"?: string;
+      "@odata.type"?: string;
+    })
+  | null;
+
+/**
  * msdyn_initializedefaultclonequery response message
+ *
+ * `result` is the value the msdyn_initializedefaultclonequery action returns (see {@link msdyn_initializedefaultclonequeryResult}).
  */
 export class msdyn_initializedefaultclonequeryResponse extends OrganizationResponse {
-  constructor(public result: msdyn_configuration) {
+  constructor(public result: msdyn_initializedefaultclonequeryResult) {
     super("msdyn_initializedefaultclonequery");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_initializedefaultclonequeryResponse {
-    return new msdyn_initializedefaultclonequeryResponse(responseObject<msdyn_configuration>(data));
+    return new msdyn_initializedefaultclonequeryResponse(
+      (data ?? null) as msdyn_initializedefaultclonequeryResult
+    );
   }
 }

@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_EmailValidationCustomAction action
+ * Response from the msdyn_EmailValidationCustomAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_EmailValidationCustomActionResponse {
+  "@odata.context"?: string;
   EmailValidationResponse: string;
   ErrorMessage: string;
   IsSuccess: boolean;
@@ -45,8 +48,7 @@ export class msdyn_EmailValidationCustomActionAction implements Executable<msdyn
   }
 
   async parseResponse(response: Response): Promise<msdyn_EmailValidationCustomActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_EmailValidationCustomActionResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_EmailValidationCustomActionResponse;
   }
 }

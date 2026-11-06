@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { McpUpdateGlobalOptionSetResponse as McpUpdateGlobalOptionSetResponseData } from "./types/index.js";
 
 /**
  * Parameters of the McpUpdateGlobalOptionSet message, by their CSDL names. A parameter the CSDL declares
@@ -51,23 +49,33 @@ export class McpUpdateGlobalOptionSetRequest
   }
 
   async parseResponse(response: Response): Promise<McpUpdateGlobalOptionSetResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return McpUpdateGlobalOptionSetResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return McpUpdateGlobalOptionSetResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the McpUpdateGlobalOptionSet action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface McpUpdateGlobalOptionSetResult {
+  "@odata.context"?: string;
+  definition: string;
+}
+
+/**
  * McpUpdateGlobalOptionSet response message
+ *
+ * `result` is the value the McpUpdateGlobalOptionSet action returns (see {@link McpUpdateGlobalOptionSetResult}).
  */
 export class McpUpdateGlobalOptionSetResponse extends OrganizationResponse {
-  constructor(public result: McpUpdateGlobalOptionSetResponseData) {
+  constructor(public result: McpUpdateGlobalOptionSetResult) {
     super("McpUpdateGlobalOptionSet");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): McpUpdateGlobalOptionSetResponse {
-    return new McpUpdateGlobalOptionSetResponse(
-      responseObject<McpUpdateGlobalOptionSetResponseData>(data)
-    );
+    return new McpUpdateGlobalOptionSetResponse(data as McpUpdateGlobalOptionSetResult);
   }
 }

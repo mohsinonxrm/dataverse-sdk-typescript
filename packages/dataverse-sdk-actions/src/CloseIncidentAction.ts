@@ -5,11 +5,11 @@ import type { EntityPayload } from "./types/EntityPayload.js";
 import type { incidentresolution } from "./types/index.js";
 
 /**
- * Response from CloseIncident action
+ * Response from the CloseIncident action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface CloseIncidentResponse {
-  // No content returned
-}
+export type CloseIncidentResponse = void;
 
 /**
  * Parameters of the CloseIncident action, by their CSDL names. A parameter the CSDL declares
@@ -46,9 +46,8 @@ export class CloseIncidentAction implements Executable<CloseIncidentResponse> {
     };
   }
 
-  async parseResponse(response: Response): Promise<CloseIncidentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CloseIncidentResponse;
-    return (await response.json()) as CloseIncidentResponse;
+  parseResponse(_response: Response): Promise<CloseIncidentResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

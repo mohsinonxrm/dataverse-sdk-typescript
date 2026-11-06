@@ -42,9 +42,9 @@ export class msdyn_ScheduleRealTimeScoringRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ScheduleRealTimeScoringResponse> {
+  parseResponse(_response: Response): Promise<msdyn_ScheduleRealTimeScoringResponse> {
     // No return value (204 No Content)
-    return new msdyn_ScheduleRealTimeScoringResponse();
+    return Promise.resolve(new msdyn_ScheduleRealTimeScoringResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_ScheduleRealTimeScoringResponse extends OrganizationResponse 
     super("msdyn_ScheduleRealTimeScoring");
   }
 
-  static fromResponse(_data: unknown): msdyn_ScheduleRealTimeScoringResponse {
+  static fromResponse(_data?: unknown): msdyn_ScheduleRealTimeScoringResponse {
     return new msdyn_ScheduleRealTimeScoringResponse();
   }
 }

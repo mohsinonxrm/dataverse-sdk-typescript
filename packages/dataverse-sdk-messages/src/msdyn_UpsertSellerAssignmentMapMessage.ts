@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_UpsertSellerAssignmentMapResponse as msdyn_UpsertSellerAssignmentMapResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_UpsertSellerAssignmentMap message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,36 @@ export class msdyn_UpsertSellerAssignmentMapRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_UpsertSellerAssignmentMapResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_UpsertSellerAssignmentMapResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_UpsertSellerAssignmentMapResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_UpsertSellerAssignmentMap action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_UpsertSellerAssignmentMapResult {
+  "@odata.context"?: string;
+  Error: string;
+  UpdatedSellerAssignmentMaps: string;
+}
+
+/**
  * msdyn_UpsertSellerAssignmentMap response message
+ *
+ * `result` is the value the msdyn_UpsertSellerAssignmentMap action returns (see {@link msdyn_UpsertSellerAssignmentMapResult}).
  */
 export class msdyn_UpsertSellerAssignmentMapResponse extends OrganizationResponse {
-  constructor(public result: msdyn_UpsertSellerAssignmentMapResponseData) {
+  constructor(public result: msdyn_UpsertSellerAssignmentMapResult) {
     super("msdyn_UpsertSellerAssignmentMap");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_UpsertSellerAssignmentMapResponse {
     return new msdyn_UpsertSellerAssignmentMapResponse(
-      responseObject<msdyn_UpsertSellerAssignmentMapResponseData>(data)
+      data as msdyn_UpsertSellerAssignmentMapResult
     );
   }
 }

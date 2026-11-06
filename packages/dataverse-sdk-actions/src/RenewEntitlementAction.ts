@@ -3,14 +3,14 @@ import { requestBody } from "./internal/requestBody.js";
 import type { entitlement } from "./types/index.js";
 
 /**
- * Response from RenewEntitlement action
+ * Response from the RenewEntitlement action.
  *
- * The response is the entity itself, not wrapped in `value`.
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface RenewEntitlementResponse extends entitlement {
-  "@odata.context"?: string;
-  "@odata.etag"?: string;
-}
+export type RenewEntitlementResponse =
+  | (entitlement & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string })
+  | null;
 
 /**
  * Parameters of the RenewEntitlement action, by their CSDL names. A parameter the CSDL declares
@@ -53,8 +53,9 @@ export class RenewEntitlementAction implements Executable<RenewEntitlementRespon
   }
 
   async parseResponse(response: Response): Promise<RenewEntitlementResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RenewEntitlementResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
     return (await response.json()) as RenewEntitlementResponse;
   }
 }

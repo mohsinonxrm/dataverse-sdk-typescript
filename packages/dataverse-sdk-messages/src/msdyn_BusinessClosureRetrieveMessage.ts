@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_businessclosure } from "./types/index.js";
 
@@ -45,21 +44,42 @@ export class msdyn_BusinessClosureRetrieveRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_BusinessClosureRetrieveResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_BusinessClosureRetrieveResponse.fromResponse({});
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204)
+      return msdyn_BusinessClosureRetrieveResponse.fromResponse(undefined);
+    // The body is the record, with its annotations
     return msdyn_BusinessClosureRetrieveResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_BusinessClosureRetrieve action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
+ */
+export type msdyn_BusinessClosureRetrieveResult =
+  | (msdyn_businessclosure & {
+      "@odata.context"?: string;
+      "@odata.etag"?: string;
+      "@odata.type"?: string;
+    })
+  | null;
+
+/**
  * msdyn_BusinessClosureRetrieve response message
+ *
+ * `result` is the value the msdyn_BusinessClosureRetrieve action returns (see {@link msdyn_BusinessClosureRetrieveResult}).
  */
 export class msdyn_BusinessClosureRetrieveResponse extends OrganizationResponse {
-  constructor(public result: msdyn_businessclosure) {
+  constructor(public result: msdyn_BusinessClosureRetrieveResult) {
     super("msdyn_BusinessClosureRetrieve");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_BusinessClosureRetrieveResponse {
-    return new msdyn_BusinessClosureRetrieveResponse(responseObject<msdyn_businessclosure>(data));
+    return new msdyn_BusinessClosureRetrieveResponse(
+      (data ?? null) as msdyn_BusinessClosureRetrieveResult
+    );
   }
 }

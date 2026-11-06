@@ -4,9 +4,12 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdyn_retrieveConnections action
+ * Response from the msdyn_retrieveConnections action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_retrieveConnectionsResponse {
+  "@odata.context"?: string;
   Connections: string;
 }
 
@@ -48,8 +51,7 @@ export class msdyn_retrieveConnectionsAction implements Executable<msdyn_retriev
   }
 
   async parseResponse(response: Response): Promise<msdyn_retrieveConnectionsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_retrieveConnectionsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_retrieveConnectionsResponse;
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesAgents_RunAgentEvalsResponse as msdyn_SalesAgents_RunAgentEvalsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesAgents_RunAgentEvals message, by their CSDL names. A parameter the CSDL declares
@@ -55,23 +53,35 @@ export class msdyn_SalesAgents_RunAgentEvalsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAgents_RunAgentEvalsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_SalesAgents_RunAgentEvalsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesAgents_RunAgentEvalsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SalesAgents_RunAgentEvals action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesAgents_RunAgentEvalsResult {
+  "@odata.context"?: string;
+  msdyn_Success: boolean;
+}
+
+/**
  * msdyn_SalesAgents_RunAgentEvals response message
+ *
+ * `result` is the value the msdyn_SalesAgents_RunAgentEvals action returns (see {@link msdyn_SalesAgents_RunAgentEvalsResult}).
  */
 export class msdyn_SalesAgents_RunAgentEvalsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgents_RunAgentEvalsResponseData) {
+  constructor(public result: msdyn_SalesAgents_RunAgentEvalsResult) {
     super("msdyn_SalesAgents_RunAgentEvals");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesAgents_RunAgentEvalsResponse {
     return new msdyn_SalesAgents_RunAgentEvalsResponse(
-      responseObject<msdyn_SalesAgents_RunAgentEvalsResponseData>(data)
+      data as msdyn_SalesAgents_RunAgentEvalsResult
     );
   }
 }

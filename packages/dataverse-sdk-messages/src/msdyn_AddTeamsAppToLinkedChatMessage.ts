@@ -42,9 +42,9 @@ export class msdyn_AddTeamsAppToLinkedChatRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_AddTeamsAppToLinkedChatResponse> {
+  parseResponse(_response: Response): Promise<msdyn_AddTeamsAppToLinkedChatResponse> {
     // No return value (204 No Content)
-    return new msdyn_AddTeamsAppToLinkedChatResponse();
+    return Promise.resolve(new msdyn_AddTeamsAppToLinkedChatResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_AddTeamsAppToLinkedChatResponse extends OrganizationResponse 
     super("msdyn_AddTeamsAppToLinkedChat");
   }
 
-  static fromResponse(_data: unknown): msdyn_AddTeamsAppToLinkedChatResponse {
+  static fromResponse(_data?: unknown): msdyn_AddTeamsAppToLinkedChatResponse {
     return new msdyn_AddTeamsAppToLinkedChatResponse();
   }
 }

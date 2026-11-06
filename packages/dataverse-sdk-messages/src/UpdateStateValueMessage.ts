@@ -57,9 +57,9 @@ export class UpdateStateValueRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<UpdateStateValueResponse> {
+  parseResponse(_response: Response): Promise<UpdateStateValueResponse> {
     // No return value (204 No Content)
-    return new UpdateStateValueResponse();
+    return Promise.resolve(new UpdateStateValueResponse());
   }
 }
 
@@ -71,7 +71,7 @@ export class UpdateStateValueResponse extends OrganizationResponse {
     super("UpdateStateValue");
   }
 
-  static fromResponse(_data: unknown): UpdateStateValueResponse {
+  static fromResponse(_data?: unknown): UpdateStateValueResponse {
     return new UpdateStateValueResponse();
   }
 }

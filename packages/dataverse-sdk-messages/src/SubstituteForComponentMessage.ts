@@ -1,10 +1,9 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { SubstituteForComponentResponse as SubstituteForComponentResponseData } from "./types/index.js";
+import type { SubstitutionResult } from "./types/index.js";
 
 /**
  * Parameters of the SubstituteForComponent message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +48,33 @@ export class SubstituteForComponentRequest
   }
 
   async parseResponse(response: Response): Promise<SubstituteForComponentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return SubstituteForComponentResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return SubstituteForComponentResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the SubstituteForComponent action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface SubstituteForComponentResult {
+  "@odata.context"?: string;
+  Result: SubstitutionResult;
+}
+
+/**
  * SubstituteForComponent response message
+ *
+ * `result` is the value the SubstituteForComponent action returns (see {@link SubstituteForComponentResult}).
  */
 export class SubstituteForComponentResponse extends OrganizationResponse {
-  constructor(public result: SubstituteForComponentResponseData) {
+  constructor(public result: SubstituteForComponentResult) {
     super("SubstituteForComponent");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): SubstituteForComponentResponse {
-    return new SubstituteForComponentResponse(
-      responseObject<SubstituteForComponentResponseData>(data)
-    );
+    return new SubstituteForComponentResponse(data as SubstituteForComponentResult);
   }
 }

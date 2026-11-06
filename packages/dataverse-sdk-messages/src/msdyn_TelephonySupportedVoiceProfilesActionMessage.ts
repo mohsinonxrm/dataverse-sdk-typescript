@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_TelephonySupportedVoiceProfilesActionResponse as msdyn_TelephonySupportedVoiceProfilesActionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_TelephonySupportedVoiceProfilesAction message, by their CSDL names. A parameter the CSDL declares
@@ -47,24 +45,35 @@ export class msdyn_TelephonySupportedVoiceProfilesActionRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_TelephonySupportedVoiceProfilesActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_TelephonySupportedVoiceProfilesActionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_TelephonySupportedVoiceProfilesActionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_TelephonySupportedVoiceProfilesAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_TelephonySupportedVoiceProfilesActionResult {
+  "@odata.context"?: string;
+  ActionResult: string;
+}
+
+/**
  * msdyn_TelephonySupportedVoiceProfilesAction response message
+ *
+ * `result` is the value the msdyn_TelephonySupportedVoiceProfilesAction action returns (see {@link msdyn_TelephonySupportedVoiceProfilesActionResult}).
  */
 export class msdyn_TelephonySupportedVoiceProfilesActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_TelephonySupportedVoiceProfilesActionResponseData) {
+  constructor(public result: msdyn_TelephonySupportedVoiceProfilesActionResult) {
     super("msdyn_TelephonySupportedVoiceProfilesAction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_TelephonySupportedVoiceProfilesActionResponse {
     return new msdyn_TelephonySupportedVoiceProfilesActionResponse(
-      responseObject<msdyn_TelephonySupportedVoiceProfilesActionResponseData>(data)
+      data as msdyn_TelephonySupportedVoiceProfilesActionResult
     );
   }
 }

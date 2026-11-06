@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetTimeLineRecordsResponse as msdyn_GetTimeLineRecordsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetTimeLineRecords message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class msdyn_GetTimeLineRecordsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetTimeLineRecordsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetTimeLineRecordsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetTimeLineRecordsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetTimeLineRecords action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetTimeLineRecordsResult {
+  "@odata.context"?: string;
+  TimeLineWallRecords: string;
+}
+
+/**
  * msdyn_GetTimeLineRecords response message
+ *
+ * `result` is the value the msdyn_GetTimeLineRecords action returns (see {@link msdyn_GetTimeLineRecordsResult}).
  */
 export class msdyn_GetTimeLineRecordsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetTimeLineRecordsResponseData) {
+  constructor(public result: msdyn_GetTimeLineRecordsResult) {
     super("msdyn_GetTimeLineRecords");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetTimeLineRecordsResponse {
-    return new msdyn_GetTimeLineRecordsResponse(
-      responseObject<msdyn_GetTimeLineRecordsResponseData>(data)
-    );
+    return new msdyn_GetTimeLineRecordsResponse(data as msdyn_GetTimeLineRecordsResult);
   }
 }

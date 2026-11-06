@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetORReasonExplanationResponse as msdyn_GetORReasonExplanationResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetORReasonExplanation message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,33 @@ export class msdyn_GetORReasonExplanationRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetORReasonExplanationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetORReasonExplanationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetORReasonExplanationResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetORReasonExplanation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetORReasonExplanationResult {
+  "@odata.context"?: string;
+  ExplanationResult: string;
+}
+
+/**
  * msdyn_GetORReasonExplanation response message
+ *
+ * `result` is the value the msdyn_GetORReasonExplanation action returns (see {@link msdyn_GetORReasonExplanationResult}).
  */
 export class msdyn_GetORReasonExplanationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetORReasonExplanationResponseData) {
+  constructor(public result: msdyn_GetORReasonExplanationResult) {
     super("msdyn_GetORReasonExplanation");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetORReasonExplanationResponse {
-    return new msdyn_GetORReasonExplanationResponse(
-      responseObject<msdyn_GetORReasonExplanationResponseData>(data)
-    );
+    return new msdyn_GetORReasonExplanationResponse(data as msdyn_GetORReasonExplanationResult);
   }
 }

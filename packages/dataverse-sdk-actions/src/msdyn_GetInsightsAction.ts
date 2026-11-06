@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_GetInsights action
+ * Response from the msdyn_GetInsights action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetInsightsResponse {
+  "@odata.context"?: string;
   msdyn_insight: string;
   msdyn_status: number;
 }
@@ -47,8 +50,7 @@ export class msdyn_GetInsightsAction implements Executable<msdyn_GetInsightsResp
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetInsightsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_GetInsightsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_GetInsightsResponse;
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { GetNextAutoNumberValueResponse as GetNextAutoNumberValueResponseData } from "./types/index.js";
 
 /**
  * Parameters of the GetNextAutoNumberValue message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class GetNextAutoNumberValueRequest
   }
 
   async parseResponse(response: Response): Promise<GetNextAutoNumberValueResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return GetNextAutoNumberValueResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return GetNextAutoNumberValueResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the GetNextAutoNumberValue action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface GetNextAutoNumberValueResult {
+  "@odata.context"?: string;
+  NextAutoNumberValue: number;
+}
+
+/**
  * GetNextAutoNumberValue response message
+ *
+ * `result` is the value the GetNextAutoNumberValue action returns (see {@link GetNextAutoNumberValueResult}).
  */
 export class GetNextAutoNumberValueResponse extends OrganizationResponse {
-  constructor(public result: GetNextAutoNumberValueResponseData) {
+  constructor(public result: GetNextAutoNumberValueResult) {
     super("GetNextAutoNumberValue");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): GetNextAutoNumberValueResponse {
-    return new GetNextAutoNumberValueResponse(
-      responseObject<GetNextAutoNumberValueResponseData>(data)
-    );
+    return new GetNextAutoNumberValueResponse(data as GetNextAutoNumberValueResult);
   }
 }

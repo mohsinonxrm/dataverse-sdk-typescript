@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_AddBotUser action
+ * Response from the msdyn_AddBotUser action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_AddBotUserResponse {
+  "@odata.context"?: string;
   ErrorCode: string;
   ErrorDescription: string;
 }
@@ -55,8 +58,7 @@ export class msdyn_AddBotUserAction implements Executable<msdyn_AddBotUserRespon
   }
 
   async parseResponse(response: Response): Promise<msdyn_AddBotUserResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_AddBotUserResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_AddBotUserResponse;
   }
 }

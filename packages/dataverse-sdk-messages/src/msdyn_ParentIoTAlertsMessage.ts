@@ -48,9 +48,9 @@ export class msdyn_ParentIoTAlertsRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ParentIoTAlertsResponse> {
+  parseResponse(_response: Response): Promise<msdyn_ParentIoTAlertsResponse> {
     // No return value (204 No Content)
-    return new msdyn_ParentIoTAlertsResponse();
+    return Promise.resolve(new msdyn_ParentIoTAlertsResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class msdyn_ParentIoTAlertsResponse extends OrganizationResponse {
     super("msdyn_ParentIoTAlerts");
   }
 
-  static fromResponse(_data: unknown): msdyn_ParentIoTAlertsResponse {
+  static fromResponse(_data?: unknown): msdyn_ParentIoTAlertsResponse {
     return new msdyn_ParentIoTAlertsResponse();
   }
 }

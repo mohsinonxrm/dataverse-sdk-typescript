@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from UninstallSolutionAsync action
+ * Response from the UninstallSolutionAsync action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface UninstallSolutionAsyncResponse {
+  "@odata.context"?: string;
   AsyncOperationId: string;
 }
 
@@ -42,8 +45,7 @@ export class UninstallSolutionAsyncAction implements Executable<UninstallSolutio
   }
 
   async parseResponse(response: Response): Promise<UninstallSolutionAsyncResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as UninstallSolutionAsyncResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as UninstallSolutionAsyncResponse;
   }
 }

@@ -3,9 +3,12 @@ import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { email } from "./types/index.js";
 
 /**
- * Response from CheckIncomingEmail function
+ * Response from the CheckIncomingEmail function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CheckIncomingEmailResponse {
+  "@odata.context"?: string;
   ReasonCode: number;
   ShouldDeliver: boolean;
 }
@@ -80,8 +83,7 @@ export class CheckIncomingEmailFunction implements Executable<CheckIncomingEmail
   }
 
   async parseResponse(response: Response): Promise<CheckIncomingEmailResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CheckIncomingEmailResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as CheckIncomingEmailResponse;
   }
 }

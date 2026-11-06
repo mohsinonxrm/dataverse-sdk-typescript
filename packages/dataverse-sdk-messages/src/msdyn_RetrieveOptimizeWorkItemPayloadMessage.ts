@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_RetrieveOptimizeWorkItemPayloadResponse as msdyn_RetrieveOptimizeWorkItemPayloadResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_RetrieveOptimizeWorkItemPayload message, by their CSDL names. A parameter the CSDL declares
@@ -47,24 +45,35 @@ export class msdyn_RetrieveOptimizeWorkItemPayloadRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrieveOptimizeWorkItemPayloadResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_RetrieveOptimizeWorkItemPayloadResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_RetrieveOptimizeWorkItemPayloadResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_RetrieveOptimizeWorkItemPayload action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_RetrieveOptimizeWorkItemPayloadResult {
+  "@odata.context"?: string;
+  Result: string;
+}
+
+/**
  * msdyn_RetrieveOptimizeWorkItemPayload response message
+ *
+ * `result` is the value the msdyn_RetrieveOptimizeWorkItemPayload action returns (see {@link msdyn_RetrieveOptimizeWorkItemPayloadResult}).
  */
 export class msdyn_RetrieveOptimizeWorkItemPayloadResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrieveOptimizeWorkItemPayloadResponseData) {
+  constructor(public result: msdyn_RetrieveOptimizeWorkItemPayloadResult) {
     super("msdyn_RetrieveOptimizeWorkItemPayload");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_RetrieveOptimizeWorkItemPayloadResponse {
     return new msdyn_RetrieveOptimizeWorkItemPayloadResponse(
-      responseObject<msdyn_RetrieveOptimizeWorkItemPayloadResponseData>(data)
+      data as msdyn_RetrieveOptimizeWorkItemPayloadResult
     );
   }
 }

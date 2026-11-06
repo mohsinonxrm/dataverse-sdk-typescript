@@ -42,11 +42,9 @@ export class msdyn_UpdateUserConsentBasedonSecurityRolesRequest
     };
   }
 
-  async parseResponse(
-    response: Response
-  ): Promise<msdyn_UpdateUserConsentBasedonSecurityRolesResponse> {
+  parseResponse(_response: Response): Promise<msdyn_UpdateUserConsentBasedonSecurityRolesResponse> {
     // No return value (204 No Content)
-    return new msdyn_UpdateUserConsentBasedonSecurityRolesResponse();
+    return Promise.resolve(new msdyn_UpdateUserConsentBasedonSecurityRolesResponse());
   }
 }
 
@@ -58,7 +56,7 @@ export class msdyn_UpdateUserConsentBasedonSecurityRolesResponse extends Organiz
     super("msdyn_UpdateUserConsentBasedonSecurityRoles");
   }
 
-  static fromResponse(_data: unknown): msdyn_UpdateUserConsentBasedonSecurityRolesResponse {
+  static fromResponse(_data?: unknown): msdyn_UpdateUserConsentBasedonSecurityRolesResponse {
     return new msdyn_UpdateUserConsentBasedonSecurityRolesResponse();
   }
 }

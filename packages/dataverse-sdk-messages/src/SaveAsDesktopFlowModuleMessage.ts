@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { SaveAsDesktopFlowModuleResponse as SaveAsDesktopFlowModuleResponseData } from "./types/index.js";
 
 /**
  * Parameters of the SaveAsDesktopFlowModule message, by their CSDL names. A parameter the CSDL declares
@@ -51,23 +49,33 @@ export class SaveAsDesktopFlowModuleRequest
   }
 
   async parseResponse(response: Response): Promise<SaveAsDesktopFlowModuleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return SaveAsDesktopFlowModuleResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return SaveAsDesktopFlowModuleResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the SaveAsDesktopFlowModule action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface SaveAsDesktopFlowModuleResult {
+  "@odata.context"?: string;
+  desktopflowmoduleid: string;
+}
+
+/**
  * SaveAsDesktopFlowModule response message
+ *
+ * `result` is the value the SaveAsDesktopFlowModule action returns (see {@link SaveAsDesktopFlowModuleResult}).
  */
 export class SaveAsDesktopFlowModuleResponse extends OrganizationResponse {
-  constructor(public result: SaveAsDesktopFlowModuleResponseData) {
+  constructor(public result: SaveAsDesktopFlowModuleResult) {
     super("SaveAsDesktopFlowModule");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): SaveAsDesktopFlowModuleResponse {
-    return new SaveAsDesktopFlowModuleResponse(
-      responseObject<SaveAsDesktopFlowModuleResponseData>(data)
-    );
+    return new SaveAsDesktopFlowModuleResponse(data as SaveAsDesktopFlowModuleResult);
   }
 }

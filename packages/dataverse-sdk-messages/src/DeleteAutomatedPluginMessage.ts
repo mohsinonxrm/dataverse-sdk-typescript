@@ -42,9 +42,9 @@ export class DeleteAutomatedPluginRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<DeleteAutomatedPluginResponse> {
+  parseResponse(_response: Response): Promise<DeleteAutomatedPluginResponse> {
     // No return value (204 No Content)
-    return new DeleteAutomatedPluginResponse();
+    return Promise.resolve(new DeleteAutomatedPluginResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class DeleteAutomatedPluginResponse extends OrganizationResponse {
     super("DeleteAutomatedPlugin");
   }
 
-  static fromResponse(_data: unknown): DeleteAutomatedPluginResponse {
+  static fromResponse(_data?: unknown): DeleteAutomatedPluginResponse {
     return new DeleteAutomatedPluginResponse();
   }
 }

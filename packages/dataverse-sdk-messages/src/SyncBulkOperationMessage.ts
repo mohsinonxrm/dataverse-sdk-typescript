@@ -1,12 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
-import type {
-  QueryExpression,
-  SyncBulkOperationResponse as SyncBulkOperationResponseData,
-} from "./types/index.js";
+import type { QueryExpression } from "./types/index.js";
 
 /**
  * Parameters of the SyncBulkOperation message, by their CSDL names. A parameter the CSDL declares
@@ -51,21 +47,33 @@ export class SyncBulkOperationRequest
   }
 
   async parseResponse(response: Response): Promise<SyncBulkOperationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return SyncBulkOperationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return SyncBulkOperationResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the SyncBulkOperation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface SyncBulkOperationResult {
+  "@odata.context"?: string;
+  Result: number;
+}
+
+/**
  * SyncBulkOperation response message
+ *
+ * `result` is the value the SyncBulkOperation action returns (see {@link SyncBulkOperationResult}).
  */
 export class SyncBulkOperationResponse extends OrganizationResponse {
-  constructor(public result: SyncBulkOperationResponseData) {
+  constructor(public result: SyncBulkOperationResult) {
     super("SyncBulkOperation");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): SyncBulkOperationResponse {
-    return new SyncBulkOperationResponse(responseObject<SyncBulkOperationResponseData>(data));
+    return new SyncBulkOperationResponse(data as SyncBulkOperationResult);
   }
 }

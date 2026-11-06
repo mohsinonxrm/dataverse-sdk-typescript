@@ -3,11 +3,14 @@ import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { kbarticle, subject } from "./types/index.js";
 
 /**
- * Response from SearchByKeywordsKbArticle function
+ * Response from the SearchByKeywordsKbArticle function.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface SearchByKeywordsKbArticleResponse {
-  value: kbarticle[];
-}
+export type SearchByKeywordsKbArticleResponse = Array<
+  kbarticle & { "@odata.etag"?: string; "@odata.type"?: string }
+>;
 
 /**
  * Parameters of the SearchByKeywordsKbArticle function, by their CSDL names. A parameter the CSDL declares
@@ -61,8 +64,9 @@ export class SearchByKeywordsKbArticleFunction implements Executable<SearchByKey
   }
 
   async parseResponse(response: Response): Promise<SearchByKeywordsKbArticleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as SearchByKeywordsKbArticleResponse;
-    return (await response.json()) as SearchByKeywordsKbArticleResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return ((await response.json()) as { value: SearchByKeywordsKbArticleResponse }).value;
   }
 }

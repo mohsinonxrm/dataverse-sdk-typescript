@@ -46,9 +46,9 @@ export class SetAutoNumberSeedRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<SetAutoNumberSeedResponse> {
+  parseResponse(_response: Response): Promise<SetAutoNumberSeedResponse> {
     // No return value (204 No Content)
-    return new SetAutoNumberSeedResponse();
+    return Promise.resolve(new SetAutoNumberSeedResponse());
   }
 }
 
@@ -60,7 +60,7 @@ export class SetAutoNumberSeedResponse extends OrganizationResponse {
     super("SetAutoNumberSeed");
   }
 
-  static fromResponse(_data: unknown): SetAutoNumberSeedResponse {
+  static fromResponse(_data?: unknown): SetAutoNumberSeedResponse {
     return new SetAutoNumberSeedResponse();
   }
 }

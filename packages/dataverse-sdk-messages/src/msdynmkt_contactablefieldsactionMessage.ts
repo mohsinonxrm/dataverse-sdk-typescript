@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdynmkt_contactablefieldsactionResponse as msdynmkt_contactablefieldsactionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdynmkt_contactablefieldsaction message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,35 @@ export class msdynmkt_contactablefieldsactionRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_contactablefieldsactionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdynmkt_contactablefieldsactionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdynmkt_contactablefieldsactionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdynmkt_contactablefieldsaction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdynmkt_contactablefieldsactionResult {
+  "@odata.context"?: string;
+  msdynmkt_contactablefieldsresponse: string;
+}
+
+/**
  * msdynmkt_contactablefieldsaction response message
+ *
+ * `result` is the value the msdynmkt_contactablefieldsaction action returns (see {@link msdynmkt_contactablefieldsactionResult}).
  */
 export class msdynmkt_contactablefieldsactionResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_contactablefieldsactionResponseData) {
+  constructor(public result: msdynmkt_contactablefieldsactionResult) {
     super("msdynmkt_contactablefieldsaction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdynmkt_contactablefieldsactionResponse {
     return new msdynmkt_contactablefieldsactionResponse(
-      responseObject<msdynmkt_contactablefieldsactionResponseData>(data)
+      data as msdynmkt_contactablefieldsactionResult
     );
   }
 }

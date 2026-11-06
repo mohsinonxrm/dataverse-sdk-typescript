@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_ProcessPostProposalFollowupResponse as msdyn_ProcessPostProposalFollowupResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_ProcessPostProposalFollowup message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,36 @@ export class msdyn_ProcessPostProposalFollowupRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ProcessPostProposalFollowupResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_ProcessPostProposalFollowupResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_ProcessPostProposalFollowupResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_ProcessPostProposalFollowup action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_ProcessPostProposalFollowupResult {
+  "@odata.context"?: string;
+  msdyn_IsPostProposalFollowupHandled: boolean;
+  msdyn_IsPostProposalTimedOut: boolean;
+}
+
+/**
  * msdyn_ProcessPostProposalFollowup response message
+ *
+ * `result` is the value the msdyn_ProcessPostProposalFollowup action returns (see {@link msdyn_ProcessPostProposalFollowupResult}).
  */
 export class msdyn_ProcessPostProposalFollowupResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ProcessPostProposalFollowupResponseData) {
+  constructor(public result: msdyn_ProcessPostProposalFollowupResult) {
     super("msdyn_ProcessPostProposalFollowup");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_ProcessPostProposalFollowupResponse {
     return new msdyn_ProcessPostProposalFollowupResponse(
-      responseObject<msdyn_ProcessPostProposalFollowupResponseData>(data)
+      data as msdyn_ProcessPostProposalFollowupResult
     );
   }
 }

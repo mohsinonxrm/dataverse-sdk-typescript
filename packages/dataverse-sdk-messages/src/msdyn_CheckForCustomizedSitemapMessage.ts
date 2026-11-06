@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_CheckForCustomizedSitemapResponse as msdyn_CheckForCustomizedSitemapResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CheckForCustomizedSitemap message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,40 @@ export class msdyn_CheckForCustomizedSitemapRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckForCustomizedSitemapResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_CheckForCustomizedSitemapResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CheckForCustomizedSitemapResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CheckForCustomizedSitemap action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CheckForCustomizedSitemapResult {
+  "@odata.context"?: string;
+  Helplink: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnLevel: number;
+  ReturnSeverity: number;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_CheckForCustomizedSitemap response message
+ *
+ * `result` is the value the msdyn_CheckForCustomizedSitemap action returns (see {@link msdyn_CheckForCustomizedSitemapResult}).
  */
 export class msdyn_CheckForCustomizedSitemapResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckForCustomizedSitemapResponseData) {
+  constructor(public result: msdyn_CheckForCustomizedSitemapResult) {
     super("msdyn_CheckForCustomizedSitemap");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CheckForCustomizedSitemapResponse {
     return new msdyn_CheckForCustomizedSitemapResponse(
-      responseObject<msdyn_CheckForCustomizedSitemapResponseData>(data)
+      data as msdyn_CheckForCustomizedSitemapResult
     );
   }
 }

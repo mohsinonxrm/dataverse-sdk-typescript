@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_CapacityProfilesToUsers action
+ * Response from the msdyn_CapacityProfilesToUsers action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_CapacityProfilesToUsersResponse {
-  // No content returned
-}
+export type msdyn_CapacityProfilesToUsersResponse = void;
 
 /**
  * Parameters of the msdyn_CapacityProfilesToUsers action, by their CSDL names. A parameter the CSDL declares
@@ -44,9 +44,8 @@ export class msdyn_CapacityProfilesToUsersAction implements Executable<msdyn_Cap
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_CapacityProfilesToUsersResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_CapacityProfilesToUsersResponse;
-    return (await response.json()) as msdyn_CapacityProfilesToUsersResponse;
+  parseResponse(_response: Response): Promise<msdyn_CapacityProfilesToUsersResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

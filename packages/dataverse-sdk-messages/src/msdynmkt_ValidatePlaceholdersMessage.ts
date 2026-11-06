@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdynmkt_ValidatePlaceholdersResponse as msdynmkt_ValidatePlaceholdersResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdynmkt_ValidatePlaceholders message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,33 @@ export class msdynmkt_ValidatePlaceholdersRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_ValidatePlaceholdersResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdynmkt_ValidatePlaceholdersResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdynmkt_ValidatePlaceholdersResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdynmkt_ValidatePlaceholders action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdynmkt_ValidatePlaceholdersResult {
+  "@odata.context"?: string;
+  ValidatePlaceholdersResult: string;
+}
+
+/**
  * msdynmkt_ValidatePlaceholders response message
+ *
+ * `result` is the value the msdynmkt_ValidatePlaceholders action returns (see {@link msdynmkt_ValidatePlaceholdersResult}).
  */
 export class msdynmkt_ValidatePlaceholdersResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_ValidatePlaceholdersResponseData) {
+  constructor(public result: msdynmkt_ValidatePlaceholdersResult) {
     super("msdynmkt_ValidatePlaceholders");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdynmkt_ValidatePlaceholdersResponse {
-    return new msdynmkt_ValidatePlaceholdersResponse(
-      responseObject<msdynmkt_ValidatePlaceholdersResponseData>(data)
-    );
+    return new msdynmkt_ValidatePlaceholdersResponse(data as msdynmkt_ValidatePlaceholdersResult);
   }
 }

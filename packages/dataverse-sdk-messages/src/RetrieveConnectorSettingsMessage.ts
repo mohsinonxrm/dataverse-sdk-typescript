@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseValue } from "./internal/responseData.js";
 
 /**
  * RetrieveConnectorSettings request message
@@ -28,21 +27,39 @@ export class RetrieveConnectorSettingsRequest
   }
 
   async parseResponse(response: Response): Promise<RetrieveConnectorSettingsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return RetrieveConnectorSettingsResponse.fromResponse({});
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return RetrieveConnectorSettingsResponse.fromResponse(undefined);
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
     return RetrieveConnectorSettingsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the RetrieveConnectorSettings action.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
+ */
+export type RetrieveConnectorSettingsResult = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
+
+/**
  * RetrieveConnectorSettings response message
+ *
+ * `result` is the value the RetrieveConnectorSettings action returns (see {@link RetrieveConnectorSettingsResult}).
  */
 export class RetrieveConnectorSettingsResponse extends OrganizationResponse {
-  constructor(public result: Record<string, unknown>[]) {
+  constructor(public result: RetrieveConnectorSettingsResult) {
     super("RetrieveConnectorSettings");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): RetrieveConnectorSettingsResponse {
-    return new RetrieveConnectorSettingsResponse(responseValue<Record<string, unknown>[]>(data));
+    return new RetrieveConnectorSettingsResponse(
+      data === undefined ? [] : (data as { value: RetrieveConnectorSettingsResult }).value
+    );
   }
 }

@@ -52,9 +52,9 @@ export class SendTemplateRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<SendTemplateResponse> {
+  parseResponse(_response: Response): Promise<SendTemplateResponse> {
     // No return value (204 No Content)
-    return new SendTemplateResponse();
+    return Promise.resolve(new SendTemplateResponse());
   }
 }
 
@@ -66,7 +66,7 @@ export class SendTemplateResponse extends OrganizationResponse {
     super("SendTemplate");
   }
 
-  static fromResponse(_data: unknown): SendTemplateResponse {
+  static fromResponse(_data?: unknown): SendTemplateResponse {
     return new SendTemplateResponse();
   }
 }

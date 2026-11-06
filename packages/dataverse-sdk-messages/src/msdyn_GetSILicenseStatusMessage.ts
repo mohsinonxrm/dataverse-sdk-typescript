@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_GetSILicenseStatusResponse as msdyn_GetSILicenseStatusResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetSILicenseStatus request message
@@ -29,23 +27,33 @@ export class msdyn_GetSILicenseStatusRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSILicenseStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetSILicenseStatusResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetSILicenseStatusResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetSILicenseStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetSILicenseStatusResult {
+  "@odata.context"?: string;
+  SILicenseStatus: string;
+}
+
+/**
  * msdyn_GetSILicenseStatus response message
+ *
+ * `result` is the value the msdyn_GetSILicenseStatus action returns (see {@link msdyn_GetSILicenseStatusResult}).
  */
 export class msdyn_GetSILicenseStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetSILicenseStatusResponseData) {
+  constructor(public result: msdyn_GetSILicenseStatusResult) {
     super("msdyn_GetSILicenseStatus");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetSILicenseStatusResponse {
-    return new msdyn_GetSILicenseStatusResponse(
-      responseObject<msdyn_GetSILicenseStatusResponseData>(data)
-    );
+    return new msdyn_GetSILicenseStatusResponse(data as msdyn_GetSILicenseStatusResult);
   }
 }

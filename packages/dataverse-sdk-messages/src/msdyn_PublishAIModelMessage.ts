@@ -29,9 +29,9 @@ export class msdyn_PublishAIModelRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_PublishAIModelResponse> {
+  parseResponse(_response: Response): Promise<msdyn_PublishAIModelResponse> {
     // No return value (204 No Content)
-    return new msdyn_PublishAIModelResponse();
+    return Promise.resolve(new msdyn_PublishAIModelResponse());
   }
 }
 
@@ -43,7 +43,7 @@ export class msdyn_PublishAIModelResponse extends OrganizationResponse {
     super("msdyn_PublishAIModel");
   }
 
-  static fromResponse(_data: unknown): msdyn_PublishAIModelResponse {
+  static fromResponse(_data?: unknown): msdyn_PublishAIModelResponse {
     return new msdyn_PublishAIModelResponse();
   }
 }

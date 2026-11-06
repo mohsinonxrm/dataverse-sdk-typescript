@@ -54,9 +54,9 @@ export class CCaaS_EndCallRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_EndCallResponse> {
+  parseResponse(_response: Response): Promise<CCaaS_EndCallResponse> {
     // No return value (204 No Content)
-    return new CCaaS_EndCallResponse();
+    return Promise.resolve(new CCaaS_EndCallResponse());
   }
 }
 
@@ -68,7 +68,7 @@ export class CCaaS_EndCallResponse extends OrganizationResponse {
     super("CCaaS_EndCall");
   }
 
-  static fromResponse(_data: unknown): CCaaS_EndCallResponse {
+  static fromResponse(_data?: unknown): CCaaS_EndCallResponse {
     return new CCaaS_EndCallResponse();
   }
 }

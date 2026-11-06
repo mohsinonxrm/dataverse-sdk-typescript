@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_setupsimulationResponse as msdyn_setupsimulationResponseData } from "./types/index.js";
 
 /**
  * msdyn_setupsimulation request message
@@ -29,23 +27,34 @@ export class msdyn_setupsimulationRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_setupsimulationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_setupsimulationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_setupsimulationResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_setupsimulation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_setupsimulationResult {
+  "@odata.context"?: string;
+  message: string;
+  statuscode: number;
+}
+
+/**
  * msdyn_setupsimulation response message
+ *
+ * `result` is the value the msdyn_setupsimulation action returns (see {@link msdyn_setupsimulationResult}).
  */
 export class msdyn_setupsimulationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_setupsimulationResponseData) {
+  constructor(public result: msdyn_setupsimulationResult) {
     super("msdyn_setupsimulation");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_setupsimulationResponse {
-    return new msdyn_setupsimulationResponse(
-      responseObject<msdyn_setupsimulationResponseData>(data)
-    );
+    return new msdyn_setupsimulationResponse(data as msdyn_setupsimulationResult);
   }
 }

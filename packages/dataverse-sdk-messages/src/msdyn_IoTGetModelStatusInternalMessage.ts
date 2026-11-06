@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_IoTGetModelStatusInternalResponse as msdyn_IoTGetModelStatusInternalResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_IoTGetModelStatusInternal message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,35 @@ export class msdyn_IoTGetModelStatusInternalRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_IoTGetModelStatusInternalResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_IoTGetModelStatusInternalResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_IoTGetModelStatusInternalResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_IoTGetModelStatusInternal action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_IoTGetModelStatusInternalResult {
+  "@odata.context"?: string;
+  MLModelStatusJSON: string;
+}
+
+/**
  * msdyn_IoTGetModelStatusInternal response message
+ *
+ * `result` is the value the msdyn_IoTGetModelStatusInternal action returns (see {@link msdyn_IoTGetModelStatusInternalResult}).
  */
 export class msdyn_IoTGetModelStatusInternalResponse extends OrganizationResponse {
-  constructor(public result: msdyn_IoTGetModelStatusInternalResponseData) {
+  constructor(public result: msdyn_IoTGetModelStatusInternalResult) {
     super("msdyn_IoTGetModelStatusInternal");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_IoTGetModelStatusInternalResponse {
     return new msdyn_IoTGetModelStatusInternalResponse(
-      responseObject<msdyn_IoTGetModelStatusInternalResponseData>(data)
+      data as msdyn_IoTGetModelStatusInternalResult
     );
   }
 }

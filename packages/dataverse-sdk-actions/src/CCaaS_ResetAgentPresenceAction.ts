@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CCaaS_ResetAgentPresence action
+ * Response from the CCaaS_ResetAgentPresence action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CCaaS_ResetAgentPresenceResponse {
+  "@odata.context"?: string;
   ActiveBrowserSessions: number;
   AgentId: string;
   AgentName: string;
@@ -49,8 +52,7 @@ export class CCaaS_ResetAgentPresenceAction implements Executable<CCaaS_ResetAge
   }
 
   async parseResponse(response: Response): Promise<CCaaS_ResetAgentPresenceResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CCaaS_ResetAgentPresenceResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as CCaaS_ResetAgentPresenceResponse;
   }
 }

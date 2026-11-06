@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_UpdatePrivacyTermsResponse as msdyn_UpdatePrivacyTermsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_UpdatePrivacyTerms message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class msdyn_UpdatePrivacyTermsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_UpdatePrivacyTermsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_UpdatePrivacyTermsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_UpdatePrivacyTermsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_UpdatePrivacyTerms action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_UpdatePrivacyTermsResult {
+  "@odata.context"?: string;
+  UpdatePrivacyTermsResult: boolean;
+}
+
+/**
  * msdyn_UpdatePrivacyTerms response message
+ *
+ * `result` is the value the msdyn_UpdatePrivacyTerms action returns (see {@link msdyn_UpdatePrivacyTermsResult}).
  */
 export class msdyn_UpdatePrivacyTermsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_UpdatePrivacyTermsResponseData) {
+  constructor(public result: msdyn_UpdatePrivacyTermsResult) {
     super("msdyn_UpdatePrivacyTerms");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_UpdatePrivacyTermsResponse {
-    return new msdyn_UpdatePrivacyTermsResponse(
-      responseObject<msdyn_UpdatePrivacyTermsResponseData>(data)
-    );
+    return new msdyn_UpdatePrivacyTermsResponse(data as msdyn_UpdatePrivacyTermsResult);
   }
 }

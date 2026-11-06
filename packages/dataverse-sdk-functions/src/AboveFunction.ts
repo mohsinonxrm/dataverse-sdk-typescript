@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from Above function
+ * Response from the Above function.
+ *
+ * The value, read from the `value` of the response body.
  */
-export interface AboveResponse {
-  value: boolean;
-}
+export type AboveResponse = boolean;
 
 /**
  * Parameters of the Above function, by their CSDL names. A parameter the CSDL declares
@@ -53,8 +53,7 @@ export class AboveFunction implements Executable<AboveResponse> {
   }
 
   async parseResponse(response: Response): Promise<AboveResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as AboveResponse;
-    return (await response.json()) as AboveResponse;
+    // A primitive comes wrapped: { "@odata.context": "…", "value": … }
+    return ((await response.json()) as { value: AboveResponse }).value;
   }
 }

@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from GetPBIReportRefreshStatus action
+ * Response from the GetPBIReportRefreshStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface GetPBIReportRefreshStatusResponse {
+  "@odata.context"?: string;
   ReportRefreshStatusEndTime: string;
   ReportRefreshStatusStartTime: string;
   ReportRefreshStatusState: string;
@@ -44,8 +47,7 @@ export class GetPBIReportRefreshStatusAction implements Executable<GetPBIReportR
   }
 
   async parseResponse(response: Response): Promise<GetPBIReportRefreshStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as GetPBIReportRefreshStatusResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as GetPBIReportRefreshStatusResponse;
   }
 }

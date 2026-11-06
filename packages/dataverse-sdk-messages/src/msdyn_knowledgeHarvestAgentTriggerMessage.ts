@@ -42,9 +42,9 @@ export class msdyn_knowledgeHarvestAgentTriggerRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_knowledgeHarvestAgentTriggerResponse> {
+  parseResponse(_response: Response): Promise<msdyn_knowledgeHarvestAgentTriggerResponse> {
     // No return value (204 No Content)
-    return new msdyn_knowledgeHarvestAgentTriggerResponse();
+    return Promise.resolve(new msdyn_knowledgeHarvestAgentTriggerResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_knowledgeHarvestAgentTriggerResponse extends OrganizationResp
     super("msdyn_knowledgeHarvestAgentTrigger");
   }
 
-  static fromResponse(_data: unknown): msdyn_knowledgeHarvestAgentTriggerResponse {
+  static fromResponse(_data?: unknown): msdyn_knowledgeHarvestAgentTriggerResponse {
     return new msdyn_knowledgeHarvestAgentTriggerResponse();
   }
 }

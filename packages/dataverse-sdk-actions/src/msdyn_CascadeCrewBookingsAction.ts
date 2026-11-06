@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_CascadeCrewBookings action
+ * Response from the msdyn_CascadeCrewBookings action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_CascadeCrewBookingsResponse {
-  // No content returned
-}
+export type msdyn_CascadeCrewBookingsResponse = void;
 
 /**
  * Parameters of the msdyn_CascadeCrewBookings action, by their CSDL names. A parameter the CSDL declares
@@ -47,9 +47,8 @@ export class msdyn_CascadeCrewBookingsAction implements Executable<msdyn_Cascade
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_CascadeCrewBookingsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_CascadeCrewBookingsResponse;
-    return (await response.json()) as msdyn_CascadeCrewBookingsResponse;
+  parseResponse(_response: Response): Promise<msdyn_CascadeCrewBookingsResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

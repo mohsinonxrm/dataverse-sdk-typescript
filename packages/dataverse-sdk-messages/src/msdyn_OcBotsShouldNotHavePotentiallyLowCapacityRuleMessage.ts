@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRuleResponse as msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRule request message
@@ -31,9 +29,7 @@ export class msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRuleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRuleResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRuleResponse.fromResponse(
       await response.json()
     );
@@ -41,16 +37,31 @@ export class msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRuleRequest
 }
 
 /**
+ * Response from the msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRule action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRuleResult {
+  "@odata.context"?: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRule response message
+ *
+ * `result` is the value the msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRule action returns (see {@link msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRuleResult}).
  */
 export class msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRuleResponseData) {
+  constructor(public result: msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRuleResult) {
     super("msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRule");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRuleResponse {
     return new msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRuleResponse(
-      responseObject<msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRuleResponseData>(data)
+      data as msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRuleResult
     );
   }
 }

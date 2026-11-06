@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
@@ -79,21 +78,37 @@ export class DeliverImmediatePromoteEmailRequest
   }
 
   async parseResponse(response: Response): Promise<DeliverImmediatePromoteEmailResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return DeliverImmediatePromoteEmailResponse.fromResponse({});
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204)
+      return DeliverImmediatePromoteEmailResponse.fromResponse(undefined);
+    // The body is the record, with its annotations
     return DeliverImmediatePromoteEmailResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the DeliverImmediatePromoteEmail action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
+ */
+export type DeliverImmediatePromoteEmailResult =
+  (email & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string }) | null;
+
+/**
  * DeliverImmediatePromoteEmail response message
+ *
+ * `result` is the value the DeliverImmediatePromoteEmail action returns (see {@link DeliverImmediatePromoteEmailResult}).
  */
 export class DeliverImmediatePromoteEmailResponse extends OrganizationResponse {
-  constructor(public result: email) {
+  constructor(public result: DeliverImmediatePromoteEmailResult) {
     super("DeliverImmediatePromoteEmail");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): DeliverImmediatePromoteEmailResponse {
-    return new DeliverImmediatePromoteEmailResponse(responseObject<email>(data));
+    return new DeliverImmediatePromoteEmailResponse(
+      (data ?? null) as DeliverImmediatePromoteEmailResult
+    );
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { ScheduleRetrainResponse as ScheduleRetrainResponseData } from "./types/index.js";
 
 /**
  * Parameters of the ScheduleRetrain message, by their CSDL names. A parameter the CSDL declares
@@ -53,21 +51,33 @@ export class ScheduleRetrainRequest
   }
 
   async parseResponse(response: Response): Promise<ScheduleRetrainResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return ScheduleRetrainResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return ScheduleRetrainResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the ScheduleRetrain action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface ScheduleRetrainResult {
+  "@odata.context"?: string;
+  response: string;
+}
+
+/**
  * ScheduleRetrain response message
+ *
+ * `result` is the value the ScheduleRetrain action returns (see {@link ScheduleRetrainResult}).
  */
 export class ScheduleRetrainResponse extends OrganizationResponse {
-  constructor(public result: ScheduleRetrainResponseData) {
+  constructor(public result: ScheduleRetrainResult) {
     super("ScheduleRetrain");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): ScheduleRetrainResponse {
-    return new ScheduleRetrainResponse(responseObject<ScheduleRetrainResponseData>(data));
+    return new ScheduleRetrainResponse(data as ScheduleRetrainResult);
   }
 }

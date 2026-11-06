@@ -5,11 +5,11 @@ import type { EntityPayload } from "./types/EntityPayload.js";
 import type { opportunity } from "./types/index.js";
 
 /**
- * Response from GetQuoteProductsFromOpportunity action
+ * Response from the GetQuoteProductsFromOpportunity action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface GetQuoteProductsFromOpportunityResponse {
-  // No content returned
-}
+export type GetQuoteProductsFromOpportunityResponse = void;
 
 /**
  * Parameters of the GetQuoteProductsFromOpportunity action, by their CSDL names. A parameter the CSDL declares
@@ -51,9 +51,8 @@ export class GetQuoteProductsFromOpportunityAction implements Executable<GetQuot
     };
   }
 
-  async parseResponse(response: Response): Promise<GetQuoteProductsFromOpportunityResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as GetQuoteProductsFromOpportunityResponse;
-    return (await response.json()) as GetQuoteProductsFromOpportunityResponse;
+  parseResponse(_response: Response): Promise<GetQuoteProductsFromOpportunityResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

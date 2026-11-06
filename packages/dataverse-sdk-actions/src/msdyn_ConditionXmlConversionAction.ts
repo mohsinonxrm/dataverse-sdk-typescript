@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_ConditionXmlConversion action
+ * Response from the msdyn_ConditionXmlConversion action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_ConditionXmlConversionResponse {
+  "@odata.context"?: string;
   Exception: string;
   OutputString: string;
 }
@@ -51,8 +54,7 @@ export class msdyn_ConditionXmlConversionAction implements Executable<msdyn_Cond
   }
 
   async parseResponse(response: Response): Promise<msdyn_ConditionXmlConversionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_ConditionXmlConversionResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_ConditionXmlConversionResponse;
   }
 }

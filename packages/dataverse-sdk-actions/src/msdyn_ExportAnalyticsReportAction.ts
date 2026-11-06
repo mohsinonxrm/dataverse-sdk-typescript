@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_ExportAnalyticsReport action
+ * Response from the msdyn_ExportAnalyticsReport action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_ExportAnalyticsReportResponse {
+  "@odata.context"?: string;
   msdyn_AnalyticsReportContent: string;
 }
 
@@ -42,8 +45,7 @@ export class msdyn_ExportAnalyticsReportAction implements Executable<msdyn_Expor
   }
 
   async parseResponse(response: Response): Promise<msdyn_ExportAnalyticsReportResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_ExportAnalyticsReportResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_ExportAnalyticsReportResponse;
   }
 }

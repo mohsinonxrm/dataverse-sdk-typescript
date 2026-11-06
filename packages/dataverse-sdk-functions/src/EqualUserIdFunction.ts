@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from EqualUserId function
+ * Response from the EqualUserId function.
+ *
+ * The value, read from the `value` of the response body.
  */
-export interface EqualUserIdResponse {
-  value: boolean;
-}
+export type EqualUserIdResponse = boolean;
 
 /**
  * Parameters of the EqualUserId function, by their CSDL names. A parameter the CSDL declares
@@ -48,8 +48,7 @@ export class EqualUserIdFunction implements Executable<EqualUserIdResponse> {
   }
 
   async parseResponse(response: Response): Promise<EqualUserIdResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as EqualUserIdResponse;
-    return (await response.json()) as EqualUserIdResponse;
+    // A primitive comes wrapped: { "@odata.context": "…", "value": … }
+    return ((await response.json()) as { value: EqualUserIdResponse }).value;
   }
 }

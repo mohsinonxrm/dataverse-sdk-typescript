@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyncrm_UpsertFile action
+ * Response from the msdyncrm_UpsertFile action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyncrm_UpsertFileResponse {
+  "@odata.context"?: string;
   OutputFile: string;
 }
 
@@ -44,8 +47,7 @@ export class msdyncrm_UpsertFileAction implements Executable<msdyncrm_UpsertFile
   }
 
   async parseResponse(response: Response): Promise<msdyncrm_UpsertFileResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyncrm_UpsertFileResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyncrm_UpsertFileResponse;
   }
 }

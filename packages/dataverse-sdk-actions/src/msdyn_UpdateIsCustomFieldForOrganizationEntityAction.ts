@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_UpdateIsCustomFieldForOrganizationEntity action
+ * Response from the msdyn_UpdateIsCustomFieldForOrganizationEntity action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_UpdateIsCustomFieldForOrganizationEntityResponse {
+  "@odata.context"?: string;
   resultCode: number;
 }
 
@@ -28,9 +31,7 @@ export class msdyn_UpdateIsCustomFieldForOrganizationEntityAction implements Exe
   async parseResponse(
     response: Response
   ): Promise<msdyn_UpdateIsCustomFieldForOrganizationEntityResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return {} as msdyn_UpdateIsCustomFieldForOrganizationEntityResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_UpdateIsCustomFieldForOrganizationEntityResponse;
   }
 }

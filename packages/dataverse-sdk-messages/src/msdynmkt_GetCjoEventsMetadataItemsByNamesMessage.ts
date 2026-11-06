@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseValue } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
 
 /**
@@ -50,24 +49,42 @@ export class msdynmkt_GetCjoEventsMetadataItemsByNamesRequest
   async parseResponse(
     response: Response
   ): Promise<msdynmkt_GetCjoEventsMetadataItemsByNamesResponse> {
-    // 204 No Content is an empty result
+    // An output that wasn't set answers 204 No Content: an empty collection
     if (response.status === 204)
-      return msdynmkt_GetCjoEventsMetadataItemsByNamesResponse.fromResponse({});
+      return msdynmkt_GetCjoEventsMetadataItemsByNamesResponse.fromResponse(undefined);
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
     return msdynmkt_GetCjoEventsMetadataItemsByNamesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdynmkt_GetCjoEventsMetadataItemsByNames action.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
+ */
+export type msdynmkt_GetCjoEventsMetadataItemsByNamesResult = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
+
+/**
  * msdynmkt_GetCjoEventsMetadataItemsByNames response message
+ *
+ * `result` is the value the msdynmkt_GetCjoEventsMetadataItemsByNames action returns (see {@link msdynmkt_GetCjoEventsMetadataItemsByNamesResult}).
  */
 export class msdynmkt_GetCjoEventsMetadataItemsByNamesResponse extends OrganizationResponse {
-  constructor(public result: Record<string, unknown>[]) {
+  constructor(public result: msdynmkt_GetCjoEventsMetadataItemsByNamesResult) {
     super("msdynmkt_GetCjoEventsMetadataItemsByNames");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdynmkt_GetCjoEventsMetadataItemsByNamesResponse {
     return new msdynmkt_GetCjoEventsMetadataItemsByNamesResponse(
-      responseValue<Record<string, unknown>[]>(data)
+      data === undefined
+        ? []
+        : (data as { value: msdynmkt_GetCjoEventsMetadataItemsByNamesResult }).value
     );
   }
 }

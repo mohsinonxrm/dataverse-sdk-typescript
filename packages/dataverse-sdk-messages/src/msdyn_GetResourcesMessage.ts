@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetResourcesResponse as msdyn_GetResourcesResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetResources message, by their CSDL names. A parameter the CSDL declares
@@ -49,21 +47,33 @@ export class msdyn_GetResourcesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetResourcesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetResourcesResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetResourcesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetResources action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetResourcesResult {
+  "@odata.context"?: string;
+  ResourceData: string;
+}
+
+/**
  * msdyn_GetResources response message
+ *
+ * `result` is the value the msdyn_GetResources action returns (see {@link msdyn_GetResourcesResult}).
  */
 export class msdyn_GetResourcesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetResourcesResponseData) {
+  constructor(public result: msdyn_GetResourcesResult) {
     super("msdyn_GetResources");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetResourcesResponse {
-    return new msdyn_GetResourcesResponse(responseObject<msdyn_GetResourcesResponseData>(data));
+    return new msdyn_GetResourcesResponse(data as msdyn_GetResourcesResult);
   }
 }

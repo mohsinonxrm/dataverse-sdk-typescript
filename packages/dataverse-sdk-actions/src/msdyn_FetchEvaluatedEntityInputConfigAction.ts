@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_FetchEvaluatedEntityInputConfig action
+ * Response from the msdyn_FetchEvaluatedEntityInputConfig action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_FetchEvaluatedEntityInputConfigResponse {
+  "@odata.context"?: string;
   Representative: string;
   entity_data: string;
 }
@@ -47,8 +50,7 @@ export class msdyn_FetchEvaluatedEntityInputConfigAction implements Executable<m
   }
 
   async parseResponse(response: Response): Promise<msdyn_FetchEvaluatedEntityInputConfigResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_FetchEvaluatedEntityInputConfigResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_FetchEvaluatedEntityInputConfigResponse;
   }
 }

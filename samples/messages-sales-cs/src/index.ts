@@ -210,7 +210,7 @@ async function executeWorkflowDemo(orgService: OrganizationService): Promise<voi
       chalk.dim(`
   const request = new ExecuteWorkflowRequest(workflowId, { EntityId: targetRecordId });
   const response = await orgService.execute(request);
-  console.log(\`Async Operation ID: \${response.result.asyncoperationid}\`);
+  console.log(\`Async Operation ID: \${response.result?.asyncoperationid}\`);
     `)
     );
     return;
@@ -230,7 +230,8 @@ async function executeWorkflowDemo(orgService: OrganizationService): Promise<voi
   const response = await orgService.execute<ExecuteWorkflowResponse>(request);
 
   console.log(chalk.green("✓ Workflow execution initiated"));
-  console.log(`  Async Operation ID: ${chalk.yellow(response.result.asyncoperationid)}`);
+  // The asyncoperation record, or null if the Web API answered 204 No Content
+  console.log(`  Async Operation ID: ${chalk.yellow(response.result?.asyncoperationid ?? "")}`);
   console.log(chalk.dim("\nℹ️  Monitor execution in Settings > System Jobs"));
 }
 
@@ -397,7 +398,7 @@ async function exportSolutionDemo(orgService: OrganizationService): Promise<void
     console.log(chalk.green(`✓ Solution exported in ${(duration / 1000).toFixed(2)}s`));
 
     // Get file size: the exported solution zip, base64 encoded
-    const solutionZip = Buffer.from(response.result.ExportSolutionFile ?? "", "base64");
+    const solutionZip = Buffer.from(response.result.ExportSolutionFile, "base64");
     const sizeKB = (solutionZip.length / 1024).toFixed(2);
 
     console.log(`  File size: ${chalk.yellow(sizeKB + " KB")}`);

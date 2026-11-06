@@ -726,11 +726,14 @@ export class OrganizationService {
    *
    * @example
    * ```typescript
-   * // A message (C# SDK pattern): ExecuteWorkflowRequest(workflowId, entityId, inputArguments)
+   * // A message (C# SDK pattern): the workflow it's bound to, then its parameters
    * import { ExecuteWorkflowRequest } from '@mohsinonxrm/dataverse-sdk-messages';
    *
-   * const response = await service.execute(new ExecuteWorkflowRequest(workflowId, accountId));
-   * console.log(response.result.asyncoperationid); // response: ExecuteWorkflowResponse
+   * const response = await service.execute(
+   *   new ExecuteWorkflowRequest(workflowId, { EntityId: accountId })
+   * );
+   * // response: ExecuteWorkflowResponse; result is the asyncoperation, or null for a 204
+   * console.log(response.result?.asyncoperationid);
    *
    * // Also works with Actions/Functions directly
    * import { WhoAmIFunction } from '@mohsinonxrm/dataverse-sdk-functions';

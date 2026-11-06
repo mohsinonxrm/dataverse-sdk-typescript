@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_JsonGetNumberResponse as msdyn_JsonGetNumberResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_JsonGetNumber message, by their CSDL names. A parameter the CSDL declares
@@ -49,21 +47,33 @@ export class msdyn_JsonGetNumberRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_JsonGetNumberResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_JsonGetNumberResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_JsonGetNumberResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_JsonGetNumber action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_JsonGetNumberResult {
+  "@odata.context"?: string;
+  Value: number;
+}
+
+/**
  * msdyn_JsonGetNumber response message
+ *
+ * `result` is the value the msdyn_JsonGetNumber action returns (see {@link msdyn_JsonGetNumberResult}).
  */
 export class msdyn_JsonGetNumberResponse extends OrganizationResponse {
-  constructor(public result: msdyn_JsonGetNumberResponseData) {
+  constructor(public result: msdyn_JsonGetNumberResult) {
     super("msdyn_JsonGetNumber");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_JsonGetNumberResponse {
-    return new msdyn_JsonGetNumberResponse(responseObject<msdyn_JsonGetNumberResponseData>(data));
+    return new msdyn_JsonGetNumberResponse(data as msdyn_JsonGetNumberResult);
   }
 }

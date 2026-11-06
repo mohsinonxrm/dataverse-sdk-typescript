@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetRequirementDependencySetResponse as msdyn_GetRequirementDependencySetResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetRequirementDependencySet message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,35 @@ export class msdyn_GetRequirementDependencySetRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetRequirementDependencySetResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetRequirementDependencySetResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetRequirementDependencySetResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetRequirementDependencySet action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetRequirementDependencySetResult {
+  "@odata.context"?: string;
+  RequirementDependencySet: string;
+}
+
+/**
  * msdyn_GetRequirementDependencySet response message
+ *
+ * `result` is the value the msdyn_GetRequirementDependencySet action returns (see {@link msdyn_GetRequirementDependencySetResult}).
  */
 export class msdyn_GetRequirementDependencySetResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetRequirementDependencySetResponseData) {
+  constructor(public result: msdyn_GetRequirementDependencySetResult) {
     super("msdyn_GetRequirementDependencySet");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetRequirementDependencySetResponse {
     return new msdyn_GetRequirementDependencySetResponse(
-      responseObject<msdyn_GetRequirementDependencySetResponseData>(data)
+      data as msdyn_GetRequirementDependencySetResult
     );
   }
 }

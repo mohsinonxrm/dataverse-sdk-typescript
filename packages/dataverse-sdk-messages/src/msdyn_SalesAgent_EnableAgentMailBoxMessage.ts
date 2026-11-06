@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesAgent_EnableAgentMailBoxResponse as msdyn_SalesAgent_EnableAgentMailBoxResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesAgent_EnableAgentMailBox message, by their CSDL names. A parameter the CSDL declares
@@ -47,24 +45,36 @@ export class msdyn_SalesAgent_EnableAgentMailBoxRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAgent_EnableAgentMailBoxResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_SalesAgent_EnableAgentMailBoxResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesAgent_EnableAgentMailBoxResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SalesAgent_EnableAgentMailBox action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesAgent_EnableAgentMailBoxResult {
+  "@odata.context"?: string;
+  Message: string;
+  Success: boolean;
+}
+
+/**
  * msdyn_SalesAgent_EnableAgentMailBox response message
+ *
+ * `result` is the value the msdyn_SalesAgent_EnableAgentMailBox action returns (see {@link msdyn_SalesAgent_EnableAgentMailBoxResult}).
  */
 export class msdyn_SalesAgent_EnableAgentMailBoxResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgent_EnableAgentMailBoxResponseData) {
+  constructor(public result: msdyn_SalesAgent_EnableAgentMailBoxResult) {
     super("msdyn_SalesAgent_EnableAgentMailBox");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesAgent_EnableAgentMailBoxResponse {
     return new msdyn_SalesAgent_EnableAgentMailBoxResponse(
-      responseObject<msdyn_SalesAgent_EnableAgentMailBoxResponseData>(data)
+      data as msdyn_SalesAgent_EnableAgentMailBoxResult
     );
   }
 }

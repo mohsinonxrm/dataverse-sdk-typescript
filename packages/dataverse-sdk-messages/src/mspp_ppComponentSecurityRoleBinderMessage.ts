@@ -48,9 +48,9 @@ export class mspp_ppComponentSecurityRoleBinderRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<mspp_ppComponentSecurityRoleBinderResponse> {
+  parseResponse(_response: Response): Promise<mspp_ppComponentSecurityRoleBinderResponse> {
     // No return value (204 No Content)
-    return new mspp_ppComponentSecurityRoleBinderResponse();
+    return Promise.resolve(new mspp_ppComponentSecurityRoleBinderResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class mspp_ppComponentSecurityRoleBinderResponse extends OrganizationResp
     super("mspp_ppComponentSecurityRoleBinder");
   }
 
-  static fromResponse(_data: unknown): mspp_ppComponentSecurityRoleBinderResponse {
+  static fromResponse(_data?: unknown): mspp_ppComponentSecurityRoleBinderResponse {
     return new mspp_ppComponentSecurityRoleBinderResponse();
   }
 }

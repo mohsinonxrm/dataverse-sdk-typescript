@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_CheckIfActivityMonitorEnabled action
+ * Response from the msdyn_CheckIfActivityMonitorEnabled action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_CheckIfActivityMonitorEnabledResponse {
+  "@odata.context"?: string;
   HelpLink: string;
   Message: string;
   ResultEntities: string;
@@ -49,8 +52,7 @@ export class msdyn_CheckIfActivityMonitorEnabledAction implements Executable<msd
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckIfActivityMonitorEnabledResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_CheckIfActivityMonitorEnabledResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_CheckIfActivityMonitorEnabledResponse;
   }
 }

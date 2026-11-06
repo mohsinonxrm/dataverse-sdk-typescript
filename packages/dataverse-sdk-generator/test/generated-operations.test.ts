@@ -308,13 +308,13 @@ describe("options-object constructors, as in the in-repo generator (#96)", () =>
     expect(whoAmI).not.toContain("Parameters {");
   });
 
-  it("parseResponse returns the body for 200 and an empty result for 204", async () => {
+  it("parseResponse returns the record for 200 and null for 204 (#300)", async () => {
     const Recalculate = await load(
       "actions/contoso_RecalculateAction.js",
       "contoso_RecalculateAction"
     );
     const action = new Recalculate(ACCOUNT_ID, { Mode: 1 });
-    expect(await action.parseResponse(noContent())).toEqual({});
+    expect(await action.parseResponse(noContent())).toBeNull();
     expect(await action.parseResponse(jsonResponse({ accountid: ACCOUNT_ID }))).toEqual({
       accountid: ACCOUNT_ID,
     });

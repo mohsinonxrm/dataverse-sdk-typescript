@@ -3,9 +3,12 @@ import { requestBody } from "./internal/requestBody.js";
 import type { ExportComponentsParams } from "./types/index.js";
 
 /**
- * Response from ExportSolutionAsync action
+ * Response from the ExportSolutionAsync action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface ExportSolutionAsyncResponse {
+  "@odata.context"?: string;
   AsyncOperationId: string;
   ExportJobId: string;
 }
@@ -72,8 +75,7 @@ export class ExportSolutionAsyncAction implements Executable<ExportSolutionAsync
   }
 
   async parseResponse(response: Response): Promise<ExportSolutionAsyncResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ExportSolutionAsyncResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as ExportSolutionAsyncResponse;
   }
 }

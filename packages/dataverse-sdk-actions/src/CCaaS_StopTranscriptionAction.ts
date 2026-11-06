@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CCaaS_StopTranscription action
+ * Response from the CCaaS_StopTranscription action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface CCaaS_StopTranscriptionResponse {
-  // No content returned
-}
+export type CCaaS_StopTranscriptionResponse = void;
 
 /**
  * Parameters of the CCaaS_StopTranscription action, by their CSDL names. A parameter the CSDL declares
@@ -56,9 +56,8 @@ export class CCaaS_StopTranscriptionAction implements Executable<CCaaS_StopTrans
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_StopTranscriptionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CCaaS_StopTranscriptionResponse;
-    return (await response.json()) as CCaaS_StopTranscriptionResponse;
+  parseResponse(_response: Response): Promise<CCaaS_StopTranscriptionResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetOpportunityPainPointsAndNeedsResponse as msdyn_GetOpportunityPainPointsAndNeedsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetOpportunityPainPointsAndNeeds message, by their CSDL names. A parameter the CSDL declares
@@ -45,24 +43,37 @@ export class msdyn_GetOpportunityPainPointsAndNeedsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetOpportunityPainPointsAndNeedsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_GetOpportunityPainPointsAndNeedsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetOpportunityPainPointsAndNeedsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetOpportunityPainPointsAndNeeds action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetOpportunityPainPointsAndNeedsResult {
+  "@odata.context"?: string;
+  ErrorMessage: string;
+  IsSuccess: boolean;
+  Result: string;
+}
+
+/**
  * msdyn_GetOpportunityPainPointsAndNeeds response message
+ *
+ * `result` is the value the msdyn_GetOpportunityPainPointsAndNeeds action returns (see {@link msdyn_GetOpportunityPainPointsAndNeedsResult}).
  */
 export class msdyn_GetOpportunityPainPointsAndNeedsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetOpportunityPainPointsAndNeedsResponseData) {
+  constructor(public result: msdyn_GetOpportunityPainPointsAndNeedsResult) {
     super("msdyn_GetOpportunityPainPointsAndNeeds");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetOpportunityPainPointsAndNeedsResponse {
     return new msdyn_GetOpportunityPainPointsAndNeedsResponse(
-      responseObject<msdyn_GetOpportunityPainPointsAndNeedsResponseData>(data)
+      data as msdyn_GetOpportunityPainPointsAndNeedsResult
     );
   }
 }

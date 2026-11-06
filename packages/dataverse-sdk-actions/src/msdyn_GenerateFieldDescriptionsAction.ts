@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_GenerateFieldDescriptions action
+ * Response from the msdyn_GenerateFieldDescriptions action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GenerateFieldDescriptionsResponse {
+  "@odata.context"?: string;
   msdyn_CandidateValue: string;
   msdyn_Description: string;
   msdyn_Prompt: string;
@@ -52,8 +55,7 @@ export class msdyn_GenerateFieldDescriptionsAction implements Executable<msdyn_G
   }
 
   async parseResponse(response: Response): Promise<msdyn_GenerateFieldDescriptionsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_GenerateFieldDescriptionsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_GenerateFieldDescriptionsResponse;
   }
 }

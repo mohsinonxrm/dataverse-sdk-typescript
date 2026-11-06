@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetFavoriteArticlesResponse as msdyn_GetFavoriteArticlesResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetFavoriteArticles message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,33 @@ export class msdyn_GetFavoriteArticlesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetFavoriteArticlesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetFavoriteArticlesResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetFavoriteArticlesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetFavoriteArticles action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetFavoriteArticlesResult {
+  "@odata.context"?: string;
+  msdyn_response: string;
+}
+
+/**
  * msdyn_GetFavoriteArticles response message
+ *
+ * `result` is the value the msdyn_GetFavoriteArticles action returns (see {@link msdyn_GetFavoriteArticlesResult}).
  */
 export class msdyn_GetFavoriteArticlesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetFavoriteArticlesResponseData) {
+  constructor(public result: msdyn_GetFavoriteArticlesResult) {
     super("msdyn_GetFavoriteArticles");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetFavoriteArticlesResponse {
-    return new msdyn_GetFavoriteArticlesResponse(
-      responseObject<msdyn_GetFavoriteArticlesResponseData>(data)
-    );
+    return new msdyn_GetFavoriteArticlesResponse(data as msdyn_GetFavoriteArticlesResult);
   }
 }

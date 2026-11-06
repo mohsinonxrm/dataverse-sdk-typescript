@@ -1,15 +1,9 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
-import type {
-  msdyn_liveworkstream,
-  msdyn_msdyn_ValidateWorkStreamSMSConnectionResponse as msdyn_msdyn_ValidateWorkStreamSMSConnectionResponseData,
-  msdyn_ocphonenumber,
-  msdyn_smsnumber,
-} from "./types/index.js";
+import type { msdyn_liveworkstream, msdyn_ocphonenumber, msdyn_smsnumber } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_msdyn_ValidateWorkStreamSMSConnection message, by their CSDL names. A parameter the CSDL declares
@@ -60,24 +54,35 @@ export class msdyn_msdyn_ValidateWorkStreamSMSConnectionRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_msdyn_ValidateWorkStreamSMSConnectionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_msdyn_ValidateWorkStreamSMSConnectionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_msdyn_ValidateWorkStreamSMSConnectionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_msdyn_ValidateWorkStreamSMSConnection action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_msdyn_ValidateWorkStreamSMSConnectionResult {
+  "@odata.context"?: string;
+  Output: string;
+}
+
+/**
  * msdyn_msdyn_ValidateWorkStreamSMSConnection response message
+ *
+ * `result` is the value the msdyn_msdyn_ValidateWorkStreamSMSConnection action returns (see {@link msdyn_msdyn_ValidateWorkStreamSMSConnectionResult}).
  */
 export class msdyn_msdyn_ValidateWorkStreamSMSConnectionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_msdyn_ValidateWorkStreamSMSConnectionResponseData) {
+  constructor(public result: msdyn_msdyn_ValidateWorkStreamSMSConnectionResult) {
     super("msdyn_msdyn_ValidateWorkStreamSMSConnection");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_msdyn_ValidateWorkStreamSMSConnectionResponse {
     return new msdyn_msdyn_ValidateWorkStreamSMSConnectionResponse(
-      responseObject<msdyn_msdyn_ValidateWorkStreamSMSConnectionResponseData>(data)
+      data as msdyn_msdyn_ValidateWorkStreamSMSConnectionResult
     );
   }
 }

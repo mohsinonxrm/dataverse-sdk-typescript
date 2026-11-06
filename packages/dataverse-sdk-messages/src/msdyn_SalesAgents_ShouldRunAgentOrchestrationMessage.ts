@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesAgents_ShouldRunAgentOrchestrationResponse as msdyn_SalesAgents_ShouldRunAgentOrchestrationResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesAgents_ShouldRunAgentOrchestration message, by their CSDL names. A parameter the CSDL declares
@@ -51,9 +49,7 @@ export class msdyn_SalesAgents_ShouldRunAgentOrchestrationRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_ShouldRunAgentOrchestrationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_SalesAgents_ShouldRunAgentOrchestrationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesAgents_ShouldRunAgentOrchestrationResponse.fromResponse(
       await response.json()
     );
@@ -61,16 +57,29 @@ export class msdyn_SalesAgents_ShouldRunAgentOrchestrationRequest
 }
 
 /**
+ * Response from the msdyn_SalesAgents_ShouldRunAgentOrchestration action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesAgents_ShouldRunAgentOrchestrationResult {
+  "@odata.context"?: string;
+  msdyn_ShouldRun: boolean;
+}
+
+/**
  * msdyn_SalesAgents_ShouldRunAgentOrchestration response message
+ *
+ * `result` is the value the msdyn_SalesAgents_ShouldRunAgentOrchestration action returns (see {@link msdyn_SalesAgents_ShouldRunAgentOrchestrationResult}).
  */
 export class msdyn_SalesAgents_ShouldRunAgentOrchestrationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgents_ShouldRunAgentOrchestrationResponseData) {
+  constructor(public result: msdyn_SalesAgents_ShouldRunAgentOrchestrationResult) {
     super("msdyn_SalesAgents_ShouldRunAgentOrchestration");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesAgents_ShouldRunAgentOrchestrationResponse {
     return new msdyn_SalesAgents_ShouldRunAgentOrchestrationResponse(
-      responseObject<msdyn_SalesAgents_ShouldRunAgentOrchestrationResponseData>(data)
+      data as msdyn_SalesAgents_ShouldRunAgentOrchestrationResult
     );
   }
 }

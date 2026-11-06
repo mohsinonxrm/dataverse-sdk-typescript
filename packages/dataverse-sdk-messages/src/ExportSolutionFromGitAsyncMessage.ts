@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { ExportSolutionFromGitAsyncResponse as ExportSolutionFromGitAsyncResponseData } from "./types/index.js";
 
 /**
  * Parameters of the ExportSolutionFromGitAsync message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,34 @@ export class ExportSolutionFromGitAsyncRequest
   }
 
   async parseResponse(response: Response): Promise<ExportSolutionFromGitAsyncResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return ExportSolutionFromGitAsyncResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return ExportSolutionFromGitAsyncResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the ExportSolutionFromGitAsync action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface ExportSolutionFromGitAsyncResult {
+  "@odata.context"?: string;
+  AsyncOperationId: string;
+  ExportJobId: string;
+}
+
+/**
  * ExportSolutionFromGitAsync response message
+ *
+ * `result` is the value the ExportSolutionFromGitAsync action returns (see {@link ExportSolutionFromGitAsyncResult}).
  */
 export class ExportSolutionFromGitAsyncResponse extends OrganizationResponse {
-  constructor(public result: ExportSolutionFromGitAsyncResponseData) {
+  constructor(public result: ExportSolutionFromGitAsyncResult) {
     super("ExportSolutionFromGitAsync");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): ExportSolutionFromGitAsyncResponse {
-    return new ExportSolutionFromGitAsyncResponse(
-      responseObject<ExportSolutionFromGitAsyncResponseData>(data)
-    );
+    return new ExportSolutionFromGitAsyncResponse(data as ExportSolutionFromGitAsyncResult);
   }
 }

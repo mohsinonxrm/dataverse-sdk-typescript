@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_GetPredictionModelStatus action
+ * Response from the msdyn_GetPredictionModelStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetPredictionModelStatusResponse {
+  "@odata.context"?: string;
   PredictionModelStatus: string;
 }
 
@@ -42,8 +45,7 @@ export class msdyn_GetPredictionModelStatusAction implements Executable<msdyn_Ge
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetPredictionModelStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_GetPredictionModelStatusResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_GetPredictionModelStatusResponse;
   }
 }

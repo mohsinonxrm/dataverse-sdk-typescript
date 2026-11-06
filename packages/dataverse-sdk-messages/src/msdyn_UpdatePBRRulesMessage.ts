@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_UpdatePBRRulesResponse as msdyn_UpdatePBRRulesResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_UpdatePBRRules message, by their CSDL names. A parameter the CSDL declares
@@ -47,21 +45,36 @@ export class msdyn_UpdatePBRRulesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_UpdatePBRRulesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_UpdatePBRRulesResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_UpdatePBRRulesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_UpdatePBRRules action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_UpdatePBRRulesResult {
+  "@odata.context"?: string;
+  Message: string;
+  RuleResults: string;
+  Success: boolean;
+  UpdatedXml: string;
+}
+
+/**
  * msdyn_UpdatePBRRules response message
+ *
+ * `result` is the value the msdyn_UpdatePBRRules action returns (see {@link msdyn_UpdatePBRRulesResult}).
  */
 export class msdyn_UpdatePBRRulesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_UpdatePBRRulesResponseData) {
+  constructor(public result: msdyn_UpdatePBRRulesResult) {
     super("msdyn_UpdatePBRRules");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_UpdatePBRRulesResponse {
-    return new msdyn_UpdatePBRRulesResponse(responseObject<msdyn_UpdatePBRRulesResponseData>(data));
+    return new msdyn_UpdatePBRRulesResponse(data as msdyn_UpdatePBRRulesResult);
   }
 }

@@ -44,9 +44,9 @@ export class msdynmkt_optoutofchannelcommunicationRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdynmkt_optoutofchannelcommunicationResponse> {
+  parseResponse(_response: Response): Promise<msdynmkt_optoutofchannelcommunicationResponse> {
     // No return value (204 No Content)
-    return new msdynmkt_optoutofchannelcommunicationResponse();
+    return Promise.resolve(new msdynmkt_optoutofchannelcommunicationResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class msdynmkt_optoutofchannelcommunicationResponse extends OrganizationR
     super("msdynmkt_optoutofchannelcommunication");
   }
 
-  static fromResponse(_data: unknown): msdynmkt_optoutofchannelcommunicationResponse {
+  static fromResponse(_data?: unknown): msdynmkt_optoutofchannelcommunicationResponse {
     return new msdynmkt_optoutofchannelcommunicationResponse();
   }
 }

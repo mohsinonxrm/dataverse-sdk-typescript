@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CCaaS_OneTimePasswordVerifyResponse as CCaaS_OneTimePasswordVerifyResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CCaaS_OneTimePasswordVerify message, by their CSDL names. A parameter the CSDL declares
@@ -57,23 +55,33 @@ export class CCaaS_OneTimePasswordVerifyRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_OneTimePasswordVerifyResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CCaaS_OneTimePasswordVerifyResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CCaaS_OneTimePasswordVerifyResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CCaaS_OneTimePasswordVerify action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CCaaS_OneTimePasswordVerifyResult {
+  "@odata.context"?: string;
+  ResponseData: string;
+}
+
+/**
  * CCaaS_OneTimePasswordVerify response message
+ *
+ * `result` is the value the CCaaS_OneTimePasswordVerify action returns (see {@link CCaaS_OneTimePasswordVerifyResult}).
  */
 export class CCaaS_OneTimePasswordVerifyResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_OneTimePasswordVerifyResponseData) {
+  constructor(public result: CCaaS_OneTimePasswordVerifyResult) {
     super("CCaaS_OneTimePasswordVerify");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CCaaS_OneTimePasswordVerifyResponse {
-    return new CCaaS_OneTimePasswordVerifyResponse(
-      responseObject<CCaaS_OneTimePasswordVerifyResponseData>(data)
-    );
+    return new CCaaS_OneTimePasswordVerifyResponse(data as CCaaS_OneTimePasswordVerifyResult);
   }
 }

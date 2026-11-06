@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_RetrieveEvaluationCriteriaResponse as msdyn_RetrieveEvaluationCriteriaResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_RetrieveEvaluationCriteria message, by their CSDL names. A parameter the CSDL declares
@@ -46,23 +44,35 @@ export class msdyn_RetrieveEvaluationCriteriaRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrieveEvaluationCriteriaResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_RetrieveEvaluationCriteriaResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_RetrieveEvaluationCriteriaResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_RetrieveEvaluationCriteria action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_RetrieveEvaluationCriteriaResult {
+  "@odata.context"?: string;
+  msydn_RetrieveEvaluationCriteriaResponse: string;
+}
+
+/**
  * msdyn_RetrieveEvaluationCriteria response message
+ *
+ * `result` is the value the msdyn_RetrieveEvaluationCriteria action returns (see {@link msdyn_RetrieveEvaluationCriteriaResult}).
  */
 export class msdyn_RetrieveEvaluationCriteriaResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrieveEvaluationCriteriaResponseData) {
+  constructor(public result: msdyn_RetrieveEvaluationCriteriaResult) {
     super("msdyn_RetrieveEvaluationCriteria");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_RetrieveEvaluationCriteriaResponse {
     return new msdyn_RetrieveEvaluationCriteriaResponse(
-      responseObject<msdyn_RetrieveEvaluationCriteriaResponseData>(data)
+      data as msdyn_RetrieveEvaluationCriteriaResult
     );
   }
 }

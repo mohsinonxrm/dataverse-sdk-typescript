@@ -48,9 +48,9 @@ export class SetReportRelatedRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<SetReportRelatedResponse> {
+  parseResponse(_response: Response): Promise<SetReportRelatedResponse> {
     // No return value (204 No Content)
-    return new SetReportRelatedResponse();
+    return Promise.resolve(new SetReportRelatedResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class SetReportRelatedResponse extends OrganizationResponse {
     super("SetReportRelated");
   }
 
-  static fromResponse(_data: unknown): SetReportRelatedResponse {
+  static fromResponse(_data?: unknown): SetReportRelatedResponse {
     return new SetReportRelatedResponse();
   }
 }

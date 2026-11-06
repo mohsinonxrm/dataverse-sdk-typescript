@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from _SkillToUser action
+ * Response from the _SkillToUser action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface _SkillToUserResponse {
-  // No content returned
-}
+export type _SkillToUserResponse = void;
 
 /**
  * Parameters of the _SkillToUser action, by their CSDL names. A parameter the CSDL declares
@@ -43,9 +43,8 @@ export class _SkillToUserAction implements Executable<_SkillToUserResponse> {
     };
   }
 
-  async parseResponse(response: Response): Promise<_SkillToUserResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as _SkillToUserResponse;
-    return (await response.json()) as _SkillToUserResponse;
+  parseResponse(_response: Response): Promise<_SkillToUserResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

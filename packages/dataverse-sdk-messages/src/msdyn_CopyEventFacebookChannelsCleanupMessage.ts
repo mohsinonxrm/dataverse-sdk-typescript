@@ -26,9 +26,9 @@ export class msdyn_CopyEventFacebookChannelsCleanupRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_CopyEventFacebookChannelsCleanupResponse> {
+  parseResponse(_response: Response): Promise<msdyn_CopyEventFacebookChannelsCleanupResponse> {
     // No return value (204 No Content)
-    return new msdyn_CopyEventFacebookChannelsCleanupResponse();
+    return Promise.resolve(new msdyn_CopyEventFacebookChannelsCleanupResponse());
   }
 }
 
@@ -40,7 +40,7 @@ export class msdyn_CopyEventFacebookChannelsCleanupResponse extends Organization
     super("msdyn_CopyEventFacebookChannelsCleanup");
   }
 
-  static fromResponse(_data: unknown): msdyn_CopyEventFacebookChannelsCleanupResponse {
+  static fromResponse(_data?: unknown): msdyn_CopyEventFacebookChannelsCleanupResponse {
     return new msdyn_CopyEventFacebookChannelsCleanupResponse();
   }
 }

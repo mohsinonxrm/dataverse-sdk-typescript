@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_InitiateCCaaSCloseConversationResponse as msdyn_InitiateCCaaSCloseConversationResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_InitiateCCaaSCloseConversation message, by their CSDL names. A parameter the CSDL declares
@@ -49,24 +47,35 @@ export class msdyn_InitiateCCaaSCloseConversationRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_InitiateCCaaSCloseConversationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_InitiateCCaaSCloseConversationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_InitiateCCaaSCloseConversationResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_InitiateCCaaSCloseConversation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_InitiateCCaaSCloseConversationResult {
+  "@odata.context"?: string;
+  msdyn_InitiateCCaaSCloseConversationAPIResponse: string;
+}
+
+/**
  * msdyn_InitiateCCaaSCloseConversation response message
+ *
+ * `result` is the value the msdyn_InitiateCCaaSCloseConversation action returns (see {@link msdyn_InitiateCCaaSCloseConversationResult}).
  */
 export class msdyn_InitiateCCaaSCloseConversationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_InitiateCCaaSCloseConversationResponseData) {
+  constructor(public result: msdyn_InitiateCCaaSCloseConversationResult) {
     super("msdyn_InitiateCCaaSCloseConversation");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_InitiateCCaaSCloseConversationResponse {
     return new msdyn_InitiateCCaaSCloseConversationResponse(
-      responseObject<msdyn_InitiateCCaaSCloseConversationResponseData>(data)
+      data as msdyn_InitiateCCaaSCloseConversationResult
     );
   }
 }

@@ -57,7 +57,7 @@ Starts an on-demand workflow for a record.
 import { ExecuteWorkflowAction } from "@mohsinonxrm/dataverse-sdk-actions";
 
 const job = await client.execute(new ExecuteWorkflowAction(workflowId, { EntityId: accountId }));
-console.log("Async Operation ID:", job.asyncoperationid);
+console.log("Async Operation ID:", job?.asyncoperationid); // null if the Web API answered 204
 ```
 
 ### WinOpportunity
@@ -80,6 +80,37 @@ await client.execute(
     Status: 3,
   })
 );
+```
+
+## Return Values
+
+`client.execute()` resolves the value the action returns, not the OData envelope around it.
+Each class's `<Name>Response` type is exactly that value (#300), and the message of the same name
+has the same value as its `result`:
+
+| Return type in `$metadata`                       | Web API response                                          | Value                                                       |
+| ------------------------------------------------ | --------------------------------------------------------- | ----------------------------------------------------------- |
+| none                                             | `204 No Content`                                          | `undefined` (`<Name>Response` is `void`)                    |
+| primitive or enum (`Edm.Boolean`, …)             | `{ "@odata.context", "value": … }`                        | the value (an enum is its member name)                      |
+| collection (`Collection(mscrm.role)`, …)         | `{ "@odata.context", "value": [ … ] }`, or 204 when unset | the array, each record with `@odata.etag`; `[]` for a 204   |
+| complex type (`mscrm.WhoAmIResponse`)            | the properties, with `@odata.context`                     | the body, with `@odata.context`                             |
+| entity (`mscrm.asyncoperation`, `crmbaseentity`) | the record, with its annotations, or 204 when unset       | the record (`@odata.etag`, `@odata.type`); `null` for a 204 |
+
+Dataverse answers `204 No Content` for an entity or entity-collection output that wasn't set,
+although `$metadata` declares the return `Nullable="false"`, so an entity return is
+`<Entity> | null`. `@odata.type` says which table a `crmbaseentity` record is.
+
+```typescript
+await client.execute(new PublishAllXmlAction()); // undefined
+
+const emails = await client.execute(
+  new InstantiateTemplateAction({
+    TemplateId: templateId,
+    ObjectType: "account",
+    ObjectId: accountId,
+  })
+);
+console.log(emails.length, emails[0]?.subject); // email records, not { value }
 ```
 
 ## Action Categories

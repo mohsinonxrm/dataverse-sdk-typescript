@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CancelContract action
+ * Response from the CancelContract action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface CancelContractResponse {
-  // No content returned
-}
+export type CancelContractResponse = void;
 
 /**
  * Parameters of the CancelContract action, by their CSDL names. A parameter the CSDL declares
@@ -50,9 +50,8 @@ export class CancelContractAction implements Executable<CancelContractResponse> 
     };
   }
 
-  async parseResponse(response: Response): Promise<CancelContractResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CancelContractResponse;
-    return (await response.json()) as CancelContractResponse;
+  parseResponse(_response: Response): Promise<CancelContractResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

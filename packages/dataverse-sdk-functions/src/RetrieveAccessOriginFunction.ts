@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from RetrieveAccessOrigin function
+ * Response from the RetrieveAccessOrigin function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveAccessOriginResponse {
+  "@odata.context"?: string;
   Response: string;
 }
 
@@ -58,8 +61,7 @@ export class RetrieveAccessOriginFunction implements Executable<RetrieveAccessOr
   }
 
   async parseResponse(response: Response): Promise<RetrieveAccessOriginResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveAccessOriginResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RetrieveAccessOriginResponse;
   }
 }

@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from ProcessInboundEmail action
+ * Response from the ProcessInboundEmail action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface ProcessInboundEmailResponse {
-  // No content returned
-}
+export type ProcessInboundEmailResponse = void;
 
 /**
  * ProcessInboundEmail action
@@ -31,9 +31,8 @@ export class ProcessInboundEmailAction implements Executable<ProcessInboundEmail
     };
   }
 
-  async parseResponse(response: Response): Promise<ProcessInboundEmailResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ProcessInboundEmailResponse;
-    return (await response.json()) as ProcessInboundEmailResponse;
+  parseResponse(_response: Response): Promise<ProcessInboundEmailResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
@@ -75,21 +74,34 @@ export class DeliverPromoteEmailRequest
   }
 
   async parseResponse(response: Response): Promise<DeliverPromoteEmailResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return DeliverPromoteEmailResponse.fromResponse({});
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return DeliverPromoteEmailResponse.fromResponse(undefined);
+    // The body is the record, with its annotations
     return DeliverPromoteEmailResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the DeliverPromoteEmail action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
+ */
+export type DeliverPromoteEmailResult =
+  (email & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string }) | null;
+
+/**
  * DeliverPromoteEmail response message
+ *
+ * `result` is the value the DeliverPromoteEmail action returns (see {@link DeliverPromoteEmailResult}).
  */
 export class DeliverPromoteEmailResponse extends OrganizationResponse {
-  constructor(public result: email) {
+  constructor(public result: DeliverPromoteEmailResult) {
     super("DeliverPromoteEmail");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): DeliverPromoteEmailResponse {
-    return new DeliverPromoteEmailResponse(responseObject<email>(data));
+    return new DeliverPromoteEmailResponse((data ?? null) as DeliverPromoteEmailResult);
   }
 }

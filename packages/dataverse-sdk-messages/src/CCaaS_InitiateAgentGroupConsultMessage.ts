@@ -60,9 +60,9 @@ export class CCaaS_InitiateAgentGroupConsultRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_InitiateAgentGroupConsultResponse> {
+  parseResponse(_response: Response): Promise<CCaaS_InitiateAgentGroupConsultResponse> {
     // No return value (204 No Content)
-    return new CCaaS_InitiateAgentGroupConsultResponse();
+    return Promise.resolve(new CCaaS_InitiateAgentGroupConsultResponse());
   }
 }
 
@@ -74,7 +74,7 @@ export class CCaaS_InitiateAgentGroupConsultResponse extends OrganizationRespons
     super("CCaaS_InitiateAgentGroupConsult");
   }
 
-  static fromResponse(_data: unknown): CCaaS_InitiateAgentGroupConsultResponse {
+  static fromResponse(_data?: unknown): CCaaS_InitiateAgentGroupConsultResponse {
     return new CCaaS_InitiateAgentGroupConsultResponse();
   }
 }

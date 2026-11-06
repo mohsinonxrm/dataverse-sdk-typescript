@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SIGetFCBStatusResponse as msdyn_SIGetFCBStatusResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SIGetFCBStatus message, by their CSDL names. A parameter the CSDL declares
@@ -45,21 +43,33 @@ export class msdyn_SIGetFCBStatusRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SIGetFCBStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_SIGetFCBStatusResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SIGetFCBStatusResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SIGetFCBStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SIGetFCBStatusResult {
+  "@odata.context"?: string;
+  Status: boolean;
+}
+
+/**
  * msdyn_SIGetFCBStatus response message
+ *
+ * `result` is the value the msdyn_SIGetFCBStatus action returns (see {@link msdyn_SIGetFCBStatusResult}).
  */
 export class msdyn_SIGetFCBStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SIGetFCBStatusResponseData) {
+  constructor(public result: msdyn_SIGetFCBStatusResult) {
     super("msdyn_SIGetFCBStatus");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SIGetFCBStatusResponse {
-    return new msdyn_SIGetFCBStatusResponse(responseObject<msdyn_SIGetFCBStatusResponseData>(data));
+    return new msdyn_SIGetFCBStatusResponse(data as msdyn_SIGetFCBStatusResult);
   }
 }

@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from GetDistinctValuesImportFile function
+ * Response from the GetDistinctValuesImportFile function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface GetDistinctValuesImportFileResponse {
+  "@odata.context"?: string;
   Values: string[];
 }
 
@@ -65,8 +68,7 @@ export class GetDistinctValuesImportFileFunction implements Executable<GetDistin
   }
 
   async parseResponse(response: Response): Promise<GetDistinctValuesImportFileResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as GetDistinctValuesImportFileResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as GetDistinctValuesImportFileResponse;
   }
 }

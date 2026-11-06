@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesDataQualityAgent_ExecutePreActivationActionResponse as msdyn_SalesDataQualityAgent_ExecutePreActivationActionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesDataQualityAgent_ExecutePreActivationAction message, by their CSDL names. A parameter the CSDL declares
@@ -47,9 +45,7 @@ export class msdyn_SalesDataQualityAgent_ExecutePreActivationActionRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesDataQualityAgent_ExecutePreActivationActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_SalesDataQualityAgent_ExecutePreActivationActionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesDataQualityAgent_ExecutePreActivationActionResponse.fromResponse(
       await response.json()
     );
@@ -57,18 +53,31 @@ export class msdyn_SalesDataQualityAgent_ExecutePreActivationActionRequest
 }
 
 /**
+ * Response from the msdyn_SalesDataQualityAgent_ExecutePreActivationAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesDataQualityAgent_ExecutePreActivationActionResult {
+  "@odata.context"?: string;
+  ResponseJson: string;
+}
+
+/**
  * msdyn_SalesDataQualityAgent_ExecutePreActivationAction response message
+ *
+ * `result` is the value the msdyn_SalesDataQualityAgent_ExecutePreActivationAction action returns (see {@link msdyn_SalesDataQualityAgent_ExecutePreActivationActionResult}).
  */
 export class msdyn_SalesDataQualityAgent_ExecutePreActivationActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesDataQualityAgent_ExecutePreActivationActionResponseData) {
+  constructor(public result: msdyn_SalesDataQualityAgent_ExecutePreActivationActionResult) {
     super("msdyn_SalesDataQualityAgent_ExecutePreActivationAction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(
     data: unknown
   ): msdyn_SalesDataQualityAgent_ExecutePreActivationActionResponse {
     return new msdyn_SalesDataQualityAgent_ExecutePreActivationActionResponse(
-      responseObject<msdyn_SalesDataQualityAgent_ExecutePreActivationActionResponseData>(data)
+      data as msdyn_SalesDataQualityAgent_ExecutePreActivationActionResult
     );
   }
 }

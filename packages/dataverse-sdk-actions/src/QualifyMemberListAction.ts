@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from QualifyMemberList action
+ * Response from the QualifyMemberList action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface QualifyMemberListResponse {
-  // No content returned
-}
+export type QualifyMemberListResponse = void;
 
 /**
  * Parameters of the QualifyMemberList action, by their CSDL names. A parameter the CSDL declares
@@ -50,9 +50,8 @@ export class QualifyMemberListAction implements Executable<QualifyMemberListResp
     };
   }
 
-  async parseResponse(response: Response): Promise<QualifyMemberListResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as QualifyMemberListResponse;
-    return (await response.json()) as QualifyMemberListResponse;
+  parseResponse(_response: Response): Promise<QualifyMemberListResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

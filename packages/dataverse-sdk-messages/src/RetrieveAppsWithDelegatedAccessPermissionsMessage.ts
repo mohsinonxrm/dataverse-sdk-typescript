@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseValue } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
 
 /**
@@ -46,24 +45,42 @@ export class RetrieveAppsWithDelegatedAccessPermissionsRequest
   async parseResponse(
     response: Response
   ): Promise<RetrieveAppsWithDelegatedAccessPermissionsResponse> {
-    // 204 No Content is an empty result
+    // An output that wasn't set answers 204 No Content: an empty collection
     if (response.status === 204)
-      return RetrieveAppsWithDelegatedAccessPermissionsResponse.fromResponse({});
+      return RetrieveAppsWithDelegatedAccessPermissionsResponse.fromResponse(undefined);
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
     return RetrieveAppsWithDelegatedAccessPermissionsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the RetrieveAppsWithDelegatedAccessPermissions action.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
+ */
+export type RetrieveAppsWithDelegatedAccessPermissionsResult = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
+
+/**
  * RetrieveAppsWithDelegatedAccessPermissions response message
+ *
+ * `result` is the value the RetrieveAppsWithDelegatedAccessPermissions action returns (see {@link RetrieveAppsWithDelegatedAccessPermissionsResult}).
  */
 export class RetrieveAppsWithDelegatedAccessPermissionsResponse extends OrganizationResponse {
-  constructor(public result: Record<string, unknown>[]) {
+  constructor(public result: RetrieveAppsWithDelegatedAccessPermissionsResult) {
     super("RetrieveAppsWithDelegatedAccessPermissions");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): RetrieveAppsWithDelegatedAccessPermissionsResponse {
     return new RetrieveAppsWithDelegatedAccessPermissionsResponse(
-      responseValue<Record<string, unknown>[]>(data)
+      data === undefined
+        ? []
+        : (data as { value: RetrieveAppsWithDelegatedAccessPermissionsResult }).value
     );
   }
 }

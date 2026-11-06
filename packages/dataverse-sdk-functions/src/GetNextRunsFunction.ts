@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from GetNextRuns function
+ * Response from the GetNextRuns function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface GetNextRunsResponse {
+  "@odata.context"?: string;
   response: string;
 }
 
@@ -73,8 +76,7 @@ export class GetNextRunsFunction implements Executable<GetNextRunsResponse> {
   }
 
   async parseResponse(response: Response): Promise<GetNextRunsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as GetNextRunsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as GetNextRunsResponse;
   }
 }

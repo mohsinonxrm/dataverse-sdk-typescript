@@ -44,9 +44,9 @@ export class msdyn_PullDataForIoTDeviceRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_PullDataForIoTDeviceResponse> {
+  parseResponse(_response: Response): Promise<msdyn_PullDataForIoTDeviceResponse> {
     // No return value (204 No Content)
-    return new msdyn_PullDataForIoTDeviceResponse();
+    return Promise.resolve(new msdyn_PullDataForIoTDeviceResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class msdyn_PullDataForIoTDeviceResponse extends OrganizationResponse {
     super("msdyn_PullDataForIoTDevice");
   }
 
-  static fromResponse(_data: unknown): msdyn_PullDataForIoTDeviceResponse {
+  static fromResponse(_data?: unknown): msdyn_PullDataForIoTDeviceResponse {
     return new msdyn_PullDataForIoTDeviceResponse();
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_CreateTrainEffortModelConfigResponse as msdyn_CreateTrainEffortModelConfigResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CreateTrainEffortModelConfig message, by their CSDL names. A parameter the CSDL declares
@@ -51,23 +49,35 @@ export class msdyn_CreateTrainEffortModelConfigRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateTrainEffortModelConfigResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_CreateTrainEffortModelConfigResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CreateTrainEffortModelConfigResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CreateTrainEffortModelConfig action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CreateTrainEffortModelConfigResult {
+  "@odata.context"?: string;
+  TrainConfig: string;
+}
+
+/**
  * msdyn_CreateTrainEffortModelConfig response message
+ *
+ * `result` is the value the msdyn_CreateTrainEffortModelConfig action returns (see {@link msdyn_CreateTrainEffortModelConfigResult}).
  */
 export class msdyn_CreateTrainEffortModelConfigResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CreateTrainEffortModelConfigResponseData) {
+  constructor(public result: msdyn_CreateTrainEffortModelConfigResult) {
     super("msdyn_CreateTrainEffortModelConfig");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CreateTrainEffortModelConfigResponse {
     return new msdyn_CreateTrainEffortModelConfigResponse(
-      responseObject<msdyn_CreateTrainEffortModelConfigResponseData>(data)
+      data as msdyn_CreateTrainEffortModelConfigResult
     );
   }
 }

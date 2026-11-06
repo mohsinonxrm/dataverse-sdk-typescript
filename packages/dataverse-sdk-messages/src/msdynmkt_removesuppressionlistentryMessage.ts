@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdynmkt_removesuppressionlistentryResponse as msdynmkt_removesuppressionlistentryResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdynmkt_removesuppressionlistentry message, by their CSDL names. A parameter the CSDL declares
@@ -45,24 +43,35 @@ export class msdynmkt_removesuppressionlistentryRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_removesuppressionlistentryResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdynmkt_removesuppressionlistentryResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdynmkt_removesuppressionlistentryResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdynmkt_removesuppressionlistentry action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdynmkt_removesuppressionlistentryResult {
+  "@odata.context"?: string;
+  msdynmkt_removesuppressionlistentryresponse: string;
+}
+
+/**
  * msdynmkt_removesuppressionlistentry response message
+ *
+ * `result` is the value the msdynmkt_removesuppressionlistentry action returns (see {@link msdynmkt_removesuppressionlistentryResult}).
  */
 export class msdynmkt_removesuppressionlistentryResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_removesuppressionlistentryResponseData) {
+  constructor(public result: msdynmkt_removesuppressionlistentryResult) {
     super("msdynmkt_removesuppressionlistentry");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdynmkt_removesuppressionlistentryResponse {
     return new msdynmkt_removesuppressionlistentryResponse(
-      responseObject<msdynmkt_removesuppressionlistentryResponseData>(data)
+      data as msdynmkt_removesuppressionlistentryResult
     );
   }
 }

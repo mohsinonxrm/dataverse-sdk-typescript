@@ -26,9 +26,9 @@ export class msdyn_CopyEventBotRegistrationsCleanupRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_CopyEventBotRegistrationsCleanupResponse> {
+  parseResponse(_response: Response): Promise<msdyn_CopyEventBotRegistrationsCleanupResponse> {
     // No return value (204 No Content)
-    return new msdyn_CopyEventBotRegistrationsCleanupResponse();
+    return Promise.resolve(new msdyn_CopyEventBotRegistrationsCleanupResponse());
   }
 }
 
@@ -40,7 +40,7 @@ export class msdyn_CopyEventBotRegistrationsCleanupResponse extends Organization
     super("msdyn_CopyEventBotRegistrationsCleanup");
   }
 
-  static fromResponse(_data: unknown): msdyn_CopyEventBotRegistrationsCleanupResponse {
+  static fromResponse(_data?: unknown): msdyn_CopyEventBotRegistrationsCleanupResponse {
     return new msdyn_CopyEventBotRegistrationsCleanupResponse();
   }
 }

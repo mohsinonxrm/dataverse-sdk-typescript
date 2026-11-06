@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { msdyn_LogCMAEventResponse as msdyn_LogCMAEventResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_LogCMAEvent message, by their CSDL names. A parameter the CSDL declares
@@ -55,21 +53,34 @@ export class msdyn_LogCMAEventRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_LogCMAEventResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_LogCMAEventResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_LogCMAEventResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_LogCMAEvent action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_LogCMAEventResult {
+  "@odata.context"?: string;
+  Code: string;
+  Message: string;
+}
+
+/**
  * msdyn_LogCMAEvent response message
+ *
+ * `result` is the value the msdyn_LogCMAEvent action returns (see {@link msdyn_LogCMAEventResult}).
  */
 export class msdyn_LogCMAEventResponse extends OrganizationResponse {
-  constructor(public result: msdyn_LogCMAEventResponseData) {
+  constructor(public result: msdyn_LogCMAEventResult) {
     super("msdyn_LogCMAEvent");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_LogCMAEventResponse {
-    return new msdyn_LogCMAEventResponse(responseObject<msdyn_LogCMAEventResponseData>(data));
+    return new msdyn_LogCMAEventResponse(data as msdyn_LogCMAEventResult);
   }
 }

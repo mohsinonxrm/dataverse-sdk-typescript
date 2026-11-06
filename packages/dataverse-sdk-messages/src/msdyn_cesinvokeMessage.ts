@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_cesinvokeResponse as msdyn_cesinvokeResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_cesinvoke message, by their CSDL names. A parameter the CSDL declares
@@ -49,21 +47,34 @@ export class msdyn_cesinvokeRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_cesinvokeResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_cesinvokeResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_cesinvokeResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_cesinvoke action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_cesinvokeResult {
+  "@odata.context"?: string;
+  CESResult: string;
+  IsSuccess: string;
+}
+
+/**
  * msdyn_cesinvoke response message
+ *
+ * `result` is the value the msdyn_cesinvoke action returns (see {@link msdyn_cesinvokeResult}).
  */
 export class msdyn_cesinvokeResponse extends OrganizationResponse {
-  constructor(public result: msdyn_cesinvokeResponseData) {
+  constructor(public result: msdyn_cesinvokeResult) {
     super("msdyn_cesinvoke");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_cesinvokeResponse {
-    return new msdyn_cesinvokeResponse(responseObject<msdyn_cesinvokeResponseData>(data));
+    return new msdyn_cesinvokeResponse(data as msdyn_cesinvokeResult);
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetDocumentContentResponse as msdyn_GetDocumentContentResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetDocumentContent message, by their CSDL names. A parameter the CSDL declares
@@ -55,23 +53,34 @@ export class msdyn_GetDocumentContentRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetDocumentContentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetDocumentContentResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetDocumentContentResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetDocumentContent action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetDocumentContentResult {
+  "@odata.context"?: string;
+  msdyn_data: string;
+  msdyn_mdlDetails: string;
+}
+
+/**
  * msdyn_GetDocumentContent response message
+ *
+ * `result` is the value the msdyn_GetDocumentContent action returns (see {@link msdyn_GetDocumentContentResult}).
  */
 export class msdyn_GetDocumentContentResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetDocumentContentResponseData) {
+  constructor(public result: msdyn_GetDocumentContentResult) {
     super("msdyn_GetDocumentContent");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetDocumentContentResponse {
-    return new msdyn_GetDocumentContentResponse(
-      responseObject<msdyn_GetDocumentContentResponseData>(data)
-    );
+    return new msdyn_GetDocumentContentResponse(data as msdyn_GetDocumentContentResult);
   }
 }

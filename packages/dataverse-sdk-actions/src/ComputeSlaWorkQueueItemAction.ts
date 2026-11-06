@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from ComputeSlaWorkQueueItem action
+ * Response from the ComputeSlaWorkQueueItem action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface ComputeSlaWorkQueueItemResponse {
-  // No content returned
-}
+export type ComputeSlaWorkQueueItemResponse = void;
 
 /**
  * ComputeSlaWorkQueueItem action
@@ -31,9 +31,8 @@ export class ComputeSlaWorkQueueItemAction implements Executable<ComputeSlaWorkQ
     };
   }
 
-  async parseResponse(response: Response): Promise<ComputeSlaWorkQueueItemResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ComputeSlaWorkQueueItemResponse;
-    return (await response.json()) as ComputeSlaWorkQueueItemResponse;
+  parseResponse(_response: Response): Promise<ComputeSlaWorkQueueItemResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

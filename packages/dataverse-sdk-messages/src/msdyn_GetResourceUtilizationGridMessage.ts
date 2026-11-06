@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetResourceUtilizationGridResponse as msdyn_GetResourceUtilizationGridResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetResourceUtilizationGrid message, by their CSDL names. A parameter the CSDL declares
@@ -53,23 +51,35 @@ export class msdyn_GetResourceUtilizationGridRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetResourceUtilizationGridResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetResourceUtilizationGridResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetResourceUtilizationGridResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetResourceUtilizationGrid action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetResourceUtilizationGridResult {
+  "@odata.context"?: string;
+  ChartItems: string;
+}
+
+/**
  * msdyn_GetResourceUtilizationGrid response message
+ *
+ * `result` is the value the msdyn_GetResourceUtilizationGrid action returns (see {@link msdyn_GetResourceUtilizationGridResult}).
  */
 export class msdyn_GetResourceUtilizationGridResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetResourceUtilizationGridResponseData) {
+  constructor(public result: msdyn_GetResourceUtilizationGridResult) {
     super("msdyn_GetResourceUtilizationGrid");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetResourceUtilizationGridResponse {
     return new msdyn_GetResourceUtilizationGridResponse(
-      responseObject<msdyn_GetResourceUtilizationGridResponseData>(data)
+      data as msdyn_GetResourceUtilizationGridResult
     );
   }
 }

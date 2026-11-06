@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdynmkt_ValueWidgetDataCustomActionResponse as msdynmkt_ValueWidgetDataCustomActionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdynmkt_ValueWidgetDataCustomAction message, by their CSDL names. A parameter the CSDL declares
@@ -45,24 +43,39 @@ export class msdynmkt_ValueWidgetDataCustomActionRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_ValueWidgetDataCustomActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdynmkt_ValueWidgetDataCustomActionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdynmkt_ValueWidgetDataCustomActionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdynmkt_ValueWidgetDataCustomAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdynmkt_ValueWidgetDataCustomActionResult {
+  "@odata.context"?: string;
+  ErrorMessage: string;
+  IsSuccess: boolean;
+  StatusCode: number;
+  WidgetData: string;
+  WidgetDefinition: string;
+}
+
+/**
  * msdynmkt_ValueWidgetDataCustomAction response message
+ *
+ * `result` is the value the msdynmkt_ValueWidgetDataCustomAction action returns (see {@link msdynmkt_ValueWidgetDataCustomActionResult}).
  */
 export class msdynmkt_ValueWidgetDataCustomActionResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_ValueWidgetDataCustomActionResponseData) {
+  constructor(public result: msdynmkt_ValueWidgetDataCustomActionResult) {
     super("msdynmkt_ValueWidgetDataCustomAction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdynmkt_ValueWidgetDataCustomActionResponse {
     return new msdynmkt_ValueWidgetDataCustomActionResponse(
-      responseObject<msdynmkt_ValueWidgetDataCustomActionResponseData>(data)
+      data as msdynmkt_ValueWidgetDataCustomActionResult
     );
   }
 }

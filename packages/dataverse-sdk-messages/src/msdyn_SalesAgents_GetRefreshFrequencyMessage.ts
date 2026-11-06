@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesAgents_GetRefreshFrequencyResponse as msdyn_SalesAgents_GetRefreshFrequencyResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesAgents_GetRefreshFrequency message, by their CSDL names. A parameter the CSDL declares
@@ -45,24 +43,36 @@ export class msdyn_SalesAgents_GetRefreshFrequencyRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAgents_GetRefreshFrequencyResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_SalesAgents_GetRefreshFrequencyResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesAgents_GetRefreshFrequencyResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SalesAgents_GetRefreshFrequency action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesAgents_GetRefreshFrequencyResult {
+  "@odata.context"?: string;
+  IsRefreshEnabled: boolean;
+  RefreshFrequencyInDays: number;
+}
+
+/**
  * msdyn_SalesAgents_GetRefreshFrequency response message
+ *
+ * `result` is the value the msdyn_SalesAgents_GetRefreshFrequency action returns (see {@link msdyn_SalesAgents_GetRefreshFrequencyResult}).
  */
 export class msdyn_SalesAgents_GetRefreshFrequencyResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgents_GetRefreshFrequencyResponseData) {
+  constructor(public result: msdyn_SalesAgents_GetRefreshFrequencyResult) {
     super("msdyn_SalesAgents_GetRefreshFrequency");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesAgents_GetRefreshFrequencyResponse {
     return new msdyn_SalesAgents_GetRefreshFrequencyResponse(
-      responseObject<msdyn_SalesAgents_GetRefreshFrequencyResponseData>(data)
+      data as msdyn_SalesAgents_GetRefreshFrequencyResult
     );
   }
 }

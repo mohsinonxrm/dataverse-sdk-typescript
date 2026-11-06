@@ -5,11 +5,11 @@ import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { knowledgearticle, msdyn_kbattachment } from "./types/index.js";
 
 /**
- * Response from msdyn_UpdateKbAttachmentPrivilege action
+ * Response from the msdyn_UpdateKbAttachmentPrivilege action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_UpdateKbAttachmentPrivilegeResponse {
-  // No content returned
-}
+export type msdyn_UpdateKbAttachmentPrivilegeResponse = void;
 
 /**
  * Parameters of the msdyn_UpdateKbAttachmentPrivilege action, by their CSDL names. A parameter the CSDL declares
@@ -50,9 +50,8 @@ export class msdyn_UpdateKbAttachmentPrivilegeAction implements Executable<msdyn
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_UpdateKbAttachmentPrivilegeResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_UpdateKbAttachmentPrivilegeResponse;
-    return (await response.json()) as msdyn_UpdateKbAttachmentPrivilegeResponse;
+  parseResponse(_response: Response): Promise<msdyn_UpdateKbAttachmentPrivilegeResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

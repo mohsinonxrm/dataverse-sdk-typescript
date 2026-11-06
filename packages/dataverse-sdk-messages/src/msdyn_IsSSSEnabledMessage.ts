@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_IsSSSEnabledResponse as msdyn_IsSSSEnabledResponseData } from "./types/index.js";
 
 /**
  * msdyn_IsSSSEnabled request message
@@ -29,21 +27,33 @@ export class msdyn_IsSSSEnabledRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_IsSSSEnabledResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_IsSSSEnabledResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_IsSSSEnabledResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_IsSSSEnabled action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_IsSSSEnabledResult {
+  "@odata.context"?: string;
+  IsSSSEnabled: boolean;
+}
+
+/**
  * msdyn_IsSSSEnabled response message
+ *
+ * `result` is the value the msdyn_IsSSSEnabled action returns (see {@link msdyn_IsSSSEnabledResult}).
  */
 export class msdyn_IsSSSEnabledResponse extends OrganizationResponse {
-  constructor(public result: msdyn_IsSSSEnabledResponseData) {
+  constructor(public result: msdyn_IsSSSEnabledResult) {
     super("msdyn_IsSSSEnabled");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_IsSSSEnabledResponse {
-    return new msdyn_IsSSSEnabledResponse(responseObject<msdyn_IsSSSEnabledResponseData>(data));
+    return new msdyn_IsSSSEnabledResponse(data as msdyn_IsSSSEnabledResult);
   }
 }

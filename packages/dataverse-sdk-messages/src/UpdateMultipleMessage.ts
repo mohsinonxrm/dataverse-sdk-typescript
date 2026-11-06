@@ -48,9 +48,9 @@ export class UpdateMultipleRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<UpdateMultipleResponse> {
+  parseResponse(_response: Response): Promise<UpdateMultipleResponse> {
     // No return value (204 No Content)
-    return new UpdateMultipleResponse();
+    return Promise.resolve(new UpdateMultipleResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class UpdateMultipleResponse extends OrganizationResponse {
     super("UpdateMultiple");
   }
 
-  static fromResponse(_data: unknown): UpdateMultipleResponse {
+  static fromResponse(_data?: unknown): UpdateMultipleResponse {
     return new UpdateMultipleResponse();
   }
 }

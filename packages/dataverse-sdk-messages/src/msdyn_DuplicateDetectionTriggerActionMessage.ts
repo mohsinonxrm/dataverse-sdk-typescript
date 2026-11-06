@@ -44,9 +44,9 @@ export class msdyn_DuplicateDetectionTriggerActionRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_DuplicateDetectionTriggerActionResponse> {
+  parseResponse(_response: Response): Promise<msdyn_DuplicateDetectionTriggerActionResponse> {
     // No return value (204 No Content)
-    return new msdyn_DuplicateDetectionTriggerActionResponse();
+    return Promise.resolve(new msdyn_DuplicateDetectionTriggerActionResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class msdyn_DuplicateDetectionTriggerActionResponse extends OrganizationR
     super("msdyn_DuplicateDetectionTriggerAction");
   }
 
-  static fromResponse(_data: unknown): msdyn_DuplicateDetectionTriggerActionResponse {
+  static fromResponse(_data?: unknown): msdyn_DuplicateDetectionTriggerActionResponse {
     return new msdyn_DuplicateDetectionTriggerActionResponse();
   }
 }

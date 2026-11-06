@@ -555,7 +555,7 @@ import { ExecuteWorkflowRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 const workflowResponse = await service.execute(
   new ExecuteWorkflowRequest(workflowId, { EntityId: entityId, InputArguments: {} })
 );
-console.log("Async operation:", workflowResponse.result.asyncoperationid);
+console.log("Async operation:", workflowResponse.result?.asyncoperationid);
 ```
 
 ---

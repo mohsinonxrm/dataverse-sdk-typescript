@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
 
 /**
@@ -50,21 +49,38 @@ export class PvaPublishStatusRequest
   }
 
   async parseResponse(response: Response): Promise<PvaPublishStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return PvaPublishStatusResponse.fromResponse({});
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return PvaPublishStatusResponse.fromResponse(undefined);
+    // The body is the record, with its annotations
     return PvaPublishStatusResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the PvaPublishStatus action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
+ */
+export type PvaPublishStatusResult = {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+} | null;
+
+/**
  * PvaPublishStatus response message
+ *
+ * `result` is the value the PvaPublishStatus action returns (see {@link PvaPublishStatusResult}).
  */
 export class PvaPublishStatusResponse extends OrganizationResponse {
-  constructor(public result: Record<string, unknown>) {
+  constructor(public result: PvaPublishStatusResult) {
     super("PvaPublishStatus");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): PvaPublishStatusResponse {
-    return new PvaPublishStatusResponse(responseObject<Record<string, unknown>>(data));
+    return new PvaPublishStatusResponse((data ?? null) as PvaPublishStatusResult);
   }
 }

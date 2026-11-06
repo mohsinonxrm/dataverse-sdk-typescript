@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_InitiateCCaaSPickConversationResponse as msdyn_InitiateCCaaSPickConversationResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_InitiateCCaaSPickConversation message, by their CSDL names. A parameter the CSDL declares
@@ -47,24 +45,35 @@ export class msdyn_InitiateCCaaSPickConversationRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_InitiateCCaaSPickConversationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_InitiateCCaaSPickConversationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_InitiateCCaaSPickConversationResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_InitiateCCaaSPickConversation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_InitiateCCaaSPickConversationResult {
+  "@odata.context"?: string;
+  msdyn_InitiateCCaaSPickConversationAPIResponse: string;
+}
+
+/**
  * msdyn_InitiateCCaaSPickConversation response message
+ *
+ * `result` is the value the msdyn_InitiateCCaaSPickConversation action returns (see {@link msdyn_InitiateCCaaSPickConversationResult}).
  */
 export class msdyn_InitiateCCaaSPickConversationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_InitiateCCaaSPickConversationResponseData) {
+  constructor(public result: msdyn_InitiateCCaaSPickConversationResult) {
     super("msdyn_InitiateCCaaSPickConversation");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_InitiateCCaaSPickConversationResponse {
     return new msdyn_InitiateCCaaSPickConversationResponse(
-      responseObject<msdyn_InitiateCCaaSPickConversationResponseData>(data)
+      data as msdyn_InitiateCCaaSPickConversationResult
     );
   }
 }

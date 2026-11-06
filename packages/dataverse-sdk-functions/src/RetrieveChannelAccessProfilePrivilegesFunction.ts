@@ -3,9 +3,12 @@ import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { ChannelAccessProfileWithPrivileges } from "./types/index.js";
 
 /**
- * Response from RetrieveChannelAccessProfilePrivileges function
+ * Response from the RetrieveChannelAccessProfilePrivileges function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveChannelAccessProfilePrivilegesResponse {
+  "@odata.context"?: string;
   ChannelAccessProfile: ChannelAccessProfileWithPrivileges;
 }
 
@@ -54,8 +57,7 @@ export class RetrieveChannelAccessProfilePrivilegesFunction implements Executabl
   }
 
   async parseResponse(response: Response): Promise<RetrieveChannelAccessProfilePrivilegesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveChannelAccessProfilePrivilegesResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RetrieveChannelAccessProfilePrivilegesResponse;
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_CheckIfAutoRouteToOwnerQueueEnabledResponse as msdyn_CheckIfAutoRouteToOwnerQueueEnabledResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CheckIfAutoRouteToOwnerQueueEnabled message, by their CSDL names. A parameter the CSDL declares
@@ -47,24 +45,40 @@ export class msdyn_CheckIfAutoRouteToOwnerQueueEnabledRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckIfAutoRouteToOwnerQueueEnabledResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_CheckIfAutoRouteToOwnerQueueEnabledResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CheckIfAutoRouteToOwnerQueueEnabledResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CheckIfAutoRouteToOwnerQueueEnabled action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CheckIfAutoRouteToOwnerQueueEnabledResult {
+  "@odata.context"?: string;
+  HelpLink: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnLevel: number;
+  ReturnSeverity: number;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_CheckIfAutoRouteToOwnerQueueEnabled response message
+ *
+ * `result` is the value the msdyn_CheckIfAutoRouteToOwnerQueueEnabled action returns (see {@link msdyn_CheckIfAutoRouteToOwnerQueueEnabledResult}).
  */
 export class msdyn_CheckIfAutoRouteToOwnerQueueEnabledResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfAutoRouteToOwnerQueueEnabledResponseData) {
+  constructor(public result: msdyn_CheckIfAutoRouteToOwnerQueueEnabledResult) {
     super("msdyn_CheckIfAutoRouteToOwnerQueueEnabled");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CheckIfAutoRouteToOwnerQueueEnabledResponse {
     return new msdyn_CheckIfAutoRouteToOwnerQueueEnabledResponse(
-      responseObject<msdyn_CheckIfAutoRouteToOwnerQueueEnabledResponseData>(data)
+      data as msdyn_CheckIfAutoRouteToOwnerQueueEnabledResult
     );
   }
 }

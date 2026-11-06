@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_CleanupCopilotAgentResponses action
+ * Response from the msdyn_CleanupCopilotAgentResponses action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_CleanupCopilotAgentResponsesResponse {
-  // No content returned
-}
+export type msdyn_CleanupCopilotAgentResponsesResponse = void;
 
 /**
  * Parameters of the msdyn_CleanupCopilotAgentResponses action, by their CSDL names. A parameter the CSDL declares
@@ -45,9 +45,8 @@ export class msdyn_CleanupCopilotAgentResponsesAction implements Executable<msdy
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_CleanupCopilotAgentResponsesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_CleanupCopilotAgentResponsesResponse;
-    return (await response.json()) as msdyn_CleanupCopilotAgentResponsesResponse;
+  parseResponse(_response: Response): Promise<msdyn_CleanupCopilotAgentResponsesResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

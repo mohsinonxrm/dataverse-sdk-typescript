@@ -26,9 +26,9 @@ export class msdyncrm_MigrateFilesCustomActionRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyncrm_MigrateFilesCustomActionResponse> {
+  parseResponse(_response: Response): Promise<msdyncrm_MigrateFilesCustomActionResponse> {
     // No return value (204 No Content)
-    return new msdyncrm_MigrateFilesCustomActionResponse();
+    return Promise.resolve(new msdyncrm_MigrateFilesCustomActionResponse());
   }
 }
 
@@ -40,7 +40,7 @@ export class msdyncrm_MigrateFilesCustomActionResponse extends OrganizationRespo
     super("msdyncrm_MigrateFilesCustomAction");
   }
 
-  static fromResponse(_data: unknown): msdyncrm_MigrateFilesCustomActionResponse {
+  static fromResponse(_data?: unknown): msdyncrm_MigrateFilesCustomActionResponse {
     return new msdyncrm_MigrateFilesCustomActionResponse();
   }
 }

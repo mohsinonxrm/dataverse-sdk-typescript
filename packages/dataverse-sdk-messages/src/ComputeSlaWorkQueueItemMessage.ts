@@ -29,9 +29,9 @@ export class ComputeSlaWorkQueueItemRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<ComputeSlaWorkQueueItemResponse> {
+  parseResponse(_response: Response): Promise<ComputeSlaWorkQueueItemResponse> {
     // No return value (204 No Content)
-    return new ComputeSlaWorkQueueItemResponse();
+    return Promise.resolve(new ComputeSlaWorkQueueItemResponse());
   }
 }
 
@@ -43,7 +43,7 @@ export class ComputeSlaWorkQueueItemResponse extends OrganizationResponse {
     super("ComputeSlaWorkQueueItem");
   }
 
-  static fromResponse(_data: unknown): ComputeSlaWorkQueueItemResponse {
+  static fromResponse(_data?: unknown): ComputeSlaWorkQueueItemResponse {
     return new ComputeSlaWorkQueueItemResponse();
   }
 }

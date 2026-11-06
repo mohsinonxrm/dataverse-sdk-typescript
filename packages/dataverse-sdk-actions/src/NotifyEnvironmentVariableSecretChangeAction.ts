@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from NotifyEnvironmentVariableSecretChange action
+ * Response from the NotifyEnvironmentVariableSecretChange action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface NotifyEnvironmentVariableSecretChangeResponse {
-  // No content returned
-}
+export type NotifyEnvironmentVariableSecretChangeResponse = void;
 
 /**
  * Parameters of the NotifyEnvironmentVariableSecretChange action, by their CSDL names. A parameter the CSDL declares
@@ -43,9 +43,8 @@ export class NotifyEnvironmentVariableSecretChangeAction implements Executable<N
     };
   }
 
-  async parseResponse(response: Response): Promise<NotifyEnvironmentVariableSecretChangeResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as NotifyEnvironmentVariableSecretChangeResponse;
-    return (await response.json()) as NotifyEnvironmentVariableSecretChangeResponse;
+  parseResponse(_response: Response): Promise<NotifyEnvironmentVariableSecretChangeResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

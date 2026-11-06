@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { searchsuggestResponse as searchsuggestResponseData } from "./types/index.js";
 
 /**
  * Parameters of the searchsuggest message, by their CSDL names. A parameter the CSDL declares
@@ -59,21 +57,33 @@ export class searchsuggestRequest
   }
 
   async parseResponse(response: Response): Promise<searchsuggestResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return searchsuggestResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return searchsuggestResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the searchsuggest action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface searchsuggestResult {
+  "@odata.context"?: string;
+  response: string;
+}
+
+/**
  * searchsuggest response message
+ *
+ * `result` is the value the searchsuggest action returns (see {@link searchsuggestResult}).
  */
 export class searchsuggestResponse extends OrganizationResponse {
-  constructor(public result: searchsuggestResponseData) {
+  constructor(public result: searchsuggestResult) {
     super("searchsuggest");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): searchsuggestResponse {
-    return new searchsuggestResponse(responseObject<searchsuggestResponseData>(data));
+    return new searchsuggestResponse(data as searchsuggestResult);
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SyncLeadActionFromNbaResponse as msdyn_SyncLeadActionFromNbaResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SyncLeadActionFromNba message, by their CSDL names. A parameter the CSDL declares
@@ -51,23 +49,35 @@ export class msdyn_SyncLeadActionFromNbaRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SyncLeadActionFromNbaResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_SyncLeadActionFromNbaResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SyncLeadActionFromNbaResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SyncLeadActionFromNba action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SyncLeadActionFromNbaResult {
+  "@odata.context"?: string;
+  Message: string;
+  Retryable: boolean;
+  Success: boolean;
+}
+
+/**
  * msdyn_SyncLeadActionFromNba response message
+ *
+ * `result` is the value the msdyn_SyncLeadActionFromNba action returns (see {@link msdyn_SyncLeadActionFromNbaResult}).
  */
 export class msdyn_SyncLeadActionFromNbaResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SyncLeadActionFromNbaResponseData) {
+  constructor(public result: msdyn_SyncLeadActionFromNbaResult) {
     super("msdyn_SyncLeadActionFromNba");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SyncLeadActionFromNbaResponse {
-    return new msdyn_SyncLeadActionFromNbaResponse(
-      responseObject<msdyn_SyncLeadActionFromNbaResponseData>(data)
-    );
+    return new msdyn_SyncLeadActionFromNbaResponse(data as msdyn_SyncLeadActionFromNbaResult);
   }
 }

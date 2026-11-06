@@ -44,9 +44,9 @@ export class ValidateUnpublishedRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<ValidateUnpublishedResponse> {
+  parseResponse(_response: Response): Promise<ValidateUnpublishedResponse> {
     // No return value (204 No Content)
-    return new ValidateUnpublishedResponse();
+    return Promise.resolve(new ValidateUnpublishedResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class ValidateUnpublishedResponse extends OrganizationResponse {
     super("ValidateUnpublished");
   }
 
-  static fromResponse(_data: unknown): ValidateUnpublishedResponse {
+  static fromResponse(_data?: unknown): ValidateUnpublishedResponse {
     return new ValidateUnpublishedResponse();
   }
 }

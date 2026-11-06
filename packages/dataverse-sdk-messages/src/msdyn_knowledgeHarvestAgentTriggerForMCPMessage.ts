@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_knowledgeHarvestAgentTriggerForMCPResponse as msdyn_knowledgeHarvestAgentTriggerForMCPResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_knowledgeHarvestAgentTriggerForMCP message, by their CSDL names. A parameter the CSDL declares
@@ -47,24 +45,35 @@ export class msdyn_knowledgeHarvestAgentTriggerForMCPRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_knowledgeHarvestAgentTriggerForMCPResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_knowledgeHarvestAgentTriggerForMCPResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_knowledgeHarvestAgentTriggerForMCPResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_knowledgeHarvestAgentTriggerForMCP action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_knowledgeHarvestAgentTriggerForMCPResult {
+  "@odata.context"?: string;
+  KnowledgeHarvestJobRecordId: string;
+}
+
+/**
  * msdyn_knowledgeHarvestAgentTriggerForMCP response message
+ *
+ * `result` is the value the msdyn_knowledgeHarvestAgentTriggerForMCP action returns (see {@link msdyn_knowledgeHarvestAgentTriggerForMCPResult}).
  */
 export class msdyn_knowledgeHarvestAgentTriggerForMCPResponse extends OrganizationResponse {
-  constructor(public result: msdyn_knowledgeHarvestAgentTriggerForMCPResponseData) {
+  constructor(public result: msdyn_knowledgeHarvestAgentTriggerForMCPResult) {
     super("msdyn_knowledgeHarvestAgentTriggerForMCP");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_knowledgeHarvestAgentTriggerForMCPResponse {
     return new msdyn_knowledgeHarvestAgentTriggerForMCPResponse(
-      responseObject<msdyn_knowledgeHarvestAgentTriggerForMCPResponseData>(data)
+      data as msdyn_knowledgeHarvestAgentTriggerForMCPResult
     );
   }
 }

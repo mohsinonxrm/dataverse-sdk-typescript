@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CallHangUpResponse as CallHangUpResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CallHangUp message, by their CSDL names. A parameter the CSDL declares
@@ -47,21 +45,33 @@ export class CallHangUpRequest
   }
 
   async parseResponse(response: Response): Promise<CallHangUpResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CallHangUpResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CallHangUpResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CallHangUp action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CallHangUpResult {
+  "@odata.context"?: string;
+  Response: string;
+}
+
+/**
  * CallHangUp response message
+ *
+ * `result` is the value the CallHangUp action returns (see {@link CallHangUpResult}).
  */
 export class CallHangUpResponse extends OrganizationResponse {
-  constructor(public result: CallHangUpResponseData) {
+  constructor(public result: CallHangUpResult) {
     super("CallHangUp");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CallHangUpResponse {
-    return new CallHangUpResponse(responseObject<CallHangUpResponseData>(data));
+    return new CallHangUpResponse(data as CallHangUpResult);
   }
 }

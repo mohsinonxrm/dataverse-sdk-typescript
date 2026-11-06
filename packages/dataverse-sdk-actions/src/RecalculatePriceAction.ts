@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from RecalculatePrice action
+ * Response from the RecalculatePrice action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface RecalculatePriceResponse {
-  // No content returned
-}
+export type RecalculatePriceResponse = void;
 
 /**
  * Parameters of the RecalculatePrice action, by their CSDL names. A parameter the CSDL declares
@@ -43,9 +43,8 @@ export class RecalculatePriceAction implements Executable<RecalculatePriceRespon
     };
   }
 
-  async parseResponse(response: Response): Promise<RecalculatePriceResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RecalculatePriceResponse;
-    return (await response.json()) as RecalculatePriceResponse;
+  parseResponse(_response: Response): Promise<RecalculatePriceResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

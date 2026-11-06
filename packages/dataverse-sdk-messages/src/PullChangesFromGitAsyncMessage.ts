@@ -1,11 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type {
-  PullChangesFromGitAsyncResponse as PullChangesFromGitAsyncResponseData,
-  PullChangesFromGitParameters,
-} from "./types/index.js";
+import type { PullChangesFromGitParameters } from "./types/index.js";
 
 /**
  * Parameters of the PullChangesFromGitAsync message, by their CSDL names. A parameter the CSDL declares
@@ -50,23 +46,33 @@ export class PullChangesFromGitAsyncRequest
   }
 
   async parseResponse(response: Response): Promise<PullChangesFromGitAsyncResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return PullChangesFromGitAsyncResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return PullChangesFromGitAsyncResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the PullChangesFromGitAsync action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface PullChangesFromGitAsyncResult {
+  "@odata.context"?: string;
+  AsyncOperationId: string;
+}
+
+/**
  * PullChangesFromGitAsync response message
+ *
+ * `result` is the value the PullChangesFromGitAsync action returns (see {@link PullChangesFromGitAsyncResult}).
  */
 export class PullChangesFromGitAsyncResponse extends OrganizationResponse {
-  constructor(public result: PullChangesFromGitAsyncResponseData) {
+  constructor(public result: PullChangesFromGitAsyncResult) {
     super("PullChangesFromGitAsync");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): PullChangesFromGitAsyncResponse {
-    return new PullChangesFromGitAsyncResponse(
-      responseObject<PullChangesFromGitAsyncResponseData>(data)
-    );
+    return new PullChangesFromGitAsyncResponse(data as PullChangesFromGitAsyncResult);
   }
 }

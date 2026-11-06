@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from GetTimeZoneCodeByLocalizedName function
+ * Response from the GetTimeZoneCodeByLocalizedName function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface GetTimeZoneCodeByLocalizedNameResponse {
+  "@odata.context"?: string;
   TimeZoneCode: number;
 }
 
@@ -56,8 +59,7 @@ export class GetTimeZoneCodeByLocalizedNameFunction implements Executable<GetTim
   }
 
   async parseResponse(response: Response): Promise<GetTimeZoneCodeByLocalizedNameResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as GetTimeZoneCodeByLocalizedNameResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as GetTimeZoneCodeByLocalizedNameResponse;
   }
 }

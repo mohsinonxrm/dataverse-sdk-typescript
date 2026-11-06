@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_IoTHubGetAggregatedDeviceReadingsResponse as msdyn_IoTHubGetAggregatedDeviceReadingsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_IoTHubGetAggregatedDeviceReadings message, by their CSDL names. A parameter the CSDL declares
@@ -49,24 +47,35 @@ export class msdyn_IoTHubGetAggregatedDeviceReadingsRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_IoTHubGetAggregatedDeviceReadingsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_IoTHubGetAggregatedDeviceReadingsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_IoTHubGetAggregatedDeviceReadingsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_IoTHubGetAggregatedDeviceReadings action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_IoTHubGetAggregatedDeviceReadingsResult {
+  "@odata.context"?: string;
+  MeasuresOutput: string;
+}
+
+/**
  * msdyn_IoTHubGetAggregatedDeviceReadings response message
+ *
+ * `result` is the value the msdyn_IoTHubGetAggregatedDeviceReadings action returns (see {@link msdyn_IoTHubGetAggregatedDeviceReadingsResult}).
  */
 export class msdyn_IoTHubGetAggregatedDeviceReadingsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_IoTHubGetAggregatedDeviceReadingsResponseData) {
+  constructor(public result: msdyn_IoTHubGetAggregatedDeviceReadingsResult) {
     super("msdyn_IoTHubGetAggregatedDeviceReadings");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_IoTHubGetAggregatedDeviceReadingsResponse {
     return new msdyn_IoTHubGetAggregatedDeviceReadingsResponse(
-      responseObject<msdyn_IoTHubGetAggregatedDeviceReadingsResponseData>(data)
+      data as msdyn_IoTHubGetAggregatedDeviceReadingsResult
     );
   }
 }

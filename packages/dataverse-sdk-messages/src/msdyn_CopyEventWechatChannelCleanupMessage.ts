@@ -26,9 +26,9 @@ export class msdyn_CopyEventWechatChannelCleanupRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_CopyEventWechatChannelCleanupResponse> {
+  parseResponse(_response: Response): Promise<msdyn_CopyEventWechatChannelCleanupResponse> {
     // No return value (204 No Content)
-    return new msdyn_CopyEventWechatChannelCleanupResponse();
+    return Promise.resolve(new msdyn_CopyEventWechatChannelCleanupResponse());
   }
 }
 
@@ -40,7 +40,7 @@ export class msdyn_CopyEventWechatChannelCleanupResponse extends OrganizationRes
     super("msdyn_CopyEventWechatChannelCleanup");
   }
 
-  static fromResponse(_data: unknown): msdyn_CopyEventWechatChannelCleanupResponse {
+  static fromResponse(_data?: unknown): msdyn_CopyEventWechatChannelCleanupResponse {
     return new msdyn_CopyEventWechatChannelCleanupResponse();
   }
 }

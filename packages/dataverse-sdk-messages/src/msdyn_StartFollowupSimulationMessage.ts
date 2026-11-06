@@ -42,9 +42,9 @@ export class msdyn_StartFollowupSimulationRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_StartFollowupSimulationResponse> {
+  parseResponse(_response: Response): Promise<msdyn_StartFollowupSimulationResponse> {
     // No return value (204 No Content)
-    return new msdyn_StartFollowupSimulationResponse();
+    return Promise.resolve(new msdyn_StartFollowupSimulationResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_StartFollowupSimulationResponse extends OrganizationResponse 
     super("msdyn_StartFollowupSimulation");
   }
 
-  static fromResponse(_data: unknown): msdyn_StartFollowupSimulationResponse {
+  static fromResponse(_data?: unknown): msdyn_StartFollowupSimulationResponse {
     return new msdyn_StartFollowupSimulationResponse();
   }
 }

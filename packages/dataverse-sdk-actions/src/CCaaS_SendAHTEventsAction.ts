@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CCaaS_SendAHTEvents action
+ * Response from the CCaaS_SendAHTEvents action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CCaaS_SendAHTEventsResponse {
+  "@odata.context"?: string;
   Message: string;
   Status: string;
 }
@@ -45,8 +48,7 @@ export class CCaaS_SendAHTEventsAction implements Executable<CCaaS_SendAHTEvents
   }
 
   async parseResponse(response: Response): Promise<CCaaS_SendAHTEventsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CCaaS_SendAHTEventsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as CCaaS_SendAHTEventsResponse;
   }
 }

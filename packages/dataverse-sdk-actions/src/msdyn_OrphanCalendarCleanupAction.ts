@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_OrphanCalendarCleanup action
+ * Response from the msdyn_OrphanCalendarCleanup action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_OrphanCalendarCleanupResponse {
-  // No content returned
-}
+export type msdyn_OrphanCalendarCleanupResponse = void;
 
 /**
  * Parameters of the msdyn_OrphanCalendarCleanup action, by their CSDL names. A parameter the CSDL declares
@@ -41,9 +41,8 @@ export class msdyn_OrphanCalendarCleanupAction implements Executable<msdyn_Orpha
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_OrphanCalendarCleanupResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_OrphanCalendarCleanupResponse;
-    return (await response.json()) as msdyn_OrphanCalendarCleanupResponse;
+  parseResponse(_response: Response): Promise<msdyn_OrphanCalendarCleanupResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

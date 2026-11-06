@@ -48,9 +48,9 @@ export class msdyn_retryevaluationRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_retryevaluationResponse> {
+  parseResponse(_response: Response): Promise<msdyn_retryevaluationResponse> {
     // No return value (204 No Content)
-    return new msdyn_retryevaluationResponse();
+    return Promise.resolve(new msdyn_retryevaluationResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class msdyn_retryevaluationResponse extends OrganizationResponse {
     super("msdyn_retryevaluation");
   }
 
-  static fromResponse(_data: unknown): msdyn_retryevaluationResponse {
+  static fromResponse(_data?: unknown): msdyn_retryevaluationResponse {
     return new msdyn_retryevaluationResponse();
   }
 }

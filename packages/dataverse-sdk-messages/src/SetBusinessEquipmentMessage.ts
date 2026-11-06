@@ -44,9 +44,9 @@ export class SetBusinessEquipmentRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<SetBusinessEquipmentResponse> {
+  parseResponse(_response: Response): Promise<SetBusinessEquipmentResponse> {
     // No return value (204 No Content)
-    return new SetBusinessEquipmentResponse();
+    return Promise.resolve(new SetBusinessEquipmentResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class SetBusinessEquipmentResponse extends OrganizationResponse {
     super("SetBusinessEquipment");
   }
 
-  static fromResponse(_data: unknown): SetBusinessEquipmentResponse {
+  static fromResponse(_data?: unknown): SetBusinessEquipmentResponse {
     return new SetBusinessEquipmentResponse();
   }
 }

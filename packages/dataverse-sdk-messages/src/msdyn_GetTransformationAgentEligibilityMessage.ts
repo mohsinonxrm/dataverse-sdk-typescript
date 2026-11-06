@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_GetTransformationAgentEligibilityResponse as msdyn_GetTransformationAgentEligibilityResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetTransformationAgentEligibility request message
@@ -31,24 +29,36 @@ export class msdyn_GetTransformationAgentEligibilityRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_GetTransformationAgentEligibilityResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_GetTransformationAgentEligibilityResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetTransformationAgentEligibilityResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetTransformationAgentEligibility action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetTransformationAgentEligibilityResult {
+  "@odata.context"?: string;
+  msdyn_disabledreason: string;
+  msdyn_isenabled: boolean;
+}
+
+/**
  * msdyn_GetTransformationAgentEligibility response message
+ *
+ * `result` is the value the msdyn_GetTransformationAgentEligibility action returns (see {@link msdyn_GetTransformationAgentEligibilityResult}).
  */
 export class msdyn_GetTransformationAgentEligibilityResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetTransformationAgentEligibilityResponseData) {
+  constructor(public result: msdyn_GetTransformationAgentEligibilityResult) {
     super("msdyn_GetTransformationAgentEligibility");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetTransformationAgentEligibilityResponse {
     return new msdyn_GetTransformationAgentEligibilityResponse(
-      responseObject<msdyn_GetTransformationAgentEligibilityResponseData>(data)
+      data as msdyn_GetTransformationAgentEligibilityResult
     );
   }
 }

@@ -4,11 +4,11 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdyn_SendMCSSurvey action
+ * Response from the msdyn_SendMCSSurvey action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_SendMCSSurveyResponse {
-  // No content returned
-}
+export type msdyn_SendMCSSurveyResponse = void;
 
 /**
  * Parameters of the msdyn_SendMCSSurvey action, by their CSDL names. A parameter the CSDL declares
@@ -53,9 +53,8 @@ export class msdyn_SendMCSSurveyAction implements Executable<msdyn_SendMCSSurvey
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_SendMCSSurveyResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_SendMCSSurveyResponse;
-    return (await response.json()) as msdyn_SendMCSSurveyResponse;
+  parseResponse(_response: Response): Promise<msdyn_SendMCSSurveyResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

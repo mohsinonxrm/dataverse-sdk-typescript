@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_ForecastInstanceActionsResponse as msdyn_ForecastInstanceActionsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_ForecastInstanceActions message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,33 @@ export class msdyn_ForecastInstanceActionsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ForecastInstanceActionsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_ForecastInstanceActionsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_ForecastInstanceActionsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_ForecastInstanceActions action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_ForecastInstanceActionsResult {
+  "@odata.context"?: string;
+  response: string;
+}
+
+/**
  * msdyn_ForecastInstanceActions response message
+ *
+ * `result` is the value the msdyn_ForecastInstanceActions action returns (see {@link msdyn_ForecastInstanceActionsResult}).
  */
 export class msdyn_ForecastInstanceActionsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ForecastInstanceActionsResponseData) {
+  constructor(public result: msdyn_ForecastInstanceActionsResult) {
     super("msdyn_ForecastInstanceActions");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_ForecastInstanceActionsResponse {
-    return new msdyn_ForecastInstanceActionsResponse(
-      responseObject<msdyn_ForecastInstanceActionsResponseData>(data)
-    );
+    return new msdyn_ForecastInstanceActionsResponse(data as msdyn_ForecastInstanceActionsResult);
   }
 }

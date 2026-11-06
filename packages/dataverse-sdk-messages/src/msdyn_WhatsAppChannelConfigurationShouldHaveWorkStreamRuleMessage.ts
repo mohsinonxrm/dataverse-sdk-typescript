@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRuleResponse as msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRule request message
@@ -31,9 +29,7 @@ export class msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRuleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRuleResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRuleResponse.fromResponse(
       await response.json()
     );
@@ -41,20 +37,33 @@ export class msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRuleRequest
 }
 
 /**
+ * Response from the msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRule action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRuleResult {
+  "@odata.context"?: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRule response message
+ *
+ * `result` is the value the msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRule action returns (see {@link msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRuleResult}).
  */
 export class msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRuleResponse extends OrganizationResponse {
-  constructor(
-    public result: msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRuleResponseData
-  ) {
+  constructor(public result: msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRuleResult) {
     super("msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRule");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(
     data: unknown
   ): msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRuleResponse {
     return new msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRuleResponse(
-      responseObject<msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRuleResponseData>(data)
+      data as msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRuleResult
     );
   }
 }

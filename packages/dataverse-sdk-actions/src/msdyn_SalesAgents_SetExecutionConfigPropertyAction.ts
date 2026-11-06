@@ -4,11 +4,11 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdyn_SalesAgents_SetExecutionConfigProperty action
+ * Response from the msdyn_SalesAgents_SetExecutionConfigProperty action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_SalesAgents_SetExecutionConfigPropertyResponse {
-  // No content returned
-}
+export type msdyn_SalesAgents_SetExecutionConfigPropertyResponse = void;
 
 /**
  * Parameters of the msdyn_SalesAgents_SetExecutionConfigProperty action, by their CSDL names. A parameter the CSDL declares
@@ -49,11 +49,10 @@ export class msdyn_SalesAgents_SetExecutionConfigPropertyAction implements Execu
     };
   }
 
-  async parseResponse(
-    response: Response
+  parseResponse(
+    _response: Response
   ): Promise<msdyn_SalesAgents_SetExecutionConfigPropertyResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_SalesAgents_SetExecutionConfigPropertyResponse;
-    return (await response.json()) as msdyn_SalesAgents_SetExecutionConfigPropertyResponse;
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

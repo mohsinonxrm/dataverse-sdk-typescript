@@ -29,9 +29,9 @@ export class SyncGroupMembersToTeamRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<SyncGroupMembersToTeamResponse> {
+  parseResponse(_response: Response): Promise<SyncGroupMembersToTeamResponse> {
     // No return value (204 No Content)
-    return new SyncGroupMembersToTeamResponse();
+    return Promise.resolve(new SyncGroupMembersToTeamResponse());
   }
 }
 
@@ -43,7 +43,7 @@ export class SyncGroupMembersToTeamResponse extends OrganizationResponse {
     super("SyncGroupMembersToTeam");
   }
 
-  static fromResponse(_data: unknown): SyncGroupMembersToTeamResponse {
+  static fromResponse(_data?: unknown): SyncGroupMembersToTeamResponse {
     return new SyncGroupMembersToTeamResponse();
   }
 }

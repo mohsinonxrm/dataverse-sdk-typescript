@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { ClearWorkQueueResponse as ClearWorkQueueResponseData } from "./types/index.js";
 
 /**
  * ClearWorkQueue request message
@@ -32,21 +30,33 @@ export class ClearWorkQueueRequest
   }
 
   async parseResponse(response: Response): Promise<ClearWorkQueueResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return ClearWorkQueueResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return ClearWorkQueueResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the ClearWorkQueue action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface ClearWorkQueueResult {
+  "@odata.context"?: string;
+  isDeletionGoingAsync: boolean;
+}
+
+/**
  * ClearWorkQueue response message
+ *
+ * `result` is the value the ClearWorkQueue action returns (see {@link ClearWorkQueueResult}).
  */
 export class ClearWorkQueueResponse extends OrganizationResponse {
-  constructor(public result: ClearWorkQueueResponseData) {
+  constructor(public result: ClearWorkQueueResult) {
     super("ClearWorkQueue");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): ClearWorkQueueResponse {
-    return new ClearWorkQueueResponse(responseObject<ClearWorkQueueResponseData>(data));
+    return new ClearWorkQueueResponse(data as ClearWorkQueueResult);
   }
 }

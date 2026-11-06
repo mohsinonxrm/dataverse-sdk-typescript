@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesAgents_PrepareSalesProfilerPayloadResponse as msdyn_SalesAgents_PrepareSalesProfilerPayloadResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesAgents_PrepareSalesProfilerPayload message, by their CSDL names. A parameter the CSDL declares
@@ -47,9 +45,7 @@ export class msdyn_SalesAgents_PrepareSalesProfilerPayloadRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_PrepareSalesProfilerPayloadResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_SalesAgents_PrepareSalesProfilerPayloadResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesAgents_PrepareSalesProfilerPayloadResponse.fromResponse(
       await response.json()
     );
@@ -57,16 +53,30 @@ export class msdyn_SalesAgents_PrepareSalesProfilerPayloadRequest
 }
 
 /**
+ * Response from the msdyn_SalesAgents_PrepareSalesProfilerPayload action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesAgents_PrepareSalesProfilerPayloadResult {
+  "@odata.context"?: string;
+  msdyn_IsSuccess: boolean;
+  msdyn_Payload: string;
+}
+
+/**
  * msdyn_SalesAgents_PrepareSalesProfilerPayload response message
+ *
+ * `result` is the value the msdyn_SalesAgents_PrepareSalesProfilerPayload action returns (see {@link msdyn_SalesAgents_PrepareSalesProfilerPayloadResult}).
  */
 export class msdyn_SalesAgents_PrepareSalesProfilerPayloadResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgents_PrepareSalesProfilerPayloadResponseData) {
+  constructor(public result: msdyn_SalesAgents_PrepareSalesProfilerPayloadResult) {
     super("msdyn_SalesAgents_PrepareSalesProfilerPayload");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesAgents_PrepareSalesProfilerPayloadResponse {
     return new msdyn_SalesAgents_PrepareSalesProfilerPayloadResponse(
-      responseObject<msdyn_SalesAgents_PrepareSalesProfilerPayloadResponseData>(data)
+      data as msdyn_SalesAgents_PrepareSalesProfilerPayloadResult
     );
   }
 }

@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_GetAllLeadPredictionModels action
+ * Response from the msdyn_GetAllLeadPredictionModels action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetAllLeadPredictionModelsResponse {
+  "@odata.context"?: string;
   Predictions: string;
 }
 
@@ -26,8 +29,7 @@ export class msdyn_GetAllLeadPredictionModelsAction implements Executable<msdyn_
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAllLeadPredictionModelsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_GetAllLeadPredictionModelsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_GetAllLeadPredictionModelsResponse;
   }
 }

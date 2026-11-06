@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_RetrieveActivitiesResponse as msdyn_RetrieveActivitiesResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_RetrieveActivities message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class msdyn_RetrieveActivitiesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrieveActivitiesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_RetrieveActivitiesResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_RetrieveActivitiesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_RetrieveActivities action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_RetrieveActivitiesResult {
+  "@odata.context"?: string;
+  ActivityList: string;
+}
+
+/**
  * msdyn_RetrieveActivities response message
+ *
+ * `result` is the value the msdyn_RetrieveActivities action returns (see {@link msdyn_RetrieveActivitiesResult}).
  */
 export class msdyn_RetrieveActivitiesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrieveActivitiesResponseData) {
+  constructor(public result: msdyn_RetrieveActivitiesResult) {
     super("msdyn_RetrieveActivities");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_RetrieveActivitiesResponse {
-    return new msdyn_RetrieveActivitiesResponse(
-      responseObject<msdyn_RetrieveActivitiesResponseData>(data)
-    );
+    return new msdyn_RetrieveActivitiesResponse(data as msdyn_RetrieveActivitiesResult);
   }
 }

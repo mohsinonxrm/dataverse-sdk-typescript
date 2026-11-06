@@ -2,11 +2,14 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import type { kbarticle } from "./types/index.js";
 
 /**
- * Response from RetrieveByTopIncidentProductKbArticle function
+ * Response from the RetrieveByTopIncidentProductKbArticle function.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface RetrieveByTopIncidentProductKbArticleResponse {
-  value: kbarticle[];
-}
+export type RetrieveByTopIncidentProductKbArticleResponse = Array<
+  kbarticle & { "@odata.etag"?: string; "@odata.type"?: string }
+>;
 
 /**
  * RetrieveByTopIncidentProductKbArticle function
@@ -33,8 +36,10 @@ export class RetrieveByTopIncidentProductKbArticleFunction implements Executable
   }
 
   async parseResponse(response: Response): Promise<RetrieveByTopIncidentProductKbArticleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveByTopIncidentProductKbArticleResponse;
-    return (await response.json()) as RetrieveByTopIncidentProductKbArticleResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return ((await response.json()) as { value: RetrieveByTopIncidentProductKbArticleResponse })
+      .value;
   }
 }

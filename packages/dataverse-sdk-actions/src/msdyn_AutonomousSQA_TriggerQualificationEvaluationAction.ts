@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_AutonomousSQA_TriggerQualificationEvaluation action
+ * Response from the msdyn_AutonomousSQA_TriggerQualificationEvaluation action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_AutonomousSQA_TriggerQualificationEvaluationResponse {
-  // No content returned
-}
+export type msdyn_AutonomousSQA_TriggerQualificationEvaluationResponse = void;
 
 /**
  * Parameters of the msdyn_AutonomousSQA_TriggerQualificationEvaluation action, by their CSDL names. A parameter the CSDL declares
@@ -52,12 +52,10 @@ export class msdyn_AutonomousSQA_TriggerQualificationEvaluationAction implements
     };
   }
 
-  async parseResponse(
-    response: Response
+  parseResponse(
+    _response: Response
   ): Promise<msdyn_AutonomousSQA_TriggerQualificationEvaluationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return {} as msdyn_AutonomousSQA_TriggerQualificationEvaluationResponse;
-    return (await response.json()) as msdyn_AutonomousSQA_TriggerQualificationEvaluationResponse;
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

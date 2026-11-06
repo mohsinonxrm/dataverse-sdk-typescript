@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CCaaS_VoiceprintCustomerConsentUpdateResponse as CCaaS_VoiceprintCustomerConsentUpdateResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CCaaS_VoiceprintCustomerConsentUpdate message, by their CSDL names. A parameter the CSDL declares
@@ -59,24 +57,38 @@ export class CCaaS_VoiceprintCustomerConsentUpdateRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_VoiceprintCustomerConsentUpdateResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return CCaaS_VoiceprintCustomerConsentUpdateResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CCaaS_VoiceprintCustomerConsentUpdateResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CCaaS_VoiceprintCustomerConsentUpdate action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CCaaS_VoiceprintCustomerConsentUpdateResult {
+  "@odata.context"?: string;
+  ConsentStatus: number;
+  ErrorMessage: string;
+  Locked: boolean;
+  StatusCode: string;
+}
+
+/**
  * CCaaS_VoiceprintCustomerConsentUpdate response message
+ *
+ * `result` is the value the CCaaS_VoiceprintCustomerConsentUpdate action returns (see {@link CCaaS_VoiceprintCustomerConsentUpdateResult}).
  */
 export class CCaaS_VoiceprintCustomerConsentUpdateResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_VoiceprintCustomerConsentUpdateResponseData) {
+  constructor(public result: CCaaS_VoiceprintCustomerConsentUpdateResult) {
     super("CCaaS_VoiceprintCustomerConsentUpdate");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CCaaS_VoiceprintCustomerConsentUpdateResponse {
     return new CCaaS_VoiceprintCustomerConsentUpdateResponse(
-      responseObject<CCaaS_VoiceprintCustomerConsentUpdateResponseData>(data)
+      data as CCaaS_VoiceprintCustomerConsentUpdateResult
     );
   }
 }

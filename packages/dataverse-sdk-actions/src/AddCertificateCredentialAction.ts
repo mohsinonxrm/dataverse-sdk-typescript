@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from AddCertificateCredential action
+ * Response from the AddCertificateCredential action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface AddCertificateCredentialResponse {
-  // No content returned
-}
+export type AddCertificateCredentialResponse = void;
 
 /**
  * Parameters of the AddCertificateCredential action, by their CSDL names. A parameter the CSDL declares
@@ -45,9 +45,8 @@ export class AddCertificateCredentialAction implements Executable<AddCertificate
     };
   }
 
-  async parseResponse(response: Response): Promise<AddCertificateCredentialResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as AddCertificateCredentialResponse;
-    return (await response.json()) as AddCertificateCredentialResponse;
+  parseResponse(_response: Response): Promise<AddCertificateCredentialResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

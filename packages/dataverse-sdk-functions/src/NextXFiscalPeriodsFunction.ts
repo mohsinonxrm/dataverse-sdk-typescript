@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from NextXFiscalPeriods function
+ * Response from the NextXFiscalPeriods function.
+ *
+ * The value, read from the `value` of the response body.
  */
-export interface NextXFiscalPeriodsResponse {
-  value: boolean;
-}
+export type NextXFiscalPeriodsResponse = boolean;
 
 /**
  * Parameters of the NextXFiscalPeriods function, by their CSDL names. A parameter the CSDL declares
@@ -53,8 +53,7 @@ export class NextXFiscalPeriodsFunction implements Executable<NextXFiscalPeriods
   }
 
   async parseResponse(response: Response): Promise<NextXFiscalPeriodsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as NextXFiscalPeriodsResponse;
-    return (await response.json()) as NextXFiscalPeriodsResponse;
+    // A primitive comes wrapped: { "@odata.context": "…", "value": … }
+    return ((await response.json()) as { value: NextXFiscalPeriodsResponse }).value;
   }
 }

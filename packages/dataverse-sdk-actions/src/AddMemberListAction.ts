@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from AddMemberList action
+ * Response from the AddMemberList action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface AddMemberListResponse {
+  "@odata.context"?: string;
   Id: string;
 }
 
@@ -49,8 +52,7 @@ export class AddMemberListAction implements Executable<AddMemberListResponse> {
   }
 
   async parseResponse(response: Response): Promise<AddMemberListResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as AddMemberListResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as AddMemberListResponse;
   }
 }

@@ -42,9 +42,9 @@ export class CreateAsyncJobToRevokeInheritedAccessRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CreateAsyncJobToRevokeInheritedAccessResponse> {
+  parseResponse(_response: Response): Promise<CreateAsyncJobToRevokeInheritedAccessResponse> {
     // No return value (204 No Content)
-    return new CreateAsyncJobToRevokeInheritedAccessResponse();
+    return Promise.resolve(new CreateAsyncJobToRevokeInheritedAccessResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class CreateAsyncJobToRevokeInheritedAccessResponse extends OrganizationR
     super("CreateAsyncJobToRevokeInheritedAccess");
   }
 
-  static fromResponse(_data: unknown): CreateAsyncJobToRevokeInheritedAccessResponse {
+  static fromResponse(_data?: unknown): CreateAsyncJobToRevokeInheritedAccessResponse {
     return new CreateAsyncJobToRevokeInheritedAccessResponse();
   }
 }

@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from GetPublicKey action
+ * Response from the GetPublicKey action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface GetPublicKeyResponse {
+  "@odata.context"?: string;
   groupPublicKey: string;
   groupSecondaryPublicKey: string;
 }
@@ -33,8 +36,7 @@ export class GetPublicKeyAction implements Executable<GetPublicKeyResponse> {
   }
 
   async parseResponse(response: Response): Promise<GetPublicKeyResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as GetPublicKeyResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as GetPublicKeyResponse;
   }
 }

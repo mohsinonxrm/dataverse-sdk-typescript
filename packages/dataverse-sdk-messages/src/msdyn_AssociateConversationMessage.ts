@@ -46,9 +46,9 @@ export class msdyn_AssociateConversationRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_AssociateConversationResponse> {
+  parseResponse(_response: Response): Promise<msdyn_AssociateConversationResponse> {
     // No return value (204 No Content)
-    return new msdyn_AssociateConversationResponse();
+    return Promise.resolve(new msdyn_AssociateConversationResponse());
   }
 }
 
@@ -60,7 +60,7 @@ export class msdyn_AssociateConversationResponse extends OrganizationResponse {
     super("msdyn_AssociateConversation");
   }
 
-  static fromResponse(_data: unknown): msdyn_AssociateConversationResponse {
+  static fromResponse(_data?: unknown): msdyn_AssociateConversationResponse {
     return new msdyn_AssociateConversationResponse();
   }
 }

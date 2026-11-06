@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { AIExtractResponse as AIExtractResponseData } from "./types/index.js";
 
 /**
  * Parameters of the AIExtract message, by their CSDL names. A parameter the CSDL declares
@@ -44,21 +42,33 @@ export class AIExtractRequest extends OrganizationRequest implements Executable<
   }
 
   async parseResponse(response: Response): Promise<AIExtractResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return AIExtractResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return AIExtractResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the AIExtract action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface AIExtractResult {
+  "@odata.context"?: string;
+  ExtractedData: string[];
+}
+
+/**
  * AIExtract response message
+ *
+ * `result` is the value the AIExtract action returns (see {@link AIExtractResult}).
  */
 export class AIExtractResponse extends OrganizationResponse {
-  constructor(public result: AIExtractResponseData) {
+  constructor(public result: AIExtractResult) {
     super("AIExtract");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): AIExtractResponse {
-    return new AIExtractResponse(responseObject<AIExtractResponseData>(data));
+    return new AIExtractResponse(data as AIExtractResult);
   }
 }

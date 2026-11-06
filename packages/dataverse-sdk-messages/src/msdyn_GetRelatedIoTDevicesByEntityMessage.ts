@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetRelatedIoTDevicesByEntityResponse as msdyn_GetRelatedIoTDevicesByEntityResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetRelatedIoTDevicesByEntity message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,35 @@ export class msdyn_GetRelatedIoTDevicesByEntityRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetRelatedIoTDevicesByEntityResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetRelatedIoTDevicesByEntityResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetRelatedIoTDevicesByEntityResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetRelatedIoTDevicesByEntity action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetRelatedIoTDevicesByEntityResult {
+  "@odata.context"?: string;
+  RelatedIoTDevicesByEntityOutput: string;
+}
+
+/**
  * msdyn_GetRelatedIoTDevicesByEntity response message
+ *
+ * `result` is the value the msdyn_GetRelatedIoTDevicesByEntity action returns (see {@link msdyn_GetRelatedIoTDevicesByEntityResult}).
  */
 export class msdyn_GetRelatedIoTDevicesByEntityResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetRelatedIoTDevicesByEntityResponseData) {
+  constructor(public result: msdyn_GetRelatedIoTDevicesByEntityResult) {
     super("msdyn_GetRelatedIoTDevicesByEntity");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetRelatedIoTDevicesByEntityResponse {
     return new msdyn_GetRelatedIoTDevicesByEntityResponse(
-      responseObject<msdyn_GetRelatedIoTDevicesByEntityResponseData>(data)
+      data as msdyn_GetRelatedIoTDevicesByEntityResult
     );
   }
 }

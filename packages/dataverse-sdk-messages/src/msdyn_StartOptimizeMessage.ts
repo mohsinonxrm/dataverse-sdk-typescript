@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_StartOptimizeResponse as msdyn_StartOptimizeResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_StartOptimize message, by their CSDL names. A parameter the CSDL declares
@@ -45,21 +43,35 @@ export class msdyn_StartOptimizeRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_StartOptimizeResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_StartOptimizeResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_StartOptimizeResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_StartOptimize action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_StartOptimizeResult {
+  "@odata.context"?: string;
+  msdyn_Response: string;
+  msdyn_RunId: string;
+  msdyn_Status: string;
+}
+
+/**
  * msdyn_StartOptimize response message
+ *
+ * `result` is the value the msdyn_StartOptimize action returns (see {@link msdyn_StartOptimizeResult}).
  */
 export class msdyn_StartOptimizeResponse extends OrganizationResponse {
-  constructor(public result: msdyn_StartOptimizeResponseData) {
+  constructor(public result: msdyn_StartOptimizeResult) {
     super("msdyn_StartOptimize");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_StartOptimizeResponse {
-    return new msdyn_StartOptimizeResponse(responseObject<msdyn_StartOptimizeResponseData>(data));
+    return new msdyn_StartOptimizeResponse(data as msdyn_StartOptimizeResult);
   }
 }

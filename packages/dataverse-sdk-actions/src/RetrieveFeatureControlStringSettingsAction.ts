@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import type { FeatureControlStringSettingData } from "./types/index.js";
 
 /**
- * Response from RetrieveFeatureControlStringSettings action
+ * Response from the RetrieveFeatureControlStringSettings action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveFeatureControlStringSettingsResponse {
+  "@odata.context"?: string;
   FeatureControlStringSettingCollection: FeatureControlStringSettingData[];
 }
 
@@ -27,8 +30,7 @@ export class RetrieveFeatureControlStringSettingsAction implements Executable<Re
   }
 
   async parseResponse(response: Response): Promise<RetrieveFeatureControlStringSettingsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveFeatureControlStringSettingsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RetrieveFeatureControlStringSettingsResponse;
   }
 }

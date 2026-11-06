@@ -42,9 +42,9 @@ export class msdynmkt_enabledoubleoptincomplianceRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdynmkt_enabledoubleoptincomplianceResponse> {
+  parseResponse(_response: Response): Promise<msdynmkt_enabledoubleoptincomplianceResponse> {
     // No return value (204 No Content)
-    return new msdynmkt_enabledoubleoptincomplianceResponse();
+    return Promise.resolve(new msdynmkt_enabledoubleoptincomplianceResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdynmkt_enabledoubleoptincomplianceResponse extends OrganizationRe
     super("msdynmkt_enabledoubleoptincompliance");
   }
 
-  static fromResponse(_data: unknown): msdynmkt_enabledoubleoptincomplianceResponse {
+  static fromResponse(_data?: unknown): msdynmkt_enabledoubleoptincomplianceResponse {
     return new msdynmkt_enabledoubleoptincomplianceResponse();
   }
 }

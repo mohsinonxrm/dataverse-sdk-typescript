@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from GetAutoNumberSeed action
+ * Response from the GetAutoNumberSeed action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface GetAutoNumberSeedResponse {
+  "@odata.context"?: string;
   AutoNumberSeedValue: number;
 }
 
@@ -44,8 +47,7 @@ export class GetAutoNumberSeedAction implements Executable<GetAutoNumberSeedResp
   }
 
   async parseResponse(response: Response): Promise<GetAutoNumberSeedResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as GetAutoNumberSeedResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as GetAutoNumberSeedResponse;
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msft_RateStorageRecommendationResponse as msft_RateStorageRecommendationResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msft_RateStorageRecommendation message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,33 @@ export class msft_RateStorageRecommendationRequest
   }
 
   async parseResponse(response: Response): Promise<msft_RateStorageRecommendationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msft_RateStorageRecommendationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msft_RateStorageRecommendationResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msft_RateStorageRecommendation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msft_RateStorageRecommendationResult {
+  "@odata.context"?: string;
+  IsSuccess: boolean;
+}
+
+/**
  * msft_RateStorageRecommendation response message
+ *
+ * `result` is the value the msft_RateStorageRecommendation action returns (see {@link msft_RateStorageRecommendationResult}).
  */
 export class msft_RateStorageRecommendationResponse extends OrganizationResponse {
-  constructor(public result: msft_RateStorageRecommendationResponseData) {
+  constructor(public result: msft_RateStorageRecommendationResult) {
     super("msft_RateStorageRecommendation");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msft_RateStorageRecommendationResponse {
-    return new msft_RateStorageRecommendationResponse(
-      responseObject<msft_RateStorageRecommendationResponseData>(data)
-    );
+    return new msft_RateStorageRecommendationResponse(data as msft_RateStorageRecommendationResult);
   }
 }

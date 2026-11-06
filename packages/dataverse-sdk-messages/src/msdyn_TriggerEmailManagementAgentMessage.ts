@@ -44,9 +44,9 @@ export class msdyn_TriggerEmailManagementAgentRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_TriggerEmailManagementAgentResponse> {
+  parseResponse(_response: Response): Promise<msdyn_TriggerEmailManagementAgentResponse> {
     // No return value (204 No Content)
-    return new msdyn_TriggerEmailManagementAgentResponse();
+    return Promise.resolve(new msdyn_TriggerEmailManagementAgentResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class msdyn_TriggerEmailManagementAgentResponse extends OrganizationRespo
     super("msdyn_TriggerEmailManagementAgent");
   }
 
-  static fromResponse(_data: unknown): msdyn_TriggerEmailManagementAgentResponse {
+  static fromResponse(_data?: unknown): msdyn_TriggerEmailManagementAgentResponse {
     return new msdyn_TriggerEmailManagementAgentResponse();
   }
 }

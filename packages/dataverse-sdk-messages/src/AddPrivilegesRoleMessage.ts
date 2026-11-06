@@ -50,9 +50,9 @@ export class AddPrivilegesRoleRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<AddPrivilegesRoleResponse> {
+  parseResponse(_response: Response): Promise<AddPrivilegesRoleResponse> {
     // No return value (204 No Content)
-    return new AddPrivilegesRoleResponse();
+    return Promise.resolve(new AddPrivilegesRoleResponse());
   }
 }
 
@@ -64,7 +64,7 @@ export class AddPrivilegesRoleResponse extends OrganizationResponse {
     super("AddPrivilegesRole");
   }
 
-  static fromResponse(_data: unknown): AddPrivilegesRoleResponse {
+  static fromResponse(_data?: unknown): AddPrivilegesRoleResponse {
     return new AddPrivilegesRoleResponse();
   }
 }

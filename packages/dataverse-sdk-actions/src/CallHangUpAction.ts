@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CallHangUp action
+ * Response from the CallHangUp action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CallHangUpResponse {
+  "@odata.context"?: string;
   Response: string;
 }
 
@@ -44,8 +47,7 @@ export class CallHangUpAction implements Executable<CallHangUpResponse> {
   }
 
   async parseResponse(response: Response): Promise<CallHangUpResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CallHangUpResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as CallHangUpResponse;
   }
 }

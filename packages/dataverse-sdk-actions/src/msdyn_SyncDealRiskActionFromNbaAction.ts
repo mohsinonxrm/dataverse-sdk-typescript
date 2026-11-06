@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_SyncDealRiskActionFromNba action
+ * Response from the msdyn_SyncDealRiskActionFromNba action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_SyncDealRiskActionFromNbaResponse {
+  "@odata.context"?: string;
   Message: string;
   Success: boolean;
 }
@@ -49,8 +52,7 @@ export class msdyn_SyncDealRiskActionFromNbaAction implements Executable<msdyn_S
   }
 
   async parseResponse(response: Response): Promise<msdyn_SyncDealRiskActionFromNbaResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_SyncDealRiskActionFromNbaResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_SyncDealRiskActionFromNbaResponse;
   }
 }

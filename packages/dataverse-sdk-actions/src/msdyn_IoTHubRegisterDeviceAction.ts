@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_IoTHubRegisterDevice action
+ * Response from the msdyn_IoTHubRegisterDevice action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_IoTHubRegisterDeviceResponse {
-  // No content returned
-}
+export type msdyn_IoTHubRegisterDeviceResponse = void;
 
 /**
  * Parameters of the msdyn_IoTHubRegisterDevice action, by their CSDL names. A parameter the CSDL declares
@@ -41,9 +41,8 @@ export class msdyn_IoTHubRegisterDeviceAction implements Executable<msdyn_IoTHub
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_IoTHubRegisterDeviceResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_IoTHubRegisterDeviceResponse;
-    return (await response.json()) as msdyn_IoTHubRegisterDeviceResponse;
+  parseResponse(_response: Response): Promise<msdyn_IoTHubRegisterDeviceResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

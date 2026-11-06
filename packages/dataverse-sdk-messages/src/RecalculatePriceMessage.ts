@@ -44,9 +44,9 @@ export class RecalculatePriceRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<RecalculatePriceResponse> {
+  parseResponse(_response: Response): Promise<RecalculatePriceResponse> {
     // No return value (204 No Content)
-    return new RecalculatePriceResponse();
+    return Promise.resolve(new RecalculatePriceResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class RecalculatePriceResponse extends OrganizationResponse {
     super("RecalculatePrice");
   }
 
-  static fromResponse(_data: unknown): RecalculatePriceResponse {
+  static fromResponse(_data?: unknown): RecalculatePriceResponse {
     return new RecalculatePriceResponse();
   }
 }

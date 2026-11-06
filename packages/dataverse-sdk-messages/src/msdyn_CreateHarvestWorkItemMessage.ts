@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_CreateHarvestWorkItemResponse as msdyn_CreateHarvestWorkItemResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CreateHarvestWorkItem message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,34 @@ export class msdyn_CreateHarvestWorkItemRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateHarvestWorkItemResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_CreateHarvestWorkItemResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CreateHarvestWorkItemResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CreateHarvestWorkItem action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CreateHarvestWorkItemResult {
+  "@odata.context"?: string;
+  Response6: string;
+  usage: string;
+}
+
+/**
  * msdyn_CreateHarvestWorkItem response message
+ *
+ * `result` is the value the msdyn_CreateHarvestWorkItem action returns (see {@link msdyn_CreateHarvestWorkItemResult}).
  */
 export class msdyn_CreateHarvestWorkItemResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CreateHarvestWorkItemResponseData) {
+  constructor(public result: msdyn_CreateHarvestWorkItemResult) {
     super("msdyn_CreateHarvestWorkItem");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CreateHarvestWorkItemResponse {
-    return new msdyn_CreateHarvestWorkItemResponse(
-      responseObject<msdyn_CreateHarvestWorkItemResponseData>(data)
-    );
+    return new msdyn_CreateHarvestWorkItemResponse(data as msdyn_CreateHarvestWorkItemResult);
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesDataQualityAgent_GetEnrichmentEligibleFieldsResponse as msdyn_SalesDataQualityAgent_GetEnrichmentEligibleFieldsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesDataQualityAgent_GetEnrichmentEligibleFields message, by their CSDL names. A parameter the CSDL declares
@@ -49,9 +47,7 @@ export class msdyn_SalesDataQualityAgent_GetEnrichmentEligibleFieldsRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesDataQualityAgent_GetEnrichmentEligibleFieldsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_SalesDataQualityAgent_GetEnrichmentEligibleFieldsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesDataQualityAgent_GetEnrichmentEligibleFieldsResponse.fromResponse(
       await response.json()
     );
@@ -59,18 +55,31 @@ export class msdyn_SalesDataQualityAgent_GetEnrichmentEligibleFieldsRequest
 }
 
 /**
+ * Response from the msdyn_SalesDataQualityAgent_GetEnrichmentEligibleFields action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesDataQualityAgent_GetEnrichmentEligibleFieldsResult {
+  "@odata.context"?: string;
+  ResponseJson: string;
+}
+
+/**
  * msdyn_SalesDataQualityAgent_GetEnrichmentEligibleFields response message
+ *
+ * `result` is the value the msdyn_SalesDataQualityAgent_GetEnrichmentEligibleFields action returns (see {@link msdyn_SalesDataQualityAgent_GetEnrichmentEligibleFieldsResult}).
  */
 export class msdyn_SalesDataQualityAgent_GetEnrichmentEligibleFieldsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesDataQualityAgent_GetEnrichmentEligibleFieldsResponseData) {
+  constructor(public result: msdyn_SalesDataQualityAgent_GetEnrichmentEligibleFieldsResult) {
     super("msdyn_SalesDataQualityAgent_GetEnrichmentEligibleFields");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(
     data: unknown
   ): msdyn_SalesDataQualityAgent_GetEnrichmentEligibleFieldsResponse {
     return new msdyn_SalesDataQualityAgent_GetEnrichmentEligibleFieldsResponse(
-      responseObject<msdyn_SalesDataQualityAgent_GetEnrichmentEligibleFieldsResponseData>(data)
+      data as msdyn_SalesDataQualityAgent_GetEnrichmentEligibleFieldsResult
     );
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CCaaS_OneTimePasswordSendResponse as CCaaS_OneTimePasswordSendResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CCaaS_OneTimePasswordSend message, by their CSDL names. A parameter the CSDL declares
@@ -55,23 +53,33 @@ export class CCaaS_OneTimePasswordSendRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_OneTimePasswordSendResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CCaaS_OneTimePasswordSendResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CCaaS_OneTimePasswordSendResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CCaaS_OneTimePasswordSend action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CCaaS_OneTimePasswordSendResult {
+  "@odata.context"?: string;
+  ResponseData: string;
+}
+
+/**
  * CCaaS_OneTimePasswordSend response message
+ *
+ * `result` is the value the CCaaS_OneTimePasswordSend action returns (see {@link CCaaS_OneTimePasswordSendResult}).
  */
 export class CCaaS_OneTimePasswordSendResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_OneTimePasswordSendResponseData) {
+  constructor(public result: CCaaS_OneTimePasswordSendResult) {
     super("CCaaS_OneTimePasswordSend");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CCaaS_OneTimePasswordSendResponse {
-    return new CCaaS_OneTimePasswordSendResponse(
-      responseObject<CCaaS_OneTimePasswordSendResponseData>(data)
-    );
+    return new CCaaS_OneTimePasswordSendResponse(data as CCaaS_OneTimePasswordSendResult);
   }
 }

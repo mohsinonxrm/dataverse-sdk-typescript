@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from GetNextRunsForFlowTrigger function
+ * Response from the GetNextRunsForFlowTrigger function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface GetNextRunsForFlowTriggerResponse {
+  "@odata.context"?: string;
   response: string;
 }
 
@@ -32,8 +35,7 @@ export class GetNextRunsForFlowTriggerFunction implements Executable<GetNextRuns
   }
 
   async parseResponse(response: Response): Promise<GetNextRunsForFlowTriggerResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as GetNextRunsForFlowTriggerResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as GetNextRunsForFlowTriggerResponse;
   }
 }

@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { msdyn_RetrieveKPIValuesForGDPRResponse as msdyn_RetrieveKPIValuesForGDPRResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_RetrieveKPIValuesForGDPR message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class msdyn_RetrieveKPIValuesForGDPRRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrieveKPIValuesForGDPRResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_RetrieveKPIValuesForGDPRResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_RetrieveKPIValuesForGDPRResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_RetrieveKPIValuesForGDPR action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_RetrieveKPIValuesForGDPRResult {
+  "@odata.context"?: string;
+  Response: string;
+}
+
+/**
  * msdyn_RetrieveKPIValuesForGDPR response message
+ *
+ * `result` is the value the msdyn_RetrieveKPIValuesForGDPR action returns (see {@link msdyn_RetrieveKPIValuesForGDPRResult}).
  */
 export class msdyn_RetrieveKPIValuesForGDPRResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrieveKPIValuesForGDPRResponseData) {
+  constructor(public result: msdyn_RetrieveKPIValuesForGDPRResult) {
     super("msdyn_RetrieveKPIValuesForGDPR");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_RetrieveKPIValuesForGDPRResponse {
-    return new msdyn_RetrieveKPIValuesForGDPRResponse(
-      responseObject<msdyn_RetrieveKPIValuesForGDPRResponseData>(data)
-    );
+    return new msdyn_RetrieveKPIValuesForGDPRResponse(data as msdyn_RetrieveKPIValuesForGDPRResult);
   }
 }

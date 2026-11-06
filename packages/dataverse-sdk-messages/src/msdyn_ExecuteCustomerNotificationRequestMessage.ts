@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_ExecuteCustomerNotificationRequestResponse as msdyn_ExecuteCustomerNotificationRequestResponseData } from "./types/index.js";
 
 /**
  * msdyn_ExecuteCustomerNotificationRequest request message
@@ -31,24 +29,35 @@ export class msdyn_ExecuteCustomerNotificationRequestRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_ExecuteCustomerNotificationRequestResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_ExecuteCustomerNotificationRequestResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_ExecuteCustomerNotificationRequestResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_ExecuteCustomerNotificationRequest action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_ExecuteCustomerNotificationRequestResult {
+  "@odata.context"?: string;
+  Response: string;
+}
+
+/**
  * msdyn_ExecuteCustomerNotificationRequest response message
+ *
+ * `result` is the value the msdyn_ExecuteCustomerNotificationRequest action returns (see {@link msdyn_ExecuteCustomerNotificationRequestResult}).
  */
 export class msdyn_ExecuteCustomerNotificationRequestResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ExecuteCustomerNotificationRequestResponseData) {
+  constructor(public result: msdyn_ExecuteCustomerNotificationRequestResult) {
     super("msdyn_ExecuteCustomerNotificationRequest");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_ExecuteCustomerNotificationRequestResponse {
     return new msdyn_ExecuteCustomerNotificationRequestResponse(
-      responseObject<msdyn_ExecuteCustomerNotificationRequestResponseData>(data)
+      data as msdyn_ExecuteCustomerNotificationRequestResult
     );
   }
 }

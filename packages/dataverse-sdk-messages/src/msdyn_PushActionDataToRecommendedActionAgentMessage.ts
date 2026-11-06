@@ -60,11 +60,11 @@ export class msdyn_PushActionDataToRecommendedActionAgentRequest
     };
   }
 
-  async parseResponse(
-    response: Response
+  parseResponse(
+    _response: Response
   ): Promise<msdyn_PushActionDataToRecommendedActionAgentResponse> {
     // No return value (204 No Content)
-    return new msdyn_PushActionDataToRecommendedActionAgentResponse();
+    return Promise.resolve(new msdyn_PushActionDataToRecommendedActionAgentResponse());
   }
 }
 
@@ -76,7 +76,7 @@ export class msdyn_PushActionDataToRecommendedActionAgentResponse extends Organi
     super("msdyn_PushActionDataToRecommendedActionAgent");
   }
 
-  static fromResponse(_data: unknown): msdyn_PushActionDataToRecommendedActionAgentResponse {
+  static fromResponse(_data?: unknown): msdyn_PushActionDataToRecommendedActionAgentResponse {
     return new msdyn_PushActionDataToRecommendedActionAgentResponse();
   }
 }

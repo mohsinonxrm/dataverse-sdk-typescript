@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdynmkt_normalizecontactpointResponse as msdynmkt_normalizecontactpointResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdynmkt_normalizecontactpoint message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class msdynmkt_normalizecontactpointRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_normalizecontactpointResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdynmkt_normalizecontactpointResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdynmkt_normalizecontactpointResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdynmkt_normalizecontactpoint action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdynmkt_normalizecontactpointResult {
+  "@odata.context"?: string;
+  msdynmkt_normalizedcontactpointvalue: string;
+}
+
+/**
  * msdynmkt_normalizecontactpoint response message
+ *
+ * `result` is the value the msdynmkt_normalizecontactpoint action returns (see {@link msdynmkt_normalizecontactpointResult}).
  */
 export class msdynmkt_normalizecontactpointResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_normalizecontactpointResponseData) {
+  constructor(public result: msdynmkt_normalizecontactpointResult) {
     super("msdynmkt_normalizecontactpoint");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdynmkt_normalizecontactpointResponse {
-    return new msdynmkt_normalizecontactpointResponse(
-      responseObject<msdynmkt_normalizecontactpointResponseData>(data)
-    );
+    return new msdynmkt_normalizecontactpointResponse(data as msdynmkt_normalizecontactpointResult);
   }
 }

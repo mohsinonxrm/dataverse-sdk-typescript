@@ -97,6 +97,6 @@ describe.skipIf(!live)("live: operation overloads and ExportToExcel (#75)", () =
       })
     );
 
-    expect(response.result.ExcelFile?.startsWith("UEsDB")).toBe(true);
+    expect(response.result.ExcelFile.startsWith("UEsDB")).toBe(true);
   });
 });

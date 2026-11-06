@@ -48,9 +48,9 @@ export class CCaaS_PickConversationRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_PickConversationResponse> {
+  parseResponse(_response: Response): Promise<CCaaS_PickConversationResponse> {
     // No return value (204 No Content)
-    return new CCaaS_PickConversationResponse();
+    return Promise.resolve(new CCaaS_PickConversationResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class CCaaS_PickConversationResponse extends OrganizationResponse {
     super("CCaaS_PickConversation");
   }
 
-  static fromResponse(_data: unknown): CCaaS_PickConversationResponse {
+  static fromResponse(_data?: unknown): CCaaS_PickConversationResponse {
     return new CCaaS_PickConversationResponse();
   }
 }

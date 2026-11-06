@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_CheckIfEmailResponseTemplateEntityTypeMatchResponse as msdyn_CheckIfEmailResponseTemplateEntityTypeMatchResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CheckIfEmailResponseTemplateEntityTypeMatch message, by their CSDL names. A parameter the CSDL declares
@@ -47,9 +45,7 @@ export class msdyn_CheckIfEmailResponseTemplateEntityTypeMatchRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckIfEmailResponseTemplateEntityTypeMatchResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_CheckIfEmailResponseTemplateEntityTypeMatchResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CheckIfEmailResponseTemplateEntityTypeMatchResponse.fromResponse(
       await response.json()
     );
@@ -57,16 +53,33 @@ export class msdyn_CheckIfEmailResponseTemplateEntityTypeMatchRequest
 }
 
 /**
+ * Response from the msdyn_CheckIfEmailResponseTemplateEntityTypeMatch action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CheckIfEmailResponseTemplateEntityTypeMatchResult {
+  "@odata.context"?: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnLevel: number;
+  ReturnSeverity: number;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_CheckIfEmailResponseTemplateEntityTypeMatch response message
+ *
+ * `result` is the value the msdyn_CheckIfEmailResponseTemplateEntityTypeMatch action returns (see {@link msdyn_CheckIfEmailResponseTemplateEntityTypeMatchResult}).
  */
 export class msdyn_CheckIfEmailResponseTemplateEntityTypeMatchResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfEmailResponseTemplateEntityTypeMatchResponseData) {
+  constructor(public result: msdyn_CheckIfEmailResponseTemplateEntityTypeMatchResult) {
     super("msdyn_CheckIfEmailResponseTemplateEntityTypeMatch");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CheckIfEmailResponseTemplateEntityTypeMatchResponse {
     return new msdyn_CheckIfEmailResponseTemplateEntityTypeMatchResponse(
-      responseObject<msdyn_CheckIfEmailResponseTemplateEntityTypeMatchResponseData>(data)
+      data as msdyn_CheckIfEmailResponseTemplateEntityTypeMatchResult
     );
   }
 }

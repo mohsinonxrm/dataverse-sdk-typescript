@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_TelephonyPlanLocationDetailsActionResponse as msdyn_TelephonyPlanLocationDetailsActionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_TelephonyPlanLocationDetailsAction message, by their CSDL names. A parameter the CSDL declares
@@ -47,24 +45,35 @@ export class msdyn_TelephonyPlanLocationDetailsActionRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_TelephonyPlanLocationDetailsActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_TelephonyPlanLocationDetailsActionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_TelephonyPlanLocationDetailsActionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_TelephonyPlanLocationDetailsAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_TelephonyPlanLocationDetailsActionResult {
+  "@odata.context"?: string;
+  ActionResult: string;
+}
+
+/**
  * msdyn_TelephonyPlanLocationDetailsAction response message
+ *
+ * `result` is the value the msdyn_TelephonyPlanLocationDetailsAction action returns (see {@link msdyn_TelephonyPlanLocationDetailsActionResult}).
  */
 export class msdyn_TelephonyPlanLocationDetailsActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_TelephonyPlanLocationDetailsActionResponseData) {
+  constructor(public result: msdyn_TelephonyPlanLocationDetailsActionResult) {
     super("msdyn_TelephonyPlanLocationDetailsAction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_TelephonyPlanLocationDetailsActionResponse {
     return new msdyn_TelephonyPlanLocationDetailsActionResponse(
-      responseObject<msdyn_TelephonyPlanLocationDetailsActionResponseData>(data)
+      data as msdyn_TelephonyPlanLocationDetailsActionResult
     );
   }
 }

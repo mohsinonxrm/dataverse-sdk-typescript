@@ -4,9 +4,12 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from CreateAndSendNewEmail action
+ * Response from the CreateAndSendNewEmail action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CreateAndSendNewEmailResponse {
+  "@odata.context"?: string;
   EmailId: string;
 }
 
@@ -58,8 +61,7 @@ export class CreateAndSendNewEmailAction implements Executable<CreateAndSendNewE
   }
 
   async parseResponse(response: Response): Promise<CreateAndSendNewEmailResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CreateAndSendNewEmailResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as CreateAndSendNewEmailResponse;
   }
 }

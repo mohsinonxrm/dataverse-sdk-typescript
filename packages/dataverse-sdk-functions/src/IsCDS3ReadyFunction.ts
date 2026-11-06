@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from IsCDS3Ready function
+ * Response from the IsCDS3Ready function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface IsCDS3ReadyResponse {
+  "@odata.context"?: string;
   IsReady: boolean;
 }
 
@@ -26,8 +29,7 @@ export class IsCDS3ReadyFunction implements Executable<IsCDS3ReadyResponse> {
   }
 
   async parseResponse(response: Response): Promise<IsCDS3ReadyResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as IsCDS3ReadyResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as IsCDS3ReadyResponse;
   }
 }

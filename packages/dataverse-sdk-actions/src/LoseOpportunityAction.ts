@@ -5,11 +5,11 @@ import type { EntityPayload } from "./types/EntityPayload.js";
 import type { opportunityclose } from "./types/index.js";
 
 /**
- * Response from LoseOpportunity action
+ * Response from the LoseOpportunity action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface LoseOpportunityResponse {
-  // No content returned
-}
+export type LoseOpportunityResponse = void;
 
 /**
  * Parameters of the LoseOpportunity action, by their CSDL names. A parameter the CSDL declares
@@ -48,9 +48,8 @@ export class LoseOpportunityAction implements Executable<LoseOpportunityResponse
     };
   }
 
-  async parseResponse(response: Response): Promise<LoseOpportunityResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as LoseOpportunityResponse;
-    return (await response.json()) as LoseOpportunityResponse;
+  parseResponse(_response: Response): Promise<LoseOpportunityResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

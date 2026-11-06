@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from ResetInheritedAccess function
+ * Response from the ResetInheritedAccess function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface ResetInheritedAccessResponse {
+  "@odata.context"?: string;
   ResetInheritedAccessResponse: string;
 }
 
@@ -48,8 +51,7 @@ export class ResetInheritedAccessFunction implements Executable<ResetInheritedAc
   }
 
   async parseResponse(response: Response): Promise<ResetInheritedAccessResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ResetInheritedAccessResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as ResetInheritedAccessResponse;
   }
 }

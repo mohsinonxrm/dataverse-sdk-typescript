@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_IoTRegisterActionHandlerResponse as msdyn_IoTRegisterActionHandlerResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_IoTRegisterActionHandler message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,33 @@ export class msdyn_IoTRegisterActionHandlerRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_IoTRegisterActionHandlerResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_IoTRegisterActionHandlerResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_IoTRegisterActionHandlerResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_IoTRegisterActionHandler action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_IoTRegisterActionHandlerResult {
+  "@odata.context"?: string;
+  RegistrationResultsJSON: string;
+}
+
+/**
  * msdyn_IoTRegisterActionHandler response message
+ *
+ * `result` is the value the msdyn_IoTRegisterActionHandler action returns (see {@link msdyn_IoTRegisterActionHandlerResult}).
  */
 export class msdyn_IoTRegisterActionHandlerResponse extends OrganizationResponse {
-  constructor(public result: msdyn_IoTRegisterActionHandlerResponseData) {
+  constructor(public result: msdyn_IoTRegisterActionHandlerResult) {
     super("msdyn_IoTRegisterActionHandler");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_IoTRegisterActionHandlerResponse {
-    return new msdyn_IoTRegisterActionHandlerResponse(
-      responseObject<msdyn_IoTRegisterActionHandlerResponseData>(data)
-    );
+    return new msdyn_IoTRegisterActionHandlerResponse(data as msdyn_IoTRegisterActionHandlerResult);
   }
 }

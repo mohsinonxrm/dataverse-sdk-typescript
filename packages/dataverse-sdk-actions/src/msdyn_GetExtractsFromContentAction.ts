@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_GetExtractsFromContent action
+ * Response from the msdyn_GetExtractsFromContent action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetExtractsFromContentResponse {
+  "@odata.context"?: string;
   msdyn_documents: string;
   msdyn_mdlDetails: string;
 }
@@ -53,8 +56,7 @@ export class msdyn_GetExtractsFromContentAction implements Executable<msdyn_GetE
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetExtractsFromContentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_GetExtractsFromContentResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_GetExtractsFromContentResponse;
   }
 }

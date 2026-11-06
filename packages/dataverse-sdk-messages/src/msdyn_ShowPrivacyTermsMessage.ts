@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_ShowPrivacyTermsResponse as msdyn_ShowPrivacyTermsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_ShowPrivacyTerms message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,33 @@ export class msdyn_ShowPrivacyTermsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ShowPrivacyTermsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_ShowPrivacyTermsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_ShowPrivacyTermsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_ShowPrivacyTerms action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_ShowPrivacyTermsResult {
+  "@odata.context"?: string;
+  ShowPrivacyTerms: boolean;
+}
+
+/**
  * msdyn_ShowPrivacyTerms response message
+ *
+ * `result` is the value the msdyn_ShowPrivacyTerms action returns (see {@link msdyn_ShowPrivacyTermsResult}).
  */
 export class msdyn_ShowPrivacyTermsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ShowPrivacyTermsResponseData) {
+  constructor(public result: msdyn_ShowPrivacyTermsResult) {
     super("msdyn_ShowPrivacyTerms");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_ShowPrivacyTermsResponse {
-    return new msdyn_ShowPrivacyTermsResponse(
-      responseObject<msdyn_ShowPrivacyTermsResponseData>(data)
-    );
+    return new msdyn_ShowPrivacyTermsResponse(data as msdyn_ShowPrivacyTermsResult);
   }
 }

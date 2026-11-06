@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_MarketingMetadataUpdateResponse as msdyn_MarketingMetadataUpdateResponseData } from "./types/index.js";
 
 /**
  * msdyn_MarketingMetadataUpdate request message
@@ -29,23 +27,33 @@ export class msdyn_MarketingMetadataUpdateRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_MarketingMetadataUpdateResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_MarketingMetadataUpdateResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_MarketingMetadataUpdateResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_MarketingMetadataUpdate action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_MarketingMetadataUpdateResult {
+  "@odata.context"?: string;
+  resultCode: number;
+}
+
+/**
  * msdyn_MarketingMetadataUpdate response message
+ *
+ * `result` is the value the msdyn_MarketingMetadataUpdate action returns (see {@link msdyn_MarketingMetadataUpdateResult}).
  */
 export class msdyn_MarketingMetadataUpdateResponse extends OrganizationResponse {
-  constructor(public result: msdyn_MarketingMetadataUpdateResponseData) {
+  constructor(public result: msdyn_MarketingMetadataUpdateResult) {
     super("msdyn_MarketingMetadataUpdate");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_MarketingMetadataUpdateResponse {
-    return new msdyn_MarketingMetadataUpdateResponse(
-      responseObject<msdyn_MarketingMetadataUpdateResponseData>(data)
-    );
+    return new msdyn_MarketingMetadataUpdateResponse(data as msdyn_MarketingMetadataUpdateResult);
   }
 }

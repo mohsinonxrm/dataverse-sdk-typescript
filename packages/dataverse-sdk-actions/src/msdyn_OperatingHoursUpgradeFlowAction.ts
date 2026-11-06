@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_OperatingHoursUpgradeFlow action
+ * Response from the msdyn_OperatingHoursUpgradeFlow action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_OperatingHoursUpgradeFlowResponse {
-  // No content returned
-}
+export type msdyn_OperatingHoursUpgradeFlowResponse = void;
 
 /**
  * msdyn_OperatingHoursUpgradeFlow action
@@ -25,9 +25,8 @@ export class msdyn_OperatingHoursUpgradeFlowAction implements Executable<msdyn_O
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_OperatingHoursUpgradeFlowResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_OperatingHoursUpgradeFlowResponse;
-    return (await response.json()) as msdyn_OperatingHoursUpgradeFlowResponse;
+  parseResponse(_response: Response): Promise<msdyn_OperatingHoursUpgradeFlowResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

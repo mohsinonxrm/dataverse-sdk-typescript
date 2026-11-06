@@ -44,9 +44,9 @@ export class msdyn_SalesAgents_ReEngageEntityRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_SalesAgents_ReEngageEntityResponse> {
+  parseResponse(_response: Response): Promise<msdyn_SalesAgents_ReEngageEntityResponse> {
     // No return value (204 No Content)
-    return new msdyn_SalesAgents_ReEngageEntityResponse();
+    return Promise.resolve(new msdyn_SalesAgents_ReEngageEntityResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class msdyn_SalesAgents_ReEngageEntityResponse extends OrganizationRespon
     super("msdyn_SalesAgents_ReEngageEntity");
   }
 
-  static fromResponse(_data: unknown): msdyn_SalesAgents_ReEngageEntityResponse {
+  static fromResponse(_data?: unknown): msdyn_SalesAgents_ReEngageEntityResponse {
     return new msdyn_SalesAgents_ReEngageEntityResponse();
   }
 }

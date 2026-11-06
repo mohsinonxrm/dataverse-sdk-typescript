@@ -46,9 +46,9 @@ export class msdyn_AnalyticsSaveDataInConfigStoreRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_AnalyticsSaveDataInConfigStoreResponse> {
+  parseResponse(_response: Response): Promise<msdyn_AnalyticsSaveDataInConfigStoreResponse> {
     // No return value (204 No Content)
-    return new msdyn_AnalyticsSaveDataInConfigStoreResponse();
+    return Promise.resolve(new msdyn_AnalyticsSaveDataInConfigStoreResponse());
   }
 }
 
@@ -60,7 +60,7 @@ export class msdyn_AnalyticsSaveDataInConfigStoreResponse extends OrganizationRe
     super("msdyn_AnalyticsSaveDataInConfigStore");
   }
 
-  static fromResponse(_data: unknown): msdyn_AnalyticsSaveDataInConfigStoreResponse {
+  static fromResponse(_data?: unknown): msdyn_AnalyticsSaveDataInConfigStoreResponse {
     return new msdyn_AnalyticsSaveDataInConfigStoreResponse();
   }
 }

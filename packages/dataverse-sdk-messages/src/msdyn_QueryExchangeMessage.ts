@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_QueryExchangeResponse as msdyn_QueryExchangeResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_QueryExchange message, by their CSDL names. A parameter the CSDL declares
@@ -49,21 +47,33 @@ export class msdyn_QueryExchangeRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_QueryExchangeResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_QueryExchangeResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_QueryExchangeResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_QueryExchange action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_QueryExchangeResult {
+  "@odata.context"?: string;
+  ExchangeData: string;
+}
+
+/**
  * msdyn_QueryExchange response message
+ *
+ * `result` is the value the msdyn_QueryExchange action returns (see {@link msdyn_QueryExchangeResult}).
  */
 export class msdyn_QueryExchangeResponse extends OrganizationResponse {
-  constructor(public result: msdyn_QueryExchangeResponseData) {
+  constructor(public result: msdyn_QueryExchangeResult) {
     super("msdyn_QueryExchange");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_QueryExchangeResponse {
-    return new msdyn_QueryExchangeResponse(responseObject<msdyn_QueryExchangeResponseData>(data));
+    return new msdyn_QueryExchangeResponse(data as msdyn_QueryExchangeResult);
   }
 }

@@ -3,9 +3,12 @@ import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { DependencyMetadataCollection } from "./types/index.js";
 
 /**
- * Response from RetrieveMissingDependenciesWithMetadata function
+ * Response from the RetrieveMissingDependenciesWithMetadata function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveMissingDependenciesWithMetadataResponse {
+  "@odata.context"?: string;
   DependencyMetadataCollection: DependencyMetadataCollection;
 }
 
@@ -61,8 +64,7 @@ export class RetrieveMissingDependenciesWithMetadataFunction implements Executab
   async parseResponse(
     response: Response
   ): Promise<RetrieveMissingDependenciesWithMetadataResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveMissingDependenciesWithMetadataResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RetrieveMissingDependenciesWithMetadataResponse;
   }
 }

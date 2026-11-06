@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetODOSFeatureEnabledRolesResponse as msdyn_GetODOSFeatureEnabledRolesResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetODOSFeatureEnabledRoles message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,35 @@ export class msdyn_GetODOSFeatureEnabledRolesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetODOSFeatureEnabledRolesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetODOSFeatureEnabledRolesResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetODOSFeatureEnabledRolesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetODOSFeatureEnabledRoles action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetODOSFeatureEnabledRolesResult {
+  "@odata.context"?: string;
+  Roles: string;
+}
+
+/**
  * msdyn_GetODOSFeatureEnabledRoles response message
+ *
+ * `result` is the value the msdyn_GetODOSFeatureEnabledRoles action returns (see {@link msdyn_GetODOSFeatureEnabledRolesResult}).
  */
 export class msdyn_GetODOSFeatureEnabledRolesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetODOSFeatureEnabledRolesResponseData) {
+  constructor(public result: msdyn_GetODOSFeatureEnabledRolesResult) {
     super("msdyn_GetODOSFeatureEnabledRoles");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetODOSFeatureEnabledRolesResponse {
     return new msdyn_GetODOSFeatureEnabledRolesResponse(
-      responseObject<msdyn_GetODOSFeatureEnabledRolesResponseData>(data)
+      data as msdyn_GetODOSFeatureEnabledRolesResult
     );
   }
 }

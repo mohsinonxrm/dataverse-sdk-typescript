@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesAgents_ProcessEngageAgentResponseResponse as msdyn_SalesAgents_ProcessEngageAgentResponseResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesAgents_ProcessEngageAgentResponse message, by their CSDL names. A parameter the CSDL declares
@@ -55,24 +53,40 @@ export class msdyn_SalesAgents_ProcessEngageAgentResponseRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_ProcessEngageAgentResponseResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_SalesAgents_ProcessEngageAgentResponseResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesAgents_ProcessEngageAgentResponseResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SalesAgents_ProcessEngageAgentResponse action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesAgents_ProcessEngageAgentResponseResult {
+  "@odata.context"?: string;
+  msdyn_AreAllFollowUpsCompleted: boolean;
+  msdyn_EmailBody: string;
+  msdyn_Explanation: string;
+  msdyn_IsAwaitingResponse: boolean;
+  msdyn_IsStuck: boolean;
+  msdyn_IsUnsubscribe: boolean;
+}
+
+/**
  * msdyn_SalesAgents_ProcessEngageAgentResponse response message
+ *
+ * `result` is the value the msdyn_SalesAgents_ProcessEngageAgentResponse action returns (see {@link msdyn_SalesAgents_ProcessEngageAgentResponseResult}).
  */
 export class msdyn_SalesAgents_ProcessEngageAgentResponseResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgents_ProcessEngageAgentResponseResponseData) {
+  constructor(public result: msdyn_SalesAgents_ProcessEngageAgentResponseResult) {
     super("msdyn_SalesAgents_ProcessEngageAgentResponse");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesAgents_ProcessEngageAgentResponseResponse {
     return new msdyn_SalesAgents_ProcessEngageAgentResponseResponse(
-      responseObject<msdyn_SalesAgents_ProcessEngageAgentResponseResponseData>(data)
+      data as msdyn_SalesAgents_ProcessEngageAgentResponseResult
     );
   }
 }

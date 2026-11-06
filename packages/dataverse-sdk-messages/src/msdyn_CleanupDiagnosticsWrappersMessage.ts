@@ -46,9 +46,9 @@ export class msdyn_CleanupDiagnosticsWrappersRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_CleanupDiagnosticsWrappersResponse> {
+  parseResponse(_response: Response): Promise<msdyn_CleanupDiagnosticsWrappersResponse> {
     // No return value (204 No Content)
-    return new msdyn_CleanupDiagnosticsWrappersResponse();
+    return Promise.resolve(new msdyn_CleanupDiagnosticsWrappersResponse());
   }
 }
 
@@ -60,7 +60,7 @@ export class msdyn_CleanupDiagnosticsWrappersResponse extends OrganizationRespon
     super("msdyn_CleanupDiagnosticsWrappers");
   }
 
-  static fromResponse(_data: unknown): msdyn_CleanupDiagnosticsWrappersResponse {
+  static fromResponse(_data?: unknown): msdyn_CleanupDiagnosticsWrappersResponse {
     return new msdyn_CleanupDiagnosticsWrappersResponse();
   }
 }

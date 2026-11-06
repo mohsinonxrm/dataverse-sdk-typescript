@@ -23,10 +23,11 @@ describe.skipIf(!live)("live: collection-bound operations (#69)", () => {
   it("ValidateSavedQuery runs on /savedqueries", async () => {
     const { client } = liveClient();
     const fetchXml = "<fetch><entity name='account'><attribute name='name'/></entity></fetch>";
-    // A valid query: Dataverse answers 204 and the action resolves with no content
+    // A valid query: Dataverse answers 204, and an action without a return type resolves
+    // undefined (#300)
     await expect(
       client.execute(new ValidateSavedQueryAction({ FetchXml: fetchXml, QueryType: 0 }))
-    ).resolves.toEqual({});
+    ).resolves.toBeUndefined();
   });
 
   it("the unbound URL the old code used doesn't exist", async () => {
@@ -70,6 +71,7 @@ describe.skipIf(!live)("live: collection-bound operations (#69)", () => {
   it("RetrievePrivilegeSet runs on /privileges", async () => {
     const { client } = liveClient();
     const result = await client.execute(new RetrievePrivilegeSetFunction());
-    expect(result.value.length).toBeGreaterThan(0);
+    // The collection itself, not { value } (#300)
+    expect(result.length).toBeGreaterThan(0);
   });
 });

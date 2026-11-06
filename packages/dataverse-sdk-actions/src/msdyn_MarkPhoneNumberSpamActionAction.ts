@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_MarkPhoneNumberSpamAction action
+ * Response from the msdyn_MarkPhoneNumberSpamAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_MarkPhoneNumberSpamActionResponse {
+  "@odata.context"?: string;
   ActionResult: string;
 }
 
@@ -50,8 +53,7 @@ export class msdyn_MarkPhoneNumberSpamActionAction implements Executable<msdyn_M
   }
 
   async parseResponse(response: Response): Promise<msdyn_MarkPhoneNumberSpamActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_MarkPhoneNumberSpamActionResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_MarkPhoneNumberSpamActionResponse;
   }
 }

@@ -5,9 +5,12 @@ import type { EntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_mobileapp } from "./types/index.js";
 
 /**
- * Response from msdyn_DownloadMobileAppBuild action
+ * Response from the msdyn_DownloadMobileAppBuild action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_DownloadMobileAppBuildResponse {
+  "@odata.context"?: string;
   Result: string;
 }
 
@@ -51,8 +54,7 @@ export class msdyn_DownloadMobileAppBuildAction implements Executable<msdyn_Down
   }
 
   async parseResponse(response: Response): Promise<msdyn_DownloadMobileAppBuildResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_DownloadMobileAppBuildResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_DownloadMobileAppBuildResponse;
   }
 }

@@ -44,9 +44,9 @@ export class msdyn_StartRIProvisioningRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_StartRIProvisioningResponse> {
+  parseResponse(_response: Response): Promise<msdyn_StartRIProvisioningResponse> {
     // No return value (204 No Content)
-    return new msdyn_StartRIProvisioningResponse();
+    return Promise.resolve(new msdyn_StartRIProvisioningResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class msdyn_StartRIProvisioningResponse extends OrganizationResponse {
     super("msdyn_StartRIProvisioning");
   }
 
-  static fromResponse(_data: unknown): msdyn_StartRIProvisioningResponse {
+  static fromResponse(_data?: unknown): msdyn_StartRIProvisioningResponse {
     return new msdyn_StartRIProvisioningResponse();
   }
 }

@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdynmkt_optoutofallchannelcommunication action
+ * Response from the msdynmkt_optoutofallchannelcommunication action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdynmkt_optoutofallchannelcommunicationResponse {
-  // No content returned
-}
+export type msdynmkt_optoutofallchannelcommunicationResponse = void;
 
 /**
  * Parameters of the msdynmkt_optoutofallchannelcommunication action, by their CSDL names. A parameter the CSDL declares
@@ -47,11 +47,8 @@ export class msdynmkt_optoutofallchannelcommunicationAction implements Executabl
     };
   }
 
-  async parseResponse(
-    response: Response
-  ): Promise<msdynmkt_optoutofallchannelcommunicationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdynmkt_optoutofallchannelcommunicationResponse;
-    return (await response.json()) as msdynmkt_optoutofallchannelcommunicationResponse;
+  parseResponse(_response: Response): Promise<msdynmkt_optoutofallchannelcommunicationResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleResponse as msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRule request message
@@ -31,9 +29,7 @@ export class msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleResponse.fromResponse(
       await response.json()
     );
@@ -41,18 +37,33 @@ export class msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleRequest
 }
 
 /**
+ * Response from the msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRule action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleResult {
+  "@odata.context"?: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRule response message
+ *
+ * `result` is the value the msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRule action returns (see {@link msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleResult}).
  */
 export class msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleResponseData) {
+  constructor(public result: msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleResult) {
     super("msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRule");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(
     data: unknown
   ): msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleResponse {
     return new msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleResponse(
-      responseObject<msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleResponseData>(data)
+      data as msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleResult
     );
   }
 }

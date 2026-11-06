@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRuleResponse as msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRule request message
@@ -31,9 +29,7 @@ export class msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRuleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRuleResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRuleResponse.fromResponse(
       await response.json()
     );
@@ -41,18 +37,33 @@ export class msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRuleRequest
 }
 
 /**
+ * Response from the msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRule action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRuleResult {
+  "@odata.context"?: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRule response message
+ *
+ * `result` is the value the msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRule action returns (see {@link msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRuleResult}).
  */
 export class msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRuleResponseData) {
+  constructor(public result: msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRuleResult) {
     super("msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRule");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(
     data: unknown
   ): msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRuleResponse {
     return new msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRuleResponse(
-      responseObject<msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRuleResponseData>(data)
+      data as msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRuleResult
     );
   }
 }

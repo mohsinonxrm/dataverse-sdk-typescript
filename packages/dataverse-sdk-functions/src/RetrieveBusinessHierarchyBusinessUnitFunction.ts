@@ -2,11 +2,14 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import type { businessunit } from "./types/index.js";
 
 /**
- * Response from RetrieveBusinessHierarchyBusinessUnit function
+ * Response from the RetrieveBusinessHierarchyBusinessUnit function.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface RetrieveBusinessHierarchyBusinessUnitResponse {
-  value: businessunit[];
-}
+export type RetrieveBusinessHierarchyBusinessUnitResponse = Array<
+  businessunit & { "@odata.etag"?: string; "@odata.type"?: string }
+>;
 
 /**
  * RetrieveBusinessHierarchyBusinessUnit function
@@ -33,8 +36,10 @@ export class RetrieveBusinessHierarchyBusinessUnitFunction implements Executable
   }
 
   async parseResponse(response: Response): Promise<RetrieveBusinessHierarchyBusinessUnitResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveBusinessHierarchyBusinessUnitResponse;
-    return (await response.json()) as RetrieveBusinessHierarchyBusinessUnitResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return ((await response.json()) as { value: RetrieveBusinessHierarchyBusinessUnitResponse })
+      .value;
   }
 }

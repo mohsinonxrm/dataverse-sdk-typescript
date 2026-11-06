@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_CopyEventBotRegistrationsCleanup action
+ * Response from the msdyn_CopyEventBotRegistrationsCleanup action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_CopyEventBotRegistrationsCleanupResponse {
-  // No content returned
-}
+export type msdyn_CopyEventBotRegistrationsCleanupResponse = void;
 
 /**
  * msdyn_CopyEventBotRegistrationsCleanup action
@@ -25,9 +25,8 @@ export class msdyn_CopyEventBotRegistrationsCleanupAction implements Executable<
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_CopyEventBotRegistrationsCleanupResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_CopyEventBotRegistrationsCleanupResponse;
-    return (await response.json()) as msdyn_CopyEventBotRegistrationsCleanupResponse;
+  parseResponse(_response: Response): Promise<msdyn_CopyEventBotRegistrationsCleanupResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

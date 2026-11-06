@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_StartEvaluationResponse as msdyn_StartEvaluationResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_StartEvaluation message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,33 @@ export class msdyn_StartEvaluationRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_StartEvaluationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_StartEvaluationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_StartEvaluationResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_StartEvaluation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_StartEvaluationResult {
+  "@odata.context"?: string;
+  jobId: string;
+}
+
+/**
  * msdyn_StartEvaluation response message
+ *
+ * `result` is the value the msdyn_StartEvaluation action returns (see {@link msdyn_StartEvaluationResult}).
  */
 export class msdyn_StartEvaluationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_StartEvaluationResponseData) {
+  constructor(public result: msdyn_StartEvaluationResult) {
     super("msdyn_StartEvaluation");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_StartEvaluationResponse {
-    return new msdyn_StartEvaluationResponse(
-      responseObject<msdyn_StartEvaluationResponseData>(data)
-    );
+    return new msdyn_StartEvaluationResponse(data as msdyn_StartEvaluationResult);
   }
 }

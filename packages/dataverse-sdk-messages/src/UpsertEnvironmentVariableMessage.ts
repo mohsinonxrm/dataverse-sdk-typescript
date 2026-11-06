@@ -56,9 +56,9 @@ export class UpsertEnvironmentVariableRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<UpsertEnvironmentVariableResponse> {
+  parseResponse(_response: Response): Promise<UpsertEnvironmentVariableResponse> {
     // No return value (204 No Content)
-    return new UpsertEnvironmentVariableResponse();
+    return Promise.resolve(new UpsertEnvironmentVariableResponse());
   }
 }
 
@@ -70,7 +70,7 @@ export class UpsertEnvironmentVariableResponse extends OrganizationResponse {
     super("UpsertEnvironmentVariable");
   }
 
-  static fromResponse(_data: unknown): UpsertEnvironmentVariableResponse {
+  static fromResponse(_data?: unknown): UpsertEnvironmentVariableResponse {
     return new UpsertEnvironmentVariableResponse();
   }
 }

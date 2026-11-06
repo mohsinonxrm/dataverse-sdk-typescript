@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_updatelivechatconfigs action
+ * Response from the msdyn_updatelivechatconfigs action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_updatelivechatconfigsResponse {
-  // No content returned
-}
+export type msdyn_updatelivechatconfigsResponse = void;
 
 /**
  * msdyn_updatelivechatconfigs action
@@ -25,9 +25,8 @@ export class msdyn_updatelivechatconfigsAction implements Executable<msdyn_updat
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_updatelivechatconfigsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_updatelivechatconfigsResponse;
-    return (await response.json()) as msdyn_updatelivechatconfigsResponse;
+  parseResponse(_response: Response): Promise<msdyn_updatelivechatconfigsResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

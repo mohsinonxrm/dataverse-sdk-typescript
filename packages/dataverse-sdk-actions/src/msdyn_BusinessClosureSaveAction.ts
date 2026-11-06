@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_BusinessClosureSave action
+ * Response from the msdyn_BusinessClosureSave action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_BusinessClosureSaveResponse {
-  // No content returned
-}
+export type msdyn_BusinessClosureSaveResponse = void;
 
 /**
  * Parameters of the msdyn_BusinessClosureSave action, by their CSDL names. A parameter the CSDL declares
@@ -47,9 +47,8 @@ export class msdyn_BusinessClosureSaveAction implements Executable<msdyn_Busines
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_BusinessClosureSaveResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_BusinessClosureSaveResponse;
-    return (await response.json()) as msdyn_BusinessClosureSaveResponse;
+  parseResponse(_response: Response): Promise<msdyn_BusinessClosureSaveResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

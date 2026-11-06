@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from RetrieveTimestamp function
+ * Response from the RetrieveTimestamp function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveTimestampResponse {
+  "@odata.context"?: string;
   Timestamp: string;
 }
 
@@ -26,8 +29,7 @@ export class RetrieveTimestampFunction implements Executable<RetrieveTimestampRe
   }
 
   async parseResponse(response: Response): Promise<RetrieveTimestampResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveTimestampResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RetrieveTimestampResponse;
   }
 }

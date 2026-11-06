@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from GetSearchInformation function
+ * Response from the GetSearchInformation function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface GetSearchInformationResponse {
+  "@odata.context"?: string;
   CanAllowLeadingWildCardSearch: string;
   CanSupportedByRelevanceSearch: string;
 }
@@ -49,8 +52,7 @@ export class GetSearchInformationFunction implements Executable<GetSearchInforma
   }
 
   async parseResponse(response: Response): Promise<GetSearchInformationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as GetSearchInformationResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as GetSearchInformationResponse;
   }
 }

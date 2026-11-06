@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_AssignVoiceCapacityProfilesActionResponse as msdyn_AssignVoiceCapacityProfilesActionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_AssignVoiceCapacityProfilesAction message, by their CSDL names. A parameter the CSDL declares
@@ -47,24 +45,35 @@ export class msdyn_AssignVoiceCapacityProfilesActionRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_AssignVoiceCapacityProfilesActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_AssignVoiceCapacityProfilesActionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_AssignVoiceCapacityProfilesActionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_AssignVoiceCapacityProfilesAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_AssignVoiceCapacityProfilesActionResult {
+  "@odata.context"?: string;
+  ActionResult: string;
+}
+
+/**
  * msdyn_AssignVoiceCapacityProfilesAction response message
+ *
+ * `result` is the value the msdyn_AssignVoiceCapacityProfilesAction action returns (see {@link msdyn_AssignVoiceCapacityProfilesActionResult}).
  */
 export class msdyn_AssignVoiceCapacityProfilesActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_AssignVoiceCapacityProfilesActionResponseData) {
+  constructor(public result: msdyn_AssignVoiceCapacityProfilesActionResult) {
     super("msdyn_AssignVoiceCapacityProfilesAction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_AssignVoiceCapacityProfilesActionResponse {
     return new msdyn_AssignVoiceCapacityProfilesActionResponse(
-      responseObject<msdyn_AssignVoiceCapacityProfilesActionResponseData>(data)
+      data as msdyn_AssignVoiceCapacityProfilesActionResult
     );
   }
 }

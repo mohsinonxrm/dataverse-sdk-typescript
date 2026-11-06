@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_CompleteOptimizeWorkItemResponse as msdyn_CompleteOptimizeWorkItemResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CompleteOptimizeWorkItem message, by their CSDL names. A parameter the CSDL declares
@@ -59,23 +57,34 @@ export class msdyn_CompleteOptimizeWorkItemRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CompleteOptimizeWorkItemResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_CompleteOptimizeWorkItemResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CompleteOptimizeWorkItemResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CompleteOptimizeWorkItem action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CompleteOptimizeWorkItemResult {
+  "@odata.context"?: string;
+  Accepted: boolean;
+  ResultJson: string;
+}
+
+/**
  * msdyn_CompleteOptimizeWorkItem response message
+ *
+ * `result` is the value the msdyn_CompleteOptimizeWorkItem action returns (see {@link msdyn_CompleteOptimizeWorkItemResult}).
  */
 export class msdyn_CompleteOptimizeWorkItemResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CompleteOptimizeWorkItemResponseData) {
+  constructor(public result: msdyn_CompleteOptimizeWorkItemResult) {
     super("msdyn_CompleteOptimizeWorkItem");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CompleteOptimizeWorkItemResponse {
-    return new msdyn_CompleteOptimizeWorkItemResponse(
-      responseObject<msdyn_CompleteOptimizeWorkItemResponseData>(data)
-    );
+    return new msdyn_CompleteOptimizeWorkItemResponse(data as msdyn_CompleteOptimizeWorkItemResult);
   }
 }

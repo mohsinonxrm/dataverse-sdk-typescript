@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_GetKnowledgeDraftAssistStream action
+ * Response from the msdyn_GetKnowledgeDraftAssistStream action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_GetKnowledgeDraftAssistStreamResponse {
-  // No content returned
-}
+export type msdyn_GetKnowledgeDraftAssistStreamResponse = void;
 
 /**
  * Parameters of the msdyn_GetKnowledgeDraftAssistStream action, by their CSDL names. A parameter the CSDL declares
@@ -43,9 +43,8 @@ export class msdyn_GetKnowledgeDraftAssistStreamAction implements Executable<msd
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_GetKnowledgeDraftAssistStreamResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_GetKnowledgeDraftAssistStreamResponse;
-    return (await response.json()) as msdyn_GetKnowledgeDraftAssistStreamResponse;
+  parseResponse(_response: Response): Promise<msdyn_GetKnowledgeDraftAssistStreamResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

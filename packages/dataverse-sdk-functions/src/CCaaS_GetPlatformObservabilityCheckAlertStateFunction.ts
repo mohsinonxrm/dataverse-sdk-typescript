@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from CCaaS_GetPlatformObservabilityCheckAlertState function
+ * Response from the CCaaS_GetPlatformObservabilityCheckAlertState function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CCaaS_GetPlatformObservabilityCheckAlertStateResponse {
+  "@odata.context"?: string;
   ResponseBody: string;
 }
 
@@ -52,8 +55,7 @@ export class CCaaS_GetPlatformObservabilityCheckAlertStateFunction implements Ex
   async parseResponse(
     response: Response
   ): Promise<CCaaS_GetPlatformObservabilityCheckAlertStateResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CCaaS_GetPlatformObservabilityCheckAlertStateResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as CCaaS_GetPlatformObservabilityCheckAlertStateResponse;
   }
 }

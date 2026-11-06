@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_OptimizeCoordinatorTick action
+ * Response from the msdyn_OptimizeCoordinatorTick action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_OptimizeCoordinatorTickResponse {
+  "@odata.context"?: string;
   ResultJson: string;
 }
 
@@ -44,8 +47,7 @@ export class msdyn_OptimizeCoordinatorTickAction implements Executable<msdyn_Opt
   }
 
   async parseResponse(response: Response): Promise<msdyn_OptimizeCoordinatorTickResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_OptimizeCoordinatorTickResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_OptimizeCoordinatorTickResponse;
   }
 }

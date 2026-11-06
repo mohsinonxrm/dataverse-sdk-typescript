@@ -6,9 +6,12 @@ import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { AccessRights } from "./types/index.js";
 
 /**
- * Response from GenerateSharedLink action
+ * Response from the GenerateSharedLink action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface GenerateSharedLinkResponse {
+  "@odata.context"?: string;
   Response: string;
 }
 
@@ -48,8 +51,7 @@ export class GenerateSharedLinkAction implements Executable<GenerateSharedLinkRe
   }
 
   async parseResponse(response: Response): Promise<GenerateSharedLinkResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as GenerateSharedLinkResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as GenerateSharedLinkResponse;
   }
 }

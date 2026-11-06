@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_OcAgentsShouldHaveCapacityRuleResponse as msdyn_OcAgentsShouldHaveCapacityRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_OcAgentsShouldHaveCapacityRule request message
@@ -29,24 +27,37 @@ export class msdyn_OcAgentsShouldHaveCapacityRuleRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_OcAgentsShouldHaveCapacityRuleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_OcAgentsShouldHaveCapacityRuleResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_OcAgentsShouldHaveCapacityRuleResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_OcAgentsShouldHaveCapacityRule action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_OcAgentsShouldHaveCapacityRuleResult {
+  "@odata.context"?: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_OcAgentsShouldHaveCapacityRule response message
+ *
+ * `result` is the value the msdyn_OcAgentsShouldHaveCapacityRule action returns (see {@link msdyn_OcAgentsShouldHaveCapacityRuleResult}).
  */
 export class msdyn_OcAgentsShouldHaveCapacityRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_OcAgentsShouldHaveCapacityRuleResponseData) {
+  constructor(public result: msdyn_OcAgentsShouldHaveCapacityRuleResult) {
     super("msdyn_OcAgentsShouldHaveCapacityRule");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_OcAgentsShouldHaveCapacityRuleResponse {
     return new msdyn_OcAgentsShouldHaveCapacityRuleResponse(
-      responseObject<msdyn_OcAgentsShouldHaveCapacityRuleResponseData>(data)
+      data as msdyn_OcAgentsShouldHaveCapacityRuleResult
     );
   }
 }

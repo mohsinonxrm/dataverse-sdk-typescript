@@ -42,11 +42,11 @@ export class msdyn_AutoCaseClosureAgentGenerateFollowupEmailRequest
     };
   }
 
-  async parseResponse(
-    response: Response
+  parseResponse(
+    _response: Response
   ): Promise<msdyn_AutoCaseClosureAgentGenerateFollowupEmailResponse> {
     // No return value (204 No Content)
-    return new msdyn_AutoCaseClosureAgentGenerateFollowupEmailResponse();
+    return Promise.resolve(new msdyn_AutoCaseClosureAgentGenerateFollowupEmailResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class msdyn_AutoCaseClosureAgentGenerateFollowupEmailResponse extends Org
     super("msdyn_AutoCaseClosureAgentGenerateFollowupEmail");
   }
 
-  static fromResponse(_data: unknown): msdyn_AutoCaseClosureAgentGenerateFollowupEmailResponse {
+  static fromResponse(_data?: unknown): msdyn_AutoCaseClosureAgentGenerateFollowupEmailResponse {
     return new msdyn_AutoCaseClosureAgentGenerateFollowupEmailResponse();
   }
 }

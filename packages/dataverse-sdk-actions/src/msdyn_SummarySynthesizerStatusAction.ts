@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_SummarySynthesizerStatus action
+ * Response from the msdyn_SummarySynthesizerStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_SummarySynthesizerStatusResponse {
+  "@odata.context"?: string;
   ErrorMessage: string;
   IsComplete: boolean;
   IsSuccess: boolean;
@@ -44,8 +47,7 @@ export class msdyn_SummarySynthesizerStatusAction implements Executable<msdyn_Su
   }
 
   async parseResponse(response: Response): Promise<msdyn_SummarySynthesizerStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_SummarySynthesizerStatusResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_SummarySynthesizerStatusResponse;
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { ValidateAIConfigurationResponse as ValidateAIConfigurationResponseData } from "./types/index.js";
 
 /**
  * Parameters of the ValidateAIConfiguration message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class ValidateAIConfigurationRequest
   }
 
   async parseResponse(response: Response): Promise<ValidateAIConfigurationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return ValidateAIConfigurationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return ValidateAIConfigurationResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the ValidateAIConfiguration action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface ValidateAIConfigurationResult {
+  "@odata.context"?: string;
+  result: string;
+}
+
+/**
  * ValidateAIConfiguration response message
+ *
+ * `result` is the value the ValidateAIConfiguration action returns (see {@link ValidateAIConfigurationResult}).
  */
 export class ValidateAIConfigurationResponse extends OrganizationResponse {
-  constructor(public result: ValidateAIConfigurationResponseData) {
+  constructor(public result: ValidateAIConfigurationResult) {
     super("ValidateAIConfiguration");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): ValidateAIConfigurationResponse {
-    return new ValidateAIConfigurationResponse(
-      responseObject<ValidateAIConfigurationResponseData>(data)
-    );
+    return new ValidateAIConfigurationResponse(data as ValidateAIConfigurationResult);
   }
 }

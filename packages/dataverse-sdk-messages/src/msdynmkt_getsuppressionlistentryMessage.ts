@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdynmkt_getsuppressionlistentryResponse as msdynmkt_getsuppressionlistentryResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdynmkt_getsuppressionlistentry message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,35 @@ export class msdynmkt_getsuppressionlistentryRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_getsuppressionlistentryResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdynmkt_getsuppressionlistentryResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdynmkt_getsuppressionlistentryResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdynmkt_getsuppressionlistentry action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdynmkt_getsuppressionlistentryResult {
+  "@odata.context"?: string;
+  msdynmkt_getsuppressionlistentryresponse: string;
+}
+
+/**
  * msdynmkt_getsuppressionlistentry response message
+ *
+ * `result` is the value the msdynmkt_getsuppressionlistentry action returns (see {@link msdynmkt_getsuppressionlistentryResult}).
  */
 export class msdynmkt_getsuppressionlistentryResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_getsuppressionlistentryResponseData) {
+  constructor(public result: msdynmkt_getsuppressionlistentryResult) {
     super("msdynmkt_getsuppressionlistentry");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdynmkt_getsuppressionlistentryResponse {
     return new msdynmkt_getsuppressionlistentryResponse(
-      responseObject<msdynmkt_getsuppressionlistentryResponseData>(data)
+      data as msdynmkt_getsuppressionlistentryResult
     );
   }
 }

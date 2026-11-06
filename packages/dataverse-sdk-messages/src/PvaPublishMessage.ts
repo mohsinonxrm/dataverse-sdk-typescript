@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { PvaPublishResponse as PvaPublishResponseData } from "./types/index.js";
 
 /**
  * PvaPublish request message
@@ -32,21 +30,33 @@ export class PvaPublishRequest
   }
 
   async parseResponse(response: Response): Promise<PvaPublishResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return PvaPublishResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return PvaPublishResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the PvaPublish action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface PvaPublishResult {
+  "@odata.context"?: string;
+  PublishedBotContentId: string;
+}
+
+/**
  * PvaPublish response message
+ *
+ * `result` is the value the PvaPublish action returns (see {@link PvaPublishResult}).
  */
 export class PvaPublishResponse extends OrganizationResponse {
-  constructor(public result: PvaPublishResponseData) {
+  constructor(public result: PvaPublishResult) {
     super("PvaPublish");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): PvaPublishResponse {
-    return new PvaPublishResponse(responseObject<PvaPublishResponseData>(data));
+    return new PvaPublishResponse(data as PvaPublishResult);
   }
 }

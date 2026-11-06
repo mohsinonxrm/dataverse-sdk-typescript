@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GlobalSettingsResponse as msdyn_GlobalSettingsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GlobalSettings message, by their CSDL names. A parameter the CSDL declares
@@ -45,21 +43,33 @@ export class msdyn_GlobalSettingsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GlobalSettingsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GlobalSettingsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GlobalSettingsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GlobalSettings action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GlobalSettingsResult {
+  "@odata.context"?: string;
+  SettingsLink: string;
+}
+
+/**
  * msdyn_GlobalSettings response message
+ *
+ * `result` is the value the msdyn_GlobalSettings action returns (see {@link msdyn_GlobalSettingsResult}).
  */
 export class msdyn_GlobalSettingsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GlobalSettingsResponseData) {
+  constructor(public result: msdyn_GlobalSettingsResult) {
     super("msdyn_GlobalSettings");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GlobalSettingsResponse {
-    return new msdyn_GlobalSettingsResponse(responseObject<msdyn_GlobalSettingsResponseData>(data));
+    return new msdyn_GlobalSettingsResponse(data as msdyn_GlobalSettingsResult);
   }
 }

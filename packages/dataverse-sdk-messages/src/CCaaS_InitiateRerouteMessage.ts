@@ -48,9 +48,9 @@ export class CCaaS_InitiateRerouteRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_InitiateRerouteResponse> {
+  parseResponse(_response: Response): Promise<CCaaS_InitiateRerouteResponse> {
     // No return value (204 No Content)
-    return new CCaaS_InitiateRerouteResponse();
+    return Promise.resolve(new CCaaS_InitiateRerouteResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class CCaaS_InitiateRerouteResponse extends OrganizationResponse {
     super("CCaaS_InitiateReroute");
   }
 
-  static fromResponse(_data: unknown): CCaaS_InitiateRerouteResponse {
+  static fromResponse(_data?: unknown): CCaaS_InitiateRerouteResponse {
     return new CCaaS_InitiateRerouteResponse();
   }
 }

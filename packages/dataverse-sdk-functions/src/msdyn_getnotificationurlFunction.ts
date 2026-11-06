@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from msdyn_getnotificationurl function
+ * Response from the msdyn_getnotificationurl function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_getnotificationurlResponse {
+  "@odata.context"?: string;
   notificationurl: string;
   scopes: string[];
   tenant: string;
@@ -55,8 +58,7 @@ export class msdyn_getnotificationurlFunction implements Executable<msdyn_getnot
   }
 
   async parseResponse(response: Response): Promise<msdyn_getnotificationurlResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_getnotificationurlResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_getnotificationurlResponse;
   }
 }

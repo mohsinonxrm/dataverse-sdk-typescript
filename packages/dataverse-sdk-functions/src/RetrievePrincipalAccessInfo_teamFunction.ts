@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from RetrievePrincipalAccessInfo function
+ * Response from the RetrievePrincipalAccessInfo function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrievePrincipalAccessInfo_teamResponse {
+  "@odata.context"?: string;
   AccessInfo: string;
 }
 
@@ -60,8 +63,7 @@ export class RetrievePrincipalAccessInfo_teamFunction implements Executable<Retr
   }
 
   async parseResponse(response: Response): Promise<RetrievePrincipalAccessInfo_teamResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrievePrincipalAccessInfo_teamResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RetrievePrincipalAccessInfo_teamResponse;
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CreateMiniCampaignV2Response as CreateMiniCampaignV2ResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CreateMiniCampaignV2 message, by their CSDL names. A parameter the CSDL declares
@@ -73,21 +71,33 @@ export class CreateMiniCampaignV2Request
   }
 
   async parseResponse(response: Response): Promise<CreateMiniCampaignV2Response> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CreateMiniCampaignV2Response.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CreateMiniCampaignV2Response.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CreateMiniCampaignV2 action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CreateMiniCampaignV2Result {
+  "@odata.context"?: string;
+  BulkOperationId: string;
+}
+
+/**
  * CreateMiniCampaignV2 response message
+ *
+ * `result` is the value the CreateMiniCampaignV2 action returns (see {@link CreateMiniCampaignV2Result}).
  */
 export class CreateMiniCampaignV2Response extends OrganizationResponse {
-  constructor(public result: CreateMiniCampaignV2ResponseData) {
+  constructor(public result: CreateMiniCampaignV2Result) {
     super("CreateMiniCampaignV2");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CreateMiniCampaignV2Response {
-    return new CreateMiniCampaignV2Response(responseObject<CreateMiniCampaignV2ResponseData>(data));
+    return new CreateMiniCampaignV2Response(data as CreateMiniCampaignV2Result);
   }
 }

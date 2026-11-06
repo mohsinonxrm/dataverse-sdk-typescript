@@ -48,9 +48,9 @@ export class msdyn_UpdateModelStatusRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_UpdateModelStatusResponse> {
+  parseResponse(_response: Response): Promise<msdyn_UpdateModelStatusResponse> {
     // No return value (204 No Content)
-    return new msdyn_UpdateModelStatusResponse();
+    return Promise.resolve(new msdyn_UpdateModelStatusResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class msdyn_UpdateModelStatusResponse extends OrganizationResponse {
     super("msdyn_UpdateModelStatus");
   }
 
-  static fromResponse(_data: unknown): msdyn_UpdateModelStatusResponse {
+  static fromResponse(_data?: unknown): msdyn_UpdateModelStatusResponse {
     return new msdyn_UpdateModelStatusResponse();
   }
 }

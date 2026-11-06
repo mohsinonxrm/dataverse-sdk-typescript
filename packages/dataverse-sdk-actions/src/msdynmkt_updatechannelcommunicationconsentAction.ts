@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdynmkt_updatechannelcommunicationconsent action
+ * Response from the msdynmkt_updatechannelcommunicationconsent action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdynmkt_updatechannelcommunicationconsentResponse {
-  // No content returned
-}
+export type msdynmkt_updatechannelcommunicationconsentResponse = void;
 
 /**
  * Parameters of the msdynmkt_updatechannelcommunicationconsent action, by their CSDL names. A parameter the CSDL declares
@@ -53,11 +53,8 @@ export class msdynmkt_updatechannelcommunicationconsentAction implements Executa
     };
   }
 
-  async parseResponse(
-    response: Response
-  ): Promise<msdynmkt_updatechannelcommunicationconsentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdynmkt_updatechannelcommunicationconsentResponse;
-    return (await response.json()) as msdynmkt_updatechannelcommunicationconsentResponse;
+  parseResponse(_response: Response): Promise<msdynmkt_updatechannelcommunicationconsentResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

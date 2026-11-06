@@ -5,9 +5,12 @@ import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { teamtemplate } from "./types/index.js";
 
 /**
- * Response from RemoveUserFromRecordTeam action
+ * Response from the RemoveUserFromRecordTeam action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RemoveUserFromRecordTeamResponse {
+  "@odata.context"?: string;
   AccessTeamId: string;
 }
 
@@ -54,8 +57,7 @@ export class RemoveUserFromRecordTeamAction implements Executable<RemoveUserFrom
   }
 
   async parseResponse(response: Response): Promise<RemoveUserFromRecordTeamResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RemoveUserFromRecordTeamResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RemoveUserFromRecordTeamResponse;
   }
 }

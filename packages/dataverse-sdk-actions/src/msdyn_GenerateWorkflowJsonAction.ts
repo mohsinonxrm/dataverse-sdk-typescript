@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_GenerateWorkflowJson action
+ * Response from the msdyn_GenerateWorkflowJson action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GenerateWorkflowJsonResponse {
+  "@odata.context"?: string;
   conflicts: string;
   msdyn_errormessage: string;
   msdyn_promptstatus: number;
@@ -56,8 +59,7 @@ export class msdyn_GenerateWorkflowJsonAction implements Executable<msdyn_Genera
   }
 
   async parseResponse(response: Response): Promise<msdyn_GenerateWorkflowJsonResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_GenerateWorkflowJsonResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_GenerateWorkflowJsonResponse;
   }
 }

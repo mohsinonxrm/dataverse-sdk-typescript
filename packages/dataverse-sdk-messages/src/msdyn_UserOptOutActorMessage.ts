@@ -42,9 +42,9 @@ export class msdyn_UserOptOutActorRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_UserOptOutActorResponse> {
+  parseResponse(_response: Response): Promise<msdyn_UserOptOutActorResponse> {
     // No return value (204 No Content)
-    return new msdyn_UserOptOutActorResponse();
+    return Promise.resolve(new msdyn_UserOptOutActorResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_UserOptOutActorResponse extends OrganizationResponse {
     super("msdyn_UserOptOutActor");
   }
 
-  static fromResponse(_data: unknown): msdyn_UserOptOutActorResponse {
+  static fromResponse(_data?: unknown): msdyn_UserOptOutActorResponse {
     return new msdyn_UserOptOutActorResponse();
   }
 }

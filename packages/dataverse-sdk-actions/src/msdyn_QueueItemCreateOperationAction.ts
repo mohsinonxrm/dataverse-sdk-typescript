@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_QueueItemCreateOperation action
+ * Response from the msdyn_QueueItemCreateOperation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_QueueItemCreateOperationResponse {
+  "@odata.context"?: string;
   msdyn_queueItemCreateAPIResponse: string;
 }
 
@@ -42,8 +45,7 @@ export class msdyn_QueueItemCreateOperationAction implements Executable<msdyn_Qu
   }
 
   async parseResponse(response: Response): Promise<msdyn_QueueItemCreateOperationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_QueueItemCreateOperationResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_QueueItemCreateOperationResponse;
   }
 }

@@ -5,11 +5,11 @@ import type { EntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_iotalert } from "./types/index.js";
 
 /**
- * Response from msdyn_IoTNewPrimaryAlert action
+ * Response from the msdyn_IoTNewPrimaryAlert action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_IoTNewPrimaryAlertResponse {
-  // No content returned
-}
+export type msdyn_IoTNewPrimaryAlertResponse = void;
 
 /**
  * Parameters of the msdyn_IoTNewPrimaryAlert action, by their CSDL names. A parameter the CSDL declares
@@ -44,9 +44,8 @@ export class msdyn_IoTNewPrimaryAlertAction implements Executable<msdyn_IoTNewPr
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_IoTNewPrimaryAlertResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_IoTNewPrimaryAlertResponse;
-    return (await response.json()) as msdyn_IoTNewPrimaryAlertResponse;
+  parseResponse(_response: Response): Promise<msdyn_IoTNewPrimaryAlertResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

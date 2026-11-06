@@ -5,9 +5,12 @@ import type { EntityPayload } from "./types/EntityPayload.js";
 import type { sitemap } from "./types/index.js";
 
 /**
- * Response from msdyn_SiteMapDiagnosis action
+ * Response from the msdyn_SiteMapDiagnosis action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_SiteMapDiagnosisResponse {
+  "@odata.context"?: string;
   HelpLink: string;
   Message: string;
   RepairIssueType: string;
@@ -51,8 +54,7 @@ export class msdyn_SiteMapDiagnosisAction implements Executable<msdyn_SiteMapDia
   }
 
   async parseResponse(response: Response): Promise<msdyn_SiteMapDiagnosisResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_SiteMapDiagnosisResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_SiteMapDiagnosisResponse;
   }
 }

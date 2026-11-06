@@ -4,11 +4,11 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdyn_ApplyRoutingRuleEntityRecord action
+ * Response from the msdyn_ApplyRoutingRuleEntityRecord action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_ApplyRoutingRuleEntityRecordResponse {
-  // No content returned
-}
+export type msdyn_ApplyRoutingRuleEntityRecordResponse = void;
 
 /**
  * Parameters of the msdyn_ApplyRoutingRuleEntityRecord action, by their CSDL names. A parameter the CSDL declares
@@ -43,9 +43,8 @@ export class msdyn_ApplyRoutingRuleEntityRecordAction implements Executable<msdy
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ApplyRoutingRuleEntityRecordResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_ApplyRoutingRuleEntityRecordResponse;
-    return (await response.json()) as msdyn_ApplyRoutingRuleEntityRecordResponse;
+  parseResponse(_response: Response): Promise<msdyn_ApplyRoutingRuleEntityRecordResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

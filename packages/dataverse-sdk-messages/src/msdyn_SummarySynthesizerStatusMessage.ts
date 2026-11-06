@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SummarySynthesizerStatusResponse as msdyn_SummarySynthesizerStatusResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SummarySynthesizerStatus message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,35 @@ export class msdyn_SummarySynthesizerStatusRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SummarySynthesizerStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_SummarySynthesizerStatusResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SummarySynthesizerStatusResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SummarySynthesizerStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SummarySynthesizerStatusResult {
+  "@odata.context"?: string;
+  ErrorMessage: string;
+  IsComplete: boolean;
+  IsSuccess: boolean;
+}
+
+/**
  * msdyn_SummarySynthesizerStatus response message
+ *
+ * `result` is the value the msdyn_SummarySynthesizerStatus action returns (see {@link msdyn_SummarySynthesizerStatusResult}).
  */
 export class msdyn_SummarySynthesizerStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SummarySynthesizerStatusResponseData) {
+  constructor(public result: msdyn_SummarySynthesizerStatusResult) {
     super("msdyn_SummarySynthesizerStatus");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SummarySynthesizerStatusResponse {
-    return new msdyn_SummarySynthesizerStatusResponse(
-      responseObject<msdyn_SummarySynthesizerStatusResponseData>(data)
-    );
+    return new msdyn_SummarySynthesizerStatusResponse(data as msdyn_SummarySynthesizerStatusResult);
   }
 }

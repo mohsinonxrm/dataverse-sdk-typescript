@@ -1,10 +1,9 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { RescheduleResponse as RescheduleResponseData } from "./types/index.js";
+import type { BusinessNotification, ValidationResult } from "./types/index.js";
 
 /**
  * Parameters of the Reschedule message, by their CSDL names. A parameter the CSDL declares
@@ -49,21 +48,34 @@ export class RescheduleRequest
   }
 
   async parseResponse(response: Response): Promise<RescheduleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return RescheduleResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return RescheduleResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the Reschedule action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface RescheduleResult {
+  "@odata.context"?: string;
+  Notifications: BusinessNotification[];
+  ValidationResult: ValidationResult;
+}
+
+/**
  * Reschedule response message
+ *
+ * `result` is the value the Reschedule action returns (see {@link RescheduleResult}).
  */
 export class RescheduleResponse extends OrganizationResponse {
-  constructor(public result: RescheduleResponseData) {
+  constructor(public result: RescheduleResult) {
     super("Reschedule");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): RescheduleResponse {
-    return new RescheduleResponse(responseObject<RescheduleResponseData>(data));
+    return new RescheduleResponse(data as RescheduleResult);
   }
 }

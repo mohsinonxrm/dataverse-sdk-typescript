@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_PollCopilotAgentResponsesResponse as msdyn_PollCopilotAgentResponsesResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_PollCopilotAgentResponses message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,36 @@ export class msdyn_PollCopilotAgentResponsesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_PollCopilotAgentResponsesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_PollCopilotAgentResponsesResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_PollCopilotAgentResponsesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_PollCopilotAgentResponses action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_PollCopilotAgentResponsesResult {
+  "@odata.context"?: string;
+  Response: string;
+  ResponseMarker: string;
+}
+
+/**
  * msdyn_PollCopilotAgentResponses response message
+ *
+ * `result` is the value the msdyn_PollCopilotAgentResponses action returns (see {@link msdyn_PollCopilotAgentResponsesResult}).
  */
 export class msdyn_PollCopilotAgentResponsesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_PollCopilotAgentResponsesResponseData) {
+  constructor(public result: msdyn_PollCopilotAgentResponsesResult) {
     super("msdyn_PollCopilotAgentResponses");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_PollCopilotAgentResponsesResponse {
     return new msdyn_PollCopilotAgentResponsesResponse(
-      responseObject<msdyn_PollCopilotAgentResponsesResponseData>(data)
+      data as msdyn_PollCopilotAgentResponsesResult
     );
   }
 }

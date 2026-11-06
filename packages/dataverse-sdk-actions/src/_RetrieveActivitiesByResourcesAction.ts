@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from _RetrieveActivitiesByResources action
+ * Response from the _RetrieveActivitiesByResources action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface _RetrieveActivitiesByResourcesResponse {
+  "@odata.context"?: string;
   ExceptionMessage: string;
   Result: string;
 }
@@ -49,8 +52,7 @@ export class _RetrieveActivitiesByResourcesAction implements Executable<_Retriev
   }
 
   async parseResponse(response: Response): Promise<_RetrieveActivitiesByResourcesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as _RetrieveActivitiesByResourcesResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as _RetrieveActivitiesByResourcesResponse;
   }
 }

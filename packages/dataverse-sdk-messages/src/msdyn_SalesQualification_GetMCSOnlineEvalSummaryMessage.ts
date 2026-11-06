@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesQualification_GetMCSOnlineEvalSummaryResponse as msdyn_SalesQualification_GetMCSOnlineEvalSummaryResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesQualification_GetMCSOnlineEvalSummary message, by their CSDL names. A parameter the CSDL declares
@@ -51,9 +49,7 @@ export class msdyn_SalesQualification_GetMCSOnlineEvalSummaryRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesQualification_GetMCSOnlineEvalSummaryResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_SalesQualification_GetMCSOnlineEvalSummaryResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesQualification_GetMCSOnlineEvalSummaryResponse.fromResponse(
       await response.json()
     );
@@ -61,16 +57,31 @@ export class msdyn_SalesQualification_GetMCSOnlineEvalSummaryRequest
 }
 
 /**
+ * Response from the msdyn_SalesQualification_GetMCSOnlineEvalSummary action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesQualification_GetMCSOnlineEvalSummaryResult {
+  "@odata.context"?: string;
+  ErrorMessage: string;
+  IsSuccess: boolean;
+  SummaryJson: string;
+}
+
+/**
  * msdyn_SalesQualification_GetMCSOnlineEvalSummary response message
+ *
+ * `result` is the value the msdyn_SalesQualification_GetMCSOnlineEvalSummary action returns (see {@link msdyn_SalesQualification_GetMCSOnlineEvalSummaryResult}).
  */
 export class msdyn_SalesQualification_GetMCSOnlineEvalSummaryResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesQualification_GetMCSOnlineEvalSummaryResponseData) {
+  constructor(public result: msdyn_SalesQualification_GetMCSOnlineEvalSummaryResult) {
     super("msdyn_SalesQualification_GetMCSOnlineEvalSummary");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesQualification_GetMCSOnlineEvalSummaryResponse {
     return new msdyn_SalesQualification_GetMCSOnlineEvalSummaryResponse(
-      responseObject<msdyn_SalesQualification_GetMCSOnlineEvalSummaryResponseData>(data)
+      data as msdyn_SalesQualification_GetMCSOnlineEvalSummaryResult
     );
   }
 }

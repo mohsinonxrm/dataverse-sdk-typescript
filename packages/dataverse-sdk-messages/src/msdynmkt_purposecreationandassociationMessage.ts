@@ -60,9 +60,9 @@ export class msdynmkt_purposecreationandassociationRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdynmkt_purposecreationandassociationResponse> {
+  parseResponse(_response: Response): Promise<msdynmkt_purposecreationandassociationResponse> {
     // No return value (204 No Content)
-    return new msdynmkt_purposecreationandassociationResponse();
+    return Promise.resolve(new msdynmkt_purposecreationandassociationResponse());
   }
 }
 
@@ -74,7 +74,7 @@ export class msdynmkt_purposecreationandassociationResponse extends Organization
     super("msdynmkt_purposecreationandassociation");
   }
 
-  static fromResponse(_data: unknown): msdynmkt_purposecreationandassociationResponse {
+  static fromResponse(_data?: unknown): msdynmkt_purposecreationandassociationResponse {
     return new msdynmkt_purposecreationandassociationResponse();
   }
 }

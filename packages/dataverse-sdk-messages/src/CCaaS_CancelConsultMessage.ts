@@ -50,9 +50,9 @@ export class CCaaS_CancelConsultRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_CancelConsultResponse> {
+  parseResponse(_response: Response): Promise<CCaaS_CancelConsultResponse> {
     // No return value (204 No Content)
-    return new CCaaS_CancelConsultResponse();
+    return Promise.resolve(new CCaaS_CancelConsultResponse());
   }
 }
 
@@ -64,7 +64,7 @@ export class CCaaS_CancelConsultResponse extends OrganizationResponse {
     super("CCaaS_CancelConsult");
   }
 
-  static fromResponse(_data: unknown): CCaaS_CancelConsultResponse {
+  static fromResponse(_data?: unknown): CCaaS_CancelConsultResponse {
     return new CCaaS_CancelConsultResponse();
   }
 }

@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_CleanUpEmailNBACardsPlugin action
+ * Response from the msdyn_CleanUpEmailNBACardsPlugin action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_CleanUpEmailNBACardsPluginResponse {
-  // No content returned
-}
+export type msdyn_CleanUpEmailNBACardsPluginResponse = void;
 
 /**
  * Parameters of the msdyn_CleanUpEmailNBACardsPlugin action, by their CSDL names. A parameter the CSDL declares
@@ -41,9 +41,8 @@ export class msdyn_CleanUpEmailNBACardsPluginAction implements Executable<msdyn_
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_CleanUpEmailNBACardsPluginResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_CleanUpEmailNBACardsPluginResponse;
-    return (await response.json()) as msdyn_CleanUpEmailNBACardsPluginResponse;
+  parseResponse(_response: Response): Promise<msdyn_CleanUpEmailNBACardsPluginResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from GetEntitiesEligibleForRecycleBin action
+ * Response from the GetEntitiesEligibleForRecycleBin action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface GetEntitiesEligibleForRecycleBinResponse {
+  "@odata.context"?: string;
   Result: string;
 }
 
@@ -26,8 +29,7 @@ export class GetEntitiesEligibleForRecycleBinAction implements Executable<GetEnt
   }
 
   async parseResponse(response: Response): Promise<GetEntitiesEligibleForRecycleBinResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as GetEntitiesEligibleForRecycleBinResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as GetEntitiesEligibleForRecycleBinResponse;
   }
 }

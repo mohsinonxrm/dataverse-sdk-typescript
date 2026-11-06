@@ -29,9 +29,9 @@ export class TriggerServiceEndpointCheckRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<TriggerServiceEndpointCheckResponse> {
+  parseResponse(_response: Response): Promise<TriggerServiceEndpointCheckResponse> {
     // No return value (204 No Content)
-    return new TriggerServiceEndpointCheckResponse();
+    return Promise.resolve(new TriggerServiceEndpointCheckResponse());
   }
 }
 
@@ -43,7 +43,7 @@ export class TriggerServiceEndpointCheckResponse extends OrganizationResponse {
     super("TriggerServiceEndpointCheck");
   }
 
-  static fromResponse(_data: unknown): TriggerServiceEndpointCheckResponse {
+  static fromResponse(_data?: unknown): TriggerServiceEndpointCheckResponse {
     return new TriggerServiceEndpointCheckResponse();
   }
 }

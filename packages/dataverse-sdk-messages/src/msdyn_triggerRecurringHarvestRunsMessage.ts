@@ -26,9 +26,9 @@ export class msdyn_triggerRecurringHarvestRunsRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_triggerRecurringHarvestRunsResponse> {
+  parseResponse(_response: Response): Promise<msdyn_triggerRecurringHarvestRunsResponse> {
     // No return value (204 No Content)
-    return new msdyn_triggerRecurringHarvestRunsResponse();
+    return Promise.resolve(new msdyn_triggerRecurringHarvestRunsResponse());
   }
 }
 
@@ -40,7 +40,7 @@ export class msdyn_triggerRecurringHarvestRunsResponse extends OrganizationRespo
     super("msdyn_triggerRecurringHarvestRuns");
   }
 
-  static fromResponse(_data: unknown): msdyn_triggerRecurringHarvestRunsResponse {
+  static fromResponse(_data?: unknown): msdyn_triggerRecurringHarvestRunsResponse {
     return new msdyn_triggerRecurringHarvestRunsResponse();
   }
 }

@@ -3,9 +3,12 @@ import { requestBody } from "./internal/requestBody.js";
 import type { Label } from "./types/index.js";
 
 /**
- * Response from InsertOptionValue action
+ * Response from the InsertOptionValue action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface InsertOptionValueResponse {
+  "@odata.context"?: string;
   NewOptionValue: number;
 }
 
@@ -63,8 +66,7 @@ export class InsertOptionValueAction implements Executable<InsertOptionValueResp
   }
 
   async parseResponse(response: Response): Promise<InsertOptionValueResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as InsertOptionValueResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as InsertOptionValueResponse;
   }
 }

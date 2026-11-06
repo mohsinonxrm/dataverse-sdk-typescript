@@ -50,9 +50,9 @@ export class QualifyMemberListRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<QualifyMemberListResponse> {
+  parseResponse(_response: Response): Promise<QualifyMemberListResponse> {
     // No return value (204 No Content)
-    return new QualifyMemberListResponse();
+    return Promise.resolve(new QualifyMemberListResponse());
   }
 }
 
@@ -64,7 +64,7 @@ export class QualifyMemberListResponse extends OrganizationResponse {
     super("QualifyMemberList");
   }
 
-  static fromResponse(_data: unknown): QualifyMemberListResponse {
+  static fromResponse(_data?: unknown): QualifyMemberListResponse {
     return new QualifyMemberListResponse();
   }
 }

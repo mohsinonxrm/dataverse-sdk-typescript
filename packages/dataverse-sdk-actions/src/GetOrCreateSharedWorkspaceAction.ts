@@ -5,14 +5,18 @@ import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { sharedworkspace } from "./types/index.js";
 
 /**
- * Response from GetOrCreateSharedWorkspace action
+ * Response from the GetOrCreateSharedWorkspace action.
  *
- * The response is the entity itself, not wrapped in `value`.
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface GetOrCreateSharedWorkspaceResponse extends sharedworkspace {
-  "@odata.context"?: string;
-  "@odata.etag"?: string;
-}
+export type GetOrCreateSharedWorkspaceResponse =
+  | (sharedworkspace & {
+      "@odata.context"?: string;
+      "@odata.etag"?: string;
+      "@odata.type"?: string;
+    })
+  | null;
 
 /**
  * Parameters of the GetOrCreateSharedWorkspace action, by their CSDL names. A parameter the CSDL declares
@@ -50,8 +54,9 @@ export class GetOrCreateSharedWorkspaceAction implements Executable<GetOrCreateS
   }
 
   async parseResponse(response: Response): Promise<GetOrCreateSharedWorkspaceResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as GetOrCreateSharedWorkspaceResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
     return (await response.json()) as GetOrCreateSharedWorkspaceResponse;
   }
 }

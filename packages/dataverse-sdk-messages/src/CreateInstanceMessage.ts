@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { CreateInstanceResponse as CreateInstanceResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CreateInstance message, by their CSDL names. A parameter the CSDL declares
@@ -49,21 +47,33 @@ export class CreateInstanceRequest
   }
 
   async parseResponse(response: Response): Promise<CreateInstanceResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CreateInstanceResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CreateInstanceResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CreateInstance action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CreateInstanceResult {
+  "@odata.context"?: string;
+  SeriesCanBeExpanded: boolean;
+}
+
+/**
  * CreateInstance response message
+ *
+ * `result` is the value the CreateInstance action returns (see {@link CreateInstanceResult}).
  */
 export class CreateInstanceResponse extends OrganizationResponse {
-  constructor(public result: CreateInstanceResponseData) {
+  constructor(public result: CreateInstanceResult) {
     super("CreateInstance");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CreateInstanceResponse {
-    return new CreateInstanceResponse(responseObject<CreateInstanceResponseData>(data));
+    return new CreateInstanceResponse(data as CreateInstanceResult);
   }
 }

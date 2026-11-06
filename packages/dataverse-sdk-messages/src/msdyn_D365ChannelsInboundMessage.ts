@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_D365ChannelsInboundResponse as msdyn_D365ChannelsInboundResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_D365ChannelsInbound message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,33 @@ export class msdyn_D365ChannelsInboundRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_D365ChannelsInboundResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_D365ChannelsInboundResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_D365ChannelsInboundResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_D365ChannelsInbound action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_D365ChannelsInboundResult {
+  "@odata.context"?: string;
+  responseMessage: string;
+}
+
+/**
  * msdyn_D365ChannelsInbound response message
+ *
+ * `result` is the value the msdyn_D365ChannelsInbound action returns (see {@link msdyn_D365ChannelsInboundResult}).
  */
 export class msdyn_D365ChannelsInboundResponse extends OrganizationResponse {
-  constructor(public result: msdyn_D365ChannelsInboundResponseData) {
+  constructor(public result: msdyn_D365ChannelsInboundResult) {
     super("msdyn_D365ChannelsInbound");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_D365ChannelsInboundResponse {
-    return new msdyn_D365ChannelsInboundResponse(
-      responseObject<msdyn_D365ChannelsInboundResponseData>(data)
-    );
+    return new msdyn_D365ChannelsInboundResponse(data as msdyn_D365ChannelsInboundResult);
   }
 }

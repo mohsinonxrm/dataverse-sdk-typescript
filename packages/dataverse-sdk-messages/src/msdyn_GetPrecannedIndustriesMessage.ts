@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_GetPrecannedIndustriesResponse as msdyn_GetPrecannedIndustriesResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetPrecannedIndustries request message
@@ -29,23 +27,34 @@ export class msdyn_GetPrecannedIndustriesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetPrecannedIndustriesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetPrecannedIndustriesResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetPrecannedIndustriesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetPrecannedIndustries action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetPrecannedIndustriesResult {
+  "@odata.context"?: string;
+  msdyn_errormessage: string;
+  msdyn_industries: string;
+}
+
+/**
  * msdyn_GetPrecannedIndustries response message
+ *
+ * `result` is the value the msdyn_GetPrecannedIndustries action returns (see {@link msdyn_GetPrecannedIndustriesResult}).
  */
 export class msdyn_GetPrecannedIndustriesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetPrecannedIndustriesResponseData) {
+  constructor(public result: msdyn_GetPrecannedIndustriesResult) {
     super("msdyn_GetPrecannedIndustries");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetPrecannedIndustriesResponse {
-    return new msdyn_GetPrecannedIndustriesResponse(
-      responseObject<msdyn_GetPrecannedIndustriesResponseData>(data)
-    );
+    return new msdyn_GetPrecannedIndustriesResponse(data as msdyn_GetPrecannedIndustriesResult);
   }
 }

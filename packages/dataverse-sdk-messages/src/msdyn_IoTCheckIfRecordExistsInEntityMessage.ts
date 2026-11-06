@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_IoTCheckIfRecordExistsInEntityResponse as msdyn_IoTCheckIfRecordExistsInEntityResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_IoTCheckIfRecordExistsInEntity message, by their CSDL names. A parameter the CSDL declares
@@ -45,24 +43,35 @@ export class msdyn_IoTCheckIfRecordExistsInEntityRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_IoTCheckIfRecordExistsInEntityResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_IoTCheckIfRecordExistsInEntityResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_IoTCheckIfRecordExistsInEntityResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_IoTCheckIfRecordExistsInEntity action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_IoTCheckIfRecordExistsInEntityResult {
+  "@odata.context"?: string;
+  IsRecordExists: boolean;
+}
+
+/**
  * msdyn_IoTCheckIfRecordExistsInEntity response message
+ *
+ * `result` is the value the msdyn_IoTCheckIfRecordExistsInEntity action returns (see {@link msdyn_IoTCheckIfRecordExistsInEntityResult}).
  */
 export class msdyn_IoTCheckIfRecordExistsInEntityResponse extends OrganizationResponse {
-  constructor(public result: msdyn_IoTCheckIfRecordExistsInEntityResponseData) {
+  constructor(public result: msdyn_IoTCheckIfRecordExistsInEntityResult) {
     super("msdyn_IoTCheckIfRecordExistsInEntity");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_IoTCheckIfRecordExistsInEntityResponse {
     return new msdyn_IoTCheckIfRecordExistsInEntityResponse(
-      responseObject<msdyn_IoTCheckIfRecordExistsInEntityResponseData>(data)
+      data as msdyn_IoTCheckIfRecordExistsInEntityResult
     );
   }
 }

@@ -3,11 +3,11 @@ import { requestBody } from "./internal/requestBody.js";
 import type { Label } from "./types/index.js";
 
 /**
- * Response from UpdateOptionValue action
+ * Response from the UpdateOptionValue action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface UpdateOptionValueResponse {
-  // No content returned
-}
+export type UpdateOptionValueResponse = void;
 
 /**
  * Parameters of the UpdateOptionValue action, by their CSDL names. A parameter the CSDL declares
@@ -64,9 +64,8 @@ export class UpdateOptionValueAction implements Executable<UpdateOptionValueResp
     };
   }
 
-  async parseResponse(response: Response): Promise<UpdateOptionValueResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as UpdateOptionValueResponse;
-    return (await response.json()) as UpdateOptionValueResponse;
+  parseResponse(_response: Response): Promise<UpdateOptionValueResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

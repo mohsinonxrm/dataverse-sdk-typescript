@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_applyworktemplateforresources action
+ * Response from the msdyn_applyworktemplateforresources action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_applyworktemplateforresourcesResponse {
-  // No content returned
-}
+export type msdyn_applyworktemplateforresourcesResponse = void;
 
 /**
  * Parameters of the msdyn_applyworktemplateforresources action, by their CSDL names. A parameter the CSDL declares
@@ -43,9 +43,8 @@ export class msdyn_applyworktemplateforresourcesAction implements Executable<msd
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_applyworktemplateforresourcesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_applyworktemplateforresourcesResponse;
-    return (await response.json()) as msdyn_applyworktemplateforresourcesResponse;
+  parseResponse(_response: Response): Promise<msdyn_applyworktemplateforresourcesResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

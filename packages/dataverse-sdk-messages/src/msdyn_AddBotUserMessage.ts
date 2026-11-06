@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_AddBotUserResponse as msdyn_AddBotUserResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_AddBotUser message, by their CSDL names. A parameter the CSDL declares
@@ -57,21 +55,34 @@ export class msdyn_AddBotUserRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_AddBotUserResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_AddBotUserResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_AddBotUserResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_AddBotUser action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_AddBotUserResult {
+  "@odata.context"?: string;
+  ErrorCode: string;
+  ErrorDescription: string;
+}
+
+/**
  * msdyn_AddBotUser response message
+ *
+ * `result` is the value the msdyn_AddBotUser action returns (see {@link msdyn_AddBotUserResult}).
  */
 export class msdyn_AddBotUserResponse extends OrganizationResponse {
-  constructor(public result: msdyn_AddBotUserResponseData) {
+  constructor(public result: msdyn_AddBotUserResult) {
     super("msdyn_AddBotUser");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_AddBotUserResponse {
-    return new msdyn_AddBotUserResponse(responseObject<msdyn_AddBotUserResponseData>(data));
+    return new msdyn_AddBotUserResponse(data as msdyn_AddBotUserResult);
   }
 }

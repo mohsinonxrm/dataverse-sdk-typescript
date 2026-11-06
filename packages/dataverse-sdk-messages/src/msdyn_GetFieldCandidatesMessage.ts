@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetFieldCandidatesResponse as msdyn_GetFieldCandidatesResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetFieldCandidates message, by their CSDL names. A parameter the CSDL declares
@@ -51,23 +49,33 @@ export class msdyn_GetFieldCandidatesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetFieldCandidatesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetFieldCandidatesResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetFieldCandidatesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetFieldCandidates action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetFieldCandidatesResult {
+  "@odata.context"?: string;
+  msdyn_aidescriptioncandidates: string;
+}
+
+/**
  * msdyn_GetFieldCandidates response message
+ *
+ * `result` is the value the msdyn_GetFieldCandidates action returns (see {@link msdyn_GetFieldCandidatesResult}).
  */
 export class msdyn_GetFieldCandidatesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetFieldCandidatesResponseData) {
+  constructor(public result: msdyn_GetFieldCandidatesResult) {
     super("msdyn_GetFieldCandidates");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetFieldCandidatesResponse {
-    return new msdyn_GetFieldCandidatesResponse(
-      responseObject<msdyn_GetFieldCandidatesResponseData>(data)
-    );
+    return new msdyn_GetFieldCandidatesResponse(data as msdyn_GetFieldCandidatesResult);
   }
 }

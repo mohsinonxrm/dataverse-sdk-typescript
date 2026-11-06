@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { InitializeAnnotationBlocksDownloadResponse as InitializeAnnotationBlocksDownloadResponseData } from "./types/index.js";
 
 /**
  * Parameters of the InitializeAnnotationBlocksDownload message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,37 @@ export class InitializeAnnotationBlocksDownloadRequest
   }
 
   async parseResponse(response: Response): Promise<InitializeAnnotationBlocksDownloadResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return InitializeAnnotationBlocksDownloadResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return InitializeAnnotationBlocksDownloadResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the InitializeAnnotationBlocksDownload action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface InitializeAnnotationBlocksDownloadResult {
+  "@odata.context"?: string;
+  FileContinuationToken: string;
+  FileName: string;
+  FileSizeInBytes: number;
+}
+
+/**
  * InitializeAnnotationBlocksDownload response message
+ *
+ * `result` is the value the InitializeAnnotationBlocksDownload action returns (see {@link InitializeAnnotationBlocksDownloadResult}).
  */
 export class InitializeAnnotationBlocksDownloadResponse extends OrganizationResponse {
-  constructor(public result: InitializeAnnotationBlocksDownloadResponseData) {
+  constructor(public result: InitializeAnnotationBlocksDownloadResult) {
     super("InitializeAnnotationBlocksDownload");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): InitializeAnnotationBlocksDownloadResponse {
     return new InitializeAnnotationBlocksDownloadResponse(
-      responseObject<InitializeAnnotationBlocksDownloadResponseData>(data)
+      data as InitializeAnnotationBlocksDownloadResult
     );
   }
 }

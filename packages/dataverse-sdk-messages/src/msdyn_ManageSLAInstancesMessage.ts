@@ -48,9 +48,9 @@ export class msdyn_ManageSLAInstancesRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ManageSLAInstancesResponse> {
+  parseResponse(_response: Response): Promise<msdyn_ManageSLAInstancesResponse> {
     // No return value (204 No Content)
-    return new msdyn_ManageSLAInstancesResponse();
+    return Promise.resolve(new msdyn_ManageSLAInstancesResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class msdyn_ManageSLAInstancesResponse extends OrganizationResponse {
     super("msdyn_ManageSLAInstances");
   }
 
-  static fromResponse(_data: unknown): msdyn_ManageSLAInstancesResponse {
+  static fromResponse(_data?: unknown): msdyn_ManageSLAInstancesResponse {
     return new msdyn_ManageSLAInstancesResponse();
   }
 }

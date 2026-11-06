@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_AddSuggestedCards action
+ * Response from the msdyn_AddSuggestedCards action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_AddSuggestedCardsResponse {
-  // No content returned
-}
+export type msdyn_AddSuggestedCardsResponse = void;
 
 /**
  * Parameters of the msdyn_AddSuggestedCards action, by their CSDL names. A parameter the CSDL declares
@@ -47,9 +47,8 @@ export class msdyn_AddSuggestedCardsAction implements Executable<msdyn_AddSugges
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_AddSuggestedCardsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_AddSuggestedCardsResponse;
-    return (await response.json()) as msdyn_AddSuggestedCardsResponse;
+  parseResponse(_response: Response): Promise<msdyn_AddSuggestedCardsResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

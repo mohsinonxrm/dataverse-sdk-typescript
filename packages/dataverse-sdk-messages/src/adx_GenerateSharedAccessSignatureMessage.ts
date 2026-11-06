@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { adx_GenerateSharedAccessSignatureResponse as adx_GenerateSharedAccessSignatureResponseData } from "./types/index.js";
 
 /**
  * Parameters of the adx_GenerateSharedAccessSignature message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,35 @@ export class adx_GenerateSharedAccessSignatureRequest
   }
 
   async parseResponse(response: Response): Promise<adx_GenerateSharedAccessSignatureResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return adx_GenerateSharedAccessSignatureResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return adx_GenerateSharedAccessSignatureResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the adx_GenerateSharedAccessSignature action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface adx_GenerateSharedAccessSignatureResult {
+  "@odata.context"?: string;
+  SharedAccessSignature: string;
+}
+
+/**
  * adx_GenerateSharedAccessSignature response message
+ *
+ * `result` is the value the adx_GenerateSharedAccessSignature action returns (see {@link adx_GenerateSharedAccessSignatureResult}).
  */
 export class adx_GenerateSharedAccessSignatureResponse extends OrganizationResponse {
-  constructor(public result: adx_GenerateSharedAccessSignatureResponseData) {
+  constructor(public result: adx_GenerateSharedAccessSignatureResult) {
     super("adx_GenerateSharedAccessSignature");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): adx_GenerateSharedAccessSignatureResponse {
     return new adx_GenerateSharedAccessSignatureResponse(
-      responseObject<adx_GenerateSharedAccessSignatureResponseData>(data)
+      data as adx_GenerateSharedAccessSignatureResult
     );
   }
 }

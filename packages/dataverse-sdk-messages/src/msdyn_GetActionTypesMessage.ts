@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseValue } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
 
 /**
@@ -46,21 +45,39 @@ export class msdyn_GetActionTypesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetActionTypesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetActionTypesResponse.fromResponse({});
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return msdyn_GetActionTypesResponse.fromResponse(undefined);
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
     return msdyn_GetActionTypesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetActionTypes action.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
+ */
+export type msdyn_GetActionTypesResult = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
+
+/**
  * msdyn_GetActionTypes response message
+ *
+ * `result` is the value the msdyn_GetActionTypes action returns (see {@link msdyn_GetActionTypesResult}).
  */
 export class msdyn_GetActionTypesResponse extends OrganizationResponse {
-  constructor(public result: Record<string, unknown>[]) {
+  constructor(public result: msdyn_GetActionTypesResult) {
     super("msdyn_GetActionTypes");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetActionTypesResponse {
-    return new msdyn_GetActionTypesResponse(responseValue<Record<string, unknown>[]>(data));
+    return new msdyn_GetActionTypesResponse(
+      data === undefined ? [] : (data as { value: msdyn_GetActionTypesResult }).value
+    );
   }
 }

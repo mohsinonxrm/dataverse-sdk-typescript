@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_IoTGetIoTAlertCustomAttributes action
+ * Response from the msdyn_IoTGetIoTAlertCustomAttributes action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_IoTGetIoTAlertCustomAttributesResponse {
+  "@odata.context"?: string;
   Metadata: string;
 }
 
@@ -26,8 +29,7 @@ export class msdyn_IoTGetIoTAlertCustomAttributesAction implements Executable<ms
   }
 
   async parseResponse(response: Response): Promise<msdyn_IoTGetIoTAlertCustomAttributesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_IoTGetIoTAlertCustomAttributesResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_IoTGetIoTAlertCustomAttributesResponse;
   }
 }

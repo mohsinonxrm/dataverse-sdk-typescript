@@ -52,9 +52,9 @@ export class UpdateProcessWithWfomJsonRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<UpdateProcessWithWfomJsonResponse> {
+  parseResponse(_response: Response): Promise<UpdateProcessWithWfomJsonResponse> {
     // No return value (204 No Content)
-    return new UpdateProcessWithWfomJsonResponse();
+    return Promise.resolve(new UpdateProcessWithWfomJsonResponse());
   }
 }
 
@@ -66,7 +66,7 @@ export class UpdateProcessWithWfomJsonResponse extends OrganizationResponse {
     super("UpdateProcessWithWfomJson");
   }
 
-  static fromResponse(_data: unknown): UpdateProcessWithWfomJsonResponse {
+  static fromResponse(_data?: unknown): UpdateProcessWithWfomJsonResponse {
     return new UpdateProcessWithWfomJsonResponse();
   }
 }

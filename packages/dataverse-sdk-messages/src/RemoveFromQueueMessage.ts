@@ -29,9 +29,9 @@ export class RemoveFromQueueRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<RemoveFromQueueResponse> {
+  parseResponse(_response: Response): Promise<RemoveFromQueueResponse> {
     // No return value (204 No Content)
-    return new RemoveFromQueueResponse();
+    return Promise.resolve(new RemoveFromQueueResponse());
   }
 }
 
@@ -43,7 +43,7 @@ export class RemoveFromQueueResponse extends OrganizationResponse {
     super("RemoveFromQueue");
   }
 
-  static fromResponse(_data: unknown): RemoveFromQueueResponse {
+  static fromResponse(_data?: unknown): RemoveFromQueueResponse {
     return new RemoveFromQueueResponse();
   }
 }

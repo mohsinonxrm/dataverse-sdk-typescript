@@ -112,12 +112,12 @@ describe.skipIf(!live)("live: generator output", () => {
     });
 
     it("collection-bound function", async () => {
-      const res = await run<{ value?: unknown[] } | unknown[]>(
-        "GetAllTimeZonesWithDisplayNameFunction",
-        { LocaleId: 1033 }
-      );
-      const list = Array.isArray(res) ? res : res.value;
-      expect(list?.length).toBeGreaterThan(0);
+      // A collection resolves the array itself, as in the in-repo generator (#300)
+      const res = await run<unknown[]>("GetAllTimeZonesWithDisplayNameFunction", {
+        LocaleId: 1033,
+      });
+      expect(Array.isArray(res)).toBe(true);
+      expect(res.length).toBeGreaterThan(0);
     });
 
     it("string parameter containing a single quote", async () => {

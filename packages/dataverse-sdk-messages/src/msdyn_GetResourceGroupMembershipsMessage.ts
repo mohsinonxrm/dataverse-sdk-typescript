@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetResourceGroupMembershipsResponse as msdyn_GetResourceGroupMembershipsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetResourceGroupMemberships message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,35 @@ export class msdyn_GetResourceGroupMembershipsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetResourceGroupMembershipsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetResourceGroupMembershipsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetResourceGroupMembershipsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetResourceGroupMemberships action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetResourceGroupMembershipsResult {
+  "@odata.context"?: string;
+  GroupMemberships: string;
+}
+
+/**
  * msdyn_GetResourceGroupMemberships response message
+ *
+ * `result` is the value the msdyn_GetResourceGroupMemberships action returns (see {@link msdyn_GetResourceGroupMembershipsResult}).
  */
 export class msdyn_GetResourceGroupMembershipsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetResourceGroupMembershipsResponseData) {
+  constructor(public result: msdyn_GetResourceGroupMembershipsResult) {
     super("msdyn_GetResourceGroupMemberships");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetResourceGroupMembershipsResponse {
     return new msdyn_GetResourceGroupMembershipsResponse(
-      responseObject<msdyn_GetResourceGroupMembershipsResponseData>(data)
+      data as msdyn_GetResourceGroupMembershipsResult
     );
   }
 }

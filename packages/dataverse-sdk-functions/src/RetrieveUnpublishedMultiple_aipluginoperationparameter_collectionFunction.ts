@@ -2,11 +2,14 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import type { aipluginoperationparameter } from "./types/index.js";
 
 /**
- * Response from RetrieveUnpublishedMultiple function
+ * Response from the RetrieveUnpublishedMultiple function.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface RetrieveUnpublishedMultiple_aipluginoperationparameter_collectionResponse {
-  value: aipluginoperationparameter[];
-}
+export type RetrieveUnpublishedMultiple_aipluginoperationparameter_collectionResponse = Array<
+  aipluginoperationparameter & { "@odata.etag"?: string; "@odata.type"?: string }
+>;
 
 /**
  * RetrieveUnpublishedMultiple function
@@ -31,9 +34,13 @@ export class RetrieveUnpublishedMultiple_aipluginoperationparameter_collectionFu
   async parseResponse(
     response: Response
   ): Promise<RetrieveUnpublishedMultiple_aipluginoperationparameter_collectionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return {} as RetrieveUnpublishedMultiple_aipluginoperationparameter_collectionResponse;
-    return (await response.json()) as RetrieveUnpublishedMultiple_aipluginoperationparameter_collectionResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return (
+      (await response.json()) as {
+        value: RetrieveUnpublishedMultiple_aipluginoperationparameter_collectionResponse;
+      }
+    ).value;
   }
 }

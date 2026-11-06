@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from UnpublishDuplicateRule action
+ * Response from the UnpublishDuplicateRule action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface UnpublishDuplicateRuleResponse {
-  // No content returned
-}
+export type UnpublishDuplicateRuleResponse = void;
 
 /**
  * Parameters of the UnpublishDuplicateRule action, by their CSDL names. A parameter the CSDL declares
@@ -41,9 +41,8 @@ export class UnpublishDuplicateRuleAction implements Executable<UnpublishDuplica
     };
   }
 
-  async parseResponse(response: Response): Promise<UnpublishDuplicateRuleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as UnpublishDuplicateRuleResponse;
-    return (await response.json()) as UnpublishDuplicateRuleResponse;
+  parseResponse(_response: Response): Promise<UnpublishDuplicateRuleResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

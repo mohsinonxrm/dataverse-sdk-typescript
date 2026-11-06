@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_CancelDataProcessingModuleExecutionResponse as msdyn_CancelDataProcessingModuleExecutionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CancelDataProcessingModuleExecution message, by their CSDL names. A parameter the CSDL declares
@@ -47,24 +45,35 @@ export class msdyn_CancelDataProcessingModuleExecutionRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CancelDataProcessingModuleExecutionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_CancelDataProcessingModuleExecutionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CancelDataProcessingModuleExecutionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CancelDataProcessingModuleExecution action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CancelDataProcessingModuleExecutionResult {
+  "@odata.context"?: string;
+  Response: string;
+}
+
+/**
  * msdyn_CancelDataProcessingModuleExecution response message
+ *
+ * `result` is the value the msdyn_CancelDataProcessingModuleExecution action returns (see {@link msdyn_CancelDataProcessingModuleExecutionResult}).
  */
 export class msdyn_CancelDataProcessingModuleExecutionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CancelDataProcessingModuleExecutionResponseData) {
+  constructor(public result: msdyn_CancelDataProcessingModuleExecutionResult) {
     super("msdyn_CancelDataProcessingModuleExecution");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CancelDataProcessingModuleExecutionResponse {
     return new msdyn_CancelDataProcessingModuleExecutionResponse(
-      responseObject<msdyn_CancelDataProcessingModuleExecutionResponseData>(data)
+      data as msdyn_CancelDataProcessingModuleExecutionResult
     );
   }
 }

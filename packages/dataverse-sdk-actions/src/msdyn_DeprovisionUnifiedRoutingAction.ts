@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_DeprovisionUnifiedRouting action
+ * Response from the msdyn_DeprovisionUnifiedRouting action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_DeprovisionUnifiedRoutingResponse {
+  "@odata.context"?: string;
   msdyn_customMessage: string;
   msdyn_errorCode: string;
   msdyn_responseCode: string;
@@ -29,8 +32,7 @@ export class msdyn_DeprovisionUnifiedRoutingAction implements Executable<msdyn_D
   }
 
   async parseResponse(response: Response): Promise<msdyn_DeprovisionUnifiedRoutingResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_DeprovisionUnifiedRoutingResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_DeprovisionUnifiedRoutingResponse;
   }
 }

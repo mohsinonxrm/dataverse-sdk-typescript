@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { BatchGetFlowMachineStatusResponse as BatchGetFlowMachineStatusResponseData } from "./types/index.js";
 
 /**
  * Parameters of the BatchGetFlowMachineStatus message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class BatchGetFlowMachineStatusRequest
   }
 
   async parseResponse(response: Response): Promise<BatchGetFlowMachineStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return BatchGetFlowMachineStatusResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return BatchGetFlowMachineStatusResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the BatchGetFlowMachineStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface BatchGetFlowMachineStatusResult {
+  "@odata.context"?: string;
+  machineStatuses: string;
+}
+
+/**
  * BatchGetFlowMachineStatus response message
+ *
+ * `result` is the value the BatchGetFlowMachineStatus action returns (see {@link BatchGetFlowMachineStatusResult}).
  */
 export class BatchGetFlowMachineStatusResponse extends OrganizationResponse {
-  constructor(public result: BatchGetFlowMachineStatusResponseData) {
+  constructor(public result: BatchGetFlowMachineStatusResult) {
     super("BatchGetFlowMachineStatus");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): BatchGetFlowMachineStatusResponse {
-    return new BatchGetFlowMachineStatusResponse(
-      responseObject<BatchGetFlowMachineStatusResponseData>(data)
-    );
+    return new BatchGetFlowMachineStatusResponse(data as BatchGetFlowMachineStatusResult);
   }
 }

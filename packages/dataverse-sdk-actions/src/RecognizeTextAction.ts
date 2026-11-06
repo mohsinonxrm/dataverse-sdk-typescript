@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from RecognizeText action
+ * Response from the RecognizeText action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RecognizeTextResponse {
+  "@odata.context"?: string;
   countOfPages: number;
 }
 
@@ -46,8 +49,7 @@ export class RecognizeTextAction implements Executable<RecognizeTextResponse> {
   }
 
   async parseResponse(response: Response): Promise<RecognizeTextResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RecognizeTextResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RecognizeTextResponse;
   }
 }

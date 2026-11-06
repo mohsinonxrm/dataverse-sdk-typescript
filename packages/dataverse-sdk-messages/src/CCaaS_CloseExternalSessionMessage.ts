@@ -58,9 +58,9 @@ export class CCaaS_CloseExternalSessionRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_CloseExternalSessionResponse> {
+  parseResponse(_response: Response): Promise<CCaaS_CloseExternalSessionResponse> {
     // No return value (204 No Content)
-    return new CCaaS_CloseExternalSessionResponse();
+    return Promise.resolve(new CCaaS_CloseExternalSessionResponse());
   }
 }
 
@@ -72,7 +72,7 @@ export class CCaaS_CloseExternalSessionResponse extends OrganizationResponse {
     super("CCaaS_CloseExternalSession");
   }
 
-  static fromResponse(_data: unknown): CCaaS_CloseExternalSessionResponse {
+  static fromResponse(_data?: unknown): CCaaS_CloseExternalSessionResponse {
     return new CCaaS_CloseExternalSessionResponse();
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { copilotquerytextcontextResponse as copilotquerytextcontextResponseData } from "./types/index.js";
 
 /**
  * Parameters of the copilotquerytextcontext message, by their CSDL names. A parameter the CSDL declares
@@ -61,23 +59,33 @@ export class copilotquerytextcontextRequest
   }
 
   async parseResponse(response: Response): Promise<copilotquerytextcontextResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return copilotquerytextcontextResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return copilotquerytextcontextResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the copilotquerytextcontext action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface copilotquerytextcontextResult {
+  "@odata.context"?: string;
+  response: string;
+}
+
+/**
  * copilotquerytextcontext response message
+ *
+ * `result` is the value the copilotquerytextcontext action returns (see {@link copilotquerytextcontextResult}).
  */
 export class copilotquerytextcontextResponse extends OrganizationResponse {
-  constructor(public result: copilotquerytextcontextResponseData) {
+  constructor(public result: copilotquerytextcontextResult) {
     super("copilotquerytextcontext");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): copilotquerytextcontextResponse {
-    return new copilotquerytextcontextResponse(
-      responseObject<copilotquerytextcontextResponseData>(data)
-    );
+    return new copilotquerytextcontextResponse(data as copilotquerytextcontextResult);
   }
 }

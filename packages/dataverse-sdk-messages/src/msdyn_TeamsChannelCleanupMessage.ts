@@ -26,9 +26,9 @@ export class msdyn_TeamsChannelCleanupRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_TeamsChannelCleanupResponse> {
+  parseResponse(_response: Response): Promise<msdyn_TeamsChannelCleanupResponse> {
     // No return value (204 No Content)
-    return new msdyn_TeamsChannelCleanupResponse();
+    return Promise.resolve(new msdyn_TeamsChannelCleanupResponse());
   }
 }
 
@@ -40,7 +40,7 @@ export class msdyn_TeamsChannelCleanupResponse extends OrganizationResponse {
     super("msdyn_TeamsChannelCleanup");
   }
 
-  static fromResponse(_data: unknown): msdyn_TeamsChannelCleanupResponse {
+  static fromResponse(_data?: unknown): msdyn_TeamsChannelCleanupResponse {
     return new msdyn_TeamsChannelCleanupResponse();
   }
 }

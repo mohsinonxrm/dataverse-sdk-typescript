@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from NotIn function
+ * Response from the NotIn function.
+ *
+ * The value, read from the `value` of the response body.
  */
-export interface NotInResponse {
-  value: boolean;
-}
+export type NotInResponse = boolean;
 
 /**
  * Parameters of the NotIn function, by their CSDL names. A parameter the CSDL declares
@@ -53,8 +53,7 @@ export class NotInFunction implements Executable<NotInResponse> {
   }
 
   async parseResponse(response: Response): Promise<NotInResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as NotInResponse;
-    return (await response.json()) as NotInResponse;
+    // A primitive comes wrapped: { "@odata.context": "…", "value": … }
+    return ((await response.json()) as { value: NotInResponse }).value;
   }
 }

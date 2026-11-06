@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_QueryOutboundNumbersActionResponse as msdyn_QueryOutboundNumbersActionResponseData } from "./types/index.js";
 
 /**
  * msdyn_QueryOutboundNumbersAction request message
@@ -29,23 +27,35 @@ export class msdyn_QueryOutboundNumbersActionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_QueryOutboundNumbersActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_QueryOutboundNumbersActionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_QueryOutboundNumbersActionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_QueryOutboundNumbersAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_QueryOutboundNumbersActionResult {
+  "@odata.context"?: string;
+  ActionResult: string;
+}
+
+/**
  * msdyn_QueryOutboundNumbersAction response message
+ *
+ * `result` is the value the msdyn_QueryOutboundNumbersAction action returns (see {@link msdyn_QueryOutboundNumbersActionResult}).
  */
 export class msdyn_QueryOutboundNumbersActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_QueryOutboundNumbersActionResponseData) {
+  constructor(public result: msdyn_QueryOutboundNumbersActionResult) {
     super("msdyn_QueryOutboundNumbersAction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_QueryOutboundNumbersActionResponse {
     return new msdyn_QueryOutboundNumbersActionResponse(
-      responseObject<msdyn_QueryOutboundNumbersActionResponseData>(data)
+      data as msdyn_QueryOutboundNumbersActionResult
     );
   }
 }

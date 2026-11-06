@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesAgents_ActivateAgentWorkflowsResponse as msdyn_SalesAgents_ActivateAgentWorkflowsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesAgents_ActivateAgentWorkflows message, by their CSDL names. A parameter the CSDL declares
@@ -47,24 +45,36 @@ export class msdyn_SalesAgents_ActivateAgentWorkflowsRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_ActivateAgentWorkflowsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_SalesAgents_ActivateAgentWorkflowsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesAgents_ActivateAgentWorkflowsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SalesAgents_ActivateAgentWorkflows action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesAgents_ActivateAgentWorkflowsResult {
+  "@odata.context"?: string;
+  ErrorMessage: string;
+  IsSuccess: boolean;
+}
+
+/**
  * msdyn_SalesAgents_ActivateAgentWorkflows response message
+ *
+ * `result` is the value the msdyn_SalesAgents_ActivateAgentWorkflows action returns (see {@link msdyn_SalesAgents_ActivateAgentWorkflowsResult}).
  */
 export class msdyn_SalesAgents_ActivateAgentWorkflowsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgents_ActivateAgentWorkflowsResponseData) {
+  constructor(public result: msdyn_SalesAgents_ActivateAgentWorkflowsResult) {
     super("msdyn_SalesAgents_ActivateAgentWorkflows");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesAgents_ActivateAgentWorkflowsResponse {
     return new msdyn_SalesAgents_ActivateAgentWorkflowsResponse(
-      responseObject<msdyn_SalesAgents_ActivateAgentWorkflowsResponseData>(data)
+      data as msdyn_SalesAgents_ActivateAgentWorkflowsResult
     );
   }
 }

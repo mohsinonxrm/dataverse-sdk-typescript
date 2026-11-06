@@ -44,9 +44,9 @@ export class _RemoveMarketingListMembersByIdsRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<_RemoveMarketingListMembersByIdsResponse> {
+  parseResponse(_response: Response): Promise<_RemoveMarketingListMembersByIdsResponse> {
     // No return value (204 No Content)
-    return new _RemoveMarketingListMembersByIdsResponse();
+    return Promise.resolve(new _RemoveMarketingListMembersByIdsResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class _RemoveMarketingListMembersByIdsResponse extends OrganizationRespon
     super("_RemoveMarketingListMembersByIds");
   }
 
-  static fromResponse(_data: unknown): _RemoveMarketingListMembersByIdsResponse {
+  static fromResponse(_data?: unknown): _RemoveMarketingListMembersByIdsResponse {
     return new _RemoveMarketingListMembersByIdsResponse();
   }
 }

@@ -6,9 +6,12 @@ import type { EntityPayload } from "./types/EntityPayload.js";
 import type { BulkDeleteOptions, QueryExpression, activityparty } from "./types/index.js";
 
 /**
- * Response from BulkDelete action
+ * Response from the BulkDelete action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface BulkDeleteResponse {
+  "@odata.context"?: string;
   JobId: string;
 }
 
@@ -64,8 +67,7 @@ export class BulkDeleteAction implements Executable<BulkDeleteResponse> {
   }
 
   async parseResponse(response: Response): Promise<BulkDeleteResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as BulkDeleteResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as BulkDeleteResponse;
   }
 }

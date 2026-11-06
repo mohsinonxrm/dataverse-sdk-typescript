@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_RetrieveCustomMessagingApplicationSecretResponse as msdyn_RetrieveCustomMessagingApplicationSecretResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_RetrieveCustomMessagingApplicationSecret message, by their CSDL names. A parameter the CSDL declares
@@ -53,9 +51,7 @@ export class msdyn_RetrieveCustomMessagingApplicationSecretRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_RetrieveCustomMessagingApplicationSecretResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_RetrieveCustomMessagingApplicationSecretResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_RetrieveCustomMessagingApplicationSecretResponse.fromResponse(
       await response.json()
     );
@@ -63,16 +59,29 @@ export class msdyn_RetrieveCustomMessagingApplicationSecretRequest
 }
 
 /**
+ * Response from the msdyn_RetrieveCustomMessagingApplicationSecret action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_RetrieveCustomMessagingApplicationSecretResult {
+  "@odata.context"?: string;
+  CustomMessagingBCRMSAppSecret: string;
+}
+
+/**
  * msdyn_RetrieveCustomMessagingApplicationSecret response message
+ *
+ * `result` is the value the msdyn_RetrieveCustomMessagingApplicationSecret action returns (see {@link msdyn_RetrieveCustomMessagingApplicationSecretResult}).
  */
 export class msdyn_RetrieveCustomMessagingApplicationSecretResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrieveCustomMessagingApplicationSecretResponseData) {
+  constructor(public result: msdyn_RetrieveCustomMessagingApplicationSecretResult) {
     super("msdyn_RetrieveCustomMessagingApplicationSecret");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_RetrieveCustomMessagingApplicationSecretResponse {
     return new msdyn_RetrieveCustomMessagingApplicationSecretResponse(
-      responseObject<msdyn_RetrieveCustomMessagingApplicationSecretResponseData>(data)
+      data as msdyn_RetrieveCustomMessagingApplicationSecretResult
     );
   }
 }

@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from ConvertOwnerTeamToAccessTeam action
+ * Response from the ConvertOwnerTeamToAccessTeam action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface ConvertOwnerTeamToAccessTeamResponse {
-  // No content returned
-}
+export type ConvertOwnerTeamToAccessTeamResponse = void;
 
 /**
  * ConvertOwnerTeamToAccessTeam action
@@ -31,9 +31,8 @@ export class ConvertOwnerTeamToAccessTeamAction implements Executable<ConvertOwn
     };
   }
 
-  async parseResponse(response: Response): Promise<ConvertOwnerTeamToAccessTeamResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ConvertOwnerTeamToAccessTeamResponse;
-    return (await response.json()) as ConvertOwnerTeamToAccessTeamResponse;
+  parseResponse(_response: Response): Promise<ConvertOwnerTeamToAccessTeamResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

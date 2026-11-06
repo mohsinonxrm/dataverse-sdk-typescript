@@ -1,8 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { SubstituteForAttributeResponse as SubstituteForAttributeResponseData } from "./types/index.js";
+import type { SubstitutionResult } from "./types/index.js";
 
 /**
  * Parameters of the SubstituteForAttribute message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +48,33 @@ export class SubstituteForAttributeRequest
   }
 
   async parseResponse(response: Response): Promise<SubstituteForAttributeResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return SubstituteForAttributeResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return SubstituteForAttributeResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the SubstituteForAttribute action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface SubstituteForAttributeResult {
+  "@odata.context"?: string;
+  Result: SubstitutionResult;
+}
+
+/**
  * SubstituteForAttribute response message
+ *
+ * `result` is the value the SubstituteForAttribute action returns (see {@link SubstituteForAttributeResult}).
  */
 export class SubstituteForAttributeResponse extends OrganizationResponse {
-  constructor(public result: SubstituteForAttributeResponseData) {
+  constructor(public result: SubstituteForAttributeResult) {
     super("SubstituteForAttribute");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): SubstituteForAttributeResponse {
-    return new SubstituteForAttributeResponse(
-      responseObject<SubstituteForAttributeResponseData>(data)
-    );
+    return new SubstituteForAttributeResponse(data as SubstituteForAttributeResult);
   }
 }

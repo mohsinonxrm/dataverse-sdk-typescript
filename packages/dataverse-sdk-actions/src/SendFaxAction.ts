@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from SendFax action
+ * Response from the SendFax action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface SendFaxResponse {
-  // No content returned
-}
+export type SendFaxResponse = void;
 
 /**
  * Parameters of the SendFax action, by their CSDL names. A parameter the CSDL declares
@@ -43,9 +43,8 @@ export class SendFaxAction implements Executable<SendFaxResponse> {
     };
   }
 
-  async parseResponse(response: Response): Promise<SendFaxResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as SendFaxResponse;
-    return (await response.json()) as SendFaxResponse;
+  parseResponse(_response: Response): Promise<SendFaxResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

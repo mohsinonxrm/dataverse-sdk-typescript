@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CreateMultipleResponse as CreateMultipleResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CreateMultiple message, by their CSDL names. A parameter the CSDL declares
@@ -51,21 +49,33 @@ export class CreateMultipleRequest
   }
 
   async parseResponse(response: Response): Promise<CreateMultipleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CreateMultipleResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CreateMultipleResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CreateMultiple action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CreateMultipleResult {
+  "@odata.context"?: string;
+  Ids: string[];
+}
+
+/**
  * CreateMultiple response message
+ *
+ * `result` is the value the CreateMultiple action returns (see {@link CreateMultipleResult}).
  */
 export class CreateMultipleResponse extends OrganizationResponse {
-  constructor(public result: CreateMultipleResponseData) {
+  constructor(public result: CreateMultipleResult) {
     super("CreateMultiple");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CreateMultipleResponse {
-    return new CreateMultipleResponse(responseObject<CreateMultipleResponseData>(data));
+    return new CreateMultipleResponse(data as CreateMultipleResult);
   }
 }

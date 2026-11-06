@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetExpandedContractResponse as msdyn_GetExpandedContractResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetExpandedContract message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class msdyn_GetExpandedContractRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetExpandedContractResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetExpandedContractResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetExpandedContractResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetExpandedContract action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetExpandedContractResult {
+  "@odata.context"?: string;
+  msdyn_ExpandedContract: string;
+}
+
+/**
  * msdyn_GetExpandedContract response message
+ *
+ * `result` is the value the msdyn_GetExpandedContract action returns (see {@link msdyn_GetExpandedContractResult}).
  */
 export class msdyn_GetExpandedContractResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetExpandedContractResponseData) {
+  constructor(public result: msdyn_GetExpandedContractResult) {
     super("msdyn_GetExpandedContract");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetExpandedContractResponse {
-    return new msdyn_GetExpandedContractResponse(
-      responseObject<msdyn_GetExpandedContractResponseData>(data)
-    );
+    return new msdyn_GetExpandedContractResponse(data as msdyn_GetExpandedContractResult);
   }
 }

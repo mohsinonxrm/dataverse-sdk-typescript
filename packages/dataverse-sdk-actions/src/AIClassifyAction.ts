@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from AIClassify action
+ * Response from the AIClassify action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface AIClassifyResponse {
+  "@odata.context"?: string;
   Classification: string;
 }
 
@@ -44,8 +47,7 @@ export class AIClassifyAction implements Executable<AIClassifyResponse> {
   }
 
   async parseResponse(response: Response): Promise<AIClassifyResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as AIClassifyResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as AIClassifyResponse;
   }
 }

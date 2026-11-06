@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CommitToGitResponse as CommitToGitResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CommitToGit message, by their CSDL names. A parameter the CSDL declares
@@ -47,21 +45,34 @@ export class CommitToGitRequest
   }
 
   async parseResponse(response: Response): Promise<CommitToGitResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CommitToGitResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CommitToGitResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CommitToGit action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CommitToGitResult {
+  "@odata.context"?: string;
+  CommitId: string;
+  Type: number;
+}
+
+/**
  * CommitToGit response message
+ *
+ * `result` is the value the CommitToGit action returns (see {@link CommitToGitResult}).
  */
 export class CommitToGitResponse extends OrganizationResponse {
-  constructor(public result: CommitToGitResponseData) {
+  constructor(public result: CommitToGitResult) {
     super("CommitToGit");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CommitToGitResponse {
-    return new CommitToGitResponse(responseObject<CommitToGitResponseData>(data));
+    return new CommitToGitResponse(data as CommitToGitResult);
   }
 }

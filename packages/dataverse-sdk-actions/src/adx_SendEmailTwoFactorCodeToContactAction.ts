@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from adx_SendEmailTwoFactorCodeToContact action
+ * Response from the adx_SendEmailTwoFactorCodeToContact action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface adx_SendEmailTwoFactorCodeToContactResponse {
-  // No content returned
-}
+export type adx_SendEmailTwoFactorCodeToContactResponse = void;
 
 /**
  * Parameters of the adx_SendEmailTwoFactorCodeToContact action, by their CSDL names. A parameter the CSDL declares
@@ -54,9 +54,8 @@ export class adx_SendEmailTwoFactorCodeToContactAction implements Executable<adx
     };
   }
 
-  async parseResponse(response: Response): Promise<adx_SendEmailTwoFactorCodeToContactResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as adx_SendEmailTwoFactorCodeToContactResponse;
-    return (await response.json()) as adx_SendEmailTwoFactorCodeToContactResponse;
+  parseResponse(_response: Response): Promise<adx_SendEmailTwoFactorCodeToContactResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

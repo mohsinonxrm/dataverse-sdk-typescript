@@ -58,9 +58,9 @@ export class UpsertCompositeDataSourceRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<UpsertCompositeDataSourceResponse> {
+  parseResponse(_response: Response): Promise<UpsertCompositeDataSourceResponse> {
     // No return value (204 No Content)
-    return new UpsertCompositeDataSourceResponse();
+    return Promise.resolve(new UpsertCompositeDataSourceResponse());
   }
 }
 
@@ -72,7 +72,7 @@ export class UpsertCompositeDataSourceResponse extends OrganizationResponse {
     super("UpsertCompositeDataSource");
   }
 
-  static fromResponse(_data: unknown): UpsertCompositeDataSourceResponse {
+  static fromResponse(_data?: unknown): UpsertCompositeDataSourceResponse {
     return new UpsertCompositeDataSourceResponse();
   }
 }

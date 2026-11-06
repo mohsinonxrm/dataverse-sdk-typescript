@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from RefreshChangesFromGit action
+ * Response from the RefreshChangesFromGit action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface RefreshChangesFromGitResponse {
-  // No content returned
-}
+export type RefreshChangesFromGitResponse = void;
 
 /**
  * Parameters of the RefreshChangesFromGit action, by their CSDL names. A parameter the CSDL declares
@@ -43,9 +43,8 @@ export class RefreshChangesFromGitAction implements Executable<RefreshChangesFro
     };
   }
 
-  async parseResponse(response: Response): Promise<RefreshChangesFromGitResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RefreshChangesFromGitResponse;
-    return (await response.json()) as RefreshChangesFromGitResponse;
+  parseResponse(_response: Response): Promise<RefreshChangesFromGitResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

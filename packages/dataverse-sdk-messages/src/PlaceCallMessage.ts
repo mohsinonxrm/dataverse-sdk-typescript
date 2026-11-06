@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { PlaceCallResponse as PlaceCallResponseData } from "./types/index.js";
 
 /**
  * Parameters of the PlaceCall message, by their CSDL names. A parameter the CSDL declares
@@ -44,21 +42,37 @@ export class PlaceCallRequest extends OrganizationRequest implements Executable<
   }
 
   async parseResponse(response: Response): Promise<PlaceCallResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return PlaceCallResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return PlaceCallResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the PlaceCall action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface PlaceCallResult {
+  "@odata.context"?: string;
+  CallConnectionId: string;
+  ConversationId: string;
+  InternalSessionId: string;
+  TestSessionId: string;
+  Timestamp: string;
+}
+
+/**
  * PlaceCall response message
+ *
+ * `result` is the value the PlaceCall action returns (see {@link PlaceCallResult}).
  */
 export class PlaceCallResponse extends OrganizationResponse {
-  constructor(public result: PlaceCallResponseData) {
+  constructor(public result: PlaceCallResult) {
     super("PlaceCall");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): PlaceCallResponse {
-    return new PlaceCallResponse(responseObject<PlaceCallResponseData>(data));
+    return new PlaceCallResponse(data as PlaceCallResult);
   }
 }

@@ -3,9 +3,12 @@ import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { RolePrivilege } from "./types/index.js";
 
 /**
- * Response from RetrieveAadUserPrivileges function
+ * Response from the RetrieveAadUserPrivileges function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveAadUserPrivilegesResponse {
+  "@odata.context"?: string;
   RolePrivileges: RolePrivilege[];
 }
 
@@ -49,8 +52,7 @@ export class RetrieveAadUserPrivilegesFunction implements Executable<RetrieveAad
   }
 
   async parseResponse(response: Response): Promise<RetrieveAadUserPrivilegesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveAadUserPrivilegesResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RetrieveAadUserPrivilegesResponse;
   }
 }

@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from RemoveFlowFromFlowGroup action
+ * Response from the RemoveFlowFromFlowGroup action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface RemoveFlowFromFlowGroupResponse {
-  // No content returned
-}
+export type RemoveFlowFromFlowGroupResponse = void;
 
 /**
  * Parameters of the RemoveFlowFromFlowGroup action, by their CSDL names. A parameter the CSDL declares
@@ -48,9 +48,8 @@ export class RemoveFlowFromFlowGroupAction implements Executable<RemoveFlowFromF
     };
   }
 
-  async parseResponse(response: Response): Promise<RemoveFlowFromFlowGroupResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RemoveFlowFromFlowGroupResponse;
-    return (await response.json()) as RemoveFlowFromFlowGroupResponse;
+  parseResponse(_response: Response): Promise<RemoveFlowFromFlowGroupResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

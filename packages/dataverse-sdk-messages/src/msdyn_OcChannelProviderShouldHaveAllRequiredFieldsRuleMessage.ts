@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRuleResponse as msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRule request message
@@ -31,9 +29,7 @@ export class msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRuleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRuleResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRuleResponse.fromResponse(
       await response.json()
     );
@@ -41,18 +37,33 @@ export class msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRuleRequest
 }
 
 /**
+ * Response from the msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRule action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRuleResult {
+  "@odata.context"?: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRule response message
+ *
+ * `result` is the value the msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRule action returns (see {@link msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRuleResult}).
  */
 export class msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRuleResponseData) {
+  constructor(public result: msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRuleResult) {
     super("msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRule");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(
     data: unknown
   ): msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRuleResponse {
     return new msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRuleResponse(
-      responseObject<msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRuleResponseData>(data)
+      data as msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRuleResult
     );
   }
 }

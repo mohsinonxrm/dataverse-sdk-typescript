@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_CheckIfSDKMessageProcessingStepsAreActiveResponse as msdyn_CheckIfSDKMessageProcessingStepsAreActiveResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CheckIfSDKMessageProcessingStepsAreActive message, by their CSDL names. A parameter the CSDL declares
@@ -49,9 +47,7 @@ export class msdyn_CheckIfSDKMessageProcessingStepsAreActiveRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckIfSDKMessageProcessingStepsAreActiveResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_CheckIfSDKMessageProcessingStepsAreActiveResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CheckIfSDKMessageProcessingStepsAreActiveResponse.fromResponse(
       await response.json()
     );
@@ -59,16 +55,33 @@ export class msdyn_CheckIfSDKMessageProcessingStepsAreActiveRequest
 }
 
 /**
+ * Response from the msdyn_CheckIfSDKMessageProcessingStepsAreActive action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CheckIfSDKMessageProcessingStepsAreActiveResult {
+  "@odata.context"?: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnLevel: number;
+  ReturnSeverity: number;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_CheckIfSDKMessageProcessingStepsAreActive response message
+ *
+ * `result` is the value the msdyn_CheckIfSDKMessageProcessingStepsAreActive action returns (see {@link msdyn_CheckIfSDKMessageProcessingStepsAreActiveResult}).
  */
 export class msdyn_CheckIfSDKMessageProcessingStepsAreActiveResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfSDKMessageProcessingStepsAreActiveResponseData) {
+  constructor(public result: msdyn_CheckIfSDKMessageProcessingStepsAreActiveResult) {
     super("msdyn_CheckIfSDKMessageProcessingStepsAreActive");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CheckIfSDKMessageProcessingStepsAreActiveResponse {
     return new msdyn_CheckIfSDKMessageProcessingStepsAreActiveResponse(
-      responseObject<msdyn_CheckIfSDKMessageProcessingStepsAreActiveResponseData>(data)
+      data as msdyn_CheckIfSDKMessageProcessingStepsAreActiveResult
     );
   }
 }

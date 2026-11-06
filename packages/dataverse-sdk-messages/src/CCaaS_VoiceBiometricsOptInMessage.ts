@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CCaaS_VoiceBiometricsOptInResponse as CCaaS_VoiceBiometricsOptInResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CCaaS_VoiceBiometricsOptIn message, by their CSDL names. A parameter the CSDL declares
@@ -57,23 +55,33 @@ export class CCaaS_VoiceBiometricsOptInRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_VoiceBiometricsOptInResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CCaaS_VoiceBiometricsOptInResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CCaaS_VoiceBiometricsOptInResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CCaaS_VoiceBiometricsOptIn action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CCaaS_VoiceBiometricsOptInResult {
+  "@odata.context"?: string;
+  operationId: string;
+}
+
+/**
  * CCaaS_VoiceBiometricsOptIn response message
+ *
+ * `result` is the value the CCaaS_VoiceBiometricsOptIn action returns (see {@link CCaaS_VoiceBiometricsOptInResult}).
  */
 export class CCaaS_VoiceBiometricsOptInResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_VoiceBiometricsOptInResponseData) {
+  constructor(public result: CCaaS_VoiceBiometricsOptInResult) {
     super("CCaaS_VoiceBiometricsOptIn");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CCaaS_VoiceBiometricsOptInResponse {
-    return new CCaaS_VoiceBiometricsOptInResponse(
-      responseObject<CCaaS_VoiceBiometricsOptInResponseData>(data)
-    );
+    return new CCaaS_VoiceBiometricsOptInResponse(data as CCaaS_VoiceBiometricsOptInResult);
   }
 }

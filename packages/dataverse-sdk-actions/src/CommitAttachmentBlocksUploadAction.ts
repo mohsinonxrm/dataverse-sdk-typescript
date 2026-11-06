@@ -4,9 +4,12 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from CommitAttachmentBlocksUpload action
+ * Response from the CommitAttachmentBlocksUpload action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CommitAttachmentBlocksUploadResponse {
+  "@odata.context"?: string;
   ActivityMimeAttachmentId: string;
   FileSizeInBytes: number;
 }
@@ -49,8 +52,7 @@ export class CommitAttachmentBlocksUploadAction implements Executable<CommitAtta
   }
 
   async parseResponse(response: Response): Promise<CommitAttachmentBlocksUploadResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CommitAttachmentBlocksUploadResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as CommitAttachmentBlocksUploadResponse;
   }
 }

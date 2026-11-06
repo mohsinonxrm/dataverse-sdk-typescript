@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
@@ -53,21 +52,35 @@ export class CopySystemFormRequest
   }
 
   async parseResponse(response: Response): Promise<CopySystemFormResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CopySystemFormResponse.fromResponse({});
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return CopySystemFormResponse.fromResponse(undefined);
+    // The body is the record, with its annotations
     return CopySystemFormResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CopySystemForm action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
+ */
+export type CopySystemFormResult =
+  | (systemform & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string })
+  | null;
+
+/**
  * CopySystemForm response message
+ *
+ * `result` is the value the CopySystemForm action returns (see {@link CopySystemFormResult}).
  */
 export class CopySystemFormResponse extends OrganizationResponse {
-  constructor(public result: systemform) {
+  constructor(public result: CopySystemFormResult) {
     super("CopySystemForm");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CopySystemFormResponse {
-    return new CopySystemFormResponse(responseObject<systemform>(data));
+    return new CopySystemFormResponse((data ?? null) as CopySystemFormResult);
   }
 }

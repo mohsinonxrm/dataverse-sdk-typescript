@@ -26,9 +26,9 @@ export class msdyn_CopyEventWhatsAppChannelCleanupRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_CopyEventWhatsAppChannelCleanupResponse> {
+  parseResponse(_response: Response): Promise<msdyn_CopyEventWhatsAppChannelCleanupResponse> {
     // No return value (204 No Content)
-    return new msdyn_CopyEventWhatsAppChannelCleanupResponse();
+    return Promise.resolve(new msdyn_CopyEventWhatsAppChannelCleanupResponse());
   }
 }
 
@@ -40,7 +40,7 @@ export class msdyn_CopyEventWhatsAppChannelCleanupResponse extends OrganizationR
     super("msdyn_CopyEventWhatsAppChannelCleanup");
   }
 
-  static fromResponse(_data: unknown): msdyn_CopyEventWhatsAppChannelCleanupResponse {
+  static fromResponse(_data?: unknown): msdyn_CopyEventWhatsAppChannelCleanupResponse {
     return new msdyn_CopyEventWhatsAppChannelCleanupResponse();
   }
 }

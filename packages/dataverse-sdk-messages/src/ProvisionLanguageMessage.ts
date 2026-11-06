@@ -42,9 +42,9 @@ export class ProvisionLanguageRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<ProvisionLanguageResponse> {
+  parseResponse(_response: Response): Promise<ProvisionLanguageResponse> {
     // No return value (204 No Content)
-    return new ProvisionLanguageResponse();
+    return Promise.resolve(new ProvisionLanguageResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class ProvisionLanguageResponse extends OrganizationResponse {
     super("ProvisionLanguage");
   }
 
-  static fromResponse(_data: unknown): ProvisionLanguageResponse {
+  static fromResponse(_data?: unknown): ProvisionLanguageResponse {
     return new ProvisionLanguageResponse();
   }
 }

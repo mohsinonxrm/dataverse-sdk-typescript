@@ -48,9 +48,9 @@ export class msdyn_OSDeletePredictionRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_OSDeletePredictionResponse> {
+  parseResponse(_response: Response): Promise<msdyn_OSDeletePredictionResponse> {
     // No return value (204 No Content)
-    return new msdyn_OSDeletePredictionResponse();
+    return Promise.resolve(new msdyn_OSDeletePredictionResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class msdyn_OSDeletePredictionResponse extends OrganizationResponse {
     super("msdyn_OSDeletePrediction");
   }
 
-  static fromResponse(_data: unknown): msdyn_OSDeletePredictionResponse {
+  static fromResponse(_data?: unknown): msdyn_OSDeletePredictionResponse {
     return new msdyn_OSDeletePredictionResponse();
   }
 }

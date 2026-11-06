@@ -44,9 +44,9 @@ export class AddAppComponentsRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<AddAppComponentsResponse> {
+  parseResponse(_response: Response): Promise<AddAppComponentsResponse> {
     // No return value (204 No Content)
-    return new AddAppComponentsResponse();
+    return Promise.resolve(new AddAppComponentsResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class AddAppComponentsResponse extends OrganizationResponse {
     super("AddAppComponents");
   }
 
-  static fromResponse(_data: unknown): AddAppComponentsResponse {
+  static fromResponse(_data?: unknown): AddAppComponentsResponse {
     return new AddAppComponentsResponse();
   }
 }

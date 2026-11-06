@@ -50,9 +50,9 @@ export class CreateNPSUserRatingRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CreateNPSUserRatingResponse> {
+  parseResponse(_response: Response): Promise<CreateNPSUserRatingResponse> {
     // No return value (204 No Content)
-    return new CreateNPSUserRatingResponse();
+    return Promise.resolve(new CreateNPSUserRatingResponse());
   }
 }
 
@@ -64,7 +64,7 @@ export class CreateNPSUserRatingResponse extends OrganizationResponse {
     super("CreateNPSUserRating");
   }
 
-  static fromResponse(_data: unknown): CreateNPSUserRatingResponse {
+  static fromResponse(_data?: unknown): CreateNPSUserRatingResponse {
     return new CreateNPSUserRatingResponse();
   }
 }

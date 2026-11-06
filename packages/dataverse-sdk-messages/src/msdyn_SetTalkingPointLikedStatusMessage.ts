@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SetTalkingPointLikedStatusResponse as msdyn_SetTalkingPointLikedStatusResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SetTalkingPointLikedStatus message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,35 @@ export class msdyn_SetTalkingPointLikedStatusRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SetTalkingPointLikedStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_SetTalkingPointLikedStatusResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SetTalkingPointLikedStatusResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SetTalkingPointLikedStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SetTalkingPointLikedStatusResult {
+  "@odata.context"?: string;
+  IsSuccessfull: boolean;
+}
+
+/**
  * msdyn_SetTalkingPointLikedStatus response message
+ *
+ * `result` is the value the msdyn_SetTalkingPointLikedStatus action returns (see {@link msdyn_SetTalkingPointLikedStatusResult}).
  */
 export class msdyn_SetTalkingPointLikedStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SetTalkingPointLikedStatusResponseData) {
+  constructor(public result: msdyn_SetTalkingPointLikedStatusResult) {
     super("msdyn_SetTalkingPointLikedStatus");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SetTalkingPointLikedStatusResponse {
     return new msdyn_SetTalkingPointLikedStatusResponse(
-      responseObject<msdyn_SetTalkingPointLikedStatusResponseData>(data)
+      data as msdyn_SetTalkingPointLikedStatusResult
     );
   }
 }

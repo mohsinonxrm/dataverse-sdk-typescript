@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_GetPrecannedIndustries action
+ * Response from the msdyn_GetPrecannedIndustries action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetPrecannedIndustriesResponse {
+  "@odata.context"?: string;
   msdyn_errormessage: string;
   msdyn_industries: string;
 }
@@ -27,8 +30,7 @@ export class msdyn_GetPrecannedIndustriesAction implements Executable<msdyn_GetP
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetPrecannedIndustriesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_GetPrecannedIndustriesResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_GetPrecannedIndustriesResponse;
   }
 }

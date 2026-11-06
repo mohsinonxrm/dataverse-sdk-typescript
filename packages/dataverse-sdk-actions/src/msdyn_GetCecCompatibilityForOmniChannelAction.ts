@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_GetCecCompatibilityForOmniChannel action
+ * Response from the msdyn_GetCecCompatibilityForOmniChannel action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetCecCompatibilityForOmniChannelResponse {
+  "@odata.context"?: string;
   IsResolvedLegacyCommand: boolean;
 }
 
@@ -28,8 +31,7 @@ export class msdyn_GetCecCompatibilityForOmniChannelAction implements Executable
   async parseResponse(
     response: Response
   ): Promise<msdyn_GetCecCompatibilityForOmniChannelResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_GetCecCompatibilityForOmniChannelResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_GetCecCompatibilityForOmniChannelResponse;
   }
 }

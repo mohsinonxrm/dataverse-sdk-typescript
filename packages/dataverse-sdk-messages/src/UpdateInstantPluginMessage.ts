@@ -56,9 +56,9 @@ export class UpdateInstantPluginRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<UpdateInstantPluginResponse> {
+  parseResponse(_response: Response): Promise<UpdateInstantPluginResponse> {
     // No return value (204 No Content)
-    return new UpdateInstantPluginResponse();
+    return Promise.resolve(new UpdateInstantPluginResponse());
   }
 }
 
@@ -70,7 +70,7 @@ export class UpdateInstantPluginResponse extends OrganizationResponse {
     super("UpdateInstantPlugin");
   }
 
-  static fromResponse(_data: unknown): UpdateInstantPluginResponse {
+  static fromResponse(_data?: unknown): UpdateInstantPluginResponse {
     return new UpdateInstantPluginResponse();
   }
 }

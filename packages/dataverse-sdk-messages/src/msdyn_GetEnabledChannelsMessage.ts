@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_GetEnabledChannelsResponse as msdyn_GetEnabledChannelsResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetEnabledChannels request message
@@ -29,23 +27,33 @@ export class msdyn_GetEnabledChannelsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetEnabledChannelsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetEnabledChannelsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetEnabledChannelsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetEnabledChannels action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetEnabledChannelsResult {
+  "@odata.context"?: string;
+  enabledChannels: string;
+}
+
+/**
  * msdyn_GetEnabledChannels response message
+ *
+ * `result` is the value the msdyn_GetEnabledChannels action returns (see {@link msdyn_GetEnabledChannelsResult}).
  */
 export class msdyn_GetEnabledChannelsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetEnabledChannelsResponseData) {
+  constructor(public result: msdyn_GetEnabledChannelsResult) {
     super("msdyn_GetEnabledChannels");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetEnabledChannelsResponse {
-    return new msdyn_GetEnabledChannelsResponse(
-      responseObject<msdyn_GetEnabledChannelsResponseData>(data)
-    );
+    return new msdyn_GetEnabledChannelsResponse(data as msdyn_GetEnabledChannelsResult);
   }
 }

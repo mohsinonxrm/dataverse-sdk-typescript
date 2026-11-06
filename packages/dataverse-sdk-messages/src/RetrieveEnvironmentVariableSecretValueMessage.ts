@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { RetrieveEnvironmentVariableSecretValueResponse as RetrieveEnvironmentVariableSecretValueResponseData } from "./types/index.js";
 
 /**
  * Parameters of the RetrieveEnvironmentVariableSecretValue message, by their CSDL names. A parameter the CSDL declares
@@ -45,24 +43,35 @@ export class RetrieveEnvironmentVariableSecretValueRequest
   }
 
   async parseResponse(response: Response): Promise<RetrieveEnvironmentVariableSecretValueResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return RetrieveEnvironmentVariableSecretValueResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return RetrieveEnvironmentVariableSecretValueResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the RetrieveEnvironmentVariableSecretValue action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface RetrieveEnvironmentVariableSecretValueResult {
+  "@odata.context"?: string;
+  EnvironmentVariableSecretValue: string;
+}
+
+/**
  * RetrieveEnvironmentVariableSecretValue response message
+ *
+ * `result` is the value the RetrieveEnvironmentVariableSecretValue action returns (see {@link RetrieveEnvironmentVariableSecretValueResult}).
  */
 export class RetrieveEnvironmentVariableSecretValueResponse extends OrganizationResponse {
-  constructor(public result: RetrieveEnvironmentVariableSecretValueResponseData) {
+  constructor(public result: RetrieveEnvironmentVariableSecretValueResult) {
     super("RetrieveEnvironmentVariableSecretValue");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): RetrieveEnvironmentVariableSecretValueResponse {
     return new RetrieveEnvironmentVariableSecretValueResponse(
-      responseObject<RetrieveEnvironmentVariableSecretValueResponseData>(data)
+      data as RetrieveEnvironmentVariableSecretValueResult
     );
   }
 }

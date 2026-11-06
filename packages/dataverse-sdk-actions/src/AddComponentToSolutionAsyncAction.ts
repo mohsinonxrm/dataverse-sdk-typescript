@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from AddComponentToSolutionAsync action
+ * Response from the AddComponentToSolutionAsync action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface AddComponentToSolutionAsyncResponse {
+  "@odata.context"?: string;
   AsyncOperationId: string;
 }
 
@@ -52,8 +55,7 @@ export class AddComponentToSolutionAsyncAction implements Executable<AddComponen
   }
 
   async parseResponse(response: Response): Promise<AddComponentToSolutionAsyncResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as AddComponentToSolutionAsyncResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as AddComponentToSolutionAsyncResponse;
   }
 }

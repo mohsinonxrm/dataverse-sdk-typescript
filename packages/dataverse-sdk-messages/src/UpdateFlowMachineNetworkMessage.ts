@@ -52,9 +52,9 @@ export class UpdateFlowMachineNetworkRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<UpdateFlowMachineNetworkResponse> {
+  parseResponse(_response: Response): Promise<UpdateFlowMachineNetworkResponse> {
     // No return value (204 No Content)
-    return new UpdateFlowMachineNetworkResponse();
+    return Promise.resolve(new UpdateFlowMachineNetworkResponse());
   }
 }
 
@@ -66,7 +66,7 @@ export class UpdateFlowMachineNetworkResponse extends OrganizationResponse {
     super("UpdateFlowMachineNetwork");
   }
 
-  static fromResponse(_data: unknown): UpdateFlowMachineNetworkResponse {
+  static fromResponse(_data?: unknown): UpdateFlowMachineNetworkResponse {
     return new UpdateFlowMachineNetworkResponse();
   }
 }

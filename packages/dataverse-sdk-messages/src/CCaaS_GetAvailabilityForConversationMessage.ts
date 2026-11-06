@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CCaaS_GetAvailabilityForConversationResponse as CCaaS_GetAvailabilityForConversationResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CCaaS_GetAvailabilityForConversation message, by their CSDL names. A parameter the CSDL declares
@@ -49,24 +47,42 @@ export class CCaaS_GetAvailabilityForConversationRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_GetAvailabilityForConversationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return CCaaS_GetAvailabilityForConversationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CCaaS_GetAvailabilityForConversationResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CCaaS_GetAvailabilityForConversation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CCaaS_GetAvailabilityForConversationResult {
+  "@odata.context"?: string;
+  AverageWaitTime: number;
+  EndTimeOfNextOperatingHour: string;
+  IsAgentAvailable: boolean;
+  IsQueueAvailable: boolean;
+  NextTransitionTime: string;
+  PositionInQueue: number;
+  QueueId: string;
+  StartTimeOfNextOperatingHour: string;
+}
+
+/**
  * CCaaS_GetAvailabilityForConversation response message
+ *
+ * `result` is the value the CCaaS_GetAvailabilityForConversation action returns (see {@link CCaaS_GetAvailabilityForConversationResult}).
  */
 export class CCaaS_GetAvailabilityForConversationResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_GetAvailabilityForConversationResponseData) {
+  constructor(public result: CCaaS_GetAvailabilityForConversationResult) {
     super("CCaaS_GetAvailabilityForConversation");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CCaaS_GetAvailabilityForConversationResponse {
     return new CCaaS_GetAvailabilityForConversationResponse(
-      responseObject<CCaaS_GetAvailabilityForConversationResponseData>(data)
+      data as CCaaS_GetAvailabilityForConversationResult
     );
   }
 }

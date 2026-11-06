@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetChildResourcesResponse as msdyn_GetChildResourcesResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetChildResources message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class msdyn_GetChildResourcesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetChildResourcesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetChildResourcesResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetChildResourcesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetChildResources action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetChildResourcesResult {
+  "@odata.context"?: string;
+  ChildResources: string;
+}
+
+/**
  * msdyn_GetChildResources response message
+ *
+ * `result` is the value the msdyn_GetChildResources action returns (see {@link msdyn_GetChildResourcesResult}).
  */
 export class msdyn_GetChildResourcesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetChildResourcesResponseData) {
+  constructor(public result: msdyn_GetChildResourcesResult) {
     super("msdyn_GetChildResources");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetChildResourcesResponse {
-    return new msdyn_GetChildResourcesResponse(
-      responseObject<msdyn_GetChildResourcesResponseData>(data)
-    );
+    return new msdyn_GetChildResourcesResponse(data as msdyn_GetChildResourcesResult);
   }
 }

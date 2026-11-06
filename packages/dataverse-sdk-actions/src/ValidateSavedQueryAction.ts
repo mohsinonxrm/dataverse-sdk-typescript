@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from ValidateSavedQuery action
+ * Response from the ValidateSavedQuery action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface ValidateSavedQueryResponse {
-  // No content returned
-}
+export type ValidateSavedQueryResponse = void;
 
 /**
  * Parameters of the ValidateSavedQuery action, by their CSDL names. A parameter the CSDL declares
@@ -45,9 +45,8 @@ export class ValidateSavedQueryAction implements Executable<ValidateSavedQueryRe
     };
   }
 
-  async parseResponse(response: Response): Promise<ValidateSavedQueryResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ValidateSavedQueryResponse;
-    return (await response.json()) as ValidateSavedQueryResponse;
+  parseResponse(_response: Response): Promise<ValidateSavedQueryResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

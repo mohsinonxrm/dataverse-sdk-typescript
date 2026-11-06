@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_DisableUnstructuredData action
+ * Response from the msdyn_DisableUnstructuredData action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_DisableUnstructuredDataResponse {
-  // No content returned
-}
+export type msdyn_DisableUnstructuredDataResponse = void;
 
 /**
  * msdyn_DisableUnstructuredData action
@@ -25,9 +25,8 @@ export class msdyn_DisableUnstructuredDataAction implements Executable<msdyn_Dis
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_DisableUnstructuredDataResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_DisableUnstructuredDataResponse;
-    return (await response.json()) as msdyn_DisableUnstructuredDataResponse;
+  parseResponse(_response: Response): Promise<msdyn_DisableUnstructuredDataResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_AIEvaluationMetricsResponse as msdyn_AIEvaluationMetricsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_AIEvaluationMetrics message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,33 @@ export class msdyn_AIEvaluationMetricsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_AIEvaluationMetricsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_AIEvaluationMetricsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_AIEvaluationMetricsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_AIEvaluationMetrics action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_AIEvaluationMetricsResult {
+  "@odata.context"?: string;
+  response: string;
+}
+
+/**
  * msdyn_AIEvaluationMetrics response message
+ *
+ * `result` is the value the msdyn_AIEvaluationMetrics action returns (see {@link msdyn_AIEvaluationMetricsResult}).
  */
 export class msdyn_AIEvaluationMetricsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_AIEvaluationMetricsResponseData) {
+  constructor(public result: msdyn_AIEvaluationMetricsResult) {
     super("msdyn_AIEvaluationMetrics");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_AIEvaluationMetricsResponse {
-    return new msdyn_AIEvaluationMetricsResponse(
-      responseObject<msdyn_AIEvaluationMetricsResponseData>(data)
-    );
+    return new msdyn_AIEvaluationMetricsResponse(data as msdyn_AIEvaluationMetricsResult);
   }
 }

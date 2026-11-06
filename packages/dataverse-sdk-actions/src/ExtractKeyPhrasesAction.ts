@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from ExtractKeyPhrases action
+ * Response from the ExtractKeyPhrases action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface ExtractKeyPhrasesResponse {
+  "@odata.context"?: string;
   countOfPhrases: number;
 }
 
@@ -46,8 +49,7 @@ export class ExtractKeyPhrasesAction implements Executable<ExtractKeyPhrasesResp
   }
 
   async parseResponse(response: Response): Promise<ExtractKeyPhrasesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ExtractKeyPhrasesResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as ExtractKeyPhrasesResponse;
   }
 }

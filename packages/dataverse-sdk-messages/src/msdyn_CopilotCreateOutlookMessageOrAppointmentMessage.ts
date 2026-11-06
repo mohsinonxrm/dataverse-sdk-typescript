@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_CopilotCreateOutlookMessageOrAppointmentResponse as msdyn_CopilotCreateOutlookMessageOrAppointmentResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CopilotCreateOutlookMessageOrAppointment message, by their CSDL names. A parameter the CSDL declares
@@ -53,9 +51,7 @@ export class msdyn_CopilotCreateOutlookMessageOrAppointmentRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CopilotCreateOutlookMessageOrAppointmentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_CopilotCreateOutlookMessageOrAppointmentResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CopilotCreateOutlookMessageOrAppointmentResponse.fromResponse(
       await response.json()
     );
@@ -63,16 +59,31 @@ export class msdyn_CopilotCreateOutlookMessageOrAppointmentRequest
 }
 
 /**
+ * Response from the msdyn_CopilotCreateOutlookMessageOrAppointment action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CopilotCreateOutlookMessageOrAppointmentResult {
+  "@odata.context"?: string;
+  msdyn_error: string;
+  msdyn_outlookResponse: string;
+  msdyn_status: number;
+}
+
+/**
  * msdyn_CopilotCreateOutlookMessageOrAppointment response message
+ *
+ * `result` is the value the msdyn_CopilotCreateOutlookMessageOrAppointment action returns (see {@link msdyn_CopilotCreateOutlookMessageOrAppointmentResult}).
  */
 export class msdyn_CopilotCreateOutlookMessageOrAppointmentResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CopilotCreateOutlookMessageOrAppointmentResponseData) {
+  constructor(public result: msdyn_CopilotCreateOutlookMessageOrAppointmentResult) {
     super("msdyn_CopilotCreateOutlookMessageOrAppointment");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CopilotCreateOutlookMessageOrAppointmentResponse {
     return new msdyn_CopilotCreateOutlookMessageOrAppointmentResponse(
-      responseObject<msdyn_CopilotCreateOutlookMessageOrAppointmentResponseData>(data)
+      data as msdyn_CopilotCreateOutlookMessageOrAppointmentResult
     );
   }
 }

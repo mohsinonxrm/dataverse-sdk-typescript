@@ -48,9 +48,9 @@ export class msdyn_assignentityRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_assignentityResponse> {
+  parseResponse(_response: Response): Promise<msdyn_assignentityResponse> {
     // No return value (204 No Content)
-    return new msdyn_assignentityResponse();
+    return Promise.resolve(new msdyn_assignentityResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class msdyn_assignentityResponse extends OrganizationResponse {
     super("msdyn_assignentity");
   }
 
-  static fromResponse(_data: unknown): msdyn_assignentityResponse {
+  static fromResponse(_data?: unknown): msdyn_assignentityResponse {
     return new msdyn_assignentityResponse();
   }
 }

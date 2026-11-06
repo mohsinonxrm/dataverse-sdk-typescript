@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetNotesAnalysisResponse as msdyn_GetNotesAnalysisResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetNotesAnalysis message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,34 @@ export class msdyn_GetNotesAnalysisRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetNotesAnalysisResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetNotesAnalysisResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetNotesAnalysisResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetNotesAnalysis action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetNotesAnalysisResult {
+  "@odata.context"?: string;
+  IsSuccess: boolean;
+  NotesAnalysisResult: string;
+}
+
+/**
  * msdyn_GetNotesAnalysis response message
+ *
+ * `result` is the value the msdyn_GetNotesAnalysis action returns (see {@link msdyn_GetNotesAnalysisResult}).
  */
 export class msdyn_GetNotesAnalysisResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetNotesAnalysisResponseData) {
+  constructor(public result: msdyn_GetNotesAnalysisResult) {
     super("msdyn_GetNotesAnalysis");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetNotesAnalysisResponse {
-    return new msdyn_GetNotesAnalysisResponse(
-      responseObject<msdyn_GetNotesAnalysisResponseData>(data)
-    );
+    return new msdyn_GetNotesAnalysisResponse(data as msdyn_GetNotesAnalysisResult);
   }
 }

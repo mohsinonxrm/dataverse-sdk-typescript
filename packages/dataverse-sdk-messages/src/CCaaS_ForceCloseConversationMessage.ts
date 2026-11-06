@@ -48,9 +48,9 @@ export class CCaaS_ForceCloseConversationRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_ForceCloseConversationResponse> {
+  parseResponse(_response: Response): Promise<CCaaS_ForceCloseConversationResponse> {
     // No return value (204 No Content)
-    return new CCaaS_ForceCloseConversationResponse();
+    return Promise.resolve(new CCaaS_ForceCloseConversationResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class CCaaS_ForceCloseConversationResponse extends OrganizationResponse {
     super("CCaaS_ForceCloseConversation");
   }
 
-  static fromResponse(_data: unknown): CCaaS_ForceCloseConversationResponse {
+  static fromResponse(_data?: unknown): CCaaS_ForceCloseConversationResponse {
     return new CCaaS_ForceCloseConversationResponse();
   }
 }

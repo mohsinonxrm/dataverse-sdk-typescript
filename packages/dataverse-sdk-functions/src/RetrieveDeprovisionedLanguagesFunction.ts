@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from RetrieveDeprovisionedLanguages function
+ * Response from the RetrieveDeprovisionedLanguages function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveDeprovisionedLanguagesResponse {
+  "@odata.context"?: string;
   RetrieveDeprovisionedLanguages: number[];
 }
 
@@ -26,8 +29,7 @@ export class RetrieveDeprovisionedLanguagesFunction implements Executable<Retrie
   }
 
   async parseResponse(response: Response): Promise<RetrieveDeprovisionedLanguagesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveDeprovisionedLanguagesResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RetrieveDeprovisionedLanguagesResponse;
   }
 }

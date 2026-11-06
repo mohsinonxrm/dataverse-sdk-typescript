@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_TrainAIModelResponse as msdyn_TrainAIModelResponseData } from "./types/index.js";
 
 /**
  * msdyn_TrainAIModel request message
@@ -32,21 +30,33 @@ export class msdyn_TrainAIModelRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_TrainAIModelResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_TrainAIModelResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_TrainAIModelResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_TrainAIModel action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_TrainAIModelResult {
+  "@odata.context"?: string;
+  Response: string;
+}
+
+/**
  * msdyn_TrainAIModel response message
+ *
+ * `result` is the value the msdyn_TrainAIModel action returns (see {@link msdyn_TrainAIModelResult}).
  */
 export class msdyn_TrainAIModelResponse extends OrganizationResponse {
-  constructor(public result: msdyn_TrainAIModelResponseData) {
+  constructor(public result: msdyn_TrainAIModelResult) {
     super("msdyn_TrainAIModel");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_TrainAIModelResponse {
-    return new msdyn_TrainAIModelResponse(responseObject<msdyn_TrainAIModelResponseData>(data));
+    return new msdyn_TrainAIModelResponse(data as msdyn_TrainAIModelResult);
   }
 }

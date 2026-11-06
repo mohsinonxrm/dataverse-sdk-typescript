@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_TableOperation action
+ * Response from the msdyn_TableOperation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_TableOperationResponse {
+  "@odata.context"?: string;
   Result: string;
 }
 
@@ -44,8 +47,7 @@ export class msdyn_TableOperationAction implements Executable<msdyn_TableOperati
   }
 
   async parseResponse(response: Response): Promise<msdyn_TableOperationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_TableOperationResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_TableOperationResponse;
   }
 }

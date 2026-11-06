@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseValue } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
 
 /**
@@ -53,24 +52,42 @@ export class msdynmkt_GetDataverseTableMetadataItemsRequest
   async parseResponse(
     response: Response
   ): Promise<msdynmkt_GetDataverseTableMetadataItemsResponse> {
-    // 204 No Content is an empty result
+    // An output that wasn't set answers 204 No Content: an empty collection
     if (response.status === 204)
-      return msdynmkt_GetDataverseTableMetadataItemsResponse.fromResponse({});
+      return msdynmkt_GetDataverseTableMetadataItemsResponse.fromResponse(undefined);
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
     return msdynmkt_GetDataverseTableMetadataItemsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdynmkt_GetDataverseTableMetadataItems action.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
+ */
+export type msdynmkt_GetDataverseTableMetadataItemsResult = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
+
+/**
  * msdynmkt_GetDataverseTableMetadataItems response message
+ *
+ * `result` is the value the msdynmkt_GetDataverseTableMetadataItems action returns (see {@link msdynmkt_GetDataverseTableMetadataItemsResult}).
  */
 export class msdynmkt_GetDataverseTableMetadataItemsResponse extends OrganizationResponse {
-  constructor(public result: Record<string, unknown>[]) {
+  constructor(public result: msdynmkt_GetDataverseTableMetadataItemsResult) {
     super("msdynmkt_GetDataverseTableMetadataItems");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdynmkt_GetDataverseTableMetadataItemsResponse {
     return new msdynmkt_GetDataverseTableMetadataItemsResponse(
-      responseValue<Record<string, unknown>[]>(data)
+      data === undefined
+        ? []
+        : (data as { value: msdynmkt_GetDataverseTableMetadataItemsResult }).value
     );
   }
 }

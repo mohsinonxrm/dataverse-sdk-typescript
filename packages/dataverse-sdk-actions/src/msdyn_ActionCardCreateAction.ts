@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_ActionCardCreate action
+ * Response from the msdyn_ActionCardCreate action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_ActionCardCreateResponse {
-  // No content returned
-}
+export type msdyn_ActionCardCreateResponse = void;
 
 /**
  * Parameters of the msdyn_ActionCardCreate action, by their CSDL names. A parameter the CSDL declares
@@ -41,9 +41,8 @@ export class msdyn_ActionCardCreateAction implements Executable<msdyn_ActionCard
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ActionCardCreateResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_ActionCardCreateResponse;
-    return (await response.json()) as msdyn_ActionCardCreateResponse;
+  parseResponse(_response: Response): Promise<msdyn_ActionCardCreateResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

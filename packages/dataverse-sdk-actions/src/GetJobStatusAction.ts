@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from GetJobStatus action
+ * Response from the GetJobStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface GetJobStatusResponse {
+  "@odata.context"?: string;
   response: string;
 }
 
@@ -46,8 +49,7 @@ export class GetJobStatusAction implements Executable<GetJobStatusResponse> {
   }
 
   async parseResponse(response: Response): Promise<GetJobStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as GetJobStatusResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as GetJobStatusResponse;
   }
 }

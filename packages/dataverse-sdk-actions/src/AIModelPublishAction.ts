@@ -2,15 +2,17 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from AIModelPublish action
+ * Response from the AIModelPublish action.
  *
- * The response is the entity itself, not wrapped in `value`.
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface AIModelPublishResponse {
+export type AIModelPublishResponse = {
   "@odata.context"?: string;
   "@odata.etag"?: string;
+  "@odata.type"?: string;
   [column: string]: unknown;
-}
+} | null;
 
 /**
  * Parameters of the AIModelPublish action, by their CSDL names. A parameter the CSDL declares
@@ -58,8 +60,9 @@ export class AIModelPublishAction implements Executable<AIModelPublishResponse> 
   }
 
   async parseResponse(response: Response): Promise<AIModelPublishResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as AIModelPublishResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
     return (await response.json()) as AIModelPublishResponse;
   }
 }

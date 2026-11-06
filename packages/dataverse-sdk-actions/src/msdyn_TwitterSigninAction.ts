@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_TwitterSignin action
+ * Response from the msdyn_TwitterSignin action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_TwitterSigninResponse {
+  "@odata.context"?: string;
   SigninUrl: string;
   StatusCode: number;
 }
@@ -45,8 +48,7 @@ export class msdyn_TwitterSigninAction implements Executable<msdyn_TwitterSignin
   }
 
   async parseResponse(response: Response): Promise<msdyn_TwitterSigninResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_TwitterSigninResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_TwitterSigninResponse;
   }
 }

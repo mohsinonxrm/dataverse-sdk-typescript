@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdynmkt_PersonalizationGetEntityProvidersResponse as msdynmkt_PersonalizationGetEntityProvidersResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdynmkt_PersonalizationGetEntityProviders message, by their CSDL names. A parameter the CSDL declares
@@ -47,24 +45,35 @@ export class msdynmkt_PersonalizationGetEntityProvidersRequest
   async parseResponse(
     response: Response
   ): Promise<msdynmkt_PersonalizationGetEntityProvidersResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdynmkt_PersonalizationGetEntityProvidersResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdynmkt_PersonalizationGetEntityProvidersResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdynmkt_PersonalizationGetEntityProviders action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdynmkt_PersonalizationGetEntityProvidersResult {
+  "@odata.context"?: string;
+  GetProvidersResult: string;
+}
+
+/**
  * msdynmkt_PersonalizationGetEntityProviders response message
+ *
+ * `result` is the value the msdynmkt_PersonalizationGetEntityProviders action returns (see {@link msdynmkt_PersonalizationGetEntityProvidersResult}).
  */
 export class msdynmkt_PersonalizationGetEntityProvidersResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_PersonalizationGetEntityProvidersResponseData) {
+  constructor(public result: msdynmkt_PersonalizationGetEntityProvidersResult) {
     super("msdynmkt_PersonalizationGetEntityProviders");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdynmkt_PersonalizationGetEntityProvidersResponse {
     return new msdynmkt_PersonalizationGetEntityProvidersResponse(
-      responseObject<msdynmkt_PersonalizationGetEntityProvidersResponseData>(data)
+      data as msdynmkt_PersonalizationGetEntityProvidersResult
     );
   }
 }

@@ -44,9 +44,9 @@ export class ApplyRecordCreationAndUpdateRuleRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<ApplyRecordCreationAndUpdateRuleResponse> {
+  parseResponse(_response: Response): Promise<ApplyRecordCreationAndUpdateRuleResponse> {
     // No return value (204 No Content)
-    return new ApplyRecordCreationAndUpdateRuleResponse();
+    return Promise.resolve(new ApplyRecordCreationAndUpdateRuleResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class ApplyRecordCreationAndUpdateRuleResponse extends OrganizationRespon
     super("ApplyRecordCreationAndUpdateRule");
   }
 
-  static fromResponse(_data: unknown): ApplyRecordCreationAndUpdateRuleResponse {
+  static fromResponse(_data?: unknown): ApplyRecordCreationAndUpdateRuleResponse {
     return new ApplyRecordCreationAndUpdateRuleResponse();
   }
 }

@@ -44,9 +44,9 @@ export class RouteToRequest extends OrganizationRequest implements Executable<Ro
     };
   }
 
-  async parseResponse(response: Response): Promise<RouteToResponse> {
+  parseResponse(_response: Response): Promise<RouteToResponse> {
     // No return value (204 No Content)
-    return new RouteToResponse();
+    return Promise.resolve(new RouteToResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class RouteToResponse extends OrganizationResponse {
     super("RouteTo");
   }
 
-  static fromResponse(_data: unknown): RouteToResponse {
+  static fromResponse(_data?: unknown): RouteToResponse {
     return new RouteToResponse();
   }
 }

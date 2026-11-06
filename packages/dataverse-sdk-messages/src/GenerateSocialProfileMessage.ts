@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
@@ -48,21 +47,35 @@ export class GenerateSocialProfileRequest
   }
 
   async parseResponse(response: Response): Promise<GenerateSocialProfileResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return GenerateSocialProfileResponse.fromResponse({});
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return GenerateSocialProfileResponse.fromResponse(undefined);
+    // The body is the record, with its annotations
     return GenerateSocialProfileResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the GenerateSocialProfile action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
+ */
+export type GenerateSocialProfileResult =
+  | (socialprofile & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string })
+  | null;
+
+/**
  * GenerateSocialProfile response message
+ *
+ * `result` is the value the GenerateSocialProfile action returns (see {@link GenerateSocialProfileResult}).
  */
 export class GenerateSocialProfileResponse extends OrganizationResponse {
-  constructor(public result: socialprofile) {
+  constructor(public result: GenerateSocialProfileResult) {
     super("GenerateSocialProfile");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): GenerateSocialProfileResponse {
-    return new GenerateSocialProfileResponse(responseObject<socialprofile>(data));
+    return new GenerateSocialProfileResponse((data ?? null) as GenerateSocialProfileResult);
   }
 }

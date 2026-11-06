@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { _RetrieveActivitiesByResourcesResponse as _RetrieveActivitiesByResourcesResponseData } from "./types/index.js";
 
 /**
  * Parameters of the _RetrieveActivitiesByResources message, by their CSDL names. A parameter the CSDL declares
@@ -51,23 +49,34 @@ export class _RetrieveActivitiesByResourcesRequest
   }
 
   async parseResponse(response: Response): Promise<_RetrieveActivitiesByResourcesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return _RetrieveActivitiesByResourcesResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return _RetrieveActivitiesByResourcesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the _RetrieveActivitiesByResources action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface _RetrieveActivitiesByResourcesResult {
+  "@odata.context"?: string;
+  ExceptionMessage: string;
+  Result: string;
+}
+
+/**
  * _RetrieveActivitiesByResources response message
+ *
+ * `result` is the value the _RetrieveActivitiesByResources action returns (see {@link _RetrieveActivitiesByResourcesResult}).
  */
 export class _RetrieveActivitiesByResourcesResponse extends OrganizationResponse {
-  constructor(public result: _RetrieveActivitiesByResourcesResponseData) {
+  constructor(public result: _RetrieveActivitiesByResourcesResult) {
     super("_RetrieveActivitiesByResources");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): _RetrieveActivitiesByResourcesResponse {
-    return new _RetrieveActivitiesByResourcesResponse(
-      responseObject<_RetrieveActivitiesByResourcesResponseData>(data)
-    );
+    return new _RetrieveActivitiesByResourcesResponse(data as _RetrieveActivitiesByResourcesResult);
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_FetchEvaluatedEntityInputConfigResponse as msdyn_FetchEvaluatedEntityInputConfigResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_FetchEvaluatedEntityInputConfig message, by their CSDL names. A parameter the CSDL declares
@@ -49,24 +47,36 @@ export class msdyn_FetchEvaluatedEntityInputConfigRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_FetchEvaluatedEntityInputConfigResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_FetchEvaluatedEntityInputConfigResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_FetchEvaluatedEntityInputConfigResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_FetchEvaluatedEntityInputConfig action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_FetchEvaluatedEntityInputConfigResult {
+  "@odata.context"?: string;
+  Representative: string;
+  entity_data: string;
+}
+
+/**
  * msdyn_FetchEvaluatedEntityInputConfig response message
+ *
+ * `result` is the value the msdyn_FetchEvaluatedEntityInputConfig action returns (see {@link msdyn_FetchEvaluatedEntityInputConfigResult}).
  */
 export class msdyn_FetchEvaluatedEntityInputConfigResponse extends OrganizationResponse {
-  constructor(public result: msdyn_FetchEvaluatedEntityInputConfigResponseData) {
+  constructor(public result: msdyn_FetchEvaluatedEntityInputConfigResult) {
     super("msdyn_FetchEvaluatedEntityInputConfig");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_FetchEvaluatedEntityInputConfigResponse {
     return new msdyn_FetchEvaluatedEntityInputConfigResponse(
-      responseObject<msdyn_FetchEvaluatedEntityInputConfigResponseData>(data)
+      data as msdyn_FetchEvaluatedEntityInputConfigResult
     );
   }
 }

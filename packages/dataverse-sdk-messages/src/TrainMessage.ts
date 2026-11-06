@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { TrainResponse as TrainResponseData } from "./types/index.js";
 
 /**
  * Parameters of the Train message, by their CSDL names. A parameter the CSDL declares
@@ -50,21 +48,33 @@ export class TrainRequest extends OrganizationRequest implements Executable<Trai
   }
 
   async parseResponse(response: Response): Promise<TrainResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return TrainResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return TrainResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the Train action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface TrainResult {
+  "@odata.context"?: string;
+  response: string;
+}
+
+/**
  * Train response message
+ *
+ * `result` is the value the Train action returns (see {@link TrainResult}).
  */
 export class TrainResponse extends OrganizationResponse {
-  constructor(public result: TrainResponseData) {
+  constructor(public result: TrainResult) {
     super("Train");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): TrainResponse {
-    return new TrainResponse(responseObject<TrainResponseData>(data));
+    return new TrainResponse(data as TrainResult);
   }
 }

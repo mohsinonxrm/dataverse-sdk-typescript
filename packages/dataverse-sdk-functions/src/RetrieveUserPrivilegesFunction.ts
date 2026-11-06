@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import type { RolePrivilege } from "./types/index.js";
 
 /**
- * Response from RetrieveUserPrivileges function
+ * Response from the RetrieveUserPrivileges function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveUserPrivilegesResponse {
+  "@odata.context"?: string;
   RolePrivileges: RolePrivilege[];
 }
 
@@ -33,8 +36,7 @@ export class RetrieveUserPrivilegesFunction implements Executable<RetrieveUserPr
   }
 
   async parseResponse(response: Response): Promise<RetrieveUserPrivilegesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveUserPrivilegesResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RetrieveUserPrivilegesResponse;
   }
 }

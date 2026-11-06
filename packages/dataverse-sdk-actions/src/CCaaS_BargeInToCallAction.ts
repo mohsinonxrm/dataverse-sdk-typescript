@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CCaaS_BargeInToCall action
+ * Response from the CCaaS_BargeInToCall action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface CCaaS_BargeInToCallResponse {
-  // No content returned
-}
+export type CCaaS_BargeInToCallResponse = void;
 
 /**
  * Parameters of the CCaaS_BargeInToCall action, by their CSDL names. A parameter the CSDL declares
@@ -56,9 +56,8 @@ export class CCaaS_BargeInToCallAction implements Executable<CCaaS_BargeInToCall
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_BargeInToCallResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CCaaS_BargeInToCallResponse;
-    return (await response.json()) as CCaaS_BargeInToCallResponse;
+  parseResponse(_response: Response): Promise<CCaaS_BargeInToCallResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

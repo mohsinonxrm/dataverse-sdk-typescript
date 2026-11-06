@@ -26,9 +26,9 @@ export class _SyncKnowledgeManagementSettingsRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<_SyncKnowledgeManagementSettingsResponse> {
+  parseResponse(_response: Response): Promise<_SyncKnowledgeManagementSettingsResponse> {
     // No return value (204 No Content)
-    return new _SyncKnowledgeManagementSettingsResponse();
+    return Promise.resolve(new _SyncKnowledgeManagementSettingsResponse());
   }
 }
 
@@ -40,7 +40,7 @@ export class _SyncKnowledgeManagementSettingsResponse extends OrganizationRespon
     super("_SyncKnowledgeManagementSettings");
   }
 
-  static fromResponse(_data: unknown): _SyncKnowledgeManagementSettingsResponse {
+  static fromResponse(_data?: unknown): _SyncKnowledgeManagementSettingsResponse {
     return new _SyncKnowledgeManagementSettingsResponse();
   }
 }

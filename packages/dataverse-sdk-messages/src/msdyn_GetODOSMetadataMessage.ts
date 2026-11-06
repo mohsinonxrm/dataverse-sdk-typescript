@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_GetODOSMetadataResponse as msdyn_GetODOSMetadataResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetODOSMetadata request message
@@ -29,23 +27,33 @@ export class msdyn_GetODOSMetadataRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetODOSMetadataResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetODOSMetadataResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetODOSMetadataResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetODOSMetadata action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetODOSMetadataResult {
+  "@odata.context"?: string;
+  Metadata: string;
+}
+
+/**
  * msdyn_GetODOSMetadata response message
+ *
+ * `result` is the value the msdyn_GetODOSMetadata action returns (see {@link msdyn_GetODOSMetadataResult}).
  */
 export class msdyn_GetODOSMetadataResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetODOSMetadataResponseData) {
+  constructor(public result: msdyn_GetODOSMetadataResult) {
     super("msdyn_GetODOSMetadata");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetODOSMetadataResponse {
-    return new msdyn_GetODOSMetadataResponse(
-      responseObject<msdyn_GetODOSMetadataResponseData>(data)
-    );
+    return new msdyn_GetODOSMetadataResponse(data as msdyn_GetODOSMetadataResult);
   }
 }

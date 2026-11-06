@@ -4,11 +4,11 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdyn_MergeDuplicatesAction action
+ * Response from the msdyn_MergeDuplicatesAction action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_MergeDuplicatesActionResponse {
-  // No content returned
-}
+export type msdyn_MergeDuplicatesActionResponse = void;
 
 /**
  * Parameters of the msdyn_MergeDuplicatesAction action, by their CSDL names. A parameter the CSDL declares
@@ -47,9 +47,8 @@ export class msdyn_MergeDuplicatesActionAction implements Executable<msdyn_Merge
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_MergeDuplicatesActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_MergeDuplicatesActionResponse;
-    return (await response.json()) as msdyn_MergeDuplicatesActionResponse;
+  parseResponse(_response: Response): Promise<msdyn_MergeDuplicatesActionResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

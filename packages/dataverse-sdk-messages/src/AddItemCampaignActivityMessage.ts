@@ -1,13 +1,9 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
-import type {
-  AddItemCampaignActivityResponse as AddItemCampaignActivityResponseData,
-  campaignactivity,
-} from "./types/index.js";
+import type { campaignactivity } from "./types/index.js";
 
 /**
  * Parameters of the AddItemCampaignActivity message, by their CSDL names. A parameter the CSDL declares
@@ -52,23 +48,33 @@ export class AddItemCampaignActivityRequest
   }
 
   async parseResponse(response: Response): Promise<AddItemCampaignActivityResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return AddItemCampaignActivityResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return AddItemCampaignActivityResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the AddItemCampaignActivity action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface AddItemCampaignActivityResult {
+  "@odata.context"?: string;
+  CampaignActivityItemId: string;
+}
+
+/**
  * AddItemCampaignActivity response message
+ *
+ * `result` is the value the AddItemCampaignActivity action returns (see {@link AddItemCampaignActivityResult}).
  */
 export class AddItemCampaignActivityResponse extends OrganizationResponse {
-  constructor(public result: AddItemCampaignActivityResponseData) {
+  constructor(public result: AddItemCampaignActivityResult) {
     super("AddItemCampaignActivity");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): AddItemCampaignActivityResponse {
-    return new AddItemCampaignActivityResponse(
-      responseObject<AddItemCampaignActivityResponseData>(data)
-    );
+    return new AddItemCampaignActivityResponse(data as AddItemCampaignActivityResult);
   }
 }

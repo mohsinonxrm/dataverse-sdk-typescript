@@ -4,11 +4,16 @@ import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtim
 import type { RollupType, TypedQueryBase } from "./types/index.js";
 
 /**
- * Response from Rollup function
+ * Response from the Rollup function.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface RollupResponse {
-  value: EntityReference[];
-}
+export type RollupResponse = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
 
 /**
  * Parameters of the Rollup function, by their CSDL names. A parameter the CSDL declares
@@ -66,8 +71,9 @@ export class RollupFunction implements Executable<RollupResponse> {
   }
 
   async parseResponse(response: Response): Promise<RollupResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RollupResponse;
-    return (await response.json()) as RollupResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return ((await response.json()) as { value: RollupResponse }).value;
   }
 }

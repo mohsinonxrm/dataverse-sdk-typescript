@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from RotateGroupKey action
+ * Response from the RotateGroupKey action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface RotateGroupKeyResponse {
-  // No content returned
-}
+export type RotateGroupKeyResponse = void;
 
 /**
  * RotateGroupKey action
@@ -31,9 +31,8 @@ export class RotateGroupKeyAction implements Executable<RotateGroupKeyResponse> 
     };
   }
 
-  async parseResponse(response: Response): Promise<RotateGroupKeyResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RotateGroupKeyResponse;
-    return (await response.json()) as RotateGroupKeyResponse;
+  parseResponse(_response: Response): Promise<RotateGroupKeyResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

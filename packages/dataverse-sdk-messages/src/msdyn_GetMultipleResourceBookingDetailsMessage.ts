@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetMultipleResourceBookingDetailsResponse as msdyn_GetMultipleResourceBookingDetailsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetMultipleResourceBookingDetails message, by their CSDL names. A parameter the CSDL declares
@@ -59,24 +57,35 @@ export class msdyn_GetMultipleResourceBookingDetailsRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_GetMultipleResourceBookingDetailsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_GetMultipleResourceBookingDetailsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetMultipleResourceBookingDetailsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetMultipleResourceBookingDetails action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetMultipleResourceBookingDetailsResult {
+  "@odata.context"?: string;
+  BookingDetailResult: string;
+}
+
+/**
  * msdyn_GetMultipleResourceBookingDetails response message
+ *
+ * `result` is the value the msdyn_GetMultipleResourceBookingDetails action returns (see {@link msdyn_GetMultipleResourceBookingDetailsResult}).
  */
 export class msdyn_GetMultipleResourceBookingDetailsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetMultipleResourceBookingDetailsResponseData) {
+  constructor(public result: msdyn_GetMultipleResourceBookingDetailsResult) {
     super("msdyn_GetMultipleResourceBookingDetails");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetMultipleResourceBookingDetailsResponse {
     return new msdyn_GetMultipleResourceBookingDetailsResponse(
-      responseObject<msdyn_GetMultipleResourceBookingDetailsResponseData>(data)
+      data as msdyn_GetMultipleResourceBookingDetailsResult
     );
   }
 }

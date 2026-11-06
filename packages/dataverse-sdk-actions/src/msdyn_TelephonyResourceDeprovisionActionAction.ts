@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_TelephonyResourceDeprovisionAction action
+ * Response from the msdyn_TelephonyResourceDeprovisionAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_TelephonyResourceDeprovisionActionResponse {
+  "@odata.context"?: string;
   ActionResult: string;
 }
 
@@ -51,8 +54,7 @@ export class msdyn_TelephonyResourceDeprovisionActionAction implements Executabl
   async parseResponse(
     response: Response
   ): Promise<msdyn_TelephonyResourceDeprovisionActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_TelephonyResourceDeprovisionActionResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_TelephonyResourceDeprovisionActionResponse;
   }
 }

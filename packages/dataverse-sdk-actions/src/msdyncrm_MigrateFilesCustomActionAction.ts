@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyncrm_MigrateFilesCustomAction action
+ * Response from the msdyncrm_MigrateFilesCustomAction action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyncrm_MigrateFilesCustomActionResponse {
-  // No content returned
-}
+export type msdyncrm_MigrateFilesCustomActionResponse = void;
 
 /**
  * msdyncrm_MigrateFilesCustomAction action
@@ -25,9 +25,8 @@ export class msdyncrm_MigrateFilesCustomActionAction implements Executable<msdyn
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyncrm_MigrateFilesCustomActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyncrm_MigrateFilesCustomActionResponse;
-    return (await response.json()) as msdyncrm_MigrateFilesCustomActionResponse;
+  parseResponse(_response: Response): Promise<msdyncrm_MigrateFilesCustomActionResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

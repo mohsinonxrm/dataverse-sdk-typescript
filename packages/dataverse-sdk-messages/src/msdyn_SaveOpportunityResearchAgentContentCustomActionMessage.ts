@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SaveOpportunityResearchAgentContentCustomActionResponse as msdyn_SaveOpportunityResearchAgentContentCustomActionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SaveOpportunityResearchAgentContentCustomAction message, by their CSDL names. A parameter the CSDL declares
@@ -49,9 +47,7 @@ export class msdyn_SaveOpportunityResearchAgentContentCustomActionRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SaveOpportunityResearchAgentContentCustomActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_SaveOpportunityResearchAgentContentCustomActionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SaveOpportunityResearchAgentContentCustomActionResponse.fromResponse(
       await response.json()
     );
@@ -59,18 +55,34 @@ export class msdyn_SaveOpportunityResearchAgentContentCustomActionRequest
 }
 
 /**
+ * Response from the msdyn_SaveOpportunityResearchAgentContentCustomAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SaveOpportunityResearchAgentContentCustomActionResult {
+  "@odata.context"?: string;
+  ErrorMessage: string;
+  IsSuccess: boolean;
+  Response: string;
+  StatusCode: number;
+}
+
+/**
  * msdyn_SaveOpportunityResearchAgentContentCustomAction response message
+ *
+ * `result` is the value the msdyn_SaveOpportunityResearchAgentContentCustomAction action returns (see {@link msdyn_SaveOpportunityResearchAgentContentCustomActionResult}).
  */
 export class msdyn_SaveOpportunityResearchAgentContentCustomActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SaveOpportunityResearchAgentContentCustomActionResponseData) {
+  constructor(public result: msdyn_SaveOpportunityResearchAgentContentCustomActionResult) {
     super("msdyn_SaveOpportunityResearchAgentContentCustomAction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(
     data: unknown
   ): msdyn_SaveOpportunityResearchAgentContentCustomActionResponse {
     return new msdyn_SaveOpportunityResearchAgentContentCustomActionResponse(
-      responseObject<msdyn_SaveOpportunityResearchAgentContentCustomActionResponseData>(data)
+      data as msdyn_SaveOpportunityResearchAgentContentCustomActionResult
     );
   }
 }

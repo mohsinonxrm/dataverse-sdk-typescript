@@ -4,11 +4,11 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from SetProcess action
+ * Response from the SetProcess action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface SetProcessResponse {
-  // No content returned
-}
+export type SetProcessResponse = void;
 
 /**
  * Parameters of the SetProcess action, by their CSDL names. A parameter the CSDL declares
@@ -47,9 +47,8 @@ export class SetProcessAction implements Executable<SetProcessResponse> {
     };
   }
 
-  async parseResponse(response: Response): Promise<SetProcessResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as SetProcessResponse;
-    return (await response.json()) as SetProcessResponse;
+  parseResponse(_response: Response): Promise<SetProcessResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

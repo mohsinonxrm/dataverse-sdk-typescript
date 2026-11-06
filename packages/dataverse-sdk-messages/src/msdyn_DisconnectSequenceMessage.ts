@@ -46,9 +46,9 @@ export class msdyn_DisconnectSequenceRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_DisconnectSequenceResponse> {
+  parseResponse(_response: Response): Promise<msdyn_DisconnectSequenceResponse> {
     // No return value (204 No Content)
-    return new msdyn_DisconnectSequenceResponse();
+    return Promise.resolve(new msdyn_DisconnectSequenceResponse());
   }
 }
 
@@ -60,7 +60,7 @@ export class msdyn_DisconnectSequenceResponse extends OrganizationResponse {
     super("msdyn_DisconnectSequence");
   }
 
-  static fromResponse(_data: unknown): msdyn_DisconnectSequenceResponse {
+  static fromResponse(_data?: unknown): msdyn_DisconnectSequenceResponse {
     return new msdyn_DisconnectSequenceResponse();
   }
 }

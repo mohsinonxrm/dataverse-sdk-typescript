@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CategorizeTextResponse as CategorizeTextResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CategorizeText message, by their CSDL names. A parameter the CSDL declares
@@ -49,21 +47,33 @@ export class CategorizeTextRequest
   }
 
   async parseResponse(response: Response): Promise<CategorizeTextResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CategorizeTextResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CategorizeTextResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CategorizeText action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CategorizeTextResult {
+  "@odata.context"?: string;
+  originalText: string;
+}
+
+/**
  * CategorizeText response message
+ *
+ * `result` is the value the CategorizeText action returns (see {@link CategorizeTextResult}).
  */
 export class CategorizeTextResponse extends OrganizationResponse {
-  constructor(public result: CategorizeTextResponseData) {
+  constructor(public result: CategorizeTextResult) {
     super("CategorizeText");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CategorizeTextResponse {
-    return new CategorizeTextResponse(responseObject<CategorizeTextResponseData>(data));
+    return new CategorizeTextResponse(data as CategorizeTextResult);
   }
 }

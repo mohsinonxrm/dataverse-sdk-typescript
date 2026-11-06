@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CCaaS_CreateProactiveVoiceDeliveryResponse as CCaaS_CreateProactiveVoiceDeliveryResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CCaaS_CreateProactiveVoiceDelivery message, by their CSDL names. A parameter the CSDL declares
@@ -59,23 +57,35 @@ export class CCaaS_CreateProactiveVoiceDeliveryRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_CreateProactiveVoiceDeliveryResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CCaaS_CreateProactiveVoiceDeliveryResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CCaaS_CreateProactiveVoiceDeliveryResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CCaaS_CreateProactiveVoiceDelivery action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CCaaS_CreateProactiveVoiceDeliveryResult {
+  "@odata.context"?: string;
+  DeliveryId: string;
+}
+
+/**
  * CCaaS_CreateProactiveVoiceDelivery response message
+ *
+ * `result` is the value the CCaaS_CreateProactiveVoiceDelivery action returns (see {@link CCaaS_CreateProactiveVoiceDeliveryResult}).
  */
 export class CCaaS_CreateProactiveVoiceDeliveryResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_CreateProactiveVoiceDeliveryResponseData) {
+  constructor(public result: CCaaS_CreateProactiveVoiceDeliveryResult) {
     super("CCaaS_CreateProactiveVoiceDelivery");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CCaaS_CreateProactiveVoiceDeliveryResponse {
     return new CCaaS_CreateProactiveVoiceDeliveryResponse(
-      responseObject<CCaaS_CreateProactiveVoiceDeliveryResponseData>(data)
+      data as CCaaS_CreateProactiveVoiceDeliveryResult
     );
   }
 }

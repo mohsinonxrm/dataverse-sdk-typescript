@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_CheckIfSLAOwnerIsActiveOrInactive action
+ * Response from the msdyn_CheckIfSLAOwnerIsActiveOrInactive action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_CheckIfSLAOwnerIsActiveOrInactiveResponse {
+  "@odata.context"?: string;
   Message: string;
   ResultEntities: string;
   ReturnLevel: number;
@@ -54,8 +57,7 @@ export class msdyn_CheckIfSLAOwnerIsActiveOrInactiveAction implements Executable
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckIfSLAOwnerIsActiveOrInactiveResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_CheckIfSLAOwnerIsActiveOrInactiveResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_CheckIfSLAOwnerIsActiveOrInactiveResponse;
   }
 }

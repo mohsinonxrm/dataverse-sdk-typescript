@@ -4,11 +4,11 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from CompoundUpdateDuplicateDetectionRule action
+ * Response from the CompoundUpdateDuplicateDetectionRule action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface CompoundUpdateDuplicateDetectionRuleResponse {
-  // No content returned
-}
+export type CompoundUpdateDuplicateDetectionRuleResponse = void;
 
 /**
  * Parameters of the CompoundUpdateDuplicateDetectionRule action, by their CSDL names. A parameter the CSDL declares
@@ -45,9 +45,8 @@ export class CompoundUpdateDuplicateDetectionRuleAction implements Executable<Co
     };
   }
 
-  async parseResponse(response: Response): Promise<CompoundUpdateDuplicateDetectionRuleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CompoundUpdateDuplicateDetectionRuleResponse;
-    return (await response.json()) as CompoundUpdateDuplicateDetectionRuleResponse;
+  parseResponse(_response: Response): Promise<CompoundUpdateDuplicateDetectionRuleResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

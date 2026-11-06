@@ -4,11 +4,11 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdyn_ExecutePrimaryCreatePostActions action
+ * Response from the msdyn_ExecutePrimaryCreatePostActions action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_ExecutePrimaryCreatePostActionsResponse {
-  // No content returned
-}
+export type msdyn_ExecutePrimaryCreatePostActionsResponse = void;
 
 /**
  * Parameters of the msdyn_ExecutePrimaryCreatePostActions action, by their CSDL names. A parameter the CSDL declares
@@ -47,9 +47,8 @@ export class msdyn_ExecutePrimaryCreatePostActionsAction implements Executable<m
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ExecutePrimaryCreatePostActionsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_ExecutePrimaryCreatePostActionsResponse;
-    return (await response.json()) as msdyn_ExecutePrimaryCreatePostActionsResponse;
+  parseResponse(_response: Response): Promise<msdyn_ExecutePrimaryCreatePostActionsResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

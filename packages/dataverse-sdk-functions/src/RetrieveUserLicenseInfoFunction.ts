@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import type { UserLicenseInfo } from "./types/index.js";
 
 /**
- * Response from RetrieveUserLicenseInfo function
+ * Response from the RetrieveUserLicenseInfo function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveUserLicenseInfoResponse {
+  "@odata.context"?: string;
   licenseInfo: UserLicenseInfo;
 }
 
@@ -33,8 +36,7 @@ export class RetrieveUserLicenseInfoFunction implements Executable<RetrieveUserL
   }
 
   async parseResponse(response: Response): Promise<RetrieveUserLicenseInfoResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveUserLicenseInfoResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RetrieveUserLicenseInfoResponse;
   }
 }

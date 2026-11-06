@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_ondemandqualityevaluationResponse as msdyn_ondemandqualityevaluationResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_ondemandqualityevaluation message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,38 @@ export class msdyn_ondemandqualityevaluationRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ondemandqualityevaluationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_ondemandqualityevaluationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_ondemandqualityevaluationResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_ondemandqualityevaluation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_ondemandqualityevaluationResult {
+  "@odata.context"?: string;
+  ActionId: string;
+  Error: string;
+  SkipReason: string;
+  Status: string;
+}
+
+/**
  * msdyn_ondemandqualityevaluation response message
+ *
+ * `result` is the value the msdyn_ondemandqualityevaluation action returns (see {@link msdyn_ondemandqualityevaluationResult}).
  */
 export class msdyn_ondemandqualityevaluationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ondemandqualityevaluationResponseData) {
+  constructor(public result: msdyn_ondemandqualityevaluationResult) {
     super("msdyn_ondemandqualityevaluation");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_ondemandqualityevaluationResponse {
     return new msdyn_ondemandqualityevaluationResponse(
-      responseObject<msdyn_ondemandqualityevaluationResponseData>(data)
+      data as msdyn_ondemandqualityevaluationResult
     );
   }
 }
