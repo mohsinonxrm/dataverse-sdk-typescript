@@ -1,14 +1,16 @@
 # Generator Implementation Summary
 
-## Status: ✅ Complete
+## Status
 
-All generator components have been fully implemented and verified.
+The generators are implemented, and their output is committed: 1,356 actions, 229 functions,
+1,356 messages and the metadata types. `test/generators.test.ts` runs the real parser and
+generators on small EDMX fixtures, and each generated package's `typecheck` compiles the committed
+output. Fixes to the generators are applied to the committed files with a script, not by a full
+regeneration (see README, Maintenance Notes).
 
 ## What Was Built
 
 ### 1. EDMX Parser (`src/parsers/edmx-parser.ts`)
-
-**Status:** ✅ Complete (280 lines)
 
 **Functionality:**
 
@@ -37,8 +39,6 @@ parseFunctions(schema): CsdlFunction[]    // Handles binding detection
 
 ### 2. Metadata Generator (`src/generators/metadata-generator.ts`)
 
-**Status:** ✅ Complete (130 lines)
-
 **Functionality:**
 
 - Generates TypeScript interfaces for Dataverse metadata API types
@@ -63,45 +63,21 @@ parseFunctions(schema): CsdlFunction[]    // Handles binding detection
 
 ### 3. Messages Generator (`src/generators/messages-generator.ts`)
 
-**Status:** ✅ Complete (180 lines)
-
 **Functionality:**
 
-- Maps Web API actions to .NET SDK message patterns
-- Generates Request/Response class pairs
-- Extends `OrganizationRequest`/`OrganizationResponse`
-- Splits into CrmSdkMessages and XrmSdkMessages
-
-**Message Mapping:**
-
-```typescript
-MESSAGE_MAPPING = {
-  // XRM (platform operations)
-  WhoAmI: "xrm",
-  Assign: "xrm",
-  SetState: "xrm",
-
-  // CRM (business logic)
-  ExecuteWorkflow: "crm",
-  WinOpportunity: "crm",
-  Merge: "crm",
-  ExportSolution: "crm",
-  ImportSolution: "crm",
-  // ... 20+ messages mapped
-};
-```
+- Generates a Request/Response class pair for every Web API action (functions are not messages)
+- Extends the hand-written `OrganizationRequest`/`OrganizationResponse`
+- Exports the classes directly (ADR-0004); there are no `CrmSdkMessages`/`XrmSdkMessages`
+  namespaces and no message mapping table
 
 **Output:**
 
-- `packages/dataverse-sdk-messages/src/crm/*.ts`
-- `packages/dataverse-sdk-messages/src/xrm/*.ts`
-- Separate `index.ts` for each namespace
+- `packages/dataverse-sdk-messages/src/{ActionName}Message.ts` (flat)
+- `index.ts` with alphabetical exports
 
 ---
 
 ### 4. Actions Generator (`src/generators/actions-generator.ts`)
-
-**Status:** ✅ Complete (150 lines)
 
 **Functionality:**
 
@@ -116,7 +92,8 @@ MESSAGE_MAPPING = {
 ```typescript
 export class WinOpportunityAction implements Executable<WinOpportunityResponse> {
   constructor(
-    public readonly opportunityClose: EntityReference,
+    public readonly opportunityClose: opportunityclose,
+    public readonly caller: string,
     public readonly status: number
   ) {}
 
@@ -138,8 +115,6 @@ export class WinOpportunityAction implements Executable<WinOpportunityResponse> 
 ---
 
 ### 5. Functions Generator (`src/generators/functions-generator.ts`)
-
-**Status:** ✅ Complete (170 lines)
 
 **Functionality:**
 
@@ -176,22 +151,10 @@ export class WhoAmIFunction implements Executable<WhoAmIResponse> {
 
 ## Build Verification
 
-### Build Status: ✅ Passing
-
 ```bash
-pnpm -r build
-# Scope: 24 of 25 workspace projects
-# ✅ All packages build successfully
-# Including tools/generate-sdk-types
-```
-
-### Generator Package Build:
-
-```bash
-cd tools/generate-sdk-types
-pnpm build
-# ✅ ESM Build success in 42ms
-# ✅ DTS Build success in 3245ms
+pnpm --filter generate-sdk-types build   # the tool
+pnpm --filter generate-sdk-types test    # parser and generator tests
+pnpm typecheck                           # includes the committed generated packages
 ```
 
 ---
@@ -282,7 +245,7 @@ Runs all generators sequentially:
 1. Fetches `$metadata` from Dataverse (client credentials auth)
 2. Parses EDMX/CSDL
 3. Generates metadata types
-4. Generates messages (CRM + XRM)
+4. Generates messages
 5. Generates actions
 6. Generates functions
 
@@ -305,38 +268,23 @@ Shows what would be generated without writing files.
 
 ---
 
-## Next Steps (Post-Implementation)
+## Next Steps
 
-### Phase A: Testing Against Real $metadata
+### Done
 
-- [ ] Set up test Dataverse environment (v9.2 + Sales + CS)
-- [ ] Configure Azure AD app registration
-- [ ] Run generator against real metadata
-- [ ] Verify generated TypeScript compiles
-- [ ] Check for missing type mappings
-- [ ] Validate generated code structure
+- [x] Run the generator against a real v9.2 `$metadata` (the dev org)
+- [x] Commit the generated types (1,356 actions, 229 functions, 1,356 messages, metadata types)
+- [x] Compile check of the generated code (each package's `typecheck`)
+- [x] Parser/generator tests (`test/generators.test.ts`, on small EDMX fixtures)
+- [x] `generate-metadata-types.yml` (manual workflow; opens a PR)
 
-### Phase B: Integration
+### Open
 
-- [ ] Commit generated types to SDK packages
-- [ ] Update package READMEs with examples
-- [ ] Create samples using generated types
-- [ ] Document any manual adjustments needed
-
-### Phase C: Automation
-
-- [ ] Create GitHub Actions workflow (`.github/workflows/generate-metadata-types.yml`)
-- [ ] Trigger: workflow_dispatch (manual)
-- [ ] Use client credentials from GitHub Secrets
-- [ ] Open PR with regenerated types
-- [ ] Add to release checklist
-
-### Phase D: Maintenance
-
-- [ ] Document when to regenerate (Dataverse updates, new features)
-- [ ] Add validation tests (generated code compiles, no type errors)
+- [ ] Check the `$metadata` snapshot (or its hash and the org version) into the repo, so generation
+      is reproducible and reviewable (#75)
+- [ ] Regenerate all packages from one current `$metadata` and review the breaking diff
+      (constructor parameter order, added and removed operations)
 - [ ] Monitor for CSDL schema changes
-- [ ] Update MESSAGE_MAPPING as new operations are discovered
 
 ---
 
@@ -350,34 +298,8 @@ Shows what would be generated without writing files.
 
 ---
 
-## Completion Checklist
+## Components
 
-### ✅ Completed
-
-- [x] EDMX Parser implementation (280 lines)
-- [x] Metadata Generator implementation (130 lines)
-- [x] Messages Generator implementation (180 lines)
-- [x] Actions Generator implementation (150 lines)
-- [x] Functions Generator implementation (170 lines)
-- [x] Build verification (all packages compile)
-- [x] CLI with Commander
-- [x] Configuration system (Zod + .env)
-- [x] Authentication (Azure Identity)
-- [x] TypeScript utilities (csdlTypeToTs, name conversion)
-- [x] File writer utilities (writeTypeScriptFile, generateIndexFile)
-- [x] Documentation (README.md exists)
-
-### ⏸️ Pending (Next Phase)
-
-- [ ] Unit tests for parsers/generators
-- [ ] Integration test against real Dataverse
-- [ ] Generate actual SDK types from v9.2 metadata
-- [ ] Verify generated code compiles in SDK packages
-- [ ] GitHub Actions workflow for automation
-
----
-
-**Implementation Date:** January 2025  
-**Total Lines of Code:** ~1,000 lines across 5 generators + utilities  
-**Build Status:** ✅ All 24 packages build successfully  
-**Ready for:** Testing against real Dataverse environment
+- EDMX parser, and metadata, messages, actions, functions and complex-types generators
+- CLI (Commander), configuration (Zod + `.env`), authentication (Azure Identity)
+- TypeScript utilities (`csdlTypeToTs`, name conversion) and file writer utilities
