@@ -19,6 +19,7 @@ import {
 } from "../fetchxml/page.js";
 import { buildSingleGetBatch, readSingleBatchResponse } from "../fetchxml/singleGetBatch.js";
 import { PreferBuilder } from "./PreferBuilder.js";
+import { DataverseInvalidRequestError } from "../errors/NamedErrors.js";
 import type { DataverseClient } from "./DataverseClient.js";
 
 export class DataverseRequestBuilder {
@@ -28,7 +29,7 @@ export class DataverseRequestBuilder {
   private preferBuilder?: PreferBuilder;
   private ifMatchValue?: string;
   private ifNoneMatchValue?: string;
-  private impersonateUserId?: string;
+  private impersonation?: { id: string; by: "systemuserid" | "aadObjectId" };
   private bindings: Record<string, string> = {};
   private suppressDuplicateDetection = true; // Default per Microsoft
   private urlValidationOptions: UrlValidationOptions = {};
@@ -115,9 +116,21 @@ export class DataverseRequestBuilder {
     return this;
   }
 
-  impersonate(userId: string): this {
-    this.impersonateUserId = userId;
+  /**
+   * Run the request as another user. By default `userId` is a `systemuserid`, sent as
+   * `MSCRMCallerID`. With `{ by: "aadObjectId" }` it is the user's Microsoft Entra object id, sent
+   * as `CallerObjectId`, which Microsoft recommends: it is the same in every environment. The
+   * calling identity needs the "Act on behalf of another user" privilege. A later call replaces
+   * an earlier one, so exactly one of the two headers is sent.
+   */
+  impersonate(userId: string, options?: { by?: "systemuserid" | "aadObjectId" }): this {
+    this.impersonation = { id: userId, by: options?.by ?? "systemuserid" };
     return this;
+  }
+
+  /** `impersonate(objectId, { by: "aadObjectId" })`: sends `CallerObjectId`. */
+  impersonateByObjectId(objectId: string): this {
+    return this.impersonate(objectId, { by: "aadObjectId" });
   }
 
   /**
@@ -514,8 +527,9 @@ export class DataverseRequestBuilder {
       headers["if-none-match"] = this.ifNoneMatchValue;
     }
 
-    if (this.impersonateUserId) {
-      headers.mscrmcallerid = this.impersonateUserId;
+    if (this.impersonation) {
+      const name = this.impersonation.by === "aadObjectId" ? "callerobjectid" : "mscrmcallerid";
+      headers[name] = this.impersonation.id;
     }
 
     // Only set header if NOT default value (avoid extra header)
@@ -544,6 +558,13 @@ export class DataverseRequestBuilder {
       headers.prefer = headers.prefer
         ? `${headers.prefer}, ${options.prefer.join(", ")}`
         : options.prefer.join(", ");
+    }
+    if (headers.mscrmcallerid && headers.callerobjectid) {
+      // Dataverse would have to pick one; refuse instead of running as the wrong user (#48).
+      throw DataverseInvalidRequestError.invalidParameter(
+        "impersonation",
+        "MSCRMCallerID and CallerObjectId can't both be set; impersonate by one id"
+      );
     }
     return req;
   }
