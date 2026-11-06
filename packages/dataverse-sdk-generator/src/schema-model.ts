@@ -183,6 +183,7 @@ export class SchemaModel {
 
       // Apply polymorphic lookup consolidation
       this.consolidatePolymorphicLookups(entityType, entityMetadata);
+      this.ensureUniqueMemberNames(entityType);
     }
   }
 
@@ -228,6 +229,26 @@ export class SchemaModel {
   }
 
   /**
+   * Make every generated member name of an entity unique. Two navigation properties with one name would be declared twice in the
+   * interface and the metadata object, which strict `tsc` rejects (#244). The later one is renamed to
+   * `<name>_<relationship>`, or `<name>_<n>` if that is taken too.
+   */
+  private ensureUniqueMemberNames(entityType: EntityType): void {
+    const taken = new Set<string>();
+    for (const nav of entityType.NavigationProperties) {
+      if (taken.has(nav.Name)) {
+        const base = nav.Name;
+        const suffix = nav.RelationshipName || nav.TargetType;
+        let candidate = suffix ? `${base}_${suffix}` : base;
+        for (let n = 2; taken.has(candidate) || candidate === base; n++)
+          candidate = `${base}_${String(n)}`;
+        nav.Name = candidate;
+      }
+      taken.add(nav.Name);
+    }
+  }
+
+  /**
    * Consolidate polymorphic lookups by merging navigation properties
    * Reference: scottdurow/dataverse-gen SchemaModel.ts#L237-L261
    */
@@ -238,12 +259,16 @@ export class SchemaModel {
     for (const attribute of entityMetadata.Attributes) {
       if (!attribute.Targets || attribute.Targets.length === 0) continue;
 
-      const logicalName = attribute.LogicalName ?? "";
+      const logicalName = String(attribute.LogicalName ?? "");
 
-      // Find all navigation properties that start with this lookup's logical name
-      const relatedNav = entityType.NavigationProperties.filter((nav) =>
-        // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-        nav.Name.startsWith(logicalName + "_")
+      // A lookup that already has a navigation property of its own name (`createdby`) has nothing
+      // to merge: the `createdby_<table>` properties beside it are the other side of other
+      // tables' relationships (collections), not one property per target (#244).
+      if (entityType.NavigationProperties.some((nav) => nav.Name === logicalName)) continue;
+
+      // Find the single-valued navigation properties that start with this lookup's logical name
+      const relatedNav = entityType.NavigationProperties.filter(
+        (nav) => !nav.IsCollection && nav.Name.startsWith(`${logicalName}_`)
       );
 
       if (relatedNav.length === 0) continue;
