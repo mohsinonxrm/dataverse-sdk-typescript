@@ -570,9 +570,9 @@ Comprehensive sample projects demonstrating SDK capabilities:
 
 ### Browser Sample
 
-| Sample                                           | Description                    | Features                                      |
-| ------------------------------------------------ | ------------------------------ | --------------------------------------------- |
-| **[spa-fluentui-v9](./samples/spa-fluentui-v9)** | React 18 SPA with Fluent UI v9 | MSAL React, account management, responsive UI |
+| Sample                                           | Description                    | Features                                                                                                                                                                                                                                |
+| ------------------------------------------------ | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **[spa-fluentui-v9](./samples/spa-fluentui-v9)** | React 18 SPA with Fluent UI v9 | A page per SDK area (queries, CRUD, concurrency, `$batch`, `OrganizationService`, messages, metadata, files, discovery, telemetry), each showing its code, result and every request; demo mode needs no org; MSAL loads only on sign-in |
 
 ## 🏗️ Architecture
 
