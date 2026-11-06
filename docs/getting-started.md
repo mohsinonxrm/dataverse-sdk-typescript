@@ -348,42 +348,59 @@ import { BatchRequestBuilder } from "@mohsinonxrm/dataverse-sdk-batch";
 
 const batch = new BatchRequestBuilder(client);
 
-// Add multiple operations
-batch.addRequest(client.api("/accounts").select(["name"]));
-batch.addRequest(client.api("/contacts").select(["fullname"]).top(10));
-batch.addRequest(client.api(`/accounts(${accountId})`));
+// addRequest(id, method, url, headers?, body?, dependsOn?)
+// URLs are relative to the Web API root (or absolute).
+batch.addRequest("accounts", "GET", "accounts?$select=name");
+batch.addRequest("contacts", "GET", "contacts?$select=fullname&$top=10");
+batch.addRequest("account", "GET", `accounts(${accountId})`);
 
-// Execute batch
-const responses = await batch.execute();
+// Execute batch: one POST $batch
+const result = await batch.execute();
 
-console.log("Accounts:", responses[0].value);
-console.log("Contacts:", responses[1].value);
-console.log("Account detail:", responses[2]);
+// Responses are keyed by the ids above (and listed in order in result.results)
+console.log("Accounts:", result.responses.get("accounts")?.body.value);
+console.log("Contacts:", result.responses.get("contacts")?.body.value);
+console.log("Account detail:", result.responses.get("account")?.body);
 ```
 
 ### Batch with Change Sets
 
 ```typescript
+import { BatchRequestBuilder, DataverseBatchError } from "@mohsinonxrm/dataverse-sdk-batch";
+
 const batch = new BatchRequestBuilder(client);
 
 // Begin change set for transactional updates
-batch.beginChangeSet();
+batch.beginChangeset();
 
 // All operations in change set succeed or fail together
-batch.addRequest(client.api("/accounts").post({ name: "Account 1" }));
-batch.addRequest(client.api("/accounts").post({ name: "Account 2" }));
-batch.addRequest(client.api(`/accounts(${existingId})`).patch({ revenue: 100000 }));
+batch.addRequest("a1", "POST", "accounts", undefined, { name: "Account 1" });
+// "$a1" refers to the account created by request "a1"
+batch.addRequest(
+  "c1",
+  "POST",
+  "contacts",
+  undefined,
+  { lastname: "Smith", "parentcustomerid_account@odata.bind": "$a1" },
+  ["a1"]
+);
+batch.addRequest("upd", "PATCH", `accounts(${existingId})`, undefined, { revenue: 100000 });
 
-batch.endChangeSet();
+batch.endChangeset();
 
 // Execute with error handling
 try {
-  const responses = await batch.execute();
-  console.log("All changes committed successfully");
+  const result = await batch.execute();
+  console.log("All changes committed:", result.responses.get("a1")?.headers["odata-entityid"]);
 } catch (error) {
-  console.error("Batch failed, all changes rolled back:", error);
+  if (error instanceof DataverseBatchError) {
+    // The change set was rolled back; error.result has the failing response
+    console.error("Batch failed, all changes rolled back:", error.result?.errors);
+  }
 }
 ```
+
+Without `continueOnError`, Dataverse stops at the first failure and `execute()` throws `DataverseBatchError`. With `execute({ continueOnError: true })` it runs every request and returns the result. More than 1000 requests are split into several `$batch` requests. See the [batch package README](../packages/dataverse-sdk-batch/README.md).
 
 ### Bulk Operations (Alternative to $batch)
 
@@ -458,37 +475,42 @@ For developers familiar with the C# SDK, use the OrganizationService pattern:
 
 ```typescript
 import { OrganizationService } from "@mohsinonxrm/dataverse-sdk-xrm";
-import { ExecuteWorkflowRequest, MergeRequest } from "@mohsinonxrm/dataverse-sdk-messages";
+import { ExecuteWorkflowRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 
 const service = new OrganizationService(client);
 
-// Create
-const accountId = await service.create("account", {
+// CRUD methods take the entity set name ("accounts"), not the logical name ("account").
+
+// Create: returns the new id
+const accountId = await service.create("accounts", {
   name: "Contoso Inc",
   revenue: 5000000,
 });
 
 // Retrieve
-const account = await service.retrieve("account", accountId, ["name", "revenue", "industrycode"]);
+const account = await service.retrieve("accounts", accountId, {
+  select: ["name", "revenue", "industrycode"],
+});
 
-// Update
-await service.update("account", accountId, {
+// Update (sends If-Match: *, so a missing record fails with 404 instead of being created)
+await service.update("accounts", accountId, {
   revenue: 6000000,
 });
 
-// Delete
-await service.delete("account", accountId);
-
 // Execute Message
-const workflowRequest = new ExecuteWorkflowRequest("workflow-id", accountId, {});
+const workflowRequest = new ExecuteWorkflowRequest(workflowId, accountId, {});
 const workflowResponse = await service.execute(workflowRequest);
-console.log("Workflow execution ID:", workflowResponse.result.asyncoperationid);
 
-// Associate
-await service.associate("account", accountId, "contact_customer_accounts", "contact", contactId);
+// Associate: related records are EntityReferences with a logical name
+await service.associate("accounts", accountId, "contact_customer_accounts", [
+  { logicalName: "contact", id: contactId },
+]);
 
-// Disassociate
-await service.disassociate("account", accountId, "contact_customer_accounts", "contact", contactId);
+// Disassociate: the related record's id
+await service.disassociate("accounts", accountId, "contact_customer_accounts", contactId);
+
+// Delete
+await service.delete("accounts", accountId);
 ```
 
 ## Next Steps
@@ -554,10 +576,12 @@ a longer wait is returned to you as a `DataverseThrottleError` with `retryAfterM
 
 ### Type Safety
 
-All operations support TypeScript auto-completion. Use generated types:
+All operations support TypeScript auto-completion. Business entity types such as `Account` are
+generated for your org by `@mohsinonxrm/dataverse-sdk-generator` (the metadata package holds only
+metadata types such as `EntityMetadata`):
 
 ```typescript
-import type { Account } from "@mohsinonxrm/dataverse-sdk-metadata";
+import type { Account } from "./generated/entities/Account.js";
 
 const account: Account = await client.api(`/accounts(${id})`).get();
 //    ^^^^^^^ Full type safety

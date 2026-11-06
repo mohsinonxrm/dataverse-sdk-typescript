@@ -27,7 +27,7 @@ const useStyles = makeStyles({
   container: {
     flex: 1,
     padding: "32px",
-    backgroundColor: (tokens as any).colorNeutralBackground3,
+    backgroundColor: tokens.colorNeutralBackground3,
   },
   header: {
     display: "flex",
@@ -40,7 +40,7 @@ const useStyles = makeStyles({
     maxWidth: "400px",
   },
   table: {
-    backgroundColor: (tokens as any).colorNeutralBackground1,
+    backgroundColor: tokens.colorNeutralBackground1,
   },
 });
 
@@ -55,16 +55,16 @@ export default function AccountList() {
   const [client, setClient] = useState<DataverseClient | null>(null);
 
   useEffect(() => {
-    initializeClient();
+    void initializeClient();
   }, []);
 
   useEffect(() => {
     if (searchTerm) {
       setFilteredAccounts(
-        (accountList as any).filter(
+        accountList.filter(
           (acc) =>
-            (acc as any).name.toLowerCase().includes((searchTerm as any).toLowerCase()) ||
-            (acc as any).accountnumber?.toLowerCase().includes((searchTerm as any).toLowerCase())
+            acc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            acc.accountnumber?.toLowerCase().includes(searchTerm.toLowerCase())
         )
       );
     } else {
@@ -75,7 +75,7 @@ export default function AccountList() {
   const initializeClient = async () => {
     const tokenProvider = new MsalBrowserTokenProvider(instance, {
       account: accounts[0],
-      scopes: (loginRequest as any).scopes,
+      scopes: loginRequest.scopes,
     });
 
     const dataverseClient = new DataverseClient({
@@ -106,9 +106,9 @@ export default function AccountList() {
         .top(50)
         .get<{ value: Account[] }>();
 
-      setAccountList((response as any).value || []);
+      setAccountList(response.value || []);
     } catch (error) {
-      (console as any).error("Failed to load accounts:", error);
+      console.error("Failed to load accounts:", error);
     } finally {
       setLoading(false);
     }
@@ -119,10 +119,10 @@ export default function AccountList() {
 
     if (confirm(`Are you sure you want to delete "${accountName}"?`)) {
       try {
-        await (client as any).api(`/accounts(${accountId})`).delete();
+        await client.api(`/accounts(${accountId})`).delete();
         await loadAccounts(client);
       } catch (error) {
-        (console as any).error("Delete failed:", error);
+        console.error("Delete failed:", error);
         alert("Failed to delete account");
       }
     }
@@ -131,7 +131,7 @@ export default function AccountList() {
   if (loading) {
     return (
       <div
-        className={(styles as any).container}
+        className={styles.container}
         style={{ display: "flex", justifyContent: "center", alignItems: "center" }}
       >
         <Spinner size="large" label="Loading accounts..." />
@@ -140,11 +140,11 @@ export default function AccountList() {
   }
 
   return (
-    <div className={(styles as any).container}>
-      <div className={(styles as any).header}>
+    <div className={styles.container}>
+      <div className={styles.header}>
         <div>
           <Title1>Accounts</Title1>
-          <Body1>{(filteredAccounts as any).length} account(s) found</Body1>
+          <Body1>{filteredAccounts.length} account(s) found</Body1>
         </div>
         <Button
           appearance="primary"
@@ -156,15 +156,15 @@ export default function AccountList() {
       </div>
 
       <Input
-        className={(styles as any).search}
+        className={styles.search}
         placeholder="Search accounts..."
         contentBefore={<SearchRegular />}
         value={searchTerm}
-        onChange={(e) => setSearchTerm((e as any).target.value)}
+        onChange={(e) => setSearchTerm(e.target.value)}
       />
 
       <Card>
-        <Table className={(styles as any).table}>
+        <Table className={styles.table}>
           <TableHeader>
             <TableRow>
               <TableHeaderCell>Name</TableHeaderCell>
@@ -177,40 +177,36 @@ export default function AccountList() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {(filteredAccounts as any).map((account) => (
-              <TableRow key={(account as any).accountid}>
+            {filteredAccounts.map((account) => (
+              <TableRow key={account.accountid}>
                 <TableCell>
                   <Button
                     appearance="subtle"
-                    onClick={() => navigate(`/accounts/${(account as any).accountid}`)}
+                    onClick={() => navigate(`/accounts/${account.accountid}`)}
                   >
-                    {(account as any).name}
+                    {account.name}
                   </Button>
                 </TableCell>
-                <TableCell>{(account as any).accountnumber || "—"}</TableCell>
-                <TableCell>{(account as any).telephone1 || "—"}</TableCell>
-                <TableCell>{(account as any).emailaddress1 || "—"}</TableCell>
+                <TableCell>{account.accountnumber || "—"}</TableCell>
+                <TableCell>{account.telephone1 || "—"}</TableCell>
+                <TableCell>{account.emailaddress1 || "—"}</TableCell>
                 <TableCell>
-                  {(account as any).revenue ? `$${(account as any).revenue.toLocaleString()}` : "—"}
+                  {account.revenue ? `$${account.revenue.toLocaleString()}` : "—"}
                 </TableCell>
                 <TableCell>
-                  {(account as any).createdon
-                    ? new Date((account as any).createdon).toLocaleDateString()
-                    : "—"}
+                  {account.createdon ? new Date(account.createdon).toLocaleDateString() : "—"}
                 </TableCell>
                 <TableCell>
                   <div style={{ display: "flex", gap: "8px" }}>
                     <Button
                       size="small"
                       icon={<EditRegular />}
-                      onClick={() => navigate(`/accounts/${(account as any).accountid}`)}
+                      onClick={() => navigate(`/accounts/${account.accountid}`)}
                     />
                     <Button
                       size="small"
                       icon={<DeleteRegular />}
-                      onClick={() =>
-                        handleDelete((account as any).accountid, (account as any).name)
-                      }
+                      onClick={() => handleDelete(account.accountid, account.name)}
                     />
                   </div>
                 </TableCell>
@@ -219,9 +215,9 @@ export default function AccountList() {
           </TableBody>
         </Table>
 
-        {(filteredAccounts as any).length === 0 && (
+        {filteredAccounts.length === 0 && (
           <div style={{ padding: "48px", textAlign: "center" }}>
-            <Body1 style={{ color: (tokens as any).colorNeutralForeground3 }}>
+            <Body1 style={{ color: tokens.colorNeutralForeground3 }}>
               {searchTerm ? "No accounts match your search" : "No accounts yet"}
             </Body1>
           </div>

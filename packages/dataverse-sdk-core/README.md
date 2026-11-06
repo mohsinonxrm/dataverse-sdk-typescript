@@ -165,13 +165,26 @@ await builder.patch<T>(body); // PATCH - update
 await builder.put<T>(body); // PUT - full replace
 await builder.delete(); // DELETE
 
+// Non-JSON content: these send Accept: */* unless you set an Accept header
+await client.api("$metadata").text(); // CSDL XML
+await client.api(`annotations(${id})/documentbody/$value`).text();
+await client.api(`accounts(${id})/entityimage/$value`).blob(); // or .arrayBuffer()
+
 // All methods support optional RequestOptions
 await builder.get({
   headers: { "Custom-Header": "value" },
-  timeoutMs: 30000,
+  timeoutMs: 30000, // the whole request: attempts, retry waits and the wait for a slot
+  attemptTimeoutMs: 10000, // optional: each attempt
   signal: abortController.signal,
 });
 ```
+
+`timeoutMs` is a deadline for the whole request, from the call until the response headers arrive:
+every attempt, every retry wait (including `Retry-After`) and the wait for a concurrency slot. When it
+passes, the request rejects with `DataverseNetworkError` named `RequestTimeout`, even if retries were
+left. `attemptTimeoutMs` limits a single attempt; a timed-out attempt is not retried. A caller's
+`signal` aborting rejects with `DataverseAbortError`. Neither the SDK's timers nor its listeners stay
+on your `signal` after the request, so one signal can be shared by any number of requests.
 
 ### Fluent API Enhancements
 
@@ -294,9 +307,13 @@ await client.api("/accounts").post({ name: "Contoso" });
 
 - Default: Duplicate detection is **suppressed** (matches Dataverse defaults)
 - `.detectDuplicates()` explicitly enables detection
-- Returns `DataverseDuplicateError` (extends `DataverseError`) on 412 status
-- Error includes `duplicates` array with record details from `error.innererror.duplicaterecords`
-- Error includes `duplicateRuleId` from `error.innererror.duplicateruleid`
+- Returns `DataverseDuplicateError` (extends `DataverseError`) for a 412 with Dataverse's
+  duplicate code `0x80040333`. Any other 412, such as an `If-Match` etag mismatch (`0x80060882`),
+  rejects with the usual `DataverseODataError`, even with `.detectDuplicates()` on
+- Error includes `duplicates` array with record details from `error.innererror.duplicaterecords`,
+  when Dataverse sends them (a plain duplicate-detection 412 carries only the code and message, so
+  the array is often empty)
+- Error includes `duplicateRuleId` from `error.innererror.duplicateruleid`, when present
 
 #### Navigation Property Binding
 
@@ -430,7 +447,7 @@ await client
 - Validates full URL including query string before sending request
 - Throws `DataverseUrlError` if limit exceeded
 - `.skipUrlValidation()` disables check for edge cases
-- Recommendation: Use `$batch` or FetchXML for complex queries exceeding limits
+- Recommendation: Use `$batch` or [`fetchXml()`](#fetchxml) for complex queries exceeding limits
 
 ### Paging
 
@@ -481,6 +498,60 @@ console.log(`Retrieved ${allAccounts.length} accounts`);
 - `.getAll()`: Collects all items into array with optional limits
 - `PageIterator` class internally manages `@odata.nextLink` traversal
 - Server-side paging limit: typically 5000 records per page (configurable in Dataverse)
+
+### FetchXML
+
+`fetchXml()` runs a FetchXML query and returns **one page** with its paging state. It doesn't loop,
+so an app that keeps its own paging state (a query editor, a grid) can use it as is.
+
+```typescript
+import { buildPagedFetchXml, parsePagingCookie } from "@mohsinonxrm/dataverse-sdk-core";
+
+let xml = `<fetch count="50" returntotalrecordcount="true">
+  <entity name="account"><attribute name="name"/><attribute name="statecode"/><order attribute="name"/></entity>
+</fetch>`;
+
+let page = await client.fetchXml<Account>("accounts", xml); // or client.api("accounts").fetchXml(xml)
+console.log(page.totalRecordCount); // 1234 (-1 without returntotalrecordcount="true")
+console.log(page.value[0]["statecode@OData.Community.Display.V1.FormattedValue"]); // "Active"
+
+while (page.moreRecords) {
+  const next = parsePagingCookie(page.pagingCookie); // { pageNumber: 2, pagingCookie: "<cookie page=\"1\">…" }
+  xml = buildPagedFetchXml(xml, {
+    page: next?.pageNumber ?? 2,
+    pagingCookie: next?.pagingCookie, // without a cookie, Dataverse pages by number
+  });
+  page = await client.fetchXml<Account>("accounts", xml);
+}
+```
+
+`FetchXmlPage<T>` has:
+
+| Field                           | From                                                                              |
+| ------------------------------- | --------------------------------------------------------------------------------- |
+| `value`                         | the records, with their annotations (formatted values, lookup logical names)      |
+| `pagingCookie`                  | `@Microsoft.Dynamics.CRM.fetchxmlpagingcookie`, as sent; absent on the last page  |
+| `moreRecords`                   | `@Microsoft.Dynamics.CRM.morerecords`; `false` when absent (the last page)        |
+| `totalRecordCount`              | `@Microsoft.Dynamics.CRM.totalrecordcount`; `-1` without `returntotalrecordcount` |
+| `totalRecordCountLimitExceeded` | `@Microsoft.Dynamics.CRM.totalrecordcountlimitexceeded` (more than 5000 rows)     |
+| `nextLink`                      | `@odata.nextLink`, which saved and user queries can return                        |
+
+- **Annotations.** `fetchXml()` sends `Prefer: odata.include-annotations="*"` by default, replacing
+  any `include-annotations` preference on the builder or in `defaultPrefer` (Dataverse drops the
+  paging annotations when it gets two). Pass `annotations: ["OData.Community.Display.V1.FormattedValue"]`
+  to ask for less; `Microsoft.Dynamics.CRM.*` is added, because `moreRecords` and
+  `totalRecordCount` come from it.
+- **Encoding.** The query is encoded with `encodeURIComponent` (`%20` for spaces), as in Microsoft's samples.
+- **Long queries.** A query whose GET URL would be longer than `maxUrlLength` (default 32,768
+  characters, the Web API limit) is sent as a `POST $batch` that carries the GET, and returns the
+  same page. Inside `$batch` the URL can be up to about 65,000 characters (beyond that Dataverse
+  answers "Invalid URI: The Uri string is too long"), which is roughly 40–45 KB of FetchXML.
+  Dataverse also allows at most 500 conditions in a query.
+- **Views.** `client.savedQuery("accounts", id)` and `client.userQuery("accounts", id)` run a system
+  or personal view and return the same page shape.
+- `fetchXml()` can't be combined with `.select()`, `.filter()` and the other query options; they
+  throw `DataverseInvalidRequestError` (`InvalidParameter`). Headers, `.impersonate()` and request
+  options apply as usual.
 
 ### Error Handling
 
@@ -604,8 +675,8 @@ The built-in classes (`AuthMiddleware`, `ODataHeadersMiddleware`, `ConcurrencyMi
 
 1. **prepend** middleware (if any)
 2. **ODataHeadersMiddleware** - Sets `Accept`, `OData-Version`, `OData-MaxVersion`, a JSON `Content-Type` for JSON bodies, `defaultHeaders` and `defaultPrefer`
-3. **ConcurrencyMiddleware** - Semaphore-based rate limiting with adaptive concurrency
-4. **RetryMiddleware** - Handles 429/502/503/504 with exponential backoff + jitter
+3. **RetryMiddleware** - Handles 429/502/503/504 with exponential backoff + jitter
+4. **ConcurrencyMiddleware** - Semaphore-based rate limiting with adaptive concurrency, one slot per attempt
 5. **AuthMiddleware** - Adds `Authorization: Bearer <token>` on every attempt; after a 401 gets a new token (passing a claims challenge) and retries once (only when a token provider is set)
 6. **TelemetryMiddleware** - Diagnostic headers; tracks dependencies and exceptions
 7. **LoggingMiddleware** - Logs request/response details (only when a logger is set)
@@ -623,19 +694,32 @@ The built-in classes (`AuthMiddleware`, `ODataHeadersMiddleware`, `ConcurrencyMi
 
 ### Advanced Features
 
-#### Impersonation (MSCRMCallerID Header)
+#### Impersonation (MSCRMCallerID / CallerObjectId Headers)
 
 Execute requests on behalf of another user.
 
 ```typescript
-// Impersonate specific user for single request
+// By the user's Microsoft Entra object id (recommended: the same in every environment)
 await client
   .api("accounts")
-  .impersonate(userId) // Sets MSCRMCallerID header
+  .impersonateByObjectId(entraObjectId) // Sets CallerObjectId; same as impersonate(id, { by: "aadObjectId" })
   .post({ name: "Contoso" });
 
-// The user must have appropriate privileges in Dataverse
+// By systemuserid
+await client
+  .api("accounts")
+  .impersonate(systemUserId) // Sets MSCRMCallerID
+  .post({ name: "Contoso" });
 ```
+
+- Exactly one header is sent; a later `impersonate()` call replaces an earlier one. A request that
+  would carry both (for example one set with `.header()`) is refused with
+  `DataverseInvalidRequestError` (`InvalidParameter`) before it is sent.
+- The calling identity needs the "Act on behalf of another user" privilege (System Administrators
+  have it). The request then runs with the impersonated user's privileges: a user without them gets
+  `0x80040220` naming that user. `createdby` is the impersonated user and `createdonbehalfby` the caller.
+- `WhoAmI` returns the calling identity either way, so it can't be used to check impersonation.
+- Pages after the first carry the same header (see [Paging](#paging)).
 
 #### Custom Headers
 
@@ -756,8 +840,8 @@ Pipeline.execute()
 Middleware Chain (sequential execution)
    ├─ prepend middleware (user-provided, optional)
    ├─ ODataHeadersMiddleware (add OData headers, defaultHeaders, defaultPrefer)
-   ├─ ConcurrencyMiddleware (rate limiting)
    ├─ RetryMiddleware (retry on 429/502/503/504)
+   ├─ ConcurrencyMiddleware (rate limiting, a slot per attempt)
    ├─ AuthMiddleware (Bearer token per attempt; one refresh-and-retry after a 401)
    ├─ TelemetryMiddleware (diagnostic headers, track dependencies)
    ├─ LoggingMiddleware (log requests, when a logger is set)
@@ -782,8 +866,8 @@ User Code (typed result)
 
 1. `prepend` middleware (if any)
 2. ODataHeadersMiddleware - Adds `Accept`, `Content-Type`, `OData-Version`, `OData-MaxVersion`, `defaultHeaders`, `defaultPrefer`
-3. ConcurrencyMiddleware - Acquires semaphore slot (blocks if at max concurrency)
-4. RetryMiddleware - Wraps the rest of the chain with retry logic (adds `retry-attempt` on retries)
+3. RetryMiddleware - Wraps the rest of the chain with retry logic (adds `retry-attempt` on retries)
+4. ConcurrencyMiddleware - Acquires a semaphore slot for this attempt (blocks if at max concurrency)
 5. AuthMiddleware - Calls `tokenProvider.getToken()` (every attempt) and adds `Authorization` header
 6. TelemetryMiddleware - Adds diagnostic headers, records start time
 7. LoggingMiddleware - Logs request details
@@ -797,8 +881,8 @@ User Code (typed result)
 3. LoggingMiddleware - Logs response status and duration
 4. TelemetryMiddleware - Tracks dependency with duration and result
 5. AuthMiddleware - On a 401, gets a new token (with the claims challenge, if any) and resends once
-6. RetryMiddleware - Checks status code, retries if 429/502/503/504 and attempts < maxRetries
-7. ConcurrencyMiddleware - Releases semaphore, adjusts limit based on `x-ms-dop-hint` header
+6. ConcurrencyMiddleware - Releases the semaphore slot, adjusts limit based on `x-ms-dop-hint` header
+7. RetryMiddleware - Checks status code, waits and retries if 429/502/503/504 and attempts < maxRetries (the wait holds no slot)
 8. ODataHeadersMiddleware - (no response processing)
 9. `prepend` middleware
 
@@ -834,7 +918,9 @@ User Code (typed result)
 - **Backoff formula:** `min(maxDelayMs, baseDelayMs * 2^attempt)`, then ±20% jitter (still capped at `maxDelayMs`)
 - **Methods:** 429 is retried for every method (Dataverse rejects throttled requests before doing any
   work). After 502/503/504 only idempotent requests are replayed: GET, HEAD, OPTIONS, PUT, DELETE, and
-  PATCH with `If-Match`.
+  PATCH with `If-Match`. The one exception for 429: a non-idempotent request (such as a `$batch`
+  POST) whose 429 response has a `multipart/mixed` body is handed back, not replayed, because
+  Dataverse processed the batch and some of its parts may have run.
 - **Network errors:** a `fetch` rejection becomes a `DataverseNetworkError` named `ConnectionFailed`
   (the original error is its `cause`). With `retryNetworkErrors: true` idempotent requests are retried
   with backoff. Aborts and timeouts are never retried.
@@ -865,6 +951,9 @@ User Code (typed result)
 - **Retry-Attempt header:** Added to retried requests for server-side diagnostics (turn off with
   `diagnosticHeaders: { retryAttempt: false }`)
 - **Stream content:** Not retried (detected via Content-Type header)
+- **Discarded responses:** the body of a response that is retried is cancelled at once, so the
+  connection goes back to the pool instead of waiting for garbage collection. The response you
+  get back (success, or the last failure when retries run out) is never read by the retry logic.
 
 #### Adaptive Concurrency
 
@@ -875,6 +964,11 @@ User Code (typed result)
 - **Bounds:** `min: 2`, `max: 16` (configurable)
 - **Semaphore:** Queue-based implementation with `acquire()` and `release()`
 - **Clamp function:** Ensures concurrency stays within `[min, max]` range
+- **A slot per attempt:** each attempt takes a slot and releases it when its response arrives, so a
+  request waiting on `Retry-After` or a backoff doesn't block other requests. A retry queues for
+  a slot again like any new request.
+- **Browsers:** `x-ms-dop-hint` isn't readable there (see [docs/browser.md](../../docs/browser.md)),
+  so the limit stays at `maxConcurrentRequests`.
 
 #### Circuit Breaker & Bulkhead
 
@@ -901,7 +995,16 @@ client.api('https://org.crm.dynamics.com/api/data/v9.2/accounts?$skiptoken=...')
 // Query building
 client.api('accounts').select('name').filter('revenue gt 1000000')
 → 'https://org.crm.dynamics.com/api/data/v9.2/accounts?$select=name&$filter=revenue%20gt%201000000'
+
+// A query string you encoded yourself is kept as written; builder options are added after it
+client.api("accounts?$filter=name%20eq%20'a%26b'").select('name')
+→ "https://org.crm.dynamics.com/api/data/v9.2/accounts?$filter=name%20eq%20'a%26b'&$select=name"
 ```
+
+Query option values are encoded with `encodeURIComponent` (a space is `%20`, not `+`), keeping `$`,
+`'`, `(`, `)`, `,`, `/`, `:`, `@` and `=` literal as in Microsoft's examples. A query string that is
+already in the path is never re-encoded; only an option the builder sets again (for example
+`$select`) replaces the one there.
 
 ## Interfaces
 
@@ -1127,7 +1230,10 @@ export interface RequestInformation {
   /** Query parameters (URL-encoded when sent) */
   query?: Record<string, string | number | boolean | undefined | null>;
   body?: unknown;
+  /** Deadline for the whole request (attempts, retry waits, slot waits) */
   timeoutMs?: number;
+  /** Limit for each attempt */
+  attemptTimeoutMs?: number;
   signal?: AbortSignal;
   /** Sent as x-ms-correlation-id; a new one is generated when omitted */
   correlationId?: string;
@@ -1271,7 +1377,7 @@ See [LICENSE](../../LICENSE) file in repository root.
 **URL too long (DataverseUrlError):**
 
 - Use `$batch` for complex queries
-- Use FetchXML for extremely complex filters
+- Use FetchXML through `fetchXml()`, which sends long queries as `$batch` itself (see [FetchXML](#fetchxml))
 - Call `.skipUrlValidation()` if you know what you're doing (not recommended)
 
 **TypeScript errors:**

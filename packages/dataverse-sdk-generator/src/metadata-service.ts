@@ -1,3 +1,9 @@
+/**
+ * Portions of this file are adapted from dataverse-gen by Scott Durow
+ * (https://github.com/scottdurow/dataverse-gen), Copyright (c) 2020 Scott Durow, licensed under
+ * the MIT License. See THIRD_PARTY_NOTICES.md in this package for the notice.
+ */
+
 import type { DataverseGenConfig } from "./types.js";
 
 /**
@@ -53,12 +59,67 @@ export class MetadataService {
    * Retrieve entity metadata via RetrieveMetadataChanges for a single entity
    * Used to enrich CSDL data with detailed attribute information
    * Reference: scottdurow/dataverse-gen MetadataService.ts#L47-L79
+   *
+   * RetrieveMetadataChanges is a function, so it is called with GET and the query is passed as
+   * a parameter alias: `RetrieveMetadataChanges(Query=@q)?@q={...}`.
    */
   async getEntityMetadata(logicalName: string): Promise<RetrieveMetadataChangesResponse> {
-    const url = `${this.baseUrl}/RetrieveMetadataChanges`;
+    const query = {
+      Criteria: {
+        Conditions: [
+          {
+            PropertyName: "LogicalName",
+            ConditionOperator: "Equals",
+            Value: {
+              Value: logicalName,
+              Type: "System.String",
+            },
+          },
+        ],
+        FilterOperator: "And",
+      },
+      Properties: {
+        PropertyNames: [
+          "Attributes",
+          "SchemaName",
+          "EntitySetName",
+          "Keys",
+          "PrimaryIdAttribute",
+          "PrimaryNameAttribute",
+        ],
+      },
+      AttributeQuery: {
+        Properties: {
+          PropertyNames: [
+            "SchemaName",
+            "LogicalName",
+            "OptionSet",
+            "RequiredLevel",
+            "AttributeType",
+            "AttributeTypeName",
+            "SourceType",
+            "Targets",
+            "DisplayName",
+            "Description",
+            "AttributeOf",
+            "DateTimeBehavior",
+            "Format",
+            "MaxLength",
+            "Precision",
+            "IsPrimaryId",
+            "IsPrimaryName",
+            "IsValidForRead",
+            "IsValidForCreate",
+            "IsValidForUpdate",
+            "IsValidForAdvancedFind",
+          ],
+        },
+      },
+    };
+
+    const url = `${this.baseUrl}/RetrieveMetadataChanges(Query=@q)?@q=${encodeURIComponent(JSON.stringify(query))}`;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
       Accept: "application/json",
       "OData-MaxVersion": "4.0",
       "OData-Version": "4.0",
@@ -68,60 +129,7 @@ export class MetadataService {
       headers.Authorization = `Bearer ${this.accessToken}`;
     }
 
-    const body = {
-      Query: {
-        Criteria: {
-          Conditions: [
-            {
-              PropertyName: "LogicalName",
-              ConditionOperator: 0, // Equals
-              Value: {
-                Value: logicalName,
-                Type: "System.String",
-              },
-            },
-          ],
-          FilterOperator: 0, // And
-        },
-        Properties: {
-          PropertyNames: ["Attributes", "SchemaName", "EntitySetName", "Keys"],
-        },
-        AttributeQuery: {
-          Properties: {
-            PropertyNames: [
-              "SchemaName",
-              "LogicalName",
-              "OptionSet",
-              "RequiredLevel",
-              "AttributeType",
-              "AttributeTypeName",
-              "SourceType",
-              "Targets",
-              "DisplayName",
-              "Description",
-              "AttributeOf",
-              "DateTimeBehavior",
-              "Format",
-              "MaxLength",
-              "Precision",
-              "IsPrimaryId",
-              "IsPrimaryName",
-              "IsValidForRead",
-              "IsValidForCreate",
-              "IsValidForUpdate",
-              "IsValidForAdvancedFind",
-            ],
-          },
-        },
-      },
-      DeletedMetadataFilters: "Default",
-    };
-
-    const response = await fetch(url, {
-      method: "POST",
-      headers,
-      body: JSON.stringify(body),
-    });
+    const response = await fetch(url, { method: "GET", headers });
 
     if (!response.ok) {
       const errorText = await response.text();

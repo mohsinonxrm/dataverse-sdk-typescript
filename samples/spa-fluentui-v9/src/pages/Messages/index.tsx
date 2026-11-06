@@ -23,6 +23,7 @@ import { useDataverse } from "../../context/DataverseContext";
 import { LoadingState } from "../../components/demo/LoadingState";
 import { ErrorDisplay } from "../../components/errors/ErrorDisplay";
 import { CodeComparison } from "../../components/demo/CodeComparison";
+import type { ResultView, JsonObject } from "../../types/common";
 
 const useStyles = makeStyles({
   container: {
@@ -34,7 +35,7 @@ const useStyles = makeStyles({
     marginBottom: "24px",
   },
   description: {
-    color: (tokens as any).colorNeutralForeground2,
+    color: tokens.colorNeutralForeground2,
     marginTop: "8px",
   },
   tabs: {
@@ -64,7 +65,7 @@ export default function Messages() {
   const [selectedTab, setSelectedTab] = useState<TabValue>("common");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const [results, setResults] = useState<any>(null);
+  const [results, setResults] = useState<ResultView | null>(null);
 
   // Common messages state
   const [targetEntityId, setTargetEntityId] = useState("");
@@ -90,13 +91,13 @@ export default function Messages() {
 
     try {
       // Assign message (can use XrmSdkMessages or raw action)
-      await (client as any).api("/Assign").post({
+      await client.api("/Assign").post<JsonObject>({
         Target: {
-          "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).account",
+          "@odata.type": "Microsoft.Dynamics.CRM.account",
           accountid: targetEntityId,
         },
         Assignee: {
-          "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).systemuser",
+          "@odata.type": "Microsoft.Dynamics.CRM.systemuser",
           systemuserid: assigneeId,
         },
       });
@@ -121,9 +122,9 @@ export default function Messages() {
 
     try {
       // SetState message
-      await (client as any).api("/SetState").post({
+      await client.api("/SetState").post<JsonObject>({
         EntityMoniker: {
-          "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).account",
+          "@odata.type": "Microsoft.Dynamics.CRM.account",
           accountid: targetEntityId,
         },
         State: parseInt(stateCode),
@@ -151,9 +152,9 @@ export default function Messages() {
 
     try {
       // Merge message (requires two account GUIDs)
-      await (client as any).api("/Merge").post({
+      await client.api("/Merge").post<JsonObject>({
         Target: {
-          "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).account",
+          "@odata.type": "Microsoft.Dynamics.CRM.account",
           accountid: "target-guid-here",
         },
         SubordinateId: "subordinate-guid-here",
@@ -181,7 +182,7 @@ export default function Messages() {
 
     try {
       // ExportSolution message
-      const response = await (client as any).api("/ExportSolution").post({
+      const response = await client.api("/ExportSolution").post<{ ExportSolutionFile: string }>({
         SolutionName: solutionName,
         Managed: false,
         ExportAutoNumberingSettings: true,
@@ -198,16 +199,16 @@ export default function Messages() {
       });
 
       // Response contains ExportSolutionFile (base64 zip)
-      const solutionFile = (response as any).ExportSolutionFile;
+      const solutionFile = response.ExportSolutionFile;
 
       setResults({
         message: "ExportSolution",
         solutionName,
-        fileSize: `${((solutionFile as any).length / 1024).toFixed(2)} KB`,
+        fileSize: `${(solutionFile.length / 1024).toFixed(2)} KB`,
         status: "Success",
       });
 
-      setSolutionXml((solutionFile as any).substring(0, 500) + "...");
+      setSolutionXml(solutionFile.substring(0, 500) + "...");
     } catch (err) {
       setError(err as Error);
     } finally {
@@ -222,7 +223,7 @@ export default function Messages() {
 
     try {
       // ImportSolution message
-      const response = await (client as any).api("/ImportSolution").post({
+      const response = await client.api("/ImportSolution").post<JsonObject>({
         CustomizationFile: solutionXml, // Base64 encoded zip file
         PublishWorkflows: true,
         OverwriteUnmanagedCustomizations: false,
@@ -233,7 +234,7 @@ export default function Messages() {
 
       setResults({
         message: "ImportSolution",
-        importJobId: (response as any).importjobid,
+        importJobId: response.importjobid,
         status: "Import started (async)",
       });
     } catch (err) {
@@ -250,7 +251,7 @@ export default function Messages() {
 
     try {
       // PublishXml message
-      await (client as any).api("/PublishXml").post({
+      await client.api("/PublishXml").post<JsonObject>({
         ParameterXml: publishXml,
       });
 
@@ -273,7 +274,7 @@ export default function Messages() {
 
     try {
       // PublishAllXml message
-      await (client as any).api("/PublishAllXml").post({});
+      await client.api("/PublishAllXml").post<JsonObject>({});
 
       setResults({
         message: "PublishAllXml",
@@ -292,12 +293,12 @@ export default function Messages() {
         <Title3>Assign Message</Title3>
         <Text>Assign a record to a user or team</Text>
 
-        <div className={(styles as any).form}>
+        <div className={styles.form}>
           <div>
             <Label>Target Entity ID (Account)</Label>
             <Input
               value={targetEntityId}
-              onChange={(_e, data) => setTargetEntityId((data as any).value)}
+              onChange={(_e, data) => setTargetEntityId(data.value)}
               placeholder="Account GUID"
             />
           </div>
@@ -305,13 +306,13 @@ export default function Messages() {
             <Label>Assignee ID (SystemUser)</Label>
             <Input
               value={assigneeId}
-              onChange={(_e, data) => setAssigneeId((data as any).value)}
+              onChange={(_e, data) => setAssigneeId(data.value)}
               placeholder="User GUID"
             />
           </div>
         </div>
 
-        <div className={(styles as any).actions}>
+        <div className={styles.actions}>
           <Button
             appearance="primary"
             icon={<PersonRegular />}
@@ -327,13 +328,13 @@ export default function Messages() {
         <Title3>SetState Message</Title3>
         <Text>Change the state and status of a record</Text>
 
-        <div className={(styles as any).form}>
+        <div className={styles.form}>
           <div>
             <Label>State Code</Label>
             <Input
               type="number"
               value={stateCode}
-              onChange={(_e, data) => setStateCode((data as any).value)}
+              onChange={(_e, data) => setStateCode(data.value)}
               placeholder="0 = Active, 1 = Inactive"
             />
           </div>
@@ -342,13 +343,13 @@ export default function Messages() {
             <Input
               type="number"
               value={statusCode}
-              onChange={(_e, data) => setStatusCode((data as any).value)}
+              onChange={(_e, data) => setStatusCode(data.value)}
               placeholder="-1 for default"
             />
           </div>
         </div>
 
-        <div className={(styles as any).actions}>
+        <div className={styles.actions}>
           <Button
             appearance="primary"
             icon={<ArrowSwapRegular />}
@@ -364,39 +365,39 @@ export default function Messages() {
         <Title3>Merge Message</Title3>
         <Text>Merge two records (supports account, contact, lead, incident)</Text>
 
-        <div className={(styles as any).actions}>
+        <div className={styles.actions}>
           <Button onClick={handleMerge}>Merge (Demo)</Button>
         </div>
       </Card>
 
       {results &&
-        (results as any).message &&
-        ((results as any).message === "Assign" ||
-          (results as any).message === "SetState" ||
-          (results as any).message === "Merge") && (
+        typeof results.message === "string" &&
+        (results.message === "Assign" ||
+          results.message === "SetState" ||
+          results.message === "Merge") && (
           <CodeComparison
             items={[
               {
                 label: "Message",
                 code:
-                  (results as any).message === "Assign"
-                    ? `await (client as any).api('/Assign').post({
-  Target: { '@(odata as any).type': '(Microsoft as any).Dynamics.(CRM as any).account', accountid: '${targetEntityId}' },
-  Assignee: { '@(odata as any).type': '(Microsoft as any).Dynamics.(CRM as any).systemuser', systemuserid: '${assigneeId}' }
+                  results.message === "Assign"
+                    ? `await client.api('/Assign').post({
+  Target: { '@odata.type': 'Microsoft.Dynamics.CRM.account', accountid: '${targetEntityId}' },
+  Assignee: { '@odata.type': 'Microsoft.Dynamics.CRM.systemuser', systemuserid: '${assigneeId}' }
 })`
-                    : (results as any).message === "SetState"
-                      ? `await (client as any).api('/SetState').post({
-  EntityMoniker: { '@(odata as any).type': '(Microsoft as any).Dynamics.(CRM as any).account', accountid: '${targetEntityId}' },
+                    : results.message === "SetState"
+                      ? `await client.api('/SetState').post({
+  EntityMoniker: { '@odata.type': 'Microsoft.Dynamics.CRM.account', accountid: '${targetEntityId}' },
   State: ${stateCode},
   Status: ${statusCode}
 })`
-                      : `await (client as any).api('/Merge').post({
-  Target: { '@(odata as any).type': '(Microsoft as any).Dynamics.(CRM as any).account', accountid: 'target-guid' },
+                      : `await client.api('/Merge').post({
+  Target: { '@odata.type': 'Microsoft.Dynamics.CRM.account', accountid: 'target-guid' },
   SubordinateId: 'subordinate-guid',
   UpdateContent: { name: 'Merged Account Name' },
   PerformParentingChecks: false
 })`,
-                result: (JSON as any).stringify(results, null, 2),
+                result: JSON.stringify(results, null, 2),
               },
             ]}
           />
@@ -410,18 +411,18 @@ export default function Messages() {
         <Title3>Export Solution</Title3>
         <Text>Export solution as base64 zip file</Text>
 
-        <div className={(styles as any).form}>
+        <div className={styles.form}>
           <div>
             <Label>Solution Name</Label>
             <Input
               value={solutionName}
-              onChange={(_e, data) => setSolutionName((data as any).value)}
+              onChange={(_e, data) => setSolutionName(data.value)}
               placeholder="MySolution"
             />
           </div>
         </div>
 
-        <div className={(styles as any).actions}>
+        <div className={styles.actions}>
           <Button
             appearance="primary"
             icon={<CloudArrowDownRegular />}
@@ -437,19 +438,19 @@ export default function Messages() {
         <Title3>Import Solution</Title3>
         <Text>Import solution from base64 zip file</Text>
 
-        <div className={(styles as any).form}>
+        <div className={styles.form}>
           <div>
             <Label>Solution File (Base64)</Label>
             <Textarea
               value={solutionXml}
-              onChange={(_e, data) => setSolutionXml((data as any).value)}
+              onChange={(_e, data) => setSolutionXml(data.value)}
               placeholder="Paste base64 encoded solution zip..."
               rows={4}
             />
           </div>
         </div>
 
-        <div className={(styles as any).actions}>
+        <div className={styles.actions}>
           <Button
             appearance="primary"
             icon={<CloudArrowUpRegular />}
@@ -465,18 +466,18 @@ export default function Messages() {
         <Title3>Publish Customizations</Title3>
         <Text>Publish specific entities or all customizations</Text>
 
-        <div className={(styles as any).form}>
+        <div className={styles.form}>
           <div>
             <Label>Publish XML</Label>
             <Textarea
               value={publishXml}
-              onChange={(_e, data) => setPublishXml((data as any).value)}
+              onChange={(_e, data) => setPublishXml(data.value)}
               rows={4}
             />
           </div>
         </div>
 
-        <div className={(styles as any).actions}>
+        <div className={styles.actions}>
           <Button appearance="primary" onClick={handlePublishXml}>
             PublishXml
           </Button>
@@ -485,32 +486,31 @@ export default function Messages() {
       </Card>
 
       {results &&
-        (results as any).message &&
-        ((results as any).message.includes("Solution") ||
-          (results as any).message.includes("Publish")) && (
+        typeof results.message === "string" &&
+        (results.message.includes("Solution") || results.message.includes("Publish")) && (
           <CodeComparison
             items={[
               {
                 label: "Message",
                 code:
-                  (results as any).message === "ExportSolution"
-                    ? `const response = await (client as any).api('/ExportSolution').post({
+                  results.message === "ExportSolution"
+                    ? `const response = await client.api('/ExportSolution').post({
   SolutionName: '${solutionName}',
   Managed: false,
   // ... other settings
 });
-// (response as any).ExportSolutionFile contains base64 zip`
-                    : (results as any).message === "ImportSolution"
-                      ? `const response = await (client as any).api('/ImportSolution').post({
+// response.ExportSolutionFile contains base64 zip`
+                    : results.message === "ImportSolution"
+                      ? `const response = await client.api('/ImportSolution').post({
   CustomizationFile: base64Zip,
   PublishWorkflows: true,
   // ... other settings
 });
-// (response as any).importjobid for tracking`
-                      : `await (client as any).api('/${(results as any).message}').post({
-  ParameterXml: '${(publishXml as any).substring(0, 50)}...'
+// response.importjobid for tracking`
+                      : `await client.api('/${results.message}').post({
+  ParameterXml: '${publishXml.substring(0, 50)}...'
 })`,
-                result: (JSON as any).stringify(results, null, 2),
+                result: JSON.stringify(results, null, 2),
               },
             ]}
           />
@@ -547,18 +547,18 @@ export default function Messages() {
   );
 
   return (
-    <div className={(styles as any).container}>
-      <div className={(styles as any).header}>
+    <div className={styles.container}>
+      <div className={styles.header}>
         <Title3>SDK Messages</Title3>
-        <Text className={(styles as any).description}>
+        <Text className={styles.description}>
           Execute typed SDK messages including solution management and business operations
         </Text>
       </div>
 
       <TabList
         selectedValue={selectedTab}
-        onTabSelect={(_, data) => setSelectedTab((data as any).value as TabValue)}
-        className={(styles as any).tabs}
+        onTabSelect={(_, data) => setSelectedTab(data.value as TabValue)}
+        className={styles.tabs}
       >
         <Tab value="common" icon={<BoxMultipleRegular />}>
           Common Messages
@@ -571,7 +571,7 @@ export default function Messages() {
         </Tab>
       </TabList>
 
-      <div className={(styles as any).content}>
+      <div className={styles.content}>
         {loading && <LoadingState label="Executing message..." />}
         {error && <ErrorDisplay error={error} onDismiss={() => setError(null)} />}
 

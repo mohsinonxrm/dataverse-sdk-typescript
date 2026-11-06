@@ -17,7 +17,7 @@ import { OrganizationService } from "../src/index.js";
 const ID = "00000000-0000-0000-0000-000000000001";
 
 describe("xrm: OrganizationService wire contract", () => {
-  it.fails("#83: create() returns the new id from OData-EntityId", async () => {
+  it("#83: create() returns the new id from OData-EntityId", async () => {
     const { client, fake } = createTestClient();
     fake.on("POST", "/accounts", () => createdResponse("accounts", ID));
     const service = new OrganizationService(client);
@@ -25,7 +25,7 @@ describe("xrm: OrganizationService wire contract", () => {
     expect(JSON.parse(fake.last().bodyText ?? "")).toEqual({ name: "Contoso" });
   });
 
-  it.fails("#83: retrieve() returns the record", async () => {
+  it("#83: retrieve() returns the record", async () => {
     const { client, fake } = createTestClient();
     fake.on("GET", `/accounts(${ID})`, () => jsonResponse({ accountid: ID, name: "Contoso" }));
     const service = new OrganizationService(client);
@@ -42,7 +42,7 @@ describe("xrm: OrganizationService wire contract", () => {
     expect(fake.last().method).toBe("PATCH");
   });
 
-  it.fails("#83: update() sends the If-Match etag and impersonation headers", async () => {
+  it("#83: update() sends the If-Match etag and impersonation headers", async () => {
     const { client, fake } = createTestClient();
     fake.on("PATCH", `/accounts(${ID})`, () => noContent());
     const service = new OrganizationService(client);
@@ -56,7 +56,7 @@ describe("xrm: OrganizationService wire contract", () => {
     expect(fake.last().headers.mscrmcallerid).toBe(ID);
   });
 
-  it.fails("#83: update() with returnRepresentation returns the updated record", async () => {
+  it("#83: update() with returnRepresentation returns the updated record", async () => {
     const { client, fake } = createTestClient();
     fake.on("PATCH", `/accounts(${ID})`, () => jsonResponse({ accountid: ID, name: "Renamed" }));
     const service = new OrganizationService(client);

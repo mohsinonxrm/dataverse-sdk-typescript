@@ -10,9 +10,12 @@ import { TelemetryMiddleware } from "../middleware/TelemetryMiddleware.js";
 export function buildDefaultMiddleware(options: DataverseClientOptions): Middleware[] {
   const list: Middleware[] = [];
   list.push(new ODataHeadersMiddleware(options));
-  list.push(new ConcurrencyMiddleware(options));
+  // Retry wraps Concurrency, so each attempt takes a slot and gives it back before the retry
+  // wait: a request sleeping on Retry-After doesn't hold a slot other requests could use (#44).
   list.push(new RetryMiddleware(options));
+  list.push(new ConcurrencyMiddleware(options));
   // Inside Retry, so every attempt gets a current token (#21); providers cache, so it's cheap.
+  // Inside Concurrency too, so a request waiting for a slot doesn't hold a token that ages.
   if (options.tokenProvider) list.push(new AuthMiddleware(options));
   list.push(new TelemetryMiddleware(options));
   list.push(new LoggingMiddleware(options));

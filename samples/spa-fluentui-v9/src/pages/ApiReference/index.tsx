@@ -11,7 +11,7 @@ const useStyles = makeStyles({
     marginBottom: "24px",
   },
   description: {
-    color: (tokens as any).colorNeutralForeground2,
+    color: tokens.colorNeutralForeground2,
     marginTop: "8px",
   },
   card: {
@@ -25,11 +25,11 @@ const useStyles = makeStyles({
     "& th, & td": {
       padding: "12px",
       textAlign: "left",
-      borderBottom: `1px solid ${(tokens as any).colorNeutralStroke1}`,
+      borderBottom: `1px solid ${tokens.colorNeutralStroke1}`,
     },
     "& th": {
       fontWeight: 600,
-      backgroundColor: (tokens as any).colorNeutralBackground3,
+      backgroundColor: tokens.colorNeutralBackground3,
     },
   },
   section: {
@@ -41,17 +41,17 @@ export default function ApiReference() {
   const styles = useStyles();
 
   return (
-    <div className={(styles as any).container}>
-      <div className={(styles as any).header}>
+    <div className={styles.container}>
+      <div className={styles.header}>
         <Title3>API Reference & Decision Guides</Title3>
-        <Text className={(styles as any).description}>
+        <Text className={styles.description}>
           Decision matrices, when-to-use guidance, and API comparison tables
         </Text>
       </div>
 
-      <Card className={(styles as any).card}>
+      <Card className={styles.card}>
         <Title3>CRUD API Comparison</Title3>
-        <table className={(styles as any).table}>
+        <table className={styles.table}>
           <thead>
             <tr>
               <th>Approach</th>
@@ -65,7 +65,7 @@ export default function ApiReference() {
               <td>
                 <Text weight="semibold">Raw API</Text>
                 <br />
-                <Text size={200}>(client as any).api('/accounts').post()</Text>
+                <Text size={200}>client.api('/accounts').post()</Text>
               </td>
               <td>
                 <Text size={200}>
@@ -76,24 +76,18 @@ export default function ApiReference() {
               </td>
               <td>
                 <Text size={200}>
-                  <CheckmarkCircleRegular color={(tokens as any).colorStatusSuccessForeground1} />{" "}
-                  Fluent API
+                  <CheckmarkCircleRegular color={tokens.colorStatusSuccessForeground1} /> Fluent API
                   <br />
-                  <CheckmarkCircleRegular
-                    color={(tokens as any).colorStatusSuccessForeground1}
-                  />{" "}
-                  Type-safe with generics
+                  <CheckmarkCircleRegular color={tokens.colorStatusSuccessForeground1} /> Type-safe
+                  with generics
                   <br />
-                  <CheckmarkCircleRegular
-                    color={(tokens as any).colorStatusSuccessForeground1}
-                  />{" "}
-                  Full control
+                  <CheckmarkCircleRegular color={tokens.colorStatusSuccessForeground1} /> Full
+                  control
                 </Text>
               </td>
               <td>
                 <Text size={200}>
-                  <DismissCircleRegular color={(tokens as any).colorNeutralForeground3} /> More
-                  verbose
+                  <DismissCircleRegular color={tokens.colorNeutralForeground3} /> More verbose
                 </Text>
               </td>
             </tr>
@@ -101,7 +95,7 @@ export default function ApiReference() {
               <td>
                 <Text weight="semibold">Typed API</Text>
                 <br />
-                <Text size={200}>(client as any).api&lt;Account&gt;().post()</Text>
+                <Text size={200}>client.api&lt;Account&gt;().post()</Text>
               </td>
               <td>
                 <Text size={200}>
@@ -112,24 +106,20 @@ export default function ApiReference() {
               </td>
               <td>
                 <Text size={200}>
-                  <CheckmarkCircleRegular color={(tokens as any).colorStatusSuccessForeground1} />{" "}
-                  Full IntelliSense
+                  <CheckmarkCircleRegular color={tokens.colorStatusSuccessForeground1} /> Full
+                  IntelliSense
                   <br />
-                  <CheckmarkCircleRegular
-                    color={(tokens as any).colorStatusSuccessForeground1}
-                  />{" "}
+                  <CheckmarkCircleRegular color={tokens.colorStatusSuccessForeground1} />{" "}
                   Compile-time checks
                   <br />
-                  <CheckmarkCircleRegular
-                    color={(tokens as any).colorStatusSuccessForeground1}
-                  />{" "}
+                  <CheckmarkCircleRegular color={tokens.colorStatusSuccessForeground1} />{" "}
                   Refactoring safe
                 </Text>
               </td>
               <td>
                 <Text size={200}>
-                  <DismissCircleRegular color={(tokens as any).colorNeutralForeground3} /> Requires
-                  type generation
+                  <DismissCircleRegular color={tokens.colorNeutralForeground3} /> Requires type
+                  generation
                 </Text>
               </td>
             </tr>
@@ -137,7 +127,7 @@ export default function ApiReference() {
               <td>
                 <Text weight="semibold">OrganizationService</Text>
                 <br />
-                <Text size={200}>(orgService as any).create('account', data)</Text>
+                <Text size={200}>orgService.create('accounts', data)</Text>
               </td>
               <td>
                 <Text size={200}>
@@ -148,27 +138,22 @@ export default function ApiReference() {
               </td>
               <td>
                 <Text size={200}>
-                  <CheckmarkCircleRegular color={(tokens as any).colorStatusSuccessForeground1} />{" "}
-                  Familiar API
+                  <CheckmarkCircleRegular color={tokens.colorStatusSuccessForeground1} /> Familiar
+                  API
                   <br />
-                  <CheckmarkCircleRegular
-                    color={(tokens as any).colorStatusSuccessForeground1}
-                  />{" "}
-                  Simple CRUD
+                  <CheckmarkCircleRegular color={tokens.colorStatusSuccessForeground1} /> Simple
+                  CRUD
                   <br />
-                  <CheckmarkCircleRegular
-                    color={(tokens as any).colorStatusSuccessForeground1}
-                  />{" "}
-                  Less boilerplate
+                  <CheckmarkCircleRegular color={tokens.colorStatusSuccessForeground1} /> Less
+                  boilerplate
                 </Text>
               </td>
               <td>
                 <Text size={200}>
-                  <DismissCircleRegular color={(tokens as any).colorNeutralForeground3} /> Less
-                  flexible
+                  <DismissCircleRegular color={tokens.colorNeutralForeground3} /> Less flexible
                   <br />
-                  <DismissCircleRegular color={(tokens as any).colorNeutralForeground3} />{" "}
-                  String-based entity names
+                  <DismissCircleRegular color={tokens.colorNeutralForeground3} /> String-based
+                  entity names
                 </Text>
               </td>
             </tr>
@@ -176,9 +161,9 @@ export default function ApiReference() {
         </table>
       </Card>
 
-      <Card className={(styles as any).card}>
+      <Card className={styles.card}>
         <Title3>Bulk Operations vs Batch</Title3>
-        <table className={(styles as any).table}>
+        <table className={styles.table}>
           <thead>
             <tr>
               <th>Scenario</th>
@@ -191,12 +176,10 @@ export default function ApiReference() {
             <tr>
               <td>Single entity, same operation (100+ records)</td>
               <td>
-                <CheckmarkCircleRegular color={(tokens as any).colorStatusSuccessForeground1} />{" "}
-                Optimized
+                <CheckmarkCircleRegular color={tokens.colorStatusSuccessForeground1} /> Optimized
               </td>
               <td>
-                <DismissCircleRegular color={(tokens as any).colorNeutralForeground3} /> More
-                overhead
+                <DismissCircleRegular color={tokens.colorNeutralForeground3} /> More overhead
               </td>
               <td>
                 <Text weight="semibold">Use Bulk Operations</Text>
@@ -205,12 +188,10 @@ export default function ApiReference() {
             <tr>
               <td>Multiple entity types</td>
               <td>
-                <DismissCircleRegular color={(tokens as any).colorStatusDangerForeground1} /> Not
-                supported
+                <DismissCircleRegular color={tokens.colorStatusDangerForeground1} /> Not supported
               </td>
               <td>
-                <CheckmarkCircleRegular color={(tokens as any).colorStatusSuccessForeground1} />{" "}
-                Supported
+                <CheckmarkCircleRegular color={tokens.colorStatusSuccessForeground1} /> Supported
               </td>
               <td>
                 <Text weight="semibold">Use $batch</Text>
@@ -219,12 +200,10 @@ export default function ApiReference() {
             <tr>
               <td>Mixed operations (create + update + delete)</td>
               <td>
-                <DismissCircleRegular color={(tokens as any).colorStatusDangerForeground1} /> Not
-                supported
+                <DismissCircleRegular color={tokens.colorStatusDangerForeground1} /> Not supported
               </td>
               <td>
-                <CheckmarkCircleRegular color={(tokens as any).colorStatusSuccessForeground1} />{" "}
-                Supported
+                <CheckmarkCircleRegular color={tokens.colorStatusSuccessForeground1} /> Supported
               </td>
               <td>
                 <Text weight="semibold">Use $batch</Text>
@@ -236,8 +215,8 @@ export default function ApiReference() {
                 <Text size={200}>Partial (ConcurrencyBehavior)</Text>
               </td>
               <td>
-                <CheckmarkCircleRegular color={(tokens as any).colorStatusSuccessForeground1} />{" "}
-                Full changesets
+                <CheckmarkCircleRegular color={tokens.colorStatusSuccessForeground1} /> Full
+                changesets
               </td>
               <td>
                 <Text weight="semibold">Use $batch changesets</Text>
@@ -246,8 +225,7 @@ export default function ApiReference() {
             <tr>
               <td>Performance critical (1000+ records)</td>
               <td>
-                <CheckmarkCircleRegular color={(tokens as any).colorStatusSuccessForeground1} />{" "}
-                Fastest
+                <CheckmarkCircleRegular color={tokens.colorStatusSuccessForeground1} /> Fastest
               </td>
               <td>
                 <Text size={200}>Good but slower</Text>
@@ -262,8 +240,7 @@ export default function ApiReference() {
                 <Text size={200}>Limited</Text>
               </td>
               <td>
-                <CheckmarkCircleRegular color={(tokens as any).colorStatusSuccessForeground1} />{" "}
-                Detailed
+                <CheckmarkCircleRegular color={tokens.colorStatusSuccessForeground1} /> Detailed
               </td>
               <td>
                 <Text weight="semibold">Use $batch with continue-on-error</Text>
@@ -273,9 +250,9 @@ export default function ApiReference() {
         </table>
       </Card>
 
-      <Card className={(styles as any).card}>
+      <Card className={styles.card}>
         <Title3>Actions vs Functions</Title3>
-        <table className={(styles as any).table}>
+        <table className={styles.table}>
           <thead>
             <tr>
               <th>Aspect</th>
@@ -327,9 +304,9 @@ export default function ApiReference() {
         </table>
       </Card>
 
-      <Card className={(styles as any).card}>
+      <Card className={styles.card}>
         <Title3>Pagination Methods</Title3>
-        <table className={(styles as any).table}>
+        <table className={styles.table}>
           <thead>
             <tr>
               <th>Method</th>
@@ -345,7 +322,7 @@ export default function ApiReference() {
               <td>Single page (default 5000 records max)</td>
               <td>
                 <Text size={200} style={{ fontFamily: "monospace" }}>
-                  const data = await (builder as any).get();
+                  const data = await builder.get();
                 </Text>
               </td>
             </tr>
@@ -356,9 +333,9 @@ export default function ApiReference() {
               <td>Page-by-page with nextLink tracking</td>
               <td>
                 <Text size={200} style={{ fontFamily: "monospace" }}>
-                  const page = await (builder as any).getPage();
+                  const page = await builder.getPage();
                   <br />
-                  if (page['@(odata as any).nextLink']) {"{...}"}
+                  if (page['@odata.nextLink']) {"{...}"}
                 </Text>
               </td>
             </tr>
@@ -369,7 +346,7 @@ export default function ApiReference() {
               <td>Stream processing, break early</td>
               <td>
                 <Text size={200} style={{ fontFamily: "monospace" }}>
-                  for await (const item of (builder as any).iterate()) {"{...}"}
+                  for await (const item of builder.iterate()) {"{...}"}
                 </Text>
               </td>
             </tr>
@@ -380,7 +357,7 @@ export default function ApiReference() {
               <td>Bounded all-records fetch</td>
               <td>
                 <Text size={200} style={{ fontFamily: "monospace" }}>
-                  const all = await (builder as any).getAll({"{"} maxItems: 1000 {"}"});
+                  const all = await builder.getAll({"{"} maxItems: 1000 {"}"});
                 </Text>
               </td>
             </tr>
@@ -388,9 +365,9 @@ export default function ApiReference() {
         </table>
       </Card>
 
-      <Card className={(styles as any).card}>
+      <Card className={styles.card}>
         <Title3>Authentication Approaches</Title3>
-        <table className={(styles as any).table}>
+        <table className={styles.table}>
           <thead>
             <tr>
               <th>Scenario</th>
@@ -423,9 +400,9 @@ export default function ApiReference() {
         </table>
       </Card>
 
-      <Card className={(styles as any).card}>
+      <Card className={styles.card}>
         <Title3>Error Handling Strategies</Title3>
-        <table className={(styles as any).table}>
+        <table className={styles.table}>
           <thead>
             <tr>
               <th>Error Type</th>
@@ -468,11 +445,9 @@ export default function ApiReference() {
         </table>
       </Card>
 
-      <div className={(styles as any).section}>
+      <div className={styles.section}>
         <Title3>Quick Reference: Package Selection</Title3>
-        <Text className={(styles as any).description}>
-          Choose the right SDK package for your needs
-        </Text>
+        <Text className={styles.description}>Choose the right SDK package for your needs</Text>
 
         <div style={{ marginTop: "24px" }}>
           <Text weight="semibold">Essential (Always needed):</Text>

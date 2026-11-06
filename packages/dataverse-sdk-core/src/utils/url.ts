@@ -25,13 +25,45 @@ export function resolveRequestUrl(apiRoot: string, pathOrUrl: string): string {
   return `${root}/${pathOrUrl.replace(/^\/+/, "")}`;
 }
 
+/**
+ * The request URL with `req.query` added.
+ *
+ * Values are encoded with `encodeURIComponent` (a space is `%20`, not `+`), keeping the characters
+ * OData writes literally (`$ ' ( ) , / : @ =`), so URLs read like Microsoft's examples:
+ * `$filter=name%20eq%20'O''Brien'`. (Parsing the URL with `new URL()`, as `fetch` does, writes
+ * `'` as `%27`; Dataverse reads both.) A query string already in `req.url` is kept exactly as the
+ * caller encoded it; only a parameter that `req.query` sets again is replaced (#52).
+ */
 export function buildUrl(req: RequestInformation): string {
   const u = new URL(req.url);
-  if (req.query) {
-    for (const [k, v] of Object.entries(req.query)) {
-      if (v === undefined || v === null) continue;
-      u.searchParams.set(k, String(v));
-    }
+  const entries = Object.entries(req.query ?? {}).filter(
+    (e): e is [string, string | number | boolean] => e[1] !== undefined && e[1] !== null
+  );
+  if (entries.length === 0) return u.toString();
+
+  const names = new Set(entries.map(([name]) => name));
+  const kept = u.search
+    .slice(1)
+    .split("&")
+    .filter((pair) => pair !== "" && !names.has(decodeQueryName(pair)));
+  const added = entries.map(
+    ([name, value]) => `${encodeQueryPart(name)}=${encodeQueryPart(String(value))}`
+  );
+  const beforeQuery = u.href.slice(0, u.href.length - u.search.length - u.hash.length);
+  return `${beforeQuery}?${[...kept, ...added].join("&")}${u.hash}`;
+}
+
+/** `encodeURIComponent`, then the characters OData writes literally put back. */
+function encodeQueryPart(text: string): string {
+  return encodeURIComponent(text).replace(/%(?:24|2C|2F|3A|40|3D)/gi, decodeURIComponent);
+}
+
+/** The decoded name of a `name=value` pair (form rules: `+` is a space). */
+function decodeQueryName(pair: string): string {
+  const raw = pair.split("=", 1)[0] ?? "";
+  try {
+    return decodeURIComponent(raw.replace(/\+/g, " "));
+  } catch {
+    return raw;
   }
-  return u.toString();
 }

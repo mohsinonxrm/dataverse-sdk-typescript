@@ -51,7 +51,7 @@ const entityId = await metadataClient.createEntityDefinition({
   DisplayCollectionName: {
     LocalizedLabels: [{ Label: "Projects", LanguageCode: 1033 }],
   },
-  OwnershipType: 1, // UserOwned
+  OwnershipType: "UserOwned", // or OwnershipTypes.UserOwned
   HasActivities: true,
   HasNotes: true,
   Attributes: [
@@ -83,7 +83,7 @@ const metadataId = await metadataClient.createEntityDefinition({
   DisplayName: { LocalizedLabels: [{ Label: "Task", LanguageCode: 1033 }] },
   DisplayCollectionName: { LocalizedLabels: [{ Label: "Tasks", LanguageCode: 1033 }] },
   Description: { LocalizedLabels: [{ Label: "Project task tracking", LanguageCode: 1033 }] },
-  OwnershipType: 1, // UserOwned
+  OwnershipType: "UserOwned", // or OwnershipTypes.UserOwned
   IsActivity: false,
   HasActivities: true,
   HasNotes: true,
@@ -113,15 +113,89 @@ const customEntities = await metadataClient.getEntityDefinitions({
 const projectEntity = await metadataClient.getEntityDefinition("new_project", {
   expand: "Attributes",
 });
+
+// Labels in specific languages (LCIDs), sent as LabelLanguages
+const labels = await metadataClient.getEntityDefinition("account", {
+  select: ["DisplayName"],
+  labelLanguages: [1033, 1036],
+});
+```
+
+### Entity Set Names
+
+`getEntitySetName()` reads the entity set name used in Web API URLs from metadata, so you don't
+have to guess the plural. The first call loads every table's name in one request and caches the
+map on the `MetadataClient`; `clearEntitySetNameCache()` forgets it.
+
+```typescript
+const set = await metadataClient.getEntitySetName("opportunity"); // "opportunities"
+const record = await client.api(`${set}(${id})`).get();
+```
+
+### Read Columns by Type
+
+Type-specific properties, such as a choice column's options, a lookup's `Targets` or a text
+column's `MaxLength`, are only available through a type cast. Pass `cast` and the results are
+typed accordingly:
+
+```typescript
+// GET EntityDefinitions(LogicalName='account')/Attributes/Microsoft.Dynamics.CRM.PicklistAttributeMetadata
+//   ?LabelLanguages=1033&$select=LogicalName&$expand=OptionSet($select=Options),GlobalOptionSet($select=Options)
+const picklists = await metadataClient.getAttributeDefinitions("account", {
+  cast: "PicklistAttributeMetadata",
+  select: ["LogicalName"],
+  expand: ["OptionSet($select=Options)", "GlobalOptionSet($select=Options)"],
+  labelLanguages: 1033,
+});
+const options = picklists[0]?.OptionSet?.Options; // picklists is PicklistAttributeMetadata[]
+
+const lookups = await metadataClient.getAttributeDefinitions("account", {
+  cast: "LookupAttributeMetadata",
+  select: ["LogicalName", "Targets"],
+});
+
+const name = await metadataClient.getAttributeDefinition("account", "name", {
+  cast: "StringAttributeMetadata",
+  select: ["MaxLength", "Format"],
+});
+```
+
+`cast` takes any attribute metadata type name: `StringAttributeMetadata`, `MemoAttributeMetadata`,
+`IntegerAttributeMetadata`, `BigIntAttributeMetadata`, `DecimalAttributeMetadata`,
+`DoubleAttributeMetadata`, `MoneyAttributeMetadata`, `DateTimeAttributeMetadata`,
+`BooleanAttributeMetadata`, `PicklistAttributeMetadata`, `MultiSelectPicklistAttributeMetadata`,
+`StateAttributeMetadata`, `StatusAttributeMetadata`, `LookupAttributeMetadata`,
+`FileAttributeMetadata`, `ImageAttributeMetadata`, `UniqueIdentifierAttributeMetadata`,
+`EntityNameAttributeMetadata`, `EnumAttributeMetadata` or `ManagedPropertyAttributeMetadata`.
+
+Key values (logical names, schema names, option set names) are escaped, so a name containing `'`
+is sent as `'O''Brien'`.
+
+Every `create*` method returns the new component's `MetadataId`. Dataverse answers a metadata
+create with `204 No Content` and the id in the `OData-EntityId` header, which is where the SDK
+reads it.
+
+### Create in a Solution
+
+Every create and update takes an optional last argument, `{ solutionUniqueName }`, sent as the
+`MSCRM.SolutionUniqueName` header. The component is added to that unmanaged solution; without it
+the change goes to the default solution.
+
+```typescript
+const metadataId = await metadataClient.createEntityDefinition(definition, {
+  solutionUniqueName: "ContosoProjects",
+});
 ```
 
 ### Update Entity
 
+Metadata updates use `PUT`, which **replaces** the whole definition: a property you leave out is
+reset to its default. Either send the complete definition to `updateEntityDefinition()`, or let
+the SDK retrieve it, apply your changes and send it back:
+
 ```typescript
-// Update entity display name
-await metadataClient.updateEntityDefinition("new_project", {
-  "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
-  DisplayName: { LocalizedLabels: [{ Label: "Project (Updated)", LanguageCode: 1033 }] },
+// Change only the description; every other property keeps its current value
+await metadataClient.mergeAndUpdateEntityDefinition("new_project", {
   Description: { LocalizedLabels: [{ Label: "Manage projects and tasks", LanguageCode: 1033 }] },
 });
 ```
@@ -270,6 +344,7 @@ const relationshipId = await metadataClient.createOneToManyRelationship({
   ReferencedAttribute: "new_projectid",
   ReferencingEntity: "new_task",
   Lookup: {
+    "@odata.type": "Microsoft.Dynamics.CRM.LookupAttributeMetadata",
     SchemaName: "new_ProjectId",
     DisplayName: { LocalizedLabels: [{ Label: "Project", LanguageCode: 1033 }] },
     RequiredLevel: { Value: "ApplicationRequired" },
@@ -317,6 +392,7 @@ const relationshipId = await metadataClient.createOneToManyRelationship({
   ReferencedAttribute: "accountid",
   ReferencingEntity: "new_project", // "Many" side (child)
   Lookup: {
+    "@odata.type": "Microsoft.Dynamics.CRM.LookupAttributeMetadata",
     SchemaName: "new_AccountId",
     DisplayName: { LocalizedLabels: [{ Label: "Account", LanguageCode: 1033 }] },
     RequiredLevel: { Value: "None" },
@@ -408,9 +484,9 @@ console.log("New option value:", result.NewOptionValue);
 
 ```typescript
 // Create customer lookup (targets account OR contact)
-const result = await metadataClient.createCustomerRelationships({
+const result = await metadataClient.createCustomerRelationship({
   Lookup: {
-    "@odata.type": "Microsoft.Dynamics.CRM.LookupAttributeMetadata",
+    "@odata.type": "Microsoft.Dynamics.CRM.ComplexLookupAttributeMetadata",
     SchemaName: "new_CustomerId",
     DisplayName: { LocalizedLabels: [{ Label: "Customer", LanguageCode: 1033 }] },
     RequiredLevel: { Value: "ApplicationRequired" },
@@ -438,7 +514,7 @@ const result = await metadataClient.createCustomerRelationships({
 
 ```typescript
 // Create lookup targeting multiple custom entities
-const result = await metadataClient.createPolymorphicLookupAttribute({
+const result = await metadataClient.createPolymorphicLookup({
   OneToManyRelationships: [
     {
       "@odata.type": "Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata",
@@ -456,6 +532,7 @@ const result = await metadataClient.createPolymorphicLookupAttribute({
     },
   ],
   Lookup: {
+    "@odata.type": "Microsoft.Dynamics.CRM.ComplexLookupAttributeMetadata",
     SchemaName: "new_RegardingId",
     DisplayName: { LocalizedLabels: [{ Label: "Regarding", LanguageCode: 1033 }] },
     RequiredLevel: { Value: "None" },
@@ -467,66 +544,75 @@ const result = await metadataClient.createPolymorphicLookupAttribute({
 
 ## Relationship Eligibility Checks
 
+`CanBeReferenced`, `CanBeReferencing` and `CanManyToMany` are Web API actions (sent as `POST`);
+the `GetValid*` methods are functions (sent as `GET`). Each method returns the plain value.
+
 ```typescript
-// Check if entity can be referenced (parent in 1:N)
-const canBeReferenced = await metadataClient.canBeReferenced("new_project");
-console.log("Can be parent:", canBeReferenced.CanBeReferenced);
+// Can the table be the parent (referenced) table in a 1:N relationship?
+const canBeParent: boolean = await metadataClient.canBeReferenced("new_project");
 
-// Check if entity can reference others (child in 1:N)
-const canBeReferencing = await metadataClient.canBeReferencing("new_task");
-console.log("Can be child:", canBeReferencing.CanBeReferencing);
+// Can the table be the child (referencing) table in a 1:N relationship?
+const canBeChild: boolean = await metadataClient.canBeReferencing("new_task");
 
-// Check if entity can participate in N:N
-const canManyToMany = await metadataClient.canManyToMany("new_project");
-console.log("Can do N:N:", canManyToMany.CanManyToMany);
+// Can the table take part in an N:N relationship?
+const canDoManyToMany: boolean = await metadataClient.canManyToMany("new_project");
 
-// Get valid entities for N:N relationships
-const validEntities = await metadataClient.getValidManyToMany("new_project");
-console.log("Valid N:N partners:", validEntities.EntityNames);
+// Tables that can reference account, and tables that contact can reference
+const children: string[] = await metadataClient.getValidReferencingEntities("account");
+const parents: string[] = await metadataClient.getValidReferencedEntities("contact");
+
+// Every table that can take part in an N:N relationship (no argument)
+const manyToManyTables: string[] = await metadataClient.getValidManyToMany();
 ```
 
 ---
 
 ## RetrieveMetadataChanges
 
-Track metadata changes using version stamps for incremental sync:
+Track metadata changes with version stamps for incremental sync. The method is positional:
+`retrieveMetadataChanges(query, clientVersionStamp?, deletedMetadataFilters?)`.
+`RetrieveMetadataChanges` is a Web API function, so the SDK sends it as a `GET` with the query as
+a JSON parameter alias.
 
 ```typescript
-// Initial query (get all + version stamp)
-const result = await metadataClient.retrieveMetadataChanges(
-  {
-    Criteria: {
-      FilterOperator: "And",
-      Conditions: [{ PropertyName: "IsCustomEntity", Value: true }],
-    },
-    Properties: {
-      PropertyNames: ["LogicalName", "DisplayName", "Attributes"],
-    },
-  },
-  "Entity" // Track entity deletions
-);
+import {
+  LogicalOperator,
+  MetadataConditionOperator,
+  type EntityQueryExpression,
+} from "@mohsinonxrm/dataverse-sdk-metadata";
 
+const query: EntityQueryExpression = {
+  Criteria: {
+    FilterOperator: LogicalOperator.And,
+    Conditions: [
+      {
+        PropertyName: "IsCustomEntity",
+        ConditionOperator: MetadataConditionOperator.Equals,
+        // A condition value is { Type, Value }
+        Value: { Type: "System.Boolean", Value: "true" },
+      },
+    ],
+  },
+  Properties: { AllProperties: false, PropertyNames: ["LogicalName", "DisplayName"] },
+};
+
+// Initial query: the metadata, plus a version stamp
+const result = await metadataClient.retrieveMetadataChanges(query);
 console.log("Entities:", result.EntityMetadata);
 console.log("Server version:", result.ServerVersionStamp);
 
-// Later: get only changes since last sync
+// Later: only what changed since the stamp, including deleted tables
 const changes = await metadataClient.retrieveMetadataChanges(
-  {
-    Criteria: {
-      FilterOperator: "And",
-      Conditions: [{ PropertyName: "IsCustomEntity", Value: true }],
-    },
-    Properties: {
-      PropertyNames: ["LogicalName", "DisplayName"],
-    },
-  },
-  "Entity",
-  result.ServerVersionStamp // Pass previous stamp
+  query,
+  result.ServerVersionStamp, // the previous stamp
+  "Default" // DeletedMetadataFilters: "Default" (tables), "Attribute", "All", or a comma-separated list
 );
-
 console.log("Changed entities:", changes.EntityMetadata);
-console.log("Deleted entities:", changes.DeletedMetadata);
+console.log("Deleted metadata:", changes.DeletedMetadata);
 ```
+
+Enum members in the query are sent by name (`"And"`, `"Equals"`), the only form Dataverse
+accepts.
 
 ---
 
@@ -534,21 +620,21 @@ console.log("Deleted entities:", changes.DeletedMetadata);
 
 ### Update Operations Use PUT
 
-Per Microsoft documentation, all metadata update operations use HTTP PUT (not PATCH). This means you must send the complete definition with all properties, not just the changed ones:
+Per Microsoft documentation, all metadata update operations use HTTP PUT (not PATCH). A PUT
+replaces the definition, so a property you leave out is reset to its default. Send the complete
+definition, not just the changed properties. For tables, `mergeAndUpdateEntityDefinition()`
+retrieves the current definition, applies your changes and sends the result:
 
 ```typescript
-// Update entity - requires complete definition
-await metadataClient.updateEntityDefinition("new_project", {
-  "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
-  DisplayName: {
-    LocalizedLabels: [{ Label: "Updated Project", LanguageCode: 1033 }],
-  },
-  Description: {
-    LocalizedLabels: [{ Label: "Updated description", LanguageCode: 1033 }],
-  },
-  // Include all other properties you want to preserve
+// Only the changed properties: the SDK fills in the rest from the current definition
+await metadataClient.mergeAndUpdateEntityDefinition("new_project", {
+  DisplayName: { LocalizedLabels: [{ Label: "Updated Project", LanguageCode: 1033 }] },
+  Description: { LocalizedLabels: [{ Label: "Updated description", LanguageCode: 1033 }] },
 });
 ```
+
+For columns, relationships and global choices, retrieve the definition, change it and pass the
+whole object to the `update*` method.
 
 The SDK automatically sets the `MSCRM.MergeLabels: true` header to merge labels instead of replacing them, preserving labels for other languages.
 
@@ -557,10 +643,23 @@ The SDK automatically sets the `MSCRM.MergeLabels: true` header to merge labels 
 The metadata package uses strict type separation:
 
 - **Read types** - include all properties returned from the server (e.g., `EntityMetadata`)
-- **Create types** - exclude read-only and internal properties (e.g., `EntityMetadataCreate`)
-- **Update types** - similar to Create but may have different required fields (e.g., `EntityMetadataUpdate`)
+- **Create types** - exclude read-only and internal properties, and require what a create needs (e.g., `EntityMetadataCreate`, `StringAttributeMetadataCreate`)
+- **Update types** - every property optional (e.g., `EntityMetadataUpdate`); a retrieved definition can be passed back
 
 This ensures you cannot accidentally send read-only fields like `MetadataId`, `ObjectTypeCode`, or internal-use fields in create/update operations.
+
+Column creates take `AttributeMetadataCreateTypes`, a union discriminated on `@odata.type`
+(`"Microsoft.Dynamics.CRM.StringAttributeMetadata"`, …), so the type-specific properties
+(`MaxLength`, `MinValue`, `Targets`, …) are checked for the type you name. Column, relationship
+and global choice creates require `@odata.type`; for a table it's optional.
+
+### Enums Are Member Names
+
+The Web API reads and writes enum members by name (`"UserOwned"`, `"ApplicationRequired"`); a
+number such as `OwnershipType: 1` is rejected. The exported enums (`OwnershipTypes`,
+`AttributeRequiredLevel`, `StringFormat`, …) are string-valued, so `OwnershipTypes.UserOwned` is
+`"UserOwned"` and you can write either form. Read types use the same names, so
+`entity.OwnershipType === OwnershipTypes.UserOwned` works on a retrieved definition.
 
 ---
 
@@ -584,17 +683,13 @@ const entityId = await metadataClient.createEntityDefinition({
 
 ---
 
-## License
-
-This package is part of the `dataverse-sdk-typescript` monorepo and is licensed under **GNU AGPL v3.0**. See [LICENSE](../../LICENSE) for details.
-
-### Publishing Changes
+## Publishing Changes
 
 Metadata changes must be published before they take effect in the application. Use PublishXml or PublishAllXml actions from the messages package.
 
 ## License
 
-GNU AGPL v3.0
+This package is part of the `dataverse-sdk-typescript` monorepo and is licensed under **GNU AGPL v3.0**. See [LICENSE](../../LICENSE) for details.
 
 ## Related Packages
 
