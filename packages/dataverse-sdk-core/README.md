@@ -635,9 +635,8 @@ try {
 ```
 
 Every `DataverseError` has `status?`, `code?`, `message`, `headers?`, `body?` (also `raw`),
-`innerError?`, `requestId?`, `correlationId?`, `cause?` and `date`. `statusCode` still works as a
-deprecated alias of `status`. Errors thrown by your own middleware or token provider are passed
-through unchanged.
+`innerError?`, `requestId?`, `correlationId?`, `cause?` and `date`. Errors thrown by your own
+middleware or token provider are passed through unchanged.
 
 **Error hierarchy:**
 
@@ -1033,7 +1032,9 @@ User Code (typed result)
 
 #### Circuit Breaker & Bulkhead
 
-**Not currently implemented** - placeholders exist in options interface for future enhancement.
+Not implemented yet, and there are no options for them. They are planned as middleware
+([#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100)). Until then, add your
+own through the `middleware` option.
 
 ### URL Construction
 

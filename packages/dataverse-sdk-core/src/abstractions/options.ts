@@ -100,10 +100,6 @@ export interface RetryOptions {
    * error it throws is logged and ignored. A per-request `onRetry` replaces the client's.
    */
   onRetry?: (info: RetryInfo) => void;
-  /** @deprecated Use `baseDelayMs`. */
-  delay?: number;
-  /** @deprecated Has no effect: backoff is always exponential. */
-  useExponentialBackoff?: boolean;
 }
 
 /** Per-header switches for `DataverseClientOptions.diagnosticHeaders`. Each defaults to `true`. */
@@ -144,19 +140,6 @@ export interface ConcurrencyOptions {
   /** Bounds for adaptive tuning */
   min?: number;
   max?: number;
-}
-
-export interface CircuitBreakerOptions {
-  enabled?: boolean;
-  failureThreshold?: number;
-  samplingWindowMs?: number;
-  openDurationMs?: number;
-}
-
-export interface BulkheadOptions {
-  enabled?: boolean;
-  maxParallel?: number;
-  maxQueue?: number;
 }
 
 /**
@@ -230,10 +213,6 @@ export interface DataverseClientOptions {
   diagnosticHeaders?: boolean | DiagnosticHeaderOptions;
   retry?: RetryOptions;
   concurrency?: ConcurrencyOptions;
-  /** @deprecated Not implemented yet: it has no effect (tracked in #100). */
-  circuitBreaker?: CircuitBreakerOptions;
-  /** @deprecated Not implemented yet: it has no effect (tracked in #100). */
-  bulkhead?: BulkheadOptions;
   /** Headers added to every request. A header the request sets itself wins. */
   defaultHeaders?: Record<string, string>;
   /**

@@ -17,7 +17,7 @@ export interface MiddlewareOptions {
 
 /**
  * Per-request retry options. This is the same type as the client's `retry` option (exported from
- * the package root as `RetryOptions`; `MiddlewareRetryOptions` is an alias kept for compatibility).
+ * the package root as `RetryOptions`).
  */
 export type RetryOptions = ClientRetryOptions;
 

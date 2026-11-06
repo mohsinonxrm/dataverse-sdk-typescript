@@ -47,12 +47,14 @@ own errors.
 
 The constructor takes one optional config object.
 
-| Option             | Type             | Description                                                                                                                                 |
-| ------------------ | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `tracer`           | `Tracer`         | Tracer for every span. Takes precedence over `tracerProvider`.                                                                              |
-| `tracerProvider`   | `TracerProvider` | Provider to get the tracer from. Defaults to the global provider.                                                                           |
-| `disableTelemetry` | `boolean`        | Make every method a no-op. Defaults to `false`.                                                                                             |
-| `serviceName`      | `string`         | Deprecated and ignored. `service.name` is a resource attribute: set it on your SDK (`new NodeSDK({ serviceName })` or `OTEL_SERVICE_NAME`). |
+| Option             | Type             | Description                                                       |
+| ------------------ | ---------------- | ----------------------------------------------------------------- |
+| `tracer`           | `Tracer`         | Tracer for every span. Takes precedence over `tracerProvider`.    |
+| `tracerProvider`   | `TracerProvider` | Provider to get the tracer from. Defaults to the global provider. |
+| `disableTelemetry` | `boolean`        | Make every method a no-op. Defaults to `false`.                   |
+
+The adapter doesn't set `service.name`: it is a resource attribute, so set it on your OpenTelemetry
+SDK (`new NodeSDK({ serviceName })` or the `OTEL_SERVICE_NAME` environment variable).
 
 ## What gets recorded
 
