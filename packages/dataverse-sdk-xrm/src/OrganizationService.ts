@@ -550,6 +550,8 @@ export class OrganizationService {
     const normalizedAssigneeId = this.normalizeGuid(assigneeId);
 
     const builder = this.client.api(`/${entitySetName}(${normalizedId})`);
+    // `If-Match: *`: a missing record rejects with 404 instead of being created (#272).
+    builder.ifMatch("*");
     await builder.patch({
       [`ownerid@odata.bind`]: `/${assigneeSetName}(${normalizedAssigneeId})`,
     });
@@ -580,6 +582,8 @@ export class OrganizationService {
     const normalizedId = this.normalizeGuid(recordId);
 
     const builder = this.client.api(`/${entitySetName}(${normalizedId})`);
+    // `If-Match: *`: a missing record rejects with 404 instead of being created (#272).
+    builder.ifMatch("*");
     await builder.patch({
       statecode: stateCode,
       statuscode: statusCode,

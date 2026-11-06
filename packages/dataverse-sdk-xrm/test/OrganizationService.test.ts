@@ -426,6 +426,13 @@ describe("OrganizationService", () => {
       await service.assign("lead", ID, ID2, "team");
       expect(body(fake.last())).toEqual({ "ownerid@odata.bind": `/teams(${ID2})` });
     });
+
+    it("sends If-Match: * so a missing record is a 404, not an upsert (#272)", async () => {
+      const { fake, service } = setup();
+      fake.on("PATCH", `/accounts(${ID})`, () => noContent());
+      await service.assign("account", ID, USER);
+      expect(fake.last().headers["if-match"]).toBe("*");
+    });
   });
 
   describe("setState", () => {
@@ -434,6 +441,13 @@ describe("OrganizationService", () => {
       fake.on("PATCH", `/opportunities(${ID})`, () => noContent());
       await service.setState("opportunity", ID, 2, 5);
       expect(body(fake.last())).toEqual({ statecode: 2, statuscode: 5 });
+    });
+
+    it("sends If-Match: * so a missing record is a 404, not an upsert (#272)", async () => {
+      const { fake, service } = setup();
+      fake.on("PATCH", `/opportunities(${ID})`, () => noContent());
+      await service.setState("opportunity", ID, 2, 5);
+      expect(fake.last().headers["if-match"]).toBe("*");
     });
   });
 
