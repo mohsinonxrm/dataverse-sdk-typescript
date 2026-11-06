@@ -101,8 +101,8 @@ describe("#18: middleware can be added, removed and reordered", () => {
     expect(lines).toEqual([]);
     expect(names).toEqual([
       "ODataHeadersMiddleware",
-      "ConcurrencyMiddleware",
       "RetryMiddleware",
+      "ConcurrencyMiddleware",
       "AuthMiddleware",
       "TelemetryMiddleware",
       "LoggingMiddleware",
@@ -124,8 +124,8 @@ describe("#18: middleware can be added, removed and reordered", () => {
     }
     expect(buildDefaultMiddleware({ baseUrl: BASE_URL }).map((m) => m.name)).toEqual([
       "ODataHeadersMiddleware",
-      "ConcurrencyMiddleware",
       "RetryMiddleware",
+      "ConcurrencyMiddleware",
       "TelemetryMiddleware",
       "LoggingMiddleware",
     ]);

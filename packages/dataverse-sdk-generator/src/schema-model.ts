@@ -1,3 +1,9 @@
+/**
+ * Portions of this file are adapted from dataverse-gen by Scott Durow
+ * (https://github.com/scottdurow/dataverse-gen), Copyright (c) 2020 Scott Durow, licensed under
+ * the MIT License. See THIRD_PARTY_NOTICES.md in this package for the notice.
+ */
+
 import * as xmljs from "xml-js";
 import type {
   DataverseGenConfig,
@@ -21,6 +27,15 @@ export class SchemaModel {
   Actions: ActionType[] = [];
   Functions: FunctionType[] = [];
   ComplexTypes: ComplexType[] = [];
+
+  /**
+   * Names of every entity type in $metadata, before filtering. Generated code types references
+   * to entities that were not generated (and abstract ones such as `crmbaseentity`) as `IEntity`.
+   */
+  AllEntityTypeNames = new Set<string>();
+
+  /** Entity types that are tables: not abstract, and with an entity set. */
+  private tableEntityTypeNames = new Set<string>();
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private metadata: any;
@@ -66,6 +81,10 @@ export class SchemaModel {
 
     if (entities && entities.length > 0) {
       this.EntityTypes = this.EntityTypes.filter((e) => entities.includes(e.LogicalName));
+    } else {
+      // "All entities" means all tables: abstract types (crmbaseentity, principal) and types
+      // without an entity set have no RetrieveMetadataChanges entry and nothing to query.
+      this.EntityTypes = this.EntityTypes.filter((e) => this.tableEntityTypeNames.has(e.Name));
     }
 
     if (actions && actions.length > 0) {
@@ -98,6 +117,9 @@ export class SchemaModel {
       // Set metadata properties not available in EDMX
       entityType.SchemaName = entityMetadata.SchemaName ?? entityType.LogicalName;
       entityType.EntitySetName = entityMetadata.EntitySetName ?? entityType.LogicalName + "s";
+      if (entityMetadata.PrimaryNameAttribute) {
+        entityType.PrimaryNameAttribute = entityMetadata.PrimaryNameAttribute;
+      }
 
       // Convert Keys metadata to EntityKeyType
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -123,6 +145,7 @@ export class SchemaModel {
 
         // Enrich with metadata
         existingProp.SchemaName = attribute.SchemaName ?? logicalName;
+        existingProp.AttributeType = attribute.AttributeType;
         existingProp.IsRequired = attribute.RequiredLevel?.Value === 2; // ApplicationRequired
         existingProp.AttributeOf = attribute.AttributeOf;
         existingProp.SourceType = attribute.SourceType ?? 0;
@@ -135,7 +158,6 @@ export class SchemaModel {
           if (enumType) {
             existingProp.IsEnum = true;
             existingProp.EnumName = enumType.Name;
-            existingProp.Type = enumType.Name;
           }
         } else if (attribute.OptionSet?.IsGlobal === true) {
           // Global option set - should already exist in EnumTypes
@@ -180,20 +202,25 @@ export class SchemaModel {
 
     const members = Array.isArray(optionSet.Options) ? optionSet.Options : [optionSet.Options];
 
+    interface Option {
+      Value?: number | null;
+      Label?: unknown;
+    }
+    const options = (members as Option[])
+      .filter((m): m is Option & { Value: number } => typeof m.Value === "number")
+      .sort((a, b) => a.Value - b.Value);
+
+    const used = new Set<string>();
     const enumType: EnumType = {
       Name: enumName,
       IsGlobal: false,
-      Members: members
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .filter((m: any) => m.Value !== null && m.Value !== undefined)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .map((m: any) => ({
-          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-          Name: this.extractLabel(m.Label) || `Value${m.Value}`,
-          Value: m.Value,
-        }))
-
-        .sort((a: { Value: number }, b: { Value: number }) => a.Value - b.Value),
+      Members: options.map((m) => {
+        let name = toEnumMemberName(this.extractLabel(m.Label), m.Value);
+        // Two options can share a label; the value keeps the second one distinct.
+        if (used.has(name)) name = `${name}_${String(m.Value).replace("-", "Minus")}`;
+        used.add(name);
+        return { Name: name, Value: m.Value };
+      }),
     };
 
     this.EnumTypes.push(enumType);
@@ -322,6 +349,20 @@ export class SchemaModel {
   private resolveTypes(): void {
     for (const entity of this.EntityTypes) {
       for (const prop of entity.Properties) {
+        const enumType = prop.EnumName
+          ? this.EnumTypes.find((e) => e.Name === prop.EnumName)
+          : undefined;
+        // Multi-select values are sent and returned as a comma-separated string ("1,2"),
+        // so only single-choice option sets get the enum type.
+        prop.TypeScriptType =
+          enumType && !prop.IsMultiSelect
+            ? { name: enumType.Name, reference: enumType.Name, isArray: false }
+            : this.getTypeScriptType(prop.Type);
+      }
+    }
+
+    for (const complexType of this.ComplexTypes) {
+      for (const prop of complexType.Properties) {
         prop.TypeScriptType = this.getTypeScriptType(prop.Type);
       }
     }
@@ -381,6 +422,10 @@ export class SchemaModel {
 
     for (const entityType of entityTypes) {
       const name = this.getAttribute(entityType, "Name");
+      this.AllEntityTypeNames.add(name);
+      if (this.getAttribute(entityType, "Abstract") !== "true" && this.hasEntitySet(name)) {
+        this.tableEntityTypeNames.add(name);
+      }
       const key = entityType.Key?.PropertyRef;
       const keyName = key ? this.getAttribute(key, "Name") : `${name.toLowerCase()}id`;
 
@@ -414,9 +459,11 @@ export class SchemaModel {
     for (const complexType of complexTypes) {
       const name = this.getAttribute(complexType, "Name");
       const properties = this.readProperties(complexType.Property);
+      const baseType = this.getAttribute(complexType, "BaseType");
 
       this.ComplexTypes.push({
         Name: name,
+        BaseType: baseType ? this.extractEntityName(baseType) : undefined,
         Properties: properties,
       });
     }
@@ -446,6 +493,7 @@ export class SchemaModel {
         Name: name,
         IsBound: isBound,
         BindingType: bindingType,
+        ...this.bindingInfo(bindingType),
         Parameters: isBound ? parameters.slice(1) : parameters,
         ReturnType: returnType,
       });
@@ -477,11 +525,29 @@ export class SchemaModel {
         Name: name,
         IsBound: isBound,
         BindingType: bindingType,
+        ...this.bindingInfo(bindingType),
         Parameters: isBound ? parameters.slice(1) : parameters,
         ReturnType: returnType,
         IsComposable: isComposable,
       });
     }
+  }
+
+  /**
+   * What a bound operation is bound to: one record of an entity type, or its collection.
+   */
+  private bindingInfo(bindingType: string | undefined): {
+    BindingEntity?: string;
+    IsCollectionBound?: boolean;
+    BindingEntitySetName?: string;
+  } {
+    if (!bindingType) return {};
+    const entity = this.extractEntityName(bindingType);
+    return {
+      BindingEntity: entity,
+      IsCollectionBound: bindingType.startsWith("Collection("),
+      BindingEntitySetName: this.hasEntitySet(entity) ? this.findEntitySetName(entity) : undefined,
+    };
   }
 
   /**
@@ -560,17 +626,15 @@ export class SchemaModel {
       return { name: tsType, isArray };
     }
 
-    // Entity or complex type
-    if (baseType.includes("Microsoft.Dynamics.CRM.")) {
-      const typeName = baseType.split(".").pop() ?? "any";
-      return {
-        name: this.toPascalCase(typeName),
-        importPath: `../entities/${this.toPascalCase(typeName)}.js`,
-        isArray,
-      };
+    // Entity, complex or enum type of the Dataverse schema ("mscrm.account" or
+    // "Microsoft.Dynamics.CRM.account"). The generator resolves the name to an import, because
+    // only it knows which types are generated.
+    const referenced = this.extractEntityName(baseType);
+    if (referenced !== baseType) {
+      return { name: referenced, reference: referenced, isArray };
     }
 
-    return { name: "any", isArray };
+    return { name: "unknown", isArray };
   }
 
   /**
@@ -579,17 +643,38 @@ export class SchemaModel {
   private mapEdmToTypeScript(edmType: string): string {
     const mapping: Record<string, string> = {
       String: "string",
+      Byte: "number",
+      SByte: "number",
+      Int16: "number",
       Int32: "number",
       Int64: "number",
+      Single: "number",
       Double: "number",
       Decimal: "number",
       Boolean: "boolean",
       DateTimeOffset: "Date",
+      Date: "string",
+      TimeOfDay: "string",
+      Duration: "string",
       Guid: "string",
       Binary: "string",
     };
 
-    return mapping[edmType] || "any";
+    return mapping[edmType] ?? "unknown";
+  }
+
+  /**
+   * Whether the entity container has an entity set for this entity type
+   */
+  private hasEntitySet(entityTypeName: string): boolean {
+    const container = this.getEntityContainer();
+    if (!container?.EntitySet) return false;
+    const entitySets = Array.isArray(container.EntitySet)
+      ? container.EntitySet
+      : [container.EntitySet];
+    return entitySets.some((entitySet: unknown) =>
+      this.getAttribute(entitySet, "EntityType").endsWith(`.${entityTypeName}`)
+    );
   }
 
   /**
@@ -648,15 +733,10 @@ export class SchemaModel {
    * Extract entity name from type string
    */
   private extractEntityName(typeString: string): string {
-    const match = /Microsoft\.Dynamics\.CRM\.(\w+)/.exec(typeString);
+    // $metadata declares the schema as Namespace="Microsoft.Dynamics.CRM" Alias="mscrm" and
+    // refers to its own types through the alias ("mscrm.contact").
+    const match = /(?:Microsoft\.Dynamics\.CRM|mscrm)\.(\w+)/.exec(typeString);
     return match ? match[1] : typeString;
-  }
-
-  /**
-   * Convert to PascalCase
-   */
-  private toPascalCase(str: string): string {
-    return str.charAt(0).toUpperCase() + str.slice(1);
   }
 
   /**
@@ -671,9 +751,12 @@ export class SchemaModel {
       return "Collection";
     }
 
-    // Check if it's an entity type
+    // Check if it's an entity type (generated or not, abstract ones included)
     const entityName = this.extractEntityName(type);
-    if (this.EntityTypes.some((e) => e.Name === entityName || e.LogicalName === entityName)) {
+    if (
+      this.AllEntityTypeNames.has(entityName) ||
+      this.EntityTypes.some((e) => e.Name === entityName || e.LogicalName === entityName)
+    ) {
       return "EntityType";
     }
 
@@ -690,4 +773,16 @@ export class SchemaModel {
     // Default to primitive
     return "PrimitiveType";
   }
+}
+
+/**
+ * Turn an option label into an enum member name: letters and digits only, words joined in
+ * PascalCase ("Financial Services" -> "FinancialServices"), prefixed with `_` when it would start
+ * with a digit. Labels without letters or digits fall back to `Value<n>`.
+ */
+export function toEnumMemberName(label: string, value: number): string {
+  const words = label.split(/[^\p{L}\p{Nd}_]+/u).filter((w) => w.length > 0);
+  if (words.length === 0) return `Value${String(value).replace("-", "Minus")}`;
+  const name = words.map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join("");
+  return /^\p{Nd}/u.test(name) ? `_${name}` : name;
 }

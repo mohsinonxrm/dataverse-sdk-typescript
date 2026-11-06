@@ -5,5 +5,6 @@
 
 export {
   AzureIdentityTokenProvider,
+  DEFAULT_REFRESH_MARGIN_MS,
   type AzureIdentityTokenProviderOptions,
 } from "./AzureIdentityTokenProvider.js";

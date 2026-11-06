@@ -4,6 +4,36 @@
 
 This project uses [Changesets](https://github.com/changesets/changesets) for versioning and publishing.
 
+## Release gates
+
+The Release workflow (`.github/workflows/changeset-version.yml`) runs on every push to `main`. Before it opens the "Version Packages" PR or publishes, it runs:
+
+1. `pnpm build` and `pnpm test` (core's `test` includes its coverage gate).
+2. `pnpm check:packages`: `publint` and `@arethetypeswrong/cli` (ESM-only profile) on every published package, so a broken `exports` / `types` setup never reaches npm. Run it locally after `pnpm build`.
+3. `pnpm test:browser`: the Vite-built SPA smoke tests in Chromium under a strict CSP.
+4. `pnpm test:integration`: the live suite against the dev org. `DATAVERSE_INTEGRATION_REQUIRED=1`, so missing secrets fail the run instead of skipping.
+
+If any gate fails, nothing is versioned or published.
+
+## Prerelease channel (`next`)
+
+To let consumer apps try unreleased fixes from `dev`:
+
+1. In GitHub, open Actions → **Release (next)** → Run workflow, and pick the `dev` branch. Other branches are refused.
+2. The workflow builds, tests, checks the packages and runs `changeset version --snapshot next`. Every package with a pending changeset gets a version like `2.0.0-next-20261105123456`.
+3. It publishes those packages with the `next` dist-tag. Nothing is committed back to `dev`.
+4. Consumers install them with `npm i @mohsinonxrm/dataverse-sdk-core@next`. `latest` is unchanged.
+
+## npm authentication
+
+Both workflows publish with provenance (`id-token: write`) and authenticate with the `NPM_TOKEN` secret.
+
+**Moving to npm trusted publishing (OIDC)** removes the long-lived token. It's a maintainer step on npmjs.com, done once per package:
+
+1. For each of the 16 `@mohsinonxrm/dataverse-sdk-*` packages, open its Settings on npmjs.com → Trusted Publisher → GitHub Actions. Enter the repository `mohsinonxrm/dataverse-sdk-typescript`, the workflow file `changeset-version.yml`, and add a second entry for `release-next.yml`.
+2. Trusted publishing needs npm CLI 11.5.1 or later in the publish step. Check which client `changeset publish` uses under pnpm before relying on it; if needed, add a step that installs a current npm.
+3. After one successful publish through OIDC, remove the `NPM_TOKEN` secret and the `NODE_AUTH_TOKEN` / `NPM_TOKEN` lines from both workflows.
+
 ## Versioning
 
 - **SemVer** via changesets

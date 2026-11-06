@@ -31,8 +31,9 @@ Dataverse supports `$batch` operations with **up to 1000** individual requests p
     - Retry transient failures: `429` and `>=502`, honoring `Retry-After` and using exponential backoff with jitter.
     - Adaptive global concurrency using `x-ms-dop-hint` when present; otherwise conservative defaults; user override allowed but bounded.
 6.  **Batching:** Provide `$batch` + changeset support in `@mohsinonxrm/dataverse-sdk-batch` with:
-    - default shallow batch size (10) and auto-splitting,
+    - auto-splitting into several `$batch` requests of at most `batchSize` (default 1000) without splitting a change set,
     - hard cap at 1000 per Dataverse limit, and change set support.
+    - (Updated in v1.2.0: the default was planned as 10 but never used; the default is now the Dataverse limit.)
 
 ### Consequences
 

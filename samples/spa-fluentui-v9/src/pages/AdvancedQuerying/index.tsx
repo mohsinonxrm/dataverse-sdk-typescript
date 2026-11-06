@@ -24,6 +24,8 @@ import { useDataverse } from "../../context/DataverseContext";
 import { LoadingState } from "../../components/demo/LoadingState";
 import { ErrorDisplay } from "../../components/errors/ErrorDisplay";
 import { CodeComparison } from "../../components/demo/CodeComparison";
+import type { PageResponse } from "@mohsinonxrm/dataverse-sdk-core";
+import type { ResultView, JsonObject } from "../../types/common";
 
 const useStyles = makeStyles({
   container: {
@@ -35,7 +37,7 @@ const useStyles = makeStyles({
     marginBottom: "24px",
   },
   description: {
-    color: (tokens as any).colorNeutralForeground2,
+    color: tokens.colorNeutralForeground2,
     marginTop: "8px",
   },
   tabs: {
@@ -78,7 +80,7 @@ export default function AdvancedQuerying() {
   const [selectedTab, setSelectedTab] = useState<TabValue>("filter");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const [results, setResults] = useState<any>(null);
+  const [results, setResults] = useState<ResultView | null>(null);
 
   // Filter builder state
   const [filterField, setFilterField] = useState("name");
@@ -109,7 +111,12 @@ export default function AdvancedQuerying() {
 
     try {
       const filter = `${filterOperator}(${filterField}, '${filterValue}')`;
-      const response = await client.api("/accounts").select().filter(filter).top(10).get();
+      const response = await client
+        .api("/accounts")
+        .select()
+        .filter(filter)
+        .top(10)
+        .get<JsonObject>();
 
       setResults(response);
     } catch (err) {
@@ -129,28 +136,28 @@ export default function AdvancedQuerying() {
       const builder = client.api("/accounts").select().orderBy("name").top(5);
 
       // 1. Single page
-      const singlePage = await (builder as any).get();
+      const singlePage = await builder.get<PageResponse<JsonObject>>();
 
       // 2. Page with nextLink
-      const pageWithLink = await (builder as any).getPage();
+      const pageWithLink = await builder.getPage<JsonObject>();
 
       // 3. Iterate approach (get first 3 items)
-      const iteratedItems: any[] = [];
+      const iteratedItems: JsonObject[] = [];
       let count = 0;
-      for await (const item of (builder as any).iterate()) {
-        (iteratedItems as any).push(item);
+      for await (const item of builder.iterate<JsonObject>()) {
+        iteratedItems.push(item);
         count++;
         if (count >= 3) break;
       }
 
       // 4. Get all (bounded)
-      const allItems = await (builder as any).getAll({ maxItems: 10 });
+      const allItems = await builder.getAll({ maxItems: 10 });
 
       setResults({
-        singlePage: (singlePage as any).value,
+        singlePage: singlePage.value,
         pageWithLink: {
-          value: (pageWithLink as any).value,
-          hasNext: !!pageWithLink["@(odata as any).nextLink"],
+          value: pageWithLink.value,
+          hasNext: !!pageWithLink["@odata.nextLink"],
         },
         iteratedItems,
         allItems,
@@ -175,7 +182,7 @@ export default function AdvancedQuerying() {
         .select("fullname", "emailaddress1")
         .expand("parentcustomerid_account($select=name,revenue)")
         .top(5)
-        .get();
+        .get<JsonObject>();
 
       setResults(response);
     } catch (err) {
@@ -192,7 +199,7 @@ export default function AdvancedQuerying() {
 
     try {
       const encodedFetchXml = encodeURIComponent(fetchXml);
-      const response = await (client as any).api(`/accounts?fetchXml=${encodedFetchXml}`).get();
+      const response = await client.api(`/accounts?fetchXml=${encodedFetchXml}`).get<JsonObject>();
 
       setResults(response);
     } catch (err) {
@@ -205,16 +212,16 @@ export default function AdvancedQuerying() {
   const renderFilterTab = () => (
     <div>
       <Card>
-        <div className={(styles as any).filterBuilder}>
+        <div className={styles.filterBuilder}>
           <Title3>Filter Builder</Title3>
           <Text>Build OData filter expressions interactively</Text>
 
-          <div className={(styles as any).filterRow}>
+          <div className={styles.filterRow}>
             <div style={{ flex: 1 }}>
               <Label>Field</Label>
               <Input
                 value={filterField}
-                onChange={(_e, data) => setFilterField((data as any).value)}
+                onChange={(_e, data) => setFilterField(data.value)}
                 placeholder="Field name"
               />
             </div>
@@ -223,9 +230,7 @@ export default function AdvancedQuerying() {
               <Dropdown
                 value={filterOperator}
                 selectedOptions={[filterOperator]}
-                onOptionSelect={(_e, data) =>
-                  setFilterOperator((data as any).optionValue as string)
-                }
+                onOptionSelect={(_e, data) => setFilterOperator(data.optionValue as string)}
               >
                 <Option value="contains">contains</Option>
                 <Option value="startswith">startswith</Option>
@@ -240,13 +245,13 @@ export default function AdvancedQuerying() {
               <Label>Value</Label>
               <Input
                 value={filterValue}
-                onChange={(_e, data) => setFilterValue((data as any).value)}
+                onChange={(_e, data) => setFilterValue(data.value)}
                 placeholder="Filter value"
               />
             </div>
           </div>
 
-          <div className={(styles as any).actions}>
+          <div className={styles.actions}>
             <Button
               appearance="primary"
               icon={<FilterRegular />}
@@ -264,7 +269,7 @@ export default function AdvancedQuerying() {
       )}
 
       {results && (
-        <div className={(styles as any).results}>
+        <div className={styles.results}>
           <CodeComparison
             items={[
               {
@@ -275,7 +280,7 @@ export default function AdvancedQuerying() {
               {
                 label: "Results",
                 code: "",
-                result: (JSON as any).stringify(results, null, 2),
+                result: JSON.stringify(results, null, 2),
               },
             ]}
           />
@@ -290,7 +295,7 @@ export default function AdvancedQuerying() {
         <Title3>Pagination Approaches</Title3>
         <Text>Compare different pagination methods</Text>
 
-        <div className={(styles as any).actions}>
+        <div className={styles.actions}>
           <Button
             appearance="primary"
             icon={<ArrowSyncRegular />}
@@ -311,37 +316,37 @@ export default function AdvancedQuerying() {
       )}
 
       {results && (
-        <div className={(styles as any).results}>
+        <div className={styles.results}>
           <CodeComparison
             items={[
               {
                 label: "get() - Single Page",
-                code: `await (client as any).api('/accounts')
+                code: `await client.api('/accounts')
   .select()
   .top(5)
   .get()`,
-                result: (JSON as any).stringify((results as any).singlePage, null, 2),
+                result: JSON.stringify(results.singlePage, null, 2),
               },
               {
                 label: "getPage() - With NextLink",
-                code: `await (client as any).api('/accounts')
+                code: `await client.api('/accounts')
   .select()
   .top(5)
   .getPage()`,
-                result: (JSON as any).stringify((results as any).pageWithLink, null, 2),
+                result: JSON.stringify(results.pageWithLink, null, 2),
               },
               {
                 label: "iterate() - First 3 Items",
-                code: `for await (const item of (builder as any).iterate()) {
+                code: `for await (const item of builder.iterate()) {
   // Process item
   if (count >= 3) break;
 }`,
-                result: (JSON as any).stringify((results as any).iteratedItems, null, 2),
+                result: JSON.stringify(results.iteratedItems, null, 2),
               },
               {
                 label: "getAll() - Bounded (max 10)",
-                code: `await (builder as any).getAll({ maxItems: 10 })`,
-                result: (JSON as any).stringify((results as any).allItems, null, 2),
+                code: `await builder.getAll({ maxItems: 10 })`,
+                result: JSON.stringify(results.allItems, null, 2),
               },
             ]}
           />
@@ -356,7 +361,7 @@ export default function AdvancedQuerying() {
         <Title3>Expand Navigation Properties</Title3>
         <Text>Retrieve related entities in a single request</Text>
 
-        <div className={(styles as any).actions}>
+        <div className={styles.actions}>
           <Button
             appearance="primary"
             icon={<DocumentBulletListRegular />}
@@ -373,12 +378,12 @@ export default function AdvancedQuerying() {
       )}
 
       {results && (
-        <div className={(styles as any).results}>
+        <div className={styles.results}>
           <CodeComparison
             items={[
               {
                 label: "Expand Query",
-                code: `await (client as any).api('/contacts')
+                code: `await client.api('/contacts')
   .select()
   .expand({
     parentcustomerid_account: {
@@ -387,7 +392,7 @@ export default function AdvancedQuerying() {
   })
   .top(5)
   .get()`,
-                result: (JSON as any).stringify(results, null, 2),
+                result: JSON.stringify(results, null, 2),
               },
             ]}
           />
@@ -402,16 +407,16 @@ export default function AdvancedQuerying() {
         <Title3>FetchXML Query</Title3>
         <Text>Execute complex queries using FetchXML syntax</Text>
 
-        <div className={(styles as any).filterBuilder}>
+        <div className={styles.filterBuilder}>
           <Label>FetchXML</Label>
           <Textarea
             value={fetchXml}
-            onChange={(_e, data) => setFetchXml((data as any).value)}
+            onChange={(_e, data) => setFetchXml(data.value)}
             rows={12}
             style={{ fontFamily: "monospace", fontSize: "12px" }}
           />
 
-          <div className={(styles as any).actions}>
+          <div className={styles.actions}>
             <Button
               appearance="primary"
               icon={<CodeRegular />}
@@ -433,13 +438,13 @@ export default function AdvancedQuerying() {
       )}
 
       {results && (
-        <div className={(styles as any).results}>
+        <div className={styles.results}>
           <CodeComparison
             items={[
               {
                 label: "Results",
                 code: "",
-                result: (JSON as any).stringify(results, null, 2),
+                result: JSON.stringify(results, null, 2),
               },
             ]}
           />
@@ -449,18 +454,18 @@ export default function AdvancedQuerying() {
   );
 
   return (
-    <div className={(styles as any).container}>
-      <div className={(styles as any).header}>
+    <div className={styles.container}>
+      <div className={styles.header}>
         <Title3>Advanced Querying</Title3>
-        <Text className={(styles as any).description}>
+        <Text className={styles.description}>
           Master OData queries, pagination strategies, expand navigation, and FetchXML
         </Text>
       </div>
 
       <TabList
         selectedValue={selectedTab}
-        onTabSelect={(_, data) => setSelectedTab((data as any).value as TabValue)}
-        className={(styles as any).tabs}
+        onTabSelect={(_, data) => setSelectedTab(data.value as TabValue)}
+        className={styles.tabs}
       >
         <Tab value="filter" icon={<FilterRegular />}>
           Filter Builder
@@ -476,7 +481,7 @@ export default function AdvancedQuerying() {
         </Tab>
       </TabList>
 
-      <div className={(styles as any).content}>
+      <div className={styles.content}>
         {loading && <LoadingState label="Executing query..." />}
         {!loading && selectedTab === "filter" && renderFilterTab()}
         {!loading && selectedTab === "pagination" && renderPaginationTab()}

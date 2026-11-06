@@ -14,10 +14,12 @@ import { DataverseRequestBuilder } from "./DataverseRequestBuilder.js";
 import { parseODataError } from "../errors/parseODataError.js";
 import { setResponseCorrelationId } from "../errors/responseDetails.js";
 import { DataverseError } from "../errors/DataverseError.js";
-import { DataverseAbortError } from "../errors/NamedErrors.js";
+import { DataverseAbortError, DataverseNetworkError } from "../errors/NamedErrors.js";
+import { startDeadline } from "../utils/signals.js";
 import { generateUUID, normalizeHeaders } from "../utils/HeaderUtils.js";
 import { FeatureUsageTracker } from "../telemetry/FeatureUsageTracker.js";
 import { DataverseInvalidRequestError } from "../errors/NamedErrors.js";
+import type { FetchXmlOptions, FetchXmlPage } from "../fetchxml/page.js";
 
 export class DataverseClient {
   private readonly baseUrl: string;
@@ -82,6 +84,36 @@ export class DataverseClient {
   }
 
   /**
+   * Run a FetchXML query and return one page: `client.api(entitySetName).fetchXml(fetchXml)`.
+   * See `DataverseRequestBuilder.fetchXml()`.
+   */
+  fetchXml<T = Record<string, unknown>>(
+    entitySetName: string,
+    fetchXml: string,
+    options?: FetchXmlOptions
+  ): Promise<FetchXmlPage<T>> {
+    return this.api(entitySetName).fetchXml<T>(fetchXml, options);
+  }
+
+  /** Run a system view by id, as one page: `GET {entitySetName}?savedQuery={id}`. */
+  savedQuery<T = Record<string, unknown>>(
+    entitySetName: string,
+    savedQueryId: string,
+    options?: FetchXmlOptions
+  ): Promise<FetchXmlPage<T>> {
+    return this.api(entitySetName).savedQuery<T>(savedQueryId, options);
+  }
+
+  /** Run a personal view by id, as one page: `GET {entitySetName}?userQuery={id}`. */
+  userQuery<T = Record<string, unknown>>(
+    entitySetName: string,
+    userQueryId: string,
+    options?: FetchXmlOptions
+  ): Promise<FetchXmlPage<T>> {
+    return this.api(entitySetName).userQuery<T>(userQueryId, options);
+  }
+
+  /**
    * Create binding payload for single-valued navigation properties
    * @param navigationProperty - The navigation property name
    * @param entitySetName - The target entity set (e.g., 'accounts')
@@ -106,12 +138,20 @@ export class DataverseClient {
   }
 
   async send(request: RequestInformation): Promise<Response> {
+    // timeoutMs covers the whole request, retries and waits included (#46): it becomes a deadline
+    // signal that every attempt, retry wait and concurrency-slot wait sees.
+    const deadline = request.timeoutMs
+      ? startDeadline(request.timeoutMs, request.signal)
+      : undefined;
     // Work on a copy with lower-cased header names: middleware must never see (or send) two
     // casings of the same header, and the caller's object must not be mutated.
     const req: RequestInformation = {
       ...request,
       url: this.resolveUrl(request.url),
       headers: normalizeHeaders(request.headers),
+      signal: deadline?.signal ?? request.signal,
+      // The adapter limits single attempts only with attemptTimeoutMs; the deadline does the rest.
+      timeoutMs: undefined,
     };
     // A fresh context per request: middleware writes to it (correlation id, retry attempt), so a
     // shared one would give every request the same correlation id and let concurrent requests
@@ -127,7 +167,12 @@ export class DataverseClient {
       setResponseCorrelationId(res, ctx.correlationId);
       return res;
     } catch (err) {
+      if (deadline?.expired && !request.signal?.aborted) {
+        throw asSdkError(DataverseNetworkError.timeout(request.timeoutMs ?? 0), ctx.correlationId);
+      }
       throw asSdkError(err, ctx.correlationId);
+    } finally {
+      deadline?.dispose();
     }
   }
 }
@@ -139,6 +184,7 @@ function applyOptions(req: RequestInformation, opt?: RequestOptions) {
     ...normalizeHeaders(opt.headers),
   });
   if (opt.timeoutMs !== undefined) req.timeoutMs = opt.timeoutMs;
+  if (opt.attemptTimeoutMs !== undefined) req.attemptTimeoutMs = opt.attemptTimeoutMs;
   if (opt.correlationId) req.correlationId = opt.correlationId;
   if (opt.middlewareOptions) req.middlewareOptions = opt.middlewareOptions;
   if (opt.signal) req.signal = opt.signal;

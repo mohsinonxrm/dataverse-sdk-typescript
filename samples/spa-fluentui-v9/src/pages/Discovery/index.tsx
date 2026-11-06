@@ -1,10 +1,15 @@
 import { useState } from "react";
 import { makeStyles, tokens, Title3, Text, Card, Button, Badge } from "@fluentui/react-components";
-import { GlobeRegular, BuildingMultipleRegular, CloudRegular } from "@fluentui/react-icons";
+import { GlobeRegular, BuildingMultipleRegular } from "@fluentui/react-icons";
 import { useDataverse } from "../../context/DataverseContext";
 import { LoadingState } from "../../components/demo/LoadingState";
 import { ErrorDisplay } from "../../components/errors/ErrorDisplay";
 import { CodeComparison } from "../../components/demo/CodeComparison";
+import {
+  DiscoveryClient,
+  OrganizationState,
+  type OrganizationDetail,
+} from "@mohsinonxrm/dataverse-sdk-discovery";
 
 const useStyles = makeStyles({
   container: {
@@ -16,7 +21,7 @@ const useStyles = makeStyles({
     marginBottom: "24px",
   },
   description: {
-    color: (tokens as any).colorNeutralForeground2,
+    color: tokens.colorNeutralForeground2,
     marginTop: "8px",
   },
   card: {
@@ -35,8 +40,8 @@ const useStyles = makeStyles({
   },
   orgCard: {
     padding: "16px",
-    backgroundColor: (tokens as any).colorNeutralBackground2,
-    borderRadius: (tokens as any).borderRadiusMedium,
+    backgroundColor: tokens.colorNeutralBackground2,
+    borderRadius: tokens.borderRadiusMedium,
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
@@ -49,97 +54,62 @@ const useStyles = makeStyles({
   info: {
     marginTop: "24px",
     padding: "16px",
-    backgroundColor: (tokens as any).colorNeutralBackground3,
-    borderRadius: (tokens as any).borderRadiusMedium,
+    backgroundColor: tokens.colorNeutralBackground3,
+    borderRadius: tokens.borderRadiusMedium,
   },
 });
 
-interface Organization {
-  Id: string;
-  UniqueName: string;
-  UrlName: string;
-  FriendlyName: string;
-  Version: string;
-  State: string;
-  Url: string[];
-}
-
 export default function Discovery() {
   const styles = useStyles();
-  const { isReady } = useDataverse();
+  const { isReady, tokenProvider } = useDataverse();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const [organizations, setOrganizations] = useState<OrganizationDetail[]>([]);
+  const [selected, setSelected] = useState<OrganizationDetail | null>(null);
 
   if (!isReady) {
     return <LoadingState label="Initializing Dataverse SDK..." />;
   }
 
   const handleDiscoverOrganizations = async () => {
+    if (!tokenProvider) return;
     setLoading(true);
     setError(null);
 
     try {
-      // Global Discovery Service endpoint for Commercial cloud
-      const discoveryUrl =
-        "https://(globaldisco as any).crm.(dynamics as any).com/api/discovery/(v2 as any).0/Instances";
-
-      // Note: In a real implementation, this would use the Discovery Client from the SDK
-      // For demonstration, showing the API call structure
-
-      const response = await fetch(discoveryUrl, {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${getToken()}`, // Simplified - would use token provider
-        },
-      });
-
-      if (!(response as any).ok) {
-        throw new Error(
-          `Discovery failed: ${(response as any).status} ${(response as any).statusText}`
-        );
-      }
-
-      const data = await (response as any).json();
-      setOrganizations((data as any).value || []);
+      // DiscoveryClient asks the token provider for a Global Discovery token itself.
+      const discoveryClient = new DiscoveryClient(tokenProvider);
+      setOrganizations(await discoveryClient.listOrganizations());
     } catch (err) {
-      setError(err as Error);
+      setError(err instanceof Error ? err : new Error(String(err)));
     } finally {
       setLoading(false);
     }
   };
 
-  const getToken = (): string => {
-    // Simplified - in real implementation, would use the token provider from context
-    return "YOUR_ACCESS_TOKEN";
-  };
-
-  const handleSelectOrganization = (org: Organization) => {
-    // In a real implementation, this would:
-    // 1. Store selected org in context
-    // 2. Reinitialize DataverseClient with new baseUrl
-    // 3. Navigate to dashboard
-    (console as any).log("Selected organization:", org);
+  const handleSelectOrganization = (org: OrganizationDetail) => {
+    // The app talks to the environment configured in VITE_DATAVERSE_URL; selecting an
+    // organization here only records the choice and shows the Web API URL to use.
+    setSelected(org);
   };
 
   return (
-    <div className={(styles as any).container}>
-      <div className={(styles as any).header}>
+    <div className={styles.container}>
+      <div className={styles.header}>
         <Title3>Global Discovery Service</Title3>
-        <Text className={(styles as any).description}>
+        <Text className={styles.description}>
           Discover and connect to Dataverse organizations across the Commercial cloud
         </Text>
       </div>
 
-      <Card className={(styles as any).card}>
+      <Card className={styles.card}>
         <Title3>Discover Organizations</Title3>
         <Text>
           The Global Discovery Service returns all Dataverse organizations the authenticated user
           has access to within the cloud region.
         </Text>
 
-        <div className={(styles as any).actions}>
+        <div className={styles.actions}>
           <Button
             appearance="primary"
             icon={<GlobeRegular />}
@@ -160,28 +130,35 @@ export default function Discovery() {
           />
         )}
 
-        {(organizations as any).length > 0 && (
-          <div className={(styles as any).orgList}>
+        {selected && (
+          <Text>
+            Selected {selected.FriendlyName}: {selected.Url}. Set VITE_DATAVERSE_URL to this URL and
+            restart to work against it.
+          </Text>
+        )}
+
+        {organizations.length > 0 && (
+          <div className={styles.orgList}>
             <Text weight="semibold">
-              Found {(organizations as any).length} organization
-              {(organizations as any).length !== 1 ? "s" : ""}
+              Found {organizations.length} organization
+              {organizations.length !== 1 ? "s" : ""}
             </Text>
 
-            {(organizations as any).map((org) => (
-              <div key={(org as any).Id} className={(styles as any).orgCard}>
-                <div className={(styles as any).orgInfo}>
+            {organizations.map((org) => (
+              <div key={org.Id} className={styles.orgCard}>
+                <div className={styles.orgInfo}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     <BuildingMultipleRegular fontSize={20} />
-                    <Text weight="semibold">{(org as any).FriendlyName}</Text>
+                    <Text weight="semibold">{org.FriendlyName}</Text>
                     <Badge appearance="outline" color="informative">
-                      {(org as any).State}
+                      {org.State === OrganizationState.Enabled ? "Enabled" : "Disabled"}
                     </Badge>
                   </div>
-                  <Text size={200} style={{ color: (tokens as any).colorNeutralForeground3 }}>
-                    {(org as any).UniqueName} • Version {(org as any).Version}
+                  <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
+                    {org.UniqueName} • Version {org.Version}
                   </Text>
-                  <Text size={200} style={{ color: (tokens as any).colorNeutralForeground3 }}>
-                    {(org as any).Url[0]}
+                  <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
+                    {org.Url}
                   </Text>
                 </div>
                 <Button
@@ -197,11 +174,11 @@ export default function Discovery() {
         )}
       </Card>
 
-      <Card className={(styles as any).card}>
+      <Card className={styles.card}>
         <Title3>Multi-Organization Scenarios</Title3>
         <Text>Common use cases for the Discovery Service</Text>
 
-        <div className={(styles as any).info}>
+        <div className={styles.info}>
           <Text weight="semibold">When to Use Discovery Service:</Text>
           <ul style={{ marginTop: "8px", paddingLeft: "20px" }}>
             <li>
@@ -231,28 +208,27 @@ export default function Discovery() {
           </ul>
         </div>
 
-        <div className={(styles as any).info} style={{ marginTop: "16px" }}>
+        <div className={styles.info} style={{ marginTop: "16px" }}>
           <Text weight="semibold">Cloud-Specific Endpoints:</Text>
           <ul style={{ marginTop: "8px", paddingLeft: "20px" }}>
             <li>
               <Text>
-                <strong>Commercial:</strong> https://(globaldisco as any).crm.(dynamics as any).com
+                <strong>Commercial:</strong> https://globaldisco.crm.dynamics.com
               </Text>
             </li>
             <li>
               <Text>
-                <strong>GCC:</strong> https://(globaldisco as any).crm9.(dynamics as any).com
+                <strong>GCC:</strong> https://globaldisco.crm9.dynamics.com
               </Text>
             </li>
             <li>
               <Text>
-                <strong>GCC High:</strong> https://(globaldisco as any).crm.(microsoftdynamics as
-                any).us
+                <strong>GCC High:</strong> https://globaldisco.crm.microsoftdynamics.us
               </Text>
             </li>
             <li>
               <Text>
-                <strong>DoD:</strong> https://(globaldisco as any).crm.(appsplatform as any).us
+                <strong>DoD:</strong> https://globaldisco.crm.appsplatform.us
               </Text>
             </li>
           </ul>
@@ -263,24 +239,21 @@ export default function Discovery() {
         items={[
           {
             label: "Discovery API Call",
-            code: `// Using SDK Discovery Client (simplified)
-const discoveryClient = new GlobalDiscoveryClient({
-  tokenProvider: msalTokenProvider,
-  cloud: 'Commercial'
-});
+            code: `// DiscoveryClient from @mohsinonxrm/dataverse-sdk-discovery
+const discoveryClient = new DiscoveryClient(tokenProvider);
 
-const orgs = await (discoveryClient as any).listOrganizations();
+const orgs = await discoveryClient.listOrganizations();
 
-// Returns array of organizations with:
+// Returns OrganizationDetail[] with:
 // - Id, UniqueName, FriendlyName
-// - Url (array of endpoints)
-// - Version, State`,
-            result: (JSON as any).stringify(
+// - Url (application URL) and ApiUrl (use it as the DataverseClient baseUrl)
+// - Version, State (0 = enabled), Region`,
+            result: JSON.stringify(
               {
                 discoveryEndpoint:
-                  "https://(globaldisco as any).crm.(dynamics as any).com/api/discovery/(v2 as any).0/Instances",
-                organizationsFound: (organizations as any).length,
-                sampleOrganization: organizations[0] || null,
+                  "https://globaldisco.crm.dynamics.com/api/discovery/v2.0/Instances",
+                organizationsFound: organizations.length,
+                sampleOrganization: organizations[0] ?? null,
               },
               null,
               2

@@ -278,7 +278,7 @@ describe.skipIf(!live)("live: $batch", () => {
     expect(text).toContain('"UserId"');
   });
 
-  it.fails("#54: BatchRequestBuilder.execute() runs a batch", async () => {
+  it("#54: BatchRequestBuilder.execute() runs a batch", async () => {
     const { client } = liveClient();
     const batch = new BatchRequestBuilder(client);
     batch.addRequest("whoami", "GET", "/WhoAmI");
@@ -297,14 +297,14 @@ describe.skipIf(!live)("live: metadata", () => {
     expect(def).toMatchObject({ EntitySetName: "accounts", PrimaryIdAttribute: "accountid" });
   });
 
-  it.fails("#62: MetadataClient.retrieveMetadataChanges() succeeds", async () => {
+  it("#62: MetadataClient.retrieveMetadataChanges() succeeds", async () => {
     const { client } = liveClient();
     const metadata = new MetadataClient(client);
     const query = { Properties: { AllProperties: false, PropertyNames: ["LogicalName"] } };
     await metadata.retrieveMetadataChanges(query);
   });
 
-  it.fails("#63: MetadataClient.canBeReferenced('account') succeeds", async () => {
+  it("#63: MetadataClient.canBeReferenced('account') succeeds", async () => {
     const { client } = liveClient();
     await expect(new MetadataClient(client).canBeReferenced("account")).resolves.toBe(true);
   });

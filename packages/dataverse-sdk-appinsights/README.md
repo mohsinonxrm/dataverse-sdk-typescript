@@ -14,8 +14,23 @@ distro exports them. The distro does not run in browsers.
 ## Installation
 
 ```bash
-pnpm add @mohsinonxrm/dataverse-sdk-appinsights @azure/monitor-opentelemetry
+pnpm add @mohsinonxrm/dataverse-sdk-appinsights @azure/monitor-opentelemetry @opentelemetry/api @opentelemetry/api-logs
 ```
+
+The OpenTelemetry and Azure packages are **peer dependencies**, so the adapter uses your app's
+copies. Its spans and log records then go to the providers your `useAzureMonitor()` registered,
+and join the active trace.
+
+| Package                        | Range      | Needed                                                                                      |
+| ------------------------------ | ---------- | ------------------------------------------------------------------------------------------- |
+| `@opentelemetry/api`           | `^1.9.0`   | Always                                                                                      |
+| `@opentelemetry/api-logs`      | `^0.221.0` | Always (events and exceptions are log records). `@azure/monitor-opentelemetry` 1.20 uses it |
+| `@azure/monitor-opentelemetry` | `^1.20.1`  | Optional: in your app to call `useAzureMonitor()`, or for the `connectionString` option     |
+| `@opentelemetry/resources`     | `^2.0.0`   | Optional: only for `cloudRoleName`; `@azure/monitor-opentelemetry` already depends on it    |
+
+Without `@azure/monitor-opentelemetry` the adapter still works with another OpenTelemetry setup
+(pass `tracer` / `logger`, or register global providers). Passing `connectionString` without it
+throws a `DataverseInvalidRequestError` that names the package to install.
 
 ## Usage
 

@@ -13,7 +13,8 @@ npm install @mohsinonxrm/dataverse-sdk-files @mohsinonxrm/dataverse-sdk-core @mo
 - ✅ **Chunked uploads**: Handles files of any size with automatic chunking (default 4MB chunks)
 - ✅ **Progress tracking**: Real-time upload progress callbacks
 - ✅ **File & Image columns**: Supports both FileAttributeMetadata and ImageAttributeMetadata
-- ✅ **Download support**: Retrieve file content as Blob (browser) or Buffer (Node.js)
+- ✅ **Download support**: Retrieve file content as a `Blob` (browser and Node.js)
+- ✅ **Browser and Node.js**: Takes a `Blob`, `File`, `ArrayBuffer` or typed array; no `Buffer` polyfill needed
 - ✅ **TypeScript first**: Fully typed with comprehensive IntelliSense
 - ✅ **Actions-based approach**: Uses Microsoft-recommended Web API actions
 
@@ -35,8 +36,8 @@ const client = new DataverseClient({
   tokenProvider,
 });
 
-// A DataverseClient is a RequestAdapter: client.send() runs each request through its pipeline.
-const fileClient = new FileColumnClient(client, client.getBaseUrl());
+// Every request runs through client.send(): auth, retry, logging and telemetry apply.
+const fileClient = new FileColumnClient(client);
 
 // Upload file to account logo (image column)
 const accountId = 'aaaa-bbbb-cccc-dddd';
@@ -46,7 +47,7 @@ await fileClient.upload(
   'accounts',      // Entity set name
   accountId,       // Record ID
   'new_logo',      // Column logical name
-  logoFile,        // File data (Blob or Buffer)
+  logoFile,        // File data (Blob, File, ArrayBuffer or Uint8Array/Buffer)
   'company-logo.png'  // File name
 );
 ```
@@ -67,8 +68,10 @@ await fileClient.upload("accounts", accountId, "new_document", documentFile, "co
 ### Upload Large File
 
 ```typescript
-// Files >128MB are automatically chunked
+// Every upload is sent in blocks of at most 4MB (the largest block Dataverse accepts),
+// so a large file needs no special options. The column's maximum size still applies.
 const largeFile = /* 500MB file */;
+const controller = new AbortController(); // controller.abort() cancels the upload
 
 await fileClient.upload(
   'emails',
@@ -77,11 +80,11 @@ await fileClient.upload(
   largeFile,
   'large-document.pdf',
   {
-    chunkSize: 8 * 1024 * 1024, // Use 8MB chunks for large files
     onProgress: (progress) => {
       // Update UI progress bar
       updateProgressBar(progress.percentage);
-    }
+    },
+    signal: controller.signal,
   }
 );
 ```
@@ -92,27 +95,24 @@ await fileClient.upload(
 // Download file from column
 const file = await fileClient.download("accounts", accountId, "new_logo");
 
-// In browser: file is Blob
-if (file instanceof Blob) {
-  const url = URL.createObjectURL(file);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = "logo.png";
-  link.click();
-  URL.revokeObjectURL(url);
-}
+// In a browser: save the Blob
+const url = URL.createObjectURL(file);
+const link = document.createElement("a");
+link.href = url;
+link.download = "logo.png";
+link.click();
+URL.revokeObjectURL(url);
 
-// In Node.js: file is Buffer
-else {
-  const fs = require("fs");
-  fs.writeFileSync("downloaded-logo.png", file);
-}
+// In Node.js: download() returns a Blob too
+import { writeFile } from "node:fs/promises";
+await writeFile("downloaded-logo.png", Buffer.from(await file.arrayBuffer()));
 ```
 
 ### Delete File
 
 ```typescript
-// Remove file from column
+// Remove the file from the column (DELETE /accounts(id)/new_logo).
+// Deleting from a column that has no file succeeds.
 await fileClient.delete("accounts", accountId, "new_logo");
 ```
 
@@ -120,15 +120,14 @@ await fileClient.delete("accounts", accountId, "new_logo");
 
 The `FileColumnClient` uses a three-step chunked upload process based on Microsoft's Web API actions:
 
-1. **Initialize**: `InitializeFileBlocksUpload` action creates upload session
+1. **Initialize**: `InitializeFileBlocksUpload` action creates upload session. Its `Target` is a typed entity reference, `{ "@odata.type": "Microsoft.Dynamics.CRM.account", "accountid": "…" }`, so the first upload to a table looks up its logical name and primary key from `EntityDefinitions` (once per entity set; the result is reused by every `FileColumnClient` on the same `DataverseClient`)
 2. **Upload blocks**: `UploadBlock` action uploads each chunk sequentially
 3. **Commit**: `CommitFileBlocksUpload` action finalizes the upload
 
 ### Default Chunk Size
 
-- **Default**: 4MB (4 _ 1024 _ 1024 bytes)
-- **Configurable**: Specify `chunkSize` option to customize
-- **Recommendation**: Use larger chunks (8-16MB) for very large files to reduce API calls
+- **Default and maximum**: 4MB (`4 * 1024 * 1024` bytes). Dataverse rejects bigger blocks, so `upload()` rejects a larger `chunkSize` with a `DataverseInvalidRequestError` before sending anything.
+- **Configurable**: Specify a smaller `chunkSize` for finer-grained progress
 
 ### Block ID Generation
 
@@ -142,7 +141,11 @@ This ensures proper ordering when committing the upload.
 
 ## Error Handling
 
+Every response is checked. When a step fails, `upload()`, `download()` and `delete()` reject with the parsed error (`DataverseODataError`, or `DataverseThrottleError` for a 429), which carries `status`, `code`, `message`, `requestId` and the response headers, and `upload()` sends nothing after the failed request. `download()` of a column with no file rejects with status 404.
+
 ```typescript
+import { DataverseODataError } from "@mohsinonxrm/dataverse-sdk-core";
+
 try {
   await fileClient.upload("accounts", accountId, "new_logo", logoFile, "logo.png", {
     onProgress: (progress) => {
@@ -152,8 +155,7 @@ try {
   console.log("Upload successful!");
 } catch (error) {
   if (error instanceof DataverseODataError) {
-    console.error("Dataverse error:", error.message);
-    console.error("Error code:", error.code);
+    console.error("Dataverse error:", error.status, error.code, error.message);
   } else {
     console.error("Upload failed:", error);
   }
@@ -170,7 +172,7 @@ function ProfilePictureUpload({ client, accountId }) {
   const [progress, setProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
 
-  const fileClient = new FileColumnClient(client, client.getBaseUrl());
+  const fileClient = new FileColumnClient(client);
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
@@ -224,11 +226,13 @@ function ProfilePictureUpload({ client, accountId }) {
 #### Constructor
 
 ```typescript
+new FileColumnClient(client: DataverseClient)
 new FileColumnClient(adapter: RequestAdapter, baseUrl?: string)
 ```
 
-- `adapter`: any object with `send(request: RequestInformation): Promise<Response>`. Pass your `DataverseClient` (it has no `requestAdapter` property; the client itself satisfies the interface, and `client.send()` applies its auth, retry and logging).
-- `baseUrl`: the Web API root, e.g. `client.getBaseUrl()` (`https://org.crm.dynamics.com/api/data/v9.2`). Pass it explicitly: the default `""` is tracked in #59.
+- `client`: your `DataverseClient`. Requests go through `client.send()`, so its auth, retry, logging and telemetry apply, and URLs are built on `client.getBaseUrl()`.
+- `adapter`: any object with `send(request: RequestInformation): Promise<Response>`. A raw adapter such as `FetchRequestAdapter` adds no auth or retry.
+- `baseUrl`: the Web API root, e.g. `https://contoso.crm.dynamics.com/api/data/v9.2`. Optional when the adapter has a `getBaseUrl()` method (a `DataverseClient` does). Without either, the constructor throws a `DataverseInvalidRequestError` (name `MissingParameter`).
 
 #### Methods
 
@@ -239,7 +243,7 @@ async upload(
   entitySetName: string,
   recordId: string,
   columnName: string,
-  file: Blob | Buffer,
+  file: Blob | ArrayBuffer | ArrayBufferView,
   fileName: string,
   options?: FileUploadOptions
 ): Promise<void>
@@ -249,10 +253,10 @@ Upload a file to a file or image column.
 
 **Parameters:**
 
-- `entitySetName`: Entity set name (e.g., `'accounts'`, `'contacts'`)
+- `entitySetName`: Entity set name (e.g., `'accounts'`, `'emails'`). The table's logical name and primary key are looked up from it once (see [Chunking Strategy](#chunking-strategy))
 - `recordId`: Record GUID (with or without braces)
 - `columnName`: Logical name of file/image column
-- `file`: File data (Blob in browser, Buffer in Node.js)
+- `file`: File data: a `Blob` or `File`, an `ArrayBuffer`, or a typed-array view such as `Uint8Array` (a Node.js `Buffer` is a `Uint8Array`). A `Blob`'s `type` becomes the file's MIME type; otherwise it is `application/octet-stream`.
 - `fileName`: Name of file being uploaded
 - `options`: Upload options (optional)
 
@@ -266,7 +270,7 @@ async download(
   recordId: string,
   columnName: string,
   options?: FileDownloadOptions
-): Promise<Blob | Buffer>
+): Promise<Blob>
 ```
 
 Download a file from a file or image column.
@@ -278,7 +282,7 @@ Download a file from a file or image column.
 - `columnName`: Logical name of file/image column
 - `options`: Download options (optional)
 
-**Returns:** File data as Blob (browser) or Buffer (Node.js).
+**Returns:** File data as a `Blob`, in browsers and in Node.js.
 
 ##### `delete()`
 
@@ -290,7 +294,7 @@ async delete(
 ): Promise<void>
 ```
 
-Delete a file from a file or image column.
+Delete a file from a file or image column, with `DELETE /{entitySetName}({recordId})/{columnName}`. Deleting from a column that has no file succeeds.
 
 **Parameters:**
 
@@ -304,8 +308,9 @@ Delete a file from a file or image column.
 
 ```typescript
 interface FileUploadOptions {
-  chunkSize?: number; // Chunk size in bytes (default: 4MB)
+  chunkSize?: number; // Chunk size in bytes (default and maximum: 4MB)
   onProgress?: (progress: UploadProgress) => void;
+  signal?: AbortSignal; // Cancels the upload; it rejects with DataverseAbortError
 }
 ```
 
@@ -325,9 +330,8 @@ interface UploadProgress {
 
 ### Chunk Size
 
-- **Small files (<10MB)**: Default 4MB chunks work well
-- **Medium files (10-100MB)**: Consider 8MB chunks
-- **Large files (>100MB)**: Consider 16MB chunks to reduce API call overhead
+- The default 4MB is also the largest block Dataverse accepts, and needs the fewest requests.
+- `upload()` reads the whole file into memory before it sends the first block.
 
 ### Parallel Uploads
 
@@ -335,11 +339,11 @@ interface UploadProgress {
 
 ### Retry Logic
 
-The underlying `RequestAdapter` handles retry logic for failed requests. Individual chunk uploads will be retried automatically on transient failures (429, 5xx).
+When the `FileColumnClient` sends through a `DataverseClient`, the client's retry settings apply to every request: a 429 is retried for any request. A block (`UploadBlock`) is also retried after a 502, 503 or 504 (and after a dropped connection when `retry.retryNetworkErrors` is on), because sending a block again with the same block id replaces it; the client retries other POSTs only after a 429. The number of retries is the client's `retry.maxRetries`. A raw adapter such as `FetchRequestAdapter` doesn't retry.
 
 ## Browser Compatibility
 
-- **Modern browsers**: Full support (Chrome, Firefox, Safari, Edge)
+- **Modern browsers**: Full support (Chrome, Firefox, Safari, Edge), with no `Buffer` polyfill
 - **IE11**: Not supported (no native `fetch`, Blob support limited)
 
 ## Node.js Compatibility
