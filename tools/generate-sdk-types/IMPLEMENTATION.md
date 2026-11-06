@@ -103,22 +103,30 @@ parseFunctions(schema): CsdlFunction[]    // Handles binding detection
 **Generated Class Structure:**
 
 ```typescript
+/** Parameters of the WinOpportunity action, by their CSDL names. */
+export interface WinOpportunityActionParameters {
+  OpportunityClose: EntityReference | EntityPayload<opportunityclose>;
+  Caller?: string;
+  Status: number;
+}
+
 export class WinOpportunityAction implements Executable<WinOpportunityResponse> {
-  constructor(
-    public readonly opportunityClose: opportunityclose,
-    public readonly caller: string,
-    public readonly status: number
-  ) {}
+  constructor(public readonly parameters: WinOpportunityActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
-    // Builds POST request with body
+    // POST with requestBody({ OpportunityClose: …, Caller: …, Status: … }): undefined ones left out
   }
 
   async parseResponse(response: Response): Promise<WinOpportunityResponse> {
-    // Parses JSON response
+    // The JSON body, or {} for 204 No Content
   }
 }
 ```
+
+The constructor takes one `<Class>Parameters` object keyed by the CSDL parameter names, required
+per `Nullable="false"` (#96). A bound action takes the record id (or, for
+`Collection(mscrm.crmbaseentity)`, the entity set) as a separate first argument. The shared code
+is in `src/utils/operation-parameters.ts`.
 
 **Output:**
 
@@ -395,8 +403,8 @@ Shows what would be generated without writing files.
 
 - [ ] Check the `$metadata` snapshot (or its hash and the org version) into the repo, so generation
       is reproducible and reviewable (#75)
-- [ ] Regenerate all packages from one current `$metadata` and review the breaking diff
-      (constructor parameter order, added and removed operations)
+- [ ] Regenerate all packages from one current `$metadata` and review the diff (added and
+      removed operations, and parameters added or made required)
 - [ ] Monitor for CSDL schema changes
 
 ---

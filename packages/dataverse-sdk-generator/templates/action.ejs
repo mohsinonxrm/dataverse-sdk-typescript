@@ -1,21 +1,36 @@
 <%# Patterned on the templates of dataverse-gen by Scott Durow (https://github.com/scottdurow/dataverse-gen), Copyright (c) 2020 Scott Durow, MIT License. See THIRD_PARTY_NOTICES.md in this package. -%>
 <%_ const responseType = action.ReturnType ? formatType(action.ReturnType) : 'void'; _%>
+<%_ if (action.Parameters.length > 0) { _%>
+/**
+ * Parameters of the <%- doc(action.Name) %> action, by their CSDL names. A parameter the CSDL
+ * declares nullable is optional, and left out of the request when it's undefined.
+ */
+export interface <%- parametersName %> {
+<%_ action.Parameters.forEach(function(param){ _%>
+  <%- propertyKey(param.Name) %><%- param.Nullable ? '?' : '' %>: <%- parameterType(param) %><%- param.Nullable ? ' | null' : '' %>;
+<%_ }) _%>
+}
+
+<%_ } _%>
 /**
  * <%- doc(action.Name) %> action
  * <%- action.IsBound ? 'Bound to: ' + doc(action.BindingType) : 'Unbound action' %>
+<%_ if (bindingDoc) { _%>
+ *
+ * <%- bindingDoc %>
+<%_ } _%>
  */
 export class <%- className %> extends ActionBase<<%- responseType %>> {
+<%_ if (constructorArguments.length > 0) { _%>
   constructor(
-<%_ if (bindingDeclaration) { _%>
-    <%- bindingDeclaration %>
-<%_ } _%>
-<%_ action.Parameters.forEach(function(param, index){ _%>
-    public <%- identifier(param.Name) %><%- isOptional(index) ? '?' : '' %>: <%- parameterType(param) %><%- param.Nullable ? ' | null' : '' %>,
+<%_ constructorArguments.forEach(function(arg){ _%>
+    <%- arg %>,
 <%_ }) _%>
   ) {
     super();
   }
 
+<%_ } _%>
   /**
    * Parameter metadata for runtime type checking
    */
@@ -30,6 +45,14 @@ export class <%- className %> extends ActionBase<<%- responseType %>> {
   };
 
   toRequestInformation(baseUrl: string): RequestInformation {
+<%_ if (action.Parameters.length > 0) { _%>
+    // The parameters by their CSDL names; an undefined one isn't sent
+    const body: Record<string, unknown> = {};
+<%_ action.Parameters.forEach(function(param){ _%>
+    if (this.parameters<%- access(param.Name) %> !== undefined) body[<%- literal(param.Name) %>] = this.parameters<%- access(param.Name) %>;
+<%_ }) _%>
+
+<%_ } _%>
     return {
       method: "POST",
       url: `${baseUrl}<%- operationPath %>`,
@@ -37,24 +60,24 @@ export class <%- className %> extends ActionBase<<%- responseType %>> {
         "content-type": "application/json",
         accept: "application/json",
       },
-      body: {
-<%_ action.Parameters.forEach(function(param){ _%>
-        <%- propertyKey(param.Name) %>: this.<%- identifier(param.Name) %>,
-<%_ }) _%>
-      },
+      body: <%- action.Parameters.length > 0 ? 'body' : '{}' %>,
     };
   }
 
 <%_ if (!action.ReturnType) { _%>
   async parseResponse(_response: Response): Promise<void> {
-    // 204 No Content
+    // No return value
   }
 <%_ } else if (returnsBody(action.ReturnType)) { _%>
   async parseResponse(response: Response): Promise<<%- responseType %>> {
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as <%- responseType %>;
     return (await response.json()) as <%- responseType %>;
   }
 <%_ } else { _%>
   async parseResponse(response: Response): Promise<<%- responseType %>> {
+    // 204 No Content is an empty result
+    if (response.status === 204) return undefined as unknown as <%- responseType %>;
     const data = (await response.json()) as { value: <%- responseType %> };
     return data.value;
   }

@@ -196,7 +196,7 @@ node dist/cli.js --help
 - **Run frequency**: When Microsoft updates Web API schema or adds new actions/functions
 - **Git workflow**: Generated files should be committed to repo
 - **Versioning**: When regenerating, review diffs carefully for breaking changes. A fresh
-  `$metadata` reorders constructor parameters, adds and removes operations, and reorders
+  `$metadata` adds and removes operations and parameters, and reorders
   `types/` properties, so a full regeneration is a large, partly breaking diff. Generator fixes
   have instead been applied to the committed files with a script, checked to be byte-identical to
   the new generator's output on the same `$metadata`.

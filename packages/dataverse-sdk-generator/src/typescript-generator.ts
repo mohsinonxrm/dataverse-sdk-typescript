@@ -246,7 +246,7 @@ export class TypescriptGenerator {
 
       const body = ejs.render(template, {
         ...this.helpers("actions", imports),
-        ...this.operationHelpers(action, "actions", imports),
+        ...this.operationHelpers(action, "actions", imports, className),
         action,
         className,
       });
@@ -273,7 +273,7 @@ export class TypescriptGenerator {
 
       const body = ejs.render(template, {
         ...this.helpers("functions", imports),
-        ...this.operationHelpers(func, "functions", imports),
+        ...this.operationHelpers(func, "functions", imports, className),
         func,
         className,
       });
@@ -444,19 +444,22 @@ export * from './metadata${suffix}.js';
   }
 
   /**
-   * Helpers for action and function templates: the constructor parameters, the request path
-   * (with the binding, for a bound operation) and how each parameter is serialized.
+   * Helpers for action and function templates: the constructor arguments, the request path (with
+   * the binding, for a bound operation) and how each parameter is serialized.
+   *
+   * As in the in-repo generator (#96), the constructor takes the record or entity set a bound
+   * operation runs on (it goes in the URL) and then one `<Class>Parameters` object keyed by the
+   * CSDL parameter names. A parameter without `Nullable="false"` is optional, and an undefined one
+   * is left out of the body or the URL aliases. With only optional parameters the object can be
+   * left out; with no parameters there is none.
    */
   private operationHelpers(
     op: ActionType | FunctionType,
     folder: Folder,
-    imports: ImportCollector
+    imports: ImportCollector,
+    className: string
   ) {
     const params = op.Parameters;
-    // Trailing nullable parameters are optional: they can be left out of the call.
-    let firstOptional = params.length;
-    while (firstOptional > 0 && params[firstOptional - 1].Nullable) firstOptional--;
-
     const isFunction = folder === "functions";
     const kindOf = (param: ParameterType) => this.model.getStructuralType(param.Type);
     const parameterType = (param: ParameterType) => {
@@ -469,8 +472,9 @@ export * from './metadata${suffix}.js';
       return tsType;
     };
 
-    // The record or collection a bound operation is called on.
+    // The record or collection a bound operation is called on: the first constructor argument.
     let bindingDeclaration = "";
+    let bindingDoc = "";
     let target = "";
     if (op.IsBound && op.BindingEntity) {
       const set = op.BindingEntitySetName;
@@ -478,17 +482,22 @@ export * from './metadata${suffix}.js';
         if (set) {
           target = `/${set}`;
         } else {
-          bindingDeclaration = "public readonly entitySetName: string,";
+          bindingDeclaration = "public readonly entitySetName: string";
+          bindingDoc =
+            'The first argument is the entity set to call it on, for example "accounts".';
           target = "/${this.entitySetName}";
         }
       } else if (set) {
         imports.value("formatParameterAlias", RUNTIME_PACKAGE);
-        bindingDeclaration = "public readonly targetId: string,";
-        target = `/${set}(\${formatParameterAlias(this.targetId, "Edm.Guid")})`;
+        const idName = `${toSafeIdentifier(op.BindingEntity)}Id`;
+        bindingDeclaration = `public readonly ${idName}: string`;
+        bindingDoc = `The first argument is the id of the ${toDocText(op.BindingEntity)} record to call it on.`;
+        target = `/${set}(\${formatParameterAlias(this.${idName}, "Edm.Guid")})`;
       } else {
         imports.value("formatRecordPath", RUNTIME_PACKAGE);
         imports.type("EntityReference", RUNTIME_PACKAGE);
-        bindingDeclaration = "public readonly target: EntityReference,";
+        bindingDeclaration = "public readonly target: EntityReference";
+        bindingDoc = "The first argument is the record to call it on, with its entitySetName.";
         target = "/${formatRecordPath(this.target)}";
       }
     }
@@ -497,12 +506,22 @@ export * from './metadata${suffix}.js';
       : `/${op.Name}`;
     if (isFunction && params.length > 0) imports.value("formatParameterAlias", RUNTIME_PACKAGE);
 
+    const parametersName = `${className}Parameters`;
+    const optional = params.every((p) => p.Nullable === true) ? " = {}" : "";
+    const constructorArguments = [
+      ...(bindingDeclaration ? [bindingDeclaration] : []),
+      ...(params.length > 0 ? [`public readonly parameters: ${parametersName}${optional}`] : []),
+    ];
+
     return {
-      bindingDeclaration,
+      bindingDoc,
+      constructorArguments,
       operationPath,
-      isOptional: (index: number) => index >= firstOptional,
+      parametersName,
       parameterType,
       parameterKind: kindOf,
+      /** `.Name`, or `["na-me"]` for a name that isn't an identifier. */
+      access: (name: string) => (IDENTIFIER.test(name) ? `.${name}` : `[${JSON.stringify(name)}]`),
       getStructuralType: (type: string) => this.model.getStructuralType(type),
     };
   }

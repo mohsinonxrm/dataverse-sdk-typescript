@@ -395,37 +395,52 @@ import {
   type RequestInformation,
 } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 
+/** Parameters of the WinOpportunity action, by their CSDL names. */
+export interface WinOpportunityActionParameters {
+  OpportunityClose: IEntity;
+  Caller?: string | null;
+  Status: number;
+}
+
 export class WinOpportunityAction extends ActionBase<void> {
-  constructor(
-    public OpportunityClose: IEntity,
-    public Caller: string | null,
-    public Status: number
-  ) {
+  constructor(public readonly parameters: WinOpportunityActionParameters) {
     super();
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
+    // The parameters by their CSDL names; an undefined one isn't sent
+    const body: Record<string, unknown> = {};
+    if (this.parameters.OpportunityClose !== undefined)
+      body["OpportunityClose"] = this.parameters.OpportunityClose;
+    if (this.parameters.Caller !== undefined) body["Caller"] = this.parameters.Caller;
+    if (this.parameters.Status !== undefined) body["Status"] = this.parameters.Status;
+
     return {
       method: "POST",
       url: `${baseUrl}/WinOpportunity`,
       headers: { "content-type": "application/json", accept: "application/json" },
-      body: {
-        OpportunityClose: this.OpportunityClose,
-        Caller: this.Caller,
-        Status: this.Status,
-      },
+      body,
     };
   }
 
   async parseResponse(_response: Response): Promise<void> {
-    // 204 No Content
+    // No return value
   }
 }
+
+await client.execute(new WinOpportunityAction({ OpportunityClose: close, Status: 3 }));
 ```
+
+The constructor takes one object with the operation's parameters, keyed by their CSDL names and
+typed as `<Class>Parameters`, as the classes in `@mohsinonxrm/dataverse-sdk-actions` do. A
+parameter that `$metadata` marks `Nullable="false"` is required; any other is optional, may be
+`null`, and isn't sent when it's left out or `undefined`. An operation with only optional parameters
+can be constructed without arguments; one without parameters has no constructor arguments at all.
 
 `ActionBase` and `FunctionBase` implement core's `Executable`, so generated operations go straight
 to `client.execute()`. An operation that returns a complex type or an entity resolves to that
-type; one that returns a primitive or a collection resolves to the `value` of the response:
+type (an empty object for `204 No Content`); one that returns a primitive or a collection
+resolves to the `value` of the response:
 
 ```typescript
 import { WhoAmIFunction } from "./generated/functions/WhoAmIFunction.js";
@@ -447,15 +462,19 @@ value is written as the OData literal for its type by `formatParameterAlias()` f
 - collections and complex values are written as JSON, and an entity reference as
   `{"@odata.id":"accounts(<id>)"}`.
 
-Trailing nullable parameters are optional; a parameter left `undefined` is left out of the call.
+Nullable parameters are optional; a parameter left out or `undefined` is left out of the call.
 
 ```typescript
 // generated/functions/RetrieveUserPrivilegeByPrivilegeNameFunction.ts (bound to systemuser)
+export interface RetrieveUserPrivilegeByPrivilegeNameFunctionParameters {
+  PrivilegeName: string;
+  ExcludeTeamBasic?: boolean | null;
+}
+
 export class RetrieveUserPrivilegeByPrivilegeNameFunction extends FunctionBase<RetrieveUserPrivilegeByPrivilegeNameResponse> {
   constructor(
-    public readonly targetId: string,
-    public PrivilegeName: string,
-    public ExcludeTeamBasic?: boolean | null
+    public readonly systemuserId: string,
+    public readonly parameters: RetrieveUserPrivilegeByPrivilegeNameFunctionParameters
   ) {
     super();
   }
@@ -463,15 +482,18 @@ export class RetrieveUserPrivilegeByPrivilegeNameFunction extends FunctionBase<R
   toRequestInformation(baseUrl: string): RequestInformation {
     const aliases: string[] = [];
     const values = new URLSearchParams();
-    if (this.PrivilegeName !== undefined) {
+    if (this.parameters.PrivilegeName !== undefined) {
       aliases.push("PrivilegeName=@p1");
-      values.append("@p1", formatParameterAlias(this.PrivilegeName, "Edm.String", "PrimitiveType"));
+      values.append(
+        "@p1",
+        formatParameterAlias(this.parameters.PrivilegeName, "Edm.String", "PrimitiveType")
+      );
     }
     // ...
     const query = values.toString();
     return {
       method: "GET",
-      url: `${baseUrl}/systemusers(${formatParameterAlias(this.targetId, "Edm.Guid")})/Microsoft.Dynamics.CRM.RetrieveUserPrivilegeByPrivilegeName(${aliases.join(",")})${query ? `?${query}` : ""}`,
+      url: `${baseUrl}/systemusers(${formatParameterAlias(this.systemuserId, "Edm.Guid")})/Microsoft.Dynamics.CRM.RetrieveUserPrivilegeByPrivilegeName(${aliases.join(",")})${query ? `?${query}` : ""}`,
       headers: { accept: "application/json" },
     };
   }
@@ -479,7 +501,7 @@ export class RetrieveUserPrivilegeByPrivilegeNameFunction extends FunctionBase<R
 }
 
 const result = await client.execute(
-  new RetrieveUserPrivilegeByPrivilegeNameFunction(userId, "prvReadAccount")
+  new RetrieveUserPrivilegeByPrivilegeNameFunction(userId, { PrivilegeName: "prvReadAccount" })
 );
 ```
 
@@ -488,9 +510,12 @@ const result = await client.execute(
 A bound operation is called on what it is bound to, `/<entity set>(<id>)/Microsoft.Dynamics.CRM.<Name>`
 for one record or `/<entity set>/Microsoft.Dynamics.CRM.<Name>` for a collection:
 
+The binding is a separate first argument, before the parameters object, because it goes in the
+URL and not in the request:
+
 | Bound to                                   | First constructor parameter                    |
 | ------------------------------------------ | ---------------------------------------------- |
-| one record of a table (`mscrm.systemuser`) | `targetId: string`                             |
+| one record of a table (`mscrm.systemuser`) | `<table>Id: string` (`systemuserId`)           |
 | a table's collection                       | none (the entity set is known)                 |
 | an abstract type (`mscrm.crmbaseentity`)   | `target: EntityReference` with `entitySetName` |
 | a collection of an abstract type           | `entitySetName: string`                        |

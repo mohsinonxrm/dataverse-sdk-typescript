@@ -106,7 +106,12 @@ describe("generated functions and bound operations (#77)", () => {
     const Search = await load("functions/contoso_SearchFunction.js", "contoso_SearchFunction");
 
     await client.execute(
-      new Search("O'Brien & Sons", `{${OWNER_ID}}`, new Date("2024-05-01T10:00:00Z"), "2024-05-01")
+      new Search({
+        Term: "O'Brien & Sons",
+        OwnerId: `{${OWNER_ID}}`,
+        Since: new Date("2024-05-01T10:00:00Z"),
+        Day: "2024-05-01",
+      })
     );
 
     expect(decoded(fake.last().url)).toBe(
@@ -118,14 +123,20 @@ describe("generated functions and bound operations (#77)", () => {
     expect(fake.last().url).toContain("%40p1=%27O%27%27Brien+%26+Sons%27");
   });
 
-  it("leaves out trailing optional parameters that are not given", async () => {
+  it("leaves out optional parameters that are not given or undefined (#96)", async () => {
     const { client, fake } = createTestClient();
     fake.on("GET", /contoso_Search/, () => jsonResponse({ value: [] }));
     const Search = await load("functions/contoso_SearchFunction.js", "contoso_SearchFunction");
 
-    await client.execute(new Search("x", OWNER_ID));
+    await client.execute(new Search({ Term: "x", OwnerId: OWNER_ID }));
     expect(decoded(fake.last().url)).toMatch(
       /contoso_Search\(Term=@p1,OwnerId=@p2\)\?@p1='x'&@p2=1111/
+    );
+    await client.execute(
+      new Search({ Term: "x", OwnerId: OWNER_ID, Since: undefined, Day: "2024-05-01" })
+    );
+    expect(decoded(fake.last().url)).toMatch(
+      /contoso_Search\(Term=@p1,OwnerId=@p2,Day=@p4\)\?@p1='x'&@p2=1111.*&@p4=2024-05-01$/
     );
   });
 
@@ -137,7 +148,7 @@ describe("generated functions and bound operations (#77)", () => {
       "RetrieveCurrentOrganizationFunction"
     );
 
-    await client.execute(new Fn(1, ["account", "contact"]));
+    await client.execute(new Fn({ AccessType: 1, Names: ["account", "contact"] }));
     expect(decoded(fake.last().url)).toBe(
       "https://contoso.crm.dynamics.com/api/data/v9.2/RetrieveCurrentOrganization(AccessType=@p1,Names=@p2)" +
         `?@p1=Microsoft.Dynamics.CRM.AccessRights'1'&@p2=["account","contact"]`
@@ -149,7 +160,7 @@ describe("generated functions and bound operations (#77)", () => {
     fake.on("GET", /contoso_GetScore/, () => jsonResponse({ value: 7 }));
     const Fn = await load("functions/contoso_GetScoreFunction.js", "contoso_GetScoreFunction");
 
-    const score = await client.execute(new Fn(ACCOUNT_ID, 2));
+    const score = await client.execute(new Fn(ACCOUNT_ID, { Rights: 2 }));
     expect(score).toBe(7);
     expect(decoded(fake.last().url)).toBe(
       `https://contoso.crm.dynamics.com/api/data/v9.2/accounts(${ACCOUNT_ID})/Microsoft.Dynamics.CRM.contoso_GetScore(Rights=@p1)` +
@@ -187,9 +198,7 @@ describe("generated functions and bound operations (#77)", () => {
     await client.execute(
       new Touch(
         { logicalName: "account", id: ACCOUNT_ID, entitySetName: "accounts" },
-        {
-          Distinct: true,
-        }
+        { Paging: { Distinct: true } }
       )
     );
     expect(decoded(fake.last().url)).toBe(
@@ -202,7 +211,7 @@ describe("generated functions and bound operations (#77)", () => {
       "RetrieveTotalRecordCountFunction"
     );
     fake.on("GET", /RetrieveTotalRecordCount/, () => jsonResponse({}));
-    await client.execute(new Rollup(["it's"]));
+    await client.execute(new Rollup({ EntityNames: ["it's"] }));
     expect(decoded(fake.last().url)).toContain(`?@p1=["it's"]`);
 
     expect(() =>
@@ -228,17 +237,113 @@ describe("generated functions and bound operations (#77)", () => {
       "contoso_RecalculateAction"
     );
 
-    await client.execute(new Flag("duplicate"));
+    await client.execute(new Flag({ Reason: "duplicate" }));
     expect(fake.last().path).toBe("/contacts/Microsoft.Dynamics.CRM.contoso_Flag");
     expect(fake.last().bodyText).toBe('{"Reason":"duplicate"}');
 
+    // Only optional parameters: the object can be left out, and undefined isn't sent (#96)
     await client.execute(new Flag());
     expect(fake.last().bodyText).toBe("{}");
+    await client.execute(new Flag({ Reason: undefined }));
+    expect(fake.last().bodyText).toBe("{}");
+    await client.execute(new Flag({ Reason: null }));
+    expect(fake.last().bodyText).toBe('{"Reason":null}');
 
-    await client.execute(new Recalculate(ACCOUNT_ID, 3));
+    await client.execute(new Recalculate(ACCOUNT_ID, { Mode: 3 }));
     expect(fake.last().path).toBe(
       `/accounts(${ACCOUNT_ID})/Microsoft.Dynamics.CRM.contoso_Recalculate`
     );
     expect(fake.last().bodyText).toBe('{"Mode":3}');
+  });
+});
+
+/** Type-check `snippet`, written next to the generated code, with the same strict settings. */
+async function usageDiagnostics(name: string, snippet: string): Promise<string[]> {
+  const file = path.join(outputRoot, "ts", name);
+  await fs.writeFile(file, snippet, "utf-8");
+  try {
+    const program = ts.createProgram([file], {
+      strict: true,
+      noEmit: true,
+      target: ts.ScriptTarget.ES2022,
+      lib: ["lib.es2022.d.ts", "lib.dom.d.ts"],
+      module: ts.ModuleKind.NodeNext,
+      moduleResolution: ts.ModuleResolutionKind.NodeNext,
+      skipLibCheck: true,
+      types: [],
+    });
+    return ts.getPreEmitDiagnostics(program).map((d) => {
+      const at =
+        d.file && d.start !== undefined
+          ? d.file.getLineAndCharacterOfPosition(d.start).line + 1
+          : 0;
+      const message = ts.flattenDiagnosticMessageText(d.messageText, "\n");
+      return `${path.basename(d.file?.fileName ?? "")}(${String(at)}): ${message}`;
+    });
+  } finally {
+    await fs.rm(file, { force: true });
+  }
+}
+
+describe("options-object constructors, as in the in-repo generator (#96)", () => {
+  const read = (file: string) => fs.readFile(path.join(outputRoot, "ts", file), "utf-8");
+
+  it("declares a <Class>Parameters interface keyed by the CSDL names, required per Nullable", async () => {
+    const search = await read("functions/contoso_SearchFunction.ts");
+    expect(search).toContain("export interface contoso_SearchFunctionParameters {");
+    expect(search).toContain("  Term: string;");
+    expect(search).toContain("  OwnerId: string;");
+    expect(search).toMatch(/ {2}Since\?: .+ \| null;/);
+    expect(search).toContain("public readonly parameters: contoso_SearchFunctionParameters,");
+    const recalculate = await read("actions/contoso_RecalculateAction.ts");
+    expect(recalculate).toContain("public readonly accountId: string,");
+    expect(recalculate).toContain(
+      " * The first argument is the id of the account record to call it on."
+    );
+    expect(await read("actions/contoso_FlagAction.ts")).toContain(
+      "public readonly parameters: contoso_FlagActionParameters = {},"
+    );
+    const whoAmI = await read("functions/WhoAmIFunction.ts");
+    expect(whoAmI).not.toContain("constructor(");
+    expect(whoAmI).not.toContain("Parameters {");
+  });
+
+  it("parseResponse returns the body for 200 and an empty result for 204", async () => {
+    const Recalculate = await load(
+      "actions/contoso_RecalculateAction.js",
+      "contoso_RecalculateAction"
+    );
+    const action = new Recalculate(ACCOUNT_ID, { Mode: 1 });
+    expect(await action.parseResponse(noContent())).toEqual({});
+    expect(await action.parseResponse(jsonResponse({ accountid: ACCOUNT_ID }))).toEqual({
+      accountid: ACCOUNT_ID,
+    });
+  });
+
+  it("required properties are required, unknown ones and positional calls don't compile", async () => {
+    const ok = await usageDiagnostics(
+      "usage-96-ok.ts",
+      `import { contoso_SearchFunction, contoso_GetScoreFunction, WhoAmIFunction } from "./functions/index.js";
+import { contoso_FlagAction, contoso_RecalculateAction } from "./actions/index.js";
+export const a = new contoso_SearchFunction({ Term: "x", OwnerId: "${OWNER_ID}", Day: null });
+export const b = new contoso_GetScoreFunction("${ACCOUNT_ID}", { Rights: 1 });
+export const c = new WhoAmIFunction();
+export const d = new contoso_FlagAction();
+export const e = new contoso_RecalculateAction("${ACCOUNT_ID}", { Mode: 3 });
+`
+    );
+    expect(ok).toEqual([]);
+    const bad = await usageDiagnostics(
+      "usage-96-bad.ts",
+      `import { contoso_SearchFunction } from "./functions/index.js";
+import { contoso_RecalculateAction } from "./actions/index.js";
+export const a = new contoso_SearchFunction({ Term: "x" });
+export const b = new contoso_SearchFunction({ Term: "x", OwnerId: "${OWNER_ID}", Sinc: "2024" });
+export const c = new contoso_SearchFunction("x", "${OWNER_ID}");
+export const d = new contoso_RecalculateAction({ Mode: 3 });
+`
+    );
+    const lines = bad.join("\n");
+    for (const line of [3, 4, 5, 6]) expect(lines).toContain(`usage-96-bad.ts(${String(line)})`);
   });
 });

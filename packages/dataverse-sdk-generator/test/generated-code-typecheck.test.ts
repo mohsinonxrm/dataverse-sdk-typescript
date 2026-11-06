@@ -103,7 +103,11 @@ export async function run(): Promise<void> {
   const person: Contact = { fullname: "Jane" };
   const whoAmI: WhoAmIResponse = await client.execute(new WhoAmIFunction());
   await client.execute(new PublishAllXmlAction());
-  await client.execute(new ExportSolutionAction("contoso", false, null));
+  // #96: one parameters object, by CSDL name; a nullable parameter may be left out or null
+  await client.execute(new ExportSolutionAction({ SolutionName: "contoso", Managed: false }));
+  await client.execute(
+    new ExportSolutionAction({ SolutionName: "contoso", Managed: true, ExportComponentsParams: null })
+  );
   const meta: EntityMetadata | undefined = getEntityMetadata("account");
   const all: Record<string, EntityMetadata> = EntityMetadataCache;
   console.log(acct, person, whoAmI, meta, all, AccountMetadata.collectionName, ContactMetadata);
