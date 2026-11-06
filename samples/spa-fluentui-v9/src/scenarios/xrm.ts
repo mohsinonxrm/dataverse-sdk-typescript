@@ -3,7 +3,7 @@
  * API. Each `#region` is shown on the page as the code that runs.
  */
 import { odataLiteral } from "@mohsinonxrm/dataverse-sdk-core";
-import { WhoAmIFunction, type WhoAmIResponse } from "@mohsinonxrm/dataverse-sdk-functions";
+import { WhoAmIFunction } from "@mohsinonxrm/dataverse-sdk-functions";
 import { OrganizationService } from "@mohsinonxrm/dataverse-sdk-xrm";
 import type { Sdk } from "../sdk/createSdk";
 import type { Account, Contact } from "./types";
@@ -13,10 +13,8 @@ export async function organizationServiceCrud({ client }: Sdk) {
   const service = new OrganizationService(client);
 
   // create() returns the new id (or the record, with returnRepresentation).
-  const accountId = String(await service.create("accounts", { name: "OrganizationService demo" }));
-  const contactId = String(
-    await service.create("contacts", { firstname: "Xrm", lastname: "Demo" })
-  );
+  const accountId = await service.create("accounts", { name: "OrganizationService demo" });
+  const contactId = await service.create("contacts", { firstname: "Xrm", lastname: "Demo" });
   try {
     // update() never creates: it sends If-Match: *, so a missing record is a 404.
     await service.update("accounts", accountId, { telephone1: "+1 425 555 0100" });
@@ -60,8 +58,9 @@ export async function organizationServiceCrud({ client }: Sdk) {
 export async function organizationServiceExecute({ client }: Sdk) {
   const service = new OrganizationService(client);
   const viaHelper = await service.whoAmI();
-  // execute() runs any typed request from the actions, functions or messages packages.
-  const viaExecute = await service.execute<WhoAmIResponse>(new WhoAmIFunction());
+  // execute() runs any typed request from the actions, functions or messages packages, and
+  // its result has the request's response type (here WhoAmIResponse).
+  const viaExecute = await service.execute(new WhoAmIFunction());
   return { viaHelper, sameUser: viaHelper.UserId === viaExecute.UserId };
 }
 // #endregion

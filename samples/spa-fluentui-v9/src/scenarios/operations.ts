@@ -10,12 +10,7 @@ import {
   RetrieveTotalRecordCountFunction,
   RetrieveVersionFunction,
 } from "@mohsinonxrm/dataverse-sdk-functions";
-import {
-  CanBeReferencedRequest,
-  OrganizationRequest,
-  type CanBeReferencedResponse,
-  type OrganizationResponse,
-} from "@mohsinonxrm/dataverse-sdk-messages";
+import { CanBeReferencedRequest, OrganizationRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 import { OrganizationService } from "@mohsinonxrm/dataverse-sdk-xrm";
 import type { Sdk } from "../sdk/createSdk";
 import type { Account } from "./types";
@@ -75,13 +70,12 @@ export async function relationshipChecks({ client }: Sdk, input: { table: string
   const manyToMany = await client.execute(new CanManyToManyAction(input.table));
 
   // A message from @mohsinonxrm/dataverse-sdk-messages, run by OrganizationService (C# style).
+  // The response type comes from the request: CanBeReferencedResponse.
   const service = new OrganizationService(client);
-  const referenced = await service.execute<CanBeReferencedResponse>(
-    new CanBeReferencedRequest(input.table)
-  );
+  const referenced = await service.execute(new CanBeReferencedRequest(input.table));
 
-  // Any action, including custom APIs, without a generated class.
-  const referencing = await service.execute<OrganizationResponse>(
+  // Any action, including custom APIs, without a generated class: an OrganizationResponse.
+  const referencing = await service.execute(
     new OrganizationRequest("CanBeReferencing", { EntityName: input.table })
   );
 
