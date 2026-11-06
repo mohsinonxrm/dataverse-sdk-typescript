@@ -93,6 +93,14 @@ console.log(`Created account: ${accountId}`);
 // Without return=representation, createAndGetId() reads the id from OData-EntityId
 const otherId = await client.api("/accounts").createAndGetId({ name: "Fabrikam" });
 
+// With return=representation the 201 has no OData-EntityId: name the primary key to read it
+const thirdId = await client
+  .api("/accounts")
+  .createAndGetId(
+    { name: "Northwind" },
+    { prefer: [Prefer.returnRepresentation()], primaryIdAttribute: "accountid" }
+  );
+
 // ========== RETRIEVE ==========
 // expand() takes strings; nested query options go inline in OData syntax
 const account = await client

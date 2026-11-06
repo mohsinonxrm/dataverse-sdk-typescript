@@ -192,6 +192,18 @@ export interface RequestOptions {
   middlewareOptions?: import("../middleware/RequestOptions.js").RequestOptions;
 }
 
+/** Options for `createAndGetId()`: the request options, plus where a returned record keeps its id. */
+export interface CreateAndGetIdOptions extends RequestOptions {
+  /**
+   * The table's primary key column, e.g. `"accountid"`. Needed only when the create asks for the
+   * record back (`Prefer: return=representation`, from `prefer`, the request's headers or the
+   * client's `defaultPrefer`): Dataverse then answers `201 Created` with the record in the body
+   * and no `OData-EntityId` or `Location` header, so the id is read from this property of the
+   * body. The headers win when both are present.
+   */
+  primaryIdAttribute?: string;
+}
+
 /** A Dataverse Web API version string such as `"v9.2"`. */
 export type ApiVersion = `v${number}.${number}`;
 

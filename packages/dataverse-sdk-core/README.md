@@ -163,6 +163,12 @@ client
 // HTTP Methods
 await builder.get<T>(); // GET - returns single page
 await builder.post<T>(body); // POST - create
+await builder.createAndGetId(body); // POST - create, resolves the new id (from OData-EntityId)
+// With Prefer: return=representation the id is only in the body: name the primary key
+await builder.createAndGetId(body, {
+  prefer: [Prefer.returnRepresentation()],
+  primaryIdAttribute: "accountid",
+});
 await builder.patch<T>(body); // PATCH - update
 await builder.put<T>(body); // PUT - full replace
 await builder.delete(); // DELETE
