@@ -186,6 +186,13 @@ const common = (prefix: string): AttributeDef[] => [
     targets: ["systemuser"],
     readOnly: true,
   },
+  {
+    logicalName: "createdonbehalfby",
+    type: "Lookup",
+    displayName: "Created By (Delegate)",
+    targets: ["systemuser"],
+    readOnly: true,
+  },
   { logicalName: "ownerid", type: "Owner", displayName: "Owner", targets: ["systemuser"] },
   { logicalName: "versionnumber", type: "BigInt", displayName: "Version Number", readOnly: true },
   { logicalName: `${prefix}_description`, type: "Memo", displayName: "Notes", maxLength: 2000 },

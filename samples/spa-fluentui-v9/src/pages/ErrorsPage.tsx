@@ -12,6 +12,7 @@ import {
   tokens,
 } from "@fluentui/react-components";
 import { ErrorBoundary } from "../components/ErrorBoundary";
+import { spinValue } from "../lib/fields";
 import { Scenario } from "../components/Scenario";
 import { ScenarioPage } from "../components/ScenarioPage";
 import { snippet } from "../lib/snippet";
@@ -73,6 +74,7 @@ export default function ErrorsPage() {
       description="Every error the SDK throws extends DataverseError, with a class per kind of failure. These scenarios cause each one; the card under Result is chosen by the error's class."
     >
       <Scenario
+        failsOnPurpose
         title="OData error (400)"
         description="An invalid $filter. Dataverse answers with an OData error, thrown as DataverseODataError."
         code={snippet(source, "odata-error")}
@@ -84,6 +86,7 @@ export default function ErrorsPage() {
       </Scenario>
 
       <Scenario
+        failsOnPurpose
         title="Record not found (404)"
         description="Reading a record that doesn't exist."
         code={snippet(source, "not-found")}
@@ -105,12 +108,13 @@ export default function ErrorsPage() {
             value={retryAfter}
             min={0}
             max={300}
-            onChange={(_, d) => setRetryAfter((d.value ?? Number(d.displayValue)) || 0)}
+            onChange={(_, d) => setRetryAfter(spinValue(d, 0))}
           />
         </Field>
       </Scenario>
 
       <Scenario
+        failsOnPurpose
         title="Network failure"
         description="fetch() itself fails, as it does offline or when CORS blocks a request: DataverseNetworkError."
         code={snippet(source, "network")}
@@ -118,6 +122,7 @@ export default function ErrorsPage() {
       />
 
       <Scenario
+        failsOnPurpose
         title="Timeout"
         description="timeoutMs is a deadline for the whole request, including retries."
         code={snippet(source, "timeout")}
@@ -128,12 +133,13 @@ export default function ErrorsPage() {
             value={timeoutMs}
             min={1}
             max={60_000}
-            onChange={(_, d) => setTimeoutMs((d.value ?? Number(d.displayValue)) || 1)}
+            onChange={(_, d) => setTimeoutMs(spinValue(d, 1))}
           />
         </Field>
       </Scenario>
 
       <Scenario
+        failsOnPurpose
         title="Abort"
         description="An AbortSignal cancels the request. The Cancel button of every scenario does the same."
         code={snippet(source, "abort")}
@@ -141,6 +147,7 @@ export default function ErrorsPage() {
       />
 
       <Scenario
+        failsOnPurpose
         title="Token kept to its origin"
         description="A request for another origin is refused before it is sent, so the bearer token never leaves your environment."
         code={snippet(source, "foreign-origin")}
@@ -148,6 +155,7 @@ export default function ErrorsPage() {
       />
 
       <Scenario
+        failsOnPurpose
         title="Failed change set"
         description="A $batch change set whose second request fails: the first is rolled back and DataverseBatchError reports each request."
         code={snippet(source, "batch-error")}

@@ -51,10 +51,53 @@ MSAL is loaded only when you sign in with Microsoft, so demo mode never download
 
 ## Pages
 
-| Group       | Route                 | Page           | What it shows                                                                                                                                                                              |
-| ----------- | --------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Overview    | `/`                   | Overview       | `WhoAmI` through `client.api()` and the typed `WhoAmIFunction`, and how the client is configured                                                                                           |
-| Diagnostics | `/diagnostics/errors` | Error handling | `DataverseODataError` (400, 404), `DataverseThrottleError`, `DataverseNetworkError`, `DataverseAbortError`, `DataverseInvalidRequestError`, `DataverseBatchError`, and the `ErrorBoundary` |
+Scenarios that write create their own records and delete them afterwards, except on the CRUD
+page, where each step is a separate scenario.
+
+### Overview
+
+- **Overview** (`/`): `WhoAmI` through `client.api()` and through the typed `WhoAmIFunction`, and
+  how the app configures `DataverseClient` (logger, telemetry, retry hook, inspector middleware).
+
+### Data
+
+- **Queries** (`/data/queries`):
+  - `select`, a `filter` built with the escaping `odata.*` helpers, `expand(nav, { select })`,
+    `orderBy`, `top` and `count`, with formatted values;
+  - expanding a collection with its own `select`, `orderBy` and `top`;
+  - paging with `prefer().maxPageSize()`, `iterate()` (stopping early) and `getAll({ maxPages })`;
+  - `client.fetchXml()` with `parsePagingCookie()` and `buildPagedFetchXml()` for page 2;
+  - listing system views, and running one with `client.savedQuery()`.
+- **Create, read, update, delete** (`/data/crud`): `createAndGetId()`, `get()` with formatted
+  values, `ifMatch("*").patch()` (update only, never upsert), and `delete()` behind a confirmation
+  dialog.
+- **Optimistic concurrency** (`/data/concurrency`): a stale `ifMatch(etag)` update refused with
+  412, and a read-modify-write loop that retries on 412.
+- **Impersonation** (`/data/impersonation`): list users, then `impersonateByObjectId()`
+  (`CallerObjectId`) for `WhoAmI` and a create, showing `createdby` and `createdonbehalfby`.
+- **Prefer headers** (`/data/prefer`): `returnRepresentation()` on a create (201 with the record),
+  `maxPageSize()` and `allAnnotations()`, with `Preference-Applied` in the inspector.
+
+### Operations
+
+- **$batch** (`/operations/batch`): a change set where a contact refers to its account by
+  Content-ID; `continueOnError` returning the failure in `result.errors`; and a large batch split
+  by `batchSize` into several `$batch` requests.
+- **OrganizationService** (`/operations/xrm`): `create`, `update`, `associate`, `retrieve` with
+  expand, `retrieveMultiple`, `setState` and `delete`; `whoAmI()` and `execute()` with a typed
+  function.
+
+### Diagnostics
+
+- **Error handling** (`/diagnostics/errors`): one scenario per error class:
+  - `DataverseODataError` for a 400 and a 404;
+  - `DataverseThrottleError`, from a 429 whose `Retry-After` is longer than `maxRetryAfterMs` (a
+    short one is retried);
+  - `DataverseNetworkError`, for an offline `fetch` and for `timeoutMs`;
+  - `DataverseAbortError`;
+  - `DataverseInvalidRequestError`, for a foreign origin, refused before anything is sent;
+  - `DataverseBatchError`, for a change set that fails and is rolled back;
+  - and an `ErrorBoundary` catching a render error.
 
 ## Design
 

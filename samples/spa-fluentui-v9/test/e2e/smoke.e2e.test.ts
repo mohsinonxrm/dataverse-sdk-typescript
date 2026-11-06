@@ -29,9 +29,6 @@ interface Session {
 
 const sessions: Session[] = [];
 
-/** On the Error handling page every scenario fails on purpose, except a throttle that is retried. */
-const SUCCEED_ON_ERRORS_PAGE = ["Throttling (429)"];
-
 async function open(viewport = { width: 1280, height: 900 }): Promise<Session> {
   const context = await browser.newContext({ viewport, deviceScaleFactor: 1 });
   const page = await context.newPage();
@@ -133,9 +130,7 @@ describe("spa-fluentui-v9", () => {
         const title = (await card.getAttribute("data-scenario")) ?? "";
         const outcome = status.startsWith("Failed") ? "failed" : "finished";
         const expected =
-          route.path === "/diagnostics/errors" && !SUCCEED_ON_ERRORS_PAGE.includes(title)
-            ? "failed"
-            : "finished";
+          (await card.getAttribute("data-expect")) === "error" ? "failed" : "finished";
         expect(`${route.path} ${title}: ${outcome}`).toBe(`${route.path} ${title}: ${expected}`);
       }
     }

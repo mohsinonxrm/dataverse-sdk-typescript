@@ -40,6 +40,8 @@ const useStyles = makeStyles({
     position: "absolute",
     top: tokens.spacingVerticalXS,
     right: tokens.spacingHorizontalXS,
+    // Hides the code scrolling under it.
+    backgroundColor: tokens.colorNeutralBackground3,
   },
   keyword: { color: tokens.colorBrandForeground1, fontWeight: tokens.fontWeightSemibold },
   string: { color: tokens.colorPaletteGreenForeground1 },
