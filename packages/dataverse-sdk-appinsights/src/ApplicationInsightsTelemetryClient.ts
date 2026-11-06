@@ -1,11 +1,10 @@
-import { useAzureMonitor } from "@azure/monitor-opentelemetry";
 import { trace } from "@opentelemetry/api";
 import type { Tracer } from "@opentelemetry/api";
 import { logs, SeverityNumber } from "@opentelemetry/api-logs";
 import type { LogAttributes, Logger } from "@opentelemetry/api-logs";
-import { resourceFromAttributes } from "@opentelemetry/resources";
 import type { TelemetryClient } from "@mohsinonxrm/dataverse-sdk-core";
 import type { ApplicationInsightsConfig } from "./types.js";
+import { azureMonitor, otelResources, requirePeer } from "./optionalPeers.js";
 import {
   propertyAttributes,
   recordDependencySpan,
@@ -54,11 +53,15 @@ export class ApplicationInsightsTelemetryClient implements TelemetryClient {
   constructor(config: ApplicationInsightsConfig = {}) {
     this.config = config;
     if (config.connectionString && !config.disableTelemetry && !azureMonitorStarted) {
+      const { useAzureMonitor } = requirePeer(azureMonitor, "connectionString");
+      const resource = config.cloudRoleName
+        ? requirePeer(otelResources, "cloudRoleName").resourceFromAttributes({
+            "service.name": config.cloudRoleName,
+          })
+        : undefined;
       useAzureMonitor({
         azureMonitorExporterOptions: { connectionString: config.connectionString },
-        ...(config.cloudRoleName
-          ? { resource: resourceFromAttributes({ "service.name": config.cloudRoleName }) }
-          : {}),
+        ...(resource ? { resource } : {}),
       });
       azureMonitorStarted = true;
     }

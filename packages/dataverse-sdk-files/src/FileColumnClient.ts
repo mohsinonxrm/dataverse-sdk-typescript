@@ -1,10 +1,17 @@
-import type { RequestAdapter, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  DataverseInvalidRequestError,
+  type DataverseClient,
+  type RequestAdapter,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import {
   InitializeFileBlocksUploadAction,
   UploadBlockAction,
   CommitFileBlocksUploadAction,
 } from "@mohsinonxrm/dataverse-sdk-actions";
+import { blockRetryOptions, checkChunkSize, sendChecked } from "./requests.js";
 import type { FileUploadOptions, FileDownloadOptions } from "./types.js";
+import { fileTarget } from "./target.js";
 
 /**
  * Default chunk size for file uploads (4MB).
@@ -20,6 +27,19 @@ function normalizeGuid(guid: string): string {
   return guid.replace(/[{}]/g, "").toLowerCase();
 }
 
+/** `getBaseUrl()` of a `DataverseClient`, or of any adapter that has one. */
+function baseUrlOf(adapter: RequestAdapter): string | undefined {
+  const candidate = adapter as Partial<Pick<DataverseClient, "getBaseUrl">>;
+  return typeof candidate.getBaseUrl === "function" ? candidate.getBaseUrl() : undefined;
+}
+
+/** Remove trailing `/` characters in linear time. */
+function trimTrailingSlashes(value: string): string {
+  let end = value.length;
+  while (end > 0 && value.charCodeAt(end - 1) === 47) end--;
+  return value.slice(0, end);
+}
+
 /**
  * Client for file and image column operations using Dataverse Web API actions.
  *
@@ -32,7 +52,8 @@ function normalizeGuid(guid: string): string {
  * ```typescript
  * import { FileColumnClient } from "@mohsinonxrm/dataverse-sdk-files";
  *
- * const fileClient = new FileColumnClient(client.requestAdapter);
+ * // Requests go through client.send(): auth, retry, logging and telemetry apply.
+ * const fileClient = new FileColumnClient(client);
  *
  * // Upload file with progress tracking
  * await fileClient.upload(
@@ -40,6 +61,7 @@ function normalizeGuid(guid: string): string {
  *   accountId,
  *   "new_logo",
  *   logoFile,
+ *   "logo.png",
  *   {
  *     chunkSize: 4 * 1024 * 1024,
  *     onProgress: (progress) => {
@@ -53,32 +75,64 @@ function normalizeGuid(guid: string): string {
  * ```
  */
 export class FileColumnClient {
-  constructor(
-    private readonly adapter: RequestAdapter,
-    private readonly baseUrl = ""
-  ) {}
+  private readonly adapter: RequestAdapter;
+  private readonly baseUrl: string;
+
+  /**
+   * Use a `DataverseClient`. Every request goes through `client.send()`, so the client's auth,
+   * retry, logging and telemetry apply, and URLs are built on `client.getBaseUrl()`.
+   *
+   * @param client - The client to send requests with.
+   */
+  constructor(client: DataverseClient);
+  /**
+   * Use any request adapter: a `DataverseClient`, or your own object with `send(request)`.
+   *
+   * @param adapter - Sends each request.
+   * @param baseUrl - The Web API root, e.g. `https://contoso.crm.dynamics.com/api/data/v9.2`
+   *   (`client.getBaseUrl()`). Optional when the adapter has a `getBaseUrl()` method.
+   * @throws DataverseInvalidRequestError (name `MissingParameter`) when there is no base URL.
+   */
+  constructor(adapter: RequestAdapter, baseUrl?: string);
+  constructor(adapter: RequestAdapter, baseUrl?: string) {
+    const root = baseUrl ?? baseUrlOf(adapter);
+    if (!root) {
+      const error = new DataverseInvalidRequestError(
+        "FileColumnClient needs the Web API root: pass a DataverseClient, or an adapter and a " +
+          "base URL such as client.getBaseUrl()"
+      );
+      error.name = "MissingParameter";
+      throw error;
+    }
+    this.adapter = adapter;
+    this.baseUrl = trimTrailingSlashes(root);
+  }
 
   /**
    * Upload a file to a file or image column.
    *
    * Automatically chunks files larger than the specified chunk size.
    *
-   * @param entitySetName - The entity set name (e.g., "accounts")
+   * @param entitySetName - The entity set name (e.g., "accounts"). The first upload to a table
+   *   looks up its logical name and primary key (one `EntityDefinitions` request, then cached).
    * @param recordId - The record ID (GUID)
    * @param columnName - The logical name of the file/image column
-   * @param file - The file data (Blob in browser, Buffer in Node)
+   * @param file - The file data: a `Blob` (or `File`), an `ArrayBuffer`, or a typed-array view
+   *   such as `Uint8Array` (a Node.js `Buffer` is a `Uint8Array`)
    * @param fileName - The name of the file being uploaded
-   * @param options - Upload options (chunk size, progress callback)
+   * @param options - Upload options (chunk size, progress callback, abort signal)
+   * @throws DataverseODataError (with `status` and `code`) when any step fails; nothing after the
+   *   failed request is sent. DataverseInvalidRequestError for a `chunkSize` above 4 MB.
    */
   async upload(
     entitySetName: string,
     recordId: string,
     columnName: string,
-    file: Blob | Buffer,
+    file: Blob | ArrayBuffer | ArrayBufferView,
     fileName: string,
     options?: FileUploadOptions
   ): Promise<void> {
-    const chunkSize = options?.chunkSize ?? DEFAULT_CHUNK_SIZE;
+    const chunkSize = checkChunkSize(options?.chunkSize ?? DEFAULT_CHUNK_SIZE);
 
     // Get file size and convert to Uint8Array
     const fileData = await this.fileToUint8Array(file);
@@ -90,35 +144,34 @@ export class FileColumnClient {
 
     // Step 1: Initialize upload session
     const initAction = new InitializeFileBlocksUploadAction(
-      {
-        "@odata.type": "Microsoft.Dynamics.CRM.EntityReference",
-        logicalName: entitySetName,
-        id: normalizeGuid(recordId),
-      },
+      await fileTarget(this.adapter, this.baseUrl, entitySetName, normalizeGuid(recordId)),
       fileName,
       columnName
     );
     const initRequest = initAction.toRequestInformation(this.baseUrl);
-    const initResponse = await this.adapter.send(initRequest);
+    const initResponse = await sendChecked(this.adapter, initRequest, options?.signal);
     const { FileContinuationToken } = await initAction.parseResponse(initResponse);
 
     // Step 2: Upload blocks (chunks)
     for (let i = 0; i < totalChunks; i++) {
       const start = i * chunkSize;
       const end = Math.min(start + chunkSize, totalSize);
-      const chunk = fileData.slice(start, end);
+      const chunk = fileData.subarray(start, end);
 
       // Generate block ID (base64-encoded sequential number)
       const blockId = this.generateBlockId(i);
       blockIds.push(blockId);
 
       // Encode chunk as base64
-      const blockData = this.arrayBufferToBase64(chunk.buffer);
+      const blockData = bytesToBase64(chunk);
 
       // Upload block
       const uploadAction = new UploadBlockAction(blockId, blockData, FileContinuationToken);
-      const uploadRequest = uploadAction.toRequestInformation(this.baseUrl);
-      await this.adapter.send(uploadRequest);
+      const uploadRequest = {
+        ...uploadAction.toRequestInformation(this.baseUrl),
+        middlewareOptions: blockRetryOptions(),
+      };
+      await sendChecked(this.adapter, uploadRequest, options?.signal);
 
       // Report progress
       if (options?.onProgress) {
@@ -135,7 +188,7 @@ export class FileColumnClient {
     }
 
     // Step 3: Commit upload
-    const mimeType = (file as Blob).type || "application/octet-stream";
+    const mimeType = (isBlob(file) && file.type) || "application/octet-stream";
     const commitAction = new CommitFileBlocksUploadAction(
       fileName,
       mimeType,
@@ -143,7 +196,7 @@ export class FileColumnClient {
       FileContinuationToken
     );
     const commitRequest = commitAction.toRequestInformation(this.baseUrl);
-    await this.adapter.send(commitRequest);
+    await sendChecked(this.adapter, commitRequest, options?.signal);
   }
 
   /**
@@ -153,14 +206,15 @@ export class FileColumnClient {
    * @param recordId - The record ID (GUID)
    * @param columnName - The logical name of the file/image column
    * @param options - Download options
-   * @returns The file data (Blob in browser, Buffer in Node)
+   * @returns The file data as a `Blob` (in Node.js too; `Buffer.from(await blob.arrayBuffer())`
+   *   gives a `Buffer`)
    */
   async download(
     entitySetName: string,
     recordId: string,
     columnName: string,
     _options?: FileDownloadOptions
-  ): Promise<Blob | Buffer> {
+  ): Promise<Blob> {
     const normalizedId = recordId.replace(/[{}]/g, "").toLowerCase();
 
     // Construct download URL
@@ -174,44 +228,32 @@ export class FileColumnClient {
       },
     };
 
-    const response = await this.adapter.send(request);
+    // A column with no file is a 404 DataverseODataError (code 0x80040217).
+    const response = await sendChecked(this.adapter, request);
 
-    if (!response.ok) {
-      throw new Error(`Failed to download file: ${response.statusText}`);
-    }
-
-    // Return appropriate type based on environment
-    if (typeof Blob !== "undefined") {
-      return await response.blob();
-    } else {
-      // Node.js environment
-      const arrayBuffer = await response.arrayBuffer();
-      return Buffer.from(arrayBuffer);
-    }
+    return response.blob();
   }
 
   /**
-   * Delete a file from a file or image column.
+   * Delete a file from a file or image column, with `DELETE /{entitySet}({id})/{column}`.
+   * Deleting from a column that has no file succeeds.
    *
    * @param entitySetName - The entity set name (e.g., "accounts")
    * @param recordId - The record ID (GUID)
    * @param columnName - The logical name of the file/image column
+   * @throws DataverseODataError (with `status` and `code`) when Dataverse rejects the request.
    */
   async delete(entitySetName: string, recordId: string, columnName: string): Promise<void> {
     const normalizedId = recordId.replace(/[{}]/g, "").toLowerCase();
 
+    // PATCH { column: null } returns 204 but leaves the file in place; DELETE removes it.
     const request: RequestInformation = {
-      method: "PATCH",
-      url: `${this.baseUrl}/${entitySetName}(${normalizedId})`,
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: {
-        [columnName]: null,
-      },
+      method: "DELETE",
+      url: `${this.baseUrl}/${entitySetName}(${normalizedId})/${columnName}`,
+      headers: {},
     };
 
-    await this.adapter.send(request);
+    await sendChecked(this.adapter, request);
   }
 
   /**
@@ -223,46 +265,37 @@ export class FileColumnClient {
   }
 
   /**
-   * Convert string to base64 (works in both browser and Node).
+   * Convert an ASCII string to base64.
    */
   private stringToBase64(str: string): string {
-    if (typeof btoa !== "undefined") {
-      // Browser
-      return btoa(str);
-    } else {
-      // Node.js
-      return Buffer.from(str, "utf-8").toString("base64");
-    }
+    return btoa(str);
   }
 
   /**
-   * Convert ArrayBuffer to base64 string.
+   * The bytes of a Blob, ArrayBuffer or typed-array view (a Node.js `Buffer` is a `Uint8Array`).
+   * Works without Node's `Buffer`, so it runs in browsers with no polyfill (#58).
    */
-  private arrayBufferToBase64(buffer: ArrayBuffer): string {
-    if (typeof btoa !== "undefined") {
-      // Browser
-      const bytes = new Uint8Array(buffer);
-      let binary = "";
-      for (let i = 0; i < bytes.byteLength; i++) {
-        binary += String.fromCharCode(bytes[i]);
-      }
-      return btoa(binary);
-    } else {
-      // Node.js
-      return Buffer.from(buffer).toString("base64");
+  private async fileToUint8Array(file: Blob | ArrayBuffer | ArrayBufferView): Promise<Uint8Array> {
+    if (file instanceof ArrayBuffer) return new Uint8Array(file);
+    if (ArrayBuffer.isView(file)) {
+      return new Uint8Array(file.buffer, file.byteOffset, file.byteLength);
     }
+    if (isBlob(file)) return new Uint8Array(await file.arrayBuffer());
+    throw new TypeError("file must be a Blob, an ArrayBuffer or a typed array such as Uint8Array");
   }
+}
 
-  /**
-   * Convert Blob or Buffer to Uint8Array.
-   */
-  private async fileToUint8Array(file: Blob | Buffer): Promise<Uint8Array> {
-    if (Buffer.isBuffer(file)) {
-      return new Uint8Array(file);
-    } else {
-      // Blob
-      const arrayBuffer = await file.arrayBuffer();
-      return new Uint8Array(arrayBuffer);
-    }
+function isBlob(value: unknown): value is Blob {
+  return typeof Blob !== "undefined" && value instanceof Blob;
+}
+
+/** Base64 without Node's `Buffer`: `btoa` exists in browsers and in Node.js. */
+function bytesToBase64(bytes: Uint8Array): string {
+  // String.fromCharCode in slices: one call per byte is slow, one call for 4 MB overflows the stack.
+  const SLICE = 0x8000;
+  let binary = "";
+  for (let i = 0; i < bytes.length; i += SLICE) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + SLICE));
   }
+  return btoa(binary);
 }

@@ -2,9 +2,12 @@
  * @fileoverview MSAL Node Token Provider for Dataverse SDK
  * Implements AccessTokenProvider using @azure/msal-node for Node.js scenarios
  * Supports: Device Code, Client Credentials, Authorization Code with PKCE
+ *
+ * `@azure/msal-node` is a peer dependency and only its types are imported: the app's own MSAL copy
+ * does the work, so nothing here relies on `instanceof` an MSAL class.
  */
 
-import {
+import type {
   ConfidentialClientApplication,
   PublicClientApplication,
   DeviceCodeRequest,
@@ -21,6 +24,21 @@ import {
   DataverseAuthenticationError,
   DataverseInvalidRequestError,
 } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  isConfidentialClientApplication,
+  isInteractionRequiredError,
+  isPublicClientApplication,
+  tokenAcquisitionFailed,
+} from "./msalErrors.js";
+
+const AUTH_CODE_SPENT =
+  "the account needs a new sign-in and the authorization code was already redeemed. " +
+  "Send the user through /authorize again and create a provider with the new code";
+
+/** Identifies a scope set regardless of order, so concurrent callers can share a sign-in. */
+function scopeKey(scopes: string[]): string {
+  return [...scopes].sort().join(" ");
+}
 
 /**
  * Authentication flow types supported by MSAL Node
@@ -50,7 +68,11 @@ export interface MsalNodeTokenProviderOptionsBase {
 }
 
 /**
- * Device code flow options (for CLI scenarios)
+ * Device code flow options (for CLI scenarios).
+ *
+ * The user signs in once: the first `getToken()` runs the device code flow, and later calls use
+ * `acquireTokenSilent` with the signed-in account (MSAL's cache, then its refresh token). The
+ * device code prompt appears again only when MSAL says the account needs a new sign-in.
  */
 export interface DeviceCodeFlowOptions extends MsalNodeTokenProviderOptionsBase {
   flow: "deviceCode";
@@ -83,7 +105,12 @@ export interface ClientCredentialsFlowOptions extends MsalNodeTokenProviderOptio
 }
 
 /**
- * Authorization code flow options (for web server scenarios)
+ * Authorization code flow options (for web server scenarios).
+ *
+ * The code is single use: the first `getToken()` redeems it, and later calls use
+ * `acquireTokenSilent` with the account it signed in. When the silent call needs a new sign-in,
+ * `getToken()` throws `DataverseAuthenticationError`; send the user through `/authorize` again and
+ * create a provider with the new code.
  */
 export interface AuthorizationCodeFlowOptions extends MsalNodeTokenProviderOptionsBase {
   flow: "authorizationCode";
@@ -105,7 +132,10 @@ export interface AuthorizationCodeFlowOptions extends MsalNodeTokenProviderOptio
 }
 
 /**
- * Username/password flow options (for testing scenarios only - not recommended for production)
+ * Username/password flow options (for testing scenarios only - not recommended for production).
+ *
+ * The first `getToken()` signs in with the password; later calls use `acquireTokenSilent` with the
+ * signed-in account, and send the password again only when MSAL says a new sign-in is needed.
  */
 export interface UsernamePasswordFlowOptions extends MsalNodeTokenProviderOptionsBase {
   flow: "usernamePassword";
@@ -197,6 +227,10 @@ export class MsalNodeTokenProvider implements AccessTokenProvider {
   private clientApplication: PublicClientApplication | ConfidentialClientApplication;
   private options: MsalNodeTokenProviderOptions;
   private cachedAccount?: AccountInfo;
+  /** The sign-in in progress (device code, auth code, ROPC), shared by concurrent callers. */
+  private signIn?: { key: string; promise: Promise<AuthenticationResult | null> };
+  /** True once the authorization code has been sent to MSAL (codes are single use). */
+  private codeRedeemed = false;
 
   /**
    * Creates a new MSAL Node token provider
@@ -240,7 +274,7 @@ export class MsalNodeTokenProvider implements AccessTokenProvider {
   ): void {
     switch (options.flow) {
       case "deviceCode":
-        if (!(clientApplication instanceof PublicClientApplication)) {
+        if (!isPublicClientApplication(clientApplication)) {
           throw DataverseInvalidRequestError.invalidParameter(
             "clientApplication",
             "Device code flow requires PublicClientApplication"
@@ -253,7 +287,7 @@ export class MsalNodeTokenProvider implements AccessTokenProvider {
         break;
 
       case "clientCredentials":
-        if (!(clientApplication instanceof ConfidentialClientApplication)) {
+        if (!isConfidentialClientApplication(clientApplication)) {
           throw DataverseInvalidRequestError.invalidParameter(
             "clientApplication",
             "Client credentials flow requires ConfidentialClientApplication"
@@ -268,7 +302,7 @@ export class MsalNodeTokenProvider implements AccessTokenProvider {
         break;
 
       case "usernamePassword":
-        if (!(clientApplication instanceof PublicClientApplication)) {
+        if (!isPublicClientApplication(clientApplication)) {
           throw DataverseInvalidRequestError.invalidParameter(
             "clientApplication",
             "Username/password flow requires PublicClientApplication"
@@ -314,19 +348,13 @@ export class MsalNodeTokenProvider implements AccessTokenProvider {
 
       switch (this.options.flow) {
         case "deviceCode":
-          result = await this.acquireTokenByDeviceCode(requestScopes, options);
+        case "authorizationCode":
+        case "usernamePassword":
+          result = await this.acquireTokenForUser(requestScopes, options);
           break;
 
         case "clientCredentials":
           result = await this.acquireTokenByClientCredentials(requestScopes, options);
-          break;
-
-        case "authorizationCode":
-          result = await this.acquireTokenByAuthorizationCode(requestScopes, options);
-          break;
-
-        case "usernamePassword":
-          result = await this.acquireTokenByUsernamePassword(requestScopes, options);
           break;
 
         case "silent":
@@ -361,9 +389,95 @@ export class MsalNodeTokenProvider implements AccessTokenProvider {
         throw error;
       }
 
-      throw DataverseAuthenticationError.tokenAcquisitionFailed(
-        error instanceof Error ? error.message : String(error)
-      );
+      throw tokenAcquisitionFailed(error);
+    }
+  }
+
+  /**
+   * Device code, authorization code and username/password: sign the user in once, then get every
+   * later token with `acquireTokenSilent` for the signed-in account (MSAL's cache, then its refresh
+   * token). The sign-in flow runs again only when the silent call says the account needs it, and
+   * concurrent callers share one sign-in, so the user sees one device code prompt (#85).
+   * @private
+   */
+  private async acquireTokenForUser(
+    scopes: string[],
+    options?: TokenOptions
+  ): Promise<AuthenticationResult | null> {
+    const key = scopeKey(scopes);
+
+    for (;;) {
+      const pending = this.signIn;
+      if (pending) {
+        if (pending.key === key) {
+          return await pending.promise;
+        }
+        // Another scope set is signing in: wait for it, then use the account it signs in.
+        await pending.promise.catch(() => undefined);
+      }
+
+      const account = this.cachedAccount;
+      if (account) {
+        try {
+          return await this.clientApplication.acquireTokenSilent(
+            this.silentRequest(account, scopes, options)
+          );
+        } catch (error) {
+          if (!isInteractionRequiredError(error)) {
+            throw error;
+          }
+          if (this.options.flow === "authorizationCode") {
+            throw tokenAcquisitionFailed(error, AUTH_CODE_SPENT);
+          }
+        }
+        if (this.signIn) {
+          // A concurrent call started the new sign-in while this one was failing: share it.
+          continue;
+        }
+      } else if (this.options.flow === "authorizationCode" && this.codeRedeemed) {
+        throw tokenAcquisitionFailed(undefined, AUTH_CODE_SPENT);
+      }
+
+      return await this.startSignIn(key, scopes, options);
+    }
+  }
+
+  /**
+   * Runs the configured sign-in flow once and keeps the account for the silent calls after it.
+   * @private
+   */
+  private startSignIn(
+    key: string,
+    scopes: string[],
+    options?: TokenOptions
+  ): Promise<AuthenticationResult | null> {
+    const promise = this.signInOnce(scopes, options)
+      .then((result) => {
+        if (result?.account) {
+          this.cachedAccount = result.account;
+        }
+        return result;
+      })
+      .finally(() => {
+        if (this.signIn?.promise === promise) {
+          this.signIn = undefined;
+        }
+      });
+    this.signIn = { key, promise };
+    return promise;
+  }
+
+  private async signInOnce(
+    scopes: string[],
+    options?: TokenOptions
+  ): Promise<AuthenticationResult | null> {
+    switch (this.options.flow) {
+      case "deviceCode":
+        return await this.acquireTokenByDeviceCode(scopes, options);
+      case "authorizationCode":
+        return await this.acquireTokenByAuthorizationCode(scopes, options);
+      default:
+        return await this.acquireTokenByUsernamePassword(scopes, options);
     }
   }
 
@@ -439,6 +553,8 @@ export class MsalNodeTokenProvider implements AccessTokenProvider {
       correlationId: options?.correlationId ?? this.options.correlationId,
     };
 
+    // A code is single use, whether or not the redemption succeeds.
+    this.codeRedeemed = true;
     return await this.clientApplication.acquireTokenByCode(authCodeRequest);
   }
 
@@ -483,15 +599,28 @@ export class MsalNodeTokenProvider implements AccessTokenProvider {
       );
     }
 
-    const silentRequest: SilentFlowRequest = {
+    return await this.clientApplication.acquireTokenSilent(
+      this.silentRequest(account, scopes, options)
+    );
+  }
+
+  /**
+   * The `acquireTokenSilent` request for an account. `TokenOptions.forceRefresh` (set by the SDK
+   * after a 401) skips MSAL's cached access token and uses the refresh token.
+   * @private
+   */
+  private silentRequest(
+    account: AccountInfo,
+    scopes: string[],
+    options?: TokenOptions
+  ): SilentFlowRequest {
+    return {
       scopes,
       account,
       forceRefresh: options?.forceRefresh ?? false,
       claims: options?.claims ?? this.options.claims,
       correlationId: options?.correlationId ?? this.options.correlationId,
     };
-
-    return await this.clientApplication.acquireTokenSilent(silentRequest);
   }
 
   /**

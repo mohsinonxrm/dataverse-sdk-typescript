@@ -1,263 +1,139 @@
-# spa-fluentui-v9: Comprehensive SDK Feature Showcase
+# spa-fluentui-v9
 
-A comprehensive reference implementation demonstrating **all capabilities** of the @mohsinonxrm/dataverse-sdk-typescript packages in a modern React 18 SPA with Fluent UI v9.
+A React 18 + Fluent UI v9 single-page app that signs in with MSAL and walks through the
+`@mohsinonxrm/dataverse-sdk-*` packages one scenario at a time: CRUD, querying, bulk and batch
+operations, relationships, metadata, files, actions, messages, discovery, observability and type
+safety. Each scenario page runs the call against your Dataverse environment and shows the code
+next to the result.
 
-## 🎯 Purpose
+It is a private sample (not published to npm) and is built against the packages in this
+workspace. It compiles with `strict` TypeScript and contains no `any`.
 
-This sample serves as:
+## What it uses
 
-- **Complete SDK reference**: Demonstrates all 16 packages and 15 capability areas
-- **Production patterns**: Shows error handling, resilience, type safety, and observability
-- **Learning resource**: Side-by-side API comparisons with copy-able code snippets
-- **Decision guidance**: When to use which approach (Raw API vs Typed vs OrgService vs Messages)
+Packages the code imports today:
 
-## 📦 SDK Packages Demonstrated
+| Package                                        | Used for                                                                              |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `@mohsinonxrm/dataverse-sdk-core`              | `DataverseClient`, the request builder (`client.api(...)`), paging types              |
+| `@mohsinonxrm/dataverse-sdk-auth-msal-browser` | `initializeMsal`, `authorityFor`, `scopesForEnvironment`, `createMsalBrowserProvider` |
+| `@mohsinonxrm/dataverse-sdk-xrm`               | `OrganizationService` (create, associate, disassociate)                               |
+| `@mohsinonxrm/dataverse-sdk-batch`             | `BatchRequestBuilder` on the Batch page                                               |
+| `@mohsinonxrm/dataverse-sdk-discovery`         | `DiscoveryClient` on the Discovery page                                               |
 
-### Core Infrastructure
+## Known gaps
 
-- `@mohsinonxrm/dataverse-sdk-core` - Client, request builder, middleware pipeline
-- `@mohsinonxrm/dataverse-sdk-auth-msal-browser` - MSAL browser authentication
+- **Typed packages are not wired in yet.** `dataverse-sdk-actions`, `-functions`, `-messages`,
+  `-metadata` and `-files` are dependencies of the sample but nothing imports them. The Bulk,
+  Actions & Functions, Messages, Metadata and Files pages call the Web API endpoints directly
+  through `client.api(...)` (for example `/CreateMultiple`, `/WhoAmI`, `/InitializeFileBlocksUpload`).
+- **The Observability page is simulated.** Its retry, backoff and concurrency demos use timers and
+  `Math.random`; they do not run the SDK's middleware.
+- **FetchXML and `$expand`** on the Querying page are built by hand (a `?fetchXml=` query string and a
+  string `$expand`). They will move to `client.fetchXml(...)` and nested `expand()` options once
+  those SDK changes are released.
+- **Not audited** for accessibility (WCAG) or responsive layout.
+- **The Files page** builds the entity set name by appending `s` to the entity name, which works for
+  `annotation`, `account` and `contact` but not for names such as `opportunity` (`opportunities`).
 
-### Data Operations
+## Run it
 
-- `@mohsinonxrm/dataverse-sdk-xrm` - OrganizationService (C#-familiar CRUD)
-- `@mohsinonxrm/dataverse-sdk-batch` - $batch operations with changesets
-- `@mohsinonxrm/dataverse-sdk-actions` - Typed actions (1200+ including bulk operations)
-- `@mohsinonxrm/dataverse-sdk-functions` - Typed functions (150+)
-- `@mohsinonxrm/dataverse-sdk-messages` - SDK messages (1000+)
+You need Node.js 22 or later, pnpm 9, a Dataverse environment, and a Microsoft Entra app
+registration.
 
-### Specialized Operations
+1. **Register an app** in Microsoft Entra ID: platform "Single-page application", redirect URI
+   `http://localhost:3000`, and the delegated permission `Dynamics CRM / user_impersonation`.
+2. **Install** from the repository root:
 
-- `@mohsinonxrm/dataverse-sdk-metadata` - Entity/attribute metadata management
-- `@mohsinonxrm/dataverse-sdk-files` - Chunked file upload/download
-- `@mohsinonxrm/dataverse-sdk-discovery` - Global discovery service
+   ```bash
+   pnpm install
+   pnpm build        # builds the SDK packages the sample imports
+   ```
 
-### Optional Enhancements
+3. **Configure** the sample. It reads `VITE_*` variables from `.env`:
 
-- `@mohsinonxrm/dataverse-sdk-appinsights` - Application Insights telemetry
-- `@mohsinonxrm/dataverse-sdk-otel` - OpenTelemetry integration
+   ```bash
+   cd samples/spa-fluentui-v9
+   cp .env.example .env
+   ```
 
-## 🗺️ Feature Map
+   | Variable                  | Meaning                                                         |
+   | ------------------------- | --------------------------------------------------------------- |
+   | `VITE_AZURE_CLIENT_ID`    | Application (client) id of the app registration                 |
+   | `VITE_AZURE_TENANT_ID`    | Directory (tenant) id; defaults to `organizations` when unset   |
+   | `VITE_AZURE_REDIRECT_URI` | Redirect URI; defaults to `http://localhost:3000`               |
+   | `VITE_DATAVERSE_URL`      | Environment URL, for example `https://yourorg.crm.dynamics.com` |
 
-### Data Operations
+4. **Start** the dev server and sign in:
 
-- **[CRUD Operations](/crud)**: Three API approaches (Raw, Typed, OrgService) with side-by-side comparison
-- **[Advanced Querying](/querying)**: OData filtering, sorting, pagination, FetchXML
-- **[Bulk Operations](/bulk)**: CreateMultiple, UpdateMultiple, UpsertMultiple (100s of records)
-- **[Batch Operations](/batch)**: $batch with changesets, dependencies, partial failures
-- **[Relationships](/relationships)**: Associate, disassociate, bind helpers
+   ```bash
+   pnpm dev          # http://localhost:3000
+   ```
 
-### Metadata Management
+Other scripts: `pnpm build` (type-check, then `vite build`), `pnpm typecheck`, `pnpm lint`,
+`pnpm preview`.
 
-- **[Metadata Explorer](/metadata)**: Entity/attribute CRUD, option sets, relationships, delta queries
+## Pages
 
-### File Operations
+| Route                      | Page                | What it shows                                                                   |
+| -------------------------- | ------------------- | ------------------------------------------------------------------------------- |
+| `/login`                   | Login               | MSAL redirect sign-in                                                           |
+| `/dashboard`               | Dashboard           | Account statistics and recent accounts                                          |
+| `/accounts`                | Account list        | Search and list accounts                                                        |
+| `/accounts/new`            | Create account      | Form that creates an account                                                    |
+| `/accounts/:id`            | Account detail      | View, edit and delete one account                                               |
+| `/scenarios/crud`          | CRUD Operations     | Raw, typed and `OrganizationService` create, side by side                       |
+| `/scenarios/querying`      | Advanced Querying   | `$filter`, paging (`get`, `getPage`, `iterate`, `getAll`), `$expand`, FetchXML  |
+| `/scenarios/bulk`          | Bulk Operations     | `CreateMultiple`, `UpdateMultiple`, `UpsertMultiple`                            |
+| `/scenarios/batch`         | Batch Operations    | `BatchRequestBuilder` with a changeset and `continueOnError`                    |
+| `/scenarios/relationships` | Relationships       | Associate, disassociate, bind on create, retrieve related                       |
+| `/scenarios/metadata`      | Metadata Explorer   | Create an entity and attributes, `RetrieveMetadataChanges`                      |
+| `/scenarios/files`         | File Operations     | Chunked upload, download                                                        |
+| `/scenarios/actions`       | Actions & Functions | `WhoAmI`, `RetrieveVersion`, `WinOpportunity`, `ExecuteWorkflow`, `GrantAccess` |
+| `/scenarios/messages`      | Messages            | `Assign`, `SetState`, `Merge`, solution export and import                       |
+| `/scenarios/discovery`     | Discovery           | `DiscoveryClient.listOrganizations()`                                           |
+| `/scenarios/observability` | Observability       | Simulated retry and concurrency demos (see Known gaps)                          |
+| `/scenarios/typesafety`    | Type Safety         | Read, create and update type examples                                           |
+| `/scenarios/reference`     | API Reference       | When to use the raw API, typed calls or `OrganizationService`                   |
 
-- **[File Operations](/files)**: Chunked upload/download with progress tracking
-
-### DevOps & Automation
-
-- **[Discovery Service](/discovery)**: Organization listing and region filtering
-- **[Actions & Functions](/actions-functions)**: Typed action/function execution
-- **[Messages](/messages)**: SDK messages for platform and business operations
-
-### Observability & Resilience
-
-- **[Observability](/observability)**: Retry middleware, concurrency control, telemetry
-
-### Reference & Learning
-
-- **[Type Safety](/type-safety)**: Compile-time type checking demonstrations
-- **[API Comparison](/api-reference)**: When to use which API approach
-
-## 🚀 Quick Start
-
-### Prerequisites
-
-- Node.js 18+
-- pnpm 8+
-- Dataverse environment (trial or production)
-- Azure AD app registration
-
-### 1. Install Dependencies
-
-```bash
-pnpm install
-```
-
-### 2. Configure Authentication
-
-Edit `src/config.ts`:
-
-```typescript
-export const msalConfig = {
-  auth: {
-    clientId: "YOUR_CLIENT_ID",
-    authority: "https://login.microsoftonline.com/YOUR_TENANT_ID",
-    redirectUri: "http://localhost:3000",
-  },
-};
-
-export const dataverseConfig = {
-  baseUrl: "https://yourorg.crm.dynamics.com",
-};
-```
-
-### 3. Run Development Server
-
-```bash
-pnpm run dev
-```
-
-Navigate to http://localhost:3000
-
-### 4. Login
-
-Click "Login" button → Authenticate with Azure AD → Explore scenarios
-
-## 📚 Scenario Guide
-
-### Beginner: Start Here
-
-1. **[CRUD Operations](/crud)** - Understand three API approaches
-2. **[Advanced Querying](/querying)** - Learn OData query capabilities
-3. **[Relationships](/relationships)** - Work with entity relationships
-
-### Intermediate: High-Throughput Operations
-
-4. **[Bulk Operations](/bulk)** - Process 100s of records efficiently
-5. **[Batch Operations](/batch)** - Transactional operations with changesets
-6. **[File Operations](/files)** - Upload/download large files with progress
-
-### Advanced: Metadata & Automation
-
-7. **[Metadata Explorer](/metadata)** - Manage entity definitions and schema
-8. **[Actions & Functions](/actions-functions)** - Execute business processes
-9. **[Messages](/messages)** - Solution management and platform operations
-
-### Enterprise: Multi-Org & Observability
-
-10. **[Discovery Service](/discovery)** - Multi-org scenarios
-11. **[Observability](/observability)** - Monitor resilience and performance
-
-### Reference: Best Practices
-
-12. **[Type Safety](/type-safety)** - Leverage TypeScript type system
-13. **[API Comparison](/api-reference)** - Choose the right API
-
-## 🛠️ Architecture
-
-### State Management
-
-- **React Context** for shared SDK instances (DataverseClient, OrganizationService)
-- **Local state** (useState) for page-specific data
-- Simple and easy to follow
-
-### Error Handling
-
-- **Type-aware error display** for all Dataverse error types:
-  - `DataverseODataError` - OData protocol errors
-  - `DataverseThrottleError` - 429 throttling with retry countdown
-  - `DataverseBatchError` - Batch partial failures
-  - `DataverseInvalidRequestError` - Client-side validation
-- **Visual retry demonstrations** with exponential backoff
-
-### Component Structure
+## Layout
 
 ```
 src/
-├── components/          # Shared components
-│   ├── layout/         # Header, Sidebar, Breadcrumbs
-│   ├── demo/           # CodeComparison, ProgressTracker
-│   ├── errors/         # ErrorDisplay, type-specific cards
-│   └── forms/          # EntityPicker, RecordPicker
-├── context/            # DataverseContext provider
-├── pages/              # Scenario pages (13 total)
-│   ├── CrudOperations/
-│   ├── BulkOperations/
-│   ├── BatchOperations/
-│   └── [...]
-└── config.ts           # MSAL and Dataverse configuration
+├── components/
+│   ├── Header.tsx        # Navigation bar
+│   ├── demo/             # CodeComparison, ProgressTracker, LoadingState
+│   └── errors/           # ErrorDisplay (one generic error panel)
+├── context/              # DataverseContext: client, orgService, tokenProvider
+├── hooks/                # useTheme
+├── pages/                # One folder per scenario, plus the account pages
+├── types/                # Account types and small shared types (JsonObject, ProgressState)
+├── config.ts             # MSAL configuration and Dataverse URL, from VITE_* variables
+└── main.tsx              # MSAL initialisation and rendering
 ```
 
-## 📖 Learning Paths
+`DataverseProvider` creates one `DataverseClient` and one `OrganizationService` per signed-in
+account and shares them, with the MSAL token provider, through `useDataverse()`. The account list,
+detail, create and dashboard pages still build their own client.
 
-### Path 1: API Comparison
+## Code examples
 
-**Goal**: Understand when to use which API
+These match what the pages run.
 
-1. Visit [CRUD Operations](/crud)
-2. Compare three approaches side-by-side:
-   - `client.api()` raw - Full control, verbose
-   - `client.api<T>()` typed - Type safety, fluent
-   - `orgService.create()` - C#-familiar, concise
-3. Check [API Comparison Reference](/api-reference) for decision matrix
-
-### Path 2: High Performance
-
-**Goal**: Process large datasets efficiently
-
-1. [Bulk Operations](/bulk) - CreateMultiple for throughput
-2. [Batch Operations](/batch) - Changesets for transactions
-3. Decision: Bulk for speed, Batch for atomicity
-4. [Observability](/observability) - Monitor concurrency and retries
-
-### Path 3: Metadata Management
-
-**Goal**: Build dynamic applications
-
-1. [Metadata Explorer](/metadata) - Browse entity schema
-2. Create custom entity with attributes
-3. Manage option sets and relationships
-4. Use [Type Safety](/type-safety) to leverage strict types
-
-### Path 4: File Handling
-
-**Goal**: Work with file columns
-
-1. [File Operations](/files) - Upload large files
-2. Watch chunked upload (4MB chunks)
-3. Track progress in real-time
-4. Download and delete files
-
-## 🔍 Code Examples
-
-### Example 1: Create Account (Three Ways)
+### Three ways to create an account
 
 ```typescript
-// Approach 1: Raw API
-const account = await client.api("/accounts").post({ name: "Contoso Ltd", revenue: 1000000 });
+// Raw request builder
+const created = await client.api("/accounts").post({ name: "Contoso Ltd", revenue: 1000000 });
 
-// Approach 2: Typed API
-const typedAccount = await client
-  .api<Account>("/accounts")
-  .post({ name: "Contoso Ltd", revenue: 1000000 });
+// Typed response
+const account = await client.api("/accounts").post<Account>({ name: "Contoso Ltd" });
 
-// Approach 3: OrgService
-const id = await orgService.create("accounts", {
-  name: "Contoso Ltd",
-  revenue: 1000000,
-});
+// OrganizationService
+const id = await orgService.create<string>("accounts", { name: "Contoso Ltd" });
 ```
 
-### Example 2: Bulk Create 100 Accounts
-
-```typescript
-import { CreateMultipleAction } from "@mohsinonxrm/dataverse-sdk-actions";
-
-const accounts = Array.from({ length: 100 }, (_, i) => ({
-  "@odata.type": "Microsoft.Dynamics.CRM.account",
-  name: `Account ${i + 1}`,
-  revenue: Math.random() * 1000000,
-}));
-
-const action = new CreateMultipleAction({ Targets: accounts });
-const result = await client.execute(action);
-
-console.log(`Created ${result.Ids.length} accounts`);
-```
-
-### Example 3: Batch with Changeset
+### Batch with a changeset
 
 ```typescript
 import { BatchRequestBuilder } from "@mohsinonxrm/dataverse-sdk-batch";
@@ -265,206 +141,69 @@ import { BatchRequestBuilder } from "@mohsinonxrm/dataverse-sdk-batch";
 const batch = new BatchRequestBuilder(client);
 
 batch.beginChangeset();
-batch.addRequest("create-account", "POST", "/accounts", undefined, {
-  name: "Parent Account",
-});
-batch.addRequest("create-contact", "POST", "/contacts", ["create-account"], {
+batch.addRequest("1", "POST", "/accounts", undefined, { name: "Parent Account" });
+batch.addRequest("2", "POST", "/contacts", undefined, {
   firstname: "John",
   lastname: "Doe",
-  "parentcustomerid_account@odata.bind": "/accounts($1)",
+  "parentcustomerid_account@odata.bind": "$1", // refers to the first request in the changeset
 });
 batch.endChangeset();
+batch.addRequest("3", "GET", "/accounts?$select=name&$top=5");
 
 const result = await batch.execute({ continueOnError: true });
+console.log(result.success, result.successfulRequests, result.failedRequests);
 ```
 
-### Example 4: Chunked File Upload
-
-```typescript
-import { FileColumnClient } from "@mohsinonxrm/dataverse-sdk-files";
-
-const fileClient = new FileColumnClient(client);
-
-await fileClient.upload("contacts", contactId, "entityimage", fileBlob, {
-  chunkSize: 4 * 1024 * 1024, // 4MB chunks
-  onProgress: (progress) => {
-    console.log(`Progress: ${progress.percentage}%`);
-    console.log(`Chunk ${progress.currentChunk}/${progress.totalChunks}`);
-  },
-});
-```
-
-## 🧪 Error Handling Examples
-
-### Handle Throttling (429)
-
-```typescript
-try {
-  await client.api("/accounts").top(5000).get(); // May trigger throttling
-} catch (error) {
-  if (error instanceof DataverseThrottleError) {
-    console.log(`Throttled. Retry after ${error.retryAfter} seconds`);
-    // SDK will auto-retry with exponential backoff
-  }
-}
-```
-
-### Handle Batch Partial Failures
-
-```typescript
-try {
-  const result = await batch.execute({ continueOnError: true });
-
-  if (!result.allSucceeded) {
-    console.log(`${result.successCount} succeeded, ${result.failureCount} failed`);
-
-    // Process partial results
-    result.responses.forEach((response, requestId) => {
-      console.log(`${requestId}: Success`);
-    });
-
-    result.errors.forEach((error, requestId) => {
-      console.error(`${requestId}: ${error.status} - ${error.message}`);
-    });
-  }
-} catch (error) {
-  if (error instanceof DataverseBatchError) {
-    // Handle batch-level error
-  }
-}
-```
-
-## 🎨 UI Components
-
-### Shared Components
-
-- **CodeComparison**: Side-by-side code and result display
-- **ErrorDisplay**: Type-aware error rendering
-- **ProgressTracker**: Visual progress for bulk/batch/file operations
-- **LoadingState**: Skeleton loaders
-- **EntityPicker**: Select entity types
-- **RecordPicker**: Select specific records
-
-### Error Cards
-
-- **ODataErrorCard**: Display OData protocol errors
-- **ThrottleErrorCard**: Show retry countdown
-- **BatchErrorCard**: Display partial failures with details
-
-## 📊 Feature Checklist
-
-### Data Operations
-
-- [ ] CRUD with three API approaches
-- [ ] Advanced OData querying
-- [ ] FetchXML support
-- [ ] Pagination (get, getPage, iterate, getAll)
-- [ ] Bulk operations (CreateMultiple, UpdateMultiple, UpsertMultiple)
-- [ ] Batch operations with changesets
-- [ ] Relationship management (associate, disassociate, bind)
-- [ ] Optimistic concurrency
-- [ ] Impersonation
-
-### Metadata
-
-- [ ] Entity CRUD
-- [ ] Attribute CRUD
-- [ ] Option set management
-- [ ] Relationship management (1:N, N:N)
-- [ ] RetrieveMetadataChanges (delta queries)
-- [ ] Type safety (Read vs Create/Update types)
-
-### Files
-
-- [ ] Chunked upload with progress
-- [ ] Chunked download
-- [ ] File deletion
-- [ ] Image column support
-
-### Actions & Functions
-
-- [ ] Typed action execution
-- [ ] Typed function execution
-- [ ] Business actions (ExecuteWorkflow, WinOpportunity, Merge)
-- [ ] Bulk actions
-
-### Messages
-
-- [ ] Platform messages (WhoAmI, Assign, SetState)
-- [ ] Business messages (ExecuteWorkflow, WinOpportunity)
-- [ ] Solution messages (Export, Import, Publish)
+`execute()` throws a `DataverseBatchError` when any request fails; its `requestErrors` map has
+the failed responses by request id.
 
 ### Discovery
 
-- [ ] List organizations
-- [ ] Filter by region
-- [ ] Organization details
+```typescript
+import { DiscoveryClient } from "@mohsinonxrm/dataverse-sdk-discovery";
 
-### Observability
+const discovery = new DiscoveryClient(tokenProvider); // from useDataverse()
+const organizations = await discovery.listOrganizations();
+```
 
-- [ ] Retry visualization
-- [ ] Concurrency monitoring
-- [ ] Telemetry dashboard
-- [ ] Error recovery flows
+### Associate and disassociate
 
-### Reference
+```typescript
+// The account owns the collection-valued contact_customer_accounts property.
+await orgService.associate("accounts", accountId, "contact_customer_accounts", [
+  { logicalName: "contact", id: contactId },
+]);
+await orgService.disassociate("accounts", accountId, "contact_customer_accounts", contactId);
+```
 
-- [ ] Type safety demonstrations
-- [ ] API comparison matrix
-- [ ] When-to-use guidance
+### Paging
 
-## 🤝 Contributing
+```typescript
+const builder = client.api("/accounts").select("name").orderBy("name").top(5);
 
-This sample is part of the dataverse-sdk-typescript monorepo. See the main [CONTRIBUTING.md](../../CONTRIBUTING.md) for contribution guidelines.
+const page = await builder.getPage<Account>(); // page.value, page["@odata.nextLink"]
+for await (const account of builder.iterate<Account>()) {
+  // every item, following @odata.nextLink
+}
+const first10 = await builder.getAll<Account>({ maxItems: 10 });
+```
 
-## 📄 License
+## Troubleshooting
 
-GNU AGPL v3.0 - See [LICENSE](../../LICENSE) for details.
+- **Sign-in fails or loops:** check that the redirect URI in the app registration matches
+  `VITE_AZURE_REDIRECT_URI` exactly, and that `VITE_AZURE_CLIENT_ID` and `VITE_AZURE_TENANT_ID` are set.
+- **Calls fail with 401 or 403:** `VITE_DATAVERSE_URL` must be the environment you were granted
+  `user_impersonation` for, and your user needs a security role in it.
+- **Pages show "Initializing Dataverse SDK...":** you are not signed in yet, or `VITE_DATAVERSE_URL` is empty.
+- **Build errors about missing SDK exports:** run `pnpm build` at the repository root first.
 
-## 📚 Documentation
+## More
 
-- [Implementation Plan](./IMPLEMENTATION_PLAN.md) - Detailed architecture and implementation guide
-- [SDK Documentation](../../docs/) - Complete SDK documentation
-- [API Reference](https://mohsinonxrm.github.io/dataverse-sdk-typescript/) - Auto-generated API docs
-
-## 🐛 Troubleshooting
-
-### Login Issues
-
-- Ensure Azure AD app registration has correct redirect URI
-- Check `clientId` and `authority` in `src/config.ts`
-- Verify user has access to Dataverse environment
-
-### API Errors
-
-- Check `baseUrl` points to correct Dataverse environment
-- Ensure user has required security roles
-- Review error details in ErrorDisplay component
-
-### Build Errors
-
-- Run `pnpm install` to ensure dependencies are installed
-- Clear `node_modules` and reinstall if needed
-- Ensure Node.js 18+ is installed
-
-## 🎓 Next Steps
-
-1. **Explore scenarios** - Navigate through all 13 pages
-2. **Copy code snippets** - Use examples in your own projects
-3. **Read implementation plan** - Understand architecture decisions
-4. **Extend the sample** - Add your own scenarios
-5. **Share feedback** - Open issues for improvements
-
----
-
-**Built with ❤️ using dataverse-sdk-typescript**
-
-3. **React hooks work beautifully with SDK** - `useEffect` for data loading, `useState` for state management
-4. **TypeScript enables confident refactoring** - catch errors at compile time
-5. **Vite provides fast development** - instant HMR, optimized builds
-
-This sample serves as a **template** for building production Dataverse SPAs. Clone it, customize it, and ship it!
+- [Design record](./docs/IMPLEMENTATION_PLAN.md): the plan the sample was built from (not a status report)
+- [SDK documentation](../../docs/)
+- [Contributing](../../CONTRIBUTING.md)
+- [CHANGELOG](./CHANGELOG.md): generated by Changesets
 
 ## License
 
-This sample is part of `@mohsinonxrm/dataverse-sdk-typescript` and is licensed under GNU AGPL v3.0.
+Part of `@mohsinonxrm/dataverse-sdk-typescript`, licensed under GNU AGPL v3.0. See [LICENSE](../../LICENSE).

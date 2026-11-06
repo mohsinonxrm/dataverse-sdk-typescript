@@ -37,22 +37,23 @@ The metadata package (Phase 6) will include strict typing for FileAttributeMetad
    ```typescript
    import { FileColumnClient } from "@mohsinonxrm/dataverse-sdk-files";
 
-   // Any RequestAdapter (an object with send(request)) works; a DataverseClient is one, and
-   // client.send() runs each request through the client's pipeline (auth, retry, logging).
-   const fileClient = new FileColumnClient(client, client.getBaseUrl());
+   // Requests go through client.send(), so the client's pipeline (auth, retry, logging) applies.
+   // new FileColumnClient(adapter, baseUrl) takes any object with send(request) instead.
+   const fileClient = new FileColumnClient(client);
 
    await fileClient.upload(
      "accounts", // entitySetName
      accountId, // recordId
      "new_logo", // columnName
-     logoFile, // Blob | Buffer
+     logoFile, // file content
+     "logo.png", // fileName
      {
        chunkSize: 4 * 1024 * 1024, // 4MB
-       onProgress: (uploaded, total) => console.log(`${uploaded}/${total}`),
+       onProgress: (progress) => console.log(`${progress.uploaded}/${progress.total}`),
      }
    );
 
-   const file = await fileClient.download("accounts", accountId, "new_logo");
+   const file = await fileClient.download("accounts", accountId, "new_logo"); // a Blob
    ```
 
 5. **Stream-based approach:** Defer to v1.1+ as alternative implementation for smaller files or specific scenarios.

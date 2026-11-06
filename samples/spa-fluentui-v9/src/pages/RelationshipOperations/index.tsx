@@ -16,6 +16,8 @@ import { useDataverse } from "../../context/DataverseContext";
 import { LoadingState } from "../../components/demo/LoadingState";
 import { ErrorDisplay } from "../../components/errors/ErrorDisplay";
 import { CodeComparison } from "../../components/demo/CodeComparison";
+import type { PageResponse } from "@mohsinonxrm/dataverse-sdk-core";
+import type { ResultView, JsonObject } from "../../types/common";
 
 const useStyles = makeStyles({
   container: {
@@ -27,7 +29,7 @@ const useStyles = makeStyles({
     marginBottom: "24px",
   },
   description: {
-    color: (tokens as any).colorNeutralForeground2,
+    color: tokens.colorNeutralForeground2,
     marginTop: "8px",
   },
   grid: {
@@ -57,7 +59,7 @@ export default function RelationshipOperations() {
   const { client, orgService, isReady } = useDataverse();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const [results, setResults] = useState<any>(null);
+  const [results, setResults] = useState<ResultView | null>(null);
 
   // Associate state
   const [contactId, setContactId] = useState("");
@@ -74,10 +76,11 @@ export default function RelationshipOperations() {
     setError(null);
 
     try {
-      // Associate using raw API
-      await (client as any).api(`/contacts(${contactId})/contact_customer_accounts/$ref`).post({
-        "@(odata as any).id": `${client["baseUrl"]}/accounts(${accountId})`,
-      });
+      // contact_customer_accounts is the collection-valued side of the relationship, so it is
+      // navigated from the account; the builder posts the absolute @odata.id to .../$ref.
+      await client
+        .api(`/accounts(${accountId})`)
+        .associate("contact_customer_accounts", "contacts", contactId);
 
       setResults({
         operation: "Associate (Raw API)",
@@ -100,8 +103,10 @@ export default function RelationshipOperations() {
 
     try {
       // Associate using OrganizationService
-      await (orgService as any).associate("contact", contactId, relationship, [
-        { entityType: "account", id: accountId },
+      // associate(entitySetName, id, relationship, relatedEntities): the primary record is the
+      // account that owns the collection-valued navigation property.
+      await orgService.associate("accounts", accountId, relationship, [
+        { logicalName: "contact", id: contactId },
       ]);
 
       setResults({
@@ -125,9 +130,8 @@ export default function RelationshipOperations() {
 
     try {
       // Disassociate using OrganizationService
-      await (orgService as any).disassociate("contact", contactId, relationship, [
-        { entityType: "account", id: accountId },
-      ]);
+      // disassociate(entitySetName, id, relationship, relatedId): relatedId is a single GUID.
+      await orgService.disassociate("accounts", accountId, relationship, contactId);
 
       setResults({
         operation: "Disassociate",
@@ -150,15 +154,15 @@ export default function RelationshipOperations() {
 
     try {
       // Create contact and bind to account in single request
-      const response = await (client as any).api("/contacts").post({
+      const response = await client.api("/contacts").post<JsonObject>({
         firstname: "Jane",
         lastname: "Doe",
-        "parentcustomerid_account@(odata as any).bind": `/accounts(${accountId})`,
+        "parentcustomerid_account@odata.bind": `/accounts(${accountId})`,
       });
 
       setResults({
         operation: "Create with Bind",
-        contactCreated: (response as any).contactid,
+        contactCreated: response.contactid,
         boundTo: accountId,
         status: "Success",
       });
@@ -179,13 +183,13 @@ export default function RelationshipOperations() {
       const response = await client
         .api(`/accounts(${accountId})/contact_customer_accounts`)
         .select()
-        .get();
+        .get<PageResponse<JsonObject>>();
 
       setResults({
         operation: "Retrieve Related",
         accountId,
-        relatedContacts: (response as any).value,
-        count: (response as any).value?.length || 0,
+        relatedContacts: response.value,
+        count: response.value.length,
       });
     } catch (err) {
       setError(err as Error);
@@ -195,25 +199,25 @@ export default function RelationshipOperations() {
   };
 
   return (
-    <div className={(styles as any).container}>
-      <div className={(styles as any).header}>
+    <div className={styles.container}>
+      <div className={styles.header}>
         <Title3>Relationship Operations</Title3>
-        <Text className={(styles as any).description}>
+        <Text className={styles.description}>
           Associate, disassociate, and bind records using N:N and 1:N relationships
         </Text>
       </div>
 
-      <div className={(styles as any).grid}>
-        <Card className={(styles as any).card}>
+      <div className={styles.grid}>
+        <Card className={styles.card}>
           <Title3>Associate Records</Title3>
           <Text>Link records through N:N relationships</Text>
 
-          <div className={(styles as any).form}>
+          <div className={styles.form}>
             <div>
               <Label>Contact ID</Label>
               <Input
                 value={contactId}
-                onChange={(_e, data) => setContactId((data as any).value)}
+                onChange={(_e, data) => setContactId(data.value)}
                 placeholder="GUID of contact"
               />
             </div>
@@ -221,7 +225,7 @@ export default function RelationshipOperations() {
               <Label>Account ID</Label>
               <Input
                 value={accountId}
-                onChange={(_e, data) => setAccountId((data as any).value)}
+                onChange={(_e, data) => setAccountId(data.value)}
                 placeholder="GUID of account"
               />
             </div>
@@ -230,7 +234,7 @@ export default function RelationshipOperations() {
               <Dropdown
                 value={relationship}
                 selectedOptions={[relationship]}
-                onOptionSelect={(_e, data) => setRelationship((data as any).optionValue as string)}
+                onOptionSelect={(_e, data) => setRelationship(data.optionValue as string)}
               >
                 <Option value="contact_customer_accounts">contact_customer_accounts (N:N)</Option>
                 <Option value="account_primary_contact">account_primary_contact (1:N)</Option>
@@ -238,7 +242,7 @@ export default function RelationshipOperations() {
             </div>
           </div>
 
-          <div className={(styles as any).actions}>
+          <div className={styles.actions}>
             <Button
               appearance="primary"
               icon={<LinkRegular />}
@@ -257,15 +261,15 @@ export default function RelationshipOperations() {
           </div>
         </Card>
 
-        <Card className={(styles as any).card}>
+        <Card className={styles.card}>
           <Title3>Disassociate Records</Title3>
           <Text>Remove links between records</Text>
 
-          <div className={(styles as any).form}>
+          <div className={styles.form}>
             <Text size={200}>Uses same IDs and relationship from Associate section</Text>
           </div>
 
-          <div className={(styles as any).actions}>
+          <div className={styles.actions}>
             <Button
               appearance="primary"
               icon={<LinkDismissRegular />}
@@ -277,15 +281,15 @@ export default function RelationshipOperations() {
           </div>
         </Card>
 
-        <Card className={(styles as any).card}>
+        <Card className={styles.card}>
           <Title3>Create with Bind</Title3>
           <Text>Create and link in a single request (1:N only)</Text>
 
-          <div className={(styles as any).form}>
+          <div className={styles.form}>
             <Text size={200}>Creates new contact and binds to account</Text>
           </div>
 
-          <div className={(styles as any).actions}>
+          <div className={styles.actions}>
             <Button
               appearance="primary"
               icon={<DatabaseLinkRegular />}
@@ -297,15 +301,15 @@ export default function RelationshipOperations() {
           </div>
         </Card>
 
-        <Card className={(styles as any).card}>
+        <Card className={styles.card}>
           <Title3>Retrieve Related</Title3>
           <Text>Get related records through navigation properties</Text>
 
-          <div className={(styles as any).form}>
+          <div className={styles.form}>
             <Text size={200}>Retrieves all contacts related to account</Text>
           </div>
 
-          <div className={(styles as any).actions}>
+          <div className={styles.actions}>
             <Button
               appearance="primary"
               onClick={handleRetrieveRelated}
@@ -327,28 +331,26 @@ export default function RelationshipOperations() {
             {
               label: "Operation",
               code:
-                (results as any).operation === "Associate (Raw API)"
-                  ? `await (client as any).api('/contacts(${contactId})/${relationship}/$ref').post({
-  '@(odata as any).id': '/accounts(${accountId})'
-})`
-                  : (results as any).operation === "Associate (OrgService)"
-                    ? `await (orgService as any).associate('contact', '${contactId}', '${relationship}', [
-  { entityType: 'account', id: '${accountId}' }
+                results.operation === "Associate (Raw API)"
+                  ? `await client
+  .api('/accounts(${accountId})')
+  .associate('contact_customer_accounts', 'contacts', '${contactId}')`
+                  : results.operation === "Associate (OrgService)"
+                    ? `await orgService.associate('accounts', '${accountId}', '${relationship}', [
+  { logicalName: 'contact', id: '${contactId}' }
 ])`
-                    : (results as any).operation === "Disassociate"
-                      ? `await (orgService as any).disassociate('contact', '${contactId}', '${relationship}', [
-  { entityType: 'account', id: '${accountId}' }
-])`
-                      : (results as any).operation === "Create with Bind"
-                        ? `await (client as any).api('/contacts').post({
+                    : results.operation === "Disassociate"
+                      ? `await orgService.disassociate('accounts', '${accountId}', '${relationship}', '${contactId}')`
+                      : results.operation === "Create with Bind"
+                        ? `await client.api('/contacts').post({
   firstname: 'Jane',
   lastname: 'Doe',
-  'parentcustomerid_account@(odata as any).bind': '/accounts(${accountId})'
+  'parentcustomerid_account@odata.bind': '/accounts(${accountId})'
 })`
-                        : `await (client as any).api('/accounts(${accountId})/${relationship}')
+                        : `await client.api('/accounts(${accountId})/${relationship}')
   .select()
   .get()`,
-              result: (JSON as any).stringify(results, null, 2),
+              result: JSON.stringify(results, null, 2),
             },
           ]}
         />

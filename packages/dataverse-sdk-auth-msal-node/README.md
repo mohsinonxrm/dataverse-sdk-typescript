@@ -18,10 +18,12 @@
 pnpm add @mohsinonxrm/dataverse-sdk-auth-msal-node @mohsinonxrm/dataverse-sdk-core @azure/msal-node
 ```
 
-**Dependencies:** `@azure/msal-node` (`^2.16.3`) and `@mohsinonxrm/dataverse-sdk-core` are regular
-dependencies of this package. The provider checks the client application with `instanceof`, so
-create your `PublicClientApplication` / `ConfidentialClientApplication` from the same
-`@azure/msal-node` copy (install a matching version so your package manager dedupes them).
+**Dependencies:** `@azure/msal-node` is a **peer dependency** (`^2.16.3 || ^3.0.0 || ^5.0.0 ||
+^6.0.0 || ^7.0.0`): install it in your app, as above. The provider uses your app's MSAL copy, the
+one you create `PublicClientApplication` / `ConfidentialClientApplication` from, and imports only
+MSAL's types, so there is one MSAL copy (`npm ls @azure/msal-node`). It checks the client
+application by its methods, not with `instanceof`, so an application from any of those majors
+works. `@mohsinonxrm/dataverse-sdk-core` is a regular dependency.
 
 ## Authentication Flows
 
@@ -77,11 +79,18 @@ console.log(`✓ Authenticated as user: ${whoami.UserId}`);
 - Requires `PublicClientApplication`
 - User sees code and URL in terminal
 - User authenticates in browser on any device
-- The provider calls `acquireTokenByDeviceCode` on every `getToken()` call and doesn't try the
-  cache first, and the client asks for a token on every request, so each request prompts again
-  (tracked in [#85](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/85)). For
-  more than one request, sign in once, then use the [silent flow](#5-silent-flow-token-cache--refresh)
-  with the account from `getCachedAccount()`
+- The user signs in once. The first `getToken()` runs `acquireTokenByDeviceCode`; every later
+  call uses `acquireTokenSilent` with the signed-in account, so tokens come from MSAL's cache or
+  its refresh token without a prompt. Concurrent first requests share one prompt
+- The prompt appears again only when the silent call says the account needs a new sign-in (MSAL's
+  `InteractionRequiredAuthError`, for example an expired refresh token). Other failures, such as
+  a network error, are thrown as `DataverseAuthenticationError` with the MSAL error as `cause`
+- After a 401 the SDK asks for a new token with `forceRefresh`, which the provider passes to
+  `acquireTokenSilent`, so MSAL uses the refresh token instead of the cached access token
+- MSAL's cache is in memory, so a new process signs in again. To keep the sign-in across runs,
+  add a [persistent cache](#token-caching--persistence) and use the
+  [silent flow](#5-silent-flow-token-cache--refresh) with an account from
+  `pca.getTokenCache().getAllAccounts()`
 - Ideal for CLI tools where browser redirect isn't available
 
 ### 2. Client Credentials Flow (Daemon Applications)
@@ -303,9 +312,13 @@ app.listen(3000, () => console.log("Server running on port 3000"));
 - Redirect URI must match the app registration exactly
 - MSAL caches the tokens in the `ConfidentialClientApplication`'s cache (in memory by default; see
   [Token Caching & Persistence](#token-caching--persistence)), and the silent flow reads them
-- `flow: "authorizationCode"` (with `code` and `codeVerifier`) redeems the code on every
-  `getToken()` call, but a code is single use, so redeem it yourself as above and use the silent
-  flow for requests ([#85](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/85))
+- Alternatively, `flow: "authorizationCode"` (with `code` and `codeVerifier`) redeems the code
+  itself, once, on the first `getToken()` call; later calls use `acquireTokenSilent` with the
+  account it signed in. A code is single use, so the provider never redeems it twice: when the
+  silent call needs a new sign-in (or the redemption failed), `getToken()` throws
+  `DataverseAuthenticationError`, and the user has to go through `/auth/login` again for a new
+  code and a new provider. For a web app with many requests per session, the pattern above
+  (redeem in the callback, keep the account in the session, silent flow per request) is simpler
 - Suitable for web apps where users log in via browser
 
 ### 4. Username/Password Flow (Resource Owner Password Credentials)
@@ -351,11 +364,15 @@ console.log(`User ID: ${result.UserId}`);
 - ❌ Security risks: credentials in memory
 - ✅ Only use for automated testing with dedicated test accounts
 
+The password is sent once, on the first `getToken()` call. Later calls use `acquireTokenSilent`
+with the signed-in account, and the provider signs in with the password again only when the
+silent call says the account needs a new sign-in.
+
 ### 5. Silent Flow (Token Cache & Refresh)
 
 **Best for:** Token refresh, subsequent requests after interactive login
 
-Silent flow acquires tokens from MSAL's cache, or with a refresh token, without user interaction. The other flows don't fall back to it: each of them goes to Entra ID on every `getToken()` call ([#85](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/85)), so after an interactive sign-in, create a silent provider for the account.
+Silent flow acquires tokens from MSAL's cache, or with a refresh token, without user interaction. The device code, authorization code and username/password flows already switch to it by themselves after their first sign-in. Use `flow: "silent"` directly when the account comes from elsewhere: a persistent token cache, or a web session that redeemed the code in its callback.
 
 ```typescript
 import { PublicClientApplication, AccountInfo } from "@azure/msal-node";
@@ -726,7 +743,8 @@ try {
 
 - `DataverseAuthenticationError`: User cancelled device code, invalid credentials, token expired
 - `DataverseInvalidRequestError`: Missing required parameters, wrong client application type for flow
-- MSAL errors wrapped in `error.cause`
+- MSAL failures are thrown as `DataverseAuthenticationError` with `name` `"TokenAcquisitionFailed"`
+  and the MSAL error in `error.cause` (with its `errorCode`, `subError` and `correlationId`)
 
 ## Security Best Practices
 
@@ -818,15 +836,19 @@ if (req.query.state !== req.session.oauthState) {
 
 ### Silent Token Acquisition Fails
 
-If silent token acquisition fails, fall back to interactive flow:
+The device code and username/password flows fall back to signing in again by themselves when the
+silent call needs it. With `flow: "silent"` or `flow: "authorizationCode"` the provider can't sign
+the user in, so `getToken()` throws; check `error.cause` and send the user through sign-in again:
 
 ```typescript
 try {
   const token = await tokenProvider.getToken(); // Silent attempt
 } catch (error) {
-  // Fall back to device code or auth code flow
-  console.log("Silent auth failed, prompting user...");
-  // Re-authenticate
+  const msalError = (error as { cause?: { name?: string } }).cause;
+  if (msalError?.name === "InteractionRequiredAuthError") {
+    // Sign the user in again (device code, or redirect to /auth/login in a web app)
+  }
+  throw error;
 }
 ```
 
