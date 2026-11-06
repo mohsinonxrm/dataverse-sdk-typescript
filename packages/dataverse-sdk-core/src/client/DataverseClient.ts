@@ -15,7 +15,7 @@ import { parseODataError } from "../errors/parseODataError.js";
 import { setResponseCorrelationId } from "../errors/responseDetails.js";
 import { DataverseError } from "../errors/DataverseError.js";
 import { DataverseAbortError, DataverseNetworkError } from "../errors/NamedErrors.js";
-import { startDeadline } from "../utils/signals.js";
+import { isTimeoutError, startDeadline } from "../utils/signals.js";
 import { generateUUID, normalizeHeaders } from "../utils/HeaderUtils.js";
 import { FeatureUsageTracker } from "../telemetry/FeatureUsageTracker.js";
 import { DataverseInvalidRequestError } from "../errors/NamedErrors.js";
@@ -171,7 +171,7 @@ export class DataverseClient {
       if (deadline?.expired && !request.signal?.aborted) {
         throw asSdkError(DataverseNetworkError.timeout(request.timeoutMs ?? 0), ctx.correlationId);
       }
-      throw asSdkError(err, ctx.correlationId);
+      throw asSdkError(err, ctx.correlationId, request.signal);
     } finally {
       deadline?.dispose();
     }
@@ -216,18 +216,35 @@ function isAllowedBaseUrl(baseUrl: string): boolean {
 }
 
 /**
- * Errors leaving `send()`: an abort (a `DOMException` from fetch or from a retry wait) becomes a
- * `DataverseAbortError`, and every SDK error gets the request's correlation id. Errors thrown by
- * the app's own middleware or token provider are passed through unchanged.
+ * Errors leaving `send()`: an abort (a `DOMException` from fetch, a retry wait or the wait for a
+ * concurrency slot) becomes an SDK error, and every SDK error gets the request's correlation id.
+ * Errors thrown by the app's own middleware or token provider are passed through unchanged.
  */
-function asSdkError(err: unknown, correlationId: string | undefined): unknown {
-  const sdkError =
-    err instanceof DataverseError
-      ? err
-      : err instanceof Error && err.name === "AbortError"
-        ? new DataverseAbortError(err.message || undefined, err)
-        : undefined;
+function asSdkError(
+  err: unknown,
+  correlationId: string | undefined,
+  callerSignal?: AbortSignal
+): unknown {
+  const sdkError = err instanceof DataverseError ? err : fromAbort(err, callerSignal);
   if (!sdkError) return err;
   sdkError.correlationId ??= correlationId;
   return sdkError;
+}
+
+/**
+ * A caller's signal that timed out (`AbortSignal.timeout()`) is reported like the client's own
+ * `timeoutMs`: a `DataverseNetworkError` named `RequestTimeout`. fetch rejects with the signal's
+ * `TimeoutError`; a fetch provider that rejects with a plain `AbortError` instead is recognised by
+ * the signal's reason. Any other abort is a `DataverseAbortError`. The original error is `cause`.
+ */
+function fromAbort(err: unknown, callerSignal?: AbortSignal): DataverseError | undefined {
+  if (!(err instanceof Error)) return undefined;
+  if (
+    isTimeoutError(err) ||
+    (err.name === "AbortError" && callerSignal?.aborted && isTimeoutError(callerSignal.reason))
+  ) {
+    return DataverseNetworkError.timeout(undefined, err);
+  }
+  if (err.name === "AbortError") return new DataverseAbortError(err.message || undefined, err);
+  return undefined;
 }
