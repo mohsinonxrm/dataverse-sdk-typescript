@@ -174,7 +174,14 @@ export type BindManyExecutor = (
 export interface RequestOptions {
   headers?: Record<string, string>;
   prefer?: PreferOption[];
+  /**
+   * Time limit for the whole request, in ms, from the call until the response headers arrive:
+   * every attempt, retry wait and wait for a concurrency slot. When it passes, the request rejects
+   * with `DataverseNetworkError` (`RequestTimeout`). Reading the body afterwards isn't limited.
+   */
   timeoutMs?: number;
+  /** Time limit for each attempt, in ms. A timed-out attempt is not retried. */
+  attemptTimeoutMs?: number;
   signal?: AbortSignal;
   /** Correlation id for this request. A new one is generated per request when omitted. */
   correlationId?: string;

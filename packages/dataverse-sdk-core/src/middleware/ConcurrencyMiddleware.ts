@@ -13,20 +13,29 @@ class Semaphore {
     this.drain();
   }
 
-  async acquire(): Promise<() => void> {
+  /** Wait for a slot. Rejects with an `AbortError`, and leaves the queue, if `signal` aborts. */
+  async acquire(signal?: AbortSignal): Promise<() => void> {
+    if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
     if (this.used < this.max) {
       this.used++;
       return () => {
         this.release();
       };
     }
-    return new Promise((resolve) => {
-      this.queue.push(() => {
+    return new Promise((resolve, reject) => {
+      const onAbort = () => {
+        this.queue = this.queue.filter((w) => w !== waiter);
+        reject(new DOMException("Aborted", "AbortError"));
+      };
+      const waiter = () => {
+        signal?.removeEventListener("abort", onAbort);
         this.used++;
         resolve(() => {
           this.release();
         });
-      });
+      };
+      signal?.addEventListener("abort", onAbort, { once: true });
+      this.queue.push(waiter);
     });
   }
 
@@ -69,7 +78,7 @@ export class ConcurrencyMiddleware implements Middleware {
   ): Promise<Response> {
     const perRequest = ctx.middlewareOptions?.get("concurrency");
     if (perRequest?.bypass) return next(request, ctx);
-    const release = await this.sem.acquire();
+    const release = await this.sem.acquire(request.signal);
     try {
       const res = await next(request, ctx);
       if (this.adaptive) {
