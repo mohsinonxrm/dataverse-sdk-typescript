@@ -11,7 +11,7 @@ Batch operations support for the Dataverse SDK, enabling multiple requests to be
 - **Reusable Codec**: `encodeBatchRequest()` and `decodeBatchResponse()` are exported for tools that build or display `$batch` bodies themselves
 - **Error Handling**: Comprehensive error handling with per-request error tracking
 - **Continue on Error**: Optional continue-on-error semantics for partial success scenarios
-- **Auto-Split Detection**: Prevents exceeding Dataverse's 1000 request limit
+- **Auto-Split**: More than 1000 requests (or `batchSize`) are sent as several `$batch` requests, one after the other, without splitting a changeset
 
 ## Installation
 
@@ -111,11 +111,21 @@ execute(options?: BatchExecutionOptions): Promise<BatchExecutionResult>
 
 **Options:**
 
-- **continueOnError**: Continue processing remaining requests on error (default: false)
-- **batchSize**: Size for auto-splitting (not yet implemented)
-- **headers**: Additional HTTP headers to include
+- **continueOnError**: Run every request even when one fails (`Prefer: odata.continue-on-error`), and return the result instead of throwing (default: false)
+- **batchSize**: Maximum requests per `$batch`, 1 to 1000 (default: 1000, the Dataverse limit). Larger batches are split, keeping each changeset whole.
+- **headers**: Additional HTTP headers for the `$batch` request
 
-**Returns:** BatchExecutionResult with responses and errors
+**Returns:** a `BatchExecutionResult` with every response, keyed by request id and in request order.
+
+**Throws:**
+
+- `DataverseBatchError` when a request fails and `continueOnError` is not set. Its `result` holds everything that was received.
+- `DataverseODataError` or `DataverseThrottleError` when the batch fails as a whole (a malformed batch, auth, throttling).
+- `DataverseBatchError` with that typed error as its `cause`, when a later batch of a split one fails as a whole. Its `result` holds the batches that ran.
+
+##### encode(boundary)
+
+Returns the multipart body `execute()` would send for a batch that fits in one `$batch`, with URLs resolved. Useful for logging or for showing the request.
 
 ##### getTotalRequestCount()
 
@@ -237,58 +247,66 @@ An id of `"1"` gives the classic `$1` form.
 
 ### Error Handling
 
-Handle errors with comprehensive per-request tracking:
+Without `continueOnError`, Dataverse stops at the first failed request and `execute()` throws a `DataverseBatchError`. Its `result` holds every response received, in order, and the ids of the requests that never ran:
 
 ```typescript
+import { DataverseBatchError } from "@mohsinonxrm/dataverse-sdk-batch";
+
 try {
-  const result = await batch.execute();
-
-  if (!result.success) {
-    console.log(`${result.failedRequests} of ${result.totalRequests} requests failed`);
-  }
+  await batch.execute();
 } catch (error) {
-  if (error instanceof DataverseBatchError) {
-    console.log(`Successful: ${error.successfulRequests}`);
-    console.log(`Failed: ${error.failedRequests}`);
-
-    // Check specific request errors
-    for (const requestId of error.getFailedRequestIds()) {
-      const failedResponse = error.getErrorForRequest(requestId);
-      console.log(`Request ${requestId} failed:`, failedResponse?.body);
+  if (error instanceof DataverseBatchError && error.result) {
+    const { results, errors, skippedRequestIds, stoppedEarly } = error.result;
+    for (const r of results) {
+      console.log(r.id, r.status); // successes and the failure, in request order
+    }
+    for (const [id, err] of errors) {
+      console.log(`Request ${id} failed:`, err.message); // a typed DataverseODataError
+    }
+    if (stoppedEarly) {
+      console.log("Not run:", skippedRequestIds); // e.g. retry these one by one
     }
   }
 }
 ```
 
+`error.requestErrors` (and `getFailedRequestIds()` and `getErrorForRequest(id)`) hold only the failed responses. The successful ones are in `error.result.responses`.
+
 ### Continue on Error
 
-Process partial successes with continue-on-error semantics:
+With `continueOnError: true`, Dataverse runs every request even when some fail, and `execute()` returns the result instead of throwing:
 
 ```typescript
 const batch = new BatchRequestBuilder(client);
 
 batch
-  .addRequest("req1", "POST", "/accounts", {}, { name: "Valid Account" })
-  .addRequest("req2", "POST", "/accounts", {}, {/* invalid data */})
-  .addRequest("req3", "POST", "/accounts", {}, { name: "Another Valid Account" });
+  .addRequest("req1", "POST", "accounts", undefined, { name: "Valid Account" })
+  .addRequest("req2", "DELETE", "accounts(00000000-0000-0000-0000-000000000001)") // doesn't exist
+  .addRequest("req3", "POST", "accounts", undefined, { name: "Another Valid Account" });
 
-try {
-  const result = await batch.execute({ continueOnError: true });
-} catch (error) {
-  if (error instanceof DataverseBatchError) {
-    // error.successfulRequests will be 2
-    // error.failedRequests will be 1
+const result = await batch.execute({ continueOnError: true });
 
-    // Process successful responses
-    for (const [id, response] of error.requestErrors) {
-      if (response.status >= 200 && response.status < 300) {
-        console.log("Success:", response.body);
-      } else {
-        console.log("Failed:", response.body);
-      }
-    }
-  }
+result.success; // false
+result.successfulRequests; // 2
+result.failedRequests; // 1
+result.errors.get("req2")?.message; // "Entity 'Account' With Id = … Does Not Exist"
+for (const r of result.results) {
+  console.log(r.id, r.status); // req1 204, req2 404, req3 204
 }
+```
+
+Each value in `result.errors` is the typed error `client.api()` would throw for the same response: `DataverseODataError` (or `DataverseThrottleError` for 429), with `status`, `code`, `headers`, `body` and `requestId`.
+
+### Large Batches
+
+More than `batchSize` requests (default and maximum: 1000) are sent as several `$batch` requests, one after the other, in order. A changeset is never split, and a changeset over 1000 requests throws. Without `continueOnError`, the batches after the first one with a failure aren't sent, and their requests are listed in `skippedRequestIds`:
+
+```typescript
+for (const id of ids) {
+  batch.addRequest(`delete-${id}`, "DELETE", `accounts(${id})`);
+}
+// 2,500 deletes go as 3 $batch requests: 1000, 1000 and 500.
+const result = await batch.execute({ continueOnError: true });
 ```
 
 ### Mixed Requests and Changesets
@@ -317,9 +335,9 @@ const result = await batch.execute();
 
 ### Request Limits
 
-- **Maximum batch size**: 1000 requests per batch (Dataverse limit)
-- **Default batch size**: 10 requests (for auto-split, not yet implemented)
-- Exceeding 1000 requests will throw an error
+- **Maximum batch size**: 1000 requests per `$batch` (Dataverse limit)
+- **Default batch size**: 1000. Set `batchSize` (1 to 1000) to send smaller `$batch` requests.
+- More requests are split into several `$batch` requests, without splitting a changeset. A changeset over 1000 requests throws.
 
 ### Changeset Behavior
 
@@ -341,10 +359,10 @@ Requests and changesets are sent in the order they're added. Dataverse answers i
 
 ### Error Handling
 
-- By default, Dataverse stops at the first failed request; later requests get no response
-- Use `continueOnError: true` to process all requests
-- `DataverseBatchError` provides detailed per-request error information
-- Check `result.success` to determine if all requests succeeded
+- By default, Dataverse stops at the first failed request; later requests get no response, and `execute()` throws `DataverseBatchError` with the whole `result`
+- Use `continueOnError: true` to process all requests; `execute()` then returns the result
+- `result.errors` holds typed errors (`DataverseODataError`, `DataverseThrottleError`)
+- Check `result.success` to determine if all requests ran and succeeded, and `result.stoppedEarly` / `result.skippedRequestIds` for requests that never ran
 - When the batch as a whole fails (a malformed batch, auth, throttling), Dataverse answers with a JSON error instead of a multipart body, and `execute()` throws the typed error: `DataverseODataError`, or `DataverseThrottleError` for 429
 
 ### How it is sent
@@ -389,6 +407,19 @@ interface BatchResponseStep {
   headers: Record<string, string>; // lower-cased names
   body?: any; // parsed JSON for JSON parts, otherwise the text
   bodyText?: string; // the body exactly as received
+}
+```
+
+### DataverseBatchError
+
+```typescript
+class DataverseBatchError extends DataverseError {
+  result?: BatchExecutionResult; // everything received (set by execute())
+  requestErrors: Map<string, BatchResponseStep>; // the failed responses only
+  totalRequests: number;
+  successfulRequests: number;
+  failedRequests: number;
+  cause?: unknown; // a split batch's typed error, when a later batch failed as a whole
 }
 ```
 

@@ -192,12 +192,7 @@ describe("BatchRequestBuilder", () => {
       );
     });
 
-    it("should throw if total requests exceed MAX_BATCH_SIZE", async () => {
-      for (let i = 0; i < 1001; i++) {
-        builder.addRequest(`req${String(i)}`, "GET", "/accounts");
-      }
-      await expect(builder.execute()).rejects.toThrow("exceeding the maximum of 1000");
-    });
+    // More than 1000 requests are split into several batches: see continue-and-split.test.ts.
   });
 
   describe("execute: matching recorded responses to requests (#56)", () => {

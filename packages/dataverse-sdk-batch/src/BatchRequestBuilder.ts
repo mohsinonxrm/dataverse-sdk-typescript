@@ -73,14 +73,9 @@ export class BatchRequestBuilder {
   private requestIdSet = new Set<string>();
 
   /**
-   * Maximum requests allowed by Dataverse per batch
+   * Maximum requests allowed by Dataverse per batch, and the default `batchSize`
    */
   private static readonly MAX_BATCH_SIZE = 1000;
-
-  /**
-   * Default batch size for auto-splitting
-   */
-  private static readonly DEFAULT_BATCH_SIZE = 10;
 
   /**
    * Creates a new batch request builder
@@ -252,31 +247,44 @@ export class BatchRequestBuilder {
   }
 
   /** The items to send, with resolved URLs. */
-  private itemsToSend(): BatchItem[] {
+  private resolveItems(items: BatchItem[]): BatchItem[] {
     const resolve = (r: BatchRequestStep): BatchRequestStep => ({
       ...r,
       url: this.resolveUrl(r.url),
     });
-    return this.items.map((item) =>
+    return items.map((item) =>
       isChangeset(item) ? { changeset: item.changeset.map(resolve) } : resolve(item)
     );
   }
 
   /**
-   * Encodes the batch body that {@link execute} sends.
+   * Encodes the batch body that {@link execute} sends (when it fits in one batch).
    *
    * @param boundary - The batch boundary
    * @returns The `multipart/mixed` body
    */
   encode(boundary: string): string {
-    return encodeBatchRequest(this.itemsToSend(), boundary);
+    return encodeBatchRequest(this.resolveItems(this.items), boundary);
   }
 
   /**
-   * Executes the batch request
+   * Executes the batch.
+   *
+   * Without `continueOnError`, Dataverse stops at the first failed request, and `execute()`
+   * throws a {@link DataverseBatchError} whose `result` holds every response received. With
+   * `continueOnError`, Dataverse runs every request and `execute()` returns the result, whatever
+   * failed: check `result.success` and `result.errors`.
+   *
+   * More than `batchSize` requests (default and maximum: 1000, the Dataverse limit) are sent as
+   * several `$batch` requests, one after the other. A changeset is never split. Without
+   * `continueOnError`, the batches after one with a failure are not sent.
    *
    * @param options - Execution options
    * @returns Batch execution result
+   * @throws DataverseBatchError when a request fails and `continueOnError` is not set; or when a
+   *   later batch of a split one fails as a whole (its typed error is the `cause`)
+   * @throws DataverseODataError or DataverseThrottleError when a single (or the first) batch
+   *   fails as a whole
    *
    * @example
    * ```typescript
@@ -286,7 +294,7 @@ export class BatchRequestBuilder {
    * // Check results
    * if (!result.success) {
    *   for (const [id, error] of result.errors) {
-   *     console.error(`Request ${id} failed:`, error);
+   *     console.error(`Request ${id} failed:`, error.message);
    *   }
    * }
    * ```
@@ -299,36 +307,94 @@ export class BatchRequestBuilder {
       );
     }
 
-    const totalRequests = this.getTotalRequestCount();
-
-    // Validate request count
-    if (totalRequests === 0) {
+    if (this.getTotalRequestCount() === 0) {
       throw new DataverseInvalidRequestError(
         "Cannot execute empty batch. Add at least one request."
       );
     }
 
-    // Check if auto-split is needed
-    const batchSize = options.batchSize ?? BatchRequestBuilder.DEFAULT_BATCH_SIZE;
-    if (totalRequests > BatchRequestBuilder.MAX_BATCH_SIZE) {
-      // Auto-split into multiple batches
-      return await this.executeWithSplit(options, batchSize);
+    const batchSize = options.batchSize ?? BatchRequestBuilder.MAX_BATCH_SIZE;
+    if (
+      !Number.isInteger(batchSize) ||
+      batchSize < 1 ||
+      batchSize > BatchRequestBuilder.MAX_BATCH_SIZE
+    ) {
+      throw new DataverseInvalidRequestError(
+        `batchSize must be an integer from 1 to ${String(BatchRequestBuilder.MAX_BATCH_SIZE)}, got ${String(batchSize)}.`
+      );
     }
 
-    // Single batch execution
-    return await this.executeSingleBatch(options);
+    const chunks = this.split(batchSize);
+    const results: BatchExecutionResult[] = [];
+    for (const [index, chunk] of chunks.entries()) {
+      let chunkResult: BatchExecutionResult;
+      try {
+        chunkResult = await this.executeSingleBatch(chunk, options);
+      } catch (err) {
+        if (index === 0) throw err;
+        // Earlier batches have run: keep their results on the error.
+        const result = this.mergeResults(results, chunks.slice(index));
+        throw batchError(
+          `Batch ${String(index + 1)} of ${String(chunks.length)} failed as a whole after ${String(index)} ran: ${err instanceof Error ? err.message : String(err)}`,
+          result,
+          err
+        );
+      }
+      results.push(chunkResult);
+      // Without continue-on-error, stop after the first batch that had a failure.
+      if (!options.continueOnError && chunkResult.failedRequests > 0) break;
+    }
+
+    const result = this.mergeResults(results, chunks.slice(results.length));
+    if (result.failedRequests > 0 && !options.continueOnError) {
+      throw batchError(
+        `Batch request failed with ${String(result.failedRequests)} error(s) out of ${String(result.totalRequests)} request(s)`,
+        result
+      );
+    }
+    return result;
   }
 
   /**
-   * Executes a single batch (no splitting)
-   *
-   * @param options - Execution options
-   * @returns Batch execution result
+   * Splits the items into batches of at most `batchSize` requests, in order, keeping each
+   * changeset whole.
    */
-  private async executeSingleBatch(options: BatchExecutionOptions): Promise<BatchExecutionResult> {
-    // Generate batch body
+  private split(batchSize: number): BatchItem[][] {
+    const chunks: BatchItem[][] = [];
+    let current: BatchItem[] = [];
+    let count = 0;
+    for (const item of this.items) {
+      const size = requestsOf(item).length;
+      if (size > BatchRequestBuilder.MAX_BATCH_SIZE) {
+        throw new DataverseInvalidRequestError(
+          `A changeset has ${String(size)} requests; Dataverse allows at most ${String(BatchRequestBuilder.MAX_BATCH_SIZE)} per batch, and a changeset can't be split.`
+        );
+      }
+      if (count + size > batchSize && current.length > 0) {
+        chunks.push(current);
+        current = [];
+        count = 0;
+      }
+      current.push(item);
+      count += size;
+    }
+    if (current.length > 0) chunks.push(current);
+    return chunks;
+  }
+
+  /**
+   * Sends one `$batch` and matches its responses to the requests.
+   *
+   * @param items - The requests and changesets of this batch
+   * @param options - Execution options
+   * @returns The result for these items (never throws for per-request failures)
+   */
+  private async executeSingleBatch(
+    items: BatchItem[],
+    options: BatchExecutionOptions
+  ): Promise<BatchExecutionResult> {
     const boundary = generateBoundary();
-    const batchBody = this.encode(boundary);
+    const batchBody = encodeBatchRequest(this.resolveItems(items), boundary);
 
     // The caller's headers, lower-cased (client.send() would do that too), then ours: the batch
     // content type must be exactly this one, and continue-on-error is added to any Prefer.
@@ -361,127 +427,40 @@ export class BatchRequestBuilder {
     }
 
     const parts = decodeBatchResponse(await response.text(), contentType);
-    return this.buildResult(parts);
+    return buildResult(items, parts);
   }
 
   /**
-   * Executes batch with auto-splitting
-   *
-   * @param options - Execution options
-   * @param batchSize - Size of each split batch
-   * @returns Aggregated batch execution result
+   * Combines the results of the batches that ran; the requests of batches that didn't run are
+   * reported as skipped.
    */
-  private executeWithSplit(
-    _options: BatchExecutionOptions,
-    _batchSize: number
-  ): Promise<BatchExecutionResult> {
-    // For simplicity in v1, throw error requiring manual split
-    // Auto-split implementation would split requests/changesets into multiple batches
-    throw new DataverseInvalidRequestError(
-      `Batch contains ${String(this.getTotalRequestCount())} requests, exceeding the maximum of ${String(BatchRequestBuilder.MAX_BATCH_SIZE)}. ` +
-        `Please split into multiple batches manually.`
-    );
-  }
-
-  /**
-   * Matches decoded responses to requests and builds the execution result.
-   *
-   * Dataverse answers top-level parts in request order, and without `odata.continue-on-error`
-   * it stops after the first failure, so the response parts with `batchIndex` n answer the n-th
-   * item. Inside a change set each response carries its Content-ID, which is the request id; a
-   * failed change set is rolled back and answered only with the failing request's response.
-   *
-   * @param parts - Decoded response parts
-   * @returns Batch execution result
-   */
-  private buildResult(parts: BatchResponsePart[]): BatchExecutionResult {
-    const byItem = new Map<number, BatchResponsePart[]>();
-    for (const part of parts) {
-      const list = byItem.get(part.batchIndex) ?? [];
-      list.push(part);
-      byItem.set(part.batchIndex, list);
-    }
-
+  private mergeResults(ran: BatchExecutionResult[], notSent: BatchItem[][]): BatchExecutionResult {
     const responses = new Map<string, BatchResponseStep>();
-    let answeredItems = 0;
-    this.items.forEach((item, index) => {
-      const answers = byItem.get(index) ?? [];
-      if (answers.length > 0) answeredItems++;
-      const requests = requestsOf(item);
-      const ids = new Set(requests.map((r) => r.id));
-      answers.forEach((part, i) => {
-        // Match by Content-ID inside a change set; otherwise (or if it is missing) by position.
-        const id =
-          part.contentId !== undefined && ids.has(part.contentId)
-            ? part.contentId
-            : i < requests.length
-              ? requests[i].id
-              : undefined;
-        if (id === undefined || responses.has(id)) return;
-        responses.set(id, {
-          id,
-          status: part.status,
-          statusText: part.statusText,
-          headers: part.headers,
-          body: part.body,
-          bodyText: part.bodyText,
-        });
-      });
-    });
-
-    const results: BatchResponseStep[] = [];
     const errors = new Map<string, Error>();
-    const errorResponses = new Map<string, BatchResponseStep>();
+    const results: BatchResponseStep[] = [];
     const skippedRequestIds: string[] = [];
-    for (const request of this.items.flatMap(requestsOf)) {
-      const step = responses.get(request.id);
-      if (!step) {
-        skippedRequestIds.push(request.id);
-        continue;
-      }
-      results.push(step);
-      if (step.status < 200 || step.status >= 300) {
-        errorResponses.set(step.id, step);
-        const text = step.bodyText ?? "";
-        errors.set(
-          step.id,
-          new Error(
-            `HTTP ${String(step.status)}${step.statusText ? " " + step.statusText : ""}: ${
-              text.length > 0 ? text : "No response body"
-            }`
-          )
-        );
-      }
+    let stoppedEarly = notSent.length > 0;
+    for (const r of ran) {
+      for (const [id, step] of r.responses) responses.set(id, step);
+      for (const [id, error] of r.errors) errors.set(id, error);
+      results.push(...r.results);
+      skippedRequestIds.push(...r.skippedRequestIds);
+      stoppedEarly ||= r.stoppedEarly;
     }
-
-    const failedRequests = errors.size;
-    const successfulRequests = results.length - failedRequests;
-    const totalRequests = this.getTotalRequestCount();
-    const result: BatchExecutionResult = {
+    for (const chunk of notSent) {
+      for (const request of chunk.flatMap(requestsOf)) skippedRequestIds.push(request.id);
+    }
+    return {
       responses,
       results,
       errors,
-      success: failedRequests === 0 && skippedRequestIds.length === 0,
-      totalRequests,
-      successfulRequests,
-      failedRequests,
+      success: errors.size === 0 && skippedRequestIds.length === 0,
+      totalRequests: this.getTotalRequestCount(),
+      successfulRequests: results.length - errors.size,
+      failedRequests: errors.size,
       skippedRequestIds,
-      stoppedEarly: answeredItems < this.items.length,
+      stoppedEarly,
     };
-
-    // If there were errors and not continueOnError, throw
-    if (failedRequests > 0) {
-      // eslint-disable-next-line @typescript-eslint/only-throw-error -- DataverseBatchError extends DataverseError extends Error; cross-package type resolution prevents ESLint from verifying the chain
-      throw new DataverseBatchError(
-        `Batch request failed with ${String(failedRequests)} error(s) out of ${String(totalRequests)} request(s)`,
-        errorResponses,
-        totalRequests,
-        successfulRequests,
-        failedRequests
-      );
-    }
-
-    return result;
   }
 
   /**
@@ -495,4 +474,124 @@ export class BatchRequestBuilder {
     this.requestIdSet.clear();
     return this;
   }
+}
+
+/**
+ * Matches the decoded responses of one `$batch` to its items and builds its result.
+ *
+ * Dataverse answers top-level parts in request order, and without `odata.continue-on-error`
+ * it stops after the first failure, so the response parts with `batchIndex` n answer the n-th
+ * item. Inside a changeset each response carries its Content-ID, which is the request id; a
+ * failed changeset is rolled back and answered only with the failing request's response.
+ */
+async function buildResult(
+  items: BatchItem[],
+  parts: BatchResponsePart[]
+): Promise<BatchExecutionResult> {
+  const byItem = new Map<number, BatchResponsePart[]>();
+  for (const part of parts) {
+    const list = byItem.get(part.batchIndex) ?? [];
+    list.push(part);
+    byItem.set(part.batchIndex, list);
+  }
+
+  const responses = new Map<string, BatchResponseStep>();
+  let answeredItems = 0;
+  items.forEach((item, index) => {
+    const answers = byItem.get(index) ?? [];
+    if (answers.length > 0) answeredItems++;
+    const requests = requestsOf(item);
+    const ids = new Set(requests.map((r) => r.id));
+    answers.forEach((part, i) => {
+      // Match by Content-ID inside a changeset; otherwise (or if it is missing) by position.
+      const id =
+        part.contentId !== undefined && ids.has(part.contentId)
+          ? part.contentId
+          : i < requests.length
+            ? requests[i].id
+            : undefined;
+      if (id === undefined || responses.has(id)) return;
+      responses.set(id, {
+        id,
+        status: part.status,
+        statusText: part.statusText,
+        headers: part.headers,
+        body: part.body,
+        bodyText: part.bodyText,
+      });
+    });
+  });
+
+  const results: BatchResponseStep[] = [];
+  const errors = new Map<string, Error>();
+  const skippedRequestIds: string[] = [];
+  let totalRequests = 0;
+  for (const request of items.flatMap(requestsOf)) {
+    totalRequests++;
+    const step = responses.get(request.id);
+    if (!step) {
+      skippedRequestIds.push(request.id);
+      continue;
+    }
+    results.push(step);
+    if (step.status < 200 || step.status >= 300) {
+      errors.set(step.id, await partError(step));
+    }
+  }
+
+  return {
+    responses,
+    results,
+    errors,
+    success: errors.size === 0 && skippedRequestIds.length === 0,
+    totalRequests,
+    successfulRequests: results.length - errors.size,
+    failedRequests: errors.size,
+    skippedRequestIds,
+    stoppedEarly: answeredItems < items.length,
+  };
+}
+
+/**
+ * The typed error for a failed batch part, as `client.api()` would throw for the same response:
+ * `DataverseODataError` (or `DataverseThrottleError` for 429) with `status`, `code`, `message`,
+ * `headers`, `body` and `requestId`.
+ */
+async function partError(step: BatchResponseStep): Promise<Error> {
+  const text = step.bodyText ?? "";
+  try {
+    // A Response can only be built for 200-599, and 204, 205 and 304 can't have a body.
+    const noBody = text === "" || step.status === 204 || step.status === 205 || step.status === 304;
+    const response = new Response(noBody ? null : text, {
+      status: step.status,
+      headers: step.headers,
+    });
+    return await parseODataError(response, text);
+  } catch {
+    return new DataverseError(`HTTP ${String(step.status)}`, {
+      status: step.status,
+      headers: step.headers,
+      raw: step.body,
+    });
+  }
+}
+
+/** A DataverseBatchError carrying the whole result. */
+function batchError(
+  message: string,
+  result: BatchExecutionResult,
+  cause?: unknown
+): DataverseBatchError {
+  const failed = new Map<string, BatchResponseStep>();
+  for (const step of result.results) {
+    if (result.errors.has(step.id)) failed.set(step.id, step);
+  }
+  return new DataverseBatchError(
+    message,
+    failed,
+    result.totalRequests,
+    result.successfulRequests,
+    result.failedRequests,
+    { result, ...(cause !== undefined ? { cause } : {}) }
+  );
 }

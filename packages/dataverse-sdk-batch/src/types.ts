@@ -146,15 +146,16 @@ export interface BatchResponseStep {
  */
 export interface BatchExecutionOptions {
   /**
-   * Whether to continue processing remaining requests if one fails
-   * Maps to Prefer: odata.continue-on-error header
+   * Run every request even when one fails (sends `Prefer: odata.continue-on-error`), and return
+   * the result instead of throwing for failed requests.
    * @default false
    */
   continueOnError?: boolean;
 
   /**
-   * Maximum requests per batch before auto-splitting
-   * @default 10
+   * Maximum requests per `$batch` (1 to 1000). Larger batches are sent as several `$batch`
+   * requests, one after the other, without splitting a changeset.
+   * @default 1000
    */
   batchSize?: number;
 
@@ -179,7 +180,9 @@ export interface BatchExecutionResult {
   results: BatchResponseStep[];
 
   /**
-   * Failed requests, keyed by request id
+   * Failed requests, keyed by request id. Each is the typed error `client.api()` would throw for
+   * the same response: `DataverseODataError` (or `DataverseThrottleError` for 429), with
+   * `status`, `code`, `message`, `headers`, `body` and `requestId`.
    */
   errors: Map<string, Error>;
 
@@ -211,7 +214,8 @@ export interface BatchExecutionResult {
   skippedRequestIds: string[];
 
   /**
-   * True when Dataverse stopped before reaching every top-level request or change set
+   * True when Dataverse stopped before reaching every top-level request or change set, or when
+   * a split batch stopped before sending every `$batch`
    */
   stoppedEarly: boolean;
 }

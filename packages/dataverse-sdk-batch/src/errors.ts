@@ -3,14 +3,23 @@
  */
 
 import { DataverseError } from "@mohsinonxrm/dataverse-sdk-core";
-import type { BatchResponseStep } from "./types.js";
+import type { BatchExecutionResult, BatchResponseStep } from "./types.js";
+
+/** Extra details for {@link DataverseBatchError}. */
+export interface DataverseBatchErrorInit {
+  /** The whole result: every response received, the typed errors, and the skipped requests. */
+  result?: BatchExecutionResult;
+  /** The underlying error, e.g. the typed error of a split batch that failed as a whole. */
+  cause?: unknown;
+}
 
 /**
  * Error thrown when batch operations fail
  */
 export class DataverseBatchError extends DataverseError {
   /**
-   * Individual request errors mapped by request ID
+   * The failed requests' responses, keyed by request id. Successful responses are in
+   * `result.responses`.
    */
   public readonly requestErrors: Map<string, BatchResponseStep>;
 
@@ -30,6 +39,13 @@ export class DataverseBatchError extends DataverseError {
   public readonly failedRequests: number;
 
   /**
+   * The whole execution result (set when thrown by `BatchRequestBuilder.execute()`): every
+   * response received, in order, the typed per-request errors, and the requests that got no
+   * response (`skippedRequestIds`, `stoppedEarly`).
+   */
+  public readonly result?: BatchExecutionResult;
+
+  /**
    * Creates a new DataverseBatchError
    *
    * @param message - Error message
@@ -37,20 +53,23 @@ export class DataverseBatchError extends DataverseError {
    * @param totalRequests - Total number of requests
    * @param successfulRequests - Number of successful requests
    * @param failedRequests - Number of failed requests
+   * @param init - The whole result, and the underlying error
    */
   constructor(
     message: string,
     requestErrors: Map<string, BatchResponseStep>,
     totalRequests: number,
     successfulRequests: number,
-    failedRequests: number
+    failedRequests: number,
+    init: DataverseBatchErrorInit = {}
   ) {
-    super(message);
+    super(message, init.cause !== undefined ? { cause: init.cause } : undefined);
     this.name = "DataverseBatchError";
     this.requestErrors = requestErrors;
     this.totalRequests = totalRequests;
     this.successfulRequests = successfulRequests;
     this.failedRequests = failedRequests;
+    this.result = init.result;
 
     // Ensure proper prototype chain for instanceof checks
     Object.setPrototypeOf(this, DataverseBatchError.prototype);

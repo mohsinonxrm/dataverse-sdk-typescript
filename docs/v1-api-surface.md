@@ -266,18 +266,23 @@ Message classes implement the `Executable<TResponse>` interface from `@mohsinonx
 ### 7.1 Batch construction and execution
 
 - `class BatchRequestBuilder` (`new BatchRequestBuilder(client: DataverseClient)`)
-  - `addRequest(...)`, `beginChangeset()`, `endChangeset()`, `getTotalRequestCount()`, `execute(options?)`, `clear()`
-- `interface BatchRequestStep`
-- `interface BatchExecutionOptions`
+  - `addRequest(id, method, url, headers?, body?, dependsOn?)`, `beginChangeset()`, `endChangeset()`, `getTotalRequestCount()`, `encode(boundary)`, `execute(options?)`, `clear()`
+  - `execute()` splits more than `batchSize` (default and maximum 1000) requests into several `$batch` requests, keeping change sets whole
+- `interface BatchRequestStep`, `interface BatchChangeset`, `type BatchItem`
+- `interface BatchExecutionOptions` (`continueOnError`, `batchSize`, `headers`)
 - `function createBindManyExecutor()` _(lets `DataverseRequestBuilder.bindMany()` use `$batch`)_
 
 ### 7.2 Batch results and errors
 
 - `interface BatchResponseStep`
-- `interface BatchExecutionResult`
-- `class DataverseBatchError` _(this package's own class, with `requestErrors` and `totalRequests`; distinct from core's `DataverseBatchError`)_
+- `interface BatchExecutionResult` (`responses`, `results`, `errors`, `success`, `skippedRequestIds`, `stoppedEarly`, counts)
+- `class DataverseBatchError` _(this package's own class, with `result`, `requestErrors` and `totalRequests`; distinct from core's `DataverseBatchError`)_, `interface DataverseBatchErrorInit`
 
-Splitting a large batch automatically is [planned](#16-planned-not-exported-yet) (#57).
+### 7.3 Codec
+
+- `function encodeBatchRequest(items, boundary, options?)`, `interface EncodeBatchOptions`, `const JSON_PART_CONTENT_TYPE`
+- `function decodeBatchResponse(body, contentType)`, `interface BatchResponsePart`, `function extractBoundary(contentType)`
+- `function generateBoundary()`, `function generateChangesetBoundary()`
 
 ---
 
@@ -428,7 +433,6 @@ Earlier drafts of this document listed these. They don't exist in the packages t
 | API                                                                                  | Package     | Tracking                                                                   |
 | ------------------------------------------------------------------------------------ | ----------- | -------------------------------------------------------------------------- |
 | Circuit breaker and bulkhead middleware (the options exist and have no effect)       | core        | [#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100) |
-| Automatic splitting of large batches                                                 | batch       | [#57](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/57)   |
 | `const Metadata` strict builders (`Label`, `Attribute`, `Entity`, `Relationship`, …) | metadata    | [#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100) |
 | Function-backed and CRUD messages (`WhoAmIRequest`, `RetrieveEntityRequest`, …)      | messages    | [#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100) |
 | Browser Application Insights adapter                                                 | appinsights | [#158](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/158) |
