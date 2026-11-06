@@ -21,8 +21,25 @@ const ID = "12345678-1234-1234-1234-123456789012";
 const ID2 = "22222222-2222-2222-2222-222222222222";
 const USER = "99999999-9999-9999-9999-999999999999";
 
+/** Entity set names the fake metadata endpoint knows (#76: they are looked up, not guessed). */
+const ENTITY_SETS: Record<string, string> = {
+  account: "accounts",
+  contact: "contacts",
+  lead: "leads",
+  opportunity: "opportunities",
+  systemuser: "systemusers",
+  team: "teams",
+};
+
 function setup() {
   const { client, fake } = createTestClient();
+  fake.on("GET", /^\/EntityDefinitions\(LogicalName='[^']+'\)$/, (req) => {
+    const logicalName = /LogicalName='([^']+)'/.exec(decodeURIComponent(req.path))?.[1] ?? "";
+    const entitySetName = ENTITY_SETS[logicalName];
+    return entitySetName
+      ? jsonResponse({ EntitySetName: entitySetName, MetadataId: ID })
+      : odataError(404, "0x80060888", "Could not find an entity with the specified name.");
+  });
   return { client, fake, service: new OrganizationService(client) };
 }
 
@@ -346,14 +363,15 @@ describe("OrganizationService", () => {
         { impersonateUserId: USER }
       );
 
-      expect(fake.requests).toHaveLength(2);
-      expect(body(fake.requests[0])).toEqual({
+      const refs = fake.requests.filter((r) => r.method === "POST");
+      expect(refs).toHaveLength(2);
+      expect(body(refs[0])).toEqual({
         "@odata.id": `${TEST_API_URL}/contacts(${ID2})`,
       });
-      expect(body(fake.requests[1])).toEqual({
+      expect(body(refs[1])).toEqual({
         "@odata.id": `${TEST_API_URL}/contacts(${USER})`,
       });
-      expect(fake.requests[0].headers.mscrmcallerid).toBe(USER);
+      expect(refs[0].headers.mscrmcallerid).toBe(USER);
     });
   });
 

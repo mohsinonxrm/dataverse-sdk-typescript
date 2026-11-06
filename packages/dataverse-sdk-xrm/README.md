@@ -393,7 +393,7 @@ async associate(
 - `entitySetName` - The plural entity set name
 - `id` - The GUID of the primary record
 - `relationship` - The collection-valued navigation property name
-- `relatedEntities` - Array of `EntityReference`s (`{ logicalName, id }`, with the logical name such as `"contact"`) to associate; each is sent as one `POST …/$ref`
+- `relatedEntities` - Array of `EntityReference`s (`{ logicalName, id }`, with the logical name such as `"contact"`) to associate; each is sent as one `POST …/$ref`. The entity set name comes from `getEntitySetName()`, or from the reference's `entitySetName` when set
 - `options` - Optional association settings
 
 **Options:**
@@ -563,6 +563,38 @@ console.log("Organization:", whoAmI.OrganizationId);
 
 ---
 
+### getEntitySetName
+
+Resolves a table's entity set name from its logical name.
+
+```typescript
+getEntitySetName(logicalName: string): Promise<string>
+setEntitySetName(logicalName: string, entitySetName: string): void
+```
+
+Methods that take a logical name (`assign()`, `setState()` and the `EntityReference`s of
+`associate()`) use this. Entity set names are not always the logical name plus "s"
+(`opportunity` → `opportunities`, custom tables can use any name), so the service reads
+`EntityDefinitions(LogicalName='…')?$select=EntitySetName` once per logical name and caches it.
+An unknown table rejects with the 404 `DataverseError` instead of a guessed URL.
+
+To skip the lookup, give the names up front, per call, or later:
+
+```typescript
+const service = new OrganizationService(client, {
+  entitySetNames: { new_widget: "new_widgets" },
+});
+service.setEntitySetName("new_gadget", "new_gadgetry");
+
+await service.associate("accounts", accountId, "new_account_widgets", [
+  { logicalName: "new_widget", id: widgetId, entitySetName: "new_widgets" },
+]);
+
+await service.getEntitySetName("opportunity"); // "opportunities" (one metadata request, then cached)
+```
+
+---
+
 ### assign
 
 Assigns a record to a user or team.
@@ -578,7 +610,7 @@ async assign(
 
 **Parameters:**
 
-- `entityName` - The logical name of the entity (e.g., 'account', 'lead')
+- `entityName` - The logical name of the entity (e.g., 'account', 'lead'); its entity set name comes from `getEntitySetName()`
 - `recordId` - The GUID of the record to assign
 - `assigneeId` - The GUID of the user or team to assign to
 - `assigneeType` - Type of assignee ('systemuser' or 'team'), defaults to 'systemuser'
@@ -610,7 +642,7 @@ async setState(
 
 **Parameters:**
 
-- `entityName` - The logical name of the entity
+- `entityName` - The logical name of the entity; its entity set name comes from `getEntitySetName()`
 - `recordId` - The GUID of the record
 - `stateCode` - The state code (0 = Active, 1 = Inactive, etc.)
 - `statusCode` - The status code (specific to entity and state)
@@ -638,9 +670,18 @@ Represents a reference to an entity record.
 
 ```typescript
 interface EntityReference {
-  logicalName: string;
+  logicalName: string; // e.g. "contact"
   id: string;
   name?: string;
+  entitySetName?: string; // e.g. "contacts"; resolved from logicalName when omitted
+}
+```
+
+### OrganizationServiceOptions
+
+```typescript
+interface OrganizationServiceOptions {
+  entitySetNames?: Record<string, string>; // logical name → entity set name, no lookup needed
 }
 ```
 

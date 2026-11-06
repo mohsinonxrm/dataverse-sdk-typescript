@@ -20,6 +20,23 @@ export interface EntityReference {
    * Optional name/display value of the referenced entity
    */
   name?: string;
+
+  /**
+   * Optional entity set name (e.g. 'contacts'). When set, it is used as is; otherwise it is
+   * resolved from `logicalName` through metadata (see `OrganizationService.getEntitySetName`).
+   */
+  entitySetName?: string;
+}
+
+/**
+ * Options for the OrganizationService constructor
+ */
+export interface OrganizationServiceOptions {
+  /**
+   * Entity set names by logical name, e.g. `{ new_widget: "new_widgets" }`. These are used
+   * without a metadata lookup; other logical names are looked up once and cached.
+   */
+  entitySetNames?: Record<string, string>;
 }
 
 /**
