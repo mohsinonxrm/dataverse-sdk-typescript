@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { MailboxTrackingFolderMapping } from "./types/index.js";
 
 /**
@@ -25,7 +25,7 @@ export class RetrieveMailboxTrackingFoldersFunction implements Executable<Retrie
     const aliases: string[] = [];
     if (this.mailboxId !== undefined) {
       aliases.push(`MailboxId=@p1`);
-      params.append("@p1", formatAliasValue(this.mailboxId));
+      params.append("@p1", formatParameterAlias(this.mailboxId, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

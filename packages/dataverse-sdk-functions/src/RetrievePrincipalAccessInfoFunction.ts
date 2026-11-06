@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
  * Response from RetrievePrincipalAccessInfo function
@@ -30,11 +30,11 @@ export class RetrievePrincipalAccessInfoFunction implements Executable<RetrieveP
     const aliases: string[] = [];
     if (this.objectId !== undefined) {
       aliases.push(`ObjectId=@p1`);
-      params.append("@p1", formatAliasValue(this.objectId));
+      params.append("@p1", formatParameterAlias(this.objectId, "Edm.Guid"));
     }
     if (this.entityName !== undefined) {
       aliases.push(`EntityName=@p2`);
-      params.append("@p2", formatAliasValue(this.entityName));
+      params.append("@p2", formatParameterAlias(this.entityName, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

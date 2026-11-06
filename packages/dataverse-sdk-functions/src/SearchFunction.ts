@@ -14,7 +14,7 @@ export interface SearchResponse {
  * Unbound function
  */
 export class SearchFunction implements Executable<SearchResponse> {
-  constructor(public readonly appointmentRequest: AppointmentRequest) {}
+  constructor(public readonly appointmentRequest?: AppointmentRequest) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/Search`;

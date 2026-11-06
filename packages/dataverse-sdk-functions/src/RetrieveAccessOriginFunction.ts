@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
  * Response from RetrieveAccessOrigin function
@@ -28,15 +28,15 @@ export class RetrieveAccessOriginFunction implements Executable<RetrieveAccessOr
     const aliases: string[] = [];
     if (this.objectId !== undefined) {
       aliases.push(`ObjectId=@p1`);
-      params.append("@p1", formatAliasValue(this.objectId));
+      params.append("@p1", formatParameterAlias(this.objectId, "Edm.Guid"));
     }
     if (this.logicalName !== undefined) {
       aliases.push(`LogicalName=@p2`);
-      params.append("@p2", formatAliasValue(this.logicalName));
+      params.append("@p2", formatParameterAlias(this.logicalName, "Edm.String"));
     }
     if (this.principalId !== undefined) {
       aliases.push(`PrincipalId=@p3`);
-      params.append("@p3", formatAliasValue(this.principalId));
+      params.append("@p3", formatParameterAlias(this.principalId, "Edm.Guid"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
  * Response from OlderThanXMinutes function
@@ -27,11 +27,11 @@ export class OlderThanXMinutesFunction implements Executable<OlderThanXMinutesRe
     const aliases: string[] = [];
     if (this.propertyName !== undefined) {
       aliases.push(`PropertyName=@p1`);
-      params.append("@p1", formatAliasValue(this.propertyName));
+      params.append("@p1", formatParameterAlias(this.propertyName, "Edm.String"));
     }
     if (this.propertyValue !== undefined) {
       aliases.push(`PropertyValue=@p2`);
-      params.append("@p2", formatAliasValue(this.propertyValue));
+      params.append("@p2", formatParameterAlias(this.propertyValue, "Edm.Int64"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

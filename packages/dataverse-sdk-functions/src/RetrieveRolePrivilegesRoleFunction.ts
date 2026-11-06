@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { RolePrivilege } from "./types/index.js";
 
 /**
@@ -25,7 +25,7 @@ export class RetrieveRolePrivilegesRoleFunction implements Executable<RetrieveRo
     const aliases: string[] = [];
     if (this.roleId !== undefined) {
       aliases.push(`RoleId=@p1`);
-      params.append("@p1", formatAliasValue(this.roleId));
+      params.append("@p1", formatParameterAlias(this.roleId, "Edm.Guid"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

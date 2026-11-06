@@ -6,6 +6,7 @@
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { parseEdmx } from "../src/parsers/edmx-parser.js";
 import { generateActions } from "../src/generators/actions-generator.js";
@@ -13,6 +14,13 @@ import { generateFunctions } from "../src/generators/functions-generator.js";
 import { generateMessages } from "../src/generators/messages-generator.js";
 import { generateComplexTypes } from "../src/generators/complex-types-generator.js";
 import { typecheck } from "./typecheck.js";
+
+/**
+ * Generated output goes inside this package (and is removed afterwards), not the OS temp dir, so
+ * the emitted functions helper's runtime import of @mohsinonxrm/dataverse-sdk-core resolves when a
+ * test loads generated code.
+ */
+const OUT_ROOT = fileURLToPath(new URL(".", import.meta.url));
 
 const EDMX = `<?xml version="1.0" encoding="utf-8"?>
 <edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
@@ -35,7 +43,7 @@ let dir: string;
 
 beforeAll(async () => {
   vi.spyOn(console, "log").mockImplementation(() => undefined);
-  dir = await mkdtemp(join(tmpdir(), "gen-test-"));
+  dir = await mkdtemp(join(OUT_ROOT, ".gen-test-"));
   const csdl = parseEdmx(EDMX);
   await generateActions(csdl, join(dir, "actions"), false);
   await generateFunctions(csdl, join(dir, "functions"), false);
@@ -67,20 +75,22 @@ describe("generate-sdk-types", () => {
     }
   });
 
-  it("#22: generated functions format every scalar alias with formatAliasValue", async () => {
+  it("#22: generated functions format every scalar alias with formatParameterAlias", async () => {
     const fn = await readFile(join(dir, "functions", "ValidateQueryFunction.ts"), "utf8");
-    expect(fn).toMatch(/import \{ formatAliasValue \} from ["']\.\/internal\/odataLiteral\.js["']/);
-    expect(fn).toMatch(/formatAliasValue\(this\.fetchXml\)/);
-    expect(fn).toMatch(/formatAliasValue\(this\.count\)/);
+    expect(fn).toMatch(
+      /import \{ formatParameterAlias \} from ["']\.\/internal\/odataLiteral\.js["']/
+    );
+    expect(fn).toContain("formatParameterAlias(this.fetchXml, 'Edm.String')");
+    expect(fn).toContain("formatParameterAlias(this.count, 'Edm.Int32')");
   });
 
-  it("#22: the emitted formatAliasValue doubles embedded quotes", async () => {
+  it("#22: the emitted formatParameterAlias doubles embedded quotes", async () => {
     const mod = (await import(join(dir, "functions", "internal", "odataLiteral.ts"))) as {
-      formatAliasValue: (v: unknown) => string;
+      formatParameterAlias: (v: unknown, type: string) => string;
     };
-    expect(mod.formatAliasValue("O'Brien's")).toBe("'O''Brien''s'");
-    expect(mod.formatAliasValue(5)).toBe("5");
-    expect(mod.formatAliasValue(true)).toBe("true");
+    expect(mod.formatParameterAlias("O'Brien's", "Edm.String")).toBe("'O''Brien''s'");
+    expect(mod.formatParameterAlias(5, "Edm.Int32")).toBe("5");
+    expect(mod.formatParameterAlias(true, "Edm.Boolean")).toBe("true");
   });
 });
 
@@ -136,7 +146,7 @@ describe("#73: nullable properties and base-typed parameters", () => {
 
   beforeAll(async () => {
     vi.spyOn(console, "log").mockImplementation(() => undefined);
-    out = await mkdtemp(join(tmpdir(), "gen-73-"));
+    out = await mkdtemp(join(OUT_ROOT, ".gen-73-"));
     const csdl = parseEdmx(POLY_EDMX);
     for (const target of ["actions", "functions", "messages"]) {
       await generateComplexTypes(csdl, join(out, target, "types"));
@@ -311,7 +321,7 @@ describe("#69: collection-bound operations", () => {
 
   beforeAll(async () => {
     vi.spyOn(console, "log").mockImplementation(() => undefined);
-    out = await mkdtemp(join(tmpdir(), "gen-69-"));
+    out = await mkdtemp(join(OUT_ROOT, ".gen-69-"));
     const csdl = parseEdmx(BOUND_EDMX);
     await generateActions(csdl, join(out, "actions"), false);
     await generateFunctions(csdl, join(out, "functions"), false);
@@ -372,6 +382,280 @@ describe("#69: collection-bound operations", () => {
     const code = await read("actions/OrphanAction.ts");
     expect(code).toContain("// WARNING: Entity set not found in metadata");
     expect(code).toContain("`${baseUrl}/nosetentitys/Microsoft.Dynamics.CRM.Orphan`");
+  });
+});
+
+/**
+ * #67, #68: function parameters are written as the OData literal of their type (enums as
+ * `Microsoft.Dynamics.CRM.<Enum>'<value>'`, GUIDs and date-times bare), enums are exported as
+ * values, and parameters the CSDL leaves nullable may be left out.
+ */
+describe("#67, #68: function parameter literals", () => {
+  const PARAMS_EDMX = `<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+  <edmx:DataServices>
+    <Schema Namespace="Microsoft.Dynamics.CRM" Alias="mscrm" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+      <EnumType Name="EntityFilters" IsFlags="true">
+        <Member Name="Default" Value="1" />
+        <Member Name="Entity" Value="1" />
+        <Member Name="Attributes" Value="2" />
+        <Member Name="Privileges" Value="4" />
+      </EnumType>
+      <Function Name="RetrieveEntity">
+        <Parameter Name="EntityFilters" Type="mscrm.EntityFilters" Nullable="false" />
+        <Parameter Name="LogicalName" Type="Edm.String" />
+        <Parameter Name="MetadataId" Type="Edm.Guid" Nullable="false" />
+        <Parameter Name="RetrieveAsIfPublished" Type="Edm.Boolean" Nullable="false" />
+        <ReturnType Type="Edm.String" />
+      </Function>
+      <Function Name="LocalTimeFromUtcTime">
+        <Parameter Name="TimeZoneCode" Type="Edm.Int32" Nullable="false" />
+        <Parameter Name="UtcTime" Type="Edm.DateTimeOffset" Nullable="false" />
+        <ReturnType Type="Edm.String" />
+      </Function>
+      <Function Name="GetChanges">
+        <Parameter Name="Stamp" Type="Edm.String" Nullable="false" />
+        <Parameter Name="AppModuleId" Type="Edm.Guid" />
+        <Parameter Name="Filters" Type="mscrm.EntityFilters" />
+        <ReturnType Type="Edm.String" />
+      </Function>
+    </Schema>
+  </edmx:DataServices>
+</edmx:Edmx>`;
+
+  const BASE = "https://contoso.crm.dynamics.com/api/data/v9.2";
+  const GUID = "00000000-0000-0000-0000-000000000000";
+  let out: string;
+  const read = (path: string) => readFile(join(out, path), "utf8");
+  type Fn = new (...args: unknown[]) => { toRequestInformation(baseUrl: string): { url: string } };
+  const load = async (name: string): Promise<Fn> => {
+    const mod = (await import(join(out, "functions", `${name}.ts`))) as Record<
+      string,
+      Fn | undefined
+    >;
+    const value = mod[name];
+    if (!value) throw new Error(`${name} isn't exported`);
+    return value;
+  };
+  /** The URL as Dataverse decodes it. */
+  const decoded = (fn: InstanceType<Fn>) =>
+    decodeURIComponent(fn.toRequestInformation(BASE).url.replace(/\+/g, " "));
+
+  beforeAll(async () => {
+    vi.spyOn(console, "log").mockImplementation(() => undefined);
+    out = await mkdtemp(join(OUT_ROOT, ".gen-6768-"));
+    const csdl = parseEdmx(PARAMS_EDMX);
+    await generateComplexTypes(csdl, join(out, "functions", "types"));
+    await generateFunctions(csdl, join(out, "functions"), false);
+  });
+
+  afterAll(async () => {
+    vi.restoreAllMocks();
+    await rm(out, { recursive: true, force: true });
+  });
+
+  it("an enum is an enum literal; a GUID is bare (#67, #68)", async () => {
+    const RetrieveEntity = await load("RetrieveEntityFunction");
+    expect(decoded(new RetrieveEntity(3, "account", GUID, false))).toBe(
+      `${BASE}/RetrieveEntity(EntityFilters=@p1,LogicalName=@p2,MetadataId=@p3,RetrieveAsIfPublished=@p4)` +
+        `?@p1=Microsoft.Dynamics.CRM.EntityFilters'3'&@p2='account'&@p3=${GUID}&@p4=false`
+    );
+    expect(decoded(new RetrieveEntity("Attributes", "account", GUID, false))).toContain(
+      "@p1=Microsoft.Dynamics.CRM.EntityFilters'Attributes'"
+    );
+  });
+
+  it("a DateTimeOffset is bare and also takes a Date (#68)", async () => {
+    const LocalTime = await load("LocalTimeFromUtcTimeFunction");
+    expect(decoded(new LocalTime(85, new Date("2026-01-01T00:00:00Z")))).toContain(
+      "@p2=2026-01-01T00:00:00.000Z"
+    );
+    expect(decoded(new LocalTime(85, "2026-01-01T00:00:00Z"))).toContain(
+      "@p2=2026-01-01T00:00:00Z"
+    );
+  });
+
+  it("nullable parameters are optional when trailing, and accept undefined otherwise (#68)", async () => {
+    const entity = await read("functions/RetrieveEntityFunction.ts");
+    expect(entity).toContain(
+      "public readonly entityFilters: EntityFilters | keyof typeof EntityFilters,"
+    );
+    expect(entity).toContain("public readonly logicalName: string | undefined,");
+    expect(entity).toContain("public readonly metadataId: string,");
+    const changes = await read("functions/GetChangesFunction.ts");
+    expect(changes).toContain("public readonly stamp: string,");
+    expect(changes).toContain("public readonly appModuleId?: string,");
+    expect(changes).toContain(
+      "public readonly filters?: EntityFilters | keyof typeof EntityFilters,"
+    );
+    const GetChanges = await load("GetChangesFunction");
+    expect(decoded(new GetChanges("s1"))).toBe(`${BASE}/GetChanges(Stamp=@p1)?@p1='s1'`);
+    const RetrieveEntity = await load("RetrieveEntityFunction");
+    expect(decoded(new RetrieveEntity(1, undefined, GUID, true))).not.toContain("LogicalName");
+  });
+
+  it("enums are exported as values, from the types index and the package index (#67)", async () => {
+    expect(await read("functions/types/index.ts")).toContain(
+      "export { EntityFilters } from './EntityFilters.js';"
+    );
+    expect(await read("functions/index.ts")).toContain(
+      "export { EntityFilters } from './types/index.js';"
+    );
+  });
+
+  it("the enum values, member names and Date compile; an unknown member doesn't", async () => {
+    const ok = await typecheck(
+      join(out, "functions"),
+      "usage-ok.ts",
+      `import { EntityFilters, RetrieveEntityFunction, LocalTimeFromUtcTimeFunction, GetChangesFunction } from "./index.js";
+new RetrieveEntityFunction(EntityFilters.Entity | EntityFilters.Attributes, "account", "${GUID}", false);
+new RetrieveEntityFunction("Entity", undefined, "${GUID}", false);
+new LocalTimeFromUtcTimeFunction(85, new Date());
+new GetChangesFunction("s1");
+`
+    );
+    expect(ok).toEqual([]);
+    const bad = await typecheck(
+      join(out, "functions"),
+      "usage-bad.ts",
+      `import { RetrieveEntityFunction } from "./index.js";
+new RetrieveEntityFunction("Bogus", "account", "${GUID}", false);
+`
+    );
+    expect(bad.join("\n")).toMatch(/usage-bad\.ts\(2\)/);
+  });
+});
+
+/**
+ * #72: an entity reference is the Web API shape (`@odata.type` + primary key) in a body and
+ * `{"@odata.id": "<set>(<id>)"}` in a function parameter, with keys and sets from the CSDL.
+ */
+describe("#72: entity references", () => {
+  const REFS_EDMX = `<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+  <edmx:DataServices>
+    <Schema Namespace="Microsoft.Dynamics.CRM" Alias="mscrm" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+      <EntityType Name="crmbaseentity" Abstract="true" />
+      <EntityType Name="account" BaseType="mscrm.crmbaseentity">
+        <Key><PropertyRef Name="accountid" /></Key>
+        <Property Name="accountid" Type="Edm.Guid" />
+      </EntityType>
+      <EntityType Name="opportunity" BaseType="mscrm.crmbaseentity">
+        <Key><PropertyRef Name="opportunityid" /></Key>
+        <Property Name="opportunityid" Type="Edm.Guid" />
+      </EntityType>
+      <EntityType Name="activitypointer" BaseType="mscrm.crmbaseentity" Abstract="true">
+        <Key><PropertyRef Name="activityid" /></Key>
+        <Property Name="activityid" Type="Edm.Guid" />
+      </EntityType>
+      <EntityType Name="email" BaseType="mscrm.activitypointer">
+        <Property Name="sender" Type="Edm.String" />
+      </EntityType>
+      <Action Name="Merge">
+        <Parameter Name="Target" Type="mscrm.crmbaseentity" Nullable="false" />
+        <Parameter Name="Subordinate" Type="mscrm.crmbaseentity" Nullable="false" />
+      </Action>
+      <Function Name="InitializeFrom">
+        <Parameter Name="EntityMoniker" Type="mscrm.crmbaseentity" Nullable="false" />
+        <Parameter Name="TargetEntityName" Type="Edm.String" Nullable="false" />
+        <ReturnType Type="mscrm.crmbaseentity" />
+      </Function>
+      <EntityContainer Name="System">
+        <EntitySet Name="accounts" EntityType="Microsoft.Dynamics.CRM.account" />
+        <EntitySet Name="opportunities" EntityType="Microsoft.Dynamics.CRM.opportunity" />
+        <EntitySet Name="activitypointers" EntityType="Microsoft.Dynamics.CRM.activitypointer" />
+        <EntitySet Name="emails" EntityType="Microsoft.Dynamics.CRM.email" />
+      </EntityContainer>
+    </Schema>
+  </edmx:DataServices>
+</edmx:Edmx>`;
+
+  const BASE = "https://contoso.crm.dynamics.com/api/data/v9.2";
+  let out: string;
+  interface RefModule {
+    createEntityReference(
+      logicalName: string,
+      id: string,
+      options?: { primaryIdAttribute?: string; entitySetName?: string }
+    ): Record<string, unknown>;
+    getEntitySetNameFromReference(ref: Record<string, unknown>): string;
+  }
+  type Op = new (...args: unknown[]) => {
+    toRequestInformation(baseUrl: string): { url: string; body?: unknown };
+  };
+  const load = async <T>(path: string): Promise<T> => {
+    const mod: unknown = await import(join(out, path));
+    return mod as T;
+  };
+
+  beforeAll(async () => {
+    vi.spyOn(console, "log").mockImplementation(() => undefined);
+    out = await mkdtemp(join(OUT_ROOT, ".gen-72-"));
+    const csdl = parseEdmx(REFS_EDMX);
+    await generateActions(csdl, join(out, "actions"), false);
+    await generateFunctions(csdl, join(out, "functions"), false);
+  });
+
+  afterAll(async () => {
+    vi.restoreAllMocks();
+    await rm(out, { recursive: true, force: true });
+  });
+
+  it("parses entity keys", () => {
+    const csdl = parseEdmx(REFS_EDMX);
+    expect(csdl.entityTypes.find((t) => t.name === "account")?.key).toEqual(["accountid"]);
+    expect(csdl.entityTypes.find((t) => t.name === "email")?.key).toEqual([]);
+  });
+
+  it("createEntityReference returns the Web API shape, keyed by the CSDL primary key", async () => {
+    for (const pkg of ["actions", "functions"]) {
+      const refs = await load<RefModule>(`${pkg}/types/EntityReference.ts`);
+      expect(JSON.stringify(refs.createEntityReference("account", "a1"))).toBe(
+        '{"@odata.type":"Microsoft.Dynamics.CRM.account","accountid":"a1"}'
+      );
+      // An activity inherits activitypointer's key
+      expect(JSON.stringify(refs.createEntityReference("email", "e1"))).toBe(
+        '{"@odata.type":"Microsoft.Dynamics.CRM.email","activityid":"e1"}'
+      );
+      const opp = refs.createEntityReference("opportunity", "o1");
+      expect(opp).toMatchObject({ logicalName: "opportunity", id: "o1" });
+      expect(refs.getEntitySetNameFromReference(opp)).toBe("opportunities");
+      // A table the CSDL doesn't know: <name>id key, and the set must be given
+      const custom = refs.createEntityReference("new_thing", "n1");
+      expect(JSON.stringify(custom)).toBe(
+        '{"@odata.type":"Microsoft.Dynamics.CRM.new_thing","new_thingid":"n1"}'
+      );
+      expect(() => refs.getEntitySetNameFromReference(custom)).toThrow(/entity set of 'new_thing'/);
+      const given = refs.createEntityReference("new_thing", "n1", { entitySetName: "new_things" });
+      expect(refs.getEntitySetNameFromReference(given)).toBe("new_things");
+    }
+  });
+
+  it("an action body carries the reference in the Web API shape", async () => {
+    const refs = await load<RefModule>("actions/types/EntityReference.ts");
+    const { MergeAction } = await load<{ MergeAction: Op }>("actions/MergeAction.ts");
+    const info = new MergeAction(
+      refs.createEntityReference("account", "a1"),
+      refs.createEntityReference("account", "a2")
+    ).toRequestInformation(BASE);
+    expect(JSON.parse(JSON.stringify(info.body))).toEqual({
+      Target: { "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "a1" },
+      Subordinate: { "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "a2" },
+    });
+  });
+
+  it("a function parameter is @odata.id from the CSDL entity set; an unknown set throws", async () => {
+    const refs = await load<RefModule>("functions/types/EntityReference.ts");
+    const { InitializeFromFunction } = await load<{ InitializeFromFunction: Op }>(
+      "functions/InitializeFromFunction.ts"
+    );
+    const url = new InitializeFromFunction(
+      refs.createEntityReference("opportunity", "o1"),
+      "account"
+    ).toRequestInformation(BASE).url;
+    expect(decodeURIComponent(url)).toContain('@p1={"@odata.id":"opportunities(o1)"}');
+    const unknown = new InitializeFromFunction(refs.createEntityReference("new_thing", "n1"), "x");
+    expect(() => unknown.toRequestInformation(BASE)).toThrow(/needs an entitySetName/);
   });
 });
 

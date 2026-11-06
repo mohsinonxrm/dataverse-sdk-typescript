@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
  * Response from InFiscalPeriodAndYear function
@@ -28,15 +28,15 @@ export class InFiscalPeriodAndYearFunction implements Executable<InFiscalPeriodA
     const aliases: string[] = [];
     if (this.propertyName !== undefined) {
       aliases.push(`PropertyName=@p1`);
-      params.append("@p1", formatAliasValue(this.propertyName));
+      params.append("@p1", formatParameterAlias(this.propertyName, "Edm.String"));
     }
     if (this.propertyValue1 !== undefined) {
       aliases.push(`PropertyValue1=@p2`);
-      params.append("@p2", formatAliasValue(this.propertyValue1));
+      params.append("@p2", formatParameterAlias(this.propertyValue1, "Edm.Int64"));
     }
     if (this.propertyValue2 !== undefined) {
       aliases.push(`PropertyValue2=@p3`);
-      params.append("@p3", formatAliasValue(this.propertyValue2));
+      params.append("@p3", formatParameterAlias(this.propertyValue2, "Edm.Int64"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

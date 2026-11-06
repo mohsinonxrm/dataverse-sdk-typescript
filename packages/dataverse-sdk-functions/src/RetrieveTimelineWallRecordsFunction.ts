@@ -1,7 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { EntityReference } from "./types/EntityReference.js";
-import { getEntitySetNameFromReference } from "./types/EntityReference.js";
 
 /**
  * Response from RetrieveTimelineWallRecords function
@@ -19,8 +18,8 @@ export interface RetrieveTimelineWallRecordsResponse {
 export class RetrieveTimelineWallRecordsFunction implements Executable<RetrieveTimelineWallRecordsResponse> {
   constructor(
     public readonly fetchXml: string,
-    public readonly target: EntityReference,
-    public readonly rollupType: number
+    public readonly target?: EntityReference,
+    public readonly rollupType?: number
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -32,20 +31,15 @@ export class RetrieveTimelineWallRecordsFunction implements Executable<RetrieveT
     const aliases: string[] = [];
     if (this.fetchXml !== undefined) {
       aliases.push(`FetchXml=@p1`);
-      params.append("@p1", formatAliasValue(this.fetchXml));
+      params.append("@p1", formatParameterAlias(this.fetchXml, "Edm.String"));
     }
     if (this.target !== undefined) {
       aliases.push(`Target=@p2`);
-      params.append(
-        "@p2",
-        JSON.stringify({
-          "@odata.id": `${getEntitySetNameFromReference(this.target)}(${this.target.id})`,
-        })
-      );
+      params.append("@p2", formatParameterAlias(this.target, "mscrm.crmbaseentity", "EntityType"));
     }
     if (this.rollupType !== undefined) {
       aliases.push(`RollupType=@p3`);
-      params.append("@p3", formatAliasValue(this.rollupType));
+      params.append("@p3", formatParameterAlias(this.rollupType, "Edm.Int32"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

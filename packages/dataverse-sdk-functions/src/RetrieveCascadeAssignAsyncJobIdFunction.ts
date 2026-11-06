@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
  * Response from RetrieveCascadeAssignAsyncJobId function
@@ -25,7 +25,7 @@ export class RetrieveCascadeAssignAsyncJobIdFunction implements Executable<Retri
     const aliases: string[] = [];
     if (this.parentEntityId !== undefined) {
       aliases.push(`ParentEntityId=@p1`);
-      params.append("@p1", formatAliasValue(this.parentEntityId));
+      params.append("@p1", formatParameterAlias(this.parentEntityId, "Edm.Guid"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

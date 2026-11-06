@@ -1,6 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { EntityReference } from "./types/EntityReference.js";
-import { getEntitySetNameFromReference } from "./types/EntityReference.js";
 import type { AccessRights } from "./types/index.js";
 
 /**
@@ -31,12 +31,7 @@ export class RetrievePrincipalAccessFunction implements Executable<RetrievePrinc
     const aliases: string[] = [];
     if (this.target !== undefined) {
       aliases.push(`Target=@p1`);
-      params.append(
-        "@p1",
-        JSON.stringify({
-          "@odata.id": `${getEntitySetNameFromReference(this.target)}(${this.target.id})`,
-        })
-      );
+      params.append("@p1", formatParameterAlias(this.target, "mscrm.crmbaseentity", "EntityType"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

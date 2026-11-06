@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
  * Response from GetComponentManagedIdentityFIC function
@@ -27,11 +27,11 @@ export class GetComponentManagedIdentityFICFunction implements Executable<GetCom
     const aliases: string[] = [];
     if (this.componentName !== undefined) {
       aliases.push(`ComponentName=@p1`);
-      params.append("@p1", formatAliasValue(this.componentName));
+      params.append("@p1", formatParameterAlias(this.componentName, "Edm.String"));
     }
     if (this.componentId !== undefined) {
       aliases.push(`ComponentId=@p2`);
-      params.append("@p2", formatAliasValue(this.componentId));
+      params.append("@p2", formatParameterAlias(this.componentId, "Edm.Guid"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

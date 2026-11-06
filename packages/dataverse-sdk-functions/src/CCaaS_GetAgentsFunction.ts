@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
  * Response from CCaaS_GetAgents function
@@ -17,14 +17,14 @@ export interface CCaaS_GetAgentsResponse {
  */
 export class CCaaS_GetAgentsFunction implements Executable<CCaaS_GetAgentsResponse> {
   constructor(
-    public readonly agentIds: string[],
-    public readonly agentType: string,
-    public readonly queues: string[],
+    public readonly agentIds: string[] | undefined,
+    public readonly agentType: string | undefined,
+    public readonly queues: string[] | undefined,
     public readonly apiVersion: string,
-    public readonly continuationToken: string,
-    public readonly name: string,
-    public readonly baseStatus: string[],
-    public readonly orderBy: string
+    public readonly continuationToken?: string,
+    public readonly name?: string,
+    public readonly baseStatus?: string[],
+    public readonly orderBy?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -39,7 +39,7 @@ export class CCaaS_GetAgentsFunction implements Executable<CCaaS_GetAgentsRespon
     }
     if (this.agentType !== undefined) {
       aliases.push(`AgentType=@p2`);
-      params.append("@p2", formatAliasValue(this.agentType));
+      params.append("@p2", formatParameterAlias(this.agentType, "Edm.String"));
     }
     if (this.queues !== undefined) {
       aliases.push(`Queues=@p3`);
@@ -47,15 +47,15 @@ export class CCaaS_GetAgentsFunction implements Executable<CCaaS_GetAgentsRespon
     }
     if (this.apiVersion !== undefined) {
       aliases.push(`ApiVersion=@p4`);
-      params.append("@p4", formatAliasValue(this.apiVersion));
+      params.append("@p4", formatParameterAlias(this.apiVersion, "Edm.String"));
     }
     if (this.continuationToken !== undefined) {
       aliases.push(`ContinuationToken=@p5`);
-      params.append("@p5", formatAliasValue(this.continuationToken));
+      params.append("@p5", formatParameterAlias(this.continuationToken, "Edm.String"));
     }
     if (this.name !== undefined) {
       aliases.push(`Name=@p6`);
-      params.append("@p6", formatAliasValue(this.name));
+      params.append("@p6", formatParameterAlias(this.name, "Edm.String"));
     }
     if (this.baseStatus !== undefined) {
       aliases.push(`BaseStatus=@p7`);
@@ -63,7 +63,7 @@ export class CCaaS_GetAgentsFunction implements Executable<CCaaS_GetAgentsRespon
     }
     if (this.orderBy !== undefined) {
       aliases.push(`OrderBy=@p8`);
-      params.append("@p8", formatAliasValue(this.orderBy));
+      params.append("@p8", formatParameterAlias(this.orderBy, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
