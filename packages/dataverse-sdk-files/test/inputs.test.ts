@@ -113,8 +113,10 @@ describe("files: upload() input types (#58)", () => {
   it("chunks every byte value correctly across blocks", async () => {
     hideBufferFromFilesPackage();
     const { files, fake } = setup();
-    const data = Uint8Array.from({ length: 300_000 }, (_, i) => (i * 7) % 256);
-    await files.upload("accounts", ID, "new_file", data, "a.bin", { chunkSize: 100_000 });
+    // (i * 7) % 256 visits all 256 byte values every 256 bytes, so each 512-byte block carries
+    // every value twice. Small on purpose: under the Buffer proxy, 300 KB took >5 s on CI.
+    const data = Uint8Array.from({ length: 1_536 }, (_, i) => (i * 7) % 256);
+    await files.upload("accounts", ID, "new_file", data, "a.bin", { chunkSize: 512 });
     expect(body(fake, "/UploadBlock")).toHaveLength(3);
     expect(uploadedBytes(fake)).toEqual(data);
   });
