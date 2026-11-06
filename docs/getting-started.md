@@ -344,7 +344,7 @@ const accounts = await client.api("/accounts").filter("contains(name, 'Contoso')
 ### Basic $batch Request
 
 ```typescript
-import { BatchRequestBuilder } from "@mohsinonxrm/dataverse-sdk-batch";
+import { BatchRequestBuilder, type BatchResponseStep } from "@mohsinonxrm/dataverse-sdk-batch";
 
 const batch = new BatchRequestBuilder(client);
 
@@ -357,9 +357,13 @@ batch.addRequest("account", "GET", `accounts(${accountId})`);
 // Execute batch: one POST $batch
 const result = await batch.execute();
 
-// Responses are keyed by the ids above (and listed in order in result.results)
-console.log("Accounts:", result.responses.get("accounts")?.body.value);
-console.log("Contacts:", result.responses.get("contacts")?.body.value);
+// Responses are keyed by the ids above (and listed in order in result.results). A body is
+// `unknown` (a batch mixes responses), so name the type of the one you read.
+type Page<T> = BatchResponseStep<{ value: T[] }>;
+const accounts = result.responses.get("accounts") as Page<{ name: string }> | undefined;
+const contacts = result.responses.get("contacts") as Page<{ fullname: string }> | undefined;
+console.log("Accounts:", accounts?.body?.value);
+console.log("Contacts:", contacts?.body?.value);
 console.log("Account detail:", result.responses.get("account")?.body);
 ```
 

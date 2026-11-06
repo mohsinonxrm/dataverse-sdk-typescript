@@ -65,7 +65,7 @@ describe.skipIf(!live)("live: BatchRequestBuilder.execute() (#54)", () => {
       ["who-again", 200],
     ]);
     expect(result.responses.get("who")?.body).toHaveProperty("UserId");
-    expect(result.responses.get("none")?.body.value).toEqual([]);
+    expect(result.responses.get("none")?.body).toMatchObject({ value: [] });
     expect(result.stoppedEarly).toBe(false);
 
     // The contact is bound to the account created in the same change set.
@@ -86,7 +86,9 @@ describe.skipIf(!live)("live: BatchRequestBuilder.execute() (#54)", () => {
     expect(err).toBeInstanceOf(DataverseBatchError);
     const batchError = err as DataverseBatchError;
     expect(batchError.getFailedRequestIds()).toEqual(["missing"]);
-    expect(batchError.getErrorForRequest("missing")?.body.error.code).toBe("0x80040217");
+    expect(batchError.getErrorForRequest("missing")?.body).toMatchObject({
+      error: { code: "0x80040217" },
+    });
     expect(batchError.successfulRequests).toBe(1);
     expect(batchError.totalRequests).toBe(3);
   });

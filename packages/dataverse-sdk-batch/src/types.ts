@@ -31,11 +31,11 @@ export interface BatchRequestStep {
   headers?: Record<string, string>;
 
   /**
-   * Request body. Strings are sent unchanged; anything else is JSON-encoded. Either way the part
-   * gets `Content-Type: application/json; type=entry` unless `headers` sets a content type.
+   * Request body. Strings are sent unchanged; anything else is JSON-encoded (`null` and
+   * `undefined` send no body). Either way the part gets `Content-Type: application/json;
+   * type=entry` unless `headers` sets a content type.
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  body?: any;
+  body?: unknown;
 
   /**
    * Ids of earlier requests in the same change set that this request refers to with `$<id>`.
@@ -58,8 +58,11 @@ export type BatchItem = BatchRequestStep | BatchChangeset;
 
 /**
  * One operation's response, as decoded from a `multipart/mixed` batch response.
+ *
+ * @typeParam TBody - The type of `body`. The decoder can't know it, so it is `unknown` unless you
+ *   name it: `parts[0] as BatchResponsePart<WhoAmIResponse>`.
  */
-export interface BatchResponsePart {
+export interface BatchResponsePart<TBody = unknown> {
   /**
    * The part's `Content-ID`. Dataverse returns it only for parts inside a change set.
    */
@@ -94,10 +97,10 @@ export interface BatchResponsePart {
 
   /**
    * The body: parsed JSON when the part's content type is JSON and the text parses, otherwise
-   * the text. `undefined` when the body is empty.
+   * the text. `undefined` when the body is empty. It is `unknown` by default: check it, or name
+   * its type with `TBody`.
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  body?: any;
+  body?: TBody;
 
   /**
    * The body exactly as received (empty string when there is none)
@@ -107,8 +110,12 @@ export interface BatchResponsePart {
 
 /**
  * Represents a parsed response from a batch operation
+ *
+ * @typeParam TBody - The type of `body`. A batch mixes responses (and a failed request's body is
+ *   an OData error), so `execute()` returns `unknown` bodies; name the type for the response you
+ *   know: `result.responses.get("who") as BatchResponseStep<WhoAmIResponse> | undefined`.
  */
-export interface BatchResponseStep {
+export interface BatchResponseStep<TBody = unknown> {
   /**
    * Id of the request this response answers (the id passed to `addRequest`)
    */
@@ -130,10 +137,10 @@ export interface BatchResponseStep {
   headers: Record<string, string>;
 
   /**
-   * Parsed response body (JSON when the part is JSON, otherwise text)
+   * Parsed response body: parsed JSON when the part is JSON, otherwise the text; `undefined` when
+   * the body is empty. It is `unknown` by default: check it, or name its type with `TBody`.
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  body?: any;
+  body?: TBody;
 
   /**
    * The body exactly as received

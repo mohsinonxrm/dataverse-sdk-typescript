@@ -67,7 +67,7 @@ addRequest(
   method: string,
   url: string,
   headers?: Record<string, string>,
-  body?: any,
+  body?: unknown,
   dependsOn?: string[]
 ): BatchRequestBuilder
 ```
@@ -76,7 +76,7 @@ addRequest(
 - **method**: HTTP method (GET, POST, PATCH, DELETE, etc.)
 - **url**: Request URL: relative to the Web API root (`accounts`, `/accounts`), absolute, or a `$<id>` reference to an earlier request in the same changeset. Relative URLs are resolved against the client's Web API root.
 - **headers**: Optional HTTP headers for this request
-- **body**: Optional request body. Objects are JSON-encoded, strings are sent as they are, and the part gets `Content-Type: application/json; type=entry` unless `headers` sets a content type.
+- **body**: Optional request body. Strings are sent as they are; anything else is JSON-encoded (`null` and `undefined` send no body). The part gets `Content-Type: application/json; type=entry` unless `headers` sets a content type.
 - **dependsOn**: Optional ids of earlier requests in the same changeset that this request refers to with `$<id>`. They are checked when the request is added: an id that isn't an earlier request of the open changeset throws. It doesn't change what is sent.
 
 Returns the builder for method chaining.
@@ -159,11 +159,45 @@ batch
 
 const result = await batch.execute();
 
-// Process responses
-const accounts = result.responses.get("accounts")?.body;
-const contacts = result.responses.get("contacts")?.body;
-const leads = result.responses.get("leads")?.body;
+// Process responses. Each body is `unknown`: name the type of the one you read.
+type Page<T> = BatchResponseStep<{ value: T[] }>;
+const accounts = result.responses.get("accounts") as Page<{ name: string }> | undefined;
+const contacts = result.responses.get("contacts") as Page<{ fullname: string }> | undefined;
+const leads = result.responses.get("leads")?.body; // unknown
+
+console.log(accounts?.body?.value.map((a) => a.name));
+console.log(contacts?.body?.value.length);
 ```
+
+### Reading response bodies
+
+A response's `body` is parsed JSON when the part is JSON, otherwise the text, and `undefined` when
+it is empty. A batch mixes responses (and a failed request's body is an OData error), so `body` is
+`unknown` and `execute()` can't type it for you. Name the type of a response you know with
+`BatchResponseStep<TBody>`, or check the value first:
+
+```typescript
+import type { BatchResponseStep } from "@mohsinonxrm/dataverse-sdk-batch";
+
+interface WhoAmIResponse {
+  UserId: string;
+  BusinessUnitId: string;
+  OrganizationId: string;
+}
+
+batch.addRequest("who", "GET", "WhoAmI");
+const result = await batch.execute();
+
+const who = result.responses.get("who") as BatchResponseStep<WhoAmIResponse> | undefined;
+console.log(who?.body?.UserId);
+
+// Or check it
+const body = result.responses.get("who")?.body;
+if (typeof body === "object" && body !== null && "UserId" in body) console.log(body.UserId);
+```
+
+`decodeBatchResponse()` returns `BatchResponsePart<unknown>` the same way; `BatchResponsePart<TBody>`
+names its body type.
 
 ### Transactional Changesets
 
@@ -400,12 +434,12 @@ interface BatchExecutionResult {
 ### BatchResponseStep
 
 ```typescript
-interface BatchResponseStep {
+interface BatchResponseStep<TBody = unknown> {
   id: string; // the id passed to addRequest
   status: number;
   statusText?: string;
   headers: Record<string, string>; // lower-cased names
-  body?: any; // parsed JSON for JSON parts, otherwise the text
+  body?: TBody; // parsed JSON for JSON parts, otherwise the text; unknown unless you name it
   bodyText?: string; // the body exactly as received
 }
 ```
