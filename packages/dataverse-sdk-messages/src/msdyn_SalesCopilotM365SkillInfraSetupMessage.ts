@@ -45,9 +45,10 @@ export class msdyn_SalesCopilotM365SkillInfraSetupRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesCopilotM365SkillInfraSetupResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_SalesCopilotM365SkillInfraSetupResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_SalesCopilotM365SkillInfraSetupResponse.fromResponse({});
+    return msdyn_SalesCopilotM365SkillInfraSetupResponse.fromResponse(await response.json());
   }
 }
 

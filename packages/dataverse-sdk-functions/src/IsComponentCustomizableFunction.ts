@@ -53,8 +53,8 @@ export class IsComponentCustomizableFunction implements Executable<IsComponentCu
   }
 
   async parseResponse(response: Response): Promise<IsComponentCustomizableResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as IsComponentCustomizableResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as IsComponentCustomizableResponse;
+    return (await response.json()) as IsComponentCustomizableResponse;
   }
 }

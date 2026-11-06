@@ -47,9 +47,9 @@ describe("#69: collection-bound messages", () => {
       DeleteMultipleRequest,
     };
     for (const [name, Request] of Object.entries(bulk)) {
-      urls[name.replace("Request", "")] = new Request("accounts", []).toRequestInformation(
-        TEST_API_URL
-      ).url;
+      urls[name.replace("Request", "")] = new Request("accounts", {
+        Targets: [],
+      }).toRequestInformation(TEST_API_URL).url;
     }
     const paths = Object.fromEntries(
       Object.entries(urls).map(([k, v]) => [k, v.slice(TEST_API_URL.length)])
@@ -81,7 +81,7 @@ describe("#69: collection-bound messages", () => {
     );
     const fetchXml = "<fetch><entity name='account'/></fetch>";
 
-    await client.execute(new ValidateSavedQueryRequest(fetchXml, 0));
+    await client.execute(new ValidateSavedQueryRequest({ FetchXml: fetchXml, QueryType: 0 }));
 
     expect(JSON.parse(fake.last().bodyText ?? "")).toEqual({ FetchXml: fetchXml, QueryType: 0 });
   });
@@ -92,7 +92,7 @@ describe("#69: collection-bound messages", () => {
       jsonResponse({ Ids: ["c1"] })
     );
     const targets = [{ "@odata.type": "Microsoft.Dynamics.CRM.contact", lastname: "One" }];
-    const request = new CreateMultipleRequest("contacts", targets);
+    const request = new CreateMultipleRequest("contacts", { Targets: targets });
 
     const response = await client.execute(request);
 

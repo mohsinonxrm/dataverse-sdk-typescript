@@ -63,8 +63,8 @@ export class adx_SendPasswordResetToContactAction implements Executable<adx_Send
   }
 
   async parseResponse(response: Response): Promise<adx_SendPasswordResetToContactResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as adx_SendPasswordResetToContactResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as adx_SendPasswordResetToContactResponse;
+    return (await response.json()) as adx_SendPasswordResetToContactResponse;
   }
 }

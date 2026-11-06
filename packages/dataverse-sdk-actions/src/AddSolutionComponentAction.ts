@@ -52,8 +52,8 @@ export class AddSolutionComponentAction implements Executable<AddSolutionCompone
   }
 
   async parseResponse(response: Response): Promise<AddSolutionComponentResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as AddSolutionComponentResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as AddSolutionComponentResponse;
+    return (await response.json()) as AddSolutionComponentResponse;
   }
 }

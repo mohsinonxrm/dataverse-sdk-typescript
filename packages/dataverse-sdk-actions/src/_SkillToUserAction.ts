@@ -44,8 +44,8 @@ export class _SkillToUserAction implements Executable<_SkillToUserResponse> {
   }
 
   async parseResponse(response: Response): Promise<_SkillToUserResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as _SkillToUserResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as _SkillToUserResponse;
+    return (await response.json()) as _SkillToUserResponse;
   }
 }

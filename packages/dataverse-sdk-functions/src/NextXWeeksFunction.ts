@@ -53,8 +53,8 @@ export class NextXWeeksFunction implements Executable<NextXWeeksResponse> {
   }
 
   async parseResponse(response: Response): Promise<NextXWeeksResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as NextXWeeksResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as NextXWeeksResponse;
+    return (await response.json()) as NextXWeeksResponse;
   }
 }

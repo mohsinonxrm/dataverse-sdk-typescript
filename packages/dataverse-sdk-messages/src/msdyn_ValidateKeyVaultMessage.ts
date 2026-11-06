@@ -53,9 +53,9 @@ export class msdyn_ValidateKeyVaultRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ValidateKeyVaultResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_ValidateKeyVaultResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_ValidateKeyVaultResponse.fromResponse({});
+    return msdyn_ValidateKeyVaultResponse.fromResponse(await response.json());
   }
 }
 

@@ -32,8 +32,8 @@ export class CalculateTotalTimeIncidentFunction implements Executable<CalculateT
   }
 
   async parseResponse(response: Response): Promise<CalculateTotalTimeIncidentResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as CalculateTotalTimeIncidentResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CalculateTotalTimeIncidentResponse;
+    return (await response.json()) as CalculateTotalTimeIncidentResponse;
   }
 }

@@ -51,11 +51,10 @@ export class msdyn_ValidateCustomMessagingApplicationRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_ValidateCustomMessagingApplicationResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_ValidateCustomMessagingApplicationResponse.fromResponse(
-      text ? JSON.parse(text) : {}
-    );
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_ValidateCustomMessagingApplicationResponse.fromResponse({});
+    return msdyn_ValidateCustomMessagingApplicationResponse.fromResponse(await response.json());
   }
 }
 

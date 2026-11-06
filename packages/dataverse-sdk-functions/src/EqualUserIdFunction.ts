@@ -48,8 +48,8 @@ export class EqualUserIdFunction implements Executable<EqualUserIdResponse> {
   }
 
   async parseResponse(response: Response): Promise<EqualUserIdResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as EqualUserIdResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as EqualUserIdResponse;
+    return (await response.json()) as EqualUserIdResponse;
   }
 }

@@ -32,9 +32,9 @@ export class PvaCreateContentSnapshotRequest
   }
 
   async parseResponse(response: Response): Promise<PvaCreateContentSnapshotResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return PvaCreateContentSnapshotResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return PvaCreateContentSnapshotResponse.fromResponse({});
+    return PvaCreateContentSnapshotResponse.fromResponse(await response.json());
   }
 }
 

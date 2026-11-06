@@ -42,8 +42,8 @@ export class msdyn_reassignmentrunAction implements Executable<msdyn_reassignmen
   }
 
   async parseResponse(response: Response): Promise<msdyn_reassignmentrunResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdyn_reassignmentrunResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_reassignmentrunResponse;
+    return (await response.json()) as msdyn_reassignmentrunResponse;
   }
 }

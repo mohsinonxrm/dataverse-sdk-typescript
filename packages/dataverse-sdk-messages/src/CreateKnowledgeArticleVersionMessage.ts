@@ -48,9 +48,9 @@ export class CreateKnowledgeArticleVersionRequest
   }
 
   async parseResponse(response: Response): Promise<CreateKnowledgeArticleVersionResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return CreateKnowledgeArticleVersionResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return CreateKnowledgeArticleVersionResponse.fromResponse({});
+    return CreateKnowledgeArticleVersionResponse.fromResponse(await response.json());
   }
 }
 

@@ -49,9 +49,9 @@ export class adx_GenerateSharedAccessSignatureRequest
   }
 
   async parseResponse(response: Response): Promise<adx_GenerateSharedAccessSignatureResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return adx_GenerateSharedAccessSignatureResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return adx_GenerateSharedAccessSignatureResponse.fromResponse({});
+    return adx_GenerateSharedAccessSignatureResponse.fromResponse(await response.json());
   }
 }
 

@@ -50,9 +50,9 @@ export class adx_AzureBlobStorageUrlRequest
   }
 
   async parseResponse(response: Response): Promise<adx_AzureBlobStorageUrlResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return adx_AzureBlobStorageUrlResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return adx_AzureBlobStorageUrlResponse.fromResponse({});
+    return adx_AzureBlobStorageUrlResponse.fromResponse(await response.json());
   }
 }
 

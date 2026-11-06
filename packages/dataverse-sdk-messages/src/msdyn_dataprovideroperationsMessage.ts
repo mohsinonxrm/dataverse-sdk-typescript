@@ -49,9 +49,9 @@ export class msdyn_dataprovideroperationsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_dataprovideroperationsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_dataprovideroperationsResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_dataprovideroperationsResponse.fromResponse({});
+    return msdyn_dataprovideroperationsResponse.fromResponse(await response.json());
   }
 }
 

@@ -47,9 +47,9 @@ export class msdyn_SendMessageToOCServiceRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SendMessageToOCServiceResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_SendMessageToOCServiceResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_SendMessageToOCServiceResponse.fromResponse({});
+    return msdyn_SendMessageToOCServiceResponse.fromResponse(await response.json());
   }
 }
 

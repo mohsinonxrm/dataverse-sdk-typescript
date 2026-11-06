@@ -53,8 +53,8 @@ export class CreateWorkflowFromTemplateAction implements Executable<CreateWorkfl
   }
 
   async parseResponse(response: Response): Promise<CreateWorkflowFromTemplateResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as CreateWorkflowFromTemplateResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CreateWorkflowFromTemplateResponse;
+    return (await response.json()) as CreateWorkflowFromTemplateResponse;
   }
 }

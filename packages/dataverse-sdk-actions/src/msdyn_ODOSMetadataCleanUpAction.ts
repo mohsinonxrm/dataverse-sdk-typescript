@@ -42,8 +42,8 @@ export class msdyn_ODOSMetadataCleanUpAction implements Executable<msdyn_ODOSMet
   }
 
   async parseResponse(response: Response): Promise<msdyn_ODOSMetadataCleanUpResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdyn_ODOSMetadataCleanUpResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_ODOSMetadataCleanUpResponse;
+    return (await response.json()) as msdyn_ODOSMetadataCleanUpResponse;
   }
 }

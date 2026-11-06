@@ -32,8 +32,8 @@ export class GetReportHistoryLimitFunction implements Executable<GetReportHistor
   }
 
   async parseResponse(response: Response): Promise<GetReportHistoryLimitResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as GetReportHistoryLimitResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as GetReportHistoryLimitResponse;
+    return (await response.json()) as GetReportHistoryLimitResponse;
   }
 }

@@ -53,9 +53,9 @@ export class AddItemCampaign_listRequest
   }
 
   async parseResponse(response: Response): Promise<AddItemCampaign_listResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return AddItemCampaign_listResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return AddItemCampaign_listResponse.fromResponse({});
+    return AddItemCampaign_listResponse.fromResponse(await response.json());
   }
 }
 

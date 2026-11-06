@@ -42,8 +42,8 @@ export class msdyn_RegisterIoTDeviceAction implements Executable<msdyn_RegisterI
   }
 
   async parseResponse(response: Response): Promise<msdyn_RegisterIoTDeviceResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdyn_RegisterIoTDeviceResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_RegisterIoTDeviceResponse;
+    return (await response.json()) as msdyn_RegisterIoTDeviceResponse;
   }
 }

@@ -42,8 +42,8 @@ export class cascadeAsync_SuccessAPIAction implements Executable<cascadeAsync_Su
   }
 
   async parseResponse(response: Response): Promise<cascadeAsync_SuccessAPIResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as cascadeAsync_SuccessAPIResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as cascadeAsync_SuccessAPIResponse;
+    return (await response.json()) as cascadeAsync_SuccessAPIResponse;
   }
 }

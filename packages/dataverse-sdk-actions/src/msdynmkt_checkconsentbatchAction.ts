@@ -53,8 +53,8 @@ export class msdynmkt_checkconsentbatchAction implements Executable<msdynmkt_che
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_checkconsentbatchResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdynmkt_checkconsentbatchResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdynmkt_checkconsentbatchResponse;
+    return (await response.json()) as msdynmkt_checkconsentbatchResponse;
   }
 }

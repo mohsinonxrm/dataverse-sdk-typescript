@@ -53,9 +53,9 @@ export class BulkRetainRequest
   }
 
   async parseResponse(response: Response): Promise<BulkRetainResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return BulkRetainResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return BulkRetainResponse.fromResponse({});
+    return BulkRetainResponse.fromResponse(await response.json());
   }
 }
 

@@ -49,8 +49,8 @@ export class CancelTrainingAction implements Executable<CancelTrainingResponse> 
   }
 
   async parseResponse(response: Response): Promise<CancelTrainingResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as CancelTrainingResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CancelTrainingResponse;
+    return (await response.json()) as CancelTrainingResponse;
   }
 }

@@ -69,8 +69,8 @@ export class msdyn_EmailTemplateRecommendationAction implements Executable<msdyn
   }
 
   async parseResponse(response: Response): Promise<msdyn_EmailTemplateRecommendationResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdyn_EmailTemplateRecommendationResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_EmailTemplateRecommendationResponse;
+    return (await response.json()) as msdyn_EmailTemplateRecommendationResponse;
   }
 }

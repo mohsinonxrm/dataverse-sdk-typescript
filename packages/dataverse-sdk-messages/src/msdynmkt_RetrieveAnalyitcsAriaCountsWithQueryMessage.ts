@@ -53,10 +53,11 @@ export class msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryRequest
   async parseResponse(
     response: Response
   ): Promise<msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryResponse.fromResponse({});
     return msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryResponse.fromResponse(
-      text ? JSON.parse(text) : {}
+      await response.json()
     );
   }
 }

@@ -51,9 +51,9 @@ export class CCaaS_NotifyAgentRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_NotifyAgentResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return CCaaS_NotifyAgentResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return CCaaS_NotifyAgentResponse.fromResponse({});
+    return CCaaS_NotifyAgentResponse.fromResponse(await response.json());
   }
 }
 

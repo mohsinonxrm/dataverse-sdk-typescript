@@ -42,8 +42,8 @@ export class msdyn_TriggerForecastPredictionsAction implements Executable<msdyn_
   }
 
   async parseResponse(response: Response): Promise<msdyn_TriggerForecastPredictionsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdyn_TriggerForecastPredictionsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_TriggerForecastPredictionsResponse;
+    return (await response.json()) as msdyn_TriggerForecastPredictionsResponse;
   }
 }

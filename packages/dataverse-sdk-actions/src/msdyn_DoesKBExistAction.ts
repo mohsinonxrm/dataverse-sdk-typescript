@@ -42,8 +42,8 @@ export class msdyn_DoesKBExistAction implements Executable<msdyn_DoesKBExistResp
   }
 
   async parseResponse(response: Response): Promise<msdyn_DoesKBExistResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdyn_DoesKBExistResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_DoesKBExistResponse;
+    return (await response.json()) as msdyn_DoesKBExistResponse;
   }
 }

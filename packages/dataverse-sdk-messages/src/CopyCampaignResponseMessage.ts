@@ -32,9 +32,9 @@ export class CopyCampaignResponseRequest
   }
 
   async parseResponse(response: Response): Promise<CopyCampaignResponseResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return CopyCampaignResponseResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return CopyCampaignResponseResponse.fromResponse({});
+    return CopyCampaignResponseResponse.fromResponse(await response.json());
   }
 }
 

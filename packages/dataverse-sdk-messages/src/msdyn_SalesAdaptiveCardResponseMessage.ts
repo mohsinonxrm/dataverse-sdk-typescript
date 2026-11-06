@@ -49,9 +49,9 @@ export class msdyn_SalesAdaptiveCardResponseRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAdaptiveCardResponseResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_SalesAdaptiveCardResponseResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_SalesAdaptiveCardResponseResponse.fromResponse({});
+    return msdyn_SalesAdaptiveCardResponseResponse.fromResponse(await response.json());
   }
 }
 

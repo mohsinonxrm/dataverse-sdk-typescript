@@ -55,8 +55,8 @@ export class RenewContractAction implements Executable<RenewContractResponse> {
   }
 
   async parseResponse(response: Response): Promise<RenewContractResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RenewContractResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RenewContractResponse;
+    return (await response.json()) as RenewContractResponse;
   }
 }

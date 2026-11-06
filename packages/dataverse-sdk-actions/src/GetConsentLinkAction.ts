@@ -56,8 +56,8 @@ export class GetConsentLinkAction implements Executable<GetConsentLinkResponse> 
   }
 
   async parseResponse(response: Response): Promise<GetConsentLinkResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as GetConsentLinkResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as GetConsentLinkResponse;
+    return (await response.json()) as GetConsentLinkResponse;
   }
 }

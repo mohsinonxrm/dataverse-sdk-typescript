@@ -47,10 +47,11 @@ export class msdyn_CheckForActiveAgreementsHavingPastEndDatesRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckForActiveAgreementsHavingPastEndDatesResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_CheckForActiveAgreementsHavingPastEndDatesResponse.fromResponse({});
     return msdyn_CheckForActiveAgreementsHavingPastEndDatesResponse.fromResponse(
-      text ? JSON.parse(text) : {}
+      await response.json()
     );
   }
 }

@@ -36,8 +36,8 @@ export class ParseImportAction implements Executable<ParseImportResponse> {
   }
 
   async parseResponse(response: Response): Promise<ParseImportResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as ParseImportResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as ParseImportResponse;
+    return (await response.json()) as ParseImportResponse;
   }
 }

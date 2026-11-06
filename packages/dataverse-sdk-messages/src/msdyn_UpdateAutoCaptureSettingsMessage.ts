@@ -53,9 +53,9 @@ export class msdyn_UpdateAutoCaptureSettingsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_UpdateAutoCaptureSettingsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_UpdateAutoCaptureSettingsResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_UpdateAutoCaptureSettingsResponse.fromResponse({});
+    return msdyn_UpdateAutoCaptureSettingsResponse.fromResponse(await response.json());
   }
 }
 

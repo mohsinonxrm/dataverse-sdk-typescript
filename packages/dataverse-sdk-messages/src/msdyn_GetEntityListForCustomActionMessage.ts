@@ -46,9 +46,9 @@ export class msdyn_GetEntityListForCustomActionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetEntityListForCustomActionResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_GetEntityListForCustomActionResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetEntityListForCustomActionResponse.fromResponse({});
+    return msdyn_GetEntityListForCustomActionResponse.fromResponse(await response.json());
   }
 }
 

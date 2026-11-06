@@ -36,15 +36,16 @@ const accounts = Array.from({ length: 100 }, (_, i) => ({
   creditlimit: 50000,
 }));
 
-const action = new CreateMultipleAction("accounts", accounts);
+const action = new CreateMultipleAction("accounts", { Targets: accounts });
 const response = await client.execute(action);
 console.log("Created IDs:", response.Ids); // Array of 100 GUIDs
 ```
 
 ## Business Actions
 
-Constructors take the action's parameters positionally, in `$metadata` order. Run an action with
-`client.execute(action)`.
+A constructor takes one object with the action's parameters, by their `$metadata` names, typed
+as `<Class>Parameters` (`ExecuteWorkflowActionParameters`). A bound action takes the record id
+first. Run an action with `client.execute(action)`.
 
 ### ExecuteWorkflow
 
@@ -55,12 +56,7 @@ Starts an on-demand workflow for a record.
 ```typescript
 import { ExecuteWorkflowAction } from "@mohsinonxrm/dataverse-sdk-actions";
 
-const job = await client.execute(
-  new ExecuteWorkflowAction(
-    workflowId, // the workflow (binding)
-    accountId // EntityId: the record to run it on; InputArguments is optional
-  )
-);
+const job = await client.execute(new ExecuteWorkflowAction(workflowId, { EntityId: accountId }));
 console.log("Async Operation ID:", job.asyncoperationid);
 ```
 
@@ -74,16 +70,15 @@ Closes an opportunity as won.
 import { WinOpportunityAction } from "@mohsinonxrm/dataverse-sdk-actions";
 
 await client.execute(
-  new WinOpportunityAction(
-    {
+  new WinOpportunityAction({
+    OpportunityClose: {
       "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
       subject: "Won - Contoso Deal",
       "opportunityid@odata.bind": `/opportunities(${opportunityId})`,
       actualrevenue: 100000,
     },
-    undefined, // Caller
-    3 // Status: Won
-  )
+    Status: 3,
+  })
 );
 ```
 
@@ -166,13 +161,12 @@ Merges two entity records (subordinate into target).
 ```typescript
 import { MergeAction, createEntityReference } from "@mohsinonxrm/dataverse-sdk-actions";
 
-const action = new MergeAction(
-  createEntityReference("account", "target-account-guid"), // Keep this record
-  createEntityReference("account", "subordinate-account-guid"), // Merge & deactivate this
-  // UpdateContent: column values to set on the target (or undefined)
-  { "@odata.type": "Microsoft.Dynamics.CRM.account", description: "Merged" },
-  false // PerformParentingChecks
-);
+const action = new MergeAction({
+  Target: createEntityReference("account", "target-account-guid"),
+  Subordinate: createEntityReference("account", "subordinate-account-guid"),
+  UpdateContent: { "@odata.type": "Microsoft.Dynamics.CRM.account", description: "Merged" },
+  PerformParentingChecks: false,
+});
 
 await client.execute(action);
 ```
@@ -220,21 +214,20 @@ Web API reads it as an entity, and a reference is the same shape with only the p
 
 ```typescript
 await client.execute(
-  new WinOpportunityAction(
-    {
+  new WinOpportunityAction({
+    OpportunityClose: {
       "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
       subject: "Won",
       "opportunityid@odata.bind": `/opportunities(${opportunityId})`,
     },
-    undefined, // Caller
-    3 // Status: Won
-  )
+    Status: 3,
+  })
 );
 ```
 
-Parameters that `$metadata` doesn't mark `Nullable="false"` are optional: at the end of the
-argument list they can be left out (`new ExecuteWorkflowAction(workflowId, entityId)`), and
-elsewhere they accept `undefined`. Either way they are left out of the request body.
+Parameters that `$metadata` marks `Nullable="false"` are required; the others are optional
+(`new ExecuteWorkflowAction(workflowId, { EntityId })` leaves out `InputArguments`). A parameter
+that is left out or `undefined` isn't sent in the request body.
 
 ### Enum Values
 
@@ -253,11 +246,13 @@ import {
 
 const { FetchXml } = await client.execute(
   new QueryExpressionToFetchXmlAction({
-    "@odata.type": "Microsoft.Dynamics.CRM.QueryExpression",
-    EntityName: "account",
-    Criteria: {
-      FilterOperator: LogicalOperator.Or, // sent as "Or"
-      Conditions: [{ AttributeName: "name", Operator: ConditionOperator.NotNull }], // "NotNull"
+    Query: {
+      "@odata.type": "Microsoft.Dynamics.CRM.QueryExpression",
+      EntityName: "account",
+      Criteria: {
+        FilterOperator: LogicalOperator.Or, // sent as "Or"
+        Conditions: [{ AttributeName: "name", Operator: ConditionOperator.NotNull }], // "NotNull"
+      },
     },
   })
 );
@@ -269,9 +264,12 @@ A flags value such as `AccessRights.ReadAccess | AccessRights.WriteAccess` is se
 
 ```typescript
 await client.execute(
-  new GrantAccessAction(createEntityReference("account", accountId), {
-    Principal: createEntityReference("team", teamId),
-    AccessMask: AccessRights.ReadAccess | AccessRights.WriteAccess, // "ReadAccess, WriteAccess"
+  new GrantAccessAction({
+    Target: createEntityReference("account", accountId),
+    PrincipalAccess: {
+      Principal: createEntityReference("team", teamId),
+      AccessMask: AccessRights.ReadAccess | AccessRights.WriteAccess, // "ReadAccess, WriteAccess"
+    },
   })
 );
 ```
@@ -318,7 +316,7 @@ const accounts = [
   { "@odata.type": "Microsoft.Dynamics.CRM.account", name: "Fabrikam", creditlimit: 75000 },
 ];
 
-const action = new CreateMultipleAction("accounts", accounts);
+const action = new CreateMultipleAction("accounts", { Targets: accounts });
 const response = await client.execute(action);
 console.log("Created IDs:", response.Ids); // ['id1', 'id2']
 ```
@@ -343,7 +341,7 @@ const updates = [
   { "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "id2", creditlimit: 125000 },
 ];
 
-const action = new UpdateMultipleAction("accounts", updates);
+const action = new UpdateMultipleAction("accounts", { Targets: updates });
 await client.execute(action); // 204 No Content
 ```
 
@@ -363,7 +361,7 @@ const records = [
   { "@odata.type": "Microsoft.Dynamics.CRM.account", name: "New Account" }, // Will be created
 ];
 
-const action = new UpsertMultipleAction("accounts", records);
+const action = new UpsertMultipleAction("accounts", { Targets: records });
 await client.execute(action); // 204 No Content
 ```
 
@@ -385,7 +383,7 @@ const targets = [
   { "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "id2" },
 ];
 
-const action = new DeleteMultipleAction("accounts", targets);
+const action = new DeleteMultipleAction("accounts", { Targets: targets });
 await client.execute(action); // Only works for elastic tables
 ```
 
@@ -413,9 +411,11 @@ import { QueryExpressionToFetchXmlAction } from "@mohsinonxrm/dataverse-sdk-acti
 
 const { FetchXml } = await client.execute(
   new QueryExpressionToFetchXmlAction({
-    "@odata.type": "Microsoft.Dynamics.CRM.QueryExpression",
-    EntityName: "account",
-    ColumnSet: { Columns: ["name"] },
+    Query: {
+      "@odata.type": "Microsoft.Dynamics.CRM.QueryExpression",
+      EntityName: "account",
+      ColumnSet: { Columns: ["name"] },
+    },
   })
 );
 ```
@@ -449,20 +449,29 @@ import {
 } from "@mohsinonxrm/dataverse-sdk-actions";
 
 const { FileContinuationToken } = await client.execute(
-  new InitializeFileBlocksUploadAction(
-    createEntityReference("account", accountId), // Target
-    "logo.png", // FileName
-    "new_logo" // FileAttributeName
-  )
+  new InitializeFileBlocksUploadAction({
+    Target: createEntityReference("account", accountId),
+    FileName: "logo.png",
+    FileAttributeName: "new_logo",
+  })
 );
 
 const blockId = btoa("000000");
 await client.execute(
-  new UploadBlockAction(blockId, Buffer.from(bytes).toString("base64"), FileContinuationToken)
+  new UploadBlockAction({
+    BlockId: blockId,
+    BlockData: Buffer.from(bytes).toString("base64"),
+    FileContinuationToken: FileContinuationToken,
+  })
 );
 
 await client.execute(
-  new CommitFileBlocksUploadAction("logo.png", "image/png", [blockId], FileContinuationToken)
+  new CommitFileBlocksUploadAction({
+    FileName: "logo.png",
+    MimeType: "image/png",
+    BlockList: [blockId],
+    FileContinuationToken: FileContinuationToken,
+  })
 );
 ```
 
@@ -482,7 +491,9 @@ import {
 
 // POST /lists(<listId>)/Microsoft.Dynamics.CRM.AddItemCampaign
 await client.execute(
-  new AddItemCampaign_listAction(listId, createEntityReference("campaign", campaignId))
+  new AddItemCampaign_listAction(listId, {
+    Campaign: createEntityReference("campaign", campaignId),
+  })
 );
 ```
 
@@ -495,13 +506,13 @@ supplemental definition. All five parameters are required. `ExcelFile` is the .x
 import { ExportToExcelAction, createEntityReference } from "@mohsinonxrm/dataverse-sdk-actions";
 
 const { ExcelFile } = await client.execute(
-  new ExportToExcelAction(
-    createEntityReference("savedquery", viewId), // or "userquery"
-    fetchXml,
-    layoutXml,
-    "", // QueryApi
-    { Arguments: { Count: 0, IsReadOnly: true, Keys: [], Values: [] } } // no query parameters ({} is rejected)
-  )
+  new ExportToExcelAction({
+    View: createEntityReference("savedquery", viewId),
+    FetchXml: fetchXml,
+    LayoutXml: layoutXml,
+    QueryApi: "",
+    QueryParameters: { Arguments: { Count: 0, IsReadOnly: true, Keys: [], Values: [] } },
+  })
 );
 ```
 
@@ -525,7 +536,7 @@ const { ExcelFile } = await client.execute(
 
 ```typescript
 // 1. Create action instance
-const action = new CreateMultipleAction("accounts", accounts);
+const action = new CreateMultipleAction("accounts", { Targets: accounts });
 
 // 2. Action converts to RequestInformation
 const requestInfo = action.toRequestInformation(baseUrl);

@@ -38,7 +38,7 @@ describe("#232: enum values in action bodies", () => {
       AccessMask: AccessRights.ReadAccess | AccessRights.WriteAccess | AccessRights.ShareAccess,
     };
 
-    await client.execute(new GrantAccessAction(account, access));
+    await client.execute(new GrantAccessAction({ Target: account, PrincipalAccess: access }));
 
     expect(JSON.parse(fake.last().bodyText ?? "")).toEqual({
       Target: { "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "a1" },
@@ -51,8 +51,14 @@ describe("#232: enum values in action bodies", () => {
   it("a single member, zero, a name and an unknown bit", async () => {
     const mask = async (AccessMask: unknown) =>
       (
-        (await bodyOf(new GrantAccessAction(account, { AccessMask } as PrincipalAccess)))
-          .PrincipalAccess as { AccessMask: unknown }
+        (
+          await bodyOf(
+            new GrantAccessAction({
+              Target: account,
+              PrincipalAccess: { AccessMask } as PrincipalAccess,
+            })
+          )
+        ).PrincipalAccess as { AccessMask: unknown }
       ).AccessMask;
     expect(await mask(AccessRights.ReadAccess)).toBe("ReadAccess");
     expect(await mask(AccessRights.None)).toBe("None");
@@ -63,7 +69,9 @@ describe("#232: enum values in action bodies", () => {
   });
 
   it("a top-level enum parameter is a member name", async () => {
-    const body = await bodyOf(new GenerateSharedLinkAction(account, AccessRights.ReadAccess));
+    const body = await bodyOf(
+      new GenerateSharedLinkAction({ Target: account, SharedRights: AccessRights.ReadAccess })
+    );
     expect(body.SharedRights).toBe("ReadAccess");
   });
 
@@ -81,7 +89,7 @@ describe("#232: enum values in action bodies", () => {
       SubQueryExpression: { Criteria: { FilterOperator: LogicalOperator.Or } },
     };
 
-    const body = await bodyOf(new QueryExpressionToFetchXmlAction(query));
+    const body = await bodyOf(new QueryExpressionToFetchXmlAction({ Query: query }));
 
     expect(body.Query).toEqual({
       "@odata.type": "Microsoft.Dynamics.CRM.QueryExpression",
@@ -99,15 +107,15 @@ describe("#232: enum values in action bodies", () => {
 
   it("names enums in each item of a collection parameter", async () => {
     const body = await bodyOf(
-      new BulkDeleteAction(
-        [{ EntityName: "account", Criteria: { FilterOperator: LogicalOperator.Or } }],
-        "job",
-        false,
-        [],
-        [],
-        "",
-        "2026-01-01T00:00:00Z"
-      )
+      new BulkDeleteAction({
+        QuerySet: [{ EntityName: "account", Criteria: { FilterOperator: LogicalOperator.Or } }],
+        JobName: "job",
+        SendEmailNotification: false,
+        ToRecipients: [],
+        CCRecipients: [],
+        RecurrencePattern: "",
+        StartDateTime: "2026-01-01T00:00:00Z",
+      })
     );
     expect(body.QuerySet).toEqual([{ EntityName: "account", Criteria: { FilterOperator: "Or" } }]);
   });

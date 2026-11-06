@@ -161,12 +161,11 @@ import {
 } from "@mohsinonxrm/dataverse-sdk-functions";
 
 const contact = await client.execute(
-  new InitializeFromFunction(
-    createEntityReference("account", sourceId), // EntityMoniker: the source record
-    undefined, // SkipParentalRelationshipMapping
-    "contact", // TargetEntityName
-    "ValidForCreate" // TargetFieldType
-  )
+  new InitializeFromFunction({
+    EntityMoniker: createEntityReference("account", sourceId),
+    TargetEntityName: "contact",
+    TargetFieldType: "ValidForCreate",
+  })
 );
 // contact holds the values the account-contact mapping copies
 ```
@@ -183,11 +182,7 @@ Retrieves metadata changes since a specific version.
 import { RetrieveMetadataChangesFunction } from "@mohsinonxrm/dataverse-sdk-functions";
 
 const { EntityMetadata, ServerVersionStamp } = await client.execute(
-  new RetrieveMetadataChangesFunction(
-    {}, // Query: an EntityQueryExpression (Criteria, Properties, AttributeQuery, …)
-    undefined, // DeletedMetadataFilters
-    previousVersionStamp // ClientVersionStamp
-  )
+  new RetrieveMetadataChangesFunction({ Query: {}, ClientVersionStamp: previousVersionStamp })
 );
 ```
 
@@ -210,9 +205,9 @@ import {
 const target = createEntityReference("account", accountId);
 // GET /systemusers(<userId>)/Microsoft.Dynamics.CRM.RetrievePrincipalAccess(Target=@p1)
 const { AccessRights } = await client.execute(
-  new RetrievePrincipalAccess_systemuserFunction(userId, target)
+  new RetrievePrincipalAccess_systemuserFunction(userId, { Target: target })
 );
-await client.execute(new RetrievePrincipalAccess_teamFunction(teamId, target));
+await client.execute(new RetrievePrincipalAccess_teamFunction(teamId, { Target: target }));
 ```
 
 ## Parameter Values
@@ -235,12 +230,12 @@ The enums are exported from the package root:
 import { EntityFilters, RetrieveEntityFunction } from "@mohsinonxrm/dataverse-sdk-functions";
 
 const { EntityMetadata } = await client.execute(
-  new RetrieveEntityFunction(
-    EntityFilters.Entity | EntityFilters.Attributes,
-    "account", // LogicalName
-    "00000000-0000-0000-0000-000000000000", // MetadataId (required by the CSDL; empty when you pass LogicalName)
-    false // RetrieveAsIfPublished
-  )
+  new RetrieveEntityFunction({
+    EntityFilters: EntityFilters.Entity | EntityFilters.Attributes,
+    LogicalName: "account",
+    MetadataId: "00000000-0000-0000-0000-000000000000",
+    RetrieveAsIfPublished: false,
+  })
 );
 ```
 

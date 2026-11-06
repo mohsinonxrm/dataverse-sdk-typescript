@@ -64,8 +64,8 @@ export class RetrieveTimelineWallRecordsFunction implements Executable<RetrieveT
   }
 
   async parseResponse(response: Response): Promise<RetrieveTimelineWallRecordsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RetrieveTimelineWallRecordsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveTimelineWallRecordsResponse;
+    return (await response.json()) as RetrieveTimelineWallRecordsResponse;
   }
 }

@@ -50,10 +50,11 @@ export class msdyn_SalesAgents_FetchReadyRecordsForAgentProcessingRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_FetchReadyRecordsForAgentProcessingResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_SalesAgents_FetchReadyRecordsForAgentProcessingResponse.fromResponse({});
     return msdyn_SalesAgents_FetchReadyRecordsForAgentProcessingResponse.fromResponse(
-      text ? JSON.parse(text) : {}
+      await response.json()
     );
   }
 }

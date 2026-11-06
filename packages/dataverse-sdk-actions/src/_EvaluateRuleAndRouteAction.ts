@@ -46,8 +46,8 @@ export class _EvaluateRuleAndRouteAction implements Executable<_EvaluateRuleAndR
   }
 
   async parseResponse(response: Response): Promise<_EvaluateRuleAndRouteResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as _EvaluateRuleAndRouteResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as _EvaluateRuleAndRouteResponse;
+    return (await response.json()) as _EvaluateRuleAndRouteResponse;
   }
 }

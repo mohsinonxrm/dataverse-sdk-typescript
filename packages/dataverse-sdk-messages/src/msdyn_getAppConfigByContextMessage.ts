@@ -51,9 +51,9 @@ export class msdyn_getAppConfigByContextRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_getAppConfigByContextResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_getAppConfigByContextResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_getAppConfigByContextResponse.fromResponse({});
+    return msdyn_getAppConfigByContextResponse.fromResponse(await response.json());
   }
 }
 

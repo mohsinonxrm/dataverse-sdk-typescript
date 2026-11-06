@@ -46,8 +46,8 @@ export class AnalyzeSentimentAction implements Executable<AnalyzeSentimentRespon
   }
 
   async parseResponse(response: Response): Promise<AnalyzeSentimentResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as AnalyzeSentimentResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as AnalyzeSentimentResponse;
+    return (await response.json()) as AnalyzeSentimentResponse;
   }
 }

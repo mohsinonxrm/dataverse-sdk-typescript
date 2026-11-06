@@ -29,9 +29,9 @@ export class PublishAllXmlAsyncRequest
   }
 
   async parseResponse(response: Response): Promise<PublishAllXmlAsyncResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return PublishAllXmlAsyncResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return PublishAllXmlAsyncResponse.fromResponse({});
+    return PublishAllXmlAsyncResponse.fromResponse(await response.json());
   }
 }
 

@@ -51,8 +51,8 @@ export class msdynmkt_GetCjoEventsMetadataItemsByNamesAction implements Executab
   async parseResponse(
     response: Response
   ): Promise<msdynmkt_GetCjoEventsMetadataItemsByNamesResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdynmkt_GetCjoEventsMetadataItemsByNamesResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdynmkt_GetCjoEventsMetadataItemsByNamesResponse;
+    return (await response.json()) as msdynmkt_GetCjoEventsMetadataItemsByNamesResponse;
   }
 }

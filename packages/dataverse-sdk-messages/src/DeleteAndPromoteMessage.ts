@@ -45,9 +45,9 @@ export class DeleteAndPromoteRequest
   }
 
   async parseResponse(response: Response): Promise<DeleteAndPromoteResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return DeleteAndPromoteResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return DeleteAndPromoteResponse.fromResponse({});
+    return DeleteAndPromoteResponse.fromResponse(await response.json());
   }
 }
 

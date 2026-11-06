@@ -53,9 +53,9 @@ export class CopySystemFormRequest
   }
 
   async parseResponse(response: Response): Promise<CopySystemFormResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return CopySystemFormResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return CopySystemFormResponse.fromResponse({});
+    return CopySystemFormResponse.fromResponse(await response.json());
   }
 }
 

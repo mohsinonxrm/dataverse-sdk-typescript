@@ -55,9 +55,9 @@ export class SchedulePredictionRequest
   }
 
   async parseResponse(response: Response): Promise<SchedulePredictionResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return SchedulePredictionResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return SchedulePredictionResponse.fromResponse({});
+    return SchedulePredictionResponse.fromResponse(await response.json());
   }
 }
 

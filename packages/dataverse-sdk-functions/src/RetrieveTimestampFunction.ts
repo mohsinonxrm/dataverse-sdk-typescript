@@ -26,8 +26,8 @@ export class RetrieveTimestampFunction implements Executable<RetrieveTimestampRe
   }
 
   async parseResponse(response: Response): Promise<RetrieveTimestampResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RetrieveTimestampResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveTimestampResponse;
+    return (await response.json()) as RetrieveTimestampResponse;
   }
 }

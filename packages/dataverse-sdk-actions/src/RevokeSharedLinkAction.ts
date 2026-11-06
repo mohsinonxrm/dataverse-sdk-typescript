@@ -48,8 +48,8 @@ export class RevokeSharedLinkAction implements Executable<RevokeSharedLinkRespon
   }
 
   async parseResponse(response: Response): Promise<RevokeSharedLinkResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RevokeSharedLinkResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RevokeSharedLinkResponse;
+    return (await response.json()) as RevokeSharedLinkResponse;
   }
 }

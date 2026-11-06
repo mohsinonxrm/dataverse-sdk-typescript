@@ -44,8 +44,8 @@ export class ApplyRoutingRuleAction implements Executable<ApplyRoutingRuleRespon
   }
 
   async parseResponse(response: Response): Promise<ApplyRoutingRuleResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as ApplyRoutingRuleResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as ApplyRoutingRuleResponse;
+    return (await response.json()) as ApplyRoutingRuleResponse;
   }
 }

@@ -49,8 +49,8 @@ export class msdyn_GetCaseSuggestionsAction implements Executable<msdyn_GetCaseS
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetCaseSuggestionsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdyn_GetCaseSuggestionsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetCaseSuggestionsResponse;
+    return (await response.json()) as msdyn_GetCaseSuggestionsResponse;
   }
 }

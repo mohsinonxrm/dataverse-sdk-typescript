@@ -60,8 +60,8 @@ export class GetQuantityDecimal_invoiceFunction implements Executable<GetQuantit
   }
 
   async parseResponse(response: Response): Promise<GetQuantityDecimal_invoiceResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as GetQuantityDecimal_invoiceResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as GetQuantityDecimal_invoiceResponse;
+    return (await response.json()) as GetQuantityDecimal_invoiceResponse;
   }
 }

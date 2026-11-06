@@ -40,12 +40,15 @@ describe.skipIf(!live)("live: entity payload parameters (#74)", () => {
     const subordinate = await createAccount("merge subordinate");
 
     await client.execute(
-      new MergeAction(
-        createEntityReference("account", target),
-        createEntityReference("account", subordinate),
-        { "@odata.type": "Microsoft.Dynamics.CRM.account", description: `${runId} merged` },
-        false
-      )
+      new MergeAction({
+        Target: createEntityReference("account", target),
+        Subordinate: createEntityReference("account", subordinate),
+        UpdateContent: {
+          "@odata.type": "Microsoft.Dynamics.CRM.account",
+          description: `${runId} merged`,
+        },
+        PerformParentingChecks: false,
+      })
     );
 
     const merged = await client
@@ -61,12 +64,15 @@ describe.skipIf(!live)("live: entity payload parameters (#74)", () => {
     const subordinate = await createAccount("merge request subordinate");
 
     await client.execute(
-      new MergeRequest(
-        createMessageReference("account", target),
-        createMessageReference("account", subordinate),
-        { "@odata.type": "Microsoft.Dynamics.CRM.account", description: `${runId} merged` },
-        false
-      )
+      new MergeRequest({
+        Target: createMessageReference("account", target),
+        Subordinate: createMessageReference("account", subordinate),
+        UpdateContent: {
+          "@odata.type": "Microsoft.Dynamics.CRM.account",
+          description: `${runId} merged`,
+        },
+        PerformParentingChecks: false,
+      })
     );
 
     const merged = await client
@@ -82,16 +88,15 @@ describe.skipIf(!live)("live: entity payload parameters (#74)", () => {
     opportunities.push(id);
 
     await client.execute(
-      new WinOpportunityAction(
-        {
+      new WinOpportunityAction({
+        OpportunityClose: {
           "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
           subject: `${runId} won`,
           "opportunityid@odata.bind": `/opportunities(${id})`,
           actualrevenue: 1000,
         },
-        "",
-        3
-      )
+        Status: 3,
+      })
     );
 
     const won = await client

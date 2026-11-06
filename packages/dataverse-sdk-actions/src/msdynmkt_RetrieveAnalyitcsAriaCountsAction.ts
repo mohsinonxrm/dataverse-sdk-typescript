@@ -50,8 +50,8 @@ export class msdynmkt_RetrieveAnalyitcsAriaCountsAction implements Executable<ms
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_RetrieveAnalyitcsAriaCountsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdynmkt_RetrieveAnalyitcsAriaCountsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdynmkt_RetrieveAnalyitcsAriaCountsResponse;
+    return (await response.json()) as msdynmkt_RetrieveAnalyitcsAriaCountsResponse;
   }
 }

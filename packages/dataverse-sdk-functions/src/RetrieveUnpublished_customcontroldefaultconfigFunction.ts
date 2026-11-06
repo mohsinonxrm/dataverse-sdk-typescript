@@ -38,8 +38,9 @@ export class RetrieveUnpublished_customcontroldefaultconfigFunction implements E
   async parseResponse(
     response: Response
   ): Promise<RetrieveUnpublished_customcontroldefaultconfigResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RetrieveUnpublished_customcontroldefaultconfigResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as RetrieveUnpublished_customcontroldefaultconfigResponse;
+    return (await response.json()) as RetrieveUnpublished_customcontroldefaultconfigResponse;
   }
 }

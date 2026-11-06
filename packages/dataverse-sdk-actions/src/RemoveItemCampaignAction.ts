@@ -52,8 +52,8 @@ export class RemoveItemCampaignAction implements Executable<RemoveItemCampaignRe
   }
 
   async parseResponse(response: Response): Promise<RemoveItemCampaignResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RemoveItemCampaignResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RemoveItemCampaignResponse;
+    return (await response.json()) as RemoveItemCampaignResponse;
   }
 }

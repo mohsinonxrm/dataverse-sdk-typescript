@@ -48,8 +48,8 @@ export class _CloneRoutingRuleSetAction implements Executable<_CloneRoutingRuleS
   }
 
   async parseResponse(response: Response): Promise<_CloneRoutingRuleSetResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as _CloneRoutingRuleSetResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as _CloneRoutingRuleSetResponse;
+    return (await response.json()) as _CloneRoutingRuleSetResponse;
   }
 }

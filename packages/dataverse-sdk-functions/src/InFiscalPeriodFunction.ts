@@ -53,8 +53,8 @@ export class InFiscalPeriodFunction implements Executable<InFiscalPeriodResponse
   }
 
   async parseResponse(response: Response): Promise<InFiscalPeriodResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as InFiscalPeriodResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as InFiscalPeriodResponse;
+    return (await response.json()) as InFiscalPeriodResponse;
   }
 }

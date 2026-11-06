@@ -36,8 +36,8 @@ export class RetrieveUnpublished_aiplugintitleFunction implements Executable<Ret
   }
 
   async parseResponse(response: Response): Promise<RetrieveUnpublished_aiplugintitleResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RetrieveUnpublished_aiplugintitleResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveUnpublished_aiplugintitleResponse;
+    return (await response.json()) as RetrieveUnpublished_aiplugintitleResponse;
   }
 }

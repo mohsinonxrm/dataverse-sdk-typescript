@@ -250,24 +250,25 @@ Actions (POST with side effects):
 import { CreateMultipleAction, WinOpportunityAction } from "@mohsinonxrm/dataverse-sdk-actions";
 
 // Bulk create
-const createMultiple = new CreateMultipleAction("accounts", [
-  { "@odata.type": "Microsoft.Dynamics.CRM.account", name: "Account 1" },
-  { "@odata.type": "Microsoft.Dynamics.CRM.account", name: "Account 2" },
-]);
+const createMultiple = new CreateMultipleAction("accounts", {
+  Targets: [
+    { "@odata.type": "Microsoft.Dynamics.CRM.account", name: "Account 1" },
+    { "@odata.type": "Microsoft.Dynamics.CRM.account", name: "Account 2" },
+  ],
+});
 
 const result = await client.execute(createMultiple);
 console.log(result.Ids); // ['guid1', 'guid2']
 
 // Win opportunity
-const winAction = new WinOpportunityAction(
-  {
-    opportunityid: opportunityId,
+const winAction = new WinOpportunityAction({
+  OpportunityClose: {
+    "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
     "opportunityid@odata.bind": `/opportunities(${opportunityId})`,
     actualrevenue: 100000,
-    actualend: new Date(),
   },
-  3
-); // Status: Won
+  Status: 3, // Won
+});
 
 await client.execute(winAction);
 ```
@@ -338,7 +339,7 @@ import {
   WhoAmIRequest,
   ExecuteWorkflowRequest,
   MergeRequest,
-  WinOpportunityRequest,
+  createEntityReference,
 } from "@mohsinonxrm/dataverse-sdk-messages";
 import { OrganizationService } from "@mohsinonxrm/dataverse-sdk-xrm";
 
@@ -349,20 +350,20 @@ const whoAmI = await org.execute(new WhoAmIRequest());
 console.log("User ID:", whoAmI.result.UserId);
 
 // Execute workflow
-const workflowRequest = new ExecuteWorkflowRequest(
-  workflowId,
-  recordId,
-  {} // Input arguments
-);
+const workflowRequest = new ExecuteWorkflowRequest(workflowId, {
+  EntityId: recordId,
+  InputArguments: {},
+});
 const workflowResponse = await org.execute(workflowRequest);
 
 // Merge records
-const mergeRequest = new MergeRequest(
-  { logicalName: "account", id: targetAccountId },
-  { logicalName: "account", id: subordinateAccountId },
-  { name: "Merged Account Name" },
-  false // PerformParentingChecks
-);
+// Parameters go in one object, by their Web API names; optional ones can be left out
+const mergeRequest = new MergeRequest({
+  Target: createEntityReference("account", targetAccountId),
+  Subordinate: createEntityReference("account", subordinateAccountId),
+  UpdateContent: { "@odata.type": "Microsoft.Dynamics.CRM.account", name: "Merged Account Name" },
+  PerformParentingChecks: false,
+});
 await org.execute(mergeRequest);
 ```
 

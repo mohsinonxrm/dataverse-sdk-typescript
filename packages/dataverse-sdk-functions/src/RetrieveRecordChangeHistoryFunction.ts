@@ -58,8 +58,8 @@ export class RetrieveRecordChangeHistoryFunction implements Executable<RetrieveR
   }
 
   async parseResponse(response: Response): Promise<RetrieveRecordChangeHistoryResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RetrieveRecordChangeHistoryResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveRecordChangeHistoryResponse;
+    return (await response.json()) as RetrieveRecordChangeHistoryResponse;
   }
 }

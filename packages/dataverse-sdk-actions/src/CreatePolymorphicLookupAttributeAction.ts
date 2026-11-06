@@ -55,8 +55,8 @@ export class CreatePolymorphicLookupAttributeAction implements Executable<Create
   }
 
   async parseResponse(response: Response): Promise<CreatePolymorphicLookupAttributeResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as CreatePolymorphicLookupAttributeResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CreatePolymorphicLookupAttributeResponse;
+    return (await response.json()) as CreatePolymorphicLookupAttributeResponse;
   }
 }

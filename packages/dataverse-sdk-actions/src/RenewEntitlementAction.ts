@@ -53,8 +53,8 @@ export class RenewEntitlementAction implements Executable<RenewEntitlementRespon
   }
 
   async parseResponse(response: Response): Promise<RenewEntitlementResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RenewEntitlementResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RenewEntitlementResponse;
+    return (await response.json()) as RenewEntitlementResponse;
   }
 }

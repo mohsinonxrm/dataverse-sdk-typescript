@@ -49,8 +49,8 @@ export class msdyn_UpdateModelStatusAction implements Executable<msdyn_UpdateMod
   }
 
   async parseResponse(response: Response): Promise<msdyn_UpdateModelStatusResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdyn_UpdateModelStatusResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_UpdateModelStatusResponse;
+    return (await response.json()) as msdyn_UpdateModelStatusResponse;
   }
 }

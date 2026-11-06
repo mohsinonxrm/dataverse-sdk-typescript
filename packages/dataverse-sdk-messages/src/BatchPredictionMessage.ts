@@ -51,9 +51,9 @@ export class BatchPredictionRequest
   }
 
   async parseResponse(response: Response): Promise<BatchPredictionResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return BatchPredictionResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return BatchPredictionResponse.fromResponse({});
+    return BatchPredictionResponse.fromResponse(await response.json());
   }
 }
 

@@ -49,11 +49,10 @@ export class msdyn_IoTHubGetAggregatedDeviceReadingsRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_IoTHubGetAggregatedDeviceReadingsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_IoTHubGetAggregatedDeviceReadingsResponse.fromResponse(
-      text ? JSON.parse(text) : {}
-    );
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_IoTHubGetAggregatedDeviceReadingsResponse.fromResponse({});
+    return msdyn_IoTHubGetAggregatedDeviceReadingsResponse.fromResponse(await response.json());
   }
 }
 

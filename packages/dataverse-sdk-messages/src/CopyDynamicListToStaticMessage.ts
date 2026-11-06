@@ -32,9 +32,9 @@ export class CopyDynamicListToStaticRequest
   }
 
   async parseResponse(response: Response): Promise<CopyDynamicListToStaticResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return CopyDynamicListToStaticResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return CopyDynamicListToStaticResponse.fromResponse({});
+    return CopyDynamicListToStaticResponse.fromResponse(await response.json());
   }
 }
 

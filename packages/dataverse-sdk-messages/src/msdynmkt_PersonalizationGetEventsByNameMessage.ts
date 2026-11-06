@@ -47,11 +47,10 @@ export class msdynmkt_PersonalizationGetEventsByNameRequest
   async parseResponse(
     response: Response
   ): Promise<msdynmkt_PersonalizationGetEventsByNameResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdynmkt_PersonalizationGetEventsByNameResponse.fromResponse(
-      text ? JSON.parse(text) : {}
-    );
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdynmkt_PersonalizationGetEventsByNameResponse.fromResponse({});
+    return msdynmkt_PersonalizationGetEventsByNameResponse.fromResponse(await response.json());
   }
 }
 

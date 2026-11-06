@@ -60,8 +60,8 @@ export class RetrievePrincipalAccess_organizationFunction implements Executable<
   }
 
   async parseResponse(response: Response): Promise<RetrievePrincipalAccess_organizationResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RetrievePrincipalAccess_organizationResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrievePrincipalAccess_organizationResponse;
+    return (await response.json()) as RetrievePrincipalAccess_organizationResponse;
   }
 }

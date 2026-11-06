@@ -50,9 +50,9 @@ export class GeneratePowerFxFormulaRequest
   }
 
   async parseResponse(response: Response): Promise<GeneratePowerFxFormulaResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return GeneratePowerFxFormulaResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return GeneratePowerFxFormulaResponse.fromResponse({});
+    return GeneratePowerFxFormulaResponse.fromResponse(await response.json());
   }
 }
 

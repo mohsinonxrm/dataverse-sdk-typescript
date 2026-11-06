@@ -46,8 +46,8 @@ export class CloneAsSolutionAction implements Executable<CloneAsSolutionResponse
   }
 
   async parseResponse(response: Response): Promise<CloneAsSolutionResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as CloneAsSolutionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CloneAsSolutionResponse;
+    return (await response.json()) as CloneAsSolutionResponse;
   }
 }

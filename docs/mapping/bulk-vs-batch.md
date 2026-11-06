@@ -47,7 +47,7 @@ const accounts = Array.from({ length: 100 }, (_, i) => ({
   creditlimit: 50000,
 }));
 
-const action = new CreateMultipleAction("accounts", accounts);
+const action = new CreateMultipleAction("accounts", { Targets: accounts });
 const response = await client.execute(action);
 console.log("Created:", response.Ids.length, "accounts");
 ```
@@ -162,7 +162,7 @@ const contacts = records.map((row) => ({
   emailaddress1: row.Email,
 }));
 
-const action = new CreateMultipleAction("contacts", contacts);
+const action = new CreateMultipleAction("contacts", { Targets: contacts });
 const response = await client.execute(action);
 console.log("Imported:", response.Ids.length, "contacts");
 ```
@@ -223,7 +223,7 @@ const accounts = accountIds.map((id) => ({
   creditlimit: 75000,
 }));
 
-const action = new UpdateMultipleAction("accounts", accounts);
+const action = new UpdateMultipleAction("accounts", { Targets: accounts });
 await client.execute(action);
 console.log("Updated", accounts.length, "accounts");
 ```
@@ -244,7 +244,7 @@ const products = externalData.map((item) => ({
   price: item.price,
 }));
 
-const action = new UpsertMultipleAction("products", products);
+const action = new UpsertMultipleAction("products", { Targets: products });
 await client.execute(action);
 console.log("Synced", products.length, "products");
 ```
@@ -295,7 +295,7 @@ const opportunities = result.responses.get("opportunities")?.body.value;
 
 ```typescript
 try {
-  const action = new CreateMultipleAction("accounts", accounts);
+  const action = new CreateMultipleAction("accounts", { Targets: accounts });
   const response = await client.execute(action);
   console.log("Created:", response.Ids);
 } catch (error) {
@@ -307,7 +307,7 @@ try {
 ### Bulk Operations (Elastic Tables with Partial Success)
 
 ```typescript
-const action = new CreateMultipleAction("accounts", accounts);
+const action = new CreateMultipleAction("accounts", { Targets: accounts });
 const response = await client.execute(action, {
   prefer: ["odata.include-annotations=Microsoft.PowerApps.CDS.ErrorDetails.*"],
 });

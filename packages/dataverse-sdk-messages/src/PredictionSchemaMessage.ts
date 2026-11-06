@@ -53,9 +53,9 @@ export class PredictionSchemaRequest
   }
 
   async parseResponse(response: Response): Promise<PredictionSchemaResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return PredictionSchemaResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return PredictionSchemaResponse.fromResponse({});
+    return PredictionSchemaResponse.fromResponse(await response.json());
   }
 }
 

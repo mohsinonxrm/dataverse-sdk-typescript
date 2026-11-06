@@ -42,8 +42,8 @@ export class msdyn_BulkAITestRunAction implements Executable<msdyn_BulkAITestRun
   }
 
   async parseResponse(response: Response): Promise<msdyn_BulkAITestRunResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdyn_BulkAITestRunResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_BulkAITestRunResponse;
+    return (await response.json()) as msdyn_BulkAITestRunResponse;
   }
 }

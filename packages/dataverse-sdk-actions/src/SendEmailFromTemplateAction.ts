@@ -52,8 +52,8 @@ export class SendEmailFromTemplateAction implements Executable<SendEmailFromTemp
   }
 
   async parseResponse(response: Response): Promise<SendEmailFromTemplateResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as SendEmailFromTemplateResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as SendEmailFromTemplateResponse;
+    return (await response.json()) as SendEmailFromTemplateResponse;
   }
 }

@@ -54,8 +54,8 @@ export class RetrieveExchangeAppointmentsFunction implements Executable<Retrieve
   }
 
   async parseResponse(response: Response): Promise<RetrieveExchangeAppointmentsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RetrieveExchangeAppointmentsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveExchangeAppointmentsResponse;
+    return (await response.json()) as RetrieveExchangeAppointmentsResponse;
   }
 }

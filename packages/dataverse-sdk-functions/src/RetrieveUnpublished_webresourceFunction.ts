@@ -36,8 +36,8 @@ export class RetrieveUnpublished_webresourceFunction implements Executable<Retri
   }
 
   async parseResponse(response: Response): Promise<RetrieveUnpublished_webresourceResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RetrieveUnpublished_webresourceResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveUnpublished_webresourceResponse;
+    return (await response.json()) as RetrieveUnpublished_webresourceResponse;
   }
 }

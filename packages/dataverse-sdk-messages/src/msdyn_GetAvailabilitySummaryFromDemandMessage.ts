@@ -59,11 +59,10 @@ export class msdyn_GetAvailabilitySummaryFromDemandRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAvailabilitySummaryFromDemandResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_GetAvailabilitySummaryFromDemandResponse.fromResponse(
-      text ? JSON.parse(text) : {}
-    );
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_GetAvailabilitySummaryFromDemandResponse.fromResponse({});
+    return msdyn_GetAvailabilitySummaryFromDemandResponse.fromResponse(await response.json());
   }
 }
 

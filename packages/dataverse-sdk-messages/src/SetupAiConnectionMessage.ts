@@ -46,9 +46,9 @@ export class SetupAiConnectionRequest
   }
 
   async parseResponse(response: Response): Promise<SetupAiConnectionResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return SetupAiConnectionResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return SetupAiConnectionResponse.fromResponse({});
+    return SetupAiConnectionResponse.fromResponse(await response.json());
   }
 }
 

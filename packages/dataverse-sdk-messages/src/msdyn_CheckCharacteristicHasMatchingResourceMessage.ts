@@ -47,11 +47,10 @@ export class msdyn_CheckCharacteristicHasMatchingResourceRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckCharacteristicHasMatchingResourceResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_CheckCharacteristicHasMatchingResourceResponse.fromResponse(
-      text ? JSON.parse(text) : {}
-    );
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_CheckCharacteristicHasMatchingResourceResponse.fromResponse({});
+    return msdyn_CheckCharacteristicHasMatchingResourceResponse.fromResponse(await response.json());
   }
 }
 

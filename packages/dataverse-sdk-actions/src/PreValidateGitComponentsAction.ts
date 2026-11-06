@@ -44,8 +44,8 @@ export class PreValidateGitComponentsAction implements Executable<PreValidateGit
   }
 
   async parseResponse(response: Response): Promise<PreValidateGitComponentsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as PreValidateGitComponentsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as PreValidateGitComponentsResponse;
+    return (await response.json()) as PreValidateGitComponentsResponse;
   }
 }

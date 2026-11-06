@@ -415,7 +415,7 @@ const accounts = [
   { "@odata.type": "Microsoft.Dynamics.CRM.account", name: "Account 3", revenue: 100000 },
 ];
 
-const action = new CreateMultipleAction("accounts", accounts);
+const action = new CreateMultipleAction("accounts", { Targets: accounts });
 const result = await client.execute(action);
 
 console.log(`Created ${result.Ids.length} accounts`);
@@ -494,7 +494,10 @@ await service.update("accounts", accountId, {
 });
 
 // Execute Message
-const workflowRequest = new ExecuteWorkflowRequest(workflowId, accountId, {});
+const workflowRequest = new ExecuteWorkflowRequest(workflowId, {
+  EntityId: accountId,
+  InputArguments: {},
+});
 const workflowResponse = await service.execute(workflowRequest);
 
 // Associate: related records are EntityReferences with a logical name

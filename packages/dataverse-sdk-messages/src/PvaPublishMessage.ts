@@ -32,9 +32,9 @@ export class PvaPublishRequest
   }
 
   async parseResponse(response: Response): Promise<PvaPublishResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return PvaPublishResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return PvaPublishResponse.fromResponse({});
+    return PvaPublishResponse.fromResponse(await response.json());
   }
 }
 

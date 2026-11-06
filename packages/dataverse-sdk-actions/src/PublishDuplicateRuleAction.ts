@@ -36,8 +36,8 @@ export class PublishDuplicateRuleAction implements Executable<PublishDuplicateRu
   }
 
   async parseResponse(response: Response): Promise<PublishDuplicateRuleResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as PublishDuplicateRuleResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as PublishDuplicateRuleResponse;
+    return (await response.json()) as PublishDuplicateRuleResponse;
   }
 }

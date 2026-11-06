@@ -53,8 +53,8 @@ export class msdyn_CheckForCustomizedWebResourcesAction implements Executable<ms
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckForCustomizedWebResourcesResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdyn_CheckForCustomizedWebResourcesResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_CheckForCustomizedWebResourcesResponse;
+    return (await response.json()) as msdyn_CheckForCustomizedWebResourcesResponse;
   }
 }

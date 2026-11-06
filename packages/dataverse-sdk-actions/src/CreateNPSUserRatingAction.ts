@@ -50,8 +50,8 @@ export class CreateNPSUserRatingAction implements Executable<CreateNPSUserRating
   }
 
   async parseResponse(response: Response): Promise<CreateNPSUserRatingResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as CreateNPSUserRatingResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CreateNPSUserRatingResponse;
+    return (await response.json()) as CreateNPSUserRatingResponse;
   }
 }

@@ -45,9 +45,9 @@ export class msdyn_FilterInActiveNBACardsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_FilterInActiveNBACardsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_FilterInActiveNBACardsResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_FilterInActiveNBACardsResponse.fromResponse({});
+    return msdyn_FilterInActiveNBACardsResponse.fromResponse(await response.json());
   }
 }
 

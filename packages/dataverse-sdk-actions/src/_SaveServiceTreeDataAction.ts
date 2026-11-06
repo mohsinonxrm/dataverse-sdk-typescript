@@ -45,8 +45,8 @@ export class _SaveServiceTreeDataAction implements Executable<_SaveServiceTreeDa
   }
 
   async parseResponse(response: Response): Promise<_SaveServiceTreeDataResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as _SaveServiceTreeDataResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as _SaveServiceTreeDataResponse;
+    return (await response.json()) as _SaveServiceTreeDataResponse;
   }
 }

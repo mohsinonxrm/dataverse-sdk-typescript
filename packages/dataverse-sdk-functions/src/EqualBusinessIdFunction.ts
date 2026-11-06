@@ -48,8 +48,8 @@ export class EqualBusinessIdFunction implements Executable<EqualBusinessIdRespon
   }
 
   async parseResponse(response: Response): Promise<EqualBusinessIdResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as EqualBusinessIdResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as EqualBusinessIdResponse;
+    return (await response.json()) as EqualBusinessIdResponse;
   }
 }

@@ -45,9 +45,9 @@ export class msdyn_GetRICommonFCBStatusRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetRICommonFCBStatusResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_GetRICommonFCBStatusResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetRICommonFCBStatusResponse.fromResponse({});
+    return msdyn_GetRICommonFCBStatusResponse.fromResponse(await response.json());
   }
 }
 

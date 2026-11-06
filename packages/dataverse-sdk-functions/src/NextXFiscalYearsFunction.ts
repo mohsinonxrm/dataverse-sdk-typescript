@@ -53,8 +53,8 @@ export class NextXFiscalYearsFunction implements Executable<NextXFiscalYearsResp
   }
 
   async parseResponse(response: Response): Promise<NextXFiscalYearsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as NextXFiscalYearsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as NextXFiscalYearsResponse;
+    return (await response.json()) as NextXFiscalYearsResponse;
   }
 }

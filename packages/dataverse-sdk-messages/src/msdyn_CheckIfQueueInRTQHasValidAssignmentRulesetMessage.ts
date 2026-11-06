@@ -31,10 +31,11 @@ export class msdyn_CheckIfQueueInRTQHasValidAssignmentRulesetRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckIfQueueInRTQHasValidAssignmentRulesetResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_CheckIfQueueInRTQHasValidAssignmentRulesetResponse.fromResponse({});
     return msdyn_CheckIfQueueInRTQHasValidAssignmentRulesetResponse.fromResponse(
-      text ? JSON.parse(text) : {}
+      await response.json()
     );
   }
 }

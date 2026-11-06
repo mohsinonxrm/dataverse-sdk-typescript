@@ -45,9 +45,9 @@ export class msdyn_CheckIfAutoNumberingIsOptedRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckIfAutoNumberingIsOptedResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_CheckIfAutoNumberingIsOptedResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_CheckIfAutoNumberingIsOptedResponse.fromResponse({});
+    return msdyn_CheckIfAutoNumberingIsOptedResponse.fromResponse(await response.json());
   }
 }
 

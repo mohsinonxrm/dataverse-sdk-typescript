@@ -53,9 +53,9 @@ export class ScheduleRetrainRequest
   }
 
   async parseResponse(response: Response): Promise<ScheduleRetrainResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return ScheduleRetrainResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return ScheduleRetrainResponse.fromResponse({});
+    return ScheduleRetrainResponse.fromResponse(await response.json());
   }
 }
 

@@ -44,8 +44,8 @@ export class msdyncrm_UpsertFileAction implements Executable<msdyncrm_UpsertFile
   }
 
   async parseResponse(response: Response): Promise<msdyncrm_UpsertFileResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdyncrm_UpsertFileResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyncrm_UpsertFileResponse;
+    return (await response.json()) as msdyncrm_UpsertFileResponse;
   }
 }

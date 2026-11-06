@@ -45,9 +45,9 @@ export class msdyn_GetFCSWithUserContextRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetFCSWithUserContextResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_GetFCSWithUserContextResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetFCSWithUserContextResponse.fromResponse({});
+    return msdyn_GetFCSWithUserContextResponse.fromResponse(await response.json());
   }
 }
 

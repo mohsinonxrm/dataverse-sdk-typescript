@@ -47,11 +47,10 @@ export class msdyn_RetrieveEnvironmentVariableValueForCSRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_RetrieveEnvironmentVariableValueForCSResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_RetrieveEnvironmentVariableValueForCSResponse.fromResponse(
-      text ? JSON.parse(text) : {}
-    );
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_RetrieveEnvironmentVariableValueForCSResponse.fromResponse({});
+    return msdyn_RetrieveEnvironmentVariableValueForCSResponse.fromResponse(await response.json());
   }
 }
 

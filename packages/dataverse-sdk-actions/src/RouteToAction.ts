@@ -47,8 +47,8 @@ export class RouteToAction implements Executable<RouteToResponse> {
   }
 
   async parseResponse(response: Response): Promise<RouteToResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RouteToResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RouteToResponse;
+    return (await response.json()) as RouteToResponse;
   }
 }

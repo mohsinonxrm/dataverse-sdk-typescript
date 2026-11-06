@@ -53,8 +53,8 @@ export class OnOrAfterFunction implements Executable<OnOrAfterResponse> {
   }
 
   async parseResponse(response: Response): Promise<OnOrAfterResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as OnOrAfterResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as OnOrAfterResponse;
+    return (await response.json()) as OnOrAfterResponse;
   }
 }

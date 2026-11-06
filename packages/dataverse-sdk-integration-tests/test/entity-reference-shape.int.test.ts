@@ -50,7 +50,11 @@ describe.skipIf(!live)("live: hand-written entity references (#251)", () => {
     };
 
     await client.execute(
-      new MergeAction(createEntityReference("account", target), handWritten, undefined, false)
+      new MergeAction({
+        Target: createEntityReference("account", target),
+        Subordinate: handWritten,
+        PerformParentingChecks: false,
+      })
     );
 
     expect(await isMerged(subordinate)).toBe(true);
@@ -66,7 +70,11 @@ describe.skipIf(!live)("live: hand-written entity references (#251)", () => {
     };
 
     await client.execute(
-      new MergeRequest(handWritten, messageReference("account", subordinate), undefined, false)
+      new MergeRequest({
+        Target: handWritten,
+        Subordinate: messageReference("account", subordinate),
+        PerformParentingChecks: false,
+      })
     );
 
     expect(await isMerged(subordinate)).toBe(true);
@@ -84,8 +92,12 @@ describe.skipIf(!live)("live: hand-written entity references (#251)", () => {
 
     await expect(
       client.execute(
-        // @ts-expect-error #251: not an EntityReference (createEntityReference makes those), and not a payload
-        new MergeAction(createEntityReference("account", target), literal, undefined, false)
+        new MergeAction({
+          Target: createEntityReference("account", target),
+          // @ts-expect-error #251: not an EntityReference (createEntityReference makes those), and not a payload
+          Subordinate: literal,
+          PerformParentingChecks: false,
+        })
       )
     ).rejects.toThrow();
 

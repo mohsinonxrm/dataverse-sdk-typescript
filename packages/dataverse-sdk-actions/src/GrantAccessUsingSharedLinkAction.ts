@@ -42,8 +42,8 @@ export class GrantAccessUsingSharedLinkAction implements Executable<GrantAccessU
   }
 
   async parseResponse(response: Response): Promise<GrantAccessUsingSharedLinkResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as GrantAccessUsingSharedLinkResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as GrantAccessUsingSharedLinkResponse;
+    return (await response.json()) as GrantAccessUsingSharedLinkResponse;
   }
 }

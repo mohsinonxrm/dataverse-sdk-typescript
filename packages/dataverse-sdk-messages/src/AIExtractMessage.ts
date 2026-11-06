@@ -44,9 +44,9 @@ export class AIExtractRequest extends OrganizationRequest implements Executable<
   }
 
   async parseResponse(response: Response): Promise<AIExtractResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return AIExtractResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return AIExtractResponse.fromResponse({});
+    return AIExtractResponse.fromResponse(await response.json());
   }
 }
 

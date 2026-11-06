@@ -32,8 +32,8 @@ export class msdyn_PublishAIModelAction implements Executable<msdyn_PublishAIMod
   }
 
   async parseResponse(response: Response): Promise<msdyn_PublishAIModelResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdyn_PublishAIModelResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_PublishAIModelResponse;
+    return (await response.json()) as msdyn_PublishAIModelResponse;
   }
 }

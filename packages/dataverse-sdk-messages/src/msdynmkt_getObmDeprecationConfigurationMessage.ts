@@ -31,11 +31,10 @@ export class msdynmkt_getObmDeprecationConfigurationRequest
   async parseResponse(
     response: Response
   ): Promise<msdynmkt_getObmDeprecationConfigurationResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdynmkt_getObmDeprecationConfigurationResponse.fromResponse(
-      text ? JSON.parse(text) : {}
-    );
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdynmkt_getObmDeprecationConfigurationResponse.fromResponse({});
+    return msdynmkt_getObmDeprecationConfigurationResponse.fromResponse(await response.json());
   }
 }
 

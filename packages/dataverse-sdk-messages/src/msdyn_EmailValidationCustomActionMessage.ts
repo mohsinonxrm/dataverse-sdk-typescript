@@ -45,9 +45,9 @@ export class msdyn_EmailValidationCustomActionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_EmailValidationCustomActionResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_EmailValidationCustomActionResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_EmailValidationCustomActionResponse.fromResponse({});
+    return msdyn_EmailValidationCustomActionResponse.fromResponse(await response.json());
   }
 }
 

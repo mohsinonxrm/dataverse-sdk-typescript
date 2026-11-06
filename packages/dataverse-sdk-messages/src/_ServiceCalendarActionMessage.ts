@@ -47,9 +47,9 @@ export class _ServiceCalendarActionRequest
   }
 
   async parseResponse(response: Response): Promise<_ServiceCalendarActionResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return _ServiceCalendarActionResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return _ServiceCalendarActionResponse.fromResponse({});
+    return _ServiceCalendarActionResponse.fromResponse(await response.json());
   }
 }
 

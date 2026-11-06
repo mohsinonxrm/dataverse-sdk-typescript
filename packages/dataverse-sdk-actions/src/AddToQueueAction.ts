@@ -56,8 +56,8 @@ export class AddToQueueAction implements Executable<AddToQueueResponse> {
   }
 
   async parseResponse(response: Response): Promise<AddToQueueResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as AddToQueueResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as AddToQueueResponse;
+    return (await response.json()) as AddToQueueResponse;
   }
 }

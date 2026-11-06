@@ -100,8 +100,8 @@ export class RetrieveRecordWallFunction implements Executable<RetrieveRecordWall
   }
 
   async parseResponse(response: Response): Promise<RetrieveRecordWallResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RetrieveRecordWallResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveRecordWallResponse;
+    return (await response.json()) as RetrieveRecordWallResponse;
   }
 }

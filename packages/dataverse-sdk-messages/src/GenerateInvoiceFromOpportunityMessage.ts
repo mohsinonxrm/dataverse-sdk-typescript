@@ -48,9 +48,9 @@ export class GenerateInvoiceFromOpportunityRequest
   }
 
   async parseResponse(response: Response): Promise<GenerateInvoiceFromOpportunityResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return GenerateInvoiceFromOpportunityResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return GenerateInvoiceFromOpportunityResponse.fromResponse({});
+    return GenerateInvoiceFromOpportunityResponse.fromResponse(await response.json());
   }
 }
 

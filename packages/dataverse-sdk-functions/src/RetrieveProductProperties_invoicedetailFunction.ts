@@ -35,8 +35,8 @@ export class RetrieveProductProperties_invoicedetailFunction implements Executab
   async parseResponse(
     response: Response
   ): Promise<RetrieveProductProperties_invoicedetailResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RetrieveProductProperties_invoicedetailResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveProductProperties_invoicedetailResponse;
+    return (await response.json()) as RetrieveProductProperties_invoicedetailResponse;
   }
 }

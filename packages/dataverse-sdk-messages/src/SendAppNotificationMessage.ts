@@ -63,9 +63,9 @@ export class SendAppNotificationRequest
   }
 
   async parseResponse(response: Response): Promise<SendAppNotificationResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return SendAppNotificationResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return SendAppNotificationResponse.fromResponse({});
+    return SendAppNotificationResponse.fromResponse(await response.json());
   }
 }
 

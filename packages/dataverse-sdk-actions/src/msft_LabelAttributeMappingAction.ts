@@ -43,8 +43,8 @@ export class msft_LabelAttributeMappingAction implements Executable<msft_LabelAt
   }
 
   async parseResponse(response: Response): Promise<msft_LabelAttributeMappingResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msft_LabelAttributeMappingResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msft_LabelAttributeMappingResponse;
+    return (await response.json()) as msft_LabelAttributeMappingResponse;
   }
 }

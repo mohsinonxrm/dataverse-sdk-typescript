@@ -45,9 +45,9 @@ export class PvaGetUserBotsRequest
   }
 
   async parseResponse(response: Response): Promise<PvaGetUserBotsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return PvaGetUserBotsResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return PvaGetUserBotsResponse.fromResponse({});
+    return PvaGetUserBotsResponse.fromResponse(await response.json());
   }
 }
 

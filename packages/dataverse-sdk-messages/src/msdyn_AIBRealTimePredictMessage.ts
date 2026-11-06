@@ -53,9 +53,9 @@ export class msdyn_AIBRealTimePredictRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_AIBRealTimePredictResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_AIBRealTimePredictResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_AIBRealTimePredictResponse.fromResponse({});
+    return msdyn_AIBRealTimePredictResponse.fromResponse(await response.json());
   }
 }
 

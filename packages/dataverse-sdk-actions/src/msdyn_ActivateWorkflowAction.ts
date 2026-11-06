@@ -44,8 +44,8 @@ export class msdyn_ActivateWorkflowAction implements Executable<msdyn_ActivateWo
   }
 
   async parseResponse(response: Response): Promise<msdyn_ActivateWorkflowResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdyn_ActivateWorkflowResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_ActivateWorkflowResponse;
+    return (await response.json()) as msdyn_ActivateWorkflowResponse;
   }
 }

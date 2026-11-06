@@ -59,9 +59,9 @@ export class searchsuggestRequest
   }
 
   async parseResponse(response: Response): Promise<searchsuggestResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return searchsuggestResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return searchsuggestResponse.fromResponse({});
+    return searchsuggestResponse.fromResponse(await response.json());
   }
 }
 

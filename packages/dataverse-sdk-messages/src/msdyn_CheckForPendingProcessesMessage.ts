@@ -45,9 +45,9 @@ export class msdyn_CheckForPendingProcessesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckForPendingProcessesResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_CheckForPendingProcessesResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_CheckForPendingProcessesResponse.fromResponse({});
+    return msdyn_CheckForPendingProcessesResponse.fromResponse(await response.json());
   }
 }
 

@@ -44,8 +44,8 @@ export class msdyn_SalesAgents_ReEngageEntityAction implements Executable<msdyn_
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAgents_ReEngageEntityResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdyn_SalesAgents_ReEngageEntityResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_SalesAgents_ReEngageEntityResponse;
+    return (await response.json()) as msdyn_SalesAgents_ReEngageEntityResponse;
   }
 }

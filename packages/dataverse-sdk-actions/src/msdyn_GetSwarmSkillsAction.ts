@@ -44,8 +44,8 @@ export class msdyn_GetSwarmSkillsAction implements Executable<msdyn_GetSwarmSkil
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSwarmSkillsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdyn_GetSwarmSkillsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetSwarmSkillsResponse;
+    return (await response.json()) as msdyn_GetSwarmSkillsResponse;
   }
 }

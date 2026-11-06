@@ -53,10 +53,11 @@ export class msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSARRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSARResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSARResponse.fromResponse({});
     return msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSARResponse.fromResponse(
-      text ? JSON.parse(text) : {}
+      await response.json()
     );
   }
 }

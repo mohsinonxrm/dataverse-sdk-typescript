@@ -48,8 +48,8 @@ export class msdynmkt_ChartWidgetDataCustomActionAction implements Executable<ms
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_ChartWidgetDataCustomActionResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdynmkt_ChartWidgetDataCustomActionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdynmkt_ChartWidgetDataCustomActionResponse;
+    return (await response.json()) as msdynmkt_ChartWidgetDataCustomActionResponse;
   }
 }

@@ -45,9 +45,9 @@ export class msdyn_CreateNewAnalysisJobRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateNewAnalysisJobResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_CreateNewAnalysisJobResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_CreateNewAnalysisJobResponse.fromResponse({});
+    return msdyn_CreateNewAnalysisJobResponse.fromResponse(await response.json());
   }
 }
 

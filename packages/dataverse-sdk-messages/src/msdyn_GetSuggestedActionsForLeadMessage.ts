@@ -32,9 +32,9 @@ export class msdyn_GetSuggestedActionsForLeadRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSuggestedActionsForLeadResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_GetSuggestedActionsForLeadResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetSuggestedActionsForLeadResponse.fromResponse({});
+    return msdyn_GetSuggestedActionsForLeadResponse.fromResponse(await response.json());
   }
 }
 

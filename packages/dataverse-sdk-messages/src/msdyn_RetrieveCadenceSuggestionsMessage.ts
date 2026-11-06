@@ -53,9 +53,9 @@ export class msdyn_RetrieveCadenceSuggestionsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrieveCadenceSuggestionsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_RetrieveCadenceSuggestionsResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_RetrieveCadenceSuggestionsResponse.fromResponse({});
+    return msdyn_RetrieveCadenceSuggestionsResponse.fromResponse(await response.json());
   }
 }
 

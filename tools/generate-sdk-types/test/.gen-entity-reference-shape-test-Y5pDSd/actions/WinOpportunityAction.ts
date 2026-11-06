@@ -1,0 +1,56 @@
+import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
+import type { EntityReference } from './types/EntityReference.js';
+import { requestBody } from './internal/requestBody.js';
+import type { EntityPayload } from './types/EntityPayload.js';
+import type { opportunityclose } from './types/index.js';
+
+/**
+ * Response from WinOpportunity action
+ */
+export interface WinOpportunityResponse {
+  // No content returned
+}
+
+/**
+ * Parameters of the WinOpportunity action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface WinOpportunityActionParameters {
+  OpportunityClose: EntityReference | EntityPayload<opportunityclose>;
+  Status: number;
+}
+
+/**
+ * WinOpportunity action
+ *
+ * Unbound action
+ */
+export class WinOpportunityAction implements Executable<WinOpportunityResponse> {
+  constructor(
+    public readonly parameters: WinOpportunityActionParameters,
+  ) {}
+
+  toRequestInformation(baseUrl: string): RequestInformation {
+    const url = `${baseUrl}/WinOpportunity`;
+
+    const body = requestBody({
+      OpportunityClose: this.parameters.OpportunityClose,
+      Status: this.parameters.Status,
+    });
+
+    return {
+      method: 'POST',
+      url,
+      headers: {
+        'content-type': 'application/json',
+      },
+      body,
+    };
+  }
+
+  async parseResponse(response: Response): Promise<WinOpportunityResponse> {
+    // 204 No Content (or an empty body) is an empty result
+    const text = response.status === 204 ? '' : await response.text();
+    return (text ? JSON.parse(text) : {}) as WinOpportunityResponse;
+  }
+}

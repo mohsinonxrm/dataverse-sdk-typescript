@@ -45,8 +45,8 @@ export class msdyn_GetSwarmResponseCardAction implements Executable<msdyn_GetSwa
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSwarmResponseCardResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdyn_GetSwarmResponseCardResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetSwarmResponseCardResponse;
+    return (await response.json()) as msdyn_GetSwarmResponseCardResponse;
   }
 }

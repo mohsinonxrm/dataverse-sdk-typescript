@@ -53,9 +53,9 @@ export class msdyn_StoreQualityEvaluationResultRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_StoreQualityEvaluationResultResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_StoreQualityEvaluationResultResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_StoreQualityEvaluationResultResponse.fromResponse({});
+    return msdyn_StoreQualityEvaluationResultResponse.fromResponse(await response.json());
   }
 }
 

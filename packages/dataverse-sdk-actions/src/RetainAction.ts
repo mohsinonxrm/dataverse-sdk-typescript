@@ -47,8 +47,8 @@ export class RetainAction implements Executable<RetainResponse> {
   }
 
   async parseResponse(response: Response): Promise<RetainResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RetainResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetainResponse;
+    return (await response.json()) as RetainResponse;
   }
 }

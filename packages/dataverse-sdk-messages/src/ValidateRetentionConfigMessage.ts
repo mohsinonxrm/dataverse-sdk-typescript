@@ -53,9 +53,9 @@ export class ValidateRetentionConfigRequest
   }
 
   async parseResponse(response: Response): Promise<ValidateRetentionConfigResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return ValidateRetentionConfigResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return ValidateRetentionConfigResponse.fromResponse({});
+    return ValidateRetentionConfigResponse.fromResponse(await response.json());
   }
 }
 

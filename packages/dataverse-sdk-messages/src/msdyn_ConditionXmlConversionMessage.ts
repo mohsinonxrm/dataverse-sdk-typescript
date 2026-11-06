@@ -53,9 +53,9 @@ export class msdyn_ConditionXmlConversionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ConditionXmlConversionResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_ConditionXmlConversionResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_ConditionXmlConversionResponse.fromResponse({});
+    return msdyn_ConditionXmlConversionResponse.fromResponse(await response.json());
   }
 }
 

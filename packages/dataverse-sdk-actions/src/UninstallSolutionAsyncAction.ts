@@ -42,8 +42,8 @@ export class UninstallSolutionAsyncAction implements Executable<UninstallSolutio
   }
 
   async parseResponse(response: Response): Promise<UninstallSolutionAsyncResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as UninstallSolutionAsyncResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as UninstallSolutionAsyncResponse;
+    return (await response.json()) as UninstallSolutionAsyncResponse;
   }
 }

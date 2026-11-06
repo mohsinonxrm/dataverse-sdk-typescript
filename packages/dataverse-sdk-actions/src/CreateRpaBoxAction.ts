@@ -50,8 +50,8 @@ export class CreateRpaBoxAction implements Executable<CreateRpaBoxResponse> {
   }
 
   async parseResponse(response: Response): Promise<CreateRpaBoxResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as CreateRpaBoxResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CreateRpaBoxResponse;
+    return (await response.json()) as CreateRpaBoxResponse;
   }
 }

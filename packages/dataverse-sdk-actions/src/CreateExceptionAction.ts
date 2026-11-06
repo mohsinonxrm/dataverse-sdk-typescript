@@ -51,8 +51,8 @@ export class CreateExceptionAction implements Executable<CreateExceptionResponse
   }
 
   async parseResponse(response: Response): Promise<CreateExceptionResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as CreateExceptionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CreateExceptionResponse;
+    return (await response.json()) as CreateExceptionResponse;
   }
 }

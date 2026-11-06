@@ -49,10 +49,11 @@ export class msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsResponse.fromResponse({});
     return msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsResponse.fromResponse(
-      text ? JSON.parse(text) : {}
+      await response.json()
     );
   }
 }

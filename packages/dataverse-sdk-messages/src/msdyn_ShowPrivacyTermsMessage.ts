@@ -45,9 +45,9 @@ export class msdyn_ShowPrivacyTermsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ShowPrivacyTermsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_ShowPrivacyTermsResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_ShowPrivacyTermsResponse.fromResponse({});
+    return msdyn_ShowPrivacyTermsResponse.fromResponse(await response.json());
   }
 }
 

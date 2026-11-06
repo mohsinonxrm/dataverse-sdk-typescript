@@ -35,8 +35,8 @@ export class RetrievePrincipalSyncAttributeMappings_teamFunction implements Exec
   async parseResponse(
     response: Response
   ): Promise<RetrievePrincipalSyncAttributeMappings_teamResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RetrievePrincipalSyncAttributeMappings_teamResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrievePrincipalSyncAttributeMappings_teamResponse;
+    return (await response.json()) as RetrievePrincipalSyncAttributeMappings_teamResponse;
   }
 }

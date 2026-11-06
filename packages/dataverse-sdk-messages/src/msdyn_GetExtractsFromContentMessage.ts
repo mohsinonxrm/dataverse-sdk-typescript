@@ -55,9 +55,9 @@ export class msdyn_GetExtractsFromContentRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetExtractsFromContentResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_GetExtractsFromContentResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetExtractsFromContentResponse.fromResponse({});
+    return msdyn_GetExtractsFromContentResponse.fromResponse(await response.json());
   }
 }
 

@@ -48,8 +48,8 @@ export class msdyn_GetCaseAggregationAction implements Executable<msdyn_GetCaseA
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetCaseAggregationResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdyn_GetCaseAggregationResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetCaseAggregationResponse;
+    return (await response.json()) as msdyn_GetCaseAggregationResponse;
   }
 }

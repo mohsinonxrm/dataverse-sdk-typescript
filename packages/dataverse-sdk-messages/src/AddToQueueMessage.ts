@@ -61,9 +61,9 @@ export class AddToQueueRequest
   }
 
   async parseResponse(response: Response): Promise<AddToQueueResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return AddToQueueResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return AddToQueueResponse.fromResponse({});
+    return AddToQueueResponse.fromResponse(await response.json());
   }
 }
 

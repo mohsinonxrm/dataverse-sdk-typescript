@@ -47,11 +47,10 @@ export class msdyn_fetchAutonomousCaseCreateUpdateRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_fetchAutonomousCaseCreateUpdateRuleResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_fetchAutonomousCaseCreateUpdateRuleResponse.fromResponse(
-      text ? JSON.parse(text) : {}
-    );
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_fetchAutonomousCaseCreateUpdateRuleResponse.fromResponse({});
+    return msdyn_fetchAutonomousCaseCreateUpdateRuleResponse.fromResponse(await response.json());
   }
 }
 

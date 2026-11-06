@@ -47,9 +47,10 @@ export class msdyn_UpdateSalesCopilotUserSettingsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_UpdateSalesCopilotUserSettingsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_UpdateSalesCopilotUserSettingsResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_UpdateSalesCopilotUserSettingsResponse.fromResponse({});
+    return msdyn_UpdateSalesCopilotUserSettingsResponse.fromResponse(await response.json());
   }
 }
 

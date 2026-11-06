@@ -47,9 +47,9 @@ export class msdyn_PowerAutomateLoggerRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_PowerAutomateLoggerResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_PowerAutomateLoggerResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_PowerAutomateLoggerResponse.fromResponse({});
+    return msdyn_PowerAutomateLoggerResponse.fromResponse(await response.json());
   }
 }
 

@@ -45,9 +45,9 @@ export class msdyn_LoadCalendarsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_LoadCalendarsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_LoadCalendarsResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_LoadCalendarsResponse.fromResponse({});
+    return msdyn_LoadCalendarsResponse.fromResponse(await response.json());
   }
 }
 

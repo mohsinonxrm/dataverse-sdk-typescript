@@ -9,8 +9,11 @@
 ## Overview
 
 Each Web API **action** has a `<Name>Request` / `<Name>Response` pair, for code written in the
-style of the .NET SDK's `OrganizationRequest` classes. A request takes the same positional
-arguments as the matching class in `@mohsinonxrm/dataverse-sdk-actions` and sends the same `POST`.
+style of the .NET SDK's `OrganizationRequest` classes. A request takes the same arguments as the
+matching class in `@mohsinonxrm/dataverse-sdk-actions` (the record id of a bound action, then one
+object with the parameters by their `$metadata` names, as in .NET's
+`new MergeRequest { Target = …, SubordinateId = … }`), keeps them in `request.Parameters`, and
+sends the same `POST`.
 Run it with `client.execute(request)`, or with `OrganizationService.execute` from
 `@mohsinonxrm/dataverse-sdk-xrm`.
 
@@ -32,16 +35,15 @@ import { WinOpportunityRequest, WinOpportunityResponse } from "@mohsinonxrm/data
 const orgService = new OrganizationService(client);
 
 await orgService.execute<WinOpportunityResponse>(
-  new WinOpportunityRequest(
-    {
+  new WinOpportunityRequest({
+    OpportunityClose: {
       "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
       subject: "Deal closed",
       "opportunityid@odata.bind": `/opportunities(${opportunityId})`,
       actualrevenue: 150000,
     },
-    undefined, // Caller
-    3 // Status: Won
-  )
+    Status: 3,
+  })
 );
 ```
 
@@ -203,7 +205,7 @@ runs, and 30 (succeeded), 31 (failed) or 32 (canceled) once it ends, so poll unt
 
 ```typescript
 const { result } = await orgService.execute<ExecuteWorkflowResponse>(
-  new ExecuteWorkflowRequest(workflowId, recordId)
+  new ExecuteWorkflowRequest(workflowId, { EntityId: recordId })
 );
 let job: { statuscode: number };
 do {

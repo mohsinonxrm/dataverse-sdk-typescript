@@ -42,8 +42,8 @@ export class msdynmkt_enabledoubleoptincomplianceAction implements Executable<ms
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_enabledoubleoptincomplianceResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdynmkt_enabledoubleoptincomplianceResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdynmkt_enabledoubleoptincomplianceResponse;
+    return (await response.json()) as msdynmkt_enabledoubleoptincomplianceResponse;
   }
 }

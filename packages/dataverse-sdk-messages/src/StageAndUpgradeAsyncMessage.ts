@@ -72,9 +72,9 @@ export class StageAndUpgradeAsyncRequest
   }
 
   async parseResponse(response: Response): Promise<StageAndUpgradeAsyncResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return StageAndUpgradeAsyncResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return StageAndUpgradeAsyncResponse.fromResponse({});
+    return StageAndUpgradeAsyncResponse.fromResponse(await response.json());
   }
 }
 

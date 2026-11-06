@@ -49,8 +49,8 @@ export class ValidateFetchXmlExpressionFunction implements Executable<ValidateFe
   }
 
   async parseResponse(response: Response): Promise<ValidateFetchXmlExpressionResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as ValidateFetchXmlExpressionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as ValidateFetchXmlExpressionResponse;
+    return (await response.json()) as ValidateFetchXmlExpressionResponse;
   }
 }

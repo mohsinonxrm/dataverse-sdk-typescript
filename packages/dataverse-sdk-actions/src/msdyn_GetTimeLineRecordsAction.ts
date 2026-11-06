@@ -44,8 +44,8 @@ export class msdyn_GetTimeLineRecordsAction implements Executable<msdyn_GetTimeL
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetTimeLineRecordsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdyn_GetTimeLineRecordsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetTimeLineRecordsResponse;
+    return (await response.json()) as msdyn_GetTimeLineRecordsResponse;
   }
 }

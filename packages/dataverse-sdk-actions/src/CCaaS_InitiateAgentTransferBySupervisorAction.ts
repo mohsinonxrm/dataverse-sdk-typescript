@@ -53,8 +53,8 @@ export class CCaaS_InitiateAgentTransferBySupervisorAction implements Executable
   async parseResponse(
     response: Response
   ): Promise<CCaaS_InitiateAgentTransferBySupervisorResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as CCaaS_InitiateAgentTransferBySupervisorResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CCaaS_InitiateAgentTransferBySupervisorResponse;
+    return (await response.json()) as CCaaS_InitiateAgentTransferBySupervisorResponse;
   }
 }

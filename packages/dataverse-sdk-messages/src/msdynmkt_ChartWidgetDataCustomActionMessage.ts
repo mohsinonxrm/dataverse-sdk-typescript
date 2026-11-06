@@ -45,9 +45,10 @@ export class msdynmkt_ChartWidgetDataCustomActionRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_ChartWidgetDataCustomActionResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdynmkt_ChartWidgetDataCustomActionResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdynmkt_ChartWidgetDataCustomActionResponse.fromResponse({});
+    return msdynmkt_ChartWidgetDataCustomActionResponse.fromResponse(await response.json());
   }
 }
 

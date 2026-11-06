@@ -36,8 +36,8 @@ export class RetrieveUnpublished_appmoduleFunction implements Executable<Retriev
   }
 
   async parseResponse(response: Response): Promise<RetrieveUnpublished_appmoduleResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RetrieveUnpublished_appmoduleResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveUnpublished_appmoduleResponse;
+    return (await response.json()) as RetrieveUnpublished_appmoduleResponse;
   }
 }

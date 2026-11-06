@@ -27,8 +27,8 @@ export class GetAuditStorageDetailsAction implements Executable<GetAuditStorageD
   }
 
   async parseResponse(response: Response): Promise<GetAuditStorageDetailsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as GetAuditStorageDetailsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as GetAuditStorageDetailsResponse;
+    return (await response.json()) as GetAuditStorageDetailsResponse;
   }
 }

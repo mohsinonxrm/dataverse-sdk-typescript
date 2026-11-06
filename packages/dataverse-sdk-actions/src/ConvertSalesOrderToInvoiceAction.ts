@@ -53,8 +53,8 @@ export class ConvertSalesOrderToInvoiceAction implements Executable<ConvertSales
   }
 
   async parseResponse(response: Response): Promise<ConvertSalesOrderToInvoiceResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as ConvertSalesOrderToInvoiceResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as ConvertSalesOrderToInvoiceResponse;
+    return (await response.json()) as ConvertSalesOrderToInvoiceResponse;
   }
 }

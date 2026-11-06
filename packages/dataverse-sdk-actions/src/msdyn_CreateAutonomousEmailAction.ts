@@ -64,8 +64,8 @@ export class msdyn_CreateAutonomousEmailAction implements Executable<msdyn_Creat
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateAutonomousEmailResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdyn_CreateAutonomousEmailResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_CreateAutonomousEmailResponse;
+    return (await response.json()) as msdyn_CreateAutonomousEmailResponse;
   }
 }

@@ -42,8 +42,8 @@ export class AIReplyAction implements Executable<AIReplyResponse> {
   }
 
   async parseResponse(response: Response): Promise<AIReplyResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as AIReplyResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as AIReplyResponse;
+    return (await response.json()) as AIReplyResponse;
   }
 }

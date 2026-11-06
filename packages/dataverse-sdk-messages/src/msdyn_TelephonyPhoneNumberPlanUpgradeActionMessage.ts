@@ -53,11 +53,10 @@ export class msdyn_TelephonyPhoneNumberPlanUpgradeActionRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_TelephonyPhoneNumberPlanUpgradeActionResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_TelephonyPhoneNumberPlanUpgradeActionResponse.fromResponse(
-      text ? JSON.parse(text) : {}
-    );
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_TelephonyPhoneNumberPlanUpgradeActionResponse.fromResponse({});
+    return msdyn_TelephonyPhoneNumberPlanUpgradeActionResponse.fromResponse(await response.json());
   }
 }
 

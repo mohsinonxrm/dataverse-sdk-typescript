@@ -49,8 +49,8 @@ export class FetchXmlToQueryExpressionFunction implements Executable<FetchXmlToQ
   }
 
   async parseResponse(response: Response): Promise<FetchXmlToQueryExpressionResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as FetchXmlToQueryExpressionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as FetchXmlToQueryExpressionResponse;
+    return (await response.json()) as FetchXmlToQueryExpressionResponse;
   }
 }

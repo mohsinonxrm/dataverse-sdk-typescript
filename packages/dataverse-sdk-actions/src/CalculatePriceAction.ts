@@ -46,8 +46,8 @@ export class CalculatePriceAction implements Executable<CalculatePriceResponse> 
   }
 
   async parseResponse(response: Response): Promise<CalculatePriceResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as CalculatePriceResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CalculatePriceResponse;
+    return (await response.json()) as CalculatePriceResponse;
   }
 }

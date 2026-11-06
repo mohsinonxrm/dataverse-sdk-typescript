@@ -49,9 +49,10 @@ export class msdyn_CheckForCustomizedWebResourcesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckForCustomizedWebResourcesResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_CheckForCustomizedWebResourcesResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_CheckForCustomizedWebResourcesResponse.fromResponse({});
+    return msdyn_CheckForCustomizedWebResourcesResponse.fromResponse(await response.json());
   }
 }
 

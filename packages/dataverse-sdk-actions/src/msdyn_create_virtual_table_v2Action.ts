@@ -76,8 +76,8 @@ export class msdyn_create_virtual_table_v2Action implements Executable<msdyn_cre
   }
 
   async parseResponse(response: Response): Promise<msdyn_create_virtual_table_v2Response> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdyn_create_virtual_table_v2Response;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_create_virtual_table_v2Response;
+    return (await response.json()) as msdyn_create_virtual_table_v2Response;
   }
 }

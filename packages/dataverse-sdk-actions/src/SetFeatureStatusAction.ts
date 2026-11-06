@@ -48,8 +48,8 @@ export class SetFeatureStatusAction implements Executable<SetFeatureStatusRespon
   }
 
   async parseResponse(response: Response): Promise<SetFeatureStatusResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as SetFeatureStatusResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as SetFeatureStatusResponse;
+    return (await response.json()) as SetFeatureStatusResponse;
   }
 }

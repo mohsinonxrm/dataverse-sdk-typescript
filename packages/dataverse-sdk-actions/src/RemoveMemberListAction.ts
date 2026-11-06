@@ -52,8 +52,8 @@ export class RemoveMemberListAction implements Executable<RemoveMemberListRespon
   }
 
   async parseResponse(response: Response): Promise<RemoveMemberListResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RemoveMemberListResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RemoveMemberListResponse;
+    return (await response.json()) as RemoveMemberListResponse;
   }
 }

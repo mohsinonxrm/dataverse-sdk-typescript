@@ -48,8 +48,8 @@ export class QuerySalesforceUnstructuredDataAction implements Executable<QuerySa
   }
 
   async parseResponse(response: Response): Promise<QuerySalesforceUnstructuredDataResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as QuerySalesforceUnstructuredDataResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as QuerySalesforceUnstructuredDataResponse;
+    return (await response.json()) as QuerySalesforceUnstructuredDataResponse;
   }
 }

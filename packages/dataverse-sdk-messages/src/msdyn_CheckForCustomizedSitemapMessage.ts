@@ -49,9 +49,9 @@ export class msdyn_CheckForCustomizedSitemapRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckForCustomizedSitemapResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_CheckForCustomizedSitemapResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_CheckForCustomizedSitemapResponse.fromResponse({});
+    return msdyn_CheckForCustomizedSitemapResponse.fromResponse(await response.json());
   }
 }
 

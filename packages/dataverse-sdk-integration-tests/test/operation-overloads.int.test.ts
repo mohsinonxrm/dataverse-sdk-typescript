@@ -53,10 +53,9 @@ describe.skipIf(!live)("live: operation overloads and ExportToExcel (#75)", () =
     accounts.push(id);
 
     const access = await client.execute(
-      new RetrievePrincipalAccess_systemuserFunction(
-        me.UserId,
-        createEntityReference("account", id)
-      )
+      new RetrievePrincipalAccess_systemuserFunction(me.UserId, {
+        Target: createEntityReference("account", id),
+      })
     );
 
     // Flags come back as member names: "ReadAccess, WriteAccess, …"
@@ -68,13 +67,13 @@ describe.skipIf(!live)("live: operation overloads and ExportToExcel (#75)", () =
     const view = await accountView();
 
     const response = await client.execute(
-      new ExportToExcelAction(
-        actionReference("savedquery", view.savedqueryid),
-        view.fetchxml,
-        view.layoutxml,
-        "",
-        NO_QUERY_PARAMETERS
-      )
+      new ExportToExcelAction({
+        View: actionReference("savedquery", view.savedqueryid),
+        FetchXml: view.fetchxml,
+        LayoutXml: view.layoutxml,
+        QueryApi: "",
+        QueryParameters: NO_QUERY_PARAMETERS,
+      })
     );
 
     // An .xlsx is a zip: base64 "UEsDB" is "PK\x03\x04"
@@ -86,13 +85,16 @@ describe.skipIf(!live)("live: operation overloads and ExportToExcel (#75)", () =
     const view = await accountView();
 
     const response = await client.execute(
-      new ExportToExcelRequest(
-        { "@odata.type": "Microsoft.Dynamics.CRM.savedquery", savedqueryid: view.savedqueryid },
-        view.fetchxml,
-        view.layoutxml,
-        "",
-        NO_QUERY_PARAMETERS
-      )
+      new ExportToExcelRequest({
+        View: {
+          "@odata.type": "Microsoft.Dynamics.CRM.savedquery",
+          savedqueryid: view.savedqueryid,
+        },
+        FetchXml: view.fetchxml,
+        LayoutXml: view.layoutxml,
+        QueryApi: "",
+        QueryParameters: NO_QUERY_PARAMETERS,
+      })
     );
 
     expect(response.result.ExcelFile?.startsWith("UEsDB")).toBe(true);

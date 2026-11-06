@@ -50,9 +50,9 @@ export class ShareRequest extends OrganizationRequest implements Executable<Shar
   }
 
   async parseResponse(response: Response): Promise<ShareResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return ShareResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return ShareResponse.fromResponse({});
+    return ShareResponse.fromResponse(await response.json());
   }
 }
 

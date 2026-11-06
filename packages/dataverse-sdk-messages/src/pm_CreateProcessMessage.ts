@@ -51,9 +51,9 @@ export class pm_CreateProcessRequest
   }
 
   async parseResponse(response: Response): Promise<pm_CreateProcessResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return pm_CreateProcessResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return pm_CreateProcessResponse.fromResponse({});
+    return pm_CreateProcessResponse.fromResponse(await response.json());
   }
 }
 

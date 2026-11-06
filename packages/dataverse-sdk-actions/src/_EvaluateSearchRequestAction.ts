@@ -73,8 +73,8 @@ export class _EvaluateSearchRequestAction implements Executable<_EvaluateSearchR
   }
 
   async parseResponse(response: Response): Promise<_EvaluateSearchRequestResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as _EvaluateSearchRequestResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as _EvaluateSearchRequestResponse;
+    return (await response.json()) as _EvaluateSearchRequestResponse;
   }
 }

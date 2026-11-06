@@ -46,8 +46,8 @@ export class RemoveCertificateCredentialAction implements Executable<RemoveCerti
   }
 
   async parseResponse(response: Response): Promise<RemoveCertificateCredentialResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RemoveCertificateCredentialResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RemoveCertificateCredentialResponse;
+    return (await response.json()) as RemoveCertificateCredentialResponse;
   }
 }

@@ -44,7 +44,7 @@ describe("#76: message entity sets", () => {
     expect(path(new CalculateActualValueOpportunityRequest("o1"))).toBe(
       "/opportunities(o1)/Microsoft.Dynamics.CRM.CalculateActualValueOpportunity"
     );
-    expect(path(new GetRunMapRequest("b1"))).toBe(
+    expect(path(new GetRunMapRequest("b1", { runId: "r1" }))).toBe(
       "/businessprocesses(b1)/Microsoft.Dynamics.CRM.GetRunMap"
     );
     expect(path(new (DistributeCampaignActivityRequest as unknown as RequestClass)("c1"))).toMatch(

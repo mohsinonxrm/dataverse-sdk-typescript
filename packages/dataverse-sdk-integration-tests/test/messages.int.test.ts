@@ -11,9 +11,11 @@ describe.skipIf(!live)("live: generated messages (#70)", () => {
     const { client } = liveClient();
     const response = await client.execute(
       new QueryExpressionToFetchXmlRequest({
-        "@odata.type": "Microsoft.Dynamics.CRM.QueryExpression",
-        EntityName: "account",
-        ColumnSet: { Columns: ["name"] },
+        Query: {
+          "@odata.type": "Microsoft.Dynamics.CRM.QueryExpression",
+          EntityName: "account",
+          ColumnSet: { Columns: ["name"] },
+        },
       })
     );
     expect(response.messageName).toBe("QueryExpressionToFetchXml");

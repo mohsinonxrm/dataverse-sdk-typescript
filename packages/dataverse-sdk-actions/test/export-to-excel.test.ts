@@ -15,13 +15,13 @@ describe("#75: ExportToExcel and action overloads", () => {
     fake.on("POST", "/ExportToExcel", () => jsonResponse({ ExcelFile: "UEsDBA==" }));
 
     const response = await client.execute(
-      new ExportToExcelAction(
-        createEntityReference("savedquery", "v1"),
-        "<fetch/>",
-        "<grid/>",
-        "",
-        {}
-      )
+      new ExportToExcelAction({
+        View: createEntityReference("savedquery", "v1"),
+        FetchXml: "<fetch/>",
+        LayoutXml: "<grid/>",
+        QueryApi: "",
+        QueryParameters: {},
+      })
     );
 
     expect(JSON.parse(fake.last().bodyText ?? "")).toEqual({
@@ -39,7 +39,9 @@ describe("#75: ExportToExcel and action overloads", () => {
     fake.on("POST", /AddItemCampaign/, () => jsonResponse({ CampaignItemId: "i1" }));
 
     await client.execute(
-      new actions.AddItemCampaign_listAction("l1", createEntityReference("campaign", "c1"))
+      new actions.AddItemCampaign_listAction("l1", {
+        Campaign: createEntityReference("campaign", "c1"),
+      })
     );
 
     expect(fake.last().path).toBe("/lists(l1)/Microsoft.Dynamics.CRM.AddItemCampaign");

@@ -48,8 +48,8 @@ export class cv_UpdateInviteAction implements Executable<cv_UpdateInviteResponse
   }
 
   async parseResponse(response: Response): Promise<cv_UpdateInviteResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as cv_UpdateInviteResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as cv_UpdateInviteResponse;
+    return (await response.json()) as cv_UpdateInviteResponse;
   }
 }

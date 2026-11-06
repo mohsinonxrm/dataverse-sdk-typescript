@@ -44,8 +44,8 @@ export class OnExternalCreatedAction implements Executable<OnExternalCreatedResp
   }
 
   async parseResponse(response: Response): Promise<OnExternalCreatedResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as OnExternalCreatedResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as OnExternalCreatedResponse;
+    return (await response.json()) as OnExternalCreatedResponse;
   }
 }

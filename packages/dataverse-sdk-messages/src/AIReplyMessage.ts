@@ -42,9 +42,9 @@ export class AIReplyRequest extends OrganizationRequest implements Executable<AI
   }
 
   async parseResponse(response: Response): Promise<AIReplyResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return AIReplyResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return AIReplyResponse.fromResponse({});
+    return AIReplyResponse.fromResponse(await response.json());
   }
 }
 

@@ -54,8 +54,8 @@ export class RemoveUserFromRecordTeamAction implements Executable<RemoveUserFrom
   }
 
   async parseResponse(response: Response): Promise<RemoveUserFromRecordTeamResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RemoveUserFromRecordTeamResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RemoveUserFromRecordTeamResponse;
+    return (await response.json()) as RemoveUserFromRecordTeamResponse;
   }
 }

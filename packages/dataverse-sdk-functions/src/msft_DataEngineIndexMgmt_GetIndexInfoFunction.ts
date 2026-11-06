@@ -63,8 +63,8 @@ export class msft_DataEngineIndexMgmt_GetIndexInfoFunction implements Executable
   }
 
   async parseResponse(response: Response): Promise<msft_DataEngineIndexMgmt_GetIndexInfoResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msft_DataEngineIndexMgmt_GetIndexInfoResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msft_DataEngineIndexMgmt_GetIndexInfoResponse;
+    return (await response.json()) as msft_DataEngineIndexMgmt_GetIndexInfoResponse;
   }
 }

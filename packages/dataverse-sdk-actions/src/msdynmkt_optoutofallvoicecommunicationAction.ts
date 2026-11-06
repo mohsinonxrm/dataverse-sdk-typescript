@@ -44,8 +44,8 @@ export class msdynmkt_optoutofallvoicecommunicationAction implements Executable<
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_optoutofallvoicecommunicationResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdynmkt_optoutofallvoicecommunicationResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdynmkt_optoutofallvoicecommunicationResponse;
+    return (await response.json()) as msdynmkt_optoutofallvoicecommunicationResponse;
   }
 }

@@ -46,11 +46,10 @@ export class RetrieveAppsWithDelegatedAccessPermissionsRequest
   async parseResponse(
     response: Response
   ): Promise<RetrieveAppsWithDelegatedAccessPermissionsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return RetrieveAppsWithDelegatedAccessPermissionsResponse.fromResponse(
-      text ? JSON.parse(text) : {}
-    );
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return RetrieveAppsWithDelegatedAccessPermissionsResponse.fromResponse({});
+    return RetrieveAppsWithDelegatedAccessPermissionsResponse.fromResponse(await response.json());
   }
 }
 

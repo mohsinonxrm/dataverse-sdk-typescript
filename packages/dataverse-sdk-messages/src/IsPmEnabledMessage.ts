@@ -29,9 +29,9 @@ export class IsPmEnabledRequest
   }
 
   async parseResponse(response: Response): Promise<IsPmEnabledResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return IsPmEnabledResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return IsPmEnabledResponse.fromResponse({});
+    return IsPmEnabledResponse.fromResponse(await response.json());
   }
 }
 

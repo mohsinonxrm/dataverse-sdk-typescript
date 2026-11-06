@@ -54,8 +54,8 @@ export class RetrieveProcessInstancesFunction implements Executable<RetrieveProc
   }
 
   async parseResponse(response: Response): Promise<RetrieveProcessInstancesResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RetrieveProcessInstancesResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveProcessInstancesResponse;
+    return (await response.json()) as RetrieveProcessInstancesResponse;
   }
 }

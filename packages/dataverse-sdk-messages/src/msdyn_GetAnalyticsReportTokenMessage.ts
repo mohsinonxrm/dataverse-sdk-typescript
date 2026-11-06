@@ -45,9 +45,9 @@ export class msdyn_GetAnalyticsReportTokenRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAnalyticsReportTokenResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_GetAnalyticsReportTokenResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetAnalyticsReportTokenResponse.fromResponse({});
+    return msdyn_GetAnalyticsReportTokenResponse.fromResponse(await response.json());
   }
 }
 

@@ -49,9 +49,10 @@ export class msdyn_FindEntityForPolymorphicLookupRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_FindEntityForPolymorphicLookupResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_FindEntityForPolymorphicLookupResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_FindEntityForPolymorphicLookupResponse.fromResponse({});
+    return msdyn_FindEntityForPolymorphicLookupResponse.fromResponse(await response.json());
   }
 }
 

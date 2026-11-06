@@ -47,10 +47,11 @@ export class msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResponse.fromResponse({});
     return msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResponse.fromResponse(
-      text ? JSON.parse(text) : {}
+      await response.json()
     );
   }
 }

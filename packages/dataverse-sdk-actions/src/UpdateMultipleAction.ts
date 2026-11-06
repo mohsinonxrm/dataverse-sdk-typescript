@@ -49,8 +49,8 @@ export class UpdateMultipleAction implements Executable<UpdateMultipleResponse> 
   }
 
   async parseResponse(response: Response): Promise<UpdateMultipleResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as UpdateMultipleResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as UpdateMultipleResponse;
+    return (await response.json()) as UpdateMultipleResponse;
   }
 }

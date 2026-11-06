@@ -47,9 +47,9 @@ export class CCaaS_SendHeartbeatRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_SendHeartbeatResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return CCaaS_SendHeartbeatResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return CCaaS_SendHeartbeatResponse.fromResponse({});
+    return CCaaS_SendHeartbeatResponse.fromResponse(await response.json());
   }
 }
 

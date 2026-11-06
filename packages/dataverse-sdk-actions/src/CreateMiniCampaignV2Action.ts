@@ -68,8 +68,8 @@ export class CreateMiniCampaignV2Action implements Executable<CreateMiniCampaign
   }
 
   async parseResponse(response: Response): Promise<CreateMiniCampaignV2Response> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as CreateMiniCampaignV2Response;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CreateMiniCampaignV2Response;
+    return (await response.json()) as CreateMiniCampaignV2Response;
   }
 }

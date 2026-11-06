@@ -49,8 +49,8 @@ export class CCaaS_ForceCloseConversationAction implements Executable<CCaaS_Forc
   }
 
   async parseResponse(response: Response): Promise<CCaaS_ForceCloseConversationResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as CCaaS_ForceCloseConversationResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CCaaS_ForceCloseConversationResponse;
+    return (await response.json()) as CCaaS_ForceCloseConversationResponse;
   }
 }

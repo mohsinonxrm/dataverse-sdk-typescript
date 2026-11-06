@@ -35,10 +35,9 @@ export class RetrievePrincipalAttributePrivileges_systemuserFunction implements 
   async parseResponse(
     response: Response
   ): Promise<RetrievePrincipalAttributePrivileges_systemuserResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (
-      text ? JSON.parse(text) : {}
-    ) as RetrievePrincipalAttributePrivileges_systemuserResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as RetrievePrincipalAttributePrivileges_systemuserResponse;
+    return (await response.json()) as RetrievePrincipalAttributePrivileges_systemuserResponse;
   }
 }

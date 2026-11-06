@@ -32,8 +32,8 @@ export class RestartHostedMachineAction implements Executable<RestartHostedMachi
   }
 
   async parseResponse(response: Response): Promise<RestartHostedMachineResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RestartHostedMachineResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RestartHostedMachineResponse;
+    return (await response.json()) as RestartHostedMachineResponse;
   }
 }

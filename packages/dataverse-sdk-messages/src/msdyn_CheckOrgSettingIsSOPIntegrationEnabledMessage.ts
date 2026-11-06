@@ -31,11 +31,10 @@ export class msdyn_CheckOrgSettingIsSOPIntegrationEnabledRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckOrgSettingIsSOPIntegrationEnabledResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_CheckOrgSettingIsSOPIntegrationEnabledResponse.fromResponse(
-      text ? JSON.parse(text) : {}
-    );
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_CheckOrgSettingIsSOPIntegrationEnabledResponse.fromResponse({});
+    return msdyn_CheckOrgSettingIsSOPIntegrationEnabledResponse.fromResponse(await response.json());
   }
 }
 

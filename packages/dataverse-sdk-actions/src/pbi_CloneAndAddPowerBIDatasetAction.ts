@@ -52,8 +52,8 @@ export class pbi_CloneAndAddPowerBIDatasetAction implements Executable<pbi_Clone
   }
 
   async parseResponse(response: Response): Promise<pbi_CloneAndAddPowerBIDatasetResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as pbi_CloneAndAddPowerBIDatasetResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as pbi_CloneAndAddPowerBIDatasetResponse;
+    return (await response.json()) as pbi_CloneAndAddPowerBIDatasetResponse;
   }
 }

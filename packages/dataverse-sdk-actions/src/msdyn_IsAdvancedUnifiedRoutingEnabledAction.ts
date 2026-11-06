@@ -26,8 +26,8 @@ export class msdyn_IsAdvancedUnifiedRoutingEnabledAction implements Executable<m
   }
 
   async parseResponse(response: Response): Promise<msdyn_IsAdvancedUnifiedRoutingEnabledResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdyn_IsAdvancedUnifiedRoutingEnabledResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_IsAdvancedUnifiedRoutingEnabledResponse;
+    return (await response.json()) as msdyn_IsAdvancedUnifiedRoutingEnabledResponse;
   }
 }

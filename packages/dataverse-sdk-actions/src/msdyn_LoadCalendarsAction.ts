@@ -42,8 +42,8 @@ export class msdyn_LoadCalendarsAction implements Executable<msdyn_LoadCalendars
   }
 
   async parseResponse(response: Response): Promise<msdyn_LoadCalendarsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdyn_LoadCalendarsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_LoadCalendarsResponse;
+    return (await response.json()) as msdyn_LoadCalendarsResponse;
   }
 }

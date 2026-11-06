@@ -51,9 +51,9 @@ export class _RetrieveActivitiesByResourcesRequest
   }
 
   async parseResponse(response: Response): Promise<_RetrieveActivitiesByResourcesResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return _RetrieveActivitiesByResourcesResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return _RetrieveActivitiesByResourcesResponse.fromResponse({});
+    return _RetrieveActivitiesByResourcesResponse.fromResponse(await response.json());
   }
 }
 

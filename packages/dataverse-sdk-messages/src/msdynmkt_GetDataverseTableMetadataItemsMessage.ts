@@ -53,11 +53,10 @@ export class msdynmkt_GetDataverseTableMetadataItemsRequest
   async parseResponse(
     response: Response
   ): Promise<msdynmkt_GetDataverseTableMetadataItemsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdynmkt_GetDataverseTableMetadataItemsResponse.fromResponse(
-      text ? JSON.parse(text) : {}
-    );
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdynmkt_GetDataverseTableMetadataItemsResponse.fromResponse({});
+    return msdynmkt_GetDataverseTableMetadataItemsResponse.fromResponse(await response.json());
   }
 }
 

@@ -51,9 +51,9 @@ export class CommitAnnotationBlocksUploadRequest
   }
 
   async parseResponse(response: Response): Promise<CommitAnnotationBlocksUploadResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return CommitAnnotationBlocksUploadResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return CommitAnnotationBlocksUploadResponse.fromResponse({});
+    return CommitAnnotationBlocksUploadResponse.fromResponse(await response.json());
   }
 }
 

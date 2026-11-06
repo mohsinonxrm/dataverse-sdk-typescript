@@ -46,8 +46,8 @@ export class msdyn_GetResourcesAction implements Executable<msdyn_GetResourcesRe
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetResourcesResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdyn_GetResourcesResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetResourcesResponse;
+    return (await response.json()) as msdyn_GetResourcesResponse;
   }
 }

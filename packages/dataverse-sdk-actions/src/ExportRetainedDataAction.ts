@@ -44,8 +44,8 @@ export class ExportRetainedDataAction implements Executable<ExportRetainedDataRe
   }
 
   async parseResponse(response: Response): Promise<ExportRetainedDataResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as ExportRetainedDataResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as ExportRetainedDataResponse;
+    return (await response.json()) as ExportRetainedDataResponse;
   }
 }

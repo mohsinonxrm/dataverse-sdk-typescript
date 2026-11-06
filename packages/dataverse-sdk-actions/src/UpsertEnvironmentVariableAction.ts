@@ -56,8 +56,8 @@ export class UpsertEnvironmentVariableAction implements Executable<UpsertEnviron
   }
 
   async parseResponse(response: Response): Promise<UpsertEnvironmentVariableResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as UpsertEnvironmentVariableResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as UpsertEnvironmentVariableResponse;
+    return (await response.json()) as UpsertEnvironmentVariableResponse;
   }
 }

@@ -49,9 +49,9 @@ export class msdyn_GetContactsFromTimelineRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetContactsFromTimelineResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_GetContactsFromTimelineResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetContactsFromTimelineResponse.fromResponse({});
+    return msdyn_GetContactsFromTimelineResponse.fromResponse(await response.json());
   }
 }
 

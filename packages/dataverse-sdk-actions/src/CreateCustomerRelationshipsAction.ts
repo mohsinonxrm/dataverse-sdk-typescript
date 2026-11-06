@@ -55,8 +55,8 @@ export class CreateCustomerRelationshipsAction implements Executable<CreateCusto
   }
 
   async parseResponse(response: Response): Promise<CreateCustomerRelationshipsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as CreateCustomerRelationshipsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CreateCustomerRelationshipsResponse;
+    return (await response.json()) as CreateCustomerRelationshipsResponse;
   }
 }

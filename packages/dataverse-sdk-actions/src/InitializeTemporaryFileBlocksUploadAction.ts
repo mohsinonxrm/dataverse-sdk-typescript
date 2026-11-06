@@ -45,8 +45,8 @@ export class InitializeTemporaryFileBlocksUploadAction implements Executable<Ini
   }
 
   async parseResponse(response: Response): Promise<InitializeTemporaryFileBlocksUploadResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as InitializeTemporaryFileBlocksUploadResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as InitializeTemporaryFileBlocksUploadResponse;
+    return (await response.json()) as InitializeTemporaryFileBlocksUploadResponse;
   }
 }

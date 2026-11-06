@@ -64,8 +64,8 @@ export class QueryScheduleFunction implements Executable<QueryScheduleResponse> 
   }
 
   async parseResponse(response: Response): Promise<QueryScheduleResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as QueryScheduleResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as QueryScheduleResponse;
+    return (await response.json()) as QueryScheduleResponse;
   }
 }

@@ -53,9 +53,9 @@ export class msdyn_SalesAnswerFromDocumentsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAnswerFromDocumentsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_SalesAnswerFromDocumentsResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_SalesAnswerFromDocumentsResponse.fromResponse({});
+    return msdyn_SalesAnswerFromDocumentsResponse.fromResponse(await response.json());
   }
 }
 

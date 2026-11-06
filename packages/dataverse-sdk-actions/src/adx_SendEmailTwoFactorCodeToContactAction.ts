@@ -55,8 +55,8 @@ export class adx_SendEmailTwoFactorCodeToContactAction implements Executable<adx
   }
 
   async parseResponse(response: Response): Promise<adx_SendEmailTwoFactorCodeToContactResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as adx_SendEmailTwoFactorCodeToContactResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as adx_SendEmailTwoFactorCodeToContactResponse;
+    return (await response.json()) as adx_SendEmailTwoFactorCodeToContactResponse;
   }
 }

@@ -53,8 +53,8 @@ export class NextXYearsFunction implements Executable<NextXYearsResponse> {
   }
 
   async parseResponse(response: Response): Promise<NextXYearsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as NextXYearsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as NextXYearsResponse;
+    return (await response.json()) as NextXYearsResponse;
   }
 }

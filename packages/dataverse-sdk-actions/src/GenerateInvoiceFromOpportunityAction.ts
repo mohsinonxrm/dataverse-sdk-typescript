@@ -50,8 +50,8 @@ export class GenerateInvoiceFromOpportunityAction implements Executable<Generate
   }
 
   async parseResponse(response: Response): Promise<GenerateInvoiceFromOpportunityResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as GenerateInvoiceFromOpportunityResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as GenerateInvoiceFromOpportunityResponse;
+    return (await response.json()) as GenerateInvoiceFromOpportunityResponse;
   }
 }

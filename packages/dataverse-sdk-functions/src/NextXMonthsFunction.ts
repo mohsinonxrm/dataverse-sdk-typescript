@@ -53,8 +53,8 @@ export class NextXMonthsFunction implements Executable<NextXMonthsResponse> {
   }
 
   async parseResponse(response: Response): Promise<NextXMonthsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as NextXMonthsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as NextXMonthsResponse;
+    return (await response.json()) as NextXMonthsResponse;
   }
 }

@@ -5,9 +5,12 @@
 > **Coverage**: <!-- count:functions -->281<!-- /count --> typed Web API functions, generated from a Dataverse `$metadata`. The lists below are generated from the package source by `pnpm --filter generate-sdk-types docs`, so every class, constructor and route shown exists.
 
 Functions are **GET operations** without side effects. Each function is a class whose constructor
-takes the parameters **positionally, in `$metadata` order**. Run it with `client.execute(fn)`.
-Parameters go in parameter aliases (`WhoAmI()`, `RetrieveTotalRecordCount(EntityNames=@p1)?@p1=…`),
-formatted for their EDM type; an argument left `undefined` is left out.
+takes **one object with the parameters, by their `$metadata` names**
+(`new RetrieveEntityFunction({ EntityFilters, LogicalName: "account", MetadataId, RetrieveAsIfPublished: false })`),
+after the record id for a bound function. A parameter `$metadata` marks `Nullable="false"` is
+required, any other optional. Run it with `client.execute(fn)`. Parameters go in parameter aliases
+(`WhoAmI()`, `RetrieveTotalRecordCount(EntityNames=@p1)?@p1=…`), formatted for their EDM type; a
+parameter left out (or `undefined`) isn't sent.
 
 ## Usage
 
@@ -22,12 +25,11 @@ const { UserId, BusinessUnitId } = await client.execute(new WhoAmIFunction());
 
 // A new contact pre-filled from an account, as the mapping on the account-contact relationship says
 const contact = await client.execute(
-  new InitializeFromFunction(
-    createEntityReference("account", accountId), // EntityMoniker
-    undefined, // SkipParentalRelationshipMapping
-    "contact", // TargetEntityName
-    "ValidForCreate" // TargetFieldType
-  )
+  new InitializeFromFunction({
+    EntityMoniker: createEntityReference("account", accountId),
+    TargetEntityName: "contact",
+    TargetFieldType: "ValidForCreate",
+  })
 );
 ```
 

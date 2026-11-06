@@ -57,9 +57,9 @@ export class msdyn_SalesOpportunityCatchupRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesOpportunityCatchupResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_SalesOpportunityCatchupResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_SalesOpportunityCatchupResponse.fromResponse({});
+    return msdyn_SalesOpportunityCatchupResponse.fromResponse(await response.json());
   }
 }
 

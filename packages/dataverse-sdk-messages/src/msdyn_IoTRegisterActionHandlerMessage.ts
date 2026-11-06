@@ -45,9 +45,9 @@ export class msdyn_IoTRegisterActionHandlerRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_IoTRegisterActionHandlerResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_IoTRegisterActionHandlerResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_IoTRegisterActionHandlerResponse.fromResponse({});
+    return msdyn_IoTRegisterActionHandlerResponse.fromResponse(await response.json());
   }
 }
 

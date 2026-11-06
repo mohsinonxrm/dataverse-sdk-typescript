@@ -48,8 +48,8 @@ export class InitializeFileBlocksUploadAction implements Executable<InitializeFi
   }
 
   async parseResponse(response: Response): Promise<InitializeFileBlocksUploadResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as InitializeFileBlocksUploadResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as InitializeFileBlocksUploadResponse;
+    return (await response.json()) as InitializeFileBlocksUploadResponse;
   }
 }

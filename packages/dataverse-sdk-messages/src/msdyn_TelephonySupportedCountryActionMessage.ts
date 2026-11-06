@@ -45,9 +45,10 @@ export class msdyn_TelephonySupportedCountryActionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_TelephonySupportedCountryActionResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_TelephonySupportedCountryActionResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_TelephonySupportedCountryActionResponse.fromResponse({});
+    return msdyn_TelephonySupportedCountryActionResponse.fromResponse(await response.json());
   }
 }
 

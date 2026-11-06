@@ -32,8 +32,8 @@ export class LockInvoicePricingAction implements Executable<LockInvoicePricingRe
   }
 
   async parseResponse(response: Response): Promise<LockInvoicePricingResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as LockInvoicePricingResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as LockInvoicePricingResponse;
+    return (await response.json()) as LockInvoicePricingResponse;
   }
 }

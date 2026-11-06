@@ -45,9 +45,9 @@ export class QueryDvUnstructuredDataRequest
   }
 
   async parseResponse(response: Response): Promise<QueryDvUnstructuredDataResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return QueryDvUnstructuredDataResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return QueryDvUnstructuredDataResponse.fromResponse({});
+    return QueryDvUnstructuredDataResponse.fromResponse(await response.json());
   }
 }
 

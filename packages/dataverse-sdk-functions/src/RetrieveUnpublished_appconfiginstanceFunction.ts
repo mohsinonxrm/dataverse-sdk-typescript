@@ -36,8 +36,8 @@ export class RetrieveUnpublished_appconfiginstanceFunction implements Executable
   }
 
   async parseResponse(response: Response): Promise<RetrieveUnpublished_appconfiginstanceResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RetrieveUnpublished_appconfiginstanceResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveUnpublished_appconfiginstanceResponse;
+    return (await response.json()) as RetrieveUnpublished_appconfiginstanceResponse;
   }
 }

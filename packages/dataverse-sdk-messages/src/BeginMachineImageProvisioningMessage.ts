@@ -53,9 +53,9 @@ export class BeginMachineImageProvisioningRequest
   }
 
   async parseResponse(response: Response): Promise<BeginMachineImageProvisioningResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return BeginMachineImageProvisioningResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return BeginMachineImageProvisioningResponse.fromResponse({});
+    return BeginMachineImageProvisioningResponse.fromResponse(await response.json());
   }
 }
 

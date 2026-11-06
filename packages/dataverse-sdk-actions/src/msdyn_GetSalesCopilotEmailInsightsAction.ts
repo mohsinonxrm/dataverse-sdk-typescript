@@ -48,8 +48,8 @@ export class msdyn_GetSalesCopilotEmailInsightsAction implements Executable<msdy
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSalesCopilotEmailInsightsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdyn_GetSalesCopilotEmailInsightsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetSalesCopilotEmailInsightsResponse;
+    return (await response.json()) as msdyn_GetSalesCopilotEmailInsightsResponse;
   }
 }

@@ -33,8 +33,8 @@ export class RetrieveUserPrivilegesFunction implements Executable<RetrieveUserPr
   }
 
   async parseResponse(response: Response): Promise<RetrieveUserPrivilegesResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RetrieveUserPrivilegesResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveUserPrivilegesResponse;
+    return (await response.json()) as RetrieveUserPrivilegesResponse;
   }
 }

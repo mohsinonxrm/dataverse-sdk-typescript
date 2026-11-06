@@ -49,9 +49,9 @@ export class SubstituteForComponentRequest
   }
 
   async parseResponse(response: Response): Promise<SubstituteForComponentResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return SubstituteForComponentResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return SubstituteForComponentResponse.fromResponse({});
+    return SubstituteForComponentResponse.fromResponse(await response.json());
   }
 }
 

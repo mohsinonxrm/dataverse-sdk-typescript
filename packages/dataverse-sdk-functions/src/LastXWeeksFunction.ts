@@ -53,8 +53,8 @@ export class LastXWeeksFunction implements Executable<LastXWeeksResponse> {
   }
 
   async parseResponse(response: Response): Promise<LastXWeeksResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as LastXWeeksResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as LastXWeeksResponse;
+    return (await response.json()) as LastXWeeksResponse;
   }
 }

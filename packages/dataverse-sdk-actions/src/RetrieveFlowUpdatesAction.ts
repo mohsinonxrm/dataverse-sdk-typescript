@@ -43,8 +43,8 @@ export class RetrieveFlowUpdatesAction implements Executable<RetrieveFlowUpdates
   }
 
   async parseResponse(response: Response): Promise<RetrieveFlowUpdatesResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RetrieveFlowUpdatesResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveFlowUpdatesResponse;
+    return (await response.json()) as RetrieveFlowUpdatesResponse;
   }
 }

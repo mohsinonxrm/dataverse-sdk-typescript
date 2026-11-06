@@ -51,8 +51,8 @@ export class PublishAIConfigurationAction implements Executable<PublishAIConfigu
   }
 
   async parseResponse(response: Response): Promise<PublishAIConfigurationResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as PublishAIConfigurationResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as PublishAIConfigurationResponse;
+    return (await response.json()) as PublishAIConfigurationResponse;
   }
 }

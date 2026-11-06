@@ -165,7 +165,7 @@ const accounts = [
   { "@odata.type": "Microsoft.Dynamics.CRM.account", name: "Contoso" },
   { "@odata.type": "Microsoft.Dynamics.CRM.account", name: "Fabrikam" },
 ];
-const action = new CreateMultipleAction("accounts", accounts);
+const action = new CreateMultipleAction("accounts", { Targets: accounts });
 const response = await client.execute(action);
 // response.Ids: ['id1', 'id2']
 ```
@@ -193,7 +193,7 @@ const opportunityClose = {
   "opportunityid@odata.bind": `/opportunities(${oppId})`,
   actualrevenue: 100000,
 };
-const action = new WinOpportunityAction(opportunityClose, 3);
+const action = new WinOpportunityAction({ OpportunityClose: opportunityClose, Status: 3 });
 await client.execute(action);
 ```
 
@@ -202,10 +202,7 @@ await client.execute(action);
 ```typescript
 import { WinOpportunityRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 
-const request = new WinOpportunityRequest({
-  OpportunityClose: opportunityClose,
-  Status: 3,
-});
+const request = new WinOpportunityRequest({ OpportunityClose: opportunityClose, Status: 3 });
 await service.execute(request);
 ```
 

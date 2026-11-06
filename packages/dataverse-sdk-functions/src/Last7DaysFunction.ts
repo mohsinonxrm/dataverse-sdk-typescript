@@ -48,8 +48,8 @@ export class Last7DaysFunction implements Executable<Last7DaysResponse> {
   }
 
   async parseResponse(response: Response): Promise<Last7DaysResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as Last7DaysResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as Last7DaysResponse;
+    return (await response.json()) as Last7DaysResponse;
   }
 }

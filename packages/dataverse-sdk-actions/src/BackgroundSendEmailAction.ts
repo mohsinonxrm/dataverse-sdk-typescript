@@ -44,8 +44,8 @@ export class BackgroundSendEmailAction implements Executable<BackgroundSendEmail
   }
 
   async parseResponse(response: Response): Promise<BackgroundSendEmailResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as BackgroundSendEmailResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as BackgroundSendEmailResponse;
+    return (await response.json()) as BackgroundSendEmailResponse;
   }
 }

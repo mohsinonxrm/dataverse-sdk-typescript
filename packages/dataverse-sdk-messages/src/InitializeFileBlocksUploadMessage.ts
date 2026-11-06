@@ -51,9 +51,9 @@ export class InitializeFileBlocksUploadRequest
   }
 
   async parseResponse(response: Response): Promise<InitializeFileBlocksUploadResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return InitializeFileBlocksUploadResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return InitializeFileBlocksUploadResponse.fromResponse({});
+    return InitializeFileBlocksUploadResponse.fromResponse(await response.json());
   }
 }
 

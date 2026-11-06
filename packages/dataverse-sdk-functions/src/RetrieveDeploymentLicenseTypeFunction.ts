@@ -26,8 +26,8 @@ export class RetrieveDeploymentLicenseTypeFunction implements Executable<Retriev
   }
 
   async parseResponse(response: Response): Promise<RetrieveDeploymentLicenseTypeResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RetrieveDeploymentLicenseTypeResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveDeploymentLicenseTypeResponse;
+    return (await response.json()) as RetrieveDeploymentLicenseTypeResponse;
   }
 }

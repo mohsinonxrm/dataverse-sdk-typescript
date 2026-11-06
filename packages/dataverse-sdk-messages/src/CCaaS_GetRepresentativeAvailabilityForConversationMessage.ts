@@ -51,10 +51,11 @@ export class CCaaS_GetRepresentativeAvailabilityForConversationRequest
   async parseResponse(
     response: Response
   ): Promise<CCaaS_GetRepresentativeAvailabilityForConversationResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return CCaaS_GetRepresentativeAvailabilityForConversationResponse.fromResponse({});
     return CCaaS_GetRepresentativeAvailabilityForConversationResponse.fromResponse(
-      text ? JSON.parse(text) : {}
+      await response.json()
     );
   }
 }

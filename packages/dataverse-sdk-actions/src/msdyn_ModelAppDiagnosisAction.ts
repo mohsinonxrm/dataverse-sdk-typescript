@@ -51,8 +51,8 @@ export class msdyn_ModelAppDiagnosisAction implements Executable<msdyn_ModelAppD
   }
 
   async parseResponse(response: Response): Promise<msdyn_ModelAppDiagnosisResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdyn_ModelAppDiagnosisResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_ModelAppDiagnosisResponse;
+    return (await response.json()) as msdyn_ModelAppDiagnosisResponse;
   }
 }

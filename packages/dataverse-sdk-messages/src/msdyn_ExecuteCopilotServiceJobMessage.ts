@@ -49,9 +49,9 @@ export class msdyn_ExecuteCopilotServiceJobRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ExecuteCopilotServiceJobResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_ExecuteCopilotServiceJobResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_ExecuteCopilotServiceJobResponse.fromResponse({});
+    return msdyn_ExecuteCopilotServiceJobResponse.fromResponse(await response.json());
   }
 }
 

@@ -47,9 +47,9 @@ export class PreValidateGitComponentsRequest
   }
 
   async parseResponse(response: Response): Promise<PreValidateGitComponentsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return PreValidateGitComponentsResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return PreValidateGitComponentsResponse.fromResponse({});
+    return PreValidateGitComponentsResponse.fromResponse(await response.json());
   }
 }
 

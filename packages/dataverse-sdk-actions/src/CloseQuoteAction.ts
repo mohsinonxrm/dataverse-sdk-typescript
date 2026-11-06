@@ -47,8 +47,8 @@ export class CloseQuoteAction implements Executable<CloseQuoteResponse> {
   }
 
   async parseResponse(response: Response): Promise<CloseQuoteResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as CloseQuoteResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CloseQuoteResponse;
+    return (await response.json()) as CloseQuoteResponse;
   }
 }

@@ -36,8 +36,8 @@ export class RetrieveUnpublished_savedqueryFunction implements Executable<Retrie
   }
 
   async parseResponse(response: Response): Promise<RetrieveUnpublished_savedqueryResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RetrieveUnpublished_savedqueryResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveUnpublished_savedqueryResponse;
+    return (await response.json()) as RetrieveUnpublished_savedqueryResponse;
   }
 }

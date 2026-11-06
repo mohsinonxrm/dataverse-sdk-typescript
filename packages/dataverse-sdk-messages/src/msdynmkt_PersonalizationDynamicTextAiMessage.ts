@@ -46,9 +46,10 @@ export class msdynmkt_PersonalizationDynamicTextAiRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_PersonalizationDynamicTextAiResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdynmkt_PersonalizationDynamicTextAiResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdynmkt_PersonalizationDynamicTextAiResponse.fromResponse({});
+    return msdynmkt_PersonalizationDynamicTextAiResponse.fromResponse(await response.json());
   }
 }
 

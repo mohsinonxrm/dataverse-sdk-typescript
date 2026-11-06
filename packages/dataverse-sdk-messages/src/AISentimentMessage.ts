@@ -45,9 +45,9 @@ export class AISentimentRequest
   }
 
   async parseResponse(response: Response): Promise<AISentimentResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return AISentimentResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return AISentimentResponse.fromResponse({});
+    return AISentimentResponse.fromResponse(await response.json());
   }
 }
 

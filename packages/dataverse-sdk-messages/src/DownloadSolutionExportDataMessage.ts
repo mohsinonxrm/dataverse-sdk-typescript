@@ -45,9 +45,9 @@ export class DownloadSolutionExportDataRequest
   }
 
   async parseResponse(response: Response): Promise<DownloadSolutionExportDataResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return DownloadSolutionExportDataResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return DownloadSolutionExportDataResponse.fromResponse({});
+    return DownloadSolutionExportDataResponse.fromResponse(await response.json());
   }
 }
 

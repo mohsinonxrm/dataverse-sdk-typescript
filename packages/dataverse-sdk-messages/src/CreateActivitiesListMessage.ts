@@ -69,9 +69,9 @@ export class CreateActivitiesListRequest
   }
 
   async parseResponse(response: Response): Promise<CreateActivitiesListResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return CreateActivitiesListResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return CreateActivitiesListResponse.fromResponse({});
+    return CreateActivitiesListResponse.fromResponse(await response.json());
   }
 }
 

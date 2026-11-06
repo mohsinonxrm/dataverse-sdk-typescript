@@ -51,8 +51,8 @@ export class CCaaS_MonitorConversationAction implements Executable<CCaaS_Monitor
   }
 
   async parseResponse(response: Response): Promise<CCaaS_MonitorConversationResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as CCaaS_MonitorConversationResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CCaaS_MonitorConversationResponse;
+    return (await response.json()) as CCaaS_MonitorConversationResponse;
   }
 }

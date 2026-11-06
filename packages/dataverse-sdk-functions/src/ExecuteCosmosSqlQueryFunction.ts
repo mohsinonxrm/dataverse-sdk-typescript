@@ -78,8 +78,8 @@ export class ExecuteCosmosSqlQueryFunction implements Executable<ExecuteCosmosSq
   }
 
   async parseResponse(response: Response): Promise<ExecuteCosmosSqlQueryResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as ExecuteCosmosSqlQueryResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as ExecuteCosmosSqlQueryResponse;
+    return (await response.json()) as ExecuteCosmosSqlQueryResponse;
   }
 }

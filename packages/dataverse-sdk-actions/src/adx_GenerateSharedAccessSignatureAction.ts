@@ -46,8 +46,8 @@ export class adx_GenerateSharedAccessSignatureAction implements Executable<adx_G
   }
 
   async parseResponse(response: Response): Promise<adx_GenerateSharedAccessSignatureResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as adx_GenerateSharedAccessSignatureResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as adx_GenerateSharedAccessSignatureResponse;
+    return (await response.json()) as adx_GenerateSharedAccessSignatureResponse;
   }
 }

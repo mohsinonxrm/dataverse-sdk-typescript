@@ -33,8 +33,8 @@ export class RetrieveProductProperties_quotedetailFunction implements Executable
   }
 
   async parseResponse(response: Response): Promise<RetrieveProductProperties_quotedetailResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RetrieveProductProperties_quotedetailResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveProductProperties_quotedetailResponse;
+    return (await response.json()) as RetrieveProductProperties_quotedetailResponse;
   }
 }

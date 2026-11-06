@@ -38,8 +38,8 @@ export class RetrieveUnpublished_savedqueryvisualizationFunction implements Exec
   async parseResponse(
     response: Response
   ): Promise<RetrieveUnpublished_savedqueryvisualizationResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RetrieveUnpublished_savedqueryvisualizationResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveUnpublished_savedqueryvisualizationResponse;
+    return (await response.json()) as RetrieveUnpublished_savedqueryvisualizationResponse;
   }
 }

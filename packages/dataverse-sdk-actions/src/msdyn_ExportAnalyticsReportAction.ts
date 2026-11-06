@@ -42,8 +42,8 @@ export class msdyn_ExportAnalyticsReportAction implements Executable<msdyn_Expor
   }
 
   async parseResponse(response: Response): Promise<msdyn_ExportAnalyticsReportResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdyn_ExportAnalyticsReportResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_ExportAnalyticsReportResponse;
+    return (await response.json()) as msdyn_ExportAnalyticsReportResponse;
   }
 }

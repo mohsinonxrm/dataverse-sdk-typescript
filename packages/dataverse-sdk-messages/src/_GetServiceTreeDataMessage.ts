@@ -47,9 +47,9 @@ export class _GetServiceTreeDataRequest
   }
 
   async parseResponse(response: Response): Promise<_GetServiceTreeDataResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return _GetServiceTreeDataResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return _GetServiceTreeDataResponse.fromResponse({});
+    return _GetServiceTreeDataResponse.fromResponse(await response.json());
   }
 }
 

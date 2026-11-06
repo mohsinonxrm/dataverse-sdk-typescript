@@ -26,8 +26,8 @@ export class RetrieveApplicationRibbonFunction implements Executable<RetrieveApp
   }
 
   async parseResponse(response: Response): Promise<RetrieveApplicationRibbonResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RetrieveApplicationRibbonResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveApplicationRibbonResponse;
+    return (await response.json()) as RetrieveApplicationRibbonResponse;
   }
 }

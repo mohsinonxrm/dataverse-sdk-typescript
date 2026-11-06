@@ -49,8 +49,8 @@ export class UpdateAccountCredentialsAction implements Executable<UpdateAccountC
   }
 
   async parseResponse(response: Response): Promise<UpdateAccountCredentialsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as UpdateAccountCredentialsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as UpdateAccountCredentialsResponse;
+    return (await response.json()) as UpdateAccountCredentialsResponse;
   }
 }

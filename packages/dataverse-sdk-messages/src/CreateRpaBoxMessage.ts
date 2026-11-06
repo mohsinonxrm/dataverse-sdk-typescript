@@ -53,9 +53,9 @@ export class CreateRpaBoxRequest
   }
 
   async parseResponse(response: Response): Promise<CreateRpaBoxResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return CreateRpaBoxResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return CreateRpaBoxResponse.fromResponse({});
+    return CreateRpaBoxResponse.fromResponse(await response.json());
   }
 }
 

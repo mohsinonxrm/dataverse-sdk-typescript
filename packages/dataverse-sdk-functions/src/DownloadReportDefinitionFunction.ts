@@ -32,8 +32,8 @@ export class DownloadReportDefinitionFunction implements Executable<DownloadRepo
   }
 
   async parseResponse(response: Response): Promise<DownloadReportDefinitionResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as DownloadReportDefinitionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as DownloadReportDefinitionResponse;
+    return (await response.json()) as DownloadReportDefinitionResponse;
   }
 }

@@ -32,8 +32,8 @@ export class PvaGetDirectLineEndpointAction implements Executable<PvaGetDirectLi
   }
 
   async parseResponse(response: Response): Promise<PvaGetDirectLineEndpointResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as PvaGetDirectLineEndpointResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as PvaGetDirectLineEndpointResponse;
+    return (await response.json()) as PvaGetDirectLineEndpointResponse;
   }
 }

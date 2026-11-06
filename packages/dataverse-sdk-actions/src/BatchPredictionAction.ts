@@ -49,8 +49,8 @@ export class BatchPredictionAction implements Executable<BatchPredictionResponse
   }
 
   async parseResponse(response: Response): Promise<BatchPredictionResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as BatchPredictionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as BatchPredictionResponse;
+    return (await response.json()) as BatchPredictionResponse;
   }
 }

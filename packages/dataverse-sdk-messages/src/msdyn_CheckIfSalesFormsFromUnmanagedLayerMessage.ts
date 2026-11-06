@@ -31,11 +31,10 @@ export class msdyn_CheckIfSalesFormsFromUnmanagedLayerRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckIfSalesFormsFromUnmanagedLayerResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_CheckIfSalesFormsFromUnmanagedLayerResponse.fromResponse(
-      text ? JSON.parse(text) : {}
-    );
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_CheckIfSalesFormsFromUnmanagedLayerResponse.fromResponse({});
+    return msdyn_CheckIfSalesFormsFromUnmanagedLayerResponse.fromResponse(await response.json());
   }
 }
 

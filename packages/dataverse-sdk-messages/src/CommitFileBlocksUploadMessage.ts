@@ -51,9 +51,9 @@ export class CommitFileBlocksUploadRequest
   }
 
   async parseResponse(response: Response): Promise<CommitFileBlocksUploadResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return CommitFileBlocksUploadResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return CommitFileBlocksUploadResponse.fromResponse({});
+    return CommitFileBlocksUploadResponse.fromResponse(await response.json());
   }
 }
 

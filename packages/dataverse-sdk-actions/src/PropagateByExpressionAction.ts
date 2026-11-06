@@ -64,8 +64,8 @@ export class PropagateByExpressionAction implements Executable<PropagateByExpres
   }
 
   async parseResponse(response: Response): Promise<PropagateByExpressionResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as PropagateByExpressionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as PropagateByExpressionResponse;
+    return (await response.json()) as PropagateByExpressionResponse;
   }
 }

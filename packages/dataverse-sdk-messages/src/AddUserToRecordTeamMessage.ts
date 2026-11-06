@@ -58,9 +58,9 @@ export class AddUserToRecordTeamRequest
   }
 
   async parseResponse(response: Response): Promise<AddUserToRecordTeamResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return AddUserToRecordTeamResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return AddUserToRecordTeamResponse.fromResponse({});
+    return AddUserToRecordTeamResponse.fromResponse(await response.json());
   }
 }
 

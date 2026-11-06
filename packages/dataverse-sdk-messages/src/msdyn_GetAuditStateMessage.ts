@@ -29,9 +29,9 @@ export class msdyn_GetAuditStateRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAuditStateResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_GetAuditStateResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetAuditStateResponse.fromResponse({});
+    return msdyn_GetAuditStateResponse.fromResponse(await response.json());
   }
 }
 

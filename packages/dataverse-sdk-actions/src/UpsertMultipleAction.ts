@@ -50,8 +50,8 @@ export class UpsertMultipleAction implements Executable<UpsertMultipleResponse> 
   }
 
   async parseResponse(response: Response): Promise<UpsertMultipleResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as UpsertMultipleResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as UpsertMultipleResponse;
+    return (await response.json()) as UpsertMultipleResponse;
   }
 }

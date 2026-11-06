@@ -45,8 +45,8 @@ export class msdyn_GetPostOperationsAction implements Executable<msdyn_GetPostOp
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetPostOperationsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdyn_GetPostOperationsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetPostOperationsResponse;
+    return (await response.json()) as msdyn_GetPostOperationsResponse;
   }
 }

@@ -64,8 +64,8 @@ export class CreateActivitiesListAction implements Executable<CreateActivitiesLi
   }
 
   async parseResponse(response: Response): Promise<CreateActivitiesListResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as CreateActivitiesListResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CreateActivitiesListResponse;
+    return (await response.json()) as CreateActivitiesListResponse;
   }
 }

@@ -47,9 +47,9 @@ export class AIClassifyRequest
   }
 
   async parseResponse(response: Response): Promise<AIClassifyResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return AIClassifyResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return AIClassifyResponse.fromResponse({});
+    return AIClassifyResponse.fromResponse(await response.json());
   }
 }
 

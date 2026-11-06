@@ -86,10 +86,7 @@ import { ExecuteWorkflowRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 const service = new OrganizationService(client);
 
 // Execute workflow message
-const request = new ExecuteWorkflowRequest(
-  workflowId, // Workflow GUID
-  recordId // Entity record GUID; InputArguments is optional
-);
+const request = new ExecuteWorkflowRequest(workflowId, { EntityId: recordId });
 
 const response = await service.execute(request);
 console.log("Async Operation ID:", response.result.asyncoperationid);
@@ -122,22 +119,18 @@ Executes a workflow against an entity record.
 ```typescript
 import { ExecuteWorkflowRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 
-const request = new ExecuteWorkflowRequest(
-  workflowId, // Workflow GUID
-  recordId, // Entity record GUID
-  {} // Input arguments (optional)
-);
+const request = new ExecuteWorkflowRequest(workflowId, { EntityId: recordId, InputArguments: {} });
 
 const response = await service.execute(request);
 console.log("Async Operation ID:", response.result.asyncoperationid);
 // Poll asyncoperation entity to check workflow status
 ```
 
-**Constructor:**
+**Constructor:** `new ExecuteWorkflowRequest(workflowId, parameters)`
 
-- `workflowId: string` - GUID of the workflow to execute
-- `entityId: string` - GUID of the entity record to run the workflow against
-- `inputArguments: InputArgumentCollection` - Optional input arguments
+- `workflowId: string` - GUID of the workflow to execute (the record the action is bound to)
+- `parameters.EntityId: string` - GUID of the entity record to run the workflow against
+- `parameters.InputArguments?: InputArgumentCollection` - Optional input arguments
 
 **Response:**
 
@@ -162,21 +155,17 @@ const opportunityClose = {
   actualend: new Date().toISOString(),
 };
 
-const request = new WinOpportunityRequest(
-  opportunityClose,
-  undefined, // Caller
-  3 // Status: Won
-);
+const request = new WinOpportunityRequest({ OpportunityClose: opportunityClose, Status: 3 });
 
 await service.execute(request);
 ```
 
-**Constructor:**
+**Constructor:** `new WinOpportunityRequest(parameters)`
 
-- `opportunityClose: EntityReference | EntityPayload<opportunityclose>` - The opportunity close
+- `OpportunityClose: EntityReference | EntityPayload<opportunityclose>` - The opportunity close
   activity, with `"opportunityid@odata.bind"`
-- `caller: string | undefined` - Optional
-- `status: number` - The status code for won opportunities
+- `Caller?: string` - Optional
+- `Status: number` - The status code for won opportunities
 
 ---
 
@@ -190,28 +179,28 @@ Merges two entity records.
 ```typescript
 import { MergeRequest, createEntityReference } from "@mohsinonxrm/dataverse-sdk-messages";
 
-const request = new MergeRequest(
-  createEntityReference("account", masterAccountId), // Target (keep)
-  createEntityReference("account", subordinateAccountId), // Subordinate (merge & deactivate)
-  {
+const request = new MergeRequest({
+  Target: createEntityReference("account", masterAccountId),
+  Subordinate: createEntityReference("account", subordinateAccountId),
+  UpdateContent: {
     // UpdateContent: column values to set on the target
     "@odata.type": "Microsoft.Dynamics.CRM.account",
     name: "Merged Company Name",
     revenue: 1000000,
   },
-  false // PerformParentingChecks
-);
+  PerformParentingChecks: false,
+});
 
 await service.execute(request);
 ```
 
-**Constructor:**
+**Constructor:** `new MergeRequest(parameters)`
 
-- `target: EntityReference | AnyEntityPayload` - The master record (will remain after merge)
-- `subordinate: EntityReference | AnyEntityPayload` - The subordinate record (will be deactivated)
-- `updateContent: EntityReference | AnyEntityPayload | undefined` - Column values to set on the
-  master record, with `@odata.type` naming the table
-- `performParentingChecks: boolean` - Whether to perform parenting checks
+- `Target: EntityReference | AnyEntityPayload` - The master record (will remain after merge)
+- `Subordinate: EntityReference | AnyEntityPayload` - The subordinate record (will be deactivated)
+- `UpdateContent?: EntityReference | AnyEntityPayload` - Column values to set on the master
+  record, with `@odata.type` naming the table
+- `PerformParentingChecks: boolean` - Whether to perform parenting checks
 
 ---
 
@@ -225,7 +214,7 @@ Exports a solution from the environment.
 import { ExportSolutionRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 
 // SolutionName and Managed are required; TargetVersion and the Export* settings are optional
-const request = new ExportSolutionRequest("MySolution", false);
+const request = new ExportSolutionRequest({ SolutionName: "MySolution", Managed: false });
 
 const response = await service.execute(request);
 
@@ -252,12 +241,12 @@ import { ImportSolutionRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 const solutionBytes = fs.readFileSync("solution.zip");
 
 const importJobId = crypto.randomUUID();
-const request = new ImportSolutionRequest(
-  false, // OverwriteUnmanagedCustomizations
-  true, // PublishWorkflows
-  solutionBytes.toString("base64"), // CustomizationFile
-  importJobId // ImportJobId; the other parameters are optional
-);
+const request = new ImportSolutionRequest({
+  OverwriteUnmanagedCustomizations: false,
+  PublishWorkflows: true,
+  CustomizationFile: solutionBytes.toString("base64"),
+  ImportJobId: importJobId,
+});
 
 // ImportSolution returns no content. Follow the import with the importjob record.
 await service.execute(request);
@@ -285,7 +274,7 @@ const parameterXml = `<importexportxml>
   </entities>
 </importexportxml>`;
 
-const request = new PublishXmlRequest(parameterXml);
+const request = new PublishXmlRequest({ ParameterXml: parameterXml });
 await service.execute(request);
 ```
 
@@ -321,7 +310,9 @@ import {
 } from "@mohsinonxrm/dataverse-sdk-messages";
 
 await service.execute(
-  new AddItemCampaign_listRequest(listId, createEntityReference("campaign", campaignId))
+  new AddItemCampaign_listRequest(listId, {
+    Campaign: createEntityReference("campaign", campaignId),
+  })
 );
 ```
 
@@ -418,9 +409,9 @@ An entity-typed parameter also takes the record itself, with column values:
 - a parameter of any table (`crmbaseentity`, such as `Merge`'s `UpdateContent`) is
   `EntityReference | AnyEntityPayload`, and `@odata.type` names the table.
 
-Parameters that `$metadata` doesn't mark `Nullable="false"` are optional: at the end of the
-argument list they can be left out (`new ExecuteWorkflowRequest(workflowId, entityId)`), and
-elsewhere they accept `undefined`.
+Parameters that `$metadata` marks `Nullable="false"` are required; the others are optional
+(`new ExecuteWorkflowRequest(workflowId, { EntityId })` leaves out `InputArguments`). A parameter
+that is left out or `undefined` isn't sent.
 
 ### Enum Values
 

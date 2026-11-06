@@ -58,9 +58,9 @@ export class ExportToExcelRequest
   }
 
   async parseResponse(response: Response): Promise<ExportToExcelResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return ExportToExcelResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return ExportToExcelResponse.fromResponse({});
+    return ExportToExcelResponse.fromResponse(await response.json());
   }
 }
 

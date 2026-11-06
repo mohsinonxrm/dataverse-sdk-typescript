@@ -55,9 +55,9 @@ export class msdyn_SLATimeCalculationRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SLATimeCalculationResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_SLATimeCalculationResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_SLATimeCalculationResponse.fromResponse({});
+    return msdyn_SLATimeCalculationResponse.fromResponse(await response.json());
   }
 }
 

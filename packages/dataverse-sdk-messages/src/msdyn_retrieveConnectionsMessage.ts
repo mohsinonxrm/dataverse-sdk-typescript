@@ -51,9 +51,9 @@ export class msdyn_retrieveConnectionsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_retrieveConnectionsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_retrieveConnectionsResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_retrieveConnectionsResponse.fromResponse({});
+    return msdyn_retrieveConnectionsResponse.fromResponse(await response.json());
   }
 }
 

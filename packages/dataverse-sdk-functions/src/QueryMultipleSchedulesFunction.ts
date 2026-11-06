@@ -64,8 +64,8 @@ export class QueryMultipleSchedulesFunction implements Executable<QueryMultipleS
   }
 
   async parseResponse(response: Response): Promise<QueryMultipleSchedulesResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as QueryMultipleSchedulesResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as QueryMultipleSchedulesResponse;
+    return (await response.json()) as QueryMultipleSchedulesResponse;
   }
 }

@@ -200,7 +200,7 @@ const accounts = [
   // ... up to 1000 for standard tables
 ];
 
-const action = new CreateMultipleAction("accounts", accounts);
+const action = new CreateMultipleAction("accounts", { Targets: accounts });
 const response = await client.execute(action);
 
 console.log("Created IDs:", response.Ids);
@@ -240,7 +240,7 @@ const updates = [
   // ... up to 1000 for standard tables
 ];
 
-const action = new UpdateMultipleAction("accounts", updates);
+const action = new UpdateMultipleAction("accounts", { Targets: updates });
 await client.execute(action); // Returns 204 No Content
 ```
 
@@ -327,7 +327,7 @@ Bulk operations are **all-or-nothing** - if one record fails, the entire operati
 
 ```typescript
 try {
-  const action = new CreateMultipleAction("accounts", accounts);
+  const action = new CreateMultipleAction("accounts", { Targets: accounts });
   const response = await client.execute(action);
   console.log("Success:", response.Ids);
 } catch (error) {
@@ -506,7 +506,7 @@ const records = [
   { "@odata.type": "Microsoft.Dynamics.CRM.account", name: "New Account" },
 ];
 
-const action = new UpsertMultipleAction("accounts", records);
+const action = new UpsertMultipleAction("accounts", { Targets: records });
 await client.execute(action);
 ```
 

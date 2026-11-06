@@ -35,10 +35,9 @@ export class RetrieveAbsoluteAndSiteCollectionUrl_sharepointdocumentlocationFunc
   async parseResponse(
     response: Response
   ): Promise<RetrieveAbsoluteAndSiteCollectionUrl_sharepointdocumentlocationResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (
-      text ? JSON.parse(text) : {}
-    ) as RetrieveAbsoluteAndSiteCollectionUrl_sharepointdocumentlocationResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as RetrieveAbsoluteAndSiteCollectionUrl_sharepointdocumentlocationResponse;
+    return (await response.json()) as RetrieveAbsoluteAndSiteCollectionUrl_sharepointdocumentlocationResponse;
   }
 }

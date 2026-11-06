@@ -49,11 +49,10 @@ export class msdyn_ActivateSdkMessageProcessingStepsRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_ActivateSdkMessageProcessingStepsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_ActivateSdkMessageProcessingStepsResponse.fromResponse(
-      text ? JSON.parse(text) : {}
-    );
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_ActivateSdkMessageProcessingStepsResponse.fromResponse({});
+    return msdyn_ActivateSdkMessageProcessingStepsResponse.fromResponse(await response.json());
   }
 }
 

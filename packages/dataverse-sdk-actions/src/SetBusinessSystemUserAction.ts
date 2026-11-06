@@ -56,8 +56,8 @@ export class SetBusinessSystemUserAction implements Executable<SetBusinessSystem
   }
 
   async parseResponse(response: Response): Promise<SetBusinessSystemUserResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as SetBusinessSystemUserResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as SetBusinessSystemUserResponse;
+    return (await response.json()) as SetBusinessSystemUserResponse;
   }
 }

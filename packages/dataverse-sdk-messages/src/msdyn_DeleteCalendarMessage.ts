@@ -45,9 +45,9 @@ export class msdyn_DeleteCalendarRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_DeleteCalendarResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_DeleteCalendarResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_DeleteCalendarResponse.fromResponse({});
+    return msdyn_DeleteCalendarResponse.fromResponse(await response.json());
   }
 }
 

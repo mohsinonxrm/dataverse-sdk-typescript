@@ -53,8 +53,8 @@ export class UnderOrEqualFunction implements Executable<UnderOrEqualResponse> {
   }
 
   async parseResponse(response: Response): Promise<UnderOrEqualResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as UnderOrEqualResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as UnderOrEqualResponse;
+    return (await response.json()) as UnderOrEqualResponse;
   }
 }

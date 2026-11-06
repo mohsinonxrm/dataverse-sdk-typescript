@@ -31,10 +31,11 @@ export class msdyn_WeChatSettingsShouldHaveAllRequiredFieldsRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_WeChatSettingsShouldHaveAllRequiredFieldsRuleResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_WeChatSettingsShouldHaveAllRequiredFieldsRuleResponse.fromResponse({});
     return msdyn_WeChatSettingsShouldHaveAllRequiredFieldsRuleResponse.fromResponse(
-      text ? JSON.parse(text) : {}
+      await response.json()
     );
   }
 }

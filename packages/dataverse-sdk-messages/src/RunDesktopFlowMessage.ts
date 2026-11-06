@@ -63,9 +63,9 @@ export class RunDesktopFlowRequest
   }
 
   async parseResponse(response: Response): Promise<RunDesktopFlowResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return RunDesktopFlowResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return RunDesktopFlowResponse.fromResponse({});
+    return RunDesktopFlowResponse.fromResponse(await response.json());
   }
 }
 

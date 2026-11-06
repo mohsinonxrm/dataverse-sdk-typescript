@@ -46,8 +46,8 @@ export class GetEntityLinkChatConfigAction implements Executable<GetEntityLinkCh
   }
 
   async parseResponse(response: Response): Promise<GetEntityLinkChatConfigResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as GetEntityLinkChatConfigResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as GetEntityLinkChatConfigResponse;
+    return (await response.json()) as GetEntityLinkChatConfigResponse;
   }
 }

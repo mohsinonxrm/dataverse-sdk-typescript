@@ -48,8 +48,8 @@ export class TomorrowFunction implements Executable<TomorrowResponse> {
   }
 
   async parseResponse(response: Response): Promise<TomorrowResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as TomorrowResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as TomorrowResponse;
+    return (await response.json()) as TomorrowResponse;
   }
 }

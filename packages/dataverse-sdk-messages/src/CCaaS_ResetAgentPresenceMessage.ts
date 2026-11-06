@@ -45,9 +45,9 @@ export class CCaaS_ResetAgentPresenceRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_ResetAgentPresenceResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return CCaaS_ResetAgentPresenceResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return CCaaS_ResetAgentPresenceResponse.fromResponse({});
+    return CCaaS_ResetAgentPresenceResponse.fromResponse(await response.json());
   }
 }
 

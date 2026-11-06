@@ -61,8 +61,8 @@ export class SearchByKeywordsKbArticleFunction implements Executable<SearchByKey
   }
 
   async parseResponse(response: Response): Promise<SearchByKeywordsKbArticleResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as SearchByKeywordsKbArticleResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as SearchByKeywordsKbArticleResponse;
+    return (await response.json()) as SearchByKeywordsKbArticleResponse;
   }
 }

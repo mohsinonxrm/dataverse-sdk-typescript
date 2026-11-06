@@ -47,9 +47,9 @@ export class msdynmkt_normalizecontactpointRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_normalizecontactpointResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdynmkt_normalizecontactpointResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdynmkt_normalizecontactpointResponse.fromResponse({});
+    return msdynmkt_normalizecontactpointResponse.fromResponse(await response.json());
   }
 }
 

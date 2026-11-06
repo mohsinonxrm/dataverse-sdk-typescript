@@ -46,8 +46,8 @@ export class RecognizeTextAction implements Executable<RecognizeTextResponse> {
   }
 
   async parseResponse(response: Response): Promise<RecognizeTextResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RecognizeTextResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RecognizeTextResponse;
+    return (await response.json()) as RecognizeTextResponse;
   }
 }

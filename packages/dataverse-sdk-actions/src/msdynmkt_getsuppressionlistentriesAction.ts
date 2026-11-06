@@ -43,8 +43,8 @@ export class msdynmkt_getsuppressionlistentriesAction implements Executable<msdy
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_getsuppressionlistentriesResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdynmkt_getsuppressionlistentriesResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdynmkt_getsuppressionlistentriesResponse;
+    return (await response.json()) as msdynmkt_getsuppressionlistentriesResponse;
   }
 }

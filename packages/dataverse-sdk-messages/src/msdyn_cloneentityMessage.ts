@@ -52,9 +52,9 @@ export class msdyn_cloneentityRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_cloneentityResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_cloneentityResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_cloneentityResponse.fromResponse({});
+    return msdyn_cloneentityResponse.fromResponse(await response.json());
   }
 }
 

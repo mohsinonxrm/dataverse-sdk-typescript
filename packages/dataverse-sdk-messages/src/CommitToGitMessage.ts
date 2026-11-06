@@ -47,9 +47,9 @@ export class CommitToGitRequest
   }
 
   async parseResponse(response: Response): Promise<CommitToGitResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return CommitToGitResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return CommitToGitResponse.fromResponse({});
+    return CommitToGitResponse.fromResponse(await response.json());
   }
 }
 

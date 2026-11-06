@@ -71,9 +71,9 @@ export class CreateMiniCampaignV2Request
   }
 
   async parseResponse(response: Response): Promise<CreateMiniCampaignV2Response> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return CreateMiniCampaignV2Response.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return CreateMiniCampaignV2Response.fromResponse({});
+    return CreateMiniCampaignV2Response.fromResponse(await response.json());
   }
 }
 

@@ -52,8 +52,8 @@ export class CopyMembersListAction implements Executable<CopyMembersListResponse
   }
 
   async parseResponse(response: Response): Promise<CopyMembersListResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as CopyMembersListResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CopyMembersListResponse;
+    return (await response.json()) as CopyMembersListResponse;
   }
 }

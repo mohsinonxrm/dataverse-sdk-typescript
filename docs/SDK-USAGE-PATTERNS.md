@@ -304,11 +304,10 @@ const opportunityClose: opportunityclose = {
   actualend: new Date().toISOString(),
 };
 
-const winAction = new WinOpportunityAction(
-  opportunityClose,
-  "", // caller
-  3 // status (Won)
-);
+const winAction = new WinOpportunityAction({
+  OpportunityClose: opportunityClose,
+  Status: 3,
+});
 
 await client.execute(winAction);
 console.log("Opportunity marked as won");
@@ -338,11 +337,11 @@ const relationships: ComplexOneToManyRelationshipMetadata[] = [
   },
 ];
 
-const createCustAction = new CreateCustomerRelationshipsAction(
-  lookup,
-  relationships,
-  "MyPublisher"
-);
+const createCustAction = new CreateCustomerRelationshipsAction({
+  Lookup: lookup,
+  OneToManyRelationships: relationships,
+  SolutionUniqueName: "MyPublisher",
+});
 
 const response = await client.execute(createCustAction);
 console.log(`Created relationships with IDs: ${response.RelationshipIds.join(", ")}`);
@@ -388,11 +387,17 @@ const whoAmI = await service.execute(new WhoAmIFunction());
 console.log(`User ID: ${whoAmI.UserId}`);
 
 // ========== Execute Action ==========
-const winAction = new WinOpportunityAction(opportunityClose, "", 3);
+const winAction = new WinOpportunityAction({
+  OpportunityClose: opportunityClose,
+  Status: 3,
+});
 await service.execute(winAction);
 
 // ========== Execute Message ==========
-const workflowRequest = new ExecuteWorkflowRequest(workflowId, recordId, {});
+const workflowRequest = new ExecuteWorkflowRequest(workflowId, {
+  EntityId: recordId,
+  InputArguments: {},
+});
 const workflowResponse = await service.execute(workflowRequest);
 console.log(`Async operation: ${workflowResponse.result.asyncoperationid}`);
 
@@ -470,7 +475,10 @@ import {
 const service = new OrganizationService(client);
 
 // ExecuteWorkflow message
-const workflowRequest = new ExecuteWorkflowRequest(workflowId, recordId, {});
+const workflowRequest = new ExecuteWorkflowRequest(workflowId, {
+  EntityId: recordId,
+  InputArguments: {},
+});
 const workflowResponse = await service.execute(workflowRequest);
 console.log(`Async operation: ${workflowResponse.result.asyncoperationid}`);
 

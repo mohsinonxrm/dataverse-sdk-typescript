@@ -55,9 +55,9 @@ export class msdynmkt_consentvalidateformRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_consentvalidateformResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdynmkt_consentvalidateformResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdynmkt_consentvalidateformResponse.fromResponse({});
+    return msdynmkt_consentvalidateformResponse.fromResponse(await response.json());
   }
 }
 

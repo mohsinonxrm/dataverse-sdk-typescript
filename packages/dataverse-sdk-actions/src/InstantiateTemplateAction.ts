@@ -47,8 +47,8 @@ export class InstantiateTemplateAction implements Executable<InstantiateTemplate
   }
 
   async parseResponse(response: Response): Promise<InstantiateTemplateResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as InstantiateTemplateResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as InstantiateTemplateResponse;
+    return (await response.json()) as InstantiateTemplateResponse;
   }
 }

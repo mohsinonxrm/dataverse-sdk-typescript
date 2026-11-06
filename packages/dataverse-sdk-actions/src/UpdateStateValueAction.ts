@@ -57,8 +57,8 @@ export class UpdateStateValueAction implements Executable<UpdateStateValueRespon
   }
 
   async parseResponse(response: Response): Promise<UpdateStateValueResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as UpdateStateValueResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as UpdateStateValueResponse;
+    return (await response.json()) as UpdateStateValueResponse;
   }
 }

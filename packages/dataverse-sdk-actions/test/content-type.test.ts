@@ -22,8 +22,11 @@ describe("#23: generated actions send one lower-case content-type", () => {
   it("every action's request declares only a lower-case content-type header", () => {
     const offenders: string[] = [];
     for (const [name, Action] of actionClasses) {
-      // Parameter values don't affect the headers, so construct without arguments.
-      const info = new Action().toRequestInformation(TEST_API_URL);
+      // Parameter values don't affect the headers, so construct with an empty parameters object
+      // (#96), after the record id for a bound action
+      const args =
+        (Action as ActionClass).length === 2 ? ["00000000-0000-0000-0000-000000000001", {}] : [{}];
+      const info = new Action(...args).toRequestInformation(TEST_API_URL);
       const headers = info.headers ?? {};
       const contentTypeNames = Object.keys(headers).filter(
         (k) => k.toLowerCase() === "content-type"
@@ -43,14 +46,13 @@ describe("#23: generated actions send one lower-case content-type", () => {
     fake.on("POST", "/WinOpportunity", () => noContent());
 
     await client.execute(
-      new actions.WinOpportunityAction(
-        {
+      new actions.WinOpportunityAction({
+        OpportunityClose: {
           "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
           subject: "Won",
         },
-        "",
-        3
-      )
+        Status: 3,
+      })
     );
 
     const r = fake.last();

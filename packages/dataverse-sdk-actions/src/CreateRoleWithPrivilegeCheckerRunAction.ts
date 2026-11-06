@@ -51,8 +51,8 @@ export class CreateRoleWithPrivilegeCheckerRunAction implements Executable<Creat
   }
 
   async parseResponse(response: Response): Promise<CreateRoleWithPrivilegeCheckerRunResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as CreateRoleWithPrivilegeCheckerRunResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CreateRoleWithPrivilegeCheckerRunResponse;
+    return (await response.json()) as CreateRoleWithPrivilegeCheckerRunResponse;
   }
 }

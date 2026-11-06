@@ -47,11 +47,10 @@ export class msdyn_TelephonyPhoneNumberReservationActionRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_TelephonyPhoneNumberReservationActionResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_TelephonyPhoneNumberReservationActionResponse.fromResponse(
-      text ? JSON.parse(text) : {}
-    );
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_TelephonyPhoneNumberReservationActionResponse.fromResponse({});
+    return msdyn_TelephonyPhoneNumberReservationActionResponse.fromResponse(await response.json());
   }
 }
 

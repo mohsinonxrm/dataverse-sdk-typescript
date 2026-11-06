@@ -32,8 +32,8 @@ export class TriggerDesktopFlowRunCallbackAction implements Executable<TriggerDe
   }
 
   async parseResponse(response: Response): Promise<TriggerDesktopFlowRunCallbackResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as TriggerDesktopFlowRunCallbackResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as TriggerDesktopFlowRunCallbackResponse;
+    return (await response.json()) as TriggerDesktopFlowRunCallbackResponse;
   }
 }

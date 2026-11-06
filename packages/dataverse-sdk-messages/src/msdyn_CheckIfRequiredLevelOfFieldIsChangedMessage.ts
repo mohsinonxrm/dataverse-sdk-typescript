@@ -31,11 +31,10 @@ export class msdyn_CheckIfRequiredLevelOfFieldIsChangedRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckIfRequiredLevelOfFieldIsChangedResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_CheckIfRequiredLevelOfFieldIsChangedResponse.fromResponse(
-      text ? JSON.parse(text) : {}
-    );
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_CheckIfRequiredLevelOfFieldIsChangedResponse.fromResponse({});
+    return msdyn_CheckIfRequiredLevelOfFieldIsChangedResponse.fromResponse(await response.json());
   }
 }
 

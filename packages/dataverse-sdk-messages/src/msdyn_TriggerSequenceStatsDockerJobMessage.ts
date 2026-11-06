@@ -29,9 +29,10 @@ export class msdyn_TriggerSequenceStatsDockerJobRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_TriggerSequenceStatsDockerJobResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_TriggerSequenceStatsDockerJobResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_TriggerSequenceStatsDockerJobResponse.fromResponse({});
+    return msdyn_TriggerSequenceStatsDockerJobResponse.fromResponse(await response.json());
   }
 }
 

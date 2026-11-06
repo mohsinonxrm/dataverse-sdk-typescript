@@ -44,8 +44,8 @@ export class msdyn_DCA_SendOutreachEmailAction implements Executable<msdyn_DCA_S
   }
 
   async parseResponse(response: Response): Promise<msdyn_DCA_SendOutreachEmailResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdyn_DCA_SendOutreachEmailResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_DCA_SendOutreachEmailResponse;
+    return (await response.json()) as msdyn_DCA_SendOutreachEmailResponse;
   }
 }

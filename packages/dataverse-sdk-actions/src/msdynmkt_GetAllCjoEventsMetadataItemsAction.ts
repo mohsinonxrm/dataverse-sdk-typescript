@@ -46,8 +46,8 @@ export class msdynmkt_GetAllCjoEventsMetadataItemsAction implements Executable<m
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_GetAllCjoEventsMetadataItemsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdynmkt_GetAllCjoEventsMetadataItemsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdynmkt_GetAllCjoEventsMetadataItemsResponse;
+    return (await response.json()) as msdynmkt_GetAllCjoEventsMetadataItemsResponse;
   }
 }

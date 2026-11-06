@@ -44,8 +44,8 @@ export class msdyn_RetrieveEmailNBAAction implements Executable<msdyn_RetrieveEm
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrieveEmailNBAResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdyn_RetrieveEmailNBAResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_RetrieveEmailNBAResponse;
+    return (await response.json()) as msdyn_RetrieveEmailNBAResponse;
   }
 }

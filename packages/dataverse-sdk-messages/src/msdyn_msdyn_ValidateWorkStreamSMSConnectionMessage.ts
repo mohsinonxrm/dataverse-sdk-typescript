@@ -60,11 +60,10 @@ export class msdyn_msdyn_ValidateWorkStreamSMSConnectionRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_msdyn_ValidateWorkStreamSMSConnectionResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_msdyn_ValidateWorkStreamSMSConnectionResponse.fromResponse(
-      text ? JSON.parse(text) : {}
-    );
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_msdyn_ValidateWorkStreamSMSConnectionResponse.fromResponse({});
+    return msdyn_msdyn_ValidateWorkStreamSMSConnectionResponse.fromResponse(await response.json());
   }
 }
 

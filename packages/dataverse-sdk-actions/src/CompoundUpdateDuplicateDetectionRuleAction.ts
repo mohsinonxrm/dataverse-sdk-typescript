@@ -46,8 +46,8 @@ export class CompoundUpdateDuplicateDetectionRuleAction implements Executable<Co
   }
 
   async parseResponse(response: Response): Promise<CompoundUpdateDuplicateDetectionRuleResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as CompoundUpdateDuplicateDetectionRuleResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CompoundUpdateDuplicateDetectionRuleResponse;
+    return (await response.json()) as CompoundUpdateDuplicateDetectionRuleResponse;
   }
 }

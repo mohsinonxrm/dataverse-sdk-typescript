@@ -30,7 +30,7 @@ describe("#22: function string parameters are OData string literals", () => {
     const { client, fake } = createTestClient();
     fake.on("GET", /^\/FetchXmlToQueryExpression\(/, () => jsonResponse({ Query: {} }));
 
-    await client.execute(new FetchXmlToQueryExpressionFunction(FETCH_XML));
+    await client.execute(new FetchXmlToQueryExpressionFunction({ FetchXml: FETCH_XML }));
 
     const r = fake.last();
     expect(r.path.split("?")[0]).toBe("/FetchXmlToQueryExpression(FetchXml=@p1)");
@@ -41,7 +41,9 @@ describe("#22: function string parameters are OData string literals", () => {
 
   it("the literal survives URL encoding: & + # % newline and non-ASCII round-trip", () => {
     const value = "a'b&c+d#e%f g\nh\r\ti é✓ 😀 ''";
-    const info = new ValidateFetchXmlExpressionFunction(value).toRequestInformation(TEST_API_URL);
+    const info = new ValidateFetchXmlExpressionFunction({ FetchXml: value }).toRequestInformation(
+      TEST_API_URL
+    );
     const url = new URL(info.url);
 
     // Nothing in the value leaks into the URL structure: no fragment, no extra query parameters.
@@ -51,7 +53,9 @@ describe("#22: function string parameters are OData string literals", () => {
   });
 
   it("a value that is only quotes becomes a literal of doubled quotes", () => {
-    const info = new ValidateFetchXmlExpressionFunction("'").toRequestInformation(TEST_API_URL);
+    const info = new ValidateFetchXmlExpressionFunction({ FetchXml: "'" }).toRequestInformation(
+      TEST_API_URL
+    );
     expect(aliasValues(info.url)).toEqual({ "@p1": "''''" });
   });
 
@@ -61,7 +65,10 @@ describe("#22: function string parameters are OData string literals", () => {
     fake.on("GET", /^\/systemusers\(/, () => jsonResponse({ RolePrivileges: [] }));
 
     await client.execute(
-      new RetrieveUserPrivilegeByPrivilegeNameFunction(userId, "prv'Read", false)
+      new RetrieveUserPrivilegeByPrivilegeNameFunction(userId, {
+        PrivilegeName: "prv'Read",
+        ExcludeTeamBasic: false,
+      })
     );
 
     const r = fake.last();
@@ -72,9 +79,9 @@ describe("#22: function string parameters are OData string literals", () => {
   });
 
   it("a string without quotes is sent exactly as before", () => {
-    const info = new ValidateFetchXmlExpressionFunction("<fetch/>").toRequestInformation(
-      TEST_API_URL
-    );
+    const info = new ValidateFetchXmlExpressionFunction({
+      FetchXml: "<fetch/>",
+    }).toRequestInformation(TEST_API_URL);
     expect(info.url).toBe(
       `${TEST_API_URL}/ValidateFetchXmlExpression(FetchXml=@p1)?%40p1=%27%3Cfetch%2F%3E%27`
     );

@@ -49,8 +49,8 @@ export class RetrieveMissingComponentsFunction implements Executable<RetrieveMis
   }
 
   async parseResponse(response: Response): Promise<RetrieveMissingComponentsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RetrieveMissingComponentsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveMissingComponentsResponse;
+    return (await response.json()) as RetrieveMissingComponentsResponse;
   }
 }

@@ -47,9 +47,9 @@ export class RetrieveBoolFeatureControlSettingRequest
   }
 
   async parseResponse(response: Response): Promise<RetrieveBoolFeatureControlSettingResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return RetrieveBoolFeatureControlSettingResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return RetrieveBoolFeatureControlSettingResponse.fromResponse({});
+    return RetrieveBoolFeatureControlSettingResponse.fromResponse(await response.json());
   }
 }
 

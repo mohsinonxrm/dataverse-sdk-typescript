@@ -51,8 +51,8 @@ export class CCaaS_CancelConsultAction implements Executable<CCaaS_CancelConsult
   }
 
   async parseResponse(response: Response): Promise<CCaaS_CancelConsultResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as CCaaS_CancelConsultResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CCaaS_CancelConsultResponse;
+    return (await response.json()) as CCaaS_CancelConsultResponse;
   }
 }

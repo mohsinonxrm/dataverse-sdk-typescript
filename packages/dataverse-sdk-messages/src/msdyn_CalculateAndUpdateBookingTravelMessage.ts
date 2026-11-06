@@ -44,9 +44,10 @@ export class msdyn_CalculateAndUpdateBookingTravelRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CalculateAndUpdateBookingTravelResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_CalculateAndUpdateBookingTravelResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_CalculateAndUpdateBookingTravelResponse.fromResponse({});
+    return msdyn_CalculateAndUpdateBookingTravelResponse.fromResponse(await response.json());
   }
 }
 

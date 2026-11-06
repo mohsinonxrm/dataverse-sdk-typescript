@@ -45,8 +45,8 @@ export class _RoutingRuleSetValidationAction implements Executable<_RoutingRuleS
   }
 
   async parseResponse(response: Response): Promise<_RoutingRuleSetValidationResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as _RoutingRuleSetValidationResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as _RoutingRuleSetValidationResponse;
+    return (await response.json()) as _RoutingRuleSetValidationResponse;
   }
 }

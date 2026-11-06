@@ -76,9 +76,9 @@ export class ExportSolutionRequest
   }
 
   async parseResponse(response: Response): Promise<ExportSolutionResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return ExportSolutionResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return ExportSolutionResponse.fromResponse({});
+    return ExportSolutionResponse.fromResponse(await response.json());
   }
 }
 

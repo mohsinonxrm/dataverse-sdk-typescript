@@ -46,8 +46,8 @@ export class msdynmkt_PersonalizationGetEventsByNameAction implements Executable
   async parseResponse(
     response: Response
   ): Promise<msdynmkt_PersonalizationGetEventsByNameResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdynmkt_PersonalizationGetEventsByNameResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdynmkt_PersonalizationGetEventsByNameResponse;
+    return (await response.json()) as msdynmkt_PersonalizationGetEventsByNameResponse;
   }
 }

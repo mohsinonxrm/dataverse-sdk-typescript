@@ -45,11 +45,10 @@ export class RetrieveEnvironmentVariableSecretValueRequest
   }
 
   async parseResponse(response: Response): Promise<RetrieveEnvironmentVariableSecretValueResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return RetrieveEnvironmentVariableSecretValueResponse.fromResponse(
-      text ? JSON.parse(text) : {}
-    );
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return RetrieveEnvironmentVariableSecretValueResponse.fromResponse({});
+    return RetrieveEnvironmentVariableSecretValueResponse.fromResponse(await response.json());
   }
 }
 

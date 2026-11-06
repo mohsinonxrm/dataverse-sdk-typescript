@@ -49,9 +49,9 @@ export class msdyn_GetWorkOrderAggregationRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetWorkOrderAggregationResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_GetWorkOrderAggregationResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetWorkOrderAggregationResponse.fromResponse({});
+    return msdyn_GetWorkOrderAggregationResponse.fromResponse(await response.json());
   }
 }
 

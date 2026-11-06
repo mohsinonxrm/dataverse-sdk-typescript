@@ -46,8 +46,8 @@ export class _ResourcesAddUpdateActionAction implements Executable<_ResourcesAdd
   }
 
   async parseResponse(response: Response): Promise<_ResourcesAddUpdateActionResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as _ResourcesAddUpdateActionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as _ResourcesAddUpdateActionResponse;
+    return (await response.json()) as _ResourcesAddUpdateActionResponse;
   }
 }

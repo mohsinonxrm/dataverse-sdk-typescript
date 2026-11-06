@@ -50,9 +50,9 @@ export class msdyn_IoTGetTagsMetadataRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_IoTGetTagsMetadataResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_IoTGetTagsMetadataResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_IoTGetTagsMetadataResponse.fromResponse({});
+    return msdyn_IoTGetTagsMetadataResponse.fromResponse(await response.json());
   }
 }
 

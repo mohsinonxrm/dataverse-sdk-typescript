@@ -61,9 +61,9 @@ export class copilotquerytextcontextRequest
   }
 
   async parseResponse(response: Response): Promise<copilotquerytextcontextResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return copilotquerytextcontextResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return copilotquerytextcontextResponse.fromResponse({});
+    return copilotquerytextcontextResponse.fromResponse(await response.json());
   }
 }
 

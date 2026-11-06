@@ -46,9 +46,9 @@ export class RetainRequest extends OrganizationRequest implements Executable<Ret
   }
 
   async parseResponse(response: Response): Promise<RetainResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return RetainResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return RetainResponse.fromResponse({});
+    return RetainResponse.fromResponse(await response.json());
   }
 }
 

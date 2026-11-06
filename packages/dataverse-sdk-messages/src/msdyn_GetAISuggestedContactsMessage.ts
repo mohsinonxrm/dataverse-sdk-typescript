@@ -47,9 +47,9 @@ export class msdyn_GetAISuggestedContactsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAISuggestedContactsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_GetAISuggestedContactsResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetAISuggestedContactsResponse.fromResponse({});
+    return msdyn_GetAISuggestedContactsResponse.fromResponse(await response.json());
   }
 }
 

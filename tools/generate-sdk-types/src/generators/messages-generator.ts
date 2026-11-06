@@ -555,9 +555,9 @@ function generateParseResponse(action: CsdlAction, responseClassName: string): s
   let code = `  async parseResponse(response: Response): Promise<${responseClassName}> {\n`;
 
   if (action.returnType) {
-    code += `    // 204 No Content (or an empty body) is an empty result\n`;
-    code += `    const text = response.status === 204 ? '' : await response.text();\n`;
-    code += `    return ${responseClassName}.fromResponse(text ? JSON.parse(text) : {});\n`;
+    code += `    // 204 No Content is an empty result\n`;
+    code += `    if (response.status === 204) return ${responseClassName}.fromResponse({});\n`;
+    code += `    return ${responseClassName}.fromResponse(await response.json());\n`;
   } else {
     code += `    // No return value (204 No Content)\n`;
     code += `    return new ${responseClassName}();\n`;

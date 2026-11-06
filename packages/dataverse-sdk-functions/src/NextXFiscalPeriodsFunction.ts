@@ -53,8 +53,8 @@ export class NextXFiscalPeriodsFunction implements Executable<NextXFiscalPeriods
   }
 
   async parseResponse(response: Response): Promise<NextXFiscalPeriodsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as NextXFiscalPeriodsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as NextXFiscalPeriodsResponse;
+    return (await response.json()) as NextXFiscalPeriodsResponse;
   }
 }

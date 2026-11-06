@@ -36,8 +36,8 @@ export class InitializeModernFlowFromAsyncWorkflowAction implements Executable<I
   }
 
   async parseResponse(response: Response): Promise<InitializeModernFlowFromAsyncWorkflowResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as InitializeModernFlowFromAsyncWorkflowResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as InitializeModernFlowFromAsyncWorkflowResponse;
+    return (await response.json()) as InitializeModernFlowFromAsyncWorkflowResponse;
   }
 }

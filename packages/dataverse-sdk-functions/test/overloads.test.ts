@@ -16,16 +16,20 @@ describe("#75: function overloads", () => {
     fake.on("GET", /RetrievePrincipalAccess/, () => jsonResponse({ AccessRights: "ReadAccess" }));
     const path = () => decodeURIComponent(fake.last().path).split("?")[0];
 
-    await client.execute(new functions.RetrievePrincipalAccess_systemuserFunction("u1", target));
+    await client.execute(
+      new functions.RetrievePrincipalAccess_systemuserFunction("u1", { Target: target })
+    );
     expect(path()).toBe(
       "/systemusers(u1)/Microsoft.Dynamics.CRM.RetrievePrincipalAccess(Target=@p1)"
     );
 
-    await client.execute(new functions.RetrievePrincipalAccess_teamFunction("t1", target));
+    await client.execute(
+      new functions.RetrievePrincipalAccess_teamFunction("t1", { Target: target })
+    );
     expect(path()).toBe("/teams(t1)/Microsoft.Dynamics.CRM.RetrievePrincipalAccess(Target=@p1)");
 
     const response = await client.execute(
-      new functions.RetrievePrincipalAccess_organizationFunction("o1", target)
+      new functions.RetrievePrincipalAccess_organizationFunction("o1", { Target: target })
     );
     expect(path()).toBe(
       "/organizations(o1)/Microsoft.Dynamics.CRM.RetrievePrincipalAccess(Target=@p1)"

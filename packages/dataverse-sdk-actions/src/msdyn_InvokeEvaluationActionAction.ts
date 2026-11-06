@@ -48,8 +48,8 @@ export class msdyn_InvokeEvaluationActionAction implements Executable<msdyn_Invo
   }
 
   async parseResponse(response: Response): Promise<msdyn_InvokeEvaluationActionResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdyn_InvokeEvaluationActionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_InvokeEvaluationActionResponse;
+    return (await response.json()) as msdyn_InvokeEvaluationActionResponse;
   }
 }

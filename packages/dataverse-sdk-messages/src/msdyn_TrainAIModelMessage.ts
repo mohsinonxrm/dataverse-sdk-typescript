@@ -32,9 +32,9 @@ export class msdyn_TrainAIModelRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_TrainAIModelResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_TrainAIModelResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_TrainAIModelResponse.fromResponse({});
+    return msdyn_TrainAIModelResponse.fromResponse(await response.json());
   }
 }
 

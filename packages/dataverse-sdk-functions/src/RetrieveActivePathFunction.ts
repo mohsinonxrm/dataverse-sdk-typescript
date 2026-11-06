@@ -49,8 +49,8 @@ export class RetrieveActivePathFunction implements Executable<RetrieveActivePath
   }
 
   async parseResponse(response: Response): Promise<RetrieveActivePathResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RetrieveActivePathResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveActivePathResponse;
+    return (await response.json()) as RetrieveActivePathResponse;
   }
 }

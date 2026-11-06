@@ -32,9 +32,9 @@ export class PvaGetDirectLineEndpointRequest
   }
 
   async parseResponse(response: Response): Promise<PvaGetDirectLineEndpointResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return PvaGetDirectLineEndpointResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return PvaGetDirectLineEndpointResponse.fromResponse({});
+    return PvaGetDirectLineEndpointResponse.fromResponse(await response.json());
   }
 }
 

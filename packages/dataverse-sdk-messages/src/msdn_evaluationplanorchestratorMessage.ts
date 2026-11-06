@@ -45,9 +45,9 @@ export class msdn_evaluationplanorchestratorRequest
   }
 
   async parseResponse(response: Response): Promise<msdn_evaluationplanorchestratorResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdn_evaluationplanorchestratorResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdn_evaluationplanorchestratorResponse.fromResponse({});
+    return msdn_evaluationplanorchestratorResponse.fromResponse(await response.json());
   }
 }
 

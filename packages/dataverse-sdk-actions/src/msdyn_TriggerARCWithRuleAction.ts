@@ -51,8 +51,8 @@ export class msdyn_TriggerARCWithRuleAction implements Executable<msdyn_TriggerA
   }
 
   async parseResponse(response: Response): Promise<msdyn_TriggerARCWithRuleResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdyn_TriggerARCWithRuleResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_TriggerARCWithRuleResponse;
+    return (await response.json()) as msdyn_TriggerARCWithRuleResponse;
   }
 }

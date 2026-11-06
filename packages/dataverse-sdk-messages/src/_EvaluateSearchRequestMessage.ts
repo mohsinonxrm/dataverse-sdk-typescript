@@ -74,9 +74,9 @@ export class _EvaluateSearchRequestRequest
   }
 
   async parseResponse(response: Response): Promise<_EvaluateSearchRequestResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return _EvaluateSearchRequestResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return _EvaluateSearchRequestResponse.fromResponse({});
+    return _EvaluateSearchRequestResponse.fromResponse(await response.json());
   }
 }
 

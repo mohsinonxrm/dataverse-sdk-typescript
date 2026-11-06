@@ -30,10 +30,12 @@ describe("#286: message overloads", () => {
     fake.on("POST", /AddItemCampaign/, () => jsonResponse({ CampaignItemId: "i1" }));
     const campaign = messages.createEntityReference("campaign", "c1");
 
-    await client.execute(new messages.AddItemCampaign_listRequest("l1", campaign));
+    await client.execute(new messages.AddItemCampaign_listRequest("l1", { Campaign: campaign }));
     expect(fake.last().path).toBe("/lists(l1)/Microsoft.Dynamics.CRM.AddItemCampaign");
 
-    await client.execute(new messages.AddItemCampaign_salesliteratureRequest("s1", campaign));
+    await client.execute(
+      new messages.AddItemCampaign_salesliteratureRequest("s1", { Campaign: campaign })
+    );
     expect(fake.last().path).toBe("/salesliteratures(s1)/Microsoft.Dynamics.CRM.AddItemCampaign");
   });
 });

@@ -48,8 +48,8 @@ export class RetrieveByResourcesServiceFunction implements Executable<RetrieveBy
   }
 
   async parseResponse(response: Response): Promise<RetrieveByResourcesServiceResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RetrieveByResourcesServiceResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveByResourcesServiceResponse;
+    return (await response.json()) as RetrieveByResourcesServiceResponse;
   }
 }

@@ -71,8 +71,8 @@ export class IncrementKnowledgeArticleViewCountFunction implements Executable<In
   }
 
   async parseResponse(response: Response): Promise<IncrementKnowledgeArticleViewCountResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as IncrementKnowledgeArticleViewCountResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as IncrementKnowledgeArticleViewCountResponse;
+    return (await response.json()) as IncrementKnowledgeArticleViewCountResponse;
   }
 }

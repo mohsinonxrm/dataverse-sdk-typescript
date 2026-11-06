@@ -91,8 +91,8 @@ export class RetrievePersonalWallFunction implements Executable<RetrievePersonal
   }
 
   async parseResponse(response: Response): Promise<RetrievePersonalWallResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RetrievePersonalWallResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrievePersonalWallResponse;
+    return (await response.json()) as RetrievePersonalWallResponse;
   }
 }

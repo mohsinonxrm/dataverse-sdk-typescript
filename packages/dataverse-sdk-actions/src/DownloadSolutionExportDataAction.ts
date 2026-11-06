@@ -42,8 +42,8 @@ export class DownloadSolutionExportDataAction implements Executable<DownloadSolu
   }
 
   async parseResponse(response: Response): Promise<DownloadSolutionExportDataResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as DownloadSolutionExportDataResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as DownloadSolutionExportDataResponse;
+    return (await response.json()) as DownloadSolutionExportDataResponse;
   }
 }

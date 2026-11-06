@@ -46,8 +46,8 @@ export class CCaaS_ModifyAgentPresenceAction implements Executable<CCaaS_ModifyA
   }
 
   async parseResponse(response: Response): Promise<CCaaS_ModifyAgentPresenceResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as CCaaS_ModifyAgentPresenceResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CCaaS_ModifyAgentPresenceResponse;
+    return (await response.json()) as CCaaS_ModifyAgentPresenceResponse;
   }
 }

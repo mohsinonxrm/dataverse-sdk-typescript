@@ -53,8 +53,8 @@ export class CopyCampaignAction implements Executable<CopyCampaignResponse> {
   }
 
   async parseResponse(response: Response): Promise<CopyCampaignResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as CopyCampaignResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CopyCampaignResponse;
+    return (await response.json()) as CopyCampaignResponse;
   }
 }

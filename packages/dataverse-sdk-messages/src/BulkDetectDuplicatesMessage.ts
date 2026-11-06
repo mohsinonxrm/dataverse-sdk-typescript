@@ -66,9 +66,9 @@ export class BulkDetectDuplicatesRequest
   }
 
   async parseResponse(response: Response): Promise<BulkDetectDuplicatesResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return BulkDetectDuplicatesResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return BulkDetectDuplicatesResponse.fromResponse({});
+    return BulkDetectDuplicatesResponse.fromResponse(await response.json());
   }
 }
 

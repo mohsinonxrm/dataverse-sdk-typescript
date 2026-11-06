@@ -49,8 +49,8 @@ export class msdyn_ParentIoTAlertsAction implements Executable<msdyn_ParentIoTAl
   }
 
   async parseResponse(response: Response): Promise<msdyn_ParentIoTAlertsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdyn_ParentIoTAlertsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_ParentIoTAlertsResponse;
+    return (await response.json()) as msdyn_ParentIoTAlertsResponse;
   }
 }

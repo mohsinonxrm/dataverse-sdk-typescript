@@ -49,8 +49,8 @@ export class SaveAsDesktopFlowModuleAction implements Executable<SaveAsDesktopFl
   }
 
   async parseResponse(response: Response): Promise<SaveAsDesktopFlowModuleResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as SaveAsDesktopFlowModuleResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as SaveAsDesktopFlowModuleResponse;
+    return (await response.json()) as SaveAsDesktopFlowModuleResponse;
   }
 }

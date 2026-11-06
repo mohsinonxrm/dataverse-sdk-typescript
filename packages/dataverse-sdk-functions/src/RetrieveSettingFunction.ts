@@ -54,8 +54,8 @@ export class RetrieveSettingFunction implements Executable<RetrieveSettingRespon
   }
 
   async parseResponse(response: Response): Promise<RetrieveSettingResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RetrieveSettingResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveSettingResponse;
+    return (await response.json()) as RetrieveSettingResponse;
   }
 }

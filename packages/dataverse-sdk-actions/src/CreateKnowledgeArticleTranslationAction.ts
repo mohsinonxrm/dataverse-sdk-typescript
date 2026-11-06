@@ -52,8 +52,8 @@ export class CreateKnowledgeArticleTranslationAction implements Executable<Creat
   }
 
   async parseResponse(response: Response): Promise<CreateKnowledgeArticleTranslationResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as CreateKnowledgeArticleTranslationResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CreateKnowledgeArticleTranslationResponse;
+    return (await response.json()) as CreateKnowledgeArticleTranslationResponse;
   }
 }

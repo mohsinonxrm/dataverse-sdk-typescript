@@ -51,9 +51,10 @@ export class msdynmkt_RetrieveAnalyitcsAriaCountsRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_RetrieveAnalyitcsAriaCountsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdynmkt_RetrieveAnalyitcsAriaCountsResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdynmkt_RetrieveAnalyitcsAriaCountsResponse.fromResponse({});
+    return msdynmkt_RetrieveAnalyitcsAriaCountsResponse.fromResponse(await response.json());
   }
 }
 

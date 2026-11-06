@@ -48,9 +48,9 @@ export class msdyn_GetRecordUsersRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetRecordUsersResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_GetRecordUsersResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetRecordUsersResponse.fromResponse({});
+    return msdyn_GetRecordUsersResponse.fromResponse(await response.json());
   }
 }
 

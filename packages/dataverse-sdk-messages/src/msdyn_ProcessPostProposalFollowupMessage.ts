@@ -49,9 +49,9 @@ export class msdyn_ProcessPostProposalFollowupRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ProcessPostProposalFollowupResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_ProcessPostProposalFollowupResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_ProcessPostProposalFollowupResponse.fromResponse({});
+    return msdyn_ProcessPostProposalFollowupResponse.fromResponse(await response.json());
   }
 }
 

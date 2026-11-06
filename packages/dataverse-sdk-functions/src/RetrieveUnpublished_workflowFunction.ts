@@ -36,8 +36,8 @@ export class RetrieveUnpublished_workflowFunction implements Executable<Retrieve
   }
 
   async parseResponse(response: Response): Promise<RetrieveUnpublished_workflowResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RetrieveUnpublished_workflowResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveUnpublished_workflowResponse;
+    return (await response.json()) as RetrieveUnpublished_workflowResponse;
   }
 }

@@ -511,24 +511,23 @@ console.log("User ID:", whoAmI.UserId);
 console.log("Business Unit:", whoAmI.BusinessUnitId);
 console.log("Organization:", whoAmI.OrganizationId);
 
-// Execute an action: constructor arguments are positional (opportunityClose, caller, status)
+// Execute an action: the constructor takes one object with the parameters, by their Web API names
 import { WinOpportunityAction } from "@mohsinonxrm/dataverse-sdk-actions";
 
-const winRequest = new WinOpportunityAction(
-  {
+const winRequest = new WinOpportunityAction({
+  OpportunityClose: {
     subject: "Won!",
     "opportunityid@odata.bind": `/opportunities(${opportunityId})`,
   },
-  "",
-  3 // a statuscode of the Won state, e.g. 3 = Won
-);
+  Status: 3,
+});
 await service.execute(winRequest);
 
-// Execute a message: ExecuteWorkflowRequest(workflowId, entityId, inputArguments)
+// Execute a message: a bound one takes the record id first, then the parameters
 import { ExecuteWorkflowRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 
 const workflowResponse = await service.execute(
-  new ExecuteWorkflowRequest(workflowId, entityId, {})
+  new ExecuteWorkflowRequest(workflowId, { EntityId: entityId, InputArguments: {} })
 );
 ```
 

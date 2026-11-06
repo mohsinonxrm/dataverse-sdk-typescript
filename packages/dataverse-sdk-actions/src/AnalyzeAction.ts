@@ -49,8 +49,8 @@ export class AnalyzeAction implements Executable<AnalyzeResponse> {
   }
 
   async parseResponse(response: Response): Promise<AnalyzeResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as AnalyzeResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as AnalyzeResponse;
+    return (await response.json()) as AnalyzeResponse;
   }
 }

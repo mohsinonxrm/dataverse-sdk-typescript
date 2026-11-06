@@ -49,9 +49,9 @@ export class msdyn_GetIoTAlertAggregationRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetIoTAlertAggregationResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_GetIoTAlertAggregationResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetIoTAlertAggregationResponse.fromResponse({});
+    return msdyn_GetIoTAlertAggregationResponse.fromResponse(await response.json());
   }
 }
 

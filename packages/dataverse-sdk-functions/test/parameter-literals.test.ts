@@ -40,12 +40,12 @@ describe("#67: enum parameters", () => {
 
   it("RetrieveEntity(EntityFilters.Entity | EntityFilters.Attributes, ...) sends an enum literal", async () => {
     const r = await send(
-      new RetrieveEntityFunction(
-        EntityFilters.Entity | EntityFilters.Attributes,
-        "account",
-        GUID,
-        false
-      )
+      new RetrieveEntityFunction({
+        EntityFilters: EntityFilters.Entity | EntityFilters.Attributes,
+        LogicalName: "account",
+        MetadataId: GUID,
+        RetrieveAsIfPublished: false,
+      })
     );
     expect(aliases(r.url)).toEqual({
       "@p1": "Microsoft.Dynamics.CRM.EntityFilters'3'",
@@ -56,13 +56,22 @@ describe("#67: enum parameters", () => {
   });
 
   it("an enum member name is accepted too", async () => {
-    const r = await send(new RetrieveEntityFunction("Entity", "account", GUID, false));
+    const r = await send(
+      new RetrieveEntityFunction({
+        EntityFilters: "Entity",
+        LogicalName: "account",
+        MetadataId: GUID,
+        RetrieveAsIfPublished: false,
+      })
+    );
     expect(aliases(r.url)["@p1"]).toBe("Microsoft.Dynamics.CRM.EntityFilters'Entity'");
   });
 
   it("RetrieveMetadataChanges encodes DeletedMetadataFilters the same way", async () => {
     const r = await send(
-      new RetrieveMetadataChangesFunction(undefined, DeletedMetadataFilters.Attribute)
+      new RetrieveMetadataChangesFunction({
+        DeletedMetadataFilters: DeletedMetadataFilters.Attribute,
+      })
     );
     // Aliases are numbered by parameter position, so the second parameter is @p2
     expect(r.url).toContain("/RetrieveMetadataChanges(DeletedMetadataFilters=@p2)?");
@@ -74,15 +83,27 @@ describe("#67: enum parameters", () => {
 
 describe("#68: GUID and DateTimeOffset literals, optional parameters", () => {
   it("a GUID is sent unquoted", async () => {
-    const r = await send(new RetrieveEntityFunction(EntityFilters.Entity, "account", GUID, false));
+    const r = await send(
+      new RetrieveEntityFunction({
+        EntityFilters: EntityFilters.Entity,
+        LogicalName: "account",
+        MetadataId: GUID,
+        RetrieveAsIfPublished: false,
+      })
+    );
     expect(aliases(r.url)["@p3"]).toBe(GUID);
   });
 
   it("a DateTimeOffset is sent unquoted, from a string or a Date", async () => {
-    const fromString = await send(new LocalTimeFromUtcTimeFunction(85, "2026-01-01T00:00:00Z"));
+    const fromString = await send(
+      new LocalTimeFromUtcTimeFunction({ TimeZoneCode: 85, UtcTime: "2026-01-01T00:00:00Z" })
+    );
     expect(aliases(fromString.url)["@p2"]).toBe("2026-01-01T00:00:00Z");
     const fromDate = await send(
-      new LocalTimeFromUtcTimeFunction(85, new Date("2026-01-01T00:00:00Z"))
+      new LocalTimeFromUtcTimeFunction({
+        TimeZoneCode: 85,
+        UtcTime: new Date("2026-01-01T00:00:00Z"),
+      })
     );
     expect(aliases(fromDate.url)["@p2"]).toBe("2026-01-01T00:00:00.000Z");
   });
@@ -90,10 +111,18 @@ describe("#68: GUID and DateTimeOffset literals, optional parameters", () => {
   it("parameters the CSDL leaves nullable can be left out", async () => {
     const none = await send(new RetrieveMetadataChangesFunction());
     expect(none.url.endsWith("/RetrieveMetadataChanges")).toBe(true);
-    const app = await send(new RetrieveMetadataChangesFunction(undefined, undefined, "", APP));
+    const app = await send(
+      new RetrieveMetadataChangesFunction({ ClientVersionStamp: "", AppModuleId: APP })
+    );
     expect(aliases(app.url)).toEqual({ "@p3": "''", "@p4": APP });
     // LogicalName is nullable but MetadataId after it isn't: it stays positional, undefined omits it
-    const r = await send(new RetrieveEntityFunction(EntityFilters.Entity, undefined, GUID, false));
+    const r = await send(
+      new RetrieveEntityFunction({
+        EntityFilters: EntityFilters.Entity,
+        MetadataId: GUID,
+        RetrieveAsIfPublished: false,
+      })
+    );
     expect(r.url).toContain(
       "/RetrieveEntity(EntityFilters=@p1,MetadataId=@p3,RetrieveAsIfPublished=@p4)?"
     );

@@ -46,9 +46,9 @@ export class msdyn_GetSalesAcceleratedSellerRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSalesAcceleratedSellerResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_GetSalesAcceleratedSellerResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetSalesAcceleratedSellerResponse.fromResponse({});
+    return msdyn_GetSalesAcceleratedSellerResponse.fromResponse(await response.json());
   }
 }
 

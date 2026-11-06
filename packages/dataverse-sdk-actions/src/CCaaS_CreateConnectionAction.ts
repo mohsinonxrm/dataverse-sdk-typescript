@@ -51,8 +51,8 @@ export class CCaaS_CreateConnectionAction implements Executable<CCaaS_CreateConn
   }
 
   async parseResponse(response: Response): Promise<CCaaS_CreateConnectionResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as CCaaS_CreateConnectionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CCaaS_CreateConnectionResponse;
+    return (await response.json()) as CCaaS_CreateConnectionResponse;
   }
 }

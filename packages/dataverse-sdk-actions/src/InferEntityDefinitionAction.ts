@@ -66,8 +66,8 @@ export class InferEntityDefinitionAction implements Executable<InferEntityDefini
   }
 
   async parseResponse(response: Response): Promise<InferEntityDefinitionResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as InferEntityDefinitionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as InferEntityDefinitionResponse;
+    return (await response.json()) as InferEntityDefinitionResponse;
   }
 }

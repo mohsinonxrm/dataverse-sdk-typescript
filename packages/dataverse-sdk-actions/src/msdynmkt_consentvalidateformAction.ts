@@ -52,8 +52,8 @@ export class msdynmkt_consentvalidateformAction implements Executable<msdynmkt_c
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_consentvalidateformResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdynmkt_consentvalidateformResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdynmkt_consentvalidateformResponse;
+    return (await response.json()) as msdynmkt_consentvalidateformResponse;
   }
 }

@@ -53,8 +53,8 @@ export class GetComponentManagedIdentityFICFunction implements Executable<GetCom
   }
 
   async parseResponse(response: Response): Promise<GetComponentManagedIdentityFICResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as GetComponentManagedIdentityFICResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as GetComponentManagedIdentityFICResponse;
+    return (await response.json()) as GetComponentManagedIdentityFICResponse;
   }
 }

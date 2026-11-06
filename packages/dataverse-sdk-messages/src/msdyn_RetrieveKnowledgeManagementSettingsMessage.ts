@@ -47,11 +47,10 @@ export class msdyn_RetrieveKnowledgeManagementSettingsRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_RetrieveKnowledgeManagementSettingsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_RetrieveKnowledgeManagementSettingsResponse.fromResponse(
-      text ? JSON.parse(text) : {}
-    );
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_RetrieveKnowledgeManagementSettingsResponse.fromResponse({});
+    return msdyn_RetrieveKnowledgeManagementSettingsResponse.fromResponse(await response.json());
   }
 }
 

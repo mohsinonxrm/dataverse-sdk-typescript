@@ -47,9 +47,9 @@ export class msdyn_PerformChecksForEnrichRecordRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_PerformChecksForEnrichRecordResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_PerformChecksForEnrichRecordResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_PerformChecksForEnrichRecordResponse.fromResponse({});
+    return msdyn_PerformChecksForEnrichRecordResponse.fromResponse(await response.json());
   }
 }
 

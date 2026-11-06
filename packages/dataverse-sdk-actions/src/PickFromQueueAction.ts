@@ -54,8 +54,8 @@ export class PickFromQueueAction implements Executable<PickFromQueueResponse> {
   }
 
   async parseResponse(response: Response): Promise<PickFromQueueResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as PickFromQueueResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as PickFromQueueResponse;
+    return (await response.json()) as PickFromQueueResponse;
   }
 }

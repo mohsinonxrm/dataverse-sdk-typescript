@@ -32,9 +32,9 @@ export class GetPublicKeyRequest
   }
 
   async parseResponse(response: Response): Promise<GetPublicKeyResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return GetPublicKeyResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return GetPublicKeyResponse.fromResponse({});
+    return GetPublicKeyResponse.fromResponse(await response.json());
   }
 }
 

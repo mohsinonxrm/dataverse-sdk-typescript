@@ -47,8 +47,8 @@ export class AddItemCampaignActivityAction implements Executable<AddItemCampaign
   }
 
   async parseResponse(response: Response): Promise<AddItemCampaignActivityResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as AddItemCampaignActivityResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as AddItemCampaignActivityResponse;
+    return (await response.json()) as AddItemCampaignActivityResponse;
   }
 }

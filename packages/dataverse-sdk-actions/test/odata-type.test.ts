@@ -55,9 +55,11 @@ describe("#73: QueryExpressionToFetchXmlAction", () => {
 
     const result = await client.execute(
       new QueryExpressionToFetchXmlAction({
-        "@odata.type": "Microsoft.Dynamics.CRM.QueryExpression",
-        EntityName: "account",
-        ColumnSet: { AllColumns: true },
+        Query: {
+          "@odata.type": "Microsoft.Dynamics.CRM.QueryExpression",
+          EntityName: "account",
+          ColumnSet: { AllColumns: true },
+        },
       })
     );
 
@@ -74,13 +76,17 @@ describe("#73: QueryExpressionToFetchXmlAction", () => {
   it("the QueryExpression from the issue, and a FetchExpression, compile without casts", async () => {
     const errors = await typecheck(`import { QueryExpressionToFetchXmlAction } from "PKG";
 new QueryExpressionToFetchXmlAction({
-  "@odata.type": "Microsoft.Dynamics.CRM.QueryExpression",
-  EntityName: "account",
-  ColumnSet: { AllColumns: true },
+  Query: {
+    "@odata.type": "Microsoft.Dynamics.CRM.QueryExpression",
+    EntityName: "account",
+    ColumnSet: { AllColumns: true },
+  },
 });
 new QueryExpressionToFetchXmlAction({
-  "@odata.type": "Microsoft.Dynamics.CRM.FetchExpression",
-  Query: "<fetch><entity name='account'/></fetch>",
+  Query: {
+    "@odata.type": "Microsoft.Dynamics.CRM.FetchExpression",
+    Query: "<fetch><entity name='account'/></fetch>",
+  },
 });
 `);
     expect(errors).toEqual([]);
@@ -99,8 +105,8 @@ export { query };
 
   it("a query without @odata.type doesn't compile (Dataverse answers 400 for it)", async () => {
     const errors = await typecheck(`import { QueryExpressionToFetchXmlAction } from "PKG";
-new QueryExpressionToFetchXmlAction({ EntityName: "account", ColumnSet: { AllColumns: true } });
+new QueryExpressionToFetchXmlAction({ Query: { EntityName: "account", ColumnSet: { AllColumns: true } } });
 `);
-    expect(errors.length).toBeGreaterThan(0);
+    expect(errors.join("\n")).toMatch(/@odata\.type/);
   }, 120_000);
 });

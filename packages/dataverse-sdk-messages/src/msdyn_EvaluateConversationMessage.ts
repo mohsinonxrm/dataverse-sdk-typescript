@@ -57,9 +57,9 @@ export class msdyn_EvaluateConversationRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_EvaluateConversationResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_EvaluateConversationResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_EvaluateConversationResponse.fromResponse({});
+    return msdyn_EvaluateConversationResponse.fromResponse(await response.json());
   }
 }
 

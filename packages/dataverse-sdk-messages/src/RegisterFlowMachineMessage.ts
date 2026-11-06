@@ -63,9 +63,9 @@ export class RegisterFlowMachineRequest
   }
 
   async parseResponse(response: Response): Promise<RegisterFlowMachineResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return RegisterFlowMachineResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return RegisterFlowMachineResponse.fromResponse({});
+    return RegisterFlowMachineResponse.fromResponse(await response.json());
   }
 }
 

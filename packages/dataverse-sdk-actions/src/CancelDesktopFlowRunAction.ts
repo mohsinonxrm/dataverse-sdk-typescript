@@ -32,8 +32,8 @@ export class CancelDesktopFlowRunAction implements Executable<CancelDesktopFlowR
   }
 
   async parseResponse(response: Response): Promise<CancelDesktopFlowRunResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as CancelDesktopFlowRunResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CancelDesktopFlowRunResponse;
+    return (await response.json()) as CancelDesktopFlowRunResponse;
   }
 }

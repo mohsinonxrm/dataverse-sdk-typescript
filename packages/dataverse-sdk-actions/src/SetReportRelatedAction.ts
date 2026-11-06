@@ -48,8 +48,8 @@ export class SetReportRelatedAction implements Executable<SetReportRelatedRespon
   }
 
   async parseResponse(response: Response): Promise<SetReportRelatedResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as SetReportRelatedResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as SetReportRelatedResponse;
+    return (await response.json()) as SetReportRelatedResponse;
   }
 }

@@ -48,9 +48,9 @@ export class AnalyzeRequest extends OrganizationRequest implements Executable<An
   }
 
   async parseResponse(response: Response): Promise<AnalyzeResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return AnalyzeResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return AnalyzeResponse.fromResponse({});
+    return AnalyzeResponse.fromResponse(await response.json());
   }
 }
 

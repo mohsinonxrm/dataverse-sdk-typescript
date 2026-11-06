@@ -29,9 +29,9 @@ export class msdyn_MigrateSlaProactiveRunRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_MigrateSlaProactiveRunResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_MigrateSlaProactiveRunResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_MigrateSlaProactiveRunResponse.fromResponse({});
+    return msdyn_MigrateSlaProactiveRunResponse.fromResponse(await response.json());
   }
 }
 

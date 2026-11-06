@@ -61,8 +61,8 @@ export class ExpandCalendarFunction implements Executable<ExpandCalendarResponse
   }
 
   async parseResponse(response: Response): Promise<ExpandCalendarResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as ExpandCalendarResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as ExpandCalendarResponse;
+    return (await response.json()) as ExpandCalendarResponse;
   }
 }

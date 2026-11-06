@@ -42,8 +42,8 @@ export class msdyn_conversationclosecasesentimentAction implements Executable<ms
   }
 
   async parseResponse(response: Response): Promise<msdyn_conversationclosecasesentimentResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdyn_conversationclosecasesentimentResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_conversationclosecasesentimentResponse;
+    return (await response.json()) as msdyn_conversationclosecasesentimentResponse;
   }
 }

@@ -9,13 +9,16 @@
 ## Overview
 
 Actions are **POST operations** that can change data. Each action is a class whose constructor
-takes the action's parameters **positionally, in `$metadata` order**. Run it with
-`client.execute(action)`; it resolves to the typed response.
+takes **one object with the action's parameters, by their `$metadata` names**
+(`new ImportSolutionAction({ CustomizationFile, ImportJobId, OverwriteUnmanagedCustomizations: true, PublishWorkflows: false })`);
+its type is exported as `<Class>Parameters`. Run it with `client.execute(action)`; it resolves to
+the typed response.
 
 - A bound action takes the record id (or, for a collection-bound action on any table, the entity
-  set name) as its first argument.
-- A parameter that `$metadata` doesn't mark `Nullable="false"` is optional: at the end of the list
-  it can be left out, elsewhere it accepts `undefined`, and either way it isn't sent.
+  set name) as its first argument, before the parameters object.
+- A parameter that `$metadata` marks `Nullable="false"` is required. Any other is optional: leave
+  it out, or set it to `undefined`, and it isn't sent. An action with only optional parameters can
+  be constructed without arguments.
 - Entity-typed parameters take an `EntityReference` (`createEntityReference(table, id)`) or an
   entity payload with column values, `@odata.type` and `<lookup>@odata.bind` values.
 - An operation declared with several bindings has one class per binding, `<Name>_<table>Action`
@@ -33,15 +36,14 @@ takes the action's parameters **positionally, in `$metadata` order**. Run it wit
 import { WinOpportunityAction } from "@mohsinonxrm/dataverse-sdk-actions";
 
 await client.execute(
-  new WinOpportunityAction(
-    {
+  new WinOpportunityAction({
+    OpportunityClose: {
       "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
       subject: "Deal closed",
       "opportunityid@odata.bind": `/opportunities(${opportunityId})`,
     },
-    undefined, // Caller
-    3 // Status: Won
-  )
+    Status: 3,
+  })
 );
 ```
 
@@ -260,10 +262,9 @@ tables, or a change set that must succeed or fail as a whole.
 import { CreateMultipleAction } from "@mohsinonxrm/dataverse-sdk-actions";
 
 const { Ids } = await client.execute(
-  new CreateMultipleAction(
-    "accounts",
-    names.map((name) => ({ "@odata.type": "Microsoft.Dynamics.CRM.account", name }))
-  )
+  new CreateMultipleAction("accounts", {
+    Targets: names.map((name) => ({ "@odata.type": "Microsoft.Dynamics.CRM.account", name })),
+  })
 );
 console.log(`Created ${String(Ids.length)} accounts`);
 ```
@@ -279,11 +280,11 @@ import {
 } from "@mohsinonxrm/dataverse-sdk-actions";
 
 const { FileContinuationToken } = await client.execute(
-  new InitializeFileBlocksUploadAction(
-    createEntityReference("account", accountId), // Target
-    "contract.pdf", // FileName
-    "new_contract" // FileAttributeName: the file column
-  )
+  new InitializeFileBlocksUploadAction({
+    Target: createEntityReference("account", accountId),
+    FileName: "contract.pdf",
+    FileAttributeName: "new_contract",
+  })
 );
 
 const blockSize = 4 * 1024 * 1024;
@@ -292,21 +293,21 @@ for (let offset = 0, n = 0; offset < file.length; offset += blockSize, n++) {
   const blockId = btoa(String(n).padStart(6, "0"));
   blockIds.push(blockId);
   await client.execute(
-    new UploadBlockAction(
-      blockId,
-      Buffer.from(file.subarray(offset, offset + blockSize)).toString("base64"),
-      FileContinuationToken
-    )
+    new UploadBlockAction({
+      BlockId: blockId,
+      BlockData: Buffer.from(file.subarray(offset, offset + blockSize)).toString("base64"),
+      FileContinuationToken: FileContinuationToken,
+    })
   );
 }
 
 await client.execute(
-  new CommitFileBlocksUploadAction(
-    "contract.pdf",
-    "application/pdf",
-    blockIds,
-    FileContinuationToken
-  )
+  new CommitFileBlocksUploadAction({
+    FileName: "contract.pdf",
+    MimeType: "application/pdf",
+    BlockList: blockIds,
+    FileContinuationToken: FileContinuationToken,
+  })
 );
 ```
 

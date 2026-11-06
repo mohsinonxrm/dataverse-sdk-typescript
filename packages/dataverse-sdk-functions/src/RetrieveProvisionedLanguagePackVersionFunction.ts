@@ -50,8 +50,8 @@ export class RetrieveProvisionedLanguagePackVersionFunction implements Executabl
   }
 
   async parseResponse(response: Response): Promise<RetrieveProvisionedLanguagePackVersionResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RetrieveProvisionedLanguagePackVersionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveProvisionedLanguagePackVersionResponse;
+    return (await response.json()) as RetrieveProvisionedLanguagePackVersionResponse;
   }
 }

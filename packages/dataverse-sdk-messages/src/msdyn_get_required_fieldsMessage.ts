@@ -51,9 +51,9 @@ export class msdyn_get_required_fieldsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_get_required_fieldsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_get_required_fieldsResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_get_required_fieldsResponse.fromResponse({});
+    return msdyn_get_required_fieldsResponse.fromResponse(await response.json());
   }
 }
 

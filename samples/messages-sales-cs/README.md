@@ -225,21 +225,23 @@ import { ExecuteWorkflowRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 const workflowId = "12345678-1234-1234-1234-123456789abc";
 const targetRecordId = "11111111-1111-1111-1111-111111111111";
 
-const request = new ExecuteWorkflowRequest(workflowId, targetRecordId, { Arguments: [] });
+const request = new ExecuteWorkflowRequest(workflowId, {
+  EntityId: targetRecordId,
+  InputArguments: { Arguments: [] },
+});
 
 const response = await orgService.execute<ExecuteWorkflowResponse>(request);
 
 console.log(`Async Operation ID: ${response.result.asyncoperationid}`);
 ```
 
-**Constructor:**
+**Constructor:** the workflow id, then the parameters by their Web API names.
 
 ```typescript
-new ExecuteWorkflowRequest(
-  workflowId: string,
-  entityId: string,
-  inputArguments: InputArgumentCollection
-)
+new ExecuteWorkflowRequest(workflowId: string, {
+  EntityId: string; // the record to run it on
+  InputArguments?: InputArgumentCollection;
+})
 ```
 
 **Response:** `ExecuteWorkflowResponse` has a `result` property, the created `asyncoperation`
@@ -303,17 +305,16 @@ import { WinOpportunityRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 
 const opportunityId = "11111111-1111-1111-1111-111111111111";
 
-const request = new WinOpportunityRequest(
-  {
+const request = new WinOpportunityRequest({
+  OpportunityClose: {
     "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
     "opportunityid@odata.bind": `/opportunities(${opportunityId})`,
     subject: "Won: Big Enterprise Deal",
     actualrevenue: 125000,
     actualend: new Date().toISOString(),
-  } as any, // the generated opportunityclose type does not model @odata.bind
-  "", // caller: empty for the current user
-  3 // status: a statuscode of the Won state
-);
+  },
+  Status: 3,
+});
 
 await orgService.execute<WinOpportunityResponse>(request);
 ```
@@ -321,11 +322,11 @@ await orgService.execute<WinOpportunityResponse>(request);
 **Constructor:**
 
 ```typescript
-new WinOpportunityRequest(
-  opportunityClose: opportunityclose,
-  caller: string,
-  status: number
-)
+new WinOpportunityRequest({
+  OpportunityClose: EntityReference | EntityPayload<opportunityclose>;
+  Caller?: string;
+  Status: number;
+})
 ```
 
 **Result:**
@@ -344,15 +345,15 @@ deletes the subordinate. The sample merges two leads.
 ```typescript
 import { MergeRequest, createEntityReference } from "@mohsinonxrm/dataverse-sdk-messages";
 
-const request = new MergeRequest(
-  createEntityReference("lead", targetId), // target
-  createEntityReference("lead", subordinateId), // subordinate
-  {
+const request = new MergeRequest({
+  Target: createEntityReference("lead", targetId),
+  Subordinate: createEntityReference("lead", subordinateId),
+  UpdateContent: {
     "@odata.type": "Microsoft.Dynamics.CRM.lead",
     subject: "Merged lead - consolidated from duplicate",
-  } as any, // updateContent: the values to set on the target
-  false // performParentingChecks
-);
+  },
+  PerformParentingChecks: false,
+});
 
 await orgService.execute<MergeResponse>(request);
 ```
@@ -360,12 +361,12 @@ await orgService.execute<MergeResponse>(request);
 **Constructor:**
 
 ```typescript
-new MergeRequest(
-  target: EntityReference,
-  subordinate: EntityReference,
-  updateContent: EntityReference, // typed as a reference; pass the entity values (cast as above)
-  performParentingChecks: boolean
-)
+new MergeRequest({
+  Target: EntityReference | AnyEntityPayload;
+  Subordinate: EntityReference | AnyEntityPayload;
+  UpdateContent?: EntityReference | AnyEntityPayload; // the column values to set on the target
+  PerformParentingChecks: boolean;
+})
 ```
 
 **What happens:**
@@ -386,23 +387,8 @@ Supported tables: `account`, `contact`, `lead`, `incident`.
 import { ExportSolutionRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 import fs from "fs/promises";
 
-const request = new ExportSolutionRequest(
-  "MySolution", // solutionName
-  false, // managed
-  "", // targetVersion
-  false, // exportAutoNumberingSettings
-  false, // exportCalendarSettings
-  false, // exportCustomizationSettings
-  false, // exportEmailTrackingSettings
-  false, // exportGeneralSettings
-  false, // exportMarketingSettings
-  false, // exportOutlookSynchronizationSettings
-  false, // exportRelationshipRoles
-  false, // exportIsvConfig
-  false, // exportSales
-  false, // exportExternalApplications
-  {} // exportComponentsParams
-);
+// SolutionName and Managed are required; the Export*Settings flags default to false
+const request = new ExportSolutionRequest({ SolutionName: "MySolution", Managed: false });
 
 const response = await orgService.execute<ExportSolutionResponse>(request);
 
@@ -448,7 +434,7 @@ const parameterXml = `
   </importexportxml>
 `.trim();
 
-await orgService.execute(new PublishXmlRequest(parameterXml));
+await orgService.execute(new PublishXmlRequest({ ParameterXml: parameterXml }));
 ```
 
 **Constructor:** `new PublishXmlRequest(parameterXml: string)`
@@ -511,7 +497,10 @@ await orgService.update("accounts", accountId, {
   statuscode: 2, // plain number
 });
 
-const request = new WinOpportunityRequest(opportunityClose, "", 3); // status as a plain number
+const request = new WinOpportunityRequest({
+  OpportunityClose: opportunityClose,
+  Status: 3,
+}); // status as a plain number
 ```
 
 ### Execution patterns used by the other demos
@@ -676,7 +665,10 @@ For messages that return async operation IDs:
 ```typescript
 import { ExecuteWorkflowRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 
-const executeWf = new ExecuteWorkflowRequest(workflowId, entityId, { Arguments: [] });
+const executeWf = new ExecuteWorkflowRequest(workflowId, {
+  EntityId: entityId,
+  InputArguments: { Arguments: [] },
+});
 const response = await orgService.execute<ExecuteWorkflowResponse>(executeWf);
 
 // Monitor completion
@@ -738,7 +730,9 @@ import { OrganizationService } from "@mohsinonxrm/dataverse-sdk-xrm";
 
 const orgService = new OrganizationService(client);
 
-await orgService.execute(new WinOpportunityRequest(opportunityClose, "", 3));
+await orgService.execute(
+  new WinOpportunityRequest({ OpportunityClose: opportunityClose, Status: 3 })
+);
 
 // CRUD, associate, assign and setState are methods on the service
 await orgService.assign("account", accountId, userId);
@@ -753,7 +747,10 @@ import { OrganizationService } from "@mohsinonxrm/dataverse-sdk-xrm";
 // Use OrganizationService for complex messages
 const orgService = new OrganizationService(client);
 
-const winRequest = new WinOpportunityRequest(opportunityClose, "", 3);
+const winRequest = new WinOpportunityRequest({
+  OpportunityClose: opportunityClose,
+  Status: 3,
+});
 await orgService.execute(winRequest);
 
 // Use DataverseClient for simple queries
@@ -814,25 +811,9 @@ async function exportSolutionForCI(
 ): Promise<void> {
   const timestamp = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
 
-  // Every export flag is positional; see Demo 7 for the full list
+  // The Export*Settings flags are optional and default to false
   const exportSolution = async (managed: boolean): Promise<Buffer> => {
-    const request = new ExportSolutionRequest(
-      solutionName,
-      managed,
-      "", // targetVersion
-      false, // exportAutoNumberingSettings
-      false, // exportCalendarSettings
-      false, // exportCustomizationSettings
-      false, // exportEmailTrackingSettings
-      false, // exportGeneralSettings
-      false, // exportMarketingSettings
-      false, // exportOutlookSynchronizationSettings
-      false, // exportRelationshipRoles
-      false, // exportIsvConfig
-      false, // exportSales
-      false, // exportExternalApplications
-      {} // exportComponentsParams
-    );
+    const request = new ExportSolutionRequest({ SolutionName: solutionName, Managed: managed });
     const response = await orgService.execute<ExportSolutionResponse>(request);
     return Buffer.from(response.result.ExportSolutionFile ?? "", "base64");
   };
@@ -867,11 +848,10 @@ async function executeWorkflowWithRetry(
 
   while (attempt < maxRetries) {
     try {
-      const request = new ExecuteWorkflowRequest(
-        workflowId,
-        entityId,
-        { Arguments: [] } // input arguments
-      );
+      const request = new ExecuteWorkflowRequest(workflowId, {
+        EntityId: entityId,
+        InputArguments: { Arguments: [] },
+      });
 
       const response = await orgService.execute<ExecuteWorkflowResponse>(request);
       return response.result.asyncoperationid ?? ""; // asyncoperationid
@@ -938,15 +918,15 @@ async function smartMerge(
   }
 
   // Execute merge
-  const mergeRequest = new MergeRequest(
-    createEntityReference(entityLogicalName, targetId),
-    createEntityReference(entityLogicalName, subordinateId),
-    {
+  const mergeRequest = new MergeRequest({
+    Target: createEntityReference(entityLogicalName, targetId),
+    Subordinate: createEntityReference(entityLogicalName, subordinateId),
+    UpdateContent: {
       "@odata.type": `Microsoft.Dynamics.CRM.${entityLogicalName}`,
       ...updateContent,
     },
-    false // performParentingChecks
-  );
+    PerformParentingChecks: false,
+  });
 
   await orgService.execute(mergeRequest);
 }

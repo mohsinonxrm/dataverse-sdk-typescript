@@ -47,8 +47,8 @@ export class ExtractTextEntitiesAction implements Executable<ExtractTextEntities
   }
 
   async parseResponse(response: Response): Promise<ExtractTextEntitiesResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as ExtractTextEntitiesResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as ExtractTextEntitiesResponse;
+    return (await response.json()) as ExtractTextEntitiesResponse;
   }
 }

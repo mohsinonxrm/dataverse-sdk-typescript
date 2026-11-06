@@ -28,8 +28,8 @@ export class msdynmkt_GetPublicConfigurationCustomActionAction implements Execut
   async parseResponse(
     response: Response
   ): Promise<msdynmkt_GetPublicConfigurationCustomActionResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdynmkt_GetPublicConfigurationCustomActionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdynmkt_GetPublicConfigurationCustomActionResponse;
+    return (await response.json()) as msdynmkt_GetPublicConfigurationCustomActionResponse;
   }
 }

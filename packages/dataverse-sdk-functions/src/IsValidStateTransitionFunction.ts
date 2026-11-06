@@ -62,8 +62,8 @@ export class IsValidStateTransitionFunction implements Executable<IsValidStateTr
   }
 
   async parseResponse(response: Response): Promise<IsValidStateTransitionResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as IsValidStateTransitionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as IsValidStateTransitionResponse;
+    return (await response.json()) as IsValidStateTransitionResponse;
   }
 }

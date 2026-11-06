@@ -51,8 +51,8 @@ export class QualifyMemberListAction implements Executable<QualifyMemberListResp
   }
 
   async parseResponse(response: Response): Promise<QualifyMemberListResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as QualifyMemberListResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as QualifyMemberListResponse;
+    return (await response.json()) as QualifyMemberListResponse;
   }
 }

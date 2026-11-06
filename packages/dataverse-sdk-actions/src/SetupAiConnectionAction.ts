@@ -48,8 +48,8 @@ export class SetupAiConnectionAction implements Executable<SetupAiConnectionResp
   }
 
   async parseResponse(response: Response): Promise<SetupAiConnectionResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as SetupAiConnectionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as SetupAiConnectionResponse;
+    return (await response.json()) as SetupAiConnectionResponse;
   }
 }

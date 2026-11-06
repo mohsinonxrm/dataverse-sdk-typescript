@@ -55,8 +55,8 @@ export class AddItemCampaign_listAction implements Executable<AddItemCampaign_li
   }
 
   async parseResponse(response: Response): Promise<AddItemCampaign_listResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as AddItemCampaign_listResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as AddItemCampaign_listResponse;
+    return (await response.json()) as AddItemCampaign_listResponse;
   }
 }

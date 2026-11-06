@@ -209,7 +209,7 @@ async function executeWorkflowDemo(orgService: OrganizationService): Promise<voi
     console.log(chalk.dim("\nExample code:"));
     console.log(
       chalk.dim(`
-  const request = new ExecuteWorkflowRequest(workflowId, targetRecordId);
+  const request = new ExecuteWorkflowRequest(workflowId, { EntityId: targetRecordId });
   const response = await orgService.execute(request);
   console.log(\`Async Operation ID: \${response.result.asyncoperationid}\`);
     `)
@@ -227,7 +227,7 @@ async function executeWorkflowDemo(orgService: OrganizationService): Promise<voi
   console.log(`Executing workflow ${chalk.dim(workflowId.substring(0, 8) + "...")}`);
   console.log(`  On account: ${chalk.dim(targetAccount.substring(0, 8) + "...")}`);
   // InputArguments is optional; this workflow takes none
-  const request = new ExecuteWorkflowRequest(workflowId, targetAccount);
+  const request = new ExecuteWorkflowRequest(workflowId, { EntityId: targetAccount });
   const response = await orgService.execute<ExecuteWorkflowResponse>(request);
 
   console.log(chalk.green("✓ Workflow execution initiated"));
@@ -263,15 +263,14 @@ async function winOpportunityDemo(
   // Win the opportunity
   console.log("\nWinning opportunity...");
 
-  const request = new WinOpportunityRequest(
-    {
+  const request = new WinOpportunityRequest({
+    OpportunityClose: {
       "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
       "opportunityid@odata.bind": `/opportunities(${opportunityId})`,
       actualrevenue: 78000,
     },
-    "", // caller (empty for current user)
-    3 // Won status code
-  );
+    Status: 3,
+  });
 
   await orgService.execute<WinOpportunityResponse>(request);
 
@@ -336,16 +335,15 @@ async function mergeDemo(orgService: OrganizationService, client: DataverseClien
   // Merge subordinate into target
   console.log("\nMerging leads...");
 
-  const request = new MergeRequest(
-    createEntityReference("lead", targetId),
-    createEntityReference("lead", subordinateId),
-    // UpdateContent: the column values to set on the target
-    {
+  const request = new MergeRequest({
+    Target: createEntityReference("lead", targetId),
+    Subordinate: createEntityReference("lead", subordinateId),
+    UpdateContent: {
       "@odata.type": "Microsoft.Dynamics.CRM.lead",
       subject: "Merged lead - consolidated from duplicate",
     },
-    false // performParentingChecks
-  );
+    PerformParentingChecks: false,
+  });
 
   await orgService.execute<MergeResponse>(request);
 
@@ -402,23 +400,8 @@ async function exportSolutionDemo(orgService: OrganizationService): Promise<void
   console.log(`Exporting solution: ${chalk.cyan(solutionName)}`);
   console.log(chalk.dim("Note: This may take 10-60 seconds depending on solution size...\n"));
 
-  const request = new ExportSolutionRequest(
-    solutionName,
-    false, // managed
-    "", // targetVersion
-    false, // exportAutoNumberingSettings
-    false, // exportCalendarSettings
-    false, // exportCustomizationSettings
-    false, // exportEmailTrackingSettings
-    false, // exportGeneralSettings
-    false, // exportMarketingSettings
-    false, // exportOutlookSynchronizationSettings
-    false, // exportRelationshipRoles
-    false, // exportIsvConfig
-    false, // exportSales
-    false, // exportExternalApplications
-    {} // exportComponentsParams
-  );
+  // SolutionName and Managed are required; the Export*Settings flags default to false
+  const request = new ExportSolutionRequest({ SolutionName: solutionName, Managed: false });
 
   const startTime = Date.now();
 
@@ -478,7 +461,7 @@ async function publishXmlDemo(orgService: OrganizationService): Promise<void> {
   console.log("Publishing customizations for: account, contact");
   console.log(chalk.dim("Note: Publishing can take 5-30 seconds...\n"));
 
-  const request = new PublishXmlRequest(parameterXml);
+  const request = new PublishXmlRequest({ ParameterXml: parameterXml });
 
   const startTime = Date.now();
 

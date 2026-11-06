@@ -44,8 +44,8 @@ export class msdyn_updatesequencetargetstepdataAction implements Executable<msdy
   }
 
   async parseResponse(response: Response): Promise<msdyn_updatesequencetargetstepdataResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as msdyn_updatesequencetargetstepdataResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_updatesequencetargetstepdataResponse;
+    return (await response.json()) as msdyn_updatesequencetargetstepdataResponse;
   }
 }

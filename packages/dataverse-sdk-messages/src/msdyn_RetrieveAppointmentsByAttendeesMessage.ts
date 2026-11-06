@@ -55,9 +55,10 @@ export class msdyn_RetrieveAppointmentsByAttendeesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrieveAppointmentsByAttendeesResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_RetrieveAppointmentsByAttendeesResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_RetrieveAppointmentsByAttendeesResponse.fromResponse({});
+    return msdyn_RetrieveAppointmentsByAttendeesResponse.fromResponse(await response.json());
   }
 }
 

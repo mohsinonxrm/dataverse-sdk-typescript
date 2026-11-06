@@ -51,9 +51,9 @@ export class AddMemberListRequest
   }
 
   async parseResponse(response: Response): Promise<AddMemberListResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return AddMemberListResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return AddMemberListResponse.fromResponse({});
+    return AddMemberListResponse.fromResponse(await response.json());
   }
 }
 

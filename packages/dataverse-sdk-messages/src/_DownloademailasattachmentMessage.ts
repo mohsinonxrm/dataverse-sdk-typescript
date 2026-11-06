@@ -47,9 +47,9 @@ export class _DownloademailasattachmentRequest
   }
 
   async parseResponse(response: Response): Promise<_DownloademailasattachmentResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return _DownloademailasattachmentResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return _DownloademailasattachmentResponse.fromResponse({});
+    return _DownloademailasattachmentResponse.fromResponse(await response.json());
   }
 }
 

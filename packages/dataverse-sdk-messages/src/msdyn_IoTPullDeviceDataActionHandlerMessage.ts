@@ -45,9 +45,10 @@ export class msdyn_IoTPullDeviceDataActionHandlerRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_IoTPullDeviceDataActionHandlerResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_IoTPullDeviceDataActionHandlerResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_IoTPullDeviceDataActionHandlerResponse.fromResponse({});
+    return msdyn_IoTPullDeviceDataActionHandlerResponse.fromResponse(await response.json());
   }
 }
 

@@ -48,8 +48,8 @@ export class LastFiscalYearFunction implements Executable<LastFiscalYearResponse
   }
 
   async parseResponse(response: Response): Promise<LastFiscalYearResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as LastFiscalYearResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as LastFiscalYearResponse;
+    return (await response.json()) as LastFiscalYearResponse;
   }
 }

@@ -53,9 +53,9 @@ export class AddItemCampaign_salesliteratureRequest
   }
 
   async parseResponse(response: Response): Promise<AddItemCampaign_salesliteratureResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return AddItemCampaign_salesliteratureResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return AddItemCampaign_salesliteratureResponse.fromResponse({});
+    return AddItemCampaign_salesliteratureResponse.fromResponse(await response.json());
   }
 }
 

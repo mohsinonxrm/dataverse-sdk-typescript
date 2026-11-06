@@ -82,9 +82,9 @@ export class ImportSolutionAsyncRequest
   }
 
   async parseResponse(response: Response): Promise<ImportSolutionAsyncResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return ImportSolutionAsyncResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return ImportSolutionAsyncResponse.fromResponse({});
+    return ImportSolutionAsyncResponse.fromResponse(await response.json());
   }
 }
 

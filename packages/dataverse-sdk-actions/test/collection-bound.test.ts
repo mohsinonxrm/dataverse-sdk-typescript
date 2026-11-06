@@ -33,8 +33,9 @@ describe("#69: collection-bound actions", () => {
     for (const { name, binding } of collectionBoundActions()) {
       const Action = (actions as unknown as Record<string, ActionClass | undefined>)[name];
       if (!Action) throw new Error(`${name} isn't exported`);
-      // Only the crmbaseentity-bound (bulk) actions take the entity set as an argument
-      const args = binding === "Collection(mscrm.crmbaseentity)" ? ["accounts"] : [];
+      // Only the crmbaseentity-bound (bulk) actions take the entity set as an argument; then
+      // the parameters object (#96), empty since parameters don't change the URL
+      const args = binding === "Collection(mscrm.crmbaseentity)" ? ["accounts", {}] : [{}];
       urls[name] = new Action(...args)
         .toRequestInformation(TEST_API_URL)
         .url.slice(TEST_API_URL.length);
@@ -67,7 +68,9 @@ describe("#69: collection-bound actions", () => {
       { "@odata.type": "Microsoft.Dynamics.CRM.contact", lastname: "Two" },
     ];
 
-    const result = await client.execute(new actions.CreateMultipleAction("contacts", targets));
+    const result = await client.execute(
+      new actions.CreateMultipleAction("contacts", { Targets: targets })
+    );
 
     expect(result.Ids).toEqual(["c1", "c2"]);
     expect(JSON.parse(fake.last().bodyText ?? "")).toEqual({ Targets: targets });
@@ -82,7 +85,9 @@ describe("#69: collection-bound actions", () => {
     );
     const fetchXml = "<fetch><entity name='account'><attribute name='name'/></entity></fetch>";
 
-    await client.execute(new actions.ValidateSavedQueryAction(fetchXml, 0));
+    await client.execute(
+      new actions.ValidateSavedQueryAction({ FetchXml: fetchXml, QueryType: 0 })
+    );
 
     expect(fake.last().method).toBe("POST");
     expect(JSON.parse(fake.last().bodyText ?? "")).toEqual({ FetchXml: fetchXml, QueryType: 0 });

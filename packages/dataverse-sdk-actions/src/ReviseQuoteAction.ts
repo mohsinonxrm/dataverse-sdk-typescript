@@ -49,8 +49,8 @@ export class ReviseQuoteAction implements Executable<ReviseQuoteResponse> {
   }
 
   async parseResponse(response: Response): Promise<ReviseQuoteResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as ReviseQuoteResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as ReviseQuoteResponse;
+    return (await response.json()) as ReviseQuoteResponse;
   }
 }

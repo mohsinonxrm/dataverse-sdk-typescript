@@ -32,8 +32,8 @@ export class LockSalesOrderPricingAction implements Executable<LockSalesOrderPri
   }
 
   async parseResponse(response: Response): Promise<LockSalesOrderPricingResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as LockSalesOrderPricingResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as LockSalesOrderPricingResponse;
+    return (await response.json()) as LockSalesOrderPricingResponse;
   }
 }

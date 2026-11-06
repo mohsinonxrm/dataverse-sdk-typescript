@@ -29,9 +29,10 @@ export class msdyn_RetrievePlatformCopilotSettingsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrievePlatformCopilotSettingsResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_RetrievePlatformCopilotSettingsResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_RetrievePlatformCopilotSettingsResponse.fromResponse({});
+    return msdyn_RetrievePlatformCopilotSettingsResponse.fromResponse(await response.json());
   }
 }
 

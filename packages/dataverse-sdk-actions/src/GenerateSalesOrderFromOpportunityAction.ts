@@ -50,8 +50,8 @@ export class GenerateSalesOrderFromOpportunityAction implements Executable<Gener
   }
 
   async parseResponse(response: Response): Promise<GenerateSalesOrderFromOpportunityResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as GenerateSalesOrderFromOpportunityResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as GenerateSalesOrderFromOpportunityResponse;
+    return (await response.json()) as GenerateSalesOrderFromOpportunityResponse;
   }
 }

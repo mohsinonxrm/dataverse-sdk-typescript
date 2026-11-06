@@ -33,8 +33,8 @@ export class RetrieveByTopIncidentSubjectKbArticleFunction implements Executable
   }
 
   async parseResponse(response: Response): Promise<RetrieveByTopIncidentSubjectKbArticleResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RetrieveByTopIncidentSubjectKbArticleResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveByTopIncidentSubjectKbArticleResponse;
+    return (await response.json()) as RetrieveByTopIncidentSubjectKbArticleResponse;
   }
 }

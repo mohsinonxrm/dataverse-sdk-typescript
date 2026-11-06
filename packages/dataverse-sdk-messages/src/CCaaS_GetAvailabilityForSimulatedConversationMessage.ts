@@ -53,10 +53,11 @@ export class CCaaS_GetAvailabilityForSimulatedConversationRequest
   async parseResponse(
     response: Response
   ): Promise<CCaaS_GetAvailabilityForSimulatedConversationResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return CCaaS_GetAvailabilityForSimulatedConversationResponse.fromResponse({});
     return CCaaS_GetAvailabilityForSimulatedConversationResponse.fromResponse(
-      text ? JSON.parse(text) : {}
+      await response.json()
     );
   }
 }

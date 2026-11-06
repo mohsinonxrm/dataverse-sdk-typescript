@@ -45,8 +45,8 @@ export class RetrieveFeatureControlSettingAction implements Executable<RetrieveF
   }
 
   async parseResponse(response: Response): Promise<RetrieveFeatureControlSettingResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as RetrieveFeatureControlSettingResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveFeatureControlSettingResponse;
+    return (await response.json()) as RetrieveFeatureControlSettingResponse;
   }
 }

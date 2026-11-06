@@ -26,8 +26,8 @@ export class QueueUpdateRibbonClientMetadataAction implements Executable<QueueUp
   }
 
   async parseResponse(response: Response): Promise<QueueUpdateRibbonClientMetadataResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as QueueUpdateRibbonClientMetadataResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as QueueUpdateRibbonClientMetadataResponse;
+    return (await response.json()) as QueueUpdateRibbonClientMetadataResponse;
   }
 }

@@ -47,9 +47,9 @@ export class msdyn_GetCJOTreeNodesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetCJOTreeNodesResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_GetCJOTreeNodesResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetCJOTreeNodesResponse.fromResponse({});
+    return msdyn_GetCJOTreeNodesResponse.fromResponse(await response.json());
   }
 }
 

@@ -45,9 +45,9 @@ export class UninstallSolutionAsyncRequest
   }
 
   async parseResponse(response: Response): Promise<UninstallSolutionAsyncResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return UninstallSolutionAsyncResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return UninstallSolutionAsyncResponse.fromResponse({});
+    return UninstallSolutionAsyncResponse.fromResponse(await response.json());
   }
 }
 

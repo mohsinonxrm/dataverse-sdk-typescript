@@ -51,9 +51,9 @@ export class msdyn_ForecastGenerateHierarchyRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ForecastGenerateHierarchyResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return msdyn_ForecastGenerateHierarchyResponse.fromResponse(text ? JSON.parse(text) : {});
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_ForecastGenerateHierarchyResponse.fromResponse({});
+    return msdyn_ForecastGenerateHierarchyResponse.fromResponse(await response.json());
   }
 }
 

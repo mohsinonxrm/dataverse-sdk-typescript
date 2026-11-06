@@ -48,8 +48,8 @@ export class ValidateRecurrenceRuleFunction implements Executable<ValidateRecurr
   }
 
   async parseResponse(response: Response): Promise<ValidateRecurrenceRuleResponse> {
-    // 204 No Content (or an empty body) is an empty result
-    const text = response.status === 204 ? "" : await response.text();
-    return (text ? JSON.parse(text) : {}) as ValidateRecurrenceRuleResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as ValidateRecurrenceRuleResponse;
+    return (await response.json()) as ValidateRecurrenceRuleResponse;
   }
 }
