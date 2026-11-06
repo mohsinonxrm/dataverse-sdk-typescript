@@ -25,6 +25,15 @@ import { PreferBuilder } from "./PreferBuilder.js";
 import { odataKey, type ODataKey } from "../odata/literal.js";
 import type { DataverseClient } from "./DataverseClient.js";
 
+/** Headers that are not carried from the first page to the next ones. */
+const FIRST_PAGE_ONLY = new Set([
+  "authorization",
+  "if-match",
+  "if-none-match",
+  "content-type",
+  "content-length",
+]);
+
 export class DataverseRequestBuilder {
   private state: QueryState = {};
   private headers: Record<string, string> = {};
@@ -356,23 +365,40 @@ export class DataverseRequestBuilder {
     return this.get<PageResponse<T>>(options);
   }
 
+  /**
+   * Iterate the records of every page, following `@odata.nextLink`. Nothing is sent until the
+   * first `next()`. Later pages carry the first request's headers (`Prefer`, impersonation and
+   * custom headers), so they have the same page size, annotations and caller as page 1.
+   */
   iterate<T = unknown>(options?: { signal?: AbortSignal }): AsyncIterable<T> {
-    // `getPage` already knows how to follow nextLink via client.api(nextLink)
-    const firstPromise = this.getPage<T>(options);
-    const client = this.client;
     const signal = options?.signal;
-    async function* generator(): AsyncIterator<T> {
-      const first = await firstPromise;
-      for await (const item of new PageIterator<T>(client, first, signal)) {
-        yield item;
-      }
+    const requestOptions: RequestOptions | undefined = signal ? { signal } : undefined;
+    // Lazy: the first request goes out on the first next(), so an iterable that is never
+    // consumed sends nothing and can't leave an unhandled rejection behind.
+    const firstPage = () => this.getPage<T>(requestOptions);
+    const headers = () => this.nextPageHeaders(requestOptions);
+    const client = this.client;
+    async function* generator(): AsyncGenerator<T> {
+      const first = await firstPage();
+      yield* new PageIterator<T>(client, first, signal, headers());
     }
     return { [Symbol.asyncIterator]: generator };
   }
 
-  async getAll<T = unknown>(opts: { maxItems?: number; maxPages?: number } = {}): Promise<T[]> {
+  /**
+   * Collect the records of every page, following `@odata.nextLink`. `maxItems` and `maxPages` stop
+   * early, before the next page is requested. Later pages carry the first request's headers, as
+   * in {@link iterate}.
+   */
+  async getAll<T = unknown>(
+    opts: { maxItems?: number; maxPages?: number; signal?: AbortSignal } = {}
+  ): Promise<T[]> {
+    const requestOptions: RequestOptions | undefined = opts.signal
+      ? { signal: opts.signal }
+      : undefined;
     const out: T[] = [];
-    let page = await this.getPage<T>();
+    let page = await this.getPage<T>(requestOptions);
+    const headers = this.nextPageHeaders(requestOptions);
     let pages = 0;
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- intentional infinite loop with explicit break statements
@@ -384,10 +410,24 @@ export class DataverseRequestBuilder {
       }
       if (!page["@odata.nextLink"]) break;
       if (opts.maxPages && pages >= opts.maxPages) break;
-      page = await this.client.api(page["@odata.nextLink"]).getPage<T>();
+      page = await this.client
+        .api(page["@odata.nextLink"])
+        .getPage<T>({ headers, signal: opts.signal });
     }
 
     return out;
+  }
+
+  /**
+   * The headers of this builder's GET that later pages need too: `Prefer` (page size,
+   * annotations), `MSCRMCallerID` / `CallerObjectId` and custom headers. Conditional headers
+   * belong to the first page only, and the token is added per request.
+   */
+  private nextPageHeaders(options: RequestOptions | undefined): Record<string, string> {
+    const { headers } = this.buildRequest("GET", undefined, options);
+    return Object.fromEntries(
+      Object.entries(headers).filter(([name]) => !FIRST_PAGE_ONLY.has(name.toLowerCase()))
+    );
   }
 
   /**

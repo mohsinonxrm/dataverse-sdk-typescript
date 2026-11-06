@@ -494,8 +494,15 @@ console.log(`Retrieved ${allAccounts.length} accounts`);
 
 - `.get()`: Returns single page as `T` (default behavior)
 - `.getPage()`: Returns `PageResponse<T>` with `value` array and `@odata.nextLink`
-- `.iterate()`: Returns `AsyncIterable<T>` that yields individual items across all pages
-- `.getAll()`: Collects all items into array with optional limits
+- `.iterate()`: Returns `AsyncIterable<T>` that yields individual items across all pages. Nothing is
+  sent until the first `next()`
+- `.getAll()`: Collects all items into array with optional limits (`maxItems`, `maxPages`, both
+  checked before the next page is requested) and an optional `signal`
+- Pages after the first are requested with the first request's headers: `Prefer` (so
+  `odata.maxpagesize` and `odata.include-annotations` hold on every page), `MSCRMCallerID` /
+  `CallerObjectId` and custom headers. `If-Match` / `If-None-Match` apply to the first page only
+- A `@odata.nextLink` to another origin is refused (`TokenOriginRefused`) before the token is sent
+  there, unless that origin is in `allowedTokenOrigins`
 - `PageIterator` class internally manages `@odata.nextLink` traversal
 - Server-side paging limit: typically 5000 records per page (configurable in Dataverse)
 
