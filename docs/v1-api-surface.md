@@ -25,6 +25,7 @@
 - `type ApiVersion` (`` `v${number}.${number}` ``)
 - `class DataverseRequestBuilder`
 - `interface RequestOptions`
+- `interface CreateAndGetIdOptions` (`RequestOptions` plus `primaryIdAttribute`, for `createAndGetId()` with `Prefer: return=representation`)
 - `class PreferBuilder`
 - `const odata` _(OData filter helpers)_
 
