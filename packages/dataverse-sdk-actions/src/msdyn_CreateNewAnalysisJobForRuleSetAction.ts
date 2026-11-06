@@ -3,9 +3,12 @@ import type { msdyn_analysisjob, msdyn_solutionhealthruleset } from "./types/ind
 
 /**
  * Response from msdyn_CreateNewAnalysisJobForRuleSet action
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
-export interface msdyn_CreateNewAnalysisJobForRuleSetResponse {
-  value: msdyn_analysisjob;
+export interface msdyn_CreateNewAnalysisJobForRuleSetResponse extends msdyn_analysisjob {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
 }
 
 /**

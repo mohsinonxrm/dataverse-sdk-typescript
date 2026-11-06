@@ -1,7 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { EntityReference } from "./types/EntityReference.js";
-import { getEntitySetNameFromReference } from "./types/EntityReference.js";
 import type { Label } from "./types/index.js";
 
 /**
@@ -33,18 +32,16 @@ export class RetrieveLocLabelsFunction implements Executable<RetrieveLocLabelsRe
       aliases.push(`EntityMoniker=@p1`);
       params.append(
         "@p1",
-        JSON.stringify({
-          "@odata.id": `${getEntitySetNameFromReference(this.entityMoniker)}(${this.entityMoniker.id})`,
-        })
+        formatParameterAlias(this.entityMoniker, "mscrm.crmbaseentity", "EntityType")
       );
     }
     if (this.attributeName !== undefined) {
       aliases.push(`AttributeName=@p2`);
-      params.append("@p2", formatAliasValue(this.attributeName));
+      params.append("@p2", formatParameterAlias(this.attributeName, "Edm.String"));
     }
     if (this.includeUnpublished !== undefined) {
       aliases.push(`IncludeUnpublished=@p3`);
-      params.append("@p3", formatAliasValue(this.includeUnpublished));
+      params.append("@p3", formatParameterAlias(this.includeUnpublished, "Edm.Boolean"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

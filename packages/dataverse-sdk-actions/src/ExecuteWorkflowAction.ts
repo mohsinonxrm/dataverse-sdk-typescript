@@ -3,9 +3,12 @@ import type { InputArgumentCollection, asyncoperation } from "./types/index.js";
 
 /**
  * Response from ExecuteWorkflow action
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
-export interface ExecuteWorkflowResponse {
-  value: asyncoperation;
+export interface ExecuteWorkflowResponse extends asyncoperation {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
 }
 
 /**

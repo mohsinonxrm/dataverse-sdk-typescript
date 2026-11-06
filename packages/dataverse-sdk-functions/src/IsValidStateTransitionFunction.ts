@@ -1,7 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { EntityReference } from "./types/EntityReference.js";
-import { getEntitySetNameFromReference } from "./types/EntityReference.js";
 
 /**
  * Response from IsValidStateTransition function
@@ -30,20 +29,15 @@ export class IsValidStateTransitionFunction implements Executable<IsValidStateTr
     const aliases: string[] = [];
     if (this.entity !== undefined) {
       aliases.push(`Entity=@p1`);
-      params.append(
-        "@p1",
-        JSON.stringify({
-          "@odata.id": `${getEntitySetNameFromReference(this.entity)}(${this.entity.id})`,
-        })
-      );
+      params.append("@p1", formatParameterAlias(this.entity, "mscrm.crmbaseentity", "EntityType"));
     }
     if (this.newState !== undefined) {
       aliases.push(`NewState=@p2`);
-      params.append("@p2", formatAliasValue(this.newState));
+      params.append("@p2", formatParameterAlias(this.newState, "Edm.String"));
     }
     if (this.newStatus !== undefined) {
       aliases.push(`NewStatus=@p3`);
-      params.append("@p3", formatAliasValue(this.newStatus));
+      params.append("@p3", formatParameterAlias(this.newStatus, "Edm.Int32"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

@@ -3,9 +3,12 @@ import type { asyncoperation } from "./types/index.js";
 
 /**
  * Response from PublishDuplicateRule action
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
-export interface PublishDuplicateRuleResponse {
-  value: asyncoperation;
+export interface PublishDuplicateRuleResponse extends asyncoperation {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
 }
 
 /**

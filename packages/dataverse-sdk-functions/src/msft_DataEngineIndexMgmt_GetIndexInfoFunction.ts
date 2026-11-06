@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
  * Response from msft_DataEngineIndexMgmt_GetIndexInfo function
@@ -29,11 +29,11 @@ export class msft_DataEngineIndexMgmt_GetIndexInfoFunction implements Executable
     const aliases: string[] = [];
     if (this.getIndexInfo_KeyColumnsJson !== undefined) {
       aliases.push(`GetIndexInfo_KeyColumnsJson=@p1`);
-      params.append("@p1", formatAliasValue(this.getIndexInfo_KeyColumnsJson));
+      params.append("@p1", formatParameterAlias(this.getIndexInfo_KeyColumnsJson, "Edm.String"));
     }
     if (this.getIndexInfo_LogicalTableName !== undefined) {
       aliases.push(`GetIndexInfo_LogicalTableName=@p2`);
-      params.append("@p2", formatAliasValue(this.getIndexInfo_LogicalTableName));
+      params.append("@p2", formatParameterAlias(this.getIndexInfo_LogicalTableName, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

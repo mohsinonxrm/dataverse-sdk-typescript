@@ -1,14 +1,16 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
-import type { EntityReference } from "./types/EntityReference.js";
-import { getEntitySetNameFromReference } from "./types/EntityReference.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { ParameterCollection } from "./types/index.js";
 
 /**
  * Response from ExecuteCosmosSqlQuery function
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
 export interface ExecuteCosmosSqlQueryResponse {
-  value: EntityReference;
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
+  [column: string]: unknown;
 }
 
 /**
@@ -20,10 +22,10 @@ export class ExecuteCosmosSqlQueryFunction implements Executable<ExecuteCosmosSq
   constructor(
     public readonly queryText: string,
     public readonly entityLogicalName: string,
-    public readonly queryParameters: ParameterCollection,
-    public readonly pageSize: number,
-    public readonly pagingCookie: string,
-    public readonly partitionId: string
+    public readonly queryParameters?: ParameterCollection,
+    public readonly pageSize?: number,
+    public readonly pagingCookie?: string,
+    public readonly partitionId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -34,11 +36,11 @@ export class ExecuteCosmosSqlQueryFunction implements Executable<ExecuteCosmosSq
     const aliases: string[] = [];
     if (this.queryText !== undefined) {
       aliases.push(`QueryText=@p1`);
-      params.append("@p1", formatAliasValue(this.queryText));
+      params.append("@p1", formatParameterAlias(this.queryText, "Edm.String"));
     }
     if (this.entityLogicalName !== undefined) {
       aliases.push(`EntityLogicalName=@p2`);
-      params.append("@p2", formatAliasValue(this.entityLogicalName));
+      params.append("@p2", formatParameterAlias(this.entityLogicalName, "Edm.String"));
     }
     if (this.queryParameters !== undefined) {
       aliases.push(`QueryParameters=@p3`);
@@ -46,15 +48,15 @@ export class ExecuteCosmosSqlQueryFunction implements Executable<ExecuteCosmosSq
     }
     if (this.pageSize !== undefined) {
       aliases.push(`PageSize=@p4`);
-      params.append("@p4", formatAliasValue(this.pageSize));
+      params.append("@p4", formatParameterAlias(this.pageSize, "Edm.Int64"));
     }
     if (this.pagingCookie !== undefined) {
       aliases.push(`PagingCookie=@p5`);
-      params.append("@p5", formatAliasValue(this.pagingCookie));
+      params.append("@p5", formatParameterAlias(this.pagingCookie, "Edm.String"));
     }
     if (this.partitionId !== undefined) {
       aliases.push(`PartitionId=@p6`);
-      params.append("@p6", formatAliasValue(this.partitionId));
+      params.append("@p6", formatParameterAlias(this.partitionId, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

@@ -1,13 +1,16 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { EntityReference } from "./types/EntityReference.js";
-import { getEntitySetNameFromReference } from "./types/EntityReference.js";
 
 /**
  * Response from CalculateRollupField function
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
 export interface CalculateRollupFieldResponse {
-  value: EntityReference;
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
+  [column: string]: unknown;
 }
 
 /**
@@ -29,16 +32,11 @@ export class CalculateRollupFieldFunction implements Executable<CalculateRollupF
     const aliases: string[] = [];
     if (this.target !== undefined) {
       aliases.push(`Target=@p1`);
-      params.append(
-        "@p1",
-        JSON.stringify({
-          "@odata.id": `${getEntitySetNameFromReference(this.target)}(${this.target.id})`,
-        })
-      );
+      params.append("@p1", formatParameterAlias(this.target, "mscrm.crmbaseentity", "EntityType"));
     }
     if (this.fieldName !== undefined) {
       aliases.push(`FieldName=@p2`);
-      params.append("@p2", formatAliasValue(this.fieldName));
+      params.append("@p2", formatParameterAlias(this.fieldName, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

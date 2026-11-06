@@ -8,6 +8,13 @@
  * @module
  */
 
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { DataverseInvalidRequestError } from "@mohsinonxrm/dataverse-sdk-core";
+
+// Generated actions and functions import these from here, so generated code needs only this
+// package (core comes with it).
+export type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+
 /**
  * Base interface for all Dataverse entities.
  * Generated entity interfaces extend this interface.
@@ -16,8 +23,12 @@ export interface IEntity {
   /** Primary key value (GUID) */
   id?: string;
 
-  /** Logical name of the entity type */
-  logicalName: string;
+  /**
+   * Logical name of the entity type. Optional, and never sent: the Web API rejects unknown
+   * properties, so `formatEntityForWrite()` drops it (the entity's metadata already says which
+   * table this is).
+   */
+  logicalName?: string;
 
   /** Allow additional properties for dynamic attributes */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -37,6 +48,13 @@ export interface EntityReference {
 
   /** Display name (optional) */
   name?: string;
+
+  /**
+   * Entity set of the referenced table (e.g. "contacts"). `formatEntityForWrite()` needs it to
+   * build `@odata.bind`; without it, it looks the set up in its `metadataCache` or `entitySetNames`
+   * option.
+   */
+  entitySetName?: string;
 }
 
 /**
@@ -49,11 +67,23 @@ export interface AttributeMetadata {
   /** Schema name (PascalCase) */
   schemaName: string;
 
-  /** Dataverse attribute type */
+  /** Dataverse attribute type (e.g. "Lookup", "Picklist"), or the OData type when unknown */
   attributeType: string;
 
   /** TypeScript type representation */
   typescriptType: string;
+
+  /** OData type of the property (e.g. "Edm.String") */
+  odataType?: string;
+
+  /** Is the attribute required (ApplicationRequired)? */
+  isRequired?: boolean;
+
+  /** Calculated or rollup column */
+  sourceType?: "calculated" | "rollup";
+
+  /** Is this a multi-select option set? */
+  isMultiSelect?: boolean;
 
   /** Is this a primary key? */
   isPrimaryKey?: boolean;
@@ -75,8 +105,20 @@ export interface NavigationMetadata {
   /** Name of the navigation property */
   name: string;
 
+  /**
+   * For a polymorphic lookup, the lookup's logical name (e.g. "customerid"). The navigation
+   * property for one target is `<fullName>_<target>` (e.g. "customerid_account").
+   */
+  fullName?: string;
+
   /** Related entity type */
   targetType: string;
+
+  /** Is this a polymorphic lookup (customer, owner, regarding)? */
+  isPolymorphic?: boolean;
+
+  /** For a polymorphic lookup: the logical names of the entities it can point to */
+  targets?: string[];
 
   /** Is this a collection? */
   isCollection: boolean;
@@ -111,7 +153,7 @@ export interface EntityMetadata {
   /** Primary name attribute (if any) */
   primaryNameAttribute?: string;
 
-  /** Map of attribute logical names to their types */
+  /** Map of attribute logical names to their OData types (e.g. "Edm.String") */
   attributeTypes: Record<string, string>;
 
   /** Map of navigation property names to target types and cardinality */
@@ -139,31 +181,21 @@ export interface EntityOperationOptions {
 }
 
 /**
- * Base class for generated action executables.
+ * Base class for generated action executables. It implements core's `Executable`, so an
+ * instance can be passed straight to `DataverseClient.execute()`.
  */
-export abstract class ActionBase<TResponse = void> {
-  abstract toRequestInformation(baseUrl: string): {
-    method: string;
-    url: string;
-    headers: Record<string, string>;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    body?: any;
-  };
+export abstract class ActionBase<TResponse = void> implements Executable<TResponse> {
+  abstract toRequestInformation(baseUrl: string): RequestInformation;
 
   abstract parseResponse(response: Response): Promise<TResponse>;
 }
 
 /**
- * Base class for generated function executables.
+ * Base class for generated function executables. It implements core's `Executable`, so an
+ * instance can be passed straight to `DataverseClient.execute()`.
  */
-export abstract class FunctionBase<TResponse> {
-  abstract toRequestInformation(baseUrl: string): {
-    method: string;
-    url: string;
-    headers: Record<string, string>;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    query?: Record<string, any>;
-  };
+export abstract class FunctionBase<TResponse> implements Executable<TResponse> {
+  abstract toRequestInformation(baseUrl: string): RequestInformation;
 
   abstract parseResponse(response: Response): Promise<TResponse>;
 }
@@ -202,6 +234,8 @@ export function isEntity(value: unknown): value is IEntity {
   );
 }
 
+export { formatParameterAlias, formatRecordPath, type ParameterKind } from "./parameters.js";
+
 /**
  * Helper to get the OData type annotation for an entity.
  */
@@ -224,25 +258,110 @@ export function getEntityUrl(entityMetadata: EntityMetadata, id: string, baseUrl
 }
 
 /**
- * Helper to format an entity for create/update operations.
- * Adds the @odata.type annotation and filters undefined values.
+ * Options for {@link formatEntityForWrite}.
+ */
+export interface FormatEntityForWriteOptions {
+  /**
+   * Metadata of the tables lookups can point to, keyed by logical name (the generated
+   * `EntityMetadataCache`). Used to find a referenced table's entity set.
+   */
+  metadataCache?: Record<string, EntityMetadata>;
+
+  /** Entity set names keyed by logical name (e.g. `{ contact: "contacts" }`). */
+  entitySetNames?: Record<string, string>;
+}
+
+/**
+ * Format an entity for a create (POST) or update (PATCH) body.
+ *
+ * - Adds the `@odata.type` annotation.
+ * - Drops `id`, `logicalName` and `undefined` values (`null` is kept: it clears the column).
+ * - Turns lookups into `@odata.bind`: an {@link EntityReference} value becomes
+ *   `"<navigation property>@odata.bind": "/<entity set>(<id>)"`, and an array of references
+ *   becomes an array of those paths (associating records on create). For a polymorphic lookup
+ *   such as `customerid`, the navigation property for the reference's table is used
+ *   (`customerid_account`).
+ *
+ * The referenced table's entity set comes from `reference.entitySetName`, then
+ * `options.entitySetNames`, then `options.metadataCache`.
+ *
+ * @throws DataverseInvalidRequestError when a reference's entity set can't be found.
+ *
+ * @example
+ * ```typescript
+ * const body = formatEntityForWrite(
+ *   { name: "Contoso", primarycontactid: createEntityReference("contact", contactId) },
+ *   AccountMetadata,
+ *   { metadataCache: EntityMetadataCache }
+ * );
+ * // { "@odata.type": "Microsoft.Dynamics.CRM.account", name: "Contoso",
+ * //   "primarycontactid@odata.bind": "/contacts(…)" }
+ * ```
  */
 export function formatEntityForWrite(
   entity: Partial<IEntity>,
-  entityMetadata: EntityMetadata
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): Record<string, any> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const formatted: Record<string, any> = {
+  entityMetadata: EntityMetadata,
+  options: FormatEntityForWriteOptions = {}
+): Record<string, unknown> {
+  const formatted: Record<string, unknown> = {
     "@odata.type": entityMetadata.typeName,
   };
 
   for (const [key, value] of Object.entries(entity)) {
-    if (key !== "id" && key !== "logicalName" && value !== undefined) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    if (key === "id" || key === "logicalName" || value === undefined) continue;
+
+    if (isEntityReference(value)) {
+      formatted[`${bindingProperty(key, value, entityMetadata)}@odata.bind`] = bindingPath(
+        value,
+        options
+      );
+    } else if (Array.isArray(value) && value.length > 0 && value.every(isEntityReference)) {
+      formatted[`${key}@odata.bind`] = value.map((ref) => bindingPath(ref, options));
+    } else {
       formatted[key] = value;
     }
   }
 
   return formatted;
+}
+
+/** The single-valued navigation property to bind `reference` through. */
+function bindingProperty(
+  key: string,
+  reference: EntityReference,
+  entityMetadata: EntityMetadata
+): string {
+  const navigation = Object.prototype.hasOwnProperty.call(entityMetadata.navigation, key)
+    ? entityMetadata.navigation[key]
+    : undefined;
+  if (navigation?.isPolymorphic) {
+    return `${navigation.fullName ?? key}_${reference.logicalName}`;
+  }
+  if (navigation) return navigation.name;
+  // A polymorphic lookup that wasn't consolidated: one navigation property per target.
+  const perTarget = `${key}_${reference.logicalName}`;
+  if (Object.prototype.hasOwnProperty.call(entityMetadata.navigation, perTarget)) {
+    return perTarget;
+  }
+  return key;
+}
+
+/** `/<entity set>(<id>)` for a reference. */
+function bindingPath(reference: EntityReference, options: FormatEntityForWriteOptions): string {
+  const entitySetName =
+    reference.entitySetName ??
+    lookup(options.entitySetNames, reference.logicalName) ??
+    lookup(options.metadataCache, reference.logicalName)?.collectionName;
+  if (!entitySetName) {
+    throw DataverseInvalidRequestError.invalidParameter(
+      "entity",
+      `no entity set is known for '${reference.logicalName}'. Set entitySetName on the reference, ` +
+        "or pass metadataCache (the generated EntityMetadataCache) or entitySetNames."
+    );
+  }
+  return `/${entitySetName}(${reference.id.replace(/^\{|\}$/g, "")})`;
+}
+
+function lookup<T>(record: Record<string, T> | undefined, key: string): T | undefined {
+  return record && Object.prototype.hasOwnProperty.call(record, key) ? record[key] : undefined;
 }

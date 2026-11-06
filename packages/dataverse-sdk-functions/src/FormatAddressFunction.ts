@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
  * Response from FormatAddress function
@@ -30,23 +30,23 @@ export class FormatAddressFunction implements Executable<FormatAddressResponse> 
     const aliases: string[] = [];
     if (this.line1 !== undefined) {
       aliases.push(`Line1=@p1`);
-      params.append("@p1", formatAliasValue(this.line1));
+      params.append("@p1", formatParameterAlias(this.line1, "Edm.String"));
     }
     if (this.city !== undefined) {
       aliases.push(`City=@p2`);
-      params.append("@p2", formatAliasValue(this.city));
+      params.append("@p2", formatParameterAlias(this.city, "Edm.String"));
     }
     if (this.stateOrProvince !== undefined) {
       aliases.push(`StateOrProvince=@p3`);
-      params.append("@p3", formatAliasValue(this.stateOrProvince));
+      params.append("@p3", formatParameterAlias(this.stateOrProvince, "Edm.String"));
     }
     if (this.postalCode !== undefined) {
       aliases.push(`PostalCode=@p4`);
-      params.append("@p4", formatAliasValue(this.postalCode));
+      params.append("@p4", formatParameterAlias(this.postalCode, "Edm.String"));
     }
     if (this.country !== undefined) {
       aliases.push(`Country=@p5`);
-      params.append("@p5", formatAliasValue(this.country));
+      params.append("@p5", formatParameterAlias(this.country, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

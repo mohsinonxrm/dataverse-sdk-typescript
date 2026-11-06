@@ -24,6 +24,8 @@ export interface CsdlEntityType {
   baseType?: string;
   /** `Abstract="true"`: the type has no instances of its own, only derived types do. */
   abstract?: boolean;
+  /** The `Key` property names (empty when the type inherits its key). */
+  key?: string[];
   properties: CsdlProperty[];
   navigationProperties: CsdlNavigationProperty[];
 }

@@ -4,9 +4,12 @@ import type { activitymimeattachment, email } from "./types/index.js";
 
 /**
  * Response from DeliverIncomingEmail action
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
-export interface DeliverIncomingEmailResponse {
-  value: email;
+export interface DeliverIncomingEmailResponse extends email {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
 }
 
 /**

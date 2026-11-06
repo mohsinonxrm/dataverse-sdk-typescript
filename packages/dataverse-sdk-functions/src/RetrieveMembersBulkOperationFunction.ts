@@ -1,7 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { EntityReference } from "./types/EntityReference.js";
-import { getEntitySetNameFromReference } from "./types/EntityReference.js";
 
 /**
  * Response from RetrieveMembersBulkOperation function
@@ -32,11 +31,11 @@ export class RetrieveMembersBulkOperationFunction implements Executable<Retrieve
     const aliases: string[] = [];
     if (this.bulkOperationSource !== undefined) {
       aliases.push(`BulkOperationSource=@p1`);
-      params.append("@p1", formatAliasValue(this.bulkOperationSource));
+      params.append("@p1", formatParameterAlias(this.bulkOperationSource, "Edm.Int32"));
     }
     if (this.entitySource !== undefined) {
       aliases.push(`EntitySource=@p2`);
-      params.append("@p2", formatAliasValue(this.entitySource));
+      params.append("@p2", formatParameterAlias(this.entitySource, "Edm.Int32"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

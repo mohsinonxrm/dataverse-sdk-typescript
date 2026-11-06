@@ -1,6 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
-import { getEntitySetNameFromReference } from "./types/EntityReference.js";
 
 /**
  * Response from RetrieveEnvironmentVariables function
@@ -15,7 +14,7 @@ export interface RetrieveEnvironmentVariablesResponse {
  * Unbound function
  */
 export class RetrieveEnvironmentVariablesFunction implements Executable<RetrieveEnvironmentVariablesResponse> {
-  constructor(public readonly schemaNames: string[]) {}
+  constructor(public readonly schemaNames?: string[]) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveEnvironmentVariables`;

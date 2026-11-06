@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
  * Response from GetSearchInformation function
@@ -25,7 +25,7 @@ export class GetSearchInformationFunction implements Executable<GetSearchInforma
     const aliases: string[] = [];
     if (this.fetchxml !== undefined) {
       aliases.push(`Fetchxml=@p1`);
-      params.append("@p1", formatAliasValue(this.fetchxml));
+      params.append("@p1", formatParameterAlias(this.fetchxml, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

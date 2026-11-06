@@ -21,7 +21,7 @@ const useStyles = makeStyles({
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    background: `linear-gradient(135deg, ${(tokens as any).colorBrandBackground2} 0%, ${(tokens as any).colorBrandBackground} 100%)`,
+    background: `linear-gradient(135deg, ${tokens.colorBrandBackground2} 0%, ${tokens.colorBrandBackground} 100%)`,
     padding: "24px",
   },
   card: {
@@ -32,7 +32,7 @@ const useStyles = makeStyles({
   },
   icon: {
     fontSize: "64px",
-    color: (tokens as any).colorBrandForeground1,
+    color: tokens.colorBrandForeground1,
     marginBottom: "24px",
   },
   title: {
@@ -40,7 +40,7 @@ const useStyles = makeStyles({
   },
   subtitle: {
     marginBottom: "32px",
-    color: (tokens as any).colorNeutralForeground2,
+    color: tokens.colorNeutralForeground2,
   },
   features: {
     display: "grid",
@@ -55,7 +55,7 @@ const useStyles = makeStyles({
     alignItems: "flex-start",
   },
   featureIcon: {
-    color: (tokens as any).colorBrandForeground1,
+    color: tokens.colorBrandForeground1,
     fontSize: "24px",
     flexShrink: 0,
   },
@@ -70,43 +70,43 @@ export default function Login() {
 
   const handleLogin = async () => {
     try {
-      await (instance as any).loginRedirect(loginRequest);
+      await instance.loginRedirect(loginRequest);
     } catch (error) {
-      (console as any).error("Login failed:", error);
+      console.error("Login failed:", error);
     }
   };
 
   return (
-    <div className={(styles as any).container}>
-      <Card className={(styles as any).card}>
-        <BuildingRegular className={(styles as any).icon} />
+    <div className={styles.container}>
+      <Card className={styles.card}>
+        <BuildingRegular className={styles.icon} />
 
-        <Title1 className={(styles as any).title}>Dataverse Account Manager</Title1>
-        <Body1 className={(styles as any).subtitle}>
+        <Title1 className={styles.title}>Dataverse Account Manager</Title1>
+        <Body1 className={styles.subtitle}>
           Production-quality SPA built with React 18, Fluent UI v9, and
           @mohsinonxrm/dataverse-sdk-typescript
         </Body1>
 
-        <div className={(styles as any).features}>
-          <div className={(styles as any).feature}>
-            <ShieldCheckmarkRegular className={(styles as any).featureIcon} />
-            <div className={(styles as any).featureText}>
+        <div className={styles.features}>
+          <div className={styles.feature}>
+            <ShieldCheckmarkRegular className={styles.featureIcon} />
+            <div className={styles.featureText}>
               <Title3 as="h3">Secure Authentication</Title3>
               <Body1>MSAL browser integration with Azure AD</Body1>
             </div>
           </div>
 
-          <div className={(styles as any).feature}>
-            <CloudArrowUpRegular className={(styles as any).featureIcon} />
-            <div className={(styles as any).featureText}>
+          <div className={styles.feature}>
+            <CloudArrowUpRegular className={styles.featureIcon} />
+            <div className={styles.featureText}>
               <Title3 as="h3">Full CRUD Operations</Title3>
               <Body1>Create, read, update, and delete Dataverse accounts</Body1>
             </div>
           </div>
 
-          <div className={(styles as any).feature}>
-            <BuildingRegular className={(styles as any).featureIcon} />
-            <div className={(styles as any).featureText}>
+          <div className={styles.feature}>
+            <BuildingRegular className={styles.featureIcon} />
+            <div className={styles.featureText}>
               <Title3 as="h3">Modern UX</Title3>
               <Body1>Fluent UI v9 components with responsive design</Body1>
             </div>

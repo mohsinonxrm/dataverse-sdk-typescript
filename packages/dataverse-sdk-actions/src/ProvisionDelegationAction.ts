@@ -3,9 +3,12 @@ import type { delegatedauthorization, team } from "./types/index.js";
 
 /**
  * Response from ProvisionDelegation action
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
-export interface ProvisionDelegationResponse {
-  value: team;
+export interface ProvisionDelegationResponse extends team {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
 }
 
 /**

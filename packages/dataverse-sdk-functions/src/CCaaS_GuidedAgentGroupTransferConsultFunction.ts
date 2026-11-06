@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
  * Response from CCaaS_GuidedAgentGroupTransferConsult function
@@ -22,8 +22,8 @@ export class CCaaS_GuidedAgentGroupTransferConsultFunction implements Executable
   constructor(
     public readonly msdyn_ocliveworkitemId: string,
     public readonly intentFamilyId: string,
-    public readonly intentGroupId: string,
-    public readonly intentId: string
+    public readonly intentGroupId?: string,
+    public readonly intentId?: string
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -35,15 +35,15 @@ export class CCaaS_GuidedAgentGroupTransferConsultFunction implements Executable
     const aliases: string[] = [];
     if (this.intentFamilyId !== undefined) {
       aliases.push(`IntentFamilyId=@p1`);
-      params.append("@p1", formatAliasValue(this.intentFamilyId));
+      params.append("@p1", formatParameterAlias(this.intentFamilyId, "Edm.Guid"));
     }
     if (this.intentGroupId !== undefined) {
       aliases.push(`IntentGroupId=@p2`);
-      params.append("@p2", formatAliasValue(this.intentGroupId));
+      params.append("@p2", formatParameterAlias(this.intentGroupId, "Edm.Guid"));
     }
     if (this.intentId !== undefined) {
       aliases.push(`IntentId=@p3`);
-      params.append("@p3", formatAliasValue(this.intentId));
+      params.append("@p3", formatParameterAlias(this.intentId, "Edm.Guid"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

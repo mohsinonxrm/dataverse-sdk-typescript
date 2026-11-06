@@ -187,17 +187,33 @@ Merges two entity records (subordinate into target).
 **Example:**
 
 ```typescript
-import { MergeAction } from "@mohsinonxrm/dataverse-sdk-actions";
+import { MergeAction, createEntityReference } from "@mohsinonxrm/dataverse-sdk-actions";
 
+const target = createEntityReference("account", "target-account-guid"); // Keep this record
 const action = new MergeAction(
-  { logicalName: "account", id: "target-account-guid" }, // Keep this record
-  "subordinate-account-guid", // Merge & deactivate this
-  { name: "Merged Company Name" }, // Update target with these values
+  target,
+  createEntityReference("account", "subordinate-account-guid"), // Merge & deactivate this
+  target, // UpdateContent (see #74 for typed entity payloads)
   false // PerformParentingChecks
 );
 
 await client.execute(action);
 ```
+
+### Entity References
+
+Entity-typed parameters (`Target`, `Subordinate`, `EntityMoniker`, …) take an `EntityReference`.
+Create one with `createEntityReference(logicalName, id)`. In a request body it is the Web API shape,
+`@odata.type` plus the table's primary key:
+
+```typescript
+JSON.stringify(createEntityReference("account", id)); // {"@odata.type":"Microsoft.Dynamics.CRM.account","accountid":"<id>"}
+JSON.stringify(createEntityReference("email", id)); // {"@odata.type":"Microsoft.Dynamics.CRM.email","activityid":"<id>"}
+```
+
+The primary keys and entity sets come from the CSDL the package was generated from. For a table
+it doesn't know (a custom table created later), pass them:
+`createEntityReference("new_project", id, { primaryIdAttribute: "new_projectid", entitySetName: "new_projects" })`.
 
 ## Bulk Operations
 

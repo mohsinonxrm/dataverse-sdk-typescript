@@ -3,9 +3,12 @@ import type { msdyn_ocsimltraining } from "./types/index.js";
 
 /**
  * Response from msdyn_CreateTrainConfig action
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
-export interface msdyn_CreateTrainConfigResponse {
-  value: msdyn_ocsimltraining;
+export interface msdyn_CreateTrainConfigResponse extends msdyn_ocsimltraining {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
 }
 
 /**

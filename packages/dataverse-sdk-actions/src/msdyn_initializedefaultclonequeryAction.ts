@@ -3,9 +3,12 @@ import type { msdyn_bookingsetupmetadata, msdyn_configuration } from "./types/in
 
 /**
  * Response from msdyn_initializedefaultclonequery action
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
-export interface msdyn_initializedefaultclonequeryResponse {
-  value: msdyn_configuration;
+export interface msdyn_initializedefaultclonequeryResponse extends msdyn_configuration {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
 }
 
 /**

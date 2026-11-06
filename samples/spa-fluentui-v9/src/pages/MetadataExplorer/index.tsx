@@ -23,6 +23,7 @@ import { useDataverse } from "../../context/DataverseContext";
 import { LoadingState } from "../../components/demo/LoadingState";
 import { ErrorDisplay } from "../../components/errors/ErrorDisplay";
 import { CodeComparison } from "../../components/demo/CodeComparison";
+import type { ResultView, JsonObject } from "../../types/common";
 
 const useStyles = makeStyles({
   container: {
@@ -34,7 +35,7 @@ const useStyles = makeStyles({
     marginBottom: "24px",
   },
   description: {
-    color: (tokens as any).colorNeutralForeground2,
+    color: tokens.colorNeutralForeground2,
     marginTop: "8px",
   },
   tabs: {
@@ -58,13 +59,19 @@ const useStyles = makeStyles({
 
 type TabValue = "entities" | "attributes" | "optionsets" | "delta";
 
+interface MetadataChanges {
+  ServerVersionStamp: string;
+  EntityMetadata: unknown[];
+  DeletedMetadata: unknown;
+}
+
 export default function MetadataExplorer() {
   const styles = useStyles();
   const { client, isReady } = useDataverse();
   const [selectedTab, setSelectedTab] = useState<TabValue>("entities");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const [results, setResults] = useState<any>(null);
+  const [results, setResults] = useState<ResultView | null>(null);
 
   // Entity state
   const [entityLogicalName, setEntityLogicalName] = useState("new_customentity");
@@ -93,7 +100,7 @@ export default function MetadataExplorer() {
         .select()
         .filter("IsCustomizable/Value eq true")
         .top(10)
-        .get();
+        .get<JsonObject>();
 
       setResults(response);
     } catch (err) {
@@ -110,23 +117,23 @@ export default function MetadataExplorer() {
 
     try {
       const entityDefinition = {
-        "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).EntityMetadata",
+        "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
         LogicalName: entityLogicalName,
         DisplayName: {
-          "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).Label",
+          "@odata.type": "Microsoft.Dynamics.CRM.Label",
           LocalizedLabels: [
             {
-              "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).LocalizedLabel",
+              "@odata.type": "Microsoft.Dynamics.CRM.LocalizedLabel",
               Label: entityDisplayName,
               LanguageCode: 1033,
             },
           ],
         },
         DisplayCollectionName: {
-          "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).Label",
+          "@odata.type": "Microsoft.Dynamics.CRM.Label",
           LocalizedLabels: [
             {
-              "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).LocalizedLabel",
+              "@odata.type": "Microsoft.Dynamics.CRM.LocalizedLabel",
               Label: `${entityDisplayName}s`,
               LanguageCode: 1033,
             },
@@ -138,16 +145,15 @@ export default function MetadataExplorer() {
         IsActivity: false,
         Attributes: [
           {
-            "@(odata as any).type":
-              "(Microsoft as any).Dynamics.(CRM as any).StringAttributeMetadata",
+            "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
             AttributeType: "String",
             AttributeTypeName: { Value: "StringType" },
             LogicalName: `${entityLogicalName}name`,
             DisplayName: {
-              "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).Label",
+              "@odata.type": "Microsoft.Dynamics.CRM.Label",
               LocalizedLabels: [
                 {
-                  "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).LocalizedLabel",
+                  "@odata.type": "Microsoft.Dynamics.CRM.LocalizedLabel",
                   Label: "Name",
                   LanguageCode: 1033,
                 },
@@ -160,11 +166,13 @@ export default function MetadataExplorer() {
         ],
       };
 
-      const response = await (client as any).api("/EntityDefinitions").post(entityDefinition);
+      const response = await client
+        .api("/EntityDefinitions")
+        .post<{ MetadataId: string }>(entityDefinition);
 
       setResults({
         operation: "Create Entity",
-        entityId: (response as any).MetadataId,
+        entityId: response.MetadataId,
         logicalName: entityLogicalName,
       });
     } catch (err) {
@@ -185,7 +193,7 @@ export default function MetadataExplorer() {
         .select()
         .filter("IsCustomizable/Value eq true")
         .top(10)
-        .get();
+        .get<JsonObject>();
 
       setResults(response);
     } catch (err) {
@@ -201,16 +209,16 @@ export default function MetadataExplorer() {
     setError(null);
 
     try {
-      const attributeDefinition: any = {
-        "@(odata as any).type": `(Microsoft as any).Dynamics.CRM.${attributeType}AttributeMetadata`,
+      const attributeDefinition: JsonObject = {
+        "@odata.type": `Microsoft.Dynamics.CRM.${attributeType}AttributeMetadata`,
         AttributeType: attributeType,
         AttributeTypeName: { Value: `${attributeType}Type` },
         LogicalName: attributeName,
         DisplayName: {
-          "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).Label",
+          "@odata.type": "Microsoft.Dynamics.CRM.Label",
           LocalizedLabels: [
             {
-              "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).LocalizedLabel",
+              "@odata.type": "Microsoft.Dynamics.CRM.LocalizedLabel",
               Label: attributeName,
               LanguageCode: 1033,
             },
@@ -222,21 +230,21 @@ export default function MetadataExplorer() {
 
       // Add type-specific properties
       if (attributeType === "String") {
-        (attributeDefinition as any).MaxLength = 100;
-        (attributeDefinition as any).FormatName = { Value: "Text" };
+        attributeDefinition.MaxLength = 100;
+        attributeDefinition.FormatName = { Value: "Text" };
       } else if (attributeType === "Integer") {
-        (attributeDefinition as any).Format = "None";
+        attributeDefinition.Format = "None";
       } else if (attributeType === "Money") {
-        (attributeDefinition as any).PrecisionSource = 2;
+        attributeDefinition.PrecisionSource = 2;
       }
 
       const response = await client
         .api(`/EntityDefinitions(LogicalName='${targetEntity}')/Attributes`)
-        .post(attributeDefinition);
+        .post<{ MetadataId: string }>(attributeDefinition);
 
       setResults({
         operation: "Create Attribute",
-        attributeId: (response as any).MetadataId,
+        attributeId: response.MetadataId,
         entity: targetEntity,
         attribute: attributeName,
         type: attributeType,
@@ -254,7 +262,11 @@ export default function MetadataExplorer() {
     setError(null);
 
     try {
-      const response = await client.api("/GlobalOptionSetDefinitions").select().top(10).get();
+      const response = await client
+        .api("/GlobalOptionSetDefinitions")
+        .select()
+        .top(10)
+        .get<JsonObject>();
 
       setResults(response);
     } catch (err) {
@@ -291,17 +303,17 @@ export default function MetadataExplorer() {
       };
 
       // Note: This would use a typed action in the real SDK
-      const response = await (client as any).api("/RetrieveMetadataChanges").post(query);
+      const response = await client.api("/RetrieveMetadataChanges").post<MetadataChanges>(query);
 
       setResults({
         operation: "Delta Query",
-        serverTimestamp: (response as any).ServerVersionStamp,
-        entityMetadata: (response as any).EntityMetadata,
-        deletedMetadata: (response as any).DeletedMetadata,
+        serverTimestamp: response.ServerVersionStamp,
+        entityMetadata: response.EntityMetadata,
+        deletedMetadata: response.DeletedMetadata,
       });
 
       // Update client timestamp for next query
-      setClientTimestamp((response as any).ServerVersionStamp);
+      setClientTimestamp(response.ServerVersionStamp);
     } catch (err) {
       setError(err as Error);
     } finally {
@@ -314,12 +326,12 @@ export default function MetadataExplorer() {
       <Card style={{ padding: "24px", marginBottom: "24px" }}>
         <Title3>Entity Operations</Title3>
 
-        <div className={(styles as any).form}>
+        <div className={styles.form}>
           <div>
             <Label>Logical Name</Label>
             <Input
               value={entityLogicalName}
-              onChange={(_e, data) => setEntityLogicalName((data as any).value)}
+              onChange={(_e, data) => setEntityLogicalName(data.value)}
               placeholder="new_customentity"
             />
           </div>
@@ -327,13 +339,13 @@ export default function MetadataExplorer() {
             <Label>Display Name</Label>
             <Input
               value={entityDisplayName}
-              onChange={(_e, data) => setEntityDisplayName((data as any).value)}
+              onChange={(_e, data) => setEntityDisplayName(data.value)}
               placeholder="Custom Entity"
             />
           </div>
         </div>
 
-        <div className={(styles as any).actions}>
+        <div className={styles.actions}>
           <Button appearance="primary" icon={<DatabaseRegular />} onClick={handleRetrieveEntities}>
             Retrieve Entities
           </Button>
@@ -349,7 +361,7 @@ export default function MetadataExplorer() {
             {
               label: "Response",
               code: "",
-              result: (JSON as any).stringify(results, null, 2),
+              result: JSON.stringify(results, null, 2),
             },
           ]}
         />
@@ -362,12 +374,12 @@ export default function MetadataExplorer() {
       <Card style={{ padding: "24px", marginBottom: "24px" }}>
         <Title3>Attribute Operations</Title3>
 
-        <div className={(styles as any).form}>
+        <div className={styles.form}>
           <div>
             <Label>Target Entity</Label>
             <Input
               value={targetEntity}
-              onChange={(_e, data) => setTargetEntity((data as any).value)}
+              onChange={(_e, data) => setTargetEntity(data.value)}
               placeholder="account"
             />
           </div>
@@ -375,7 +387,7 @@ export default function MetadataExplorer() {
             <Label>Attribute Name</Label>
             <Input
               value={attributeName}
-              onChange={(_e, data) => setAttributeName((data as any).value)}
+              onChange={(_e, data) => setAttributeName(data.value)}
               placeholder="new_customfield"
             />
           </div>
@@ -384,7 +396,7 @@ export default function MetadataExplorer() {
             <Dropdown
               value={attributeType}
               selectedOptions={[attributeType]}
-              onOptionSelect={(_e, data) => setAttributeType((data as any).optionValue as string)}
+              onOptionSelect={(_e, data) => setAttributeType(data.optionValue as string)}
             >
               <Option value="String">String</Option>
               <Option value="Integer">Integer</Option>
@@ -396,7 +408,7 @@ export default function MetadataExplorer() {
           </div>
         </div>
 
-        <div className={(styles as any).actions}>
+        <div className={styles.actions}>
           <Button
             appearance="primary"
             icon={<ColumnTripleEditRegular />}
@@ -416,7 +428,7 @@ export default function MetadataExplorer() {
             {
               label: "Response",
               code: "",
-              result: (JSON as any).stringify(results, null, 2),
+              result: JSON.stringify(results, null, 2),
             },
           ]}
         />
@@ -429,7 +441,7 @@ export default function MetadataExplorer() {
       <Card style={{ padding: "24px", marginBottom: "24px" }}>
         <Title3>Global Option Sets</Title3>
 
-        <div className={(styles as any).actions}>
+        <div className={styles.actions}>
           <Button
             appearance="primary"
             icon={<DataTrendingRegular />}
@@ -446,7 +458,7 @@ export default function MetadataExplorer() {
             {
               label: "Response",
               code: "",
-              result: (JSON as any).stringify(results, null, 2),
+              result: JSON.stringify(results, null, 2),
             },
           ]}
         />
@@ -460,12 +472,12 @@ export default function MetadataExplorer() {
         <Title3>Delta Queries (RetrieveMetadataChanges)</Title3>
         <Text>Query metadata changes since last sync</Text>
 
-        <div className={(styles as any).form}>
+        <div className={styles.form}>
           <div>
             <Label>Client Timestamp</Label>
             <Input
               value={clientTimestamp}
-              onChange={(_e, data) => setClientTimestamp((data as any).value)}
+              onChange={(_e, data) => setClientTimestamp(data.value)}
               placeholder="Leave empty for initial query"
             />
             <Text size={200}>
@@ -476,7 +488,7 @@ export default function MetadataExplorer() {
           </div>
         </div>
 
-        <div className={(styles as any).actions}>
+        <div className={styles.actions}>
           <Button appearance="primary" icon={<ArrowSyncRegular />} onClick={handleDeltaQuery}>
             Execute Delta Query
           </Button>
@@ -488,8 +500,8 @@ export default function MetadataExplorer() {
           items={[
             {
               label: "Response",
-              code: `Server Timestamp: ${(results as any).serverTimestamp || "N/A"}`,
-              result: (JSON as any).stringify(results, null, 2),
+              code: `Server Timestamp: ${typeof results.serverTimestamp === "string" ? results.serverTimestamp : "N/A"}`,
+              result: JSON.stringify(results, null, 2),
             },
           ]}
         />
@@ -498,18 +510,18 @@ export default function MetadataExplorer() {
   );
 
   return (
-    <div className={(styles as any).container}>
-      <div className={(styles as any).header}>
+    <div className={styles.container}>
+      <div className={styles.header}>
         <Title3>Metadata Explorer</Title3>
-        <Text className={(styles as any).description}>
+        <Text className={styles.description}>
           CRUD operations for entities, attributes, option sets, and delta queries
         </Text>
       </div>
 
       <TabList
         selectedValue={selectedTab}
-        onTabSelect={(_, data) => setSelectedTab((data as any).value as TabValue)}
-        className={(styles as any).tabs}
+        onTabSelect={(_, data) => setSelectedTab(data.value as TabValue)}
+        className={styles.tabs}
       >
         <Tab value="entities" icon={<DatabaseRegular />}>
           Entities
@@ -525,7 +537,7 @@ export default function MetadataExplorer() {
         </Tab>
       </TabList>
 
-      <div className={(styles as any).content}>
+      <div className={styles.content}>
         {loading && <LoadingState label="Processing metadata operation..." />}
         {error && <ErrorDisplay error={error} onDismiss={() => setError(null)} />}
 

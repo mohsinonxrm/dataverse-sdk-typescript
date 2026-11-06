@@ -13,6 +13,8 @@ export default tseslint.config(
       "**/*.config.js",
       "**/*.config.ts",
       "**/*.config.mjs",
+      // Plain Node release scripts (no tsconfig), e.g. scripts/check-packages.mjs
+      "scripts/**",
       // Auto-generated SDK files
       "packages/dataverse-sdk-actions/src/**/*.ts",
       "packages/dataverse-sdk-functions/src/**/*.ts",

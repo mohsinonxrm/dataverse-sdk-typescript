@@ -4,9 +4,12 @@ import type { email } from "./types/index.js";
 
 /**
  * Response from SendEmailFromTemplate action
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
-export interface SendEmailFromTemplateResponse {
-  value: email;
+export interface SendEmailFromTemplateResponse extends email {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
 }
 
 /**

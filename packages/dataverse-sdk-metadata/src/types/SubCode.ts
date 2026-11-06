@@ -1,18 +1,37 @@
 /**
  * SubCode
+ *
+ * The Web API reads and writes enum members by name (`"Unspecified"`), never by number,
+ * so this is a string union. `SubCode.Unspecified` is the name; each member's comment
+ * gives its numeric value.
  */
-export enum SubCode {
-  Unspecified = 0,
-  Schedulable = 1,
-  Committed = 2,
-  Uncommitted = 3,
-  Break = 4,
-  Holiday = 5,
-  Vacation = 6,
-  Appointment = 7,
-  ResourceStartTime = 8,
-  ResourceServiceRestriction = 9,
-  ResourceCapacity = 10,
-  ServiceRestriction = 11,
-  ServiceCost = 12,
-}
+export const SubCode = {
+  /** 0 */
+  Unspecified: "Unspecified",
+  /** 1 */
+  Schedulable: "Schedulable",
+  /** 2 */
+  Committed: "Committed",
+  /** 3 */
+  Uncommitted: "Uncommitted",
+  /** 4 */
+  Break: "Break",
+  /** 5 */
+  Holiday: "Holiday",
+  /** 6 */
+  Vacation: "Vacation",
+  /** 7 */
+  Appointment: "Appointment",
+  /** 8 */
+  ResourceStartTime: "ResourceStartTime",
+  /** 9 */
+  ResourceServiceRestriction: "ResourceServiceRestriction",
+  /** 10 */
+  ResourceCapacity: "ResourceCapacity",
+  /** 11 */
+  ServiceRestriction: "ServiceRestriction",
+  /** 12 */
+  ServiceCost: "ServiceCost",
+} as const;
+
+export type SubCode = (typeof SubCode)[keyof typeof SubCode];

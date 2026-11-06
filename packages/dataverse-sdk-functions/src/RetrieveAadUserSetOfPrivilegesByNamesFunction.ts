@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { RolePrivilege } from "./types/index.js";
 
 /**
@@ -28,7 +28,7 @@ export class RetrieveAadUserSetOfPrivilegesByNamesFunction implements Executable
     const aliases: string[] = [];
     if (this.directoryObjectId !== undefined) {
       aliases.push(`DirectoryObjectId=@p1`);
-      params.append("@p1", formatAliasValue(this.directoryObjectId));
+      params.append("@p1", formatParameterAlias(this.directoryObjectId, "Edm.Guid"));
     }
     if (this.privilegeNames !== undefined) {
       aliases.push(`PrivilegeNames=@p2`);

@@ -61,7 +61,8 @@ export function mergePrefer(
   return merged.length ? merged.join(", ") : undefined;
 }
 
-function splitPrefer(value: string | undefined): string[] {
+/** Split a `Prefer` header into its preferences (commas inside quotes are kept). */
+export function splitPrefer(value: string | undefined): string[] {
   if (!value) return [];
   // Split on commas outside quotes: include-annotations values are quoted and may list several.
   const parts: string[] = [];

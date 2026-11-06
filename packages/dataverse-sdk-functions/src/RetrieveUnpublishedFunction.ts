@@ -3,9 +3,12 @@ import type { aipluginoperationparameter } from "./types/index.js";
 
 /**
  * Response from RetrieveUnpublished function
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
-export interface RetrieveUnpublishedResponse {
-  value: aipluginoperationparameter;
+export interface RetrieveUnpublishedResponse extends aipluginoperationparameter {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
 }
 
 /**

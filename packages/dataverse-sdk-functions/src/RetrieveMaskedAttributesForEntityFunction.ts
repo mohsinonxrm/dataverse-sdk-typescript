@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
  * Response from RetrieveMaskedAttributesForEntity function
@@ -24,7 +24,7 @@ export class RetrieveMaskedAttributesForEntityFunction implements Executable<Ret
     const aliases: string[] = [];
     if (this.entityLogicalName !== undefined) {
       aliases.push(`EntityLogicalName=@p1`);
-      params.append("@p1", formatAliasValue(this.entityLogicalName));
+      params.append("@p1", formatParameterAlias(this.entityLogicalName, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

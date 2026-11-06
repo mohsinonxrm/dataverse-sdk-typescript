@@ -35,7 +35,7 @@ const useStyles = makeStyles({
   container: {
     flex: 1,
     padding: "32px",
-    backgroundColor: (tokens as any).colorNeutralBackground3,
+    backgroundColor: tokens.colorNeutralBackground3,
   },
   header: {
     display: "flex",
@@ -76,12 +76,12 @@ const useStyles = makeStyles({
     alignItems: "center",
     gap: "12px",
     padding: "12px",
-    backgroundColor: (tokens as any).colorNeutralBackground2,
-    borderRadius: (tokens as any).borderRadiusMedium,
+    backgroundColor: tokens.colorNeutralBackground2,
+    borderRadius: tokens.borderRadiusMedium,
   },
   infoIcon: {
     fontSize: "20px",
-    color: (tokens as any).colorBrandForeground1,
+    color: tokens.colorBrandForeground1,
   },
 });
 
@@ -98,13 +98,13 @@ export default function AccountDetail() {
   const [formData, setFormData] = useState<UpdateAccountInput>({ accountid: id! });
 
   useEffect(() => {
-    initializeClient();
+    void initializeClient();
   }, []);
 
   const initializeClient = async () => {
     const tokenProvider = new MsalBrowserTokenProvider(instance, {
       account: accounts[0],
-      scopes: (loginRequest as any).scopes,
+      scopes: loginRequest.scopes,
     });
 
     const dataverseClient = new DataverseClient({
@@ -139,27 +139,27 @@ export default function AccountDetail() {
           "description",
           "createdon",
           "modifiedon",
-          "@(odata as any).etag"
+          "@odata.etag"
         )
         .get<Account>();
 
       setAccount(response);
       setFormData({
         accountid: id,
-        name: (response as any).name,
-        accountnumber: (response as any).accountnumber,
-        telephone1: (response as any).telephone1,
-        emailaddress1: (response as any).emailaddress1,
-        revenue: (response as any).revenue,
-        numberofemployees: (response as any).numberofemployees,
-        websiteurl: (response as any).websiteurl,
-        address1_city: (response as any).address1_city,
-        address1_stateorprovince: (response as any).address1_stateorprovince,
-        address1_country: (response as any).address1_country,
-        description: (response as any).description,
+        name: response.name,
+        accountnumber: response.accountnumber,
+        telephone1: response.telephone1,
+        emailaddress1: response.emailaddress1,
+        revenue: response.revenue,
+        numberofemployees: response.numberofemployees,
+        websiteurl: response.websiteurl,
+        address1_city: response.address1_city,
+        address1_stateorprovince: response.address1_stateorprovince,
+        address1_country: response.address1_country,
+        description: response.description,
       });
     } catch (error) {
-      (console as any).error("Failed to load account:", error);
+      console.error("Failed to load account:", error);
       alert("Failed to load account");
       navigate("/accounts");
     } finally {
@@ -173,35 +173,28 @@ export default function AccountDetail() {
     try {
       setSaving(true);
 
-      const payload: any = {};
-      if ((formData as any).name) (payload as any).name = (formData as any).name;
-      if ((formData as any).accountnumber !== undefined)
-        (payload as any).accountnumber = (formData as any).accountnumber;
-      if ((formData as any).telephone1 !== undefined)
-        (payload as any).telephone1 = (formData as any).telephone1;
-      if ((formData as any).emailaddress1 !== undefined)
-        (payload as any).emailaddress1 = (formData as any).emailaddress1;
-      if ((formData as any).revenue !== undefined)
-        (payload as any).revenue = Number((formData as any).revenue);
-      if ((formData as any).numberofemployees !== undefined)
-        (payload as any).numberofemployees = Number((formData as any).numberofemployees);
-      if ((formData as any).websiteurl !== undefined)
-        (payload as any).websiteurl = (formData as any).websiteurl;
-      if ((formData as any).address1_city !== undefined)
-        (payload as any).address1_city = (formData as any).address1_city;
-      if ((formData as any).address1_stateorprovince !== undefined)
-        (payload as any).address1_stateorprovince = (formData as any).address1_stateorprovince;
-      if ((formData as any).address1_country !== undefined)
-        (payload as any).address1_country = (formData as any).address1_country;
-      if ((formData as any).description !== undefined)
-        (payload as any).description = (formData as any).description;
+      const payload: Partial<UpdateAccountInput> = {};
+      if (formData.name) payload.name = formData.name;
+      if (formData.accountnumber !== undefined) payload.accountnumber = formData.accountnumber;
+      if (formData.telephone1 !== undefined) payload.telephone1 = formData.telephone1;
+      if (formData.emailaddress1 !== undefined) payload.emailaddress1 = formData.emailaddress1;
+      if (formData.revenue !== undefined) payload.revenue = Number(formData.revenue);
+      if (formData.numberofemployees !== undefined)
+        payload.numberofemployees = Number(formData.numberofemployees);
+      if (formData.websiteurl !== undefined) payload.websiteurl = formData.websiteurl;
+      if (formData.address1_city !== undefined) payload.address1_city = formData.address1_city;
+      if (formData.address1_stateorprovince !== undefined)
+        payload.address1_stateorprovince = formData.address1_stateorprovince;
+      if (formData.address1_country !== undefined)
+        payload.address1_country = formData.address1_country;
+      if (formData.description !== undefined) payload.description = formData.description;
 
-      await (client as any).api(`/accounts(${id})`).patch(payload);
+      await client.api(`/accounts(${id})`).patch(payload);
 
       setEditing(false);
       await loadAccount(client);
     } catch (error) {
-      (console as any).error("Failed to update account:", error);
+      console.error("Failed to update account:", error);
       alert("Failed to update account");
     } finally {
       setSaving(false);
@@ -211,12 +204,12 @@ export default function AccountDetail() {
   const handleDelete = async () => {
     if (!client || !account) return;
 
-    if (confirm(`Are you sure you want to delete "${(account as any).name}"?`)) {
+    if (confirm(`Are you sure you want to delete "${account.name}"?`)) {
       try {
-        await (client as any).api(`/accounts(${id})`).delete();
+        await client.api(`/accounts(${id})`).delete();
         navigate("/accounts");
       } catch (error) {
-        (console as any).error("Delete failed:", error);
+        console.error("Delete failed:", error);
         alert("Failed to delete account");
       }
     }
@@ -229,7 +222,7 @@ export default function AccountDetail() {
   if (loading) {
     return (
       <div
-        className={(styles as any).container}
+        className={styles.container}
         style={{ display: "flex", justifyContent: "center", alignItems: "center" }}
       >
         <Spinner size="large" label="Loading account..." />
@@ -242,15 +235,15 @@ export default function AccountDetail() {
   }
 
   return (
-    <div className={(styles as any).container}>
-      <div className={(styles as any).header}>
-        <div className={(styles as any).headerInfo}>
-          <Title1>{(account as any).name}</Title1>
-          <Body1 style={{ marginTop: "8px", color: (tokens as any).colorNeutralForeground3 }}>
-            Account ID: {(account as any).accountid}
+    <div className={styles.container}>
+      <div className={styles.header}>
+        <div className={styles.headerInfo}>
+          <Title1>{account.name}</Title1>
+          <Body1 style={{ marginTop: "8px", color: tokens.colorNeutralForeground3 }}>
+            Account ID: {account.accountid}
           </Body1>
         </div>
-        <div className={(styles as any).actions}>
+        <div className={styles.actions}>
           {!editing ? (
             <>
               <Button appearance="primary" icon={<EditRegular />} onClick={() => setEditing(true)}>
@@ -276,17 +269,17 @@ export default function AccountDetail() {
                   setEditing(false);
                   setFormData({
                     accountid: id!,
-                    name: (account as any).name,
-                    accountnumber: (account as any).accountnumber,
-                    telephone1: (account as any).telephone1,
-                    emailaddress1: (account as any).emailaddress1,
-                    revenue: (account as any).revenue,
-                    numberofemployees: (account as any).numberofemployees,
-                    websiteurl: (account as any).websiteurl,
-                    address1_city: (account as any).address1_city,
-                    address1_stateorprovince: (account as any).address1_stateorprovince,
-                    address1_country: (account as any).address1_country,
-                    description: (account as any).description,
+                    name: account.name,
+                    accountnumber: account.accountnumber,
+                    telephone1: account.telephone1,
+                    emailaddress1: account.emailaddress1,
+                    revenue: account.revenue,
+                    numberofemployees: account.numberofemployees,
+                    websiteurl: account.websiteurl,
+                    address1_city: account.address1_city,
+                    address1_stateorprovince: account.address1_stateorprovince,
+                    address1_country: account.address1_country,
+                    description: account.description,
                   });
                 }}
                 disabled={saving}
@@ -298,160 +291,154 @@ export default function AccountDetail() {
         </div>
       </div>
 
-      <div className={(styles as any).grid}>
-        <Card className={(styles as any).card}>
+      <div className={styles.grid}>
+        <Card className={styles.card}>
           <Title2 style={{ marginBottom: "20px" }}>Account Details</Title2>
 
           {editing ? (
-            <div className={(styles as any).form}>
+            <div className={styles.form}>
               <Field label="Account Name *">
                 <Input
-                  value={(formData as any).name || ""}
-                  onChange={(e) => handleChange("name", (e as any).target.value)}
+                  value={formData.name || ""}
+                  onChange={(e) => handleChange("name", e.target.value)}
                 />
               </Field>
 
-              <div className={(styles as any).row}>
+              <div className={styles.row}>
                 <Field label="Account Number">
                   <Input
-                    value={(formData as any).accountnumber || ""}
-                    onChange={(e) => handleChange("accountnumber", (e as any).target.value)}
+                    value={formData.accountnumber || ""}
+                    onChange={(e) => handleChange("accountnumber", e.target.value)}
                   />
                 </Field>
                 <Field label="Phone">
                   <Input
-                    value={(formData as any).telephone1 || ""}
-                    onChange={(e) => handleChange("telephone1", (e as any).target.value)}
+                    value={formData.telephone1 || ""}
+                    onChange={(e) => handleChange("telephone1", e.target.value)}
                   />
                 </Field>
               </div>
 
-              <div className={(styles as any).row}>
+              <div className={styles.row}>
                 <Field label="Email">
                   <Input
-                    value={(formData as any).emailaddress1 || ""}
-                    onChange={(e) => handleChange("emailaddress1", (e as any).target.value)}
+                    value={formData.emailaddress1 || ""}
+                    onChange={(e) => handleChange("emailaddress1", e.target.value)}
                   />
                 </Field>
                 <Field label="Website">
                   <Input
-                    value={(formData as any).websiteurl || ""}
-                    onChange={(e) => handleChange("websiteurl", (e as any).target.value)}
+                    value={formData.websiteurl || ""}
+                    onChange={(e) => handleChange("websiteurl", e.target.value)}
                   />
                 </Field>
               </div>
 
-              <div className={(styles as any).row}>
+              <div className={styles.row}>
                 <Field label="Revenue">
                   <Input
-                    value={(formData as any).revenue?.toString() || ""}
-                    onChange={(e) => handleChange("revenue", (e as any).target.value)}
+                    value={formData.revenue?.toString() || ""}
+                    onChange={(e) => handleChange("revenue", e.target.value)}
                     type="number"
                   />
                 </Field>
                 <Field label="Employees">
                   <Input
-                    value={(formData as any).numberofemployees?.toString() || ""}
-                    onChange={(e) => handleChange("numberofemployees", (e as any).target.value)}
+                    value={formData.numberofemployees?.toString() || ""}
+                    onChange={(e) => handleChange("numberofemployees", e.target.value)}
                     type="number"
                   />
                 </Field>
               </div>
 
-              <div className={(styles as any).row}>
+              <div className={styles.row}>
                 <Field label="City">
                   <Input
-                    value={(formData as any).address1_city || ""}
-                    onChange={(e) => handleChange("address1_city", (e as any).target.value)}
+                    value={formData.address1_city || ""}
+                    onChange={(e) => handleChange("address1_city", e.target.value)}
                   />
                 </Field>
                 <Field label="State/Province">
                   <Input
-                    value={(formData as any).address1_stateorprovince || ""}
-                    onChange={(e) =>
-                      handleChange("address1_stateorprovince", (e as any).target.value)
-                    }
+                    value={formData.address1_stateorprovince || ""}
+                    onChange={(e) => handleChange("address1_stateorprovince", e.target.value)}
                   />
                 </Field>
               </div>
 
               <Field label="Country">
                 <Input
-                  value={(formData as any).address1_country || ""}
-                  onChange={(e) => handleChange("address1_country", (e as any).target.value)}
+                  value={formData.address1_country || ""}
+                  onChange={(e) => handleChange("address1_country", e.target.value)}
                 />
               </Field>
 
               <Field label="Description">
                 <Input
-                  value={(formData as any).description || ""}
-                  onChange={(e) => handleChange("description", (e as any).target.value)}
+                  value={formData.description || ""}
+                  onChange={(e) => handleChange("description", e.target.value)}
                 />
               </Field>
             </div>
           ) : (
-            <div className={(styles as any).infoGrid}>
-              <div className={(styles as any).infoItem}>
-                <BuildingRegular className={(styles as any).infoIcon} />
+            <div className={styles.infoGrid}>
+              <div className={styles.infoItem}>
+                <BuildingRegular className={styles.infoIcon} />
                 <div>
                   <Body1 style={{ fontWeight: 600 }}>Account Number</Body1>
-                  <Body1>{(account as any).accountnumber || "—"}</Body1>
+                  <Body1>{account.accountnumber || "—"}</Body1>
                 </div>
               </div>
 
-              <div className={(styles as any).infoItem}>
-                <PhoneRegular className={(styles as any).infoIcon} />
+              <div className={styles.infoItem}>
+                <PhoneRegular className={styles.infoIcon} />
                 <div>
                   <Body1 style={{ fontWeight: 600 }}>Phone</Body1>
-                  <Body1>{(account as any).telephone1 || "—"}</Body1>
+                  <Body1>{account.telephone1 || "—"}</Body1>
                 </div>
               </div>
 
-              <div className={(styles as any).infoItem}>
-                <MailRegular className={(styles as any).infoIcon} />
+              <div className={styles.infoItem}>
+                <MailRegular className={styles.infoIcon} />
                 <div>
                   <Body1 style={{ fontWeight: 600 }}>Email</Body1>
-                  <Body1>{(account as any).emailaddress1 || "—"}</Body1>
+                  <Body1>{account.emailaddress1 || "—"}</Body1>
                 </div>
               </div>
 
-              <div className={(styles as any).infoItem}>
-                <GlobeRegular className={(styles as any).infoIcon} />
+              <div className={styles.infoItem}>
+                <GlobeRegular className={styles.infoIcon} />
                 <div>
                   <Body1 style={{ fontWeight: 600 }}>Website</Body1>
-                  <Body1>{(account as any).websiteurl || "—"}</Body1>
+                  <Body1>{account.websiteurl || "—"}</Body1>
                 </div>
               </div>
 
-              <div className={(styles as any).infoItem}>
-                <MoneyRegular className={(styles as any).infoIcon} />
+              <div className={styles.infoItem}>
+                <MoneyRegular className={styles.infoIcon} />
                 <div>
                   <Body1 style={{ fontWeight: 600 }}>Revenue</Body1>
-                  <Body1>
-                    {(account as any).revenue
-                      ? `$${(account as any).revenue.toLocaleString()}`
-                      : "—"}
-                  </Body1>
+                  <Body1>{account.revenue ? `$${account.revenue.toLocaleString()}` : "—"}</Body1>
                 </div>
               </div>
 
-              <div className={(styles as any).infoItem}>
-                <PeopleRegular className={(styles as any).infoIcon} />
+              <div className={styles.infoItem}>
+                <PeopleRegular className={styles.infoIcon} />
                 <div>
                   <Body1 style={{ fontWeight: 600 }}>Employees</Body1>
-                  <Body1>{(account as any).numberofemployees || "—"}</Body1>
+                  <Body1>{account.numberofemployees || "—"}</Body1>
                 </div>
               </div>
 
-              <div className={(styles as any).infoItem}>
-                <LocationRegular className={(styles as any).infoIcon} />
+              <div className={styles.infoItem}>
+                <LocationRegular className={styles.infoIcon} />
                 <div>
                   <Body1 style={{ fontWeight: 600 }}>Location</Body1>
                   <Body1>
                     {[
-                      (account as any).address1_city,
-                      (account as any).address1_stateorprovince,
-                      (account as any).address1_country,
+                      account.address1_city,
+                      account.address1_stateorprovince,
+                      account.address1_country,
                     ]
                       .filter(Boolean)
                       .join(", ") || "—"}
@@ -459,16 +446,16 @@ export default function AccountDetail() {
                 </div>
               </div>
 
-              {(account as any).description && (
+              {account.description && (
                 <div
                   style={{
                     padding: "12px",
-                    backgroundColor: (tokens as any).colorNeutralBackground2,
-                    borderRadius: (tokens as any).borderRadiusMedium,
+                    backgroundColor: tokens.colorNeutralBackground2,
+                    borderRadius: tokens.borderRadiusMedium,
                   }}
                 >
                   <Body1 style={{ fontWeight: 600, marginBottom: "8px" }}>Description</Body1>
-                  <Body1>{(account as any).description}</Body1>
+                  <Body1>{account.description}</Body1>
                 </div>
               )}
             </div>
@@ -476,29 +463,25 @@ export default function AccountDetail() {
         </Card>
 
         <div style={{ display: "grid", gap: "24px" }}>
-          <Card className={(styles as any).card}>
+          <Card className={styles.card}>
             <Title2 style={{ marginBottom: "16px" }}>Metadata</Title2>
             <div style={{ display: "grid", gap: "12px" }}>
               <div>
                 <Body1 style={{ fontWeight: 600 }}>Created</Body1>
                 <Body1>
-                  {(account as any).createdon
-                    ? new Date((account as any).createdon).toLocaleString()
-                    : "—"}
+                  {account.createdon ? new Date(account.createdon).toLocaleString() : "—"}
                 </Body1>
               </div>
               <div>
                 <Body1 style={{ fontWeight: 600 }}>Modified</Body1>
                 <Body1>
-                  {(account as any).modifiedon
-                    ? new Date((account as any).modifiedon).toLocaleString()
-                    : "—"}
+                  {account.modifiedon ? new Date(account.modifiedon).toLocaleString() : "—"}
                 </Body1>
               </div>
               <div>
                 <Body1 style={{ fontWeight: 600 }}>ETag</Body1>
                 <Body1 style={{ fontSize: "12px", wordBreak: "break-all" }}>
-                  {account["@(odata as any).etag"] || "—"}
+                  {account["@odata.etag"] || "—"}
                 </Body1>
               </div>
             </div>

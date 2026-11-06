@@ -24,7 +24,6 @@ All samples use:
 ### 3) daemon-clientcredentials
 
 - client credentials auth
-- batch create/update with autosplit; cap 1000
 
 ### 4) metadata-ops
 
@@ -35,6 +34,12 @@ All samples use:
 
 - ExecuteWorkflow typed action call
 - WinOpportunity typed action call (Sales)
+
+### 6) batch-ops
+
+- `$batch` with `BatchRequestBuilder`: independent requests and changesets
+- Content-ID references (`$<id>`) inside a changeset
+- `continueOnError`; batches over 1000 requests (or `batchSize`) are split automatically
 
 ## Environment variables
 

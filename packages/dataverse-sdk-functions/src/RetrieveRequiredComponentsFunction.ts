@@ -1,7 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { EntityReference } from "./types/EntityReference.js";
-import { getEntitySetNameFromReference } from "./types/EntityReference.js";
 
 /**
  * Response from RetrieveRequiredComponents function
@@ -29,11 +28,11 @@ export class RetrieveRequiredComponentsFunction implements Executable<RetrieveRe
     const aliases: string[] = [];
     if (this.objectId !== undefined) {
       aliases.push(`ObjectId=@p1`);
-      params.append("@p1", formatAliasValue(this.objectId));
+      params.append("@p1", formatParameterAlias(this.objectId, "Edm.Guid"));
     }
     if (this.componentType !== undefined) {
       aliases.push(`ComponentType=@p2`);
-      params.append("@p2", formatAliasValue(this.componentType));
+      params.append("@p2", formatParameterAlias(this.componentType, "Edm.Int32"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

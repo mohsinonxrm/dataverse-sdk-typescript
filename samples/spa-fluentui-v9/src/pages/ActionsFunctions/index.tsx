@@ -21,6 +21,7 @@ import { useDataverse } from "../../context/DataverseContext";
 import { LoadingState } from "../../components/demo/LoadingState";
 import { ErrorDisplay } from "../../components/errors/ErrorDisplay";
 import { CodeComparison } from "../../components/demo/CodeComparison";
+import type { ResultView, JsonObject } from "../../types/common";
 
 const useStyles = makeStyles({
   container: {
@@ -32,7 +33,7 @@ const useStyles = makeStyles({
     marginBottom: "24px",
   },
   description: {
-    color: (tokens as any).colorNeutralForeground2,
+    color: tokens.colorNeutralForeground2,
     marginTop: "8px",
   },
   tabs: {
@@ -62,7 +63,7 @@ export default function ActionsFunctions() {
   const [selectedTab, setSelectedTab] = useState<TabValue>("functions");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const [results, setResults] = useState<any>(null);
+  const [results, setResults] = useState<ResultView | null>(null);
 
   // Function state
   const [userId, setUserId] = useState("");
@@ -83,13 +84,13 @@ export default function ActionsFunctions() {
 
     try {
       // WhoAmI is an unbound function (GET request)
-      const response = await (client as any).api("/WhoAmI").get();
+      const response = await client.api("/WhoAmI").get<JsonObject>();
 
       setResults({
         function: "WhoAmI",
-        userId: (response as any).UserId,
-        businessUnitId: (response as any).BusinessUnitId,
-        organizationId: (response as any).OrganizationId,
+        userId: response.UserId,
+        businessUnitId: response.BusinessUnitId,
+        organizationId: response.OrganizationId,
       });
     } catch (err) {
       setError(err as Error);
@@ -104,11 +105,11 @@ export default function ActionsFunctions() {
     setError(null);
 
     try {
-      const response = await (client as any).api("/RetrieveVersion").get();
+      const response = await client.api("/RetrieveVersion").get<JsonObject>();
 
       setResults({
         function: "RetrieveVersion",
-        version: (response as any).Version,
+        version: response.Version,
       });
     } catch (err) {
       setError(err as Error);
@@ -126,15 +127,15 @@ export default function ActionsFunctions() {
       // Bound function with parameter aliases
       const response = await client
         .api(
-          `/systemusers(${userId})/(Microsoft as any).Dynamics.(CRM as any).RetrievePrincipalAccess(Target=@target)?@target={'@(odata as any).type':'(Microsoft as any).Dynamics.(CRM as any).account','accountid':'${targetEntityId}'}`
+          `/systemusers(${userId})/Microsoft.Dynamics.CRM.RetrievePrincipalAccess(Target=@target)?@target={'@odata.type':'Microsoft.Dynamics.CRM.account','accountid':'${targetEntityId}'}`
         )
-        .get();
+        .get<JsonObject>();
 
       setResults({
         function: "RetrievePrincipalAccess",
         userId,
         targetEntityId,
-        accessRights: (response as any).AccessRights,
+        accessRights: response.AccessRights,
       });
     } catch (err) {
       setError(err as Error);
@@ -150,11 +151,11 @@ export default function ActionsFunctions() {
 
     try {
       // WinOpportunity is an unbound action (POST request)
-      const response = await (client as any).api("/WinOpportunity").post({
+      await client.api("/WinOpportunity").post({
         OpportunityClose: {
-          "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).opportunityclose",
+          "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
           subject: "Won Opportunity",
-          "opportunityid@(odata as any).bind": `/opportunities(${opportunityId})`,
+          "opportunityid@odata.bind": `/opportunities(${opportunityId})`,
         },
         Status: 3, // Won
       });
@@ -178,9 +179,9 @@ export default function ActionsFunctions() {
 
     try {
       // ExecuteWorkflow is bound to workflow entity
-      const response = await (client as any)
-        .api(`/workflows(${workflowId})/(Microsoft as any).Dynamics.(CRM as any).ExecuteWorkflow`)
-        .post({
+      const response = await client
+        .api(`/workflows(${workflowId})/Microsoft.Dynamics.CRM.ExecuteWorkflow`)
+        .post<JsonObject>({
           EntityId: targetEntityId,
         });
 
@@ -188,7 +189,7 @@ export default function ActionsFunctions() {
         action: "ExecuteWorkflow",
         workflowId,
         targetEntityId,
-        asyncOperationId: (response as any).asyncoperationid,
+        asyncOperationId: response.asyncoperationid,
         status: "Workflow started",
       });
     } catch (err) {
@@ -205,14 +206,14 @@ export default function ActionsFunctions() {
 
     try {
       // GrantAccess action
-      await (client as any).api("/GrantAccess").post({
+      await client.api("/GrantAccess").post<JsonObject>({
         Target: {
-          "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).account",
+          "@odata.type": "Microsoft.Dynamics.CRM.account",
           accountid: targetEntityId,
         },
         PrincipalAccess: {
           Principal: {
-            "@(odata as any).type": "(Microsoft as any).Dynamics.(CRM as any).systemuser",
+            "@odata.type": "Microsoft.Dynamics.CRM.systemuser",
             systemuserid: userId,
           },
           AccessMask: "ReadAccess,WriteAccess",
@@ -239,7 +240,7 @@ export default function ActionsFunctions() {
         <Title3>Unbound Functions</Title3>
         <Text>Functions are GET requests with no side effects</Text>
 
-        <div className={(styles as any).actions}>
+        <div className={styles.actions}>
           <Button appearance="primary" icon={<PersonCircleRegular />} onClick={handleWhoAmI}>
             WhoAmI
           </Button>
@@ -251,12 +252,12 @@ export default function ActionsFunctions() {
         <Title3>Bound Functions</Title3>
         <Text>Functions bound to entity instances (use parameter aliases)</Text>
 
-        <div className={(styles as any).form}>
+        <div className={styles.form}>
           <div>
             <Label>User ID</Label>
             <Input
               value={userId}
-              onChange={(_e, data) => setUserId((data as any).value)}
+              onChange={(_e, data) => setUserId(data.value)}
               placeholder="System user GUID"
             />
           </div>
@@ -264,13 +265,13 @@ export default function ActionsFunctions() {
             <Label>Target Entity ID (Account)</Label>
             <Input
               value={targetEntityId}
-              onChange={(_e, data) => setTargetEntityId((data as any).value)}
+              onChange={(_e, data) => setTargetEntityId(data.value)}
               placeholder="Account GUID"
             />
           </div>
         </div>
 
-        <div className={(styles as any).actions}>
+        <div className={styles.actions}>
           <Button
             appearance="primary"
             onClick={handleRetrievePrincipalAccess}
@@ -281,18 +282,18 @@ export default function ActionsFunctions() {
         </div>
       </Card>
 
-      {results && (results as any).function && (
+      {results && results.function !== undefined && (
         <CodeComparison
           items={[
             {
               label: "Function Call",
               code:
-                (results as any).function === "WhoAmI"
-                  ? `await (client as any).api('/WhoAmI').get()`
-                  : (results as any).function === "RetrieveVersion"
-                    ? `await (client as any).api('/RetrieveVersion').get()`
-                    : `await (client as any).api('/systemusers(${userId})/(Microsoft as any).Dynamics.(CRM as any).RetrievePrincipalAccess(Target=@target)?@target={...}').get()`,
-              result: (JSON as any).stringify(results, null, 2),
+                results.function === "WhoAmI"
+                  ? `await client.api('/WhoAmI').get()`
+                  : results.function === "RetrieveVersion"
+                    ? `await client.api('/RetrieveVersion').get()`
+                    : `await client.api('/systemusers(${userId})/Microsoft.Dynamics.CRM.RetrievePrincipalAccess(Target=@target)?@target={...}').get()`,
+              result: JSON.stringify(results, null, 2),
             },
           ]}
         />
@@ -306,18 +307,18 @@ export default function ActionsFunctions() {
         <Title3>Business Actions</Title3>
         <Text>Actions are POST requests that may have side effects</Text>
 
-        <div className={(styles as any).form}>
+        <div className={styles.form}>
           <div>
             <Label>Opportunity ID</Label>
             <Input
               value={opportunityId}
-              onChange={(_e, data) => setOpportunityId((data as any).value)}
+              onChange={(_e, data) => setOpportunityId(data.value)}
               placeholder="Opportunity GUID"
             />
           </div>
         </div>
 
-        <div className={(styles as any).actions}>
+        <div className={styles.actions}>
           <Button
             appearance="primary"
             icon={<TrophyRegular />}
@@ -333,12 +334,12 @@ export default function ActionsFunctions() {
         <Title3>Workflow Actions</Title3>
         <Text>Execute workflows and background processes</Text>
 
-        <div className={(styles as any).form}>
+        <div className={styles.form}>
           <div>
             <Label>Workflow ID</Label>
             <Input
               value={workflowId}
-              onChange={(_e, data) => setWorkflowId((data as any).value)}
+              onChange={(_e, data) => setWorkflowId(data.value)}
               placeholder="Workflow GUID"
             />
           </div>
@@ -346,13 +347,13 @@ export default function ActionsFunctions() {
             <Label>Target Entity ID</Label>
             <Input
               value={targetEntityId}
-              onChange={(_e, data) => setTargetEntityId((data as any).value)}
+              onChange={(_e, data) => setTargetEntityId(data.value)}
               placeholder="Record GUID"
             />
           </div>
         </div>
 
-        <div className={(styles as any).actions}>
+        <div className={styles.actions}>
           <Button
             appearance="primary"
             icon={<FlowRegular />}
@@ -368,12 +369,12 @@ export default function ActionsFunctions() {
         <Title3>Security Actions</Title3>
         <Text>Grant or revoke access to records</Text>
 
-        <div className={(styles as any).form}>
+        <div className={styles.form}>
           <div>
             <Label>User ID</Label>
             <Input
               value={userId}
-              onChange={(_e, data) => setUserId((data as any).value)}
+              onChange={(_e, data) => setUserId(data.value)}
               placeholder="System user GUID"
             />
           </div>
@@ -381,13 +382,13 @@ export default function ActionsFunctions() {
             <Label>Target Entity ID (Account)</Label>
             <Input
               value={targetEntityId}
-              onChange={(_e, data) => setTargetEntityId((data as any).value)}
+              onChange={(_e, data) => setTargetEntityId(data.value)}
               placeholder="Account GUID"
             />
           </div>
         </div>
 
-        <div className={(styles as any).actions}>
+        <div className={styles.actions}>
           <Button
             appearance="primary"
             onClick={handleGrantAccess}
@@ -398,33 +399,33 @@ export default function ActionsFunctions() {
         </div>
       </Card>
 
-      {results && (results as any).action && (
+      {results && results.action !== undefined && (
         <CodeComparison
           items={[
             {
               label: "Action Call",
               code:
-                (results as any).action === "WinOpportunity"
-                  ? `await (client as any).api('/WinOpportunity').post({
+                results.action === "WinOpportunity"
+                  ? `await client.api('/WinOpportunity').post({
   OpportunityClose: {
-    '@(odata as any).type': '(Microsoft as any).Dynamics.(CRM as any).opportunityclose',
+    '@odata.type': 'Microsoft.Dynamics.CRM.opportunityclose',
     subject: 'Won Opportunity',
-    'opportunityid@(odata as any).bind': '/opportunities(${opportunityId})'
+    'opportunityid@odata.bind': '/opportunities(${opportunityId})'
   },
   Status: 3
 })`
-                  : (results as any).action === "ExecuteWorkflow"
-                    ? `await (client as any).api('/workflows(${workflowId})/(Microsoft as any).Dynamics.(CRM as any).ExecuteWorkflow').post({
+                  : results.action === "ExecuteWorkflow"
+                    ? `await client.api('/workflows(${workflowId})/Microsoft.Dynamics.CRM.ExecuteWorkflow').post({
   EntityId: '${targetEntityId}'
 })`
-                    : `await (client as any).api('/GrantAccess').post({
-  Target: { '@(odata as any).type': '(Microsoft as any).Dynamics.(CRM as any).account', accountid: '${targetEntityId}' },
+                    : `await client.api('/GrantAccess').post({
+  Target: { '@odata.type': 'Microsoft.Dynamics.CRM.account', accountid: '${targetEntityId}' },
   PrincipalAccess: {
-    Principal: { '@(odata as any).type': '(Microsoft as any).Dynamics.(CRM as any).systemuser', systemuserid: '${userId}' },
+    Principal: { '@odata.type': 'Microsoft.Dynamics.CRM.systemuser', systemuserid: '${userId}' },
     AccessMask: 'ReadAccess,WriteAccess'
   }
 })`,
-              result: (JSON as any).stringify(results, null, 2),
+              result: JSON.stringify(results, null, 2),
             },
           ]}
         />
@@ -433,18 +434,18 @@ export default function ActionsFunctions() {
   );
 
   return (
-    <div className={(styles as any).container}>
-      <div className={(styles as any).header}>
+    <div className={styles.container}>
+      <div className={styles.header}>
         <Title3>Actions & Functions</Title3>
-        <Text className={(styles as any).description}>
+        <Text className={styles.description}>
           Execute typed Web API actions (POST) and functions (GET) with compile-time safety
         </Text>
       </div>
 
       <TabList
         selectedValue={selectedTab}
-        onTabSelect={(_, data) => setSelectedTab((data as any).value as TabValue)}
-        className={(styles as any).tabs}
+        onTabSelect={(_, data) => setSelectedTab(data.value as TabValue)}
+        className={styles.tabs}
       >
         <Tab value="functions" icon={<PersonCircleRegular />}>
           Functions (GET)
@@ -454,7 +455,7 @@ export default function ActionsFunctions() {
         </Tab>
       </TabList>
 
-      <div className={(styles as any).content}>
+      <div className={styles.content}>
         {loading && <LoadingState label="Executing operation..." />}
         {error && <ErrorDisplay error={error} onDismiss={() => setError(null)} />}
 

@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
  * Response from LastWeek function
@@ -24,7 +24,7 @@ export class LastWeekFunction implements Executable<LastWeekResponse> {
     const aliases: string[] = [];
     if (this.propertyName !== undefined) {
       aliases.push(`PropertyName=@p1`);
-      params.append("@p1", formatAliasValue(this.propertyName));
+      params.append("@p1", formatParameterAlias(this.propertyName, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

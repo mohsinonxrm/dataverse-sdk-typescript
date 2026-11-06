@@ -3,9 +3,12 @@ import type { socialprofile } from "./types/index.js";
 
 /**
  * Response from GenerateSocialProfile action
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
-export interface GenerateSocialProfileResponse {
-  value: socialprofile;
+export interface GenerateSocialProfileResponse extends socialprofile {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
 }
 
 /**

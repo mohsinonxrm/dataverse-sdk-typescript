@@ -32,9 +32,11 @@
     "format": "prettier -w .",
     "format:check": "prettier --check .",
     "test:integration": "pnpm --filter @mohsinonxrm/dataverse-sdk-integration-tests test:integration",
-    "test:browser": "pnpm --filter @mohsinonxrm/dataverse-sdk-browser-tests test:browser"
+    "test:browser": "pnpm --filter @mohsinonxrm/dataverse-sdk-browser-tests test:browser",
+    "check:packages": "node scripts/check-packages.mjs"
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.2",
     "@changesets/cli": "^2.31.1",
     "@eslint/js": "^9.39.5",
     "@typescript-eslint/eslint-plugin": "^8.72.1",
@@ -43,6 +45,7 @@
     "eslint": "^9.39.5",
     "msw": "^2.15.0",
     "prettier": "^3.9.10",
+    "publint": "^0.3.12",
     "rimraf": "^6.1.4",
     "tsd": "^0.31.2",
     "tsup": "^8.5.1",

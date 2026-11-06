@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
  * Response from GetValidReferencedEntities function
@@ -14,7 +14,7 @@ export interface GetValidReferencedEntitiesResponse {
  * Unbound function
  */
 export class GetValidReferencedEntitiesFunction implements Executable<GetValidReferencedEntitiesResponse> {
-  constructor(public readonly referencingEntityName: string) {}
+  constructor(public readonly referencingEntityName?: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/GetValidReferencedEntities`;
@@ -24,7 +24,7 @@ export class GetValidReferencedEntitiesFunction implements Executable<GetValidRe
     const aliases: string[] = [];
     if (this.referencingEntityName !== undefined) {
       aliases.push(`ReferencingEntityName=@p1`);
-      params.append("@p1", formatAliasValue(this.referencingEntityName));
+      params.append("@p1", formatParameterAlias(this.referencingEntityName, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

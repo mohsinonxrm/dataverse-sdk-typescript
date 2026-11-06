@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
  * Response from CCaaS_GetClientLWIContext function
@@ -31,7 +31,7 @@ export class CCaaS_GetClientLWIContextFunction implements Executable<CCaaS_GetCl
     const aliases: string[] = [];
     if (this.apiVersion !== undefined) {
       aliases.push(`ApiVersion=@p1`);
-      params.append("@p1", formatAliasValue(this.apiVersion));
+      params.append("@p1", formatParameterAlias(this.apiVersion, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

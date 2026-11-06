@@ -1,7 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { EntityReference } from "./types/EntityReference.js";
-import { getEntitySetNameFromReference } from "./types/EntityReference.js";
 import type { AuditDetailCollection, PagingInfo } from "./types/index.js";
 
 /**
@@ -20,7 +19,7 @@ export class RetrieveAttributeChangeHistoryFunction implements Executable<Retrie
   constructor(
     public readonly target: EntityReference,
     public readonly attributeLogicalName: string,
-    public readonly pagingInfo: PagingInfo
+    public readonly pagingInfo?: PagingInfo
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -31,16 +30,11 @@ export class RetrieveAttributeChangeHistoryFunction implements Executable<Retrie
     const aliases: string[] = [];
     if (this.target !== undefined) {
       aliases.push(`Target=@p1`);
-      params.append(
-        "@p1",
-        JSON.stringify({
-          "@odata.id": `${getEntitySetNameFromReference(this.target)}(${this.target.id})`,
-        })
-      );
+      params.append("@p1", formatParameterAlias(this.target, "mscrm.crmbaseentity", "EntityType"));
     }
     if (this.attributeLogicalName !== undefined) {
       aliases.push(`AttributeLogicalName=@p2`);
-      params.append("@p2", formatAliasValue(this.attributeLogicalName));
+      params.append("@p2", formatParameterAlias(this.attributeLogicalName, "Edm.String"));
     }
     if (this.pagingInfo !== undefined) {
       aliases.push(`PagingInfo=@p3`);

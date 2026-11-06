@@ -1,7 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { EntityReference } from "./types/EntityReference.js";
-import { getEntitySetNameFromReference } from "./types/EntityReference.js";
 
 /**
  * Response from GetAllTimeZonesWithDisplayName function
@@ -28,7 +27,7 @@ export class GetAllTimeZonesWithDisplayNameFunction implements Executable<GetAll
     const aliases: string[] = [];
     if (this.localeId !== undefined) {
       aliases.push(`LocaleId=@p1`);
-      params.append("@p1", formatAliasValue(this.localeId));
+      params.append("@p1", formatParameterAlias(this.localeId, "Edm.Int32"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

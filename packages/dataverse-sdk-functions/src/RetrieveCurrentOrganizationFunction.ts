@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { EndpointAccessType, OrganizationDetail } from "./types/index.js";
 
 /**
@@ -15,7 +15,7 @@ export interface RetrieveCurrentOrganizationResponse {
  * Unbound function
  */
 export class RetrieveCurrentOrganizationFunction implements Executable<RetrieveCurrentOrganizationResponse> {
-  constructor(public readonly accessType: EndpointAccessType) {}
+  constructor(public readonly accessType: EndpointAccessType | keyof typeof EndpointAccessType) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveCurrentOrganization`;
@@ -25,7 +25,10 @@ export class RetrieveCurrentOrganizationFunction implements Executable<RetrieveC
     const aliases: string[] = [];
     if (this.accessType !== undefined) {
       aliases.push(`AccessType=@p1`);
-      params.append("@p1", formatAliasValue(this.accessType));
+      params.append(
+        "@p1",
+        formatParameterAlias(this.accessType, "mscrm.EndpointAccessType", "EnumerationType")
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

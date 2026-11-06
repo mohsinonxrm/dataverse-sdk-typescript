@@ -129,10 +129,23 @@ function parseEntityTypes(entityTypeElements: any[], namespace: string): CsdlEnt
       namespace,
       baseType: et["@_BaseType"],
       abstract: et["@_Abstract"] === true || et["@_Abstract"] === "true",
+      key: parseKey(et.Key),
       properties,
       navigationProperties,
     };
   });
+}
+
+/**
+ * Parse an EntityType's `<Key><PropertyRef Name="..."/></Key>`.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function parseKey(keyElement: any): string[] {
+  if (!keyElement) return [];
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  const refs: unknown = keyElement.PropertyRef;
+  const list = Array.isArray(refs) ? refs : refs ? [refs] : [];
+  return list.map((r) => String((r as Record<string, unknown>)["@_Name"]));
 }
 
 /**

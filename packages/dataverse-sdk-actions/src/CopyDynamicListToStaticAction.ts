@@ -3,9 +3,12 @@ import type { list } from "./types/index.js";
 
 /**
  * Response from CopyDynamicListToStatic action
+ *
+ * The response is the entity itself, not wrapped in `value`.
  */
-export interface CopyDynamicListToStaticResponse {
-  value: list;
+export interface CopyDynamicListToStaticResponse extends list {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
 }
 
 /**

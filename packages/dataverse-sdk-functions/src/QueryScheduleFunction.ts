@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { TimeCode, TimeInfo } from "./types/index.js";
 
 /**
@@ -17,8 +17,8 @@ export interface QueryScheduleResponse {
 export class QueryScheduleFunction implements Executable<QueryScheduleResponse> {
   constructor(
     public readonly resourceId: string,
-    public readonly start: string,
-    public readonly end: string,
+    public readonly start: string | Date,
+    public readonly end: string | Date,
     public readonly timeCodes: TimeCode[]
   ) {}
 
@@ -30,15 +30,15 @@ export class QueryScheduleFunction implements Executable<QueryScheduleResponse> 
     const aliases: string[] = [];
     if (this.resourceId !== undefined) {
       aliases.push(`ResourceId=@p1`);
-      params.append("@p1", formatAliasValue(this.resourceId));
+      params.append("@p1", formatParameterAlias(this.resourceId, "Edm.Guid"));
     }
     if (this.start !== undefined) {
       aliases.push(`Start=@p2`);
-      params.append("@p2", formatAliasValue(this.start));
+      params.append("@p2", formatParameterAlias(this.start, "Edm.DateTimeOffset"));
     }
     if (this.end !== undefined) {
       aliases.push(`End=@p3`);
-      params.append("@p3", formatAliasValue(this.end));
+      params.append("@p3", formatParameterAlias(this.end, "Edm.DateTimeOffset"));
     }
     if (this.timeCodes !== undefined) {
       aliases.push(`TimeCodes=@p4`);

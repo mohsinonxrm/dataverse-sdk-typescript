@@ -1,14 +1,29 @@
 /**
  * PrivilegeType
+ *
+ * The Web API reads and writes enum members by name (`"None"`), never by number,
+ * so this is a string union. `PrivilegeType.None` is the name; each member's comment
+ * gives its numeric value.
  */
-export enum PrivilegeType {
-  None = 0,
-  Create = 1,
-  Read = 2,
-  Write = 3,
-  Delete = 4,
-  Assign = 5,
-  Share = 6,
-  Append = 7,
-  AppendTo = 8,
-}
+export const PrivilegeType = {
+  /** 0 */
+  None: "None",
+  /** 1 */
+  Create: "Create",
+  /** 2 */
+  Read: "Read",
+  /** 3 */
+  Write: "Write",
+  /** 4 */
+  Delete: "Delete",
+  /** 5 */
+  Assign: "Assign",
+  /** 6 */
+  Share: "Share",
+  /** 7 */
+  Append: "Append",
+  /** 8 */
+  AppendTo: "AppendTo",
+} as const;
+
+export type PrivilegeType = (typeof PrivilegeType)[keyof typeof PrivilegeType];

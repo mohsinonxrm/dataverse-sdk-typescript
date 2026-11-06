@@ -1,5 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { formatAliasValue } from "./internal/odataLiteral.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { RibbonLocationFilters } from "./types/index.js";
 
 /**
@@ -17,7 +17,7 @@ export interface RetrieveEntityRibbonResponse {
 export class RetrieveEntityRibbonFunction implements Executable<RetrieveEntityRibbonResponse> {
   constructor(
     public readonly entityName: string,
-    public readonly ribbonLocationFilter: RibbonLocationFilters
+    public readonly ribbonLocationFilter: RibbonLocationFilters | keyof typeof RibbonLocationFilters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -28,11 +28,18 @@ export class RetrieveEntityRibbonFunction implements Executable<RetrieveEntityRi
     const aliases: string[] = [];
     if (this.entityName !== undefined) {
       aliases.push(`EntityName=@p1`);
-      params.append("@p1", formatAliasValue(this.entityName));
+      params.append("@p1", formatParameterAlias(this.entityName, "Edm.String"));
     }
     if (this.ribbonLocationFilter !== undefined) {
       aliases.push(`RibbonLocationFilter=@p2`);
-      params.append("@p2", formatAliasValue(this.ribbonLocationFilter));
+      params.append(
+        "@p2",
+        formatParameterAlias(
+          this.ribbonLocationFilter,
+          "mscrm.RibbonLocationFilters",
+          "EnumerationType"
+        )
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

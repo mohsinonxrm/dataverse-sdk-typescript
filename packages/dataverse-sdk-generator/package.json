@@ -30,7 +30,8 @@
   },
   "files": [
     "dist",
-    "templates"
+    "templates",
+    "THIRD_PARTY_NOTICES.md"
   ],
   "scripts": {
     "build": "tsup",
@@ -40,6 +41,8 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
+    "@azure/msal-node": "^2.16.3",
+    "@mohsinonxrm/dataverse-sdk-auth-msal-node": "workspace:*",
     "@mohsinonxrm/dataverse-sdk-core": "workspace:*",
     "@mohsinonxrm/dataverse-sdk-entities-runtime": "workspace:*",
     "@mohsinonxrm/dataverse-sdk-metadata": "workspace:*",
@@ -50,6 +53,7 @@
     "xml-js": "^1.6.11"
   },
   "devDependencies": {
+    "@mohsinonxrm/dataverse-sdk-testing": "workspace:^",
     "@types/ejs": "^3.1.5",
     "@types/node": "^20.19.43",
     "eslint": "^9.39.5",

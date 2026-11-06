@@ -30,16 +30,19 @@ describe("Business Actions", () => {
       });
     });
 
-    it("should parse response with asyncoperation value", async () => {
+    it("should parse the asyncoperation the response body is (#71)", async () => {
       const action = new ExecuteWorkflowAction("workflow-guid", "entity-guid", {});
       const mockResponse = new Response(
-        JSON.stringify({ value: { asyncoperationid: "async-operation-guid" } }),
+        JSON.stringify({
+          "@odata.context": "$metadata#asyncoperations/$entity",
+          asyncoperationid: "async-operation-guid",
+        }),
         { status: 200, headers: { "Content-Type": "application/json" } }
       );
 
       const response = await action.parseResponse(mockResponse);
 
-      expect(response.value.asyncoperationid).toBe("async-operation-guid");
+      expect(response.asyncoperationid).toBe("async-operation-guid");
     });
   });
 
