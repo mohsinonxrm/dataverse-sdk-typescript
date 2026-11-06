@@ -3,7 +3,12 @@
  */
 
 import type { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
-import { DataverseInvalidRequestError } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  DataverseError,
+  DataverseInvalidRequestError,
+  normalizeHeaders,
+  parseODataError,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import type {
   BatchItem,
   BatchRequestStep,
@@ -21,6 +26,14 @@ import { decodeBatchResponse } from "./decoding.js";
  * they are limited to characters that are safe in a MIME header and in a URL.
  */
 const CONTENT_ID_PATTERN = /^[A-Za-z0-9._~-]+$/;
+
+function headersToRecord(headers: Headers): Record<string, string> {
+  const out: Record<string, string> = {};
+  headers.forEach((value, key) => {
+    out[key] = value;
+  });
+  return out;
+}
 
 /** The requests of an item: the request itself, or the requests of a change set. */
 function requestsOf(item: BatchItem): BatchRequestStep[] {
@@ -317,33 +330,37 @@ export class BatchRequestBuilder {
     const boundary = generateBoundary();
     const batchBody = this.encode(boundary);
 
-    // Prepare headers
-    const headers: Record<string, string> = {
-      "Content-Type": `multipart/mixed; boundary=${boundary}`,
-      ...(options.headers ?? {}),
-    };
-
+    // The caller's headers, lower-cased (client.send() would do that too), then ours: the batch
+    // content type must be exactly this one, and continue-on-error is added to any Prefer.
+    const headers = normalizeHeaders(options.headers);
+    headers["content-type"] = `multipart/mixed; boundary=${boundary}`;
     if (options.continueOnError) {
-      headers.Prefer = "odata.continue-on-error";
+      headers.prefer = headers.prefer
+        ? `${headers.prefer}, odata.continue-on-error`
+        : "odata.continue-on-error";
     }
 
-    // Send request
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-    const response = (await this.client.api("/$batch").post(batchBody, headers)) as {
-      headers: Headers;
-      text: () => Promise<string>;
-    };
+    // client.send() returns the raw Response and sends a string body unchanged.
+    const response = await this.client.send({
+      method: "POST",
+      url: "$batch",
+      headers,
+      body: batchBody,
+    });
 
-    // Parse response
-    const contentType = response.headers.get("Content-Type");
-    if (!contentType) {
-      throw new Error("No Content-Type header in batch response");
+    // Dataverse answers a batch whose first failure is a 4xx or 5xx with that status, but the
+    // body is still the multipart batch response. Anything else is an error for the batch as a
+    // whole (malformed batch, auth, throttling).
+    const contentType = response.headers.get("content-type") ?? "";
+    if (!/^\s*multipart\/mixed\s*;/i.test(contentType)) {
+      if (!response.ok) throw await parseODataError(response);
+      throw new DataverseError(
+        `Unexpected $batch response: expected multipart/mixed, got "${contentType || "no content type"}"`,
+        { status: response.status, headers: headersToRecord(response.headers) }
+      );
     }
 
-    const responseBody = await response.text();
-    const parts = decodeBatchResponse(responseBody, contentType);
-
-    // Build result
+    const parts = decodeBatchResponse(await response.text(), contentType);
     return this.buildResult(parts);
   }
 
